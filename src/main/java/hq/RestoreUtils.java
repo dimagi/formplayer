@@ -23,6 +23,14 @@ import java.nio.charset.Charset;
  */
 public class RestoreUtils {
 
+    public static String getOTARestoreAuth(String username, String authKey){
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response =
+                restTemplate.exchange("http://localhost:8000/a/test/phone/restore/?version=2.0", HttpMethod.GET,
+                        new HttpEntity<String>(HttpUtils.createAuthHeaders(username, authKey)), String.class);
+        return response.getBody();
+    }
+
     public static String getOTARestore(String username, String password){
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
@@ -40,4 +48,12 @@ public class RestoreUtils {
         return mSandbox;
     }
 
+    public static UserSqlSandbox restoreUserAuth(String username, String authKey) throws
+            UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
+        String restorePayload = getOTARestoreAuth(username, authKey);
+        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username);
+        PrototypeFactory.setStaticHasher(new ClassNameHasher());
+        ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
+        return mSandbox;
+    }
 }

@@ -46,8 +46,32 @@ public class CaseAPIs {
         }
     }
 
+    private static UserSqlSandbox restoreIfNotExistsAuth(String username, String authKey) throws Exception{
+        File db = new File(getDbFilePath(username));
+        if(db.exists()){
+            return new UserSqlSandbox(username);
+        } else{
+            return RestoreUtils.restoreUserAuth(username, authKey);
+        }
+    }
+
+
     public static String getDbFilePath(String username){
         String path = UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + username + ".db";
         return path;
+    }
+
+    public static String filterCasesAuth(String username, String authKey, String filterExpr) throws Exception{
+        try {
+            String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpr + "/@case_id)";
+            UserSqlSandbox mSandbox = restoreIfNotExistsAuth(username, authKey);
+            EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
+            String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
+            System.out.println("filtered cases: " + filteredCases);
+            return filteredCases;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "null";
     }
 }

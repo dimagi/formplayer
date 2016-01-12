@@ -30,6 +30,7 @@ dependencies {
     compile("org.springframework:spring-web")
     compile 'net.sf.kxml:kxml2:2.3.0'
     compile 'xpp3:xpp3:1.1.4c'
+    compile 'org.json:json:20131018'
     compile("com.fasterxml.jackson.core:jackson-core:2.4.3")
     compile("com.fasterxml.jackson.core:jackson-databind:2.4.3")
     compile fileTree(dir: 'libs', include: '*.jar')

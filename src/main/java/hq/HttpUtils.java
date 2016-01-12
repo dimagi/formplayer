@@ -9,10 +9,6 @@ import java.nio.charset.Charset;
  * Created by willpride on 1/12/16.
  */
 public class HttpUtils {
-    public static String getFullUsername(String username, String domain){
-        // assumes commcarehq.org as server
-        return username + "@" + domain + ".commcarehq.org";
-    }
 
     public static HttpHeaders createHeaders(String username, String password ){
         return new HttpHeaders(){
@@ -22,6 +18,16 @@ public class HttpUtils {
                         auth.getBytes(Charset.forName("US-ASCII")) );
                 String authHeader = "Basic " + new String( encodedAuth );
                 set( "Authorization", authHeader );
+            }
+        };
+    }
+
+    public static HttpHeaders createAuthHeaders(String username, String authKey){
+        return new HttpHeaders(){
+            {
+                add( "Cookie",  "sessionid=" + authKey);
+                add( "sessionid",  "sessionid=" + authKey);
+                add( "Authorization",  "sessionid=" + authKey);
             }
         };
     }
