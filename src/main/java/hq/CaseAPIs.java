@@ -9,10 +9,12 @@ import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathLazyNodeset;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathFuncExpr;
+import requests.FilterRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.ExportException;
+import java.util.logging.Filter;
 
 /**
  * Created by willpride on 1/7/16.
@@ -46,12 +48,12 @@ public class CaseAPIs {
         }
     }
 
-    private static UserSqlSandbox restoreIfNotExistsAuth(String username, String authKey) throws Exception{
-        File db = new File(getDbFilePath(username));
+    private static UserSqlSandbox restoreIfNotExistsAuth(FilterRequest filterRequest) throws Exception{
+        File db = new File(getDbFilePath(filterRequest.getUsername()));
         if(db.exists()){
-            return new UserSqlSandbox(username);
+            return new UserSqlSandbox(filterRequest.getUsername());
         } else{
-            return RestoreUtils.restoreUserAuth(username, authKey);
+            return RestoreUtils.restoreUserAuth(filterRequest);
         }
     }
 
@@ -61,10 +63,10 @@ public class CaseAPIs {
         return path;
     }
 
-    public static String filterCasesAuth(String username, String authKey, String filterExpr) throws Exception{
+    public static String filterCasesAuth(FilterRequest request) throws Exception{
         try {
-            String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpr + "/@case_id)";
-            UserSqlSandbox mSandbox = restoreIfNotExistsAuth(username, authKey);
+            String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilter() + "/@case_id)";
+            UserSqlSandbox mSandbox = restoreIfNotExistsAuth(request);
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
             String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
             System.out.println("filtered cases: " + filteredCases);

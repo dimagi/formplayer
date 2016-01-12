@@ -14,20 +14,25 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.xmlpull.v1.XmlPullParserException;
+import requests.FilterRequest;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.logging.Filter;
 
 /**
  * Created by willpride on 1/12/16.
  */
 public class RestoreUtils {
 
-    public static String getOTARestoreAuth(String username, String authKey){
+    public static String getOTARestoreAuth(FilterRequest filterRequest){
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
-                restTemplate.exchange("http://localhost:8000/a/test/phone/restore/?version=2.0", HttpMethod.GET,
-                        new HttpEntity<String>(HttpUtils.createAuthHeaders(username, authKey)), String.class);
+                restTemplate.exchange("http://" + filterRequest.getHost()
+                        +  "/a/" + filterRequest.getDomain() + "/phone/restore/?version=2.0",
+                        HttpMethod.GET,
+                        new HttpEntity<String>(HttpUtils.createAuthHeaders(filterRequest.getUsername(),
+                                filterRequest.getAuthKey())), String.class);
         return response.getBody();
     }
 
@@ -48,10 +53,10 @@ public class RestoreUtils {
         return mSandbox;
     }
 
-    public static UserSqlSandbox restoreUserAuth(String username, String authKey) throws
+    public static UserSqlSandbox restoreUserAuth(FilterRequest filterRequest) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
-        String restorePayload = getOTARestoreAuth(username, authKey);
-        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username);
+        String restorePayload = getOTARestoreAuth(filterRequest);
+        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(filterRequest.getUsername());
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
         return mSandbox;
