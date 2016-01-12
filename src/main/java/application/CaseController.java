@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class CaseController {
 
     @RequestMapping("/cases")
-    public String getCaseIds(@RequestParam(value="username") String username,
-                                  @RequestParam(value="password") String password,
-                                  @RequestParam(value="filter_expr", defaultValue="") String filterExpression){
-        return CaseAPIs.filterCases(username, password, filterExpression);
+    public CaseResponse getCaseIds(@RequestParam(value="username") String username,
+                                   @RequestParam(value="password") String password,
+                                   @RequestParam(value="filter_expr", defaultValue="") String filterExpression){
+        return new CaseResponse(CaseAPIs.filterCases(username, password, filterExpression));
     }
 }
