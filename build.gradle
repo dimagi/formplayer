@@ -26,6 +26,11 @@ targetCompatibility = 1.8
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter")
+    compile("org.springframework:spring-web")
+    compile 'kxml2:kxml2:2.3.0'
+    compile 'xpp3:xpp3:1.1.4c'
+    compile("com.fasterxml.jackson.core:jackson-databind")
     compile project(':javarosa')
     compile project(':commcare')
     testCompile("junit:junit")

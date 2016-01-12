@@ -26,7 +26,7 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... strings) throws Exception {
-        String response = CaseAPIs.getOTARestore(CaseAPIs.getFullUsername("will", "ccqa"),"123");
-        System.out.println(response);
+        int response = CaseAPIs.restoreUser(CaseAPIs.getFullUsername("will", "ccqa"),"123");
+        System.out.println("Response!: " + response);
     }
 }
