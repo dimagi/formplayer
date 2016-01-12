@@ -10,6 +10,7 @@ import org.javarosa.xpath.XPathLazyNodeset;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.server.ExportException;
 
@@ -25,7 +26,8 @@ public class CaseAPIs {
     public static String filterCases(String username, String password, String filters){
         try {
             String filterPath = "join(',', instance('casedb')/casedb/case" + filters + "/@case_id)";
-            UserSqlSandbox mSandbox = RestoreUtils.restoreUser(username, password);
+
+            UserSqlSandbox mSandbox = restoreIfNotExists(username, password);
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
             String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
             return filteredCases;
@@ -33,5 +35,19 @@ public class CaseAPIs {
             e.printStackTrace();
         }
         return "null";
+    }
+
+    private static UserSqlSandbox restoreIfNotExists(String username, String password) throws Exception{
+        File db = new File(getDbFilePath(username));
+        if(db.exists()){
+            return new UserSqlSandbox(username);
+        } else{
+            return RestoreUtils.restoreUser(username, password);
+        }
+    }
+
+    public static String getDbFilePath(String username){
+        String path = UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + username + ".db";
+        return path;
     }
 }
