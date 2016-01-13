@@ -18,7 +18,7 @@ public class CaseController {
         return new CaseResponse(CaseAPIs.filterCases(username, password, filterExpression));
     }
 
-    @RequestMapping("/filter_cases_auth")
+    @RequestMapping("/filter_cases")
     public CaseResponse filterCasesHQ(@RequestBody String body, @RequestHeader HttpHeaders header) throws Exception {
         FilterRequest request = new FilterRequest(body, header);
         String caseResponse = CaseAPIs.filterCasesAuth(request);

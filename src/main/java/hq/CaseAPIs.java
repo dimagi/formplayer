@@ -21,10 +21,6 @@ import java.util.logging.Filter;
  */
 public class CaseAPIs {
 
-    public static String filterCases(String username, String password){
-        return filterCases(username, password, "");
-    }
-
     public static String filterCases(String username, String password, String filters){
         try {
             String filterPath = "join(',', instance('casedb')/casedb/case" + filters + "/@case_id)";
@@ -69,7 +65,6 @@ public class CaseAPIs {
             UserSqlSandbox mSandbox = restoreIfNotExistsAuth(request);
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
             String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
-            System.out.println("filtered cases: " + filteredCases);
             return filteredCases;
         } catch (Exception e) {
             e.printStackTrace();
