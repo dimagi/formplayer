@@ -1,46 +1,29 @@
 package requests;
 
+import auth.BasicAuth;
+import hq.RestoreUtils;
 import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
 
 /**
  * Created by willpride on 1/12/16.
  */
-public class FilterRequest {
-    String filter;
-    String username;
-    String authKey;
-    String domain;
-    String host;
+public class FilterRequest extends RestoreRequest{
 
-    public FilterRequest(String body, HttpHeaders header){
+    String filter;
+
+    public FilterRequest(String body, HttpHeaders header) {
+        super(body, header);
         JSONObject jsonBody = new JSONObject(body);
         filter = jsonBody.getString("filter_expr");
-        JSONObject sessionData = jsonBody.getJSONObject("session_data");
-        username = sessionData.getString("username");
-        JSONObject auth = jsonBody.getJSONObject("hq_auth");
-        authKey = auth.getString("key");
-        host = header.getFirst("host");
-        domain = sessionData.getString("domain");
+    }
+
+    public FilterRequest(String username, String password, String domain, String host, String filter){
+        super(username, password, domain, host);
+        this.filter = filter;
     }
 
     public String getFilter(){
         return filter;
-    }
-
-    public String getUsername(){
-        return username;
-    }
-
-    public String getAuthKey(){
-        return authKey;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public String getDomain() {
-        return domain;
     }
 }

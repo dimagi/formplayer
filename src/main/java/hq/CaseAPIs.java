@@ -10,6 +10,7 @@ import org.javarosa.xpath.XPathLazyNodeset;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import requests.FilterRequest;
+import requests.RestoreRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,48 +22,25 @@ import java.util.logging.Filter;
  */
 public class CaseAPIs {
 
-    public static String filterCases(String username, String password, String filters){
-        try {
-            String filterPath = "join(',', instance('casedb')/casedb/case" + filters + "/@case_id)";
-
-            UserSqlSandbox mSandbox = restoreIfNotExists(username, password);
-            EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
-            String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
-            return filteredCases;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "null";
-    }
-
-    private static UserSqlSandbox restoreIfNotExists(String username, String password) throws Exception{
-        File db = new File(getDbFilePath(username));
+    private static UserSqlSandbox restoreIfNotExists(RestoreRequest restoreRequest) throws Exception{
+        File db = new File(getDbFilePath(restoreRequest.getUsername()));
         if(db.exists()){
-            return new UserSqlSandbox(username);
+            return new UserSqlSandbox(restoreRequest.getUsername());
         } else{
-            return RestoreUtils.restoreUser(username, password);
-        }
-    }
-
-    private static UserSqlSandbox restoreIfNotExistsAuth(FilterRequest filterRequest) throws Exception{
-        File db = new File(getDbFilePath(filterRequest.getUsername()));
-        if(db.exists()){
-            return new UserSqlSandbox(filterRequest.getUsername());
-        } else{
-            return RestoreUtils.restoreUserAuth(filterRequest);
+            return RestoreUtils.restoreUser(restoreRequest);
         }
     }
 
 
-    public static String getDbFilePath(String username){
+    private static String getDbFilePath(String username){
         String path = UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + username + ".db";
         return path;
     }
 
-    public static String filterCasesAuth(FilterRequest request) throws Exception{
+    public static String filterCases(FilterRequest request) throws Exception{
         try {
             String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilter() + "/@case_id)";
-            UserSqlSandbox mSandbox = restoreIfNotExistsAuth(request);
+            UserSqlSandbox mSandbox = restoreIfNotExists(request);
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
             String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
             return filteredCases;

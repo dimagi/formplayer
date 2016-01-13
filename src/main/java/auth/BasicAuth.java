@@ -1,4 +1,4 @@
-package hq;
+package auth;
 
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.http.HttpHeaders;
@@ -6,11 +6,19 @@ import org.springframework.http.HttpHeaders;
 import java.nio.charset.Charset;
 
 /**
- * Created by willpride on 1/12/16.
+ * Created by willpride on 1/13/16.
  */
-public class HttpUtils {
+public class BasicAuth implements HqAuth {
+    String username;
+    String password;
 
-    public static HttpHeaders createHeaders(String username, String password ){
+    public BasicAuth(String username, String password ){
+        this.username = username;
+        this.password = password;
+    }
+
+    @Override
+    public HttpHeaders getAuthHeaders() {
         return new HttpHeaders(){
             {
                 String auth = username + ":" + password;
@@ -18,16 +26,6 @@ public class HttpUtils {
                         auth.getBytes(Charset.forName("US-ASCII")) );
                 String authHeader = "Basic " + new String( encodedAuth );
                 set( "Authorization", authHeader );
-            }
-        };
-    }
-
-    public static HttpHeaders createAuthHeaders(String authKey){
-        return new HttpHeaders(){
-            {
-                add( "Cookie",  "sessionid=" + authKey);
-                add( "sessionid",  "sessionid=" + authKey);
-                add( "Authorization",  "sessionid=" + authKey);
             }
         };
     }
