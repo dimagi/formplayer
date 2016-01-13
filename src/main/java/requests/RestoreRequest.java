@@ -22,10 +22,9 @@ public class RestoreRequest {
     HqAuth auth;
     String password;
 
-    public RestoreRequest(String body, HttpHeaders header){
+    public RestoreRequest(String body){
         JSONObject jsonBody = new JSONObject(body);
         JSONObject sessionData = jsonBody.getJSONObject("session_data");
-        System.out.println("JSON BODY: " + jsonBody);
         username = sessionData.getString("username");
         JSONObject authJson = jsonBody.getJSONObject("hq_auth");
         String authKey = authJson.getString("key");

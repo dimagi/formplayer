@@ -30,8 +30,8 @@ public class CaseController {
     }
 
     @RequestMapping("/filter_cases")
-    public CaseResponse filterCasesHQ(@RequestBody String body, @RequestHeader HttpHeaders header) throws Exception {
-        FilterRequest filterRequest = new FilterRequest(body, header);
+    public CaseResponse filterCasesHQ(@RequestBody String body) throws Exception {
+        FilterRequest filterRequest = new FilterRequest(body);
         String caseResponse = CaseAPIs.filterCases(filterRequest);
         return new CaseResponse(caseResponse);
     }
