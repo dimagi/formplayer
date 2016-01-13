@@ -12,8 +12,8 @@ public class FilterRequest extends RestoreRequest{
 
     String filter;
 
-    public FilterRequest(String body, HttpHeaders header) {
-        super(body, header);
+    public FilterRequest(String body) {
+        super(body);
         JSONObject jsonBody = new JSONObject(body);
         filter = jsonBody.getString("filter_expr");
     }
