@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.UUID;
 
 /**
  * Created by willpride on 1/14/16.
@@ -40,11 +41,11 @@ public class NewFormRequest extends AuthRequest {
     }
 
     public NewFormResponse getResponse() throws IOException {
-        NewFormResponse ret = new NewFormResponse(getFormTree(), langs, title);
+        NewFormResponse ret = new NewFormResponse(getFormTree(), langs, title, UUID.randomUUID().toString());
         return ret;
     }
 
-    public String getFormXml(){
+    private String getFormXml(){
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
                 restTemplate.exchange(formUrl,
@@ -53,7 +54,7 @@ public class NewFormRequest extends AuthRequest {
         return response.getBody();
     }
 
-    public JSONArray getFormTree() throws IOException {
+    private JSONArray getFormTree() throws IOException {
         String formXml = getFormXml();
         FormDef formDef = parseFormDef(formXml);
         FormEntryModel fem = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_LINEAR);
@@ -65,7 +66,7 @@ public class NewFormRequest extends AuthRequest {
         return ret;
     }
 
-    public FormDef parseFormDef(String formXml) throws IOException {
+    private FormDef parseFormDef(String formXml) throws IOException {
         XFormParser mParser = new XFormParser(new StringReader(formXml));
         return mParser.parse();
     }

@@ -65,9 +65,12 @@ public class NewFormTests {
         String responseBody = restoreResponse.getBody();
         JSONObject jsonResponse = new JSONObject(responseBody);
 
+        System.out.println("jsonresponse: " + jsonResponse);
+
         assert(jsonResponse.has("tree"));
         assert(jsonResponse.has("langs"));
         assert(jsonResponse.has("title"));
+        assert(jsonResponse.has("session_id"));
 
         assert(jsonResponse.getString("title").equals("Basic Form"));
         assert(jsonResponse.getJSONArray("langs").length() == 2);
@@ -102,6 +105,7 @@ public class NewFormTests {
         assert(jsonResponse.has("tree"));
         assert(jsonResponse.has("langs"));
         assert(jsonResponse.has("title"));
+        assert(jsonResponse.has("session_id"));
 
         assert(jsonResponse.getString("title").equals("Question Types"));
         assert(jsonResponse.getJSONArray("langs").length() == 2);

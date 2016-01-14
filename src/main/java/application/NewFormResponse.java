@@ -12,10 +12,12 @@ public class NewFormResponse {
     JSONArray tree;
     String title;
     String[] langs;
-    public NewFormResponse(JSONArray tree, String[] langs, String title){
+    String session_id;
+    public NewFormResponse(JSONArray tree, String[] langs, String title, String session_id){
         this.tree = tree;
         this.langs = langs;
         this.title = title;
+        this.session_id = session_id;
     }
 
     public String getTree(){
@@ -29,4 +31,6 @@ public class NewFormResponse {
     public String getTitle(){
         return title;
     }
+
+    public String getSession_id(){return session_id;}
 }
