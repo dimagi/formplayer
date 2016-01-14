@@ -1,22 +1,19 @@
 package application;
 
-import auth.BasicAuth;
 import hq.CaseAPIs;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import requests.FilterRequest;
 
 /**
  * Created by willpride on 1/12/16.
  */
 @RestController
+@EnableAutoConfiguration
 public class CaseController {
-
-    private FilterRequest filterRequest;
-
-    public CaseController(){
-
-    }
 
     @RequestMapping("/cases")
     public CaseResponse getCaseIds(@RequestParam(value="username") String username,

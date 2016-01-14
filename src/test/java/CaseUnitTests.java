@@ -7,9 +7,12 @@ import org.junit.Before;
 import org.junit.Test;
 import requests.FilterRequest;
 import org.apache.commons.io.IOUtils;
+import utils.FileUtils;
+
+import java.io.File;
 import java.io.IOException;
 
-public class CaseAPITest {
+public class CaseUnitTests {
 
     @Before
     public void setUp() {
@@ -18,8 +21,8 @@ public class CaseAPITest {
 
     @Test
     public void testRestoreFilter() throws Exception {
-        String restorePayload = getFile("test_restore.xml");
-        String filterRequestPayload = getFile("requests/filter/filter_cases.json");
+        String restorePayload = FileUtils.getFile(this.getClass(), "test_restore.xml");
+        String filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases.json");
 
         FilterRequest filterRequest = new FilterRequest(filterRequestPayload);
         RestoreUtils.restoreUser(filterRequest, restorePayload);
@@ -31,26 +34,11 @@ public class CaseAPITest {
     }
 
     public void requestAssert(String filepath, int count) throws Exception{
-        String filterRequestPayload = getFile(filepath);
+        String filterRequestPayload = FileUtils.getFile(this.getClass(), filepath);
         FilterRequest filterRequest = new FilterRequest(filterRequestPayload);
         String filtered = CaseAPIs.filterCases(filterRequest);
         String[] caseIds = filtered.split(",");
         assert(caseIds.length == count);
-    }
-
-    private String getFile(String fileName){
-
-        String result = "";
-
-        ClassLoader classLoader = getClass().getClassLoader();
-        try {
-            result = IOUtils.toString(classLoader.getResourceAsStream(fileName));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return result;
-
     }
 
     @After
