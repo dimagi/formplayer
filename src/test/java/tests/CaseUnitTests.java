@@ -1,3 +1,5 @@
+package tests;
+
 import hq.CaseAPIs;
 import hq.RestoreUtils;
 import org.commcare.api.persistence.SqlSandboxUtils;

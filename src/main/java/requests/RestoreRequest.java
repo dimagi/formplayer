@@ -15,28 +15,25 @@ import org.springframework.web.client.RestTemplate;
 /**
  * Created by willpride on 1/12/16.
  */
-public class RestoreRequest {
+public class RestoreRequest extends AuthRequest{
     String username;
     String domain;
     final static String host = "localhost:8000";
-    HqAuth auth;
     String password;
 
     public RestoreRequest(String body){
+        super(body);
         JSONObject jsonBody = new JSONObject(body);
-        JSONObject sessionData = jsonBody.getJSONObject("session_data");
+        JSONObject sessionData = getSessionData(jsonBody);
         username = sessionData.getString("username");
-        JSONObject authJson = jsonBody.getJSONObject("hq_auth");
-        String authKey = authJson.getString("key");
-        auth = new DjangoAuth(authKey);
         domain = sessionData.getString("domain");
     }
 
     public RestoreRequest(String username, String password, String domain, String host){
+        super(username, password);
         this.username = username;
         this.password = password;
         this.domain = domain;
-        this.auth = new BasicAuth(username, password);
     }
 
     public String getHost() {
@@ -45,10 +42,6 @@ public class RestoreRequest {
 
     public String getUsername(){
         return username;
-    }
-
-    public HqAuth getAuth(){
-        return auth;
     }
 
     public String getDomain() {

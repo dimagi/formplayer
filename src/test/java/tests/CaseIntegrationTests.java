@@ -1,3 +1,5 @@
+package tests;
+
 import application.Application;
 import hq.RestoreUtils;
 import org.commcare.api.persistence.SqlSandboxUtils;
@@ -22,8 +24,6 @@ import requests.FilterRequest;
 import utils.FileUtils;
 
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
-import static org.junit.Assert.*;
-
 
 /**
  * Created by willpride on 1/14/16.

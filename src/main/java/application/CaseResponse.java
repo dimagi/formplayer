@@ -9,7 +9,7 @@ public class CaseResponse {
     String[] cases; // comma separated case list
     public CaseResponse(String caseString){
         String[] caseIds = caseString.split(",");
-        ArrayList<String> caseIdArray = new ArrayList<>();
+        ArrayList<String> caseIdArray = new ArrayList<String>();
         for(String caseId: caseIds){
             if(!caseId.trim().equals("")){
                 caseIdArray.add(caseId);
