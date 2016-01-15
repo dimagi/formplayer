@@ -2,6 +2,7 @@ package application;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import session.FormEntrySession;
 
 import java.util.ArrayList;
 
@@ -13,11 +14,12 @@ public class NewFormResponse {
     String title;
     String[] langs;
     String session_id;
-    public NewFormResponse(JSONArray tree, String[] langs, String title, String session_id){
-        this.tree = tree;
-        this.langs = langs;
-        this.title = title;
-        this.session_id = session_id;
+
+    public NewFormResponse(FormEntrySession fes){
+        this.tree = fes.getFormTree();
+        this.langs = fes.getLanguages();
+        this.title = fes.getTitle();
+        this.session_id = fes.getUUID();
     }
 
     public String getTree(){
