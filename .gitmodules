@@ -1,0 +1,6 @@
+[submodule "libs/javarosa"]
+	path = libs/javarosa
+	url = https://github.com/dimagi/javarosa.git
+[submodule "libs/commcare"]
+	path = libs/commcare
+	url = https://github.com/dimagi/commcare.git
