@@ -1,9 +1,11 @@
 package session;
 
 import org.commcare.api.json.WalkJson;
+import org.commcare.api.xml.XmlUtil;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
 import org.json.JSONArray;
 
@@ -25,6 +27,7 @@ public class FormEntrySession {
     String uuid;
 
     public FormEntrySession(String formXml, String initLang) throws IOException {
+        System.out.println("Form XML: " + formXml);
         formDef = parseFormDef(formXml);
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -37,6 +40,10 @@ public class FormEntrySession {
     private FormDef parseFormDef(String formXml) throws IOException {
         XFormParser mParser = new XFormParser(new StringReader(formXml));
         return mParser.parse();
+    }
+
+    public String getFormXml() throws IOException {
+        return XmlUtil.getPrettyXml(new XFormSerializingVisitor().serializeInstance(formDef.getInstance()));
     }
 
     public FormEntryModel getFormEntryModel(){

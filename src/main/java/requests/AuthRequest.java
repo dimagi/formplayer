@@ -11,8 +11,10 @@ import org.json.JSONObject;
 public class AuthRequest {
 
     HqAuth auth;
+    String body;
 
     public AuthRequest(String body) {
+        this.body = body;
         JSONObject jsonBody = new JSONObject(body);
         JSONObject authJson = jsonBody.getJSONObject("hq_auth");
         String authKey = authJson.getString("key");

@@ -1,39 +1,40 @@
 package requests;
 
 import application.NewFormResponse;
-import org.commcare.api.json.WalkJson;
-import org.javarosa.core.model.FormDef;
-import org.javarosa.form.api.FormEntryController;
-import org.javarosa.form.api.FormEntryModel;
-import org.javarosa.xform.parse.XFormParser;
-import org.json.JSONArray;
+import objects.SerializableSession;
 import org.json.JSONObject;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import repo.SessionRepo;
+import services.XFormService;
 import session.FormEntrySession;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.UUID;
 
 /**
  * Created by willpride on 1/14/16.
  */
+@Service
 public class NewFormRequest extends AuthRequest {
 
     String formUrl;
-    String[] langs;
-    String title;
     FormEntrySession formEntrySession;
+    SessionRepo sessionRepo;
+    XFormService xFormService;
 
-    public NewFormRequest(String body) throws IOException {
+    public NewFormRequest(String body, SessionRepo sessionRepo, XFormService xFormService) throws IOException {
         super(body);
+        this.sessionRepo = sessionRepo;
+        this.xFormService = xFormService;
         JSONObject jsonBody = new JSONObject(body);
         formUrl = jsonBody.getString("form-url");
         String initLang = jsonBody.getString("lang");
-        formEntrySession = new FormEntrySession(getFormXml(), initLang);
+        try {
+            formEntrySession = new FormEntrySession(getFormXml(), initLang);
+            sessionRepo.save(serialize());
+        } catch(IOException e){
+            e.printStackTrace();
+        }
     }
 
     public NewFormResponse getResponse() throws IOException {
@@ -41,12 +42,14 @@ public class NewFormRequest extends AuthRequest {
         return ret;
     }
 
-    private String getFormXml(){
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response =
-                restTemplate.exchange(formUrl,
-                        HttpMethod.GET,
-                        new HttpEntity<String>(getAuth().getAuthHeaders()), String.class);
-        return response.getBody();
+    public String getFormXml(){
+        return xFormService.getFormXml(formUrl, auth);
+    }
+
+    private SerializableSession serialize() throws IOException {
+        SerializableSession serializableSession = new SerializableSession();
+        serializableSession.setInstanceXml(formEntrySession.getFormXml());
+        serializableSession.setId(formEntrySession.getUUID());
+        return serializableSession;
     }
 }

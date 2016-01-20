@@ -10,12 +10,14 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import repo.SessionRepo;
 import repo.impl.SessionImpl;
 
 @Configuration
 @ComponentScan
 @EnableAutoConfiguration
+@EnableWebMvc
 public class Application {
 
     public static void main(String[] args) {
@@ -23,7 +25,7 @@ public class Application {
         SessionRepo repo = (SessionRepo) context.getBean("sessionRepo");
 
         SerializableSession session = new SerializableSession();
-        session.setId("will");
+        session.setId("will2");
         session.setInstanceXml("<test/>");
 
         repo.save(session);
