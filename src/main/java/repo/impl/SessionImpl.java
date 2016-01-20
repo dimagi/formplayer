@@ -22,6 +22,7 @@ public class SessionImpl implements SessionRepo{
 
     @Override
     public void save(SerializableSession session) {
+        System.out.println("Saving session: " + session.getId());
         this.redisTemplate.opsForHash().put(SESSION_KEY, session.getId(), session);
     }
 

@@ -31,6 +31,7 @@ public class NewFormRequest extends AuthRequest {
         String initLang = jsonBody.getString("lang");
         try {
             formEntrySession = new FormEntrySession(getFormXml(), initLang);
+            System.out.println("Saving session: " + formEntrySession.getUUID());
             sessionRepo.save(serialize());
         } catch(IOException e){
             e.printStackTrace();
