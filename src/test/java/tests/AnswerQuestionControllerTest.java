@@ -12,6 +12,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -132,12 +134,17 @@ public class AnswerQuestionControllerTest {
 
         JSONObject object = answerQuestionGetResult("1","William Pride","test_id");
 
+        System.out.println("Object: " + object);
+
         AnswerTree answerTree = new AnswerTree(object);
         answerTree.assertTreeLength(24);
         answerTree.assertTreeAnswer(1, "William Pride");
 
 
         object = answerQuestionGetResult("2","123","test_id");
+
+        System.out.println("Object: " + object);
+
         answerTree = new AnswerTree(object);
         //answerTree.assertTreeAnswer(1, "William Pride");
         answerTree.assertTreeAnswer(2, "123");
