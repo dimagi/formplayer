@@ -75,6 +75,7 @@ public class SessionController {
         session.setFormXml(formEntrySession.getFormXml());
         session.setInstanceXml(formEntrySession.getInstanceXml());
         sessionRepo.save(session);
+        System.out.println("Saving Session: " + session);
         AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
         return responseBean;
 

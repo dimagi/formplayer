@@ -44,4 +44,9 @@ public class AnswerQuestionResponseBean {
     public void setSequenceId(String sequenceId) {
         this.sequenceId = sequenceId;
     }
+
+    @Override
+    public String toString(){
+        return "Answer Question Response Bean: [tree=" + tree + ", status=" + status + ", seq_id: " + sequenceId + "]";
+    }
 }

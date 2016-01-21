@@ -3,6 +3,7 @@ package tests;
 import application.Application;
 import auth.HqAuth;
 import beans.AnswerQuestionRequestBean;
+import beans.AnswerQuestionResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -56,7 +57,7 @@ public class FormEntryTest {
         mockMvc = MockMvcBuilders.<StandaloneMockMvcBuilder>webAppContextSetup(context).build();
     }
 
-    public JSONObject answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
+    public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
@@ -68,8 +69,9 @@ public class FormEntryTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        JSONObject object = new JSONObject(answerResult.getResponse().getContentAsString());
-        return object;
+        AnswerQuestionResponseBean response = mapper.readValue(answerResult.getResponse().getContentAsString(),
+                AnswerQuestionResponseBean.class);
+        return response;
     }
 
     @Test
@@ -88,14 +90,40 @@ public class FormEntryTest {
         String sessionId = resultJson.getString("session_id");
         System.out.println("session id: " + sessionId);
 
-        resultJson = answerQuestionGetResult("1","William Pride", sessionId);
+        AnswerQuestionResponseBean response = answerQuestionGetResult("1","William Pride", sessionId);
 
-        System.out.println("result2: " + resultJson);
+        System.out.println("result2: " + response);
 
-        resultJson = answerQuestionGetResult("2","345", sessionId);
+        response = answerQuestionGetResult("2","345", sessionId);
 
-        System.out.println("result3: " + resultJson);
+        System.out.println("result3: " + response);
 
+        response = answerQuestionGetResult("3","2.54", sessionId);
 
+        System.out.println("result3: " + response);
+
+        response = answerQuestionGetResult("4","1970-10-23", sessionId);
+
+        System.out.println("result3: " + response);
+
+        response = answerQuestionGetResult("6", "12:30:30", sessionId);
+
+        System.out.println("result3: " + response);
+
+        response = answerQuestionGetResult("7", "ben rudolph", sessionId);
+
+        System.out.println("result3: " + response);
+
+        response = answerQuestionGetResult("8","123456789", sessionId);
+
+        System.out.println("result3: " + response);
+
+        response = answerQuestionGetResult("10", "2",sessionId);
+
+        System.out.println("result3: " + response);
+
+        response = answerQuestionGetResult("11", "1 2 3", sessionId);
+
+        System.out.println("result3: " + response);
     }
 }
