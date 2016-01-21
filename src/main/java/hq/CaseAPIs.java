@@ -39,8 +39,8 @@ public class CaseAPIs {
 
     public static String filterCases(FilterRequest request) throws Exception{
         try {
-            String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilter() + "/@case_id)";
-            UserSqlSandbox mSandbox = restoreIfNotExists(request);
+            String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
+            UserSqlSandbox mSandbox = restoreIfNotExists(request.getRestoreRequest());
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
             String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
             return filteredCases;
