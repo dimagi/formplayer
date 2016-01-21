@@ -8,16 +8,16 @@ import java.util.Map;
 /**
  * Created by willpride on 1/20/16.
  */
-public class AnswerQuestionBean {
+public class AnswerQuestionRequestBean {
     private String formIndex;
     private String answer;
     private String sessionId;
 
-    public AnswerQuestionBean(){
+    public AnswerQuestionRequestBean(){
 
     }
 
-    public AnswerQuestionBean(String formIndex, String answer, String sessionId) {
+    public AnswerQuestionRequestBean(String formIndex, String answer, String sessionId) {
         this.formIndex = formIndex;
         this.answer = answer;
         this.sessionId = sessionId;
