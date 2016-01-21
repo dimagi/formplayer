@@ -48,7 +48,7 @@ public class CaseFilterTests {
         Mockito.reset(restoreServiceMock);
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(caseController).build();
-        when(restoreServiceMock.getRestoreXml(anyString(), anyString(), any(HqAuth.class)))
+        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }
 

@@ -54,7 +54,7 @@ public class CaseFilterRequestBean {
 
     public String getRestoreXml(){
         HqAuth auth = new DjangoAuth(hqAuth.get("key"));
-        return restoreService.getRestoreXml(Application.HOST, sessionData.getDomain(), auth);
+        return restoreService.getRestoreXml(sessionData.getDomain(), auth);
     }
 
     public void setRestoreService(RestoreService restoreService) {

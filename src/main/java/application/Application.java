@@ -1,6 +1,8 @@
 package application;
 
 import objects.SerializableSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,6 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import repo.SessionRepo;
 import repo.impl.SessionImpl;
@@ -22,9 +25,11 @@ import services.impl.XFormServiceImpl;
 @ComponentScan
 @EnableAutoConfiguration
 @EnableWebMvc
+@Component
 public class Application {
 
-    public static final String HOST = "localhost:8000";
+    @Value("${touchforms.host")
+    public static String HOST;
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
