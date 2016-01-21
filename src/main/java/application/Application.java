@@ -28,9 +28,6 @@ import services.impl.XFormServiceImpl;
 @Component
 public class Application {
 
-    @Value("${touchforms.host")
-    public static String HOST;
-
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
     }
