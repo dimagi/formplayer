@@ -24,11 +24,9 @@ public class CaseController {
     @RequestMapping("/filter_cases")
     public CaseFilterResponseBean filterCasesHQ(@RequestBody String body) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        System.out.println("Filter body: " + body);
         CaseFilterRequestBean filterRequest = mapper.readValue(body, CaseFilterRequestBean.class);
         filterRequest.setRestoreService(restoreService);
         String caseResponse = CaseAPIs.filterCases(filterRequest);
-        System.out.println("case reponse: " + caseResponse);
         return new CaseFilterResponseBean(caseResponse);
     }
 }

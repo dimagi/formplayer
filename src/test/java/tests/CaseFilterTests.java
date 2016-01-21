@@ -93,6 +93,17 @@ public class CaseFilterTests {
         caseArray = responseObject.getJSONArray("cases");
         assert(caseArray.length() == 1);
         assert(caseArray.get(0).equals("e7ed3658d7394415a4bba5edc7055f1d"));
+
+        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_4.json");
+        result = this.mockMvc.perform(
+                post("/filter_cases")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filterRequestPayload))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        responseObject =  new JSONObject(result.getResponse().getContentAsString());
+        caseArray = responseObject.getJSONArray("cases");
     }
 
     @After

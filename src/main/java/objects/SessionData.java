@@ -1,6 +1,7 @@
 package objects;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map;
 /**
  * Created by willpride on 1/20/16.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SessionData {
 
     private String username;

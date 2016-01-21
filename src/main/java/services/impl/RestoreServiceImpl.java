@@ -13,6 +13,8 @@ import services.RestoreService;
 public class RestoreServiceImpl implements RestoreService {
     @Override
     public String getRestoreXml(String host, String domain, HqAuth auth) {
+        System.out.println("restoring from: " +"http://" + host
+                + "/a/" + domain + "/phone/restore/?version=2.0");
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
                 restTemplate.exchange("http://" + host

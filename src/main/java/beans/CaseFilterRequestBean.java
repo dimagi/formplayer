@@ -5,6 +5,7 @@ import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import hq.RestoreUtils;
 import objects.SessionData;
@@ -17,6 +18,7 @@ import java.util.Map;
 /**
  * Created by willpride on 1/12/16.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CaseFilterRequestBean {
 
     private String filterExpression;
@@ -58,4 +60,5 @@ public class CaseFilterRequestBean {
     public void setRestoreService(RestoreService restoreService) {
         this.restoreService = restoreService;
     }
+
 }

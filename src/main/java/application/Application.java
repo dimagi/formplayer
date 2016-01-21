@@ -13,6 +13,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import repo.SessionRepo;
 import repo.impl.SessionImpl;
+import services.RestoreService;
+import services.XFormService;
+import services.impl.RestoreServiceImpl;
+import services.impl.XFormServiceImpl;
 
 @Configuration
 @ComponentScan
@@ -20,7 +24,7 @@ import repo.impl.SessionImpl;
 @EnableWebMvc
 public class Application {
 
-    public static final String HOST = "localhost:8080";
+    public static final String HOST = "localhost:8000";
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
@@ -44,6 +48,19 @@ public class Application {
     public SessionRepo sessionRepo(){
         SessionImpl impl = new SessionImpl();
         impl.setRedisTemplate(redisTemplate());
+        return impl;
+    }
+
+    @Bean
+    public XFormService xFormService(){
+        XFormServiceImpl impl = new XFormServiceImpl();
+        return impl;
+    }
+
+
+    @Bean
+    public RestoreService restoreService(){
+        RestoreService impl = new RestoreServiceImpl();
         return impl;
     }
 }
