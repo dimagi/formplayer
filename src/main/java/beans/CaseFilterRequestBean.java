@@ -1,4 +1,4 @@
-package requests;
+package beans;
 
 import application.Application;
 import auth.BasicAuth;
@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Created by willpride on 1/12/16.
  */
-public class FilterRequest {
+public class CaseFilterRequestBean {
 
     private String filterExpression;
     private Map<String, String> hqAuth;
