@@ -1,5 +1,6 @@
 package requests;
 
+import application.Application;
 import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
@@ -9,6 +10,7 @@ import hq.RestoreUtils;
 import objects.SessionData;
 import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
+import services.RestoreService;
 
 import java.util.Map;
 
@@ -20,6 +22,8 @@ public class FilterRequest {
     private String filterExpression;
     private Map<String, String> hqAuth;
     private SessionData sessionData;
+
+    private RestoreService restoreService;
 
     @JsonGetter(value = "filter_expr")
     public String getFilterExpression() {
@@ -46,10 +50,12 @@ public class FilterRequest {
         this.sessionData = sessionData;
     }
 
-    public RestoreRequest getRestoreRequest(){
+    public String getRestoreXml(){
         HqAuth auth = new DjangoAuth(hqAuth.get("key"));
-        RestoreRequest restoreRequest = new RestoreRequest(sessionData.getUsername(),
-                sessionData.getDomain(), sessionData.getHost(), auth);
-        return restoreRequest;
+        return restoreService.getRestoreXml(Application.HOST, sessionData.getDomain(), auth);
+    }
+
+    public void setRestoreService(RestoreService restoreService) {
+        this.restoreService = restoreService;
     }
 }

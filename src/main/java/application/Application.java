@@ -20,6 +20,8 @@ import repo.impl.SessionImpl;
 @EnableWebMvc
 public class Application {
 
+    public static final String HOST = "localhost:8080";
+
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
     }

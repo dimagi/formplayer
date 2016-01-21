@@ -21,10 +21,9 @@ import java.util.logging.Filter;
  */
 public class RestoreUtils {
 
-    public static UserSqlSandbox restoreUser(RestoreRequest restoreRequest) throws
+    public static UserSqlSandbox restoreUser(String username, String restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
-        String restorePayload = restoreRequest.getRestorePayload();
-        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(restoreRequest.getUsername());
+        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
         return mSandbox;

@@ -22,12 +22,12 @@ import java.util.logging.Filter;
  */
 public class CaseAPIs {
 
-    private static UserSqlSandbox restoreIfNotExists(RestoreRequest restoreRequest) throws Exception{
-        File db = new File(getDbFilePath(restoreRequest.getUsername()));
+    private static UserSqlSandbox restoreIfNotExists(String username, String xml) throws Exception{
+        File db = new File(getDbFilePath(username));
         if(db.exists()){
-            return new UserSqlSandbox(restoreRequest.getUsername());
+            return new UserSqlSandbox(username);
         } else{
-            return RestoreUtils.restoreUser(restoreRequest);
+            return RestoreUtils.restoreUser(username, xml);
         }
     }
 
@@ -40,7 +40,7 @@ public class CaseAPIs {
     public static String filterCases(FilterRequest request) throws Exception{
         try {
             String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
-            UserSqlSandbox mSandbox = restoreIfNotExists(request.getRestoreRequest());
+            UserSqlSandbox mSandbox = restoreIfNotExists(request.getSessionData().getUsername(), request.getRestoreXml());
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
             String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
             return filteredCases;
