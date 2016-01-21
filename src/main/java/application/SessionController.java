@@ -51,14 +51,12 @@ public class SessionController {
         for(Object obj: mMap.values()){
             sessionList.add((SerializableSession)obj);
         }
-        System.out.println("Return Session List " + sessionList);
         return sessionList;
     }
 
     @RequestMapping(value = "/get_session", method = RequestMethod.GET)
     @ResponseBody
     public SerializableSession getSession(@RequestParam(value="id") String id) {
-        System.out.println("Getting session: " + id);
         SerializableSession serializableSession = sessionRepo.find(id);
         return serializableSession;
     }
@@ -68,15 +66,15 @@ public class SessionController {
     public AnswerQuestionResponseBean answerQuestion(@RequestBody String body) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         AnswerQuestionRequestBean answerQuestionBean = mapper.readValue(body, AnswerQuestionRequestBean.class);
-        System.out.println("Answer Question Bean: " + answerQuestionBean);
         SerializableSession session = sessionRepo.find(answerQuestionBean.getSessionId());
-        System.out.println("Session: " + session);
         FormEntrySession formEntrySession = new FormEntrySession(session);
         JSONObject resp = AnswerQuestionJson.questionAnswerToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
-        System.out.println("Response: " + resp);
+        session.setFormXml(formEntrySession.getFormXml());
+        session.setInstanceXml(formEntrySession.getInstanceXml());
+        sessionRepo.save(session);
         AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
         return responseBean;
 
