@@ -1,0 +1,4 @@
+{
+  'action': 'evaluate-xpath',
+  'xpath': '/data/q_pass'
+}

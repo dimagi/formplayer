@@ -1,30 +1,22 @@
 package application;
 
-import beans.AnswerQuestionBean;
+import beans.AnswerQuestionRequestBean;
 import beans.AnswerQuestionResponseBean;
+import beans.NewSessionResponse;
+import beans.NewSessionBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hq.CaseAPIs;
 import objects.SerializableSession;
 import objects.SessionList;
-import org.apache.commons.io.IOUtils;
 import org.commcare.api.json.AnswerQuestionJson;
-import org.javarosa.core.model.FormDef;
-import org.javarosa.core.model.instance.FormInstance;
-import org.javarosa.form.api.FormEntryController;
-import org.javarosa.form.api.FormEntryModel;
-import org.javarosa.xform.parse.XFormParser;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.SessionRepo;
-import requests.FilterRequest;
 import requests.NewFormRequest;
 import services.XFormService;
 import session.FormEntrySession;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -42,8 +34,10 @@ public class SessionController {
     private XFormService xFormService;
 
     @RequestMapping("/new_session")
-    public NewFormResponse newFormResponse(@RequestBody String body) throws Exception {
-        NewFormRequest newFormRequest = new NewFormRequest(body, sessionRepo, xFormService);
+    public NewSessionResponse newFormResponse(@RequestBody String body) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        NewSessionBean newSessionBean = mapper.readValue(body, NewSessionBean.class);
+        NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService);
         return newFormRequest.getResponse();
     }
 
@@ -73,7 +67,7 @@ public class SessionController {
     @RequestMapping("/answer_question")
     public AnswerQuestionResponseBean answerQuestion(@RequestBody String body) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        AnswerQuestionBean answerQuestionBean = mapper.readValue(body, AnswerQuestionBean.class);
+        AnswerQuestionRequestBean answerQuestionBean = mapper.readValue(body, AnswerQuestionRequestBean.class);
         System.out.println("Answer Question Bean: " + answerQuestionBean);
         SerializableSession session = sessionRepo.find(answerQuestionBean.getSessionId());
         System.out.println("Session: " + session);

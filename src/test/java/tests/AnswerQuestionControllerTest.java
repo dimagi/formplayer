@@ -1,11 +1,10 @@
 package tests;
 
 import application.SessionController;
-import auth.HqAuth;
-import beans.AnswerQuestionBean;
-import beans.NewSessionBean;
+import beans.AnswerQuestionRequestBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +18,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
 import services.XFormService;
@@ -27,11 +25,8 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -50,7 +45,6 @@ public class AnswerQuestionControllerTest {
     @InjectMocks
     private SessionController sessionController;
 
-
     @Before
     public void setUp() throws IOException {
         Mockito.reset(sessionRepoMock);
@@ -60,18 +54,17 @@ public class AnswerQuestionControllerTest {
     }
 
     @Test
-    public void newSession() throws Exception {
+    public void basicForm() throws Exception {
 
         SerializableSession serializableSession = new SerializableSession();
         serializableSession.setFormXml(FileUtils.getFile(this.getClass(), "xforms/basic.xml"));
         serializableSession.setInstanceXml(FileUtils.getFile(this.getClass(), "instances/basic_0.xml"));
         serializableSession.setId("test_id");
 
-
         when(sessionRepoMock.find(anyString()))
                 .thenReturn(serializableSession);
 
-        AnswerQuestionBean answerQuestionBean = new AnswerQuestionBean("0", "123", "test_id");
+        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean("0", "123", "test_id");
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
 
@@ -83,7 +76,15 @@ public class AnswerQuestionControllerTest {
                 .andReturn();
 
         JSONObject object = new JSONObject(answerResult.getResponse().getContentAsString());
-        System.out.println("answer response: " + object);
+        assert(object.has("tree"));
+        String treeString = object.getString("tree");
+        assert (object.get("status").equals("success"));
+        System.out.println("answer response: " + treeString);
+        JSONArray tree = new JSONArray(treeString);
+        assert(tree.length() == 1);
+        String jsonString = tree.getString(0);
+        JSONObject jsonObject = new JSONObject(jsonString);
+        assert(jsonObject.get("answer").equals("123"));
 
     }
 }

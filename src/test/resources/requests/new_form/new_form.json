@@ -1,6 +1,5 @@
 {
   "lang": "en",
-  "session-id": null,
   "session-data": {
     "username": "test",
     "additional_filters": {
@@ -24,10 +23,6 @@
     "key": "3fu61g0hqz1743tjejdrr40j4e98wohk"
   },
   "form-url": "http://localhost:8000/a/test/apps/download/10a706429116a3e55f1d1302cd3db69f/modules-0/forms-0.xml",
-  "uses_sql_backend": true,
-  "nav": "fao",
-  "action": "new-form",
-  "uses-sqlite": false,
   "form_context": {
     "case_model": null
   }
