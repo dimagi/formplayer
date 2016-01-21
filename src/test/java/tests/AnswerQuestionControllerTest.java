@@ -63,6 +63,7 @@ public class AnswerQuestionControllerTest {
     public void newSession() throws Exception {
 
         SerializableSession serializableSession = new SerializableSession();
+        serializableSession.setFormXml(FileUtils.getFile(this.getClass(), "xforms/basic.xml"));
         serializableSession.setInstanceXml(FileUtils.getFile(this.getClass(), "instances/basic_0.xml"));
         serializableSession.setId("test_id");
 

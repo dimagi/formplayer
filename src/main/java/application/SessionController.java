@@ -21,6 +21,7 @@ import repo.SessionRepo;
 import requests.FilterRequest;
 import requests.NewFormRequest;
 import services.XFormService;
+import session.FormEntrySession;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,15 +74,15 @@ public class SessionController {
     public AnswerQuestionResponseBean answerQuestion(@RequestBody String body) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         AnswerQuestionBean answerQuestionBean = mapper.readValue(body, AnswerQuestionBean.class);
-        System.out.println("Answer Question Bean: " + answerQuestionBean.getSessionId());
+        System.out.println("Answer Question Bean: " + answerQuestionBean);
         SerializableSession session = sessionRepo.find(answerQuestionBean.getSessionId());
-        FormInstance formInstance = XFormParser.restoreDataModel(IOUtils.toInputStream(session.getInstanceXml()), null);
-        FormDef formDef = new FormDef();
-        formDef.setInstance(formInstance);
-        FormEntryModel fem = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_LINEAR);
-        FormEntryController fec = new FormEntryController(fem);
-        JSONObject resp = AnswerQuestionJson.questionAnswerToJson(fec, fem,
-                answerQuestionBean.getAnswer(), answerQuestionBean.getFormIndex());
+        System.out.println("Session: " + session);
+        FormEntrySession formEntrySession = new FormEntrySession(session);
+        JSONObject resp = AnswerQuestionJson.questionAnswerToJson(formEntrySession.getFormEntryController(),
+                formEntrySession.getFormEntryModel(),
+                answerQuestionBean.getAnswer(),
+                answerQuestionBean.getFormIndex());
+        System.out.println("Response: " + resp);
         AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
         return responseBean;
 

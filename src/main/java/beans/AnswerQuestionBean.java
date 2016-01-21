@@ -47,4 +47,9 @@ public class AnswerQuestionBean {
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
+
+    @Override
+    public String toString(){
+        return "Answer Question Bean [formIndex: " + formIndex + ", answer: " + answer + ", sessionId: " + sessionId + "]";
+    }
 }

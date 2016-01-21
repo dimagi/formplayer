@@ -13,6 +13,8 @@ public class AnswerQuestionResponseBean {
     private String status;
     private String sequenceId;
 
+    public AnswerQuestionResponseBean(){}
+
     public AnswerQuestionResponseBean(String tree, String status, String sequenceId) {
         this.tree = tree;
         this.status = status;

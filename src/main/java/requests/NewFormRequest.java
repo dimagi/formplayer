@@ -3,7 +3,6 @@ package requests;
 import application.NewFormResponse;
 import objects.SerializableSession;
 import org.json.JSONObject;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import repo.SessionRepo;
 import services.XFormService;
@@ -31,7 +30,6 @@ public class NewFormRequest extends AuthRequest {
         String initLang = jsonBody.getString("lang");
         try {
             formEntrySession = new FormEntrySession(getFormXml(), initLang);
-            System.out.println("Saving session: " + formEntrySession.getUUID());
             sessionRepo.save(serialize());
         } catch(IOException e){
             e.printStackTrace();
@@ -49,8 +47,9 @@ public class NewFormRequest extends AuthRequest {
 
     private SerializableSession serialize() throws IOException {
         SerializableSession serializableSession = new SerializableSession();
-        serializableSession.setInstanceXml(formEntrySession.getFormXml());
+        serializableSession.setInstanceXml(formEntrySession.getInstanceXml());
         serializableSession.setId(formEntrySession.getUUID());
+        serializableSession.setFormXml(formEntrySession.getFormXml());
         return serializableSession;
     }
 }
