@@ -1,8 +1,11 @@
 package session;
 
+import objects.SerializableSession;
+import org.apache.commons.io.IOUtils;
 import org.commcare.api.json.WalkJson;
 import org.commcare.api.xml.XmlUtil;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.model.xform.XFormSerializingVisitor;
@@ -21,13 +24,20 @@ public class FormEntrySession {
     private FormDef formDef;
     private FormEntryModel formEntryModel;
     private FormEntryController formEntryController;
+    private String formXml;
 
     String title;
     String[] langs;
     String uuid;
 
+    public FormEntrySession(SerializableSession session) throws IOException{
+        this(session.getFormXml(), "en");
+        FormInstance formInstance = XFormParser.restoreDataModel(IOUtils.toInputStream(session.getInstanceXml()), null);
+        formDef.setInstance(formInstance);
+    }
+
     public FormEntrySession(String formXml, String initLang) throws IOException {
-        System.out.println("Form XML: " + formXml);
+        this.formXml = formXml;
         formDef = parseFormDef(formXml);
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -42,7 +52,7 @@ public class FormEntrySession {
         return mParser.parse();
     }
 
-    public String getFormXml() throws IOException {
+    public String getInstanceXml() throws IOException {
         return XmlUtil.getPrettyXml(new XFormSerializingVisitor().serializeInstance(formDef.getInstance()));
     }
 
@@ -69,5 +79,13 @@ public class FormEntrySession {
 
     public String getUUID(){
         return uuid;
+    }
+
+    public String getFormXml() {
+        return formXml;
+    }
+
+    public void setFormXml(String formXml) {
+        this.formXml = formXml;
     }
 }

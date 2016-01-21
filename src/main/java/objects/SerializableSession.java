@@ -8,6 +8,7 @@ import java.io.Serializable;
 public class SerializableSession implements Serializable{
     private String id;
     private String instanceXml;
+    private String formXml;
 
 
     public String getInstanceXml() {
@@ -41,6 +42,14 @@ public class SerializableSession implements Serializable{
 
     @Override
     public String toString(){
-        return "Session [id=" + id + ", instance=" + instanceXml + "]";
+        return "Session [id=" + id + ", instance=" + instanceXml + ", form=" + formXml + "]";
+    }
+
+    public String getFormXml() {
+        return formXml;
+    }
+
+    public void setFormXml(String formXml) {
+        this.formXml = formXml;
     }
 }

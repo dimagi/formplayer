@@ -15,7 +15,9 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import repo.SessionRepo;
 import repo.impl.SessionImpl;
+import services.RestoreService;
 import services.XFormService;
+import services.impl.RestoreServiceImpl;
 import services.impl.XFormServiceImpl;
 
 import java.util.Properties;
@@ -95,6 +97,13 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public XFormService xFormService(){
         XFormServiceImpl impl = new XFormServiceImpl();
+        return impl;
+    }
+
+
+    @Bean
+    public RestoreService restoreService(){
+        RestoreService impl = new RestoreServiceImpl();
         return impl;
     }
 }

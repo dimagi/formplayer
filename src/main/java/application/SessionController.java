@@ -1,19 +1,22 @@
 package application;
 
-import hq.CaseAPIs;
+import beans.AnswerQuestionRequestBean;
+import beans.AnswerQuestionResponseBean;
+import beans.NewSessionResponse;
+import beans.NewSessionBean;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import objects.SessionList;
+import org.commcare.api.json.AnswerQuestionJson;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.SessionRepo;
-import requests.FilterRequest;
 import requests.NewFormRequest;
 import services.XFormService;
+import session.FormEntrySession;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +34,10 @@ public class SessionController {
     private XFormService xFormService;
 
     @RequestMapping("/new_session")
-    public NewFormResponse newFormResponse(@RequestBody String body) throws Exception {
-        NewFormRequest newFormRequest = new NewFormRequest(body, sessionRepo, xFormService);
+    public NewSessionResponse newFormResponse(@RequestBody String body) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        NewSessionBean newSessionBean = mapper.readValue(body, NewSessionBean.class);
+        NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService);
         return newFormRequest.getResponse();
     }
 
@@ -46,15 +51,33 @@ public class SessionController {
         for(Object obj: mMap.values()){
             sessionList.add((SerializableSession)obj);
         }
-        System.out.println("Return Session List " + sessionList);
         return sessionList;
     }
 
     @RequestMapping(value = "/get_session", method = RequestMethod.GET)
     @ResponseBody
     public SerializableSession getSession(@RequestParam(value="id") String id) {
-        System.out.println("Getting session: " + id);
         SerializableSession serializableSession = sessionRepo.find(id);
         return serializableSession;
+    }
+
+
+    @RequestMapping("/answer_question")
+    public AnswerQuestionResponseBean answerQuestion(@RequestBody String body) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        AnswerQuestionRequestBean answerQuestionBean = mapper.readValue(body, AnswerQuestionRequestBean.class);
+        SerializableSession session = sessionRepo.find(answerQuestionBean.getSessionId());
+        FormEntrySession formEntrySession = new FormEntrySession(session);
+        JSONObject resp = AnswerQuestionJson.questionAnswerToJson(formEntrySession.getFormEntryController(),
+                formEntrySession.getFormEntryModel(),
+                answerQuestionBean.getAnswer(),
+                answerQuestionBean.getFormIndex());
+        session.setFormXml(formEntrySession.getFormXml());
+        session.setInstanceXml(formEntrySession.getInstanceXml());
+        sessionRepo.save(session);
+        System.out.println("Saving Session: " + session);
+        AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
+        return responseBean;
+
     }
 }

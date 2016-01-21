@@ -1,4 +1,4 @@
-package application;
+package beans;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,13 +9,13 @@ import java.util.ArrayList;
 /**
  * Created by willpride on 1/12/16.
  */
-public class NewFormResponse {
+public class NewSessionResponse {
     JSONArray tree;
     String title;
     String[] langs;
     String session_id;
 
-    public NewFormResponse(FormEntrySession fes){
+    public NewSessionResponse(FormEntrySession fes){
         this.tree = fes.getFormTree();
         this.langs = fes.getLanguages();
         this.title = fes.getTitle();

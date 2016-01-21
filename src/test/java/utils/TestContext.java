@@ -9,6 +9,7 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.SessionRepo;
 import requests.NewFormRequest;
+import services.RestoreService;
 import services.XFormService;
 
 @Configuration
@@ -40,5 +41,10 @@ public class TestContext {
     @Bean
     public XFormService newFormRequest() {
         return Mockito.mock(XFormService.class);
+    }
+
+    @Bean
+    public RestoreService restoreService() {
+        return Mockito.mock(RestoreService.class);
     }
 }

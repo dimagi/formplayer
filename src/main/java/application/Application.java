@@ -20,22 +20,10 @@ import repo.impl.SessionImpl;
 @EnableWebMvc
 public class Application {
 
+    public static final String HOST = "localhost:8080";
+
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
-        SessionRepo repo = (SessionRepo) context.getBean("sessionRepo");
-
-        SerializableSession session = new SerializableSession();
-        session.setId("will2");
-        session.setInstanceXml("<test/>");
-
-        repo.save(session);
-
-        System.out.println("Saved!");
-
-        SerializableSession session2 = repo.find("will");
-
-        System.out.println("Got: " + session2);
-
     }
 
     @Bean
