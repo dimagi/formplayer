@@ -32,7 +32,7 @@ public class CurrentResponseBean {
     public String getSessionId() {
         return sessionId;
     }
-    @JsonSetter(value = "session-_d")
+    @JsonSetter(value = "session-id")
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }

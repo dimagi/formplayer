@@ -2,9 +2,7 @@ package tests;
 
 import application.Application;
 import auth.HqAuth;
-import beans.AnswerQuestionRequestBean;
-import beans.AnswerQuestionResponseBean;
-import beans.CurrentRequestBean;
+import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -130,15 +128,46 @@ public class FormEntryTest {
 
         ObjectMapper mapper = new ObjectMapper();
 
+        //Test Current Session
         CurrentRequestBean currentRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), CurrentRequestBean.class);
         currentRequestBean.setSessionId(sessionId);
 
-        //Test Current Session
         ResultActions currentResult = mockMvc.perform(get("/current")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(currentRequestBean)));
         String currentResultString = currentResult.andReturn().getResponse().getContentAsString();
         System.out.println("Current Result: " + currentResultString);
+
+        //Test Get Instance
+        GetInstanceRequestBean getInstanceRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), GetInstanceRequestBean.class);
+        getInstanceRequestBean.setSessionId(sessionId);
+        ResultActions getInstanceResult = mockMvc.perform(get("/get_instance")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(getInstanceRequestBean)));
+        String getInstanceResultString = getInstanceResult.andReturn().getResponse().getContentAsString();
+        System.out.println("Get Instance Result: " + getInstanceResultString);
+
+        //Test Get Instance
+        EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
+        evaluateXPathRequestBean.setSessionId(sessionId);
+        ResultActions evaluateXpathResult = mockMvc.perform(get("/evaluate_xpath")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
+        String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
+        System.out.println("Evaluate Xpath Result: " + evaluateXpathResultString);
+
+        //Test Submission
+        SubmitRequestBean submitRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), "requests/submit/submit_request.json"), SubmitRequestBean.class);
+        currentRequestBean.setSessionId(sessionId);
+
+        ResultActions submitResult = mockMvc.perform(post("/submit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(currentRequestBean)));
+        String submitResultString = submitResult.andReturn().getResponse().getContentAsString();
+        System.out.println("Current Result: " + submitResultString);
     }
 }
