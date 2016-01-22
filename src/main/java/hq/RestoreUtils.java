@@ -1,6 +1,5 @@
 package hq;
 
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.parse.ParseUtilsHelper;
@@ -9,12 +8,9 @@ import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
-import requests.FilterRequest;
 import requests.RestoreRequest;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.logging.Filter;
 
 /**
  * Created by willpride on 1/12/16.
