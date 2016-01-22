@@ -101,7 +101,7 @@ public class FormEntryTest {
         response = answerQuestionGetResult("8","123456789", sessionId);
         response = answerQuestionGetResult("10", "2",sessionId);
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
-        
+
         ObjectMapper mapper = new ObjectMapper();
 
         CurrentRequestBean currentRequestBean = mapper.readValue
