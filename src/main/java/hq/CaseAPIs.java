@@ -3,19 +3,11 @@ package hq;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.core.sandbox.SandboxUtils;
 import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.core.model.instance.ExternalDataInstance;
-import org.javarosa.xml.util.InvalidStructureException;
-import org.javarosa.xml.util.UnfullfilledRequirementsException;
-import org.javarosa.xpath.XPathLazyNodeset;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathFuncExpr;
-import requests.FilterRequest;
-import requests.RestoreRequest;
+import beans.CaseFilterRequestBean;
 
 import java.io.File;
-import java.io.IOException;
-import java.rmi.server.ExportException;
-import java.util.logging.Filter;
 
 /**
  * Created by willpride on 1/7/16.
@@ -37,7 +29,7 @@ public class CaseAPIs {
         return path;
     }
 
-    public static String filterCases(FilterRequest request) throws Exception{
+    public static String filterCases(CaseFilterRequestBean request) throws Exception{
         try {
             String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
             UserSqlSandbox mSandbox = restoreIfNotExists(request.getSessionData().getUsername(), request.getRestoreXml());

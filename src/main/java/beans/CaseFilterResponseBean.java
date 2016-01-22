@@ -1,13 +1,13 @@
-package application;
+package beans;
 
 import java.util.ArrayList;
 
 /**
  * Created by willpride on 1/12/16.
  */
-public class CaseResponse {
+public class CaseFilterResponseBean {
     String[] cases; // comma separated case list
-    public CaseResponse(String caseString){
+    public CaseFilterResponseBean(String caseString){
         String[] caseIds = caseString.split(",");
         ArrayList<String> caseIdArray = new ArrayList<String>();
         for(String caseId: caseIds){

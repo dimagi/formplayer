@@ -1,10 +1,11 @@
-package requests;
+package beans;
 
 import application.Application;
 import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import hq.RestoreUtils;
 import objects.SessionData;
@@ -17,7 +18,8 @@ import java.util.Map;
 /**
  * Created by willpride on 1/12/16.
  */
-public class FilterRequest {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class CaseFilterRequestBean {
 
     private String filterExpression;
     private Map<String, String> hqAuth;
@@ -52,10 +54,11 @@ public class FilterRequest {
 
     public String getRestoreXml(){
         HqAuth auth = new DjangoAuth(hqAuth.get("key"));
-        return restoreService.getRestoreXml(Application.HOST, sessionData.getDomain(), auth);
+        return restoreService.getRestoreXml(sessionData.getDomain(), auth);
     }
 
     public void setRestoreService(RestoreService restoreService) {
         this.restoreService = restoreService;
     }
+
 }

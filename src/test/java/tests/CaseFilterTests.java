@@ -1,11 +1,7 @@
 package tests;
 
 import application.CaseController;
-import application.SessionController;
 import auth.HqAuth;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import hq.CaseAPIs;
-import hq.RestoreUtils;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.json.JSONArray;
@@ -24,16 +20,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import repo.SessionRepo;
-import requests.FilterRequest;
-import org.apache.commons.io.IOUtils;
 import services.RestoreService;
-import services.XFormService;
 import utils.FileUtils;
 import utils.TestContext;
-
-import java.io.File;
-import java.io.IOException;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -59,7 +48,7 @@ public class CaseFilterTests {
         Mockito.reset(restoreServiceMock);
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(caseController).build();
-        when(restoreServiceMock.getRestoreXml(anyString(), anyString(), any(HqAuth.class)))
+        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }
 
@@ -104,6 +93,17 @@ public class CaseFilterTests {
         caseArray = responseObject.getJSONArray("cases");
         assert(caseArray.length() == 1);
         assert(caseArray.get(0).equals("e7ed3658d7394415a4bba5edc7055f1d"));
+
+        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_4.json");
+        result = this.mockMvc.perform(
+                post("/filter_cases")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filterRequestPayload))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        responseObject =  new JSONObject(result.getResponse().getContentAsString());
+        caseArray = responseObject.getJSONArray("cases");
     }
 
     @After
