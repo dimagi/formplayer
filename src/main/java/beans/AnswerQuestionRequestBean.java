@@ -13,9 +13,8 @@ public class AnswerQuestionRequestBean {
     private String answer;
     private String sessionId;
 
-    public AnswerQuestionRequestBean(){
-
-    }
+    // our JSON-Object mapping lib (Jackson) requires a default constructor
+    public AnswerQuestionRequestBean(){}
 
     public AnswerQuestionRequestBean(String formIndex, String answer, String sessionId) {
         this.formIndex = formIndex;

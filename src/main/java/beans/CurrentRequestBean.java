@@ -14,9 +14,8 @@ public class CurrentRequestBean {
     private Map<String, String> formContext;
     private String sessionId;
 
-    public CurrentRequestBean(){
-
-    }
+    // our JSON-Object mapping lib (Jackson) requires a default constructor
+    public CurrentRequestBean(){}
 
     @JsonGetter(value = "session-id")
     public String getSessionId() {
@@ -38,6 +37,6 @@ public class CurrentRequestBean {
 
     @Override
     public String toString(){
-        return "Answer Question Bean [formContente: " + formContext + ", sessionId: " + sessionId + "]";
+        return "Answer Question Bean [formContent=" + formContext + ", sessionId=" + sessionId + "]";
     }
 }

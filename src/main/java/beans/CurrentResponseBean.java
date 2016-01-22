@@ -16,9 +16,8 @@ public class CurrentResponseBean {
     private String[] langs;
     private String sessionId;
 
-    public CurrentResponseBean(){
-
-    }
+    // our JSON-Object mapping lib (Jackson) requires a default constructor
+    public CurrentResponseBean(){}
 
     public CurrentResponseBean(FormEntrySession session){
         tree = session.getFormTree();
@@ -32,7 +31,7 @@ public class CurrentResponseBean {
     public String getSessionId() {
         return sessionId;
     }
-    @JsonSetter(value = "session-_d")
+    @JsonSetter(value = "session-id")
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
