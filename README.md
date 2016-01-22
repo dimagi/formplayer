@@ -66,11 +66,17 @@ Used by debugger. Submit an XPath, evaluate against the current instance, and re
 Given a session id, return the instance XML and XMLNS associated with that session.
 ####/sync_db
 Given a userna,e sync that user's DB. 
+####/new_repeat
+Add a new repeat, presumably after being prompted.
+####/edit_repeat
+Edit a repeat group
+####/delete_repeat
+Delete a repeat group
+ 
+xformplayer.Actions.DELETE_REPEAT:
 
 ###TBD
 ####/next
 Move to next event, skipping the current. Can't think of how this would be used considering we display all questions at once so wouldn't have the notion of being at one index and skipping the next.
-####/new_repeat
-Add a new prompt, presumably after being prompted. Can't determine how this is used.
 ####/set_lang
 Set the language to be used by the XForm engine
