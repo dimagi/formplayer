@@ -74,6 +74,7 @@ public class FormEntryTest {
         return response;
     }
 
+    //Integration test of form entry functions
     @Test
     public void testFormEntry() throws Exception {
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
@@ -88,43 +89,16 @@ public class FormEntryTest {
         JSONObject resultJson = new JSONObject(result.andReturn().getResponse().getContentAsString());
 
         String sessionId = resultJson.getString("session_id");
-        System.out.println("session id: " + sessionId);
 
         AnswerQuestionResponseBean response = answerQuestionGetResult("1","William Pride", sessionId);
-
-        System.out.println("result2: " + response);
-
         response = answerQuestionGetResult("2","345", sessionId);
-
-        System.out.println("result3: " + response);
-
         response = answerQuestionGetResult("3","2.54", sessionId);
-
-        System.out.println("result3: " + response);
-
         response = answerQuestionGetResult("4","1970-10-23", sessionId);
-
-        System.out.println("result3: " + response);
-
         response = answerQuestionGetResult("6", "12:30:30", sessionId);
-
-        System.out.println("result3: " + response);
-
         response = answerQuestionGetResult("7", "ben rudolph", sessionId);
-
-        System.out.println("result3: " + response);
-
         response = answerQuestionGetResult("8","123456789", sessionId);
-
-        System.out.println("result3: " + response);
-
         response = answerQuestionGetResult("10", "2",sessionId);
-
-        System.out.println("result3: " + response);
-
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
-
-        System.out.println("result3: " + response);
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -137,7 +111,6 @@ public class FormEntryTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(currentRequestBean)));
         String currentResultString = currentResult.andReturn().getResponse().getContentAsString();
-        System.out.println("Current Result: " + currentResultString);
 
         //Test Get Instance
         GetInstanceRequestBean getInstanceRequestBean = mapper.readValue
@@ -147,7 +120,6 @@ public class FormEntryTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(getInstanceRequestBean)));
         String getInstanceResultString = getInstanceResult.andReturn().getResponse().getContentAsString();
-        System.out.println("Get Instance Result: " + getInstanceResultString);
 
         //Test Get Instance
         EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue
@@ -157,7 +129,6 @@ public class FormEntryTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
         String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
-        System.out.println("Evaluate Xpath Result: " + evaluateXpathResultString);
 
         //Test Submission
         SubmitRequestBean submitRequestBean = mapper.readValue
@@ -168,6 +139,5 @@ public class FormEntryTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(currentRequestBean)));
         String submitResultString = submitResult.andReturn().getResponse().getContentAsString();
-        System.out.println("Current Result: " + submitResultString);
     }
 }

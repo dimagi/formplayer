@@ -16,9 +16,8 @@ public class CurrentResponseBean {
     private String[] langs;
     private String sessionId;
 
-    public CurrentResponseBean(){
-
-    }
+    // our JSON-Object mapping lib (Jackson) requires a default constructor
+    public CurrentResponseBean(){}
 
     public CurrentResponseBean(FormEntrySession session){
         tree = session.getFormTree();

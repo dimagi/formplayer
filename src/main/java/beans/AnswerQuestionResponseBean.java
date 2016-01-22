@@ -13,6 +13,7 @@ public class AnswerQuestionResponseBean {
     private String status;
     private String sequenceId;
 
+    // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionResponseBean(){}
 
     public AnswerQuestionResponseBean(String tree, String status, String sequenceId) {
