@@ -1,9 +1,6 @@
 package application;
 
-import beans.AnswerQuestionRequestBean;
-import beans.AnswerQuestionResponseBean;
-import beans.NewSessionResponse;
-import beans.NewSessionBean;
+import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import objects.SessionList;
@@ -17,6 +14,7 @@ import requests.NewFormRequest;
 import services.XFormService;
 import session.FormEntrySession;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -79,5 +77,15 @@ public class SessionController {
         AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
         return responseBean;
 
+    }
+
+    @RequestMapping(value = "/current", method = RequestMethod.GET)
+    @ResponseBody
+    public CurrentResponseBean getCurrent(@RequestBody String body) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        CurrentRequestBean currentRequestBean = mapper.readValue(body, CurrentRequestBean.class);
+        SerializableSession serializableSession = sessionRepo.find(currentRequestBean.getSessionId());
+        FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
+        return new CurrentResponseBean(formEntrySession);
     }
 }

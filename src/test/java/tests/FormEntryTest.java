@@ -4,6 +4,7 @@ import application.Application;
 import auth.HqAuth;
 import beans.AnswerQuestionRequestBean;
 import beans.AnswerQuestionResponseBean;
+import beans.CurrentRequestBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import utils.FileUtils;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -125,5 +127,18 @@ public class FormEntryTest {
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
 
         System.out.println("result3: " + response);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        CurrentRequestBean currentRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), CurrentRequestBean.class);
+        currentRequestBean.setSessionId(sessionId);
+
+        //Test Current Session
+        ResultActions currentResult = mockMvc.perform(get("/current")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(currentRequestBean)));
+        String currentResultString = currentResult.andReturn().getResponse().getContentAsString();
+        System.out.println("Current Result: " + currentResultString);
     }
 }
