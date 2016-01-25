@@ -24,10 +24,6 @@ import java.util.Properties;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {
-        "net.petrikainulainen.spring.testmvc.common.controller",
-        "net.petrikainulainen.spring.testmvc.todo.controller"
-})
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Override
@@ -46,7 +42,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
         Properties exceptionMappings = new Properties();
 
-        exceptionMappings.put("net.petrikainulainen.spring.testmvc.todo.exception.TodoNotFoundException", "error/404");
         exceptionMappings.put("java.lang.Exception", "error/error");
         exceptionMappings.put("java.lang.RuntimeException", "error/error");
 

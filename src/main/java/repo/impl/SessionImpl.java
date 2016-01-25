@@ -15,11 +15,6 @@ public class SessionImpl implements SessionRepo{
 
     private static String SESSION_KEY = "Session";
 
-    public RedisTemplate<String, SerializableSession> getRedisTemplate(){
-        return redisTemplate;
-    }
-
-
     @Override
     public void save(SerializableSession session) {
         System.out.println("Saving session: " + session.getId());
@@ -44,5 +39,9 @@ public class SessionImpl implements SessionRepo{
 
     public void setRedisTemplate(RedisTemplate<String, SerializableSession> redisTemplate) {
         this.redisTemplate = redisTemplate;
+    }
+
+    public RedisTemplate<String, SerializableSession> getRedisTemplate(){
+        return redisTemplate;
     }
 }
