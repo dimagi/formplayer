@@ -85,7 +85,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public SessionRepo sessionRepo(){
         SessionImpl impl = new SessionImpl();
-        impl.setRedisTemplate(redisTemplate());
         return impl;
     }
 
