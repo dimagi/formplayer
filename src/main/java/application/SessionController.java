@@ -61,8 +61,8 @@ public class SessionController {
         Map<Object, Object> mMap = sessionRepo.findAll();
         SessionList sessionList = new SessionList();
 
-        for(Object obj: mMap.values()){
-            sessionList.add((SerializableSession)obj);
+        for (Object obj : mMap.values()) {
+            sessionList.add((SerializableSession) obj);
         }
         return sessionList;
     }
