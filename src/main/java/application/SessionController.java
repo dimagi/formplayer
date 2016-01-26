@@ -144,7 +144,6 @@ public class SessionController {
     @ResponseBody
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody String body) {
         try {
-            System.out.println("Evaluation called");
             ObjectMapper mapper = new ObjectMapper();
             EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue(body, EvaluateXPathRequestBean.class);
             SerializableSession serializableSession = sessionRepo.find(evaluateXPathRequestBean.getSessionId());
