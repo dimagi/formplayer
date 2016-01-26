@@ -40,6 +40,7 @@ public class SessionController {
     @RequestMapping("/new_session")
     public NewSessionResponse newFormResponse(@RequestBody String body){
         try {
+            System.out.println("New Session: " + body);
             ObjectMapper mapper = new ObjectMapper();
             NewSessionRequestBean newSessionBean = mapper.readValue(body, NewSessionRequestBean.class);
             NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService);

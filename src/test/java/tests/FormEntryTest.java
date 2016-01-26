@@ -100,7 +100,7 @@ public class FormEntryTest {
         String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_2.json");
 
         ObjectMapper mapper = new ObjectMapper();
-        NewSessionBean newFormRequest = mapper.readValue(requestPayload, NewSessionBean.class);
+        NewSessionRequestBean newFormRequest = mapper.readValue(requestPayload, NewSessionRequestBean.class);
 
         ResultActions result = mockMvc.perform(post("/new_session")
                         .contentType(MediaType.APPLICATION_JSON)

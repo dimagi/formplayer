@@ -100,13 +100,10 @@ public class SessionControllerTest {
     @Test
     public void newSession() throws Exception {
 
-        Map<String, String> hqAuth = new HashMap<String, String>();
-        hqAuth.put("type", "django-session");
-        hqAuth.put("key", "123");
+        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_2.json");
 
-        NewSessionRequestBean formRequest = new NewSessionRequestBean("derp", "en", hqAuth);
-        ObjectMapper converter = new ObjectMapper();
-        String jsonBody = converter.writeValueAsString(formRequest);
+        ObjectMapper mapper = new ObjectMapper();
+        NewSessionRequestBean newFormRequest = mapper.readValue(requestPayload, NewSessionRequestBean.class);
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "xforms/basic.xml"));
@@ -114,7 +111,7 @@ public class SessionControllerTest {
         MvcResult result = this.mockMvc.perform(
                 post("/new_session")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody))
+                        .content(mapper.writeValueAsString(newFormRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
