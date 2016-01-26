@@ -85,11 +85,12 @@ public class NewRepeatTests {
         MvcResult result = this.mockMvc.perform(
                 post("/new_session")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request.toString()))
-                .andExpect(status().isOk())
-                .andReturn();
+                        .content(request.toString())).andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
+
+        System.out.println("jResponse body: " + responseBody);
+
         JSONObject jsonResponse = new JSONObject(responseBody);
 
         System.out.println("json response: " + jsonResponse);
