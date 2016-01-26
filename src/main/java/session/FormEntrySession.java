@@ -88,4 +88,12 @@ public class FormEntrySession {
     public void setFormXml(String formXml) {
         this.formXml = formXml;
     }
+
+    public String getXmlns(){
+        Object metaData = getFormEntryModel().getForm().getMainInstance().getMetaData(FormInstance.META_XMLNS);
+        if(metaData == null){
+            return null;
+        }
+        return metaData.toString();
+    }
 }

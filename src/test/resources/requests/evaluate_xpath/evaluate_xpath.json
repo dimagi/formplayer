@@ -1,0 +1,8 @@
+{
+  "action": "evaluate-xpath",
+  "xpath": "/data/q_text",
+  "form_context": {
+    "case_model": null
+  },
+  "session-id": "e4cd7ea6f61040b6821b9e9953f32440"
+}
