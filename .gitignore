@@ -1,0 +1,4 @@
+build/
+.gradle
+config/application.properties
+gradle/
