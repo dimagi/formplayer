@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder;
 import org.springframework.web.context.WebApplicationContext;
 import repo.SessionRepo;
+import requests.NewFormRequest;
 import services.XFormService;
 import utils.FileUtils;
 
@@ -81,11 +82,12 @@ public class FormEntryTest {
                 .thenReturn(FileUtils.getFile(this.getClass(), "xforms/question_types.xml"));
         String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_2.json");
 
-        JSONObject request = new JSONObject(requestPayload);
+        ObjectMapper mapper = new ObjectMapper();
+        NewSessionBean newFormRequest = mapper.readValue(requestPayload, NewSessionBean.class);
 
         ResultActions result = mockMvc.perform(post("/new_session")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request.toString()));
+                        .content(mapper.writeValueAsString(newFormRequest)));
         JSONObject resultJson = new JSONObject(result.andReturn().getResponse().getContentAsString());
 
         String sessionId = resultJson.getString("session_id");
@@ -100,7 +102,7 @@ public class FormEntryTest {
         response = answerQuestionGetResult("10", "2",sessionId);
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
 
-        ObjectMapper mapper = new ObjectMapper();
+        mapper = new ObjectMapper();
 
         //Test Current Session
         CurrentRequestBean currentRequestBean = mapper.readValue
