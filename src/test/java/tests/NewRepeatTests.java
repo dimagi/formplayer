@@ -4,7 +4,9 @@ import application.Application;
 import application.SessionController;
 import auth.HqAuth;
 import beans.NewRepeatRequestBean;
+import beans.NewSessionRequestBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.json.JSONArray;
@@ -13,11 +15,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.IntegrationTest;
@@ -43,6 +44,7 @@ import java.io.IOException;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -51,10 +53,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Created by willpride on 1/14/16.
  */
-@SpringApplicationConfiguration(classes = Application.class)   // 2
-@WebAppConfiguration   // 3
-@IntegrationTest()
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = TestContext.class)
 public class NewRepeatTests {
 
     final String NEW_FORM_URL = "/new_session";
@@ -63,29 +63,55 @@ public class NewRepeatTests {
 
     private MockMvc mockMvc;
 
-    @Mock
+    @Autowired
+    private SessionRepo sessionRepoMock;
+
+    @Autowired
     private XFormService xFormServiceMock;
+
+    @InjectMocks
+    private SessionController sessionController;
 
     @Before
     public void setUp() throws IOException {
-        WebApplicationContext context = (WebApplicationContext) SpringApplication.run(Application.class);
-        mockMvc = MockMvcBuilders.<StandaloneMockMvcBuilder>webAppContextSetup(context).build();
+        Mockito.reset(sessionRepoMock);
+        Mockito.reset(xFormServiceMock);
+        MockitoAnnotations.initMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
     }
 
     @Test
     public void testRepeat() throws Exception {
+
+        final SerializableSession serializableSession =  new SerializableSession();
+
+        when(sessionRepoMock.find(anyString())).thenReturn(serializableSession);
+
+        ArgumentCaptor<SerializableSession> argumentCaptor = ArgumentCaptor.forClass(SerializableSession.class);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Object[] args = invocationOnMock.getArguments();
+                SerializableSession toBeSaved = (SerializableSession) args[0];
+                serializableSession.setInstanceXml(toBeSaved.getInstanceXml());
+                serializableSession.setFormXml(toBeSaved.getFormXml());
+                return null;
+            }
+        }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "xforms/repeat.xml"));
 
         String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form.json");
 
-        JSONObject request = new JSONObject(requestPayload);
+        NewSessionRequestBean newSessionRequestBean = new ObjectMapper().readValue(requestPayload,
+                NewSessionRequestBean.class);
 
         MvcResult result = this.mockMvc.perform(
                 post("/new_session")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request.toString())).andReturn();
+                        .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
 
