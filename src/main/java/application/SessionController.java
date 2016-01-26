@@ -8,6 +8,7 @@ import objects.SerializableSession;
 import objects.SessionList;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
+import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -117,5 +118,40 @@ public class SessionController {
         }
         //error handling?
         return null;
+    }
+
+    @RequestMapping(value = "/submit", method = RequestMethod.POST)
+    @ResponseBody
+    public SubmitResponseBean submitForm(@RequestBody String body) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        SubmitRequestBean submitRequestBean = mapper.readValue(body, SubmitRequestBean.class);
+        SerializableSession serializableSession = sessionRepo.find(submitRequestBean.getSessionId());
+        FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
+        return new SubmitResponseBean(formEntrySession);
+    }
+
+    @RequestMapping(value = "/get_instance", method = RequestMethod.GET)
+    @ResponseBody
+    public GetInstanceResponseBean getInstance(@RequestBody String body) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        GetInstanceRequestBean getInstanceRequestBean = mapper.readValue(body, GetInstanceRequestBean.class);
+        SerializableSession serializableSession = sessionRepo.find(getInstanceRequestBean.getSessionId());
+        FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
+        return new GetInstanceResponseBean(formEntrySession);
+    }
+
+    @RequestMapping(value = "/evaluate_xpath", method = RequestMethod.GET)
+    @ResponseBody
+    public EvaluateXPathResponseBean evaluateXpath(@RequestBody String body) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue(body, EvaluateXPathRequestBean.class);
+            SerializableSession serializableSession = sessionRepo.find(evaluateXPathRequestBean.getSessionId());
+            FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
+            return new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
+        } catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }
