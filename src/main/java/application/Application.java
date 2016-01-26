@@ -27,42 +27,7 @@ import services.impl.XFormServiceImpl;
 @EnableWebMvc
 @Component
 public class Application {
-
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
-    }
-
-    @Bean
-    public JedisConnectionFactory jedisConnFactory(){
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        jedisConnectionFactory.setUsePool(true);
-        return jedisConnectionFactory;
-    }
-
-    @Bean
-    public RedisTemplate redisTemplate(){
-        RedisTemplate redisTemplate =  new RedisTemplate();
-        redisTemplate.setConnectionFactory(jedisConnFactory());
-        return redisTemplate;
-    }
-
-    @Bean
-    public SessionRepo sessionRepo(){
-        SessionImpl impl = new SessionImpl();
-        impl.setRedisTemplate(redisTemplate());
-        return impl;
-    }
-
-    @Bean
-    public XFormService xFormService(){
-        XFormServiceImpl impl = new XFormServiceImpl();
-        return impl;
-    }
-
-
-    @Bean
-    public RestoreService restoreService(){
-        RestoreService impl = new RestoreServiceImpl();
-        return impl;
     }
 }

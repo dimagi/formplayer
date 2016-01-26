@@ -1,6 +1,7 @@
 package repo.impl;
 
 import objects.SerializableSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import repo.SessionRepo;
 
@@ -11,14 +12,10 @@ import java.util.Map;
  */
 public class SessionImpl implements SessionRepo{
 
+    @Autowired
     private RedisTemplate<String, SerializableSession> redisTemplate;
 
     private static String SESSION_KEY = "Session";
-
-    public RedisTemplate<String, SerializableSession> getRedisTemplate(){
-        return redisTemplate;
-    }
-
 
     @Override
     public void save(SerializableSession session) {
@@ -40,9 +37,5 @@ public class SessionImpl implements SessionRepo{
     @Override
     public void delete(String id) {
         this.redisTemplate.opsForHash().delete(SESSION_KEY,id);
-    }
-
-    public void setRedisTemplate(RedisTemplate<String, SerializableSession> redisTemplate) {
-        this.redisTemplate = redisTemplate;
     }
 }
