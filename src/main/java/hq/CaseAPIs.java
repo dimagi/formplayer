@@ -14,7 +14,7 @@ import java.io.File;
  */
 public class CaseAPIs {
 
-    private static UserSqlSandbox restoreIfNotExists(String username, String xml) throws Exception{
+    public static UserSqlSandbox restoreIfNotExists(String username, String xml) throws Exception{
         File db = new File(getDbFilePath(username));
         if(db.exists()){
             return new UserSqlSandbox(username);

@@ -9,7 +9,7 @@ public class SerializableSession implements Serializable{
     private String id;
     private String instanceXml;
     private String formXml;
-
+    private String username;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -51,5 +51,13 @@ public class SerializableSession implements Serializable{
 
     public void setFormXml(String formXml) {
         this.formXml = formXml;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

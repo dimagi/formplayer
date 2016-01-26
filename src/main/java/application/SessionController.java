@@ -8,7 +8,6 @@ import objects.SerializableSession;
 import objects.SessionList;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
-import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -42,7 +41,7 @@ public class SessionController {
     public NewSessionResponse newFormResponse(@RequestBody String body){
         try {
             ObjectMapper mapper = new ObjectMapper();
-            NewSessionBean newSessionBean = mapper.readValue(body, NewSessionBean.class);
+            NewSessionRequestBean newSessionBean = mapper.readValue(body, NewSessionRequestBean.class);
             NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService);
             return newFormRequest.getResponse();
         } catch (JsonParseException e) {
@@ -144,13 +143,38 @@ public class SessionController {
     @ResponseBody
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody String body) {
         try {
-            System.out.println("Evaluation called");
             ObjectMapper mapper = new ObjectMapper();
             EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue(body, EvaluateXPathRequestBean.class);
             SerializableSession serializableSession = sessionRepo.find(evaluateXPathRequestBean.getSessionId());
             FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
             return new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
         } catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @RequestMapping(value = "/new_repeat", method = RequestMethod.GET)
+    @ResponseBody
+    public NewRepeatResponseBean newRepeat(@RequestBody String body) {
+        try {
+            System.out.println("New Repeat");
+            ObjectMapper mapper = new ObjectMapper();
+            NewRepeatRequestBean newRepeatRequestBean = mapper.readValue(body, NewRepeatRequestBean.class);
+            SerializableSession serializableSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
+            FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
+            JSONObject resp = AnswerQuestionJson.descendRepeatToJson(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel(),
+                    newRepeatRequestBean.getFormIndex());
+            serializableSession.setFormXml(formEntrySession.getFormXml());
+            serializableSession.setInstanceXml(formEntrySession.getInstanceXml());
+            sessionRepo.save(serializableSession);
+
+            System.out.println("New Repeat Resp: " + resp);
+
+            return new NewRepeatResponseBean(formEntrySession.getFormTree().toString(), "2");
+        } catch(Exception e){
+            System.out.println("E: " + e);
             e.printStackTrace();
             return null;
         }

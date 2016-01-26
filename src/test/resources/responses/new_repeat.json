@@ -1,0 +1,96 @@
+{
+  'tree': [
+    {
+      'caption_audio': None,
+      'caption': u
+      'Enter a name:',
+      'binding': u
+      '/data/q_name',
+      'caption_image': None,
+      'type': 'question',
+      'caption_markdown': None,
+      'required': True,
+      'ix': "0",
+      'relevant': True,
+      'help': None,
+      'answer': None,
+      'datatype': 'str',
+      'style': {},
+      'caption_video': None
+    },
+    {
+      'caption_audio': None,
+      'caption': u
+      'question3',
+      'caption_image': None,
+      'type': 'repeat-juncture',
+      'caption_markdown': None,
+      'ix': "1J",
+      'relevant': True,
+      'children': [
+        {
+          'caption': u
+          'question3 1/2',
+          'type': 'sub-group',
+          'uuid': 'b66445e183fa',
+          'ix': "1:0",
+          'children': [
+            {
+              'caption_audio': None,
+              'caption': u
+              'repeat_text',
+              'binding': u
+              '/data/question3/repeat_text',
+              'caption_image': None,
+              'type': 'question',
+              'caption_markdown': None,
+              'required': False,
+              'ix': "1:0,0",
+              'relevant': True,
+              'help': None,
+              'answer': None,
+              'datatype': 'str',
+              'style': {},
+              'caption_video': None
+            }
+          ],
+          'repeatable': True
+        },
+        {
+          'caption': u
+          'question3 2/2',
+          'type': 'sub-group',
+          'uuid': '2150fc344750',
+          'ix': "1:1",
+          'children': [
+            {
+              'caption_audio': None,
+              'caption': u
+              'repeat_text',
+              'binding': u
+              '/data/question3/repeat_text',
+              'caption_image': None,
+              'type': 'question',
+              'caption_markdown': None,
+              'required': False,
+              'ix': "1:1,0",
+              'relevant': True,
+              'help': None,
+              'answer': None,
+              'datatype': 'str',
+              'style': {},
+              'caption_video': None
+            }
+          ],
+          'repeatable': True
+        }
+      ],
+      'add-choice': u
+      'Add another question3',
+      'header': u
+      'question3',
+      'caption_video': None
+    }
+  ],
+  'seq_id': 3
+}

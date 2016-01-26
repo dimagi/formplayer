@@ -3,7 +3,7 @@ package requests;
 import beans.NewSessionResponse;
 import auth.DjangoAuth;
 import auth.HqAuth;
-import beans.NewSessionBean;
+import beans.NewSessionRequestBean;
 import objects.SerializableSession;
 import org.springframework.stereotype.Service;
 import repo.SessionRepo;
@@ -23,12 +23,14 @@ public class NewFormRequest {
     SessionRepo sessionRepo;
     XFormService xFormService;
     HqAuth auth;
+    String username;
 
-    public NewFormRequest(NewSessionBean bean, SessionRepo sessionRepo, XFormService xFormService) throws IOException {
+    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo, XFormService xFormService) throws IOException {
         this.sessionRepo = sessionRepo;
         this.xFormService = xFormService;
         formUrl = bean.getFormUrl();
         auth = new DjangoAuth(bean.getHqAuth().get("django-session"));
+        username = bean.getSessionData().getUsername();
         String initLang = bean.getLang();
         try {
             formEntrySession = new FormEntrySession(getFormXml(), initLang);
@@ -52,6 +54,7 @@ public class NewFormRequest {
         serializableSession.setInstanceXml(formEntrySession.getInstanceXml());
         serializableSession.setId(formEntrySession.getUUID());
         serializableSession.setFormXml(formEntrySession.getFormXml());
+        serializableSession.setUsername(username);
         return serializableSession;
     }
 }

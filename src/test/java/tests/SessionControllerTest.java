@@ -2,14 +2,13 @@ package tests;
 
 import application.SessionController;
 import auth.HqAuth;
-import beans.NewSessionBean;
+import beans.NewSessionRequestBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +104,7 @@ public class SessionControllerTest {
         hqAuth.put("type", "django-session");
         hqAuth.put("key", "123");
 
-        NewSessionBean formRequest = new NewSessionBean("derp", "en", hqAuth);
+        NewSessionRequestBean formRequest = new NewSessionRequestBean("derp", "en", hqAuth);
         ObjectMapper converter = new ObjectMapper();
         String jsonBody = converter.writeValueAsString(formRequest);
 
