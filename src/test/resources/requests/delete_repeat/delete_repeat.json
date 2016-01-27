@@ -1,13 +1,13 @@
 {
-  'form_ix': '1J',
-  'action': 'delete-repeat',
-  'hq_auth': {
-    'type': 'django-session',
-    'key': '6f9iv4hpax36vslk6ffnjs5xt5floebc'
+  "form_ix": "1J",
+  "action": "delete-repeat",
+  "hq_auth": {
+    "type": "django-session",
+    "key": "6f9iv4hpax36vslk6ffnjs5xt5floebc"
   },
-  'form_context': {
-    'case_model': None
+  "form_context": {
+    "case_model": null
   },
-  'session-id': 'f68b55763ca8452c9186a807dd55be0f',
-  'ix': 0
+  "session-id": "f68b55763ca8452c9186a807dd55be0f",
+  "ix": 0
 }

@@ -89,38 +89,6 @@ public class NewRepeatTests {
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }
 
-    public class AnswerTree{
-        private JSONObject object;
-        private JSONArray tree;
-
-        public AnswerTree(JSONObject object){
-            this.object = object;
-            assert(object.has("tree"));
-            String treeString = object.getString("tree");
-            System.out.println("Answer Tree: " + treeString);
-            this.tree = new JSONArray(treeString);
-        }
-
-        public void assertTreeLength(int length){
-            System.out.println("Asserting length: " + length + ", actual: " + tree.length());
-            assert(tree.length() == length);
-        }
-
-        public void assertTreeAnswer(int index, String answer){
-            String jsonString = tree.getString(index);
-            JSONObject jsonObject = new JSONObject(jsonString);
-            assert(String.valueOf(jsonObject.get("answer")).equals(answer));
-
-        }
-
-        public void assertHasKey(int index, String key){
-            String jsonString = tree.getString(index);
-            JSONObject jsonObject = new JSONObject(jsonString);
-            assert(jsonObject.has(key));
-        }
-    }
-
-
     @Test
     public void testRepeat() throws Exception {
 
@@ -158,9 +126,6 @@ public class NewRepeatTests {
         String responseBody = result.getResponse().getContentAsString();
 
         JSONObject jsonResponse = new JSONObject(responseBody);
-
-        AnswerTree answerTree = new AnswerTree(jsonResponse);
-        answerTree.assertTreeLength(2);
 
         String sessionId = jsonResponse.getString("session_id");
 
