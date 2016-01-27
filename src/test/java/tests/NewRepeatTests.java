@@ -4,7 +4,9 @@ import application.Application;
 import application.SessionController;
 import auth.HqAuth;
 import beans.NewRepeatRequestBean;
+import beans.NewRepeatResponseBean;
 import beans.NewSessionRequestBean;
+import beans.QuestionBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
@@ -36,11 +38,13 @@ import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import repo.SessionRepo;
+import services.RestoreService;
 import services.XFormService;
 import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -69,6 +73,9 @@ public class NewRepeatTests {
     @Autowired
     private XFormService xFormServiceMock;
 
+    @Autowired
+    private RestoreService restoreServiceMock;
+
     @InjectMocks
     private SessionController sessionController;
 
@@ -78,7 +85,41 @@ public class NewRepeatTests {
         Mockito.reset(xFormServiceMock);
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }
+
+    public class AnswerTree{
+        private JSONObject object;
+        private JSONArray tree;
+
+        public AnswerTree(JSONObject object){
+            this.object = object;
+            assert(object.has("tree"));
+            String treeString = object.getString("tree");
+            System.out.println("Answer Tree: " + treeString);
+            this.tree = new JSONArray(treeString);
+        }
+
+        public void assertTreeLength(int length){
+            System.out.println("Asserting length: " + length + ", actual: " + tree.length());
+            assert(tree.length() == length);
+        }
+
+        public void assertTreeAnswer(int index, String answer){
+            String jsonString = tree.getString(index);
+            JSONObject jsonObject = new JSONObject(jsonString);
+            assert(String.valueOf(jsonObject.get("answer")).equals(answer));
+
+        }
+
+        public void assertHasKey(int index, String key){
+            String jsonString = tree.getString(index);
+            JSONObject jsonObject = new JSONObject(jsonString);
+            assert(jsonObject.has(key));
+        }
+    }
+
 
     @Test
     public void testRepeat() throws Exception {
@@ -96,6 +137,7 @@ public class NewRepeatTests {
                 SerializableSession toBeSaved = (SerializableSession) args[0];
                 serializableSession.setInstanceXml(toBeSaved.getInstanceXml());
                 serializableSession.setFormXml(toBeSaved.getFormXml());
+                serializableSession.setRestoreXml(toBeSaved.getRestoreXml());
                 return null;
             }
         }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
@@ -115,15 +157,12 @@ public class NewRepeatTests {
 
         String responseBody = result.getResponse().getContentAsString();
 
-        System.out.println("jResponse body: " + responseBody);
-
         JSONObject jsonResponse = new JSONObject(responseBody);
 
-        System.out.println("json response: " + jsonResponse);
+        AnswerTree answerTree = new AnswerTree(jsonResponse);
+        answerTree.assertTreeLength(2);
 
         String sessionId = jsonResponse.getString("session_id");
-
-        System.out.println("session id: " + sessionId);
 
         String repeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
 
@@ -137,13 +176,27 @@ public class NewRepeatTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestString));
 
-        String repeatResultString = repeatResult.andReturn().getResponse().getContentAsString();
+        NewRepeatResponseBean newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
+                NewRepeatResponseBean.class);
 
-        System.out.println("Repeat Result: " + repeatResultString);
+        QuestionBean[] tree = newRepeatResponseBean.getTree();
 
-        JSONObject resultJson = new JSONObject(repeatResultString);
+        assert(tree.length == 2);
+        QuestionBean questionBean = tree[1];
+        assert(questionBean.getChildren() != null);
+        QuestionBean[] children = questionBean.getChildren();
+        assert(children.length == 1);
+        QuestionBean child = children[0];
+        assert(child.getIx().contains("1_0,"));
+        children = child.getChildren();
+        assert(children.length == 1);
+        child = children[0];
+        System.out.println("Child: " + child);
+        assert(child.getIx().contains("1_0, 0,"));
 
-        System.out.println("Repeat Result: " + resultJson);
+
+
+
 
     }
 

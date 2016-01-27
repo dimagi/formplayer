@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import repo.SessionRepo;
+import services.RestoreService;
 import services.XFormService;
 import utils.FileUtils;
 import utils.TestContext;
@@ -61,6 +62,9 @@ public class NewFormTests {
     @Autowired
     private XFormService xFormServiceMock;
 
+    @Autowired
+    private RestoreService restoreServiceMock;
+
     @InjectMocks
     private SessionController sessionController;
 
@@ -69,8 +73,11 @@ public class NewFormTests {
     public void setUp() throws IOException {
         Mockito.reset(sessionRepoMock);
         Mockito.reset(xFormServiceMock);
+        Mockito.reset(restoreServiceMock);
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }
 
     @Test

@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
+import services.RestoreService;
 import services.XFormService;
 import utils.FileUtils;
 import utils.TestContext;
@@ -45,6 +46,9 @@ public class FormEntryTest {
     @Autowired
     private XFormService xFormServiceMock;
 
+    @Autowired
+    private RestoreService restoreServiceMock;
+
     @InjectMocks
     private SessionController sessionController;
  
@@ -58,7 +62,7 @@ public class FormEntryTest {
 
     public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-        ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
 
         MvcResult answerResult = this.mockMvc.perform(
@@ -78,6 +82,7 @@ public class FormEntryTest {
     public void testFormEntry() throws Exception {
 
         final SerializableSession serializableSession =  new SerializableSession();
+        serializableSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
         when(sessionRepoMock.find(anyString())).thenReturn(serializableSession);
 

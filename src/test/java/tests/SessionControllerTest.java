@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
+import services.RestoreService;
 import services.XFormService;
 import utils.FileUtils;
 import utils.TestContext;
@@ -44,6 +45,9 @@ public class SessionControllerTest {
     @Autowired
     private XFormService xFormServiceMock;
 
+    @Autowired
+    private RestoreService restoreServiceMock;
+
     @InjectMocks
     private SessionController sessionController;
 
@@ -52,8 +56,11 @@ public class SessionControllerTest {
     public void setUp() throws IOException {
         Mockito.reset(sessionRepoMock);
         Mockito.reset(xFormServiceMock);
+        Mockito.reset(restoreServiceMock);
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }
 
     @Test
@@ -103,7 +110,7 @@ public class SessionControllerTest {
         String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_2.json");
 
         ObjectMapper mapper = new ObjectMapper();
-        NewSessionRequestBean newFormRequest = mapper.readValue(requestPayload, NewSessionRequestBean.class);
+        NewSessionRequestBean newSessionRequest = mapper.readValue(requestPayload, NewSessionRequestBean.class);
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "xforms/basic.xml"));
@@ -111,7 +118,7 @@ public class SessionControllerTest {
         MvcResult result = this.mockMvc.perform(
                 post("/new_session")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(newFormRequest)))
+                        .content(mapper.writeValueAsString(newSessionRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 

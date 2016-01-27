@@ -8,11 +8,21 @@ import org.javarosa.xpath.expr.XPathFuncExpr;
 import beans.CaseFilterRequestBean;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by willpride on 1/7/16.
  */
 public class CaseAPIs {
+
+    public static UserSqlSandbox throwIfNotExists(String username) throws IOException{
+        File db = new File(getDbFilePath(username));
+        if(db.exists()){
+            return new UserSqlSandbox(username);
+        } else{
+            throw new IOException("This SqlSandbox doesn't exist");
+        }
+    }
 
     public static UserSqlSandbox restoreIfNotExists(String username, String xml) throws Exception{
         File db = new File(getDbFilePath(username));

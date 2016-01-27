@@ -1,7 +1,11 @@
 package tests;
 
 import application.SessionController;
+import auth.HqAuth;
 import beans.AnswerQuestionRequestBean;
+import beans.AnswerQuestionResponseBean;
+import beans.QuestionBean;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.json.JSONArray;
@@ -22,11 +26,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
+import services.RestoreService;
 import services.XFormService;
 import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,6 +51,9 @@ public class AnswerQuestionControllerTest {
     @Autowired
     private XFormService xFormServiceMock;
 
+    @Autowired
+    private RestoreService restoreServiceMock;
+
     @InjectMocks
     private SessionController sessionController;
 
@@ -51,24 +61,38 @@ public class AnswerQuestionControllerTest {
     public void setUp() throws IOException {
         Mockito.reset(sessionRepoMock);
         Mockito.reset(xFormServiceMock);
+        Mockito.reset(restoreServiceMock);
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+
     }
 
-    public JSONObject answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
-        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonBody = mapper.writeValueAsString(answerQuestionBean);
+    public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) {
+        try {
+            AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonBody = mapper.writeValueAsString(answerQuestionBean);
 
-        MvcResult answerResult = this.mockMvc.perform(
-                post("/answer_question")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        JSONObject object = new JSONObject(answerResult.getResponse().getContentAsString());
-        return object;
+            MvcResult answerResult = this.mockMvc.perform(
+                    post("/answer_question")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonBody))
+                    .andExpect(status().isOk())
+                    .andReturn();
+            System.out.println("Answer Response: " + answerResult.getResponse().getContentAsString());
+            AnswerQuestionResponseBean object = mapper.readValue(answerResult.getResponse().getContentAsString(),
+                    AnswerQuestionResponseBean.class);
+            return object;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Test
@@ -77,49 +101,21 @@ public class AnswerQuestionControllerTest {
         SerializableSession serializableSession = new SerializableSession();
         serializableSession.setFormXml(FileUtils.getFile(this.getClass(), "xforms/basic.xml"));
         serializableSession.setInstanceXml(FileUtils.getFile(this.getClass(), "instances/basic_0.xml"));
+        serializableSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
         serializableSession.setId("test_id");
 
         when(sessionRepoMock.find(anyString()))
                 .thenReturn(serializableSession);
 
-        JSONObject object = answerQuestionGetResult("0","123","test_id");
+        AnswerQuestionResponseBean object = answerQuestionGetResult("0","123","test_id");
 
-        assert(object.has("tree"));
-        String treeString = object.getString("tree");
-        assert (object.get("status").equals("success"));
-        System.out.println("answer response: " + treeString);
-        JSONArray tree = new JSONArray(treeString);
-        assert(tree.length() == 1);
-        String jsonString = tree.getString(0);
-        JSONObject jsonObject = new JSONObject(jsonString);
-        assert(jsonObject.get("answer").equals("123"));
+        System.out.println("0: " + object.getTree()[0].toString());
+
+        assert(object.getTree().length == 1);
+        QuestionBean questionBean = object.getTree()[0];
+        assert(questionBean.getAnswer().equals("123"));
 
     }
-
-    public class AnswerTree{
-        private JSONObject object;
-        private JSONArray tree;
-
-        public AnswerTree(JSONObject object){
-            this.object = object;
-            assert(object.has("tree"));
-            assert(object.get("status").equals("success"));
-            String treeString = object.getString("tree");
-            this.tree = new JSONArray(treeString);
-        }
-
-        public void assertTreeLength(int length){
-            assert(tree.length() == length);
-        }
-
-        public void assertTreeAnswer(int index, String answer){
-            String jsonString = tree.getString(index);
-            JSONObject jsonObject = new JSONObject(jsonString);
-            assert(jsonObject.get("answer").equals(answer));
-
-        }
-    }
-
 
     @Test
     public void questionTypesForm() throws Exception {
@@ -132,22 +128,17 @@ public class AnswerQuestionControllerTest {
         when(sessionRepoMock.find(anyString()))
                 .thenReturn(serializableSession);
 
-        JSONObject object = answerQuestionGetResult("1","William Pride","test_id");
+        AnswerQuestionResponseBean object = answerQuestionGetResult("1","William Pride","test_id");
 
-        System.out.println("Object: " + object);
-
-        AnswerTree answerTree = new AnswerTree(object);
-        answerTree.assertTreeLength(24);
-        answerTree.assertTreeAnswer(1, "William Pride");
-
+        assert(object.getTree().length == 24);
+        assert(object.getTree()[1].getAnswer().equals("William Pride"));
 
         object = answerQuestionGetResult("2","123","test_id");
 
-        System.out.println("Object: " + object);
+        System.out.println("Tree: " + Arrays.toString(object.getTree()));
 
-        answerTree = new AnswerTree(object);
-        //answerTree.assertTreeAnswer(1, "William Pride");
-        answerTree.assertTreeAnswer(2, "123");
-        answerTree.assertTreeLength(24);
+        assert(object.getTree()[1].getAnswer().equals("William Pride"));
+        assert(String.valueOf(object.getTree()[2].getAnswer()).equals("123"));
+        assert(object.getTree().length == 24);
     }
 }

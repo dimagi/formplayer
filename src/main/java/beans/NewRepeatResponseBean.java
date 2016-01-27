@@ -3,26 +3,28 @@ package beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
+import java.util.Arrays;
+
 /**
  * Created by willpride on 1/20/16.
  */
 public class NewRepeatResponseBean {
-    private String tree;
+    private QuestionBean[] tree;
     private String sequenceId;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public NewRepeatResponseBean(){}
 
-    public NewRepeatResponseBean(String tree, String sequenceId) {
+    public NewRepeatResponseBean(QuestionBean[] tree, String sequenceId) {
         this.tree = tree;
         this.sequenceId = sequenceId;
     }
 
-    public String getTree() {
+    public QuestionBean[] getTree() {
         return tree;
     }
 
-    public void setTree(String tree) {
+    public void setTree(QuestionBean[] tree) {
         this.tree = tree;
     }
     @JsonGetter(value = "seq_id")
@@ -36,6 +38,6 @@ public class NewRepeatResponseBean {
 
     @Override
     public String toString(){
-        return "NewRepeatResponseBean: [tree=" + tree + ", seq_id: " + sequenceId + "]";
+        return "NewRepeatResponseBean: [tree=" + Arrays.toString(tree) + ", seq_id: " + sequenceId + "]";
     }
 }

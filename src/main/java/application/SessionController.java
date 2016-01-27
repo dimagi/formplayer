@@ -8,12 +8,15 @@ import objects.SerializableSession;
 import objects.SessionList;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
+import org.commcare.api.json.PromptToJson;
+import org.commcare.api.json.WalkJson;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.SessionRepo;
 import requests.NewFormRequest;
+import services.RestoreService;
 import services.XFormService;
 import session.FormEntrySession;
 import org.apache.commons.logging.Log;
@@ -35,15 +38,17 @@ public class SessionController {
     @Autowired
     private XFormService xFormService;
 
+    @Autowired
+    private RestoreService restoreService;
+
     Log log = LogFactory.getLog(SessionController.class);
 
     @RequestMapping("/new_session")
     public NewSessionResponse newFormResponse(@RequestBody String body){
         try {
-            System.out.println("New Session: " + body);
             ObjectMapper mapper = new ObjectMapper();
             NewSessionRequestBean newSessionBean = mapper.readValue(body, NewSessionRequestBean.class);
-            NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService);
+            NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService, restoreService);
             return newFormRequest.getResponse();
         } catch (JsonParseException e) {
             log.error(e);
@@ -51,6 +56,8 @@ public class SessionController {
             log.error(e);
         } catch (IOException e) {
             log.error(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -77,7 +84,7 @@ public class SessionController {
 
 
     @RequestMapping("/answer_question")
-    public AnswerQuestionResponseBean answerQuestion(@RequestBody String body){
+    public AnswerQuestionResponseBean answerQuestion(@RequestBody String body) throws Exception {
         try {
             ObjectMapper mapper = new ObjectMapper();
             AnswerQuestionRequestBean answerQuestionBean = mapper.readValue(body, AnswerQuestionRequestBean.class);
@@ -93,10 +100,16 @@ public class SessionController {
             AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
             return responseBean;
         } catch (JsonParseException e) {
+            System.out.println("ME: " + e);
+            e.printStackTrace();
             log.error(e);
         } catch (JsonMappingException e) {
+            System.out.println("ME: " + e);
+            e.printStackTrace();
             log.error(e);
         } catch (IOException e) {
+            System.out.println("ME: " + e);
+            e.printStackTrace();
             log.error(e);
         }
         return null;
@@ -115,6 +128,8 @@ public class SessionController {
             return new CurrentResponseBean(formEntrySession);
         } catch (IOException e) {
             log.error(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         //error handling?
         return null;
@@ -122,7 +137,7 @@ public class SessionController {
 
     @RequestMapping(value = "/submit", method = RequestMethod.POST)
     @ResponseBody
-    public SubmitResponseBean submitForm(@RequestBody String body) throws IOException {
+    public SubmitResponseBean submitForm(@RequestBody String body) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         SubmitRequestBean submitRequestBean = mapper.readValue(body, SubmitRequestBean.class);
         SerializableSession serializableSession = sessionRepo.find(submitRequestBean.getSessionId());
@@ -132,7 +147,7 @@ public class SessionController {
 
     @RequestMapping(value = "/get_instance", method = RequestMethod.GET)
     @ResponseBody
-    public GetInstanceResponseBean getInstance(@RequestBody String body) throws IOException {
+    public GetInstanceResponseBean getInstance(@RequestBody String body) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         GetInstanceRequestBean getInstanceRequestBean = mapper.readValue(body, GetInstanceRequestBean.class);
         SerializableSession serializableSession = sessionRepo.find(getInstanceRequestBean.getSessionId());
@@ -164,16 +179,21 @@ public class SessionController {
             NewRepeatRequestBean newRepeatRequestBean = mapper.readValue(body, NewRepeatRequestBean.class);
             SerializableSession serializableSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
             FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
+
             JSONObject resp = AnswerQuestionJson.descendRepeatToJson(formEntrySession.getFormEntryController(),
                     formEntrySession.getFormEntryModel(),
                     newRepeatRequestBean.getFormIndex());
+
             serializableSession.setFormXml(formEntrySession.getFormXml());
             serializableSession.setInstanceXml(formEntrySession.getInstanceXml());
             sessionRepo.save(serializableSession);
 
-            System.out.println("New Repeat Resp: " + resp);
+            JSONObject respo =  AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel());
 
-            return new NewRepeatResponseBean(formEntrySession.getFormTree().toString(), "2");
+            System.out.println("New Repeat Resp: " + respo.toString());
+
+            return mapper.readValue(respo.toString(), NewRepeatResponseBean.class);
         } catch(Exception e){
             System.out.println("E: " + e);
             e.printStackTrace();
