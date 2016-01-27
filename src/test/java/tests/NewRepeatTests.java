@@ -167,24 +167,29 @@ public class NewRepeatTests {
 
         newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
                 NewRepeatResponseBean.class);
-
         tree = newRepeatResponseBean.getTree();
-
-        System.out.println("Second Response: " + repeatResult.andReturn().getResponse().getContentAsString());
-
         assert(tree.length == 2);
         questionBean = tree[1];
         assert(questionBean.getChildren() != null);
         children = questionBean.getChildren();
         assert(children.length == 2);
+
         child = children[0];
         System.out.println("Child: " + child);
         assert(child.getIx().contains("1_0,"));
-        children = child.getChildren();
-        assert(children.length == 1);
-        child = children[0];
+        QuestionBean[] children2 = child.getChildren();
+        assert(children2.length == 1);
+        child = children2[0];
         System.out.println("Child: " + child);
         assert(child.getIx().contains("1_0, 0,"));
+
+        child = children[1];
+        System.out.println("Child: " + child);
+        children2 = child.getChildren();
+        assert(children2.length == 1);
+        child = children2[0];
+        System.out.println("Child: " + child);
+        assert(child.getIx().contains("1_1, 0,"));
 
 
 
