@@ -144,6 +144,8 @@ public class NewRepeatTests {
         NewRepeatResponseBean newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
                 NewRepeatResponseBean.class);
 
+        System.out.println("First Response: " + repeatResult.andReturn().getResponse().getContentAsString());
+
         QuestionBean[] tree = newRepeatResponseBean.getTree();
 
         assert(tree.length == 2);
@@ -159,6 +161,30 @@ public class NewRepeatTests {
         System.out.println("Child: " + child);
         assert(child.getIx().contains("1_0, 0,"));
 
+        repeatResult = mockMvc.perform(get("/new_repeat")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestString));
+
+        newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
+                NewRepeatResponseBean.class);
+
+        tree = newRepeatResponseBean.getTree();
+
+        System.out.println("Second Response: " + repeatResult.andReturn().getResponse().getContentAsString());
+
+        assert(tree.length == 2);
+        questionBean = tree[1];
+        assert(questionBean.getChildren() != null);
+        children = questionBean.getChildren();
+        assert(children.length == 2);
+        child = children[0];
+        System.out.println("Child: " + child);
+        assert(child.getIx().contains("1_0,"));
+        children = child.getChildren();
+        assert(children.length == 1);
+        child = children[0];
+        System.out.println("Child: " + child);
+        assert(child.getIx().contains("1_0, 0,"));
 
 
 
