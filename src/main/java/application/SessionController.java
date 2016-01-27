@@ -174,7 +174,6 @@ public class SessionController {
     @ResponseBody
     public NewRepeatResponseBean newRepeat(@RequestBody String body) {
         try {
-            System.out.println("New Repeat");
             ObjectMapper mapper = new ObjectMapper();
             NewRepeatRequestBean newRepeatRequestBean = mapper.readValue(body, NewRepeatRequestBean.class);
             SerializableSession serializableSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
@@ -190,10 +189,39 @@ public class SessionController {
 
             JSONObject respo =  AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
                     formEntrySession.getFormEntryModel());
-
-            System.out.println("New Repeat Resp: " + respo.toString());
-
             return mapper.readValue(respo.toString(), NewRepeatResponseBean.class);
+        } catch(Exception e){
+            System.out.println("E: " + e);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @RequestMapping(value = "/delete_repeat", method = RequestMethod.GET)
+    @ResponseBody
+    public DeleteRepeatResponseBean delete_repeat(@RequestBody String body) {
+        try {
+            System.out.println("Delete Repeat");
+            ObjectMapper mapper = new ObjectMapper();
+
+            DeleteRepeatRequestBean deleteRepeatRequestBean = mapper.readValue(body, DeleteRepeatRequestBean.class);
+            SerializableSession serializableSession = sessionRepo.find(deleteRepeatRequestBean.getSessionId());
+            FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
+
+            JSONObject resp = AnswerQuestionJson.deleteRepeatToJson(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel(),
+                    deleteRepeatRequestBean.getFormIndex());
+
+            serializableSession.setFormXml(formEntrySession.getFormXml());
+            serializableSession.setInstanceXml(formEntrySession.getInstanceXml());
+            sessionRepo.save(serializableSession);
+
+            JSONObject respo =  AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel());
+
+            System.out.println("Delete Repeat Resp: " + respo.toString());
+
+            return mapper.readValue(respo.toString(), DeleteRepeatResponseBean.class);
         } catch(Exception e){
             System.out.println("E: " + e);
             e.printStackTrace();

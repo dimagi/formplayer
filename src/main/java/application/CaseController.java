@@ -1,6 +1,8 @@
 package application;
 
 import beans.CaseFilterResponseBean;
+import beans.SyncDbRequestBean;
+import beans.SyncDbResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hq.CaseAPIs;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,5 +30,15 @@ public class CaseController {
         filterRequest.setRestoreService(restoreService);
         String caseResponse = CaseAPIs.filterCases(filterRequest);
         return new CaseFilterResponseBean(caseResponse);
+    }
+
+    @RequestMapping("/sync_db")
+    public SyncDbResponseBean syncUserDb(@RequestBody String body) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        SyncDbRequestBean syncRequest = mapper.readValue(body, SyncDbRequestBean.class);
+        syncRequest.setRestoreService(restoreService);
+        String restoreXml = syncRequest.getRestoreXml();
+        CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), restoreXml);
+        return new SyncDbResponseBean();
     }
 }

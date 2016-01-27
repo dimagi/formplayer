@@ -1,17 +1,12 @@
 package tests;
 
-import application.Application;
 import application.SessionController;
 import auth.HqAuth;
-import beans.NewRepeatRequestBean;
-import beans.NewRepeatResponseBean;
-import beans.NewSessionRequestBean;
-import beans.QuestionBean;
+import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -19,24 +14,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.WebApplicationContext;
 import repo.SessionRepo;
 import services.RestoreService;
 import services.XFormService;
@@ -44,15 +32,13 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /**
  * Created by willpride on 1/14/16.
@@ -129,17 +115,25 @@ public class RepeatTests {
 
         String sessionId = jsonResponse.getString("session_id");
 
-        String repeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
+        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
+        String deleteRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/delete_repeat/delete_repeat.json");
+
 
         ObjectMapper mapper = new ObjectMapper();
-        NewRepeatRequestBean newRepeatRequestBean = mapper.readValue(repeatRequestPayload, NewRepeatRequestBean.class);
+        NewRepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
+                NewRepeatRequestBean.class);
         newRepeatRequestBean.setSessionId(sessionId);
 
-        String requestString = mapper.writeValueAsString(newRepeatRequestBean);
+        DeleteRepeatRequestBean deleteRepeatRequestBean = mapper.readValue(deleteRepeatRequestPayload,
+                DeleteRepeatRequestBean.class);
+        deleteRepeatRequestBean.setSessionId(sessionId);
+
+        String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
+        String deleteRepeatRequestString = mapper.writeValueAsString(deleteRepeatRequestBean);
 
         ResultActions repeatResult = mockMvc.perform(get("/new_repeat")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestString));
+                .content(newRepeatRequestString));
 
         NewRepeatResponseBean newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
                 NewRepeatResponseBean.class);
@@ -163,7 +157,7 @@ public class RepeatTests {
 
         repeatResult = mockMvc.perform(get("/new_repeat")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestString));
+                .content(newRepeatRequestString));
 
         newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
                 NewRepeatResponseBean.class);
@@ -192,8 +186,19 @@ public class RepeatTests {
         assert(child.getIx().contains("1_1, 0,"));
 
 
+        repeatResult = mockMvc.perform(get("/delete_repeat")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(deleteRepeatRequestString));
 
+        DeleteRepeatResponseBean deleteRepeatResponseBean = mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
+                DeleteRepeatResponseBean.class);
 
+        tree = deleteRepeatResponseBean.getTree();
+        assert(tree.length == 2);
+        questionBean = tree[1];
+        assert(questionBean.getChildren() != null);
+        children = questionBean.getChildren();
+        assert(children.length == 1);
     }
 
     @After

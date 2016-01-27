@@ -2,8 +2,14 @@ package tests;
 
 import application.CaseController;
 import auth.HqAuth;
+import beans.SyncDbRequestBean;
+import beans.SyncDbResponseBean;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import org.commcare.api.persistence.SqlSandboxUtils;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
+import org.commcare.cases.model.Case;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -34,6 +40,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = TestContext.class)
 public class CaseFilterTests {
 
+    ObjectMapper mapper;
+
     private MockMvc mockMvc;
 
     @Autowired
@@ -50,6 +58,7 @@ public class CaseFilterTests {
         mockMvc = MockMvcBuilders.standaloneSetup(caseController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        mapper = new ObjectMapper();
     }
 
     @Test
@@ -104,6 +113,36 @@ public class CaseFilterTests {
 
         responseObject =  new JSONObject(result.getResponse().getContentAsString());
         caseArray = responseObject.getJSONArray("cases");
+    }
+
+    @Test
+    public void testSyncDb() throws Exception {
+        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
+
+        assert(!SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
+
+        String syncDbRequestPayload = FileUtils.getFile(this.getClass(), "requests/sync_db/sync_db.json");
+
+        SyncDbRequestBean syncDbRequestBean = mapper.readValue(syncDbRequestPayload,
+                SyncDbRequestBean.class);
+
+        MvcResult result = this.mockMvc.perform(
+                post("/sync_db")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(syncDbRequestBean)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        SyncDbResponseBean syncDbResponseBean = mapper.readValue(result.getResponse().getContentAsString(),
+                SyncDbResponseBean.class);
+
+        assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
+
+        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage(syncDbRequestBean.getUsername());
+
+        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+
+        assert(15 == caseStorage.getNumRecords());
     }
 
     @After
