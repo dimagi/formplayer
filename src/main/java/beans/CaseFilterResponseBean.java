@@ -7,6 +7,10 @@ import java.util.ArrayList;
  */
 public class CaseFilterResponseBean {
     String[] cases; // comma separated case list
+
+    public CaseFilterResponseBean(){
+
+    }
     public CaseFilterResponseBean(String caseString){
         String[] caseIds = caseString.split(",");
         ArrayList<String> caseIdArray = new ArrayList<String>();

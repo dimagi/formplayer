@@ -2,6 +2,7 @@ package tests;
 
 import application.CaseController;
 import auth.HqAuth;
+import beans.CaseFilterResponseBean;
 import beans.SyncDbRequestBean;
 import beans.SyncDbResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -72,10 +73,11 @@ public class CaseFilterTests {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        JSONObject responseObject =  new JSONObject(result.getResponse().getContentAsString());
-        JSONArray caseArray = responseObject.getJSONArray("cases");
-        assert(caseArray.length() == 3);
-        assert(caseArray.get(0).equals("2aa41fcf4d8a464b82b171a39959ccec"));
+        CaseFilterResponseBean caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterResponseBean.class);
+        String[] caseArray0 = caseFilterResponseBean0.getCases();
+        assert(caseArray0.length == 3);
+        assert(caseArray0[0].equals("2aa41fcf4d8a464b82b171a39959ccec"));
 
         filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_2.json");
         result = this.mockMvc.perform(
@@ -85,10 +87,10 @@ public class CaseFilterTests {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        responseObject =  new JSONObject(result.getResponse().getContentAsString());
-        caseArray = responseObject.getJSONArray("cases");
-        assert(caseArray.length() == 9);
-        assert(caseArray.get(8).equals("35cb37fbff054703b249df0892c09e15"));
+        CaseFilterResponseBean caseFilterResponseBean1 = mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterResponseBean.class);
+        String[] caseArray1 = caseFilterResponseBean1.getCases();
+        assert(caseArray1.length == 9);
 
         filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_3.json");
         result = this.mockMvc.perform(
@@ -98,10 +100,11 @@ public class CaseFilterTests {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        responseObject =  new JSONObject(result.getResponse().getContentAsString());
-        caseArray = responseObject.getJSONArray("cases");
-        assert(caseArray.length() == 1);
-        assert(caseArray.get(0).equals("e7ed3658d7394415a4bba5edc7055f1d"));
+        CaseFilterResponseBean caseFilterResponseBean2 = mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterResponseBean.class);
+        String[] caseArray2 = caseFilterResponseBean2.getCases();
+        assert(caseArray2.length == 1);
+        assert(caseArray2[0].equals("e7ed3658d7394415a4bba5edc7055f1d"));
 
         filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_4.json");
         result = this.mockMvc.perform(
@@ -111,8 +114,9 @@ public class CaseFilterTests {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        responseObject =  new JSONObject(result.getResponse().getContentAsString());
-        caseArray = responseObject.getJSONArray("cases");
+        CaseFilterResponseBean caseFilterResponseBean3 = mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterResponseBean.class);
+        String[] caseArray3 = caseFilterResponseBean3.getCases();
     }
 
     @Test
@@ -135,6 +139,8 @@ public class CaseFilterTests {
 
         SyncDbResponseBean syncDbResponseBean = mapper.readValue(result.getResponse().getContentAsString(),
                 SyncDbResponseBean.class);
+
+        assert(syncDbResponseBean.getStatus().equals("success"));
 
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
