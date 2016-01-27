@@ -59,7 +59,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class NewRepeatTests {
+public class RepeatTests {
 
     final String NEW_FORM_URL = "/new_session";
 
