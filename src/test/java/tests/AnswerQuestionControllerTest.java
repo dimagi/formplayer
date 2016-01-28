@@ -8,16 +8,12 @@ import beans.QuestionBean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -33,7 +29,6 @@ import utils.TestContext;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -75,6 +70,8 @@ public class AnswerQuestionControllerTest {
             ObjectMapper mapper = new ObjectMapper();
             String jsonBody = mapper.writeValueAsString(answerQuestionBean);
 
+            System.out.println("JSON body: " + jsonBody);
+
             MvcResult answerResult = this.mockMvc.perform(
                     post("/answer_question")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -109,8 +106,6 @@ public class AnswerQuestionControllerTest {
 
         AnswerQuestionResponseBean object = answerQuestionGetResult("0","123","test_id");
 
-        System.out.println("0: " + object.getTree()[0].toString());
-
         assert(object.getTree().length == 1);
         QuestionBean questionBean = object.getTree()[0];
         assert(questionBean.getAnswer().equals("123"));
@@ -132,13 +127,23 @@ public class AnswerQuestionControllerTest {
 
         assert(object.getTree().length == 24);
         assert(object.getTree()[1].getAnswer().equals("William Pride"));
-
         object = answerQuestionGetResult("2","123","test_id");
-
-        System.out.println("Tree: " + Arrays.toString(object.getTree()));
-
-        assert(object.getTree()[1].getAnswer().equals("William Pride"));
         assert(String.valueOf(object.getTree()[2].getAnswer()).equals("123"));
-        assert(object.getTree().length == 24);
+        object = answerQuestionGetResult("3","1.2345","test_id");
+        assert(String.valueOf(object.getTree()[3].getAnswer()).equals("1.2345"));
+        object = answerQuestionGetResult("4","1970-10-23","test_id");
+        assert(String.valueOf(object.getTree()[4].getAnswer()).equals("23/10/70"));
+        object = answerQuestionGetResult("6", "12:30", "test_id");
+        assert(String.valueOf(object.getTree()[6].getAnswer()).equals("12:30"));
+        object = answerQuestionGetResult("7", "ben rudolph", "test_id");
+        assert(String.valueOf(object.getTree()[7].getAnswer()).equals("ben rudolph"));
+        object = answerQuestionGetResult("8","123456789", "test_id");
+        assert(String.valueOf(object.getTree()[8].getAnswer()).equals("123456789"));
+        object = answerQuestionGetResult("10", "2","test_id");
+        assert(String.valueOf(object.getTree()[10].getAnswer()).equals("2"));
+        object = answerQuestionGetResult("10", "1","test_id");
+        assert(String.valueOf(object.getTree()[10].getAnswer()).equals("1"));
+        object = answerQuestionGetResult("11", "1 2 3", "test_id");
+        assert(String.valueOf(object.getTree()[11].getAnswer()).equals("[1, 2, 3]"));
     }
 }
