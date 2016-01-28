@@ -51,7 +51,6 @@ public class SessionController {
         return newFormRequest.getResponse();
     }
 
-
     @RequestMapping(value = "/sessions", method = RequestMethod.GET, headers = "Accept=application/json")
     public @ResponseBody List<SerializableSession> findAllSessions() {
 
@@ -76,10 +75,12 @@ public class SessionController {
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         SerializableSession session = sessionRepo.find(answerQuestionBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(session);
+
         JSONObject resp = AnswerQuestionJson.questionAnswerToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
+
         session.setFormXml(formEntrySession.getFormXml());
         session.setInstanceXml(formEntrySession.getInstanceXml());
         sessionRepo.save(session);

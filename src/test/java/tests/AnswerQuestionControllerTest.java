@@ -29,6 +29,7 @@ import utils.TestContext;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -64,32 +65,23 @@ public class AnswerQuestionControllerTest {
 
     }
 
-    public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) {
-        try {
-            AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-            ObjectMapper mapper = new ObjectMapper();
-            String jsonBody = mapper.writeValueAsString(answerQuestionBean);
+    public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
+        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(answerQuestionBean);
 
-            System.out.println("JSON body: " + jsonBody);
+        System.out.println("JSON body: " + jsonBody);
 
-            MvcResult answerResult = this.mockMvc.perform(
-                    post("/answer_question")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(jsonBody))
-                    .andExpect(status().isOk())
-                    .andReturn();
-            System.out.println("Answer Response: " + answerResult.getResponse().getContentAsString());
-            AnswerQuestionResponseBean object = mapper.readValue(answerResult.getResponse().getContentAsString(),
-                    AnswerQuestionResponseBean.class);
-            return object;
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        MvcResult answerResult = this.mockMvc.perform(
+                post("/answer_question")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody))
+                .andExpect(status().isOk())
+                .andReturn();
+        System.out.println("Answer Response: " + answerResult.getResponse().getContentAsString());
+        AnswerQuestionResponseBean object = mapper.readValue(answerResult.getResponse().getContentAsString(),
+                AnswerQuestionResponseBean.class);
+        return object;
     }
 
     @Test
@@ -145,5 +137,71 @@ public class AnswerQuestionControllerTest {
         assert(String.valueOf(object.getTree()[10].getAnswer()).equals("1"));
         object = answerQuestionGetResult("11", "1 2 3", "test_id");
         assert(String.valueOf(object.getTree()[11].getAnswer()).equals("[1, 2, 3]"));
+    }
+
+    @Test
+    public void constraintsForm() throws Exception {
+
+        SerializableSession serializableSession = new SerializableSession();
+        serializableSession.setFormXml(FileUtils.getFile(this.getClass(), "xforms/constraints.xml"));
+        serializableSession.setInstanceXml(FileUtils.getFile(this.getClass(), "instances/constraints.xml"));
+        serializableSession.setId("test_id");
+
+        when(sessionRepoMock.find(anyString()))
+                .thenReturn(serializableSession);
+
+        AnswerQuestionResponseBean object = answerQuestionGetResult("2","test","test_id");
+        assert object.getTree() == null;
+        assert object.getStatus().equals("error");
+        assert object.getType().equals("restraint");
+        assert object.getReason().contains("Please try something else and continue");
+
+        object = answerQuestionGetResult("2","not test","test_id");
+        assert object.getTree()[2].getAnswer().equals("not test");
+        assert object.getStatus().equals("success");
+        assert object.getType() == null;
+        assert object.getReason() == null;
+
+
+        object = answerQuestionGetResult("3","t","test_id");
+        assert object.getTree() == null;
+        assert object.getStatus().equals("error");
+        assert object.getType().equals("restraint");
+        assert object.getReason().contains("Please try your answer again");
+
+        object = answerQuestionGetResult("3","1234567","test_id");
+        assert object.getTree() == null;
+        assert object.getStatus().equals("error");
+        assert object.getType().equals("restraint");
+        assert object.getReason().contains("Please try your answer again");
+
+        object = answerQuestionGetResult("3","12345","test_id");
+        assert object.getTree()[3].getAnswer().equals("12345");
+        assert object.getStatus().equals("success");
+        assert object.getType() == null;
+        assert object.getReason() == null;
+        
+
+        object = answerQuestionGetResult("4","Will","test_id");
+        assert object.getTree() == null;
+        assert object.getStatus().equals("error");
+        assert object.getType().equals("illegal-argument");
+        assert object.getReason().contains("Invalid cast of data");
+
+        object = answerQuestionGetResult("4","10","test_id");
+        assert object.getTree() == null;
+        assert object.getStatus().equals("error");
+        assert object.getType().equals("restraint");
+        assert object.getReason().contains("Your entry is invalid");
+
+        object = answerQuestionGetResult("4","90000","test_id");
+        assert object.getTree() == null;
+        assert object.getStatus().equals("error");
+        assert object.getType().equals("restraint");
+        assert object.getReason().contains("Your entry is invalid");
+
+        object = answerQuestionGetResult("4","100","test_id");
+        assert String.valueOf(object.getTree()[4].getAnswer()).equals("100");
+        assert object.getStatus().equals("success");
     }
 }

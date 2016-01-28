@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -16,6 +17,8 @@ public class AnswerQuestionResponseBean {
     private QuestionBean[] tree;
     private String status;
     private String sequenceId;
+    private String reason;
+    private String type;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionResponseBean(){}
@@ -52,6 +55,22 @@ public class AnswerQuestionResponseBean {
 
     @Override
     public String toString(){
-        return "Answer Question Response Bean: [tree=" + tree + ", status=" + status + ", seq_id: " + sequenceId + "]";
+        return "AnswerQuestionResponseBean: [tree=" + Arrays.toString(tree) + ", status=" + status + ", seq_id: " + sequenceId + "]";
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
