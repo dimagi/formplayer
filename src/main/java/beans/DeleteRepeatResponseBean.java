@@ -38,6 +38,6 @@ public class DeleteRepeatResponseBean {
 
     @Override
     public String toString(){
-        return "NewRepeatResponseBean: [tree=" + Arrays.toString(tree) + ", seq_id: " + sequenceId + "]";
+        return "DeleteRepeatResponseBean: [tree=" + Arrays.toString(tree) + ", seq_id: " + sequenceId + "]";
     }
 }
