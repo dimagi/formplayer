@@ -5,7 +5,10 @@ import auth.HqAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
+import org.commcare.api.persistence.SqlSandboxUtils;
+import org.commcare.api.persistence.UserSqlSandbox;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +61,7 @@ public class FormEntryTest {
         Mockito.reset(xFormServiceMock);
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
 
     public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
@@ -158,11 +162,16 @@ public class FormEntryTest {
         //Test Submission
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/submit/submit_request.json"), SubmitRequestBean.class);
-        currentRequestBean.setSessionId(sessionId);
+        submitRequestBean.setSessionId(sessionId);
 
         ResultActions submitResult = mockMvc.perform(post("/submit")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(currentRequestBean)));
+                .content(mapper.writeValueAsString(submitRequestBean)));
         String submitResultString = submitResult.andReturn().getResponse().getContentAsString();
+    }
+
+    @After
+    public void tearDown(){
+        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
 }

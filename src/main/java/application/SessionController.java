@@ -1,11 +1,14 @@
 package application;
 
+import auth.DjangoAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hq.CaseAPIs;
 import objects.SerializableSession;
 import objects.SessionList;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
+import org.commcare.modern.process.FormRecordProcessorHelper;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -77,6 +80,7 @@ public class SessionController {
 
         session.setFormXml(formEntrySession.getFormXml());
         session.setInstanceXml(formEntrySession.getInstanceXml());
+        session.setSequenceId(formEntrySession.getSequenceId() + 1);
         sessionRepo.save(session);
         AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
         return responseBean;
@@ -96,6 +100,7 @@ public class SessionController {
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
         SerializableSession serializableSession = sessionRepo.find(submitRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
+        FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
         return new SubmitResponseBean(formEntrySession);
     }
 

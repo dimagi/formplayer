@@ -45,7 +45,7 @@ public class SerializableSession implements Serializable{
 
     @Override
     public String toString(){
-        return "Session [id=" + id + ", instance=" + instanceXml + ", form=" + formXml + "]";
+        return "Session [id=" + id + ", instance=" + instanceXml + ", form=" + formXml + ", username=" + username + "]";
     }
 
     public String getFormXml() {

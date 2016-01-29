@@ -57,8 +57,9 @@ public class FormEntrySession {
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
         this.username = session.getUsername();
-        initialize(username, restoreXml);
+        initialize(true, username, restoreXml);
         uuid = UUID.randomUUID().toString();
+        this.sequenceId = session.getSequenceId();
     }
 
     public FormEntrySession(String formXml, String restoreXml, String initLang, String username) throws Exception {
@@ -72,16 +73,16 @@ public class FormEntrySession {
         langs = formEntryModel.getLanguages();
         this.initLang = initLang;
         this.username = username;
-        System.out.println("FormEntrySession RestreXML: " + restoreXml);
-        //initialize(username, restoreXml);
+        initialize(true, username, restoreXml);
         uuid = UUID.randomUUID().toString();
+        this.sequenceId = 0;
     }
 
-    public void initialize(String username, String restoreXml) throws Exception {
+    public void initialize(boolean newInstance, String username, String restoreXml) throws Exception {
         this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
         CommCarePlatform platform = new CommCarePlatform(2, 27);
         CommCareSession session = new CommCareSession(platform);
-        formDef.initialize(false, new CommCareInstanceInitializer(session, sandbox, platform));
+        formDef.initialize(newInstance, new CommCareInstanceInitializer(session, sandbox, platform));
     }
 
     private FormDef parseFormDef(String formXml) throws IOException {
@@ -162,5 +163,15 @@ public class FormEntrySession {
 
     public void setInitLang(String initLang) {
         this.initLang = initLang;
+    }
+
+    public UserSandbox getSandbox(){
+        return this.sandbox;
+    }
+
+
+    public String submitGetXml() throws IOException {
+        formDef.postProcessInstance();
+        return getInstanceXml();
     }
 }

@@ -1,12 +1,15 @@
 package tests;
 
+import application.CaseController;
 import application.SessionController;
 import auth.HqAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
+import org.commcare.cases.model.Case;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -39,13 +42,14 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Created by willpride on 1/14/16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class RepeatTests {
+public class CaseTests {
 
     private MockMvc mockMvc;
 
@@ -61,6 +65,8 @@ public class RepeatTests {
     @InjectMocks
     private SessionController sessionController;
 
+    ObjectMapper mapper;
+
     @Before
     public void setUp() throws IOException {
         Mockito.reset(sessionRepoMock);
@@ -68,17 +74,38 @@ public class RepeatTests {
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore_3.xml"));
+        mapper = new ObjectMapper();
+        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
+    }
+
+    public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
+        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(answerQuestionBean);
+
+        MvcResult answerResult = this.mockMvc.perform(
+                post("/answer_question")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        AnswerQuestionResponseBean response = mapper.readValue(answerResult.getResponse().getContentAsString(),
+                AnswerQuestionResponseBean.class);
+        return response;
     }
 
     @Test
-    public void testRepeat() throws Exception {
+    public void testCases() throws Exception {
+
+        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("test");
+
+        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
         final SerializableSession serializableSession =  new SerializableSession();
 
         when(sessionRepoMock.find(anyString())).thenReturn(serializableSession);
-
-        ArgumentCaptor<SerializableSession> argumentCaptor = ArgumentCaptor.forClass(SerializableSession.class);
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -94,9 +121,9 @@ public class RepeatTests {
         }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/repeat.xml"));
+                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/cases/create_case.xml"));
 
-        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form.json");
+        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_3.json");
 
         NewSessionRequestBean newSessionRequestBean = new ObjectMapper().readValue(requestPayload,
                 NewSessionRequestBean.class);
@@ -110,90 +137,43 @@ public class RepeatTests {
 
         JSONObject jsonResponse = new JSONObject(responseBody);
 
+        sandbox = SqlSandboxUtils.getStaticStorage("test3");
+        caseStorage =  sandbox.getCaseStorage();
+
+        assert 15 == caseStorage.getNumRecords();
+
         String sessionId = jsonResponse.getString("session_id");
 
-        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
-        String deleteRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/delete_repeat/delete_repeat.json");
+        answerQuestionGetResult("0", "Tom Brady", sessionId);
+        answerQuestionGetResult("1", "1", sessionId);
+
+        SubmitRequestBean submitRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), "requests/submit/submit_request_case.json"), SubmitRequestBean.class);
+        submitRequestBean.setSessionId(sessionId);
+
+        result = this.mockMvc.perform(
+                post("/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
+
+        responseBody = result.getResponse().getContentAsString();
+
+        System.out.println("submit response: " + responseBody);
+
+        sandbox = SqlSandboxUtils.getStaticStorage("test3");
+
+        caseStorage =  sandbox.getCaseStorage();
+
+        System.out.println("num records: " + caseStorage.getNumRecords());
+
+        assert 16 == caseStorage.getNumRecords();
 
 
-        ObjectMapper mapper = new ObjectMapper();
-        RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
-                RepeatRequestBean.class);
-        newRepeatRequestBean.setSessionId(sessionId);
-
-        RepeatRequestBean repeatRequestBean = mapper.readValue(deleteRepeatRequestPayload,
-                RepeatRequestBean.class);
-        repeatRequestBean.setSessionId(sessionId);
-
-        String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
-        String deleteRepeatRequestString = mapper.writeValueAsString(repeatRequestBean);
-
-        ResultActions repeatResult = mockMvc.perform(get("/new_repeat")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(newRepeatRequestString));
-
-        RepeatResponseBean newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
-                RepeatResponseBean.class);
-
-        QuestionBean[] tree = newRepeatResponseBean.getTree();
-
-        assert(tree.length == 2);
-        QuestionBean questionBean = tree[1];
-        assert(questionBean.getChildren() != null);
-        QuestionBean[] children = questionBean.getChildren();
-        assert(children.length == 1);
-        QuestionBean child = children[0];
-        assert(child.getIx().contains("1_0,"));
-        children = child.getChildren();
-        assert(children.length == 1);
-        child = children[0];
-        assert(child.getIx().contains("1_0, 0,"));
-
-        repeatResult = mockMvc.perform(get("/new_repeat")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(newRepeatRequestString));
-
-        newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
-                RepeatResponseBean.class);
-        tree = newRepeatResponseBean.getTree();
-        assert(tree.length == 2);
-        questionBean = tree[1];
-        assert(questionBean.getChildren() != null);
-        children = questionBean.getChildren();
-        assert(children.length == 2);
-
-        child = children[0];
-        assert(child.getIx().contains("1_0,"));
-        QuestionBean[] children2 = child.getChildren();
-        assert(children2.length == 1);
-        child = children2[0];
-        assert(child.getIx().contains("1_0, 0,"));
-
-        child = children[1];
-        children2 = child.getChildren();
-        assert(children2.length == 1);
-        child = children2[0];
-        assert(child.getIx().contains("1_1, 0,"));
-
-
-        repeatResult = mockMvc.perform(get("/delete_repeat")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(deleteRepeatRequestString));
-
-        RepeatResponseBean deleteRepeatResponseBean = mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
-                RepeatResponseBean.class);
-
-        tree = deleteRepeatResponseBean.getTree();
-        assert(tree.length == 2);
-        questionBean = tree[1];
-        assert(questionBean.getChildren() != null);
-        children = questionBean.getChildren();
-        assert(children.length == 1);
     }
 
     @After
     public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
+        //SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
 
 }
