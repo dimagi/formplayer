@@ -36,6 +36,8 @@ public class FormEntrySession {
     private String formXml;
     private String restoreXml;
     private UserSandbox sandbox;
+    private int sequenceId;
+    private String initLang;
 
     String title;
     String[] langs;
@@ -43,13 +45,18 @@ public class FormEntrySession {
     String username;
 
     public FormEntrySession(SerializableSession session) throws Exception{
-        this(session.getFormXml(), session.getRestoreXml(), "en", session.getUsername());
+        this.formXml = session.getFormXml();
+        this.restoreXml = session.getRestoreXml();
         formDef = hq.RestoreUtils.loadInstance(IOUtils.toInputStream(formXml), IOUtils.toInputStream(session.getInstanceXml()));
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
+        if(session.getInitLang() != null) {
+            formEntryController.setLanguage(session.getInitLang());
+        }
+        this.sequenceId = session.getSequenceId();
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
-        this.username = username;
+        this.username = session.getUsername();
         System.out.println("FormEntrySession RestreXML: " + restoreXml);
         initialize(username, restoreXml);
         uuid = UUID.randomUUID().toString();
@@ -64,6 +71,7 @@ public class FormEntrySession {
         formEntryController.setLanguage(initLang);
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
+        this.initLang = initLang;
         this.username = username;
         System.out.println("FormEntrySession RestreXML: " + restoreXml);
         //initialize(username, restoreXml);
@@ -139,5 +147,21 @@ public class FormEntrySession {
 
     public void setRestoreXml(String restoreXml) {
         this.restoreXml = restoreXml;
+    }
+
+    public int getSequenceId() {
+        return sequenceId;
+    }
+
+    public void setSequenceId(int sequenceId) {
+        this.sequenceId = sequenceId;
+    }
+
+    public String getInitLang() {
+        return initLang;
+    }
+
+    public void setInitLang(String initLang) {
+        this.initLang = initLang;
     }
 }

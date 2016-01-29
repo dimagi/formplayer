@@ -5,7 +5,6 @@ import auth.HqAuth;
 import beans.AnswerQuestionRequestBean;
 import beans.AnswerQuestionResponseBean;
 import beans.QuestionBean;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.junit.Before;
@@ -28,8 +27,6 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -180,7 +177,7 @@ public class AnswerQuestionControllerTest {
         assert object.getStatus().equals("success");
         assert object.getType() == null;
         assert object.getReason() == null;
-        
+
 
         object = answerQuestionGetResult("4","Will","test_id");
         assert object.getTree() == null;

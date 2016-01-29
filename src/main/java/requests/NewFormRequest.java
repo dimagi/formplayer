@@ -68,6 +68,8 @@ public class NewFormRequest {
         serializableSession.setFormXml(formEntrySession.getFormXml());
         serializableSession.setUsername(username);
         serializableSession.setRestoreXml(formEntrySession.getRestoreXml());
+        serializableSession.setSequenceId(formEntrySession.getSequenceId());
+        serializableSession.setInitLang(formEntrySession.getInitLang());
         return serializableSession;
     }
 }
