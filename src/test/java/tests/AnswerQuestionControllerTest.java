@@ -67,15 +67,12 @@ public class AnswerQuestionControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
 
-        System.out.println("JSON body: " + jsonBody);
-
         MvcResult answerResult = this.mockMvc.perform(
                 post("/answer_question")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody))
                 .andExpect(status().isOk())
                 .andReturn();
-        System.out.println("Answer Response: " + answerResult.getResponse().getContentAsString());
         AnswerQuestionResponseBean object = mapper.readValue(answerResult.getResponse().getContentAsString(),
                 AnswerQuestionResponseBean.class);
         return object;
