@@ -8,14 +8,14 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DeleteRepeatRequestBean {
+public class RepeatRequestBean {
     private String formIndex;
     private String sessionId;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public DeleteRepeatRequestBean(){}
+    public RepeatRequestBean(){}
 
-    public DeleteRepeatRequestBean(String formIndex, String sessionId) {
+    public RepeatRequestBean(String formIndex, String sessionId) {
         this.formIndex = formIndex;
         this.sessionId = sessionId;
     }
@@ -39,6 +39,6 @@ public class DeleteRepeatRequestBean {
 
     @Override
     public String toString(){
-        return "DeleteRepeatRequestBean [formIndex: " + formIndex + ", sessionId: " + sessionId + "]";
+        return "RepeatRequestBean [formIndex: " + formIndex + ", sessionId: " + sessionId + "]";
     }
 }

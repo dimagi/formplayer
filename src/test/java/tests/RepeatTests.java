@@ -120,25 +120,23 @@ public class RepeatTests {
 
 
         ObjectMapper mapper = new ObjectMapper();
-        NewRepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
-                NewRepeatRequestBean.class);
+        RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
+                RepeatRequestBean.class);
         newRepeatRequestBean.setSessionId(sessionId);
 
-        DeleteRepeatRequestBean deleteRepeatRequestBean = mapper.readValue(deleteRepeatRequestPayload,
-                DeleteRepeatRequestBean.class);
-        deleteRepeatRequestBean.setSessionId(sessionId);
+        RepeatRequestBean repeatRequestBean = mapper.readValue(deleteRepeatRequestPayload,
+                RepeatRequestBean.class);
+        repeatRequestBean.setSessionId(sessionId);
 
         String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
-        String deleteRepeatRequestString = mapper.writeValueAsString(deleteRepeatRequestBean);
+        String deleteRepeatRequestString = mapper.writeValueAsString(repeatRequestBean);
 
         ResultActions repeatResult = mockMvc.perform(get("/new_repeat")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(newRepeatRequestString));
 
-        NewRepeatResponseBean newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
-                NewRepeatResponseBean.class);
-
-        System.out.println("First Response: " + repeatResult.andReturn().getResponse().getContentAsString());
+        RepeatResponseBean newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
+                RepeatResponseBean.class);
 
         QuestionBean[] tree = newRepeatResponseBean.getTree();
 
@@ -160,7 +158,7 @@ public class RepeatTests {
                 .content(newRepeatRequestString));
 
         newRepeatResponseBean= mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
-                NewRepeatResponseBean.class);
+                RepeatResponseBean.class);
         tree = newRepeatResponseBean.getTree();
         assert(tree.length == 2);
         questionBean = tree[1];
@@ -190,8 +188,8 @@ public class RepeatTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(deleteRepeatRequestString));
 
-        DeleteRepeatResponseBean deleteRepeatResponseBean = mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
-                DeleteRepeatResponseBean.class);
+        RepeatResponseBean deleteRepeatResponseBean = mapper.readValue(repeatResult.andReturn().getResponse().getContentAsString(),
+                RepeatResponseBean.class);
 
         tree = deleteRepeatResponseBean.getTree();
         assert(tree.length == 2);

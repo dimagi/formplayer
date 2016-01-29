@@ -8,14 +8,14 @@ import java.util.Arrays;
 /**
  * Created by willpride on 1/20/16.
  */
-public class DeleteRepeatResponseBean {
+public class RepeatResponseBean {
     private QuestionBean[] tree;
     private String sequenceId;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public DeleteRepeatResponseBean(){}
+    public RepeatResponseBean(){}
 
-    public DeleteRepeatResponseBean(QuestionBean[] tree, String sequenceId) {
+    public RepeatResponseBean(QuestionBean[] tree, String sequenceId) {
         this.tree = tree;
         this.sequenceId = sequenceId;
     }
@@ -38,6 +38,6 @@ public class DeleteRepeatResponseBean {
 
     @Override
     public String toString(){
-        return "DeleteRepeatResponseBean: [tree=" + Arrays.toString(tree) + ", seq_id: " + sequenceId + "]";
+        return "RepeatResponseBean: [tree=" + Arrays.toString(tree) + ", seq_id: " + sequenceId + "]";
     }
 }

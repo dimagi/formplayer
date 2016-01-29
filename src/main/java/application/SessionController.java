@@ -1,16 +1,11 @@
 package application;
 
 import beans.*;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import objects.SessionList;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
-import org.commcare.api.json.PromptToJson;
-import org.commcare.api.json.WalkJson;
-import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -22,7 +17,6 @@ import services.XFormService;
 import session.FormEntrySession;
 import org.apache.commons.logging.Log;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -123,7 +117,7 @@ public class SessionController {
 
     @RequestMapping(value = "/new_repeat", method = RequestMethod.GET)
     @ResponseBody
-    public NewRepeatResponseBean newRepeat(@RequestBody NewRepeatRequestBean newRepeatRequestBean) throws Exception {
+    public RepeatResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         SerializableSession serializableSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
 
@@ -136,18 +130,18 @@ public class SessionController {
         sessionRepo.save(serializableSession);
         JSONObject response =  AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel());
-        return mapper.readValue(response.toString(), NewRepeatResponseBean.class);
+        return mapper.readValue(response.toString(), RepeatResponseBean.class);
     }
 
     @RequestMapping(value = "/delete_repeat", method = RequestMethod.GET)
     @ResponseBody
-    public DeleteRepeatResponseBean delete_repeat(@RequestBody DeleteRepeatRequestBean deleteRepeatRequestBean) throws Exception {
-        SerializableSession serializableSession = sessionRepo.find(deleteRepeatRequestBean.getSessionId());
+    public RepeatResponseBean delete_repeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
+        SerializableSession serializableSession = sessionRepo.find(repeatRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
 
         JSONObject resp = AnswerQuestionJson.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-                deleteRepeatRequestBean.getFormIndex());
+                repeatRequestBean.getFormIndex());
 
         serializableSession.setFormXml(formEntrySession.getFormXml());
         serializableSession.setInstanceXml(formEntrySession.getInstanceXml());
@@ -156,6 +150,6 @@ public class SessionController {
         JSONObject response =  AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel());
 
-        return mapper.readValue(response.toString(), DeleteRepeatResponseBean.class);
+        return mapper.readValue(response.toString(), RepeatResponseBean.class);
     }
 }
