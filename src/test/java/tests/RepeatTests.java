@@ -47,10 +47,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @ContextConfiguration(classes = TestContext.class)
 public class RepeatTests {
 
-    final String NEW_FORM_URL = "/new_session";
-
-    RestTemplate template = new TestRestTemplate();
-
     private MockMvc mockMvc;
 
     @Autowired
@@ -150,7 +146,6 @@ public class RepeatTests {
         children = child.getChildren();
         assert(children.length == 1);
         child = children[0];
-        System.out.println("Child: " + child);
         assert(child.getIx().contains("1_0, 0,"));
 
         repeatResult = mockMvc.perform(get("/new_repeat")
@@ -167,20 +162,16 @@ public class RepeatTests {
         assert(children.length == 2);
 
         child = children[0];
-        System.out.println("Child: " + child);
         assert(child.getIx().contains("1_0,"));
         QuestionBean[] children2 = child.getChildren();
         assert(children2.length == 1);
         child = children2[0];
-        System.out.println("Child: " + child);
         assert(child.getIx().contains("1_0, 0,"));
 
         child = children[1];
-        System.out.println("Child: " + child);
         children2 = child.getChildren();
         assert(children2.length == 1);
         child = children2[0];
-        System.out.println("Child: " + child);
         assert(child.getIx().contains("1_1, 0,"));
 
 

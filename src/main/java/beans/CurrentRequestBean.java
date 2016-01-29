@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import java.util.Map;
 
 /**
+ * Request to return the current question tree of the identified session
+ *
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -37,6 +39,6 @@ public class CurrentRequestBean {
 
     @Override
     public String toString(){
-        return "Answer Question Bean [formContent=" + formContext + ", sessionId=" + sessionId + "]";
+        return "CurrentRequestBean [formContent=" + formContext + ", sessionId=" + sessionId + "]";
     }
 }

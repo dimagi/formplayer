@@ -57,7 +57,6 @@ public class FormEntrySession {
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
         this.username = session.getUsername();
-        System.out.println("FormEntrySession RestreXML: " + restoreXml);
         initialize(username, restoreXml);
         uuid = UUID.randomUUID().toString();
     }

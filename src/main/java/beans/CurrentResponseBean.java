@@ -8,6 +8,8 @@ import session.FormEntrySession;
 import java.util.Map;
 
 /**
+ * Return the current state of the form entry session (tree, languages, title)
+ *
  * Created by willpride on 1/20/16.
  */
 public class CurrentResponseBean {

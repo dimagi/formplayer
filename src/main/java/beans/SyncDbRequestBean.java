@@ -46,15 +46,12 @@ public class SyncDbRequestBean {
         return username;
     }
 
-    public void setUsername(String username) {
-        System.out.println("Set Username: " + username);
-        this.username = username;
-        String[] atSplit = username.split("@");
-        System.out.println("At split: " + Arrays.toString(atSplit));
+    // hacky as fuck. Get the username from the domained username
+    public void setUsername(String domainedUsername) {
+        this.username = domainedUsername;
+        String[] atSplit = domainedUsername.split("@");
         String domainedName = atSplit[1];
-        System.out.println("Domained name: " +domainedName);
         String[] dotSplit = domainedName.split("\\.");
-        System.out.println("dot split: " + Arrays.toString(dotSplit));
         domain = dotSplit[0];
     }
 
