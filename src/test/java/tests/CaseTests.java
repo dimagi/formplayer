@@ -10,6 +10,10 @@ import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
+import org.commcare.core.sandbox.SandboxUtils;
+import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.xpath.XPathParseTool;
+import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -35,6 +39,7 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -97,11 +102,7 @@ public class CaseTests {
     }
 
     @Test
-    public void testCases() throws Exception {
-
-        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("test");
-
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+    public void testCaseTransaction() throws Exception {
 
         final SerializableSession serializableSession =  new SerializableSession();
 
@@ -116,6 +117,7 @@ public class CaseTests {
                 serializableSession.setFormXml(toBeSaved.getFormXml());
                 serializableSession.setRestoreXml(toBeSaved.getRestoreXml());
                 serializableSession.setUsername(toBeSaved.getUsername());
+                serializableSession.setSessionData(toBeSaved.getSessionData());
                 return null;
             }
         }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
@@ -137,10 +139,21 @@ public class CaseTests {
 
         JSONObject jsonResponse = new JSONObject(responseBody);
 
-        sandbox = SqlSandboxUtils.getStaticStorage("test3");
-        caseStorage =  sandbox.getCaseStorage();
+        String filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
+        result = this.mockMvc.perform(
+                post("/filter_cases_session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filterRequestPayload))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assert 15 == caseStorage.getNumRecords();
+        CaseFilterResponseBean caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterResponseBean.class);
+        String[] caseArray0 = caseFilterResponseBean0.getCases();
+
+        System.out.println("Cases: " + Arrays.toString(caseArray0));
+
+        assert(caseArray0.length == 15);
 
         String sessionId = jsonResponse.getString("session_id");
 
@@ -156,17 +169,101 @@ public class CaseTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
 
+        System.out.println("SubmitResult: " + result.getResponse().getContentAsString());
+
+        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
+        result = this.mockMvc.perform(
+                post("/filter_cases_session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filterRequestPayload))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterResponseBean.class);
+        caseArray0 = caseFilterResponseBean0.getCases();
+
+        System.out.println("CaseArray: " + caseArray0.length);
+        System.out.println("CaseArray: " + Arrays.toString(caseArray0));
+
+        assert(caseArray0.length == 16);
+
+        final SerializableSession serializableSession2 =  new SerializableSession();
+
+        when(sessionRepoMock.find(anyString())).thenReturn(serializableSession2);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Object[] args = invocationOnMock.getArguments();
+                SerializableSession toBeSaved = (SerializableSession) args[0];
+                serializableSession2.setInstanceXml(toBeSaved.getInstanceXml());
+                serializableSession2.setFormXml(toBeSaved.getFormXml());
+                serializableSession2.setRestoreXml(toBeSaved.getRestoreXml());
+                serializableSession2.setUsername(toBeSaved.getUsername());
+                serializableSession2.setSessionData(toBeSaved.getSessionData());
+                return null;
+            }
+        }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
+
+        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/cases/close_case.xml"));
+
+        requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_4.json");
+
+        newSessionRequestBean = new ObjectMapper().readValue(requestPayload,
+                NewSessionRequestBean.class);
+
+        result = this.mockMvc.perform(
+                post("/new_session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
+
         responseBody = result.getResponse().getContentAsString();
 
-        System.out.println("submit response: " + responseBody);
+        jsonResponse = new JSONObject(responseBody);
 
-        sandbox = SqlSandboxUtils.getStaticStorage("test3");
+        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
+        result = this.mockMvc.perform(
+                post("/filter_cases_session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filterRequestPayload))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        caseStorage =  sandbox.getCaseStorage();
+        caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterResponseBean.class);
+        caseArray0 = caseFilterResponseBean0.getCases();
 
-        System.out.println("num records: " + caseStorage.getNumRecords());
+        assert(caseArray0.length == 16);
 
-        assert 16 == caseStorage.getNumRecords();
+        sessionId = jsonResponse.getString("session_id");
+        answerQuestionGetResult("0", "1", sessionId);
+
+        submitRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), "requests/submit/submit_request_case.json"), SubmitRequestBean.class);
+        submitRequestBean.setSessionId(sessionId);
+
+        result = this.mockMvc.perform(
+                post("/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
+
+        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
+        result = this.mockMvc.perform(
+                post("/filter_cases_session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filterRequestPayload))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterResponseBean.class);
+        caseArray0 = caseFilterResponseBean0.getCases();
+
+        System.out.println("FinalResult: " + caseArray0.length + " : " + Arrays.toString(caseArray0));
+
+        assert(caseArray0.length == 15);
 
 
     }

@@ -6,13 +6,10 @@ import beans.CaseFilterResponseBean;
 import beans.SyncDbRequestBean;
 import beans.SyncDbResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +28,8 @@ import services.RestoreService;
 import utils.FileUtils;
 import utils.TestContext;
 
+import java.util.Arrays;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
@@ -39,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class CaseFilterTests {
+public class FilterTests {
 
     ObjectMapper mapper;
 
@@ -76,6 +75,7 @@ public class CaseFilterTests {
         CaseFilterResponseBean caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
                 CaseFilterResponseBean.class);
         String[] caseArray0 = caseFilterResponseBean0.getCases();
+        System.out.println("Case Array: " + Arrays.toString(caseArray0));
         assert(caseArray0.length == 3);
         assert(caseArray0[0].equals("2aa41fcf4d8a464b82b171a39959ccec"));
 

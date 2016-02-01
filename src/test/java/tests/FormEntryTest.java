@@ -158,6 +158,10 @@ public class FormEntryTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
         String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
+        EvaluateXPathResponseBean evaluateXPathResponseBean = mapper.readValue(evaluateXpathResultString,
+                EvaluateXPathResponseBean.class);
+        assert evaluateXPathResponseBean.getStatus().equals("success");
+        assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 
         //Test Submission
         SubmitRequestBean submitRequestBean = mapper.readValue
