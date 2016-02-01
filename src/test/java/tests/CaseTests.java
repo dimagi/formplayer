@@ -264,7 +264,7 @@ public class CaseTests {
 
     @After
     public void tearDown(){
-        //SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
+        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
 
 }
