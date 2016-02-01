@@ -157,4 +157,11 @@ public class SessionController {
 
         return mapper.readValue(response.toString(), RepeatResponseBean.class);
     }
+
+    @RequestMapping("/filter_cases_session  ")
+    public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
+        filterRequest.setRestoreService(restoreService);
+        String caseResponse = CaseAPIs.filterCases(filterRequest);
+        return new CaseFilterResponseBean(caseResponse);
+    }
 }

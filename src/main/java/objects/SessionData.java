@@ -18,6 +18,7 @@ public class SessionData {
     private String userId;
     private String appId;
     private Map<String, String> userData;
+    private Map<String, String> data;
     private String host;
     private String sessionName;
     private String appVersion;
@@ -100,5 +101,13 @@ public class SessionData {
     @JsonSetter(value = "app_id")
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public Map<String, String> getData() {
+        return data;
+    }
+
+    public void setData(Map<String, String> data) {
+        this.data = data;
     }
 }

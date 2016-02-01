@@ -12,6 +12,7 @@ import services.XFormService;
 import session.FormEntrySession;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created by willpride on 1/14/16.
@@ -40,8 +41,9 @@ public class NewFormRequest {
         username = bean.getSessionData().getUsername();
         domain = bean.getSessionData().getDomain();
         String initLang = bean.getLang();
+        Map<String, String> data = bean.getSessionData().getData();
         try {
-            formEntrySession = new FormEntrySession(getFormXml(), getRestoreXml(), initLang, username);
+            formEntrySession = new FormEntrySession(getFormXml(), getRestoreXml(), initLang, username, data);
             sessionRepo.save(serialize());
         } catch(IOException e){
             e.printStackTrace();
@@ -70,6 +72,7 @@ public class NewFormRequest {
         serializableSession.setRestoreXml(formEntrySession.getRestoreXml());
         serializableSession.setSequenceId(formEntrySession.getSequenceId());
         serializableSession.setInitLang(formEntrySession.getInitLang());
+        serializableSession.setSessionData(formEntrySession.getSessionData());
         return serializableSession;
     }
 }

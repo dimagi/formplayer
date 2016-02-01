@@ -102,7 +102,7 @@ public class CaseTests {
     }
 
     @Test
-    public void testCaseTransaction() throws Exception {
+    public void testCases() throws Exception {
 
         final SerializableSession serializableSession =  new SerializableSession();
 
@@ -167,9 +167,7 @@ public class CaseTests {
         result = this.mockMvc.perform(
                 post("/submit")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
-
-        System.out.println("SubmitResult: " + result.getResponse().getContentAsString());
+                        .content(new ObjectMapper().writeValueAsString(submitRequestBean))).andReturn();
 
         filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
         result = this.mockMvc.perform(
@@ -182,9 +180,6 @@ public class CaseTests {
         caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
                 CaseFilterResponseBean.class);
         caseArray0 = caseFilterResponseBean0.getCases();
-
-        System.out.println("CaseArray: " + caseArray0.length);
-        System.out.println("CaseArray: " + Arrays.toString(caseArray0));
 
         assert(caseArray0.length == 16);
 
@@ -247,9 +242,10 @@ public class CaseTests {
         result = this.mockMvc.perform(
                 post("/submit")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
+                        .content(new ObjectMapper().writeValueAsString(submitRequestBean))).andReturn();
 
         filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
+
         result = this.mockMvc.perform(
                 post("/filter_cases_session")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -260,8 +256,6 @@ public class CaseTests {
         caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
                 CaseFilterResponseBean.class);
         caseArray0 = caseFilterResponseBean0.getCases();
-
-        System.out.println("FinalResult: " + caseArray0.length + " : " + Arrays.toString(caseArray0));
 
         assert(caseArray0.length == 15);
 

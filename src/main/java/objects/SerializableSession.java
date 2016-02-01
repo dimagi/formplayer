@@ -1,6 +1,7 @@
 package objects;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Created by willpride on 1/19/16.
@@ -13,6 +14,7 @@ public class SerializableSession implements Serializable{
     private String username;
     private String initLang;
     private int sequenceId;
+    private Map<String, String> sessionData;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -86,5 +88,13 @@ public class SerializableSession implements Serializable{
 
     public void setSequenceId(int sequenceId) {
         this.sequenceId = sequenceId;
+    }
+
+    public Map<String, String> getSessionData() {
+        return sessionData;
+    }
+
+    public void setSessionData(Map<String, String> sessionData) {
+        this.sessionData = sessionData;
     }
 }

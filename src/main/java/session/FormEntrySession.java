@@ -5,6 +5,7 @@ import objects.SerializableSession;
 import org.apache.commons.io.IOUtils;
 import org.commcare.api.json.WalkJson;
 import org.commcare.api.persistence.UserSqlSandbox;
+import org.commcare.api.session.SessionWrapper;
 import org.commcare.api.xml.XmlUtil;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -38,6 +40,8 @@ public class FormEntrySession {
     private UserSandbox sandbox;
     private int sequenceId;
     private String initLang;
+    private Map<String, String> sessionData;
+    private FormplayerSessionWrapper sessionWrapper;
 
     String title;
     String[] langs;
@@ -47,6 +51,9 @@ public class FormEntrySession {
     public FormEntrySession(SerializableSession session) throws Exception{
         this.formXml = session.getFormXml();
         this.restoreXml = session.getRestoreXml();
+        this.username = session.getUsername();
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
+        this.sessionData = session.getSessionData();
         formDef = hq.RestoreUtils.loadInstance(IOUtils.toInputStream(formXml), IOUtils.toInputStream(session.getInstanceXml()));
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -56,15 +63,23 @@ public class FormEntrySession {
         this.sequenceId = session.getSequenceId();
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
-        this.username = session.getUsername();
-        initialize(true, username, restoreXml);
         uuid = UUID.randomUUID().toString();
         this.sequenceId = session.getSequenceId();
+        initialize(true, session.getSessionData());
+    }
+    public FormEntrySession(String formXml, String restoreXml, String initLang, String username) throws Exception {
+        this(formXml, restoreXml, initLang, username, null);
     }
 
-    public FormEntrySession(String formXml, String restoreXml, String initLang, String username) throws Exception {
+
+    public FormEntrySession(String formXml, String restoreXml, String initLang, String username,
+                Map<String, String> sessionData) throws Exception {
+        System.out.println("Session Data: " + sessionData);
         this.formXml = formXml;
         this.restoreXml = restoreXml;
+        this.username = username;
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
+        this.sessionData = sessionData;
         formDef = parseFormDef(formXml);
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -72,17 +87,19 @@ public class FormEntrySession {
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
         this.initLang = initLang;
-        this.username = username;
-        initialize(true, username, restoreXml);
         uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
+        initialize(true, sessionData);
     }
 
-    public void initialize(boolean newInstance, String username, String restoreXml) throws Exception {
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
+    public void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
-        CommCareSession session = new CommCareSession(platform);
-        formDef.initialize(newInstance, new CommCareInstanceInitializer(session, sandbox, platform));
+        this.sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+        formDef.initialize(newInstance, sessionWrapper.getIIF());
+    }
+
+    public void initialize(boolean newInstance) throws Exception {
+        initialize(newInstance, null);
     }
 
     private FormDef parseFormDef(String formXml) throws IOException {
@@ -173,5 +190,9 @@ public class FormEntrySession {
     public String submitGetXml() throws IOException {
         formDef.postProcessInstance();
         return getInstanceXml();
+    }
+
+    public Map<String, String> getSessionData() {
+        return sessionData;
     }
 }

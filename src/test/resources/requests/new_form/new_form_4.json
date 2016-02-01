@@ -14,7 +14,7 @@
       "commcare_phone_number": null
     },
     "data": {
-      "case_id_new_coverage_basic_0": "test"
+      "case_id": "test"
     },
     "host": "http://localhost:8000",
     "session_name": "ccqa > Basic Form",
