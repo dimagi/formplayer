@@ -1,6 +1,5 @@
 package tests;
 
-import application.CaseController;
 import auth.HqAuth;
 import beans.CaseFilterResponseBean;
 import beans.SyncDbRequestBean;
@@ -28,6 +27,7 @@ import services.RestoreService;
 import utils.FileUtils;
 import utils.TestContext;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
@@ -38,27 +38,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class FilterTests {
-
-    ObjectMapper mapper;
-
-    private MockMvc mockMvc;
-
-    @Autowired
-    private RestoreService restoreServiceMock;
-
-    @InjectMocks
-    private CaseController caseController;
+public class FilterTests extends BaseTestClass {
 
     @Before
-    public void setUp() {
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
-        Mockito.reset(restoreServiceMock);
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(caseController).build();
+    public void setUp() throws IOException {
+        super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
-        mapper = new ObjectMapper();
     }
 
     @Test
@@ -149,10 +135,5 @@ public class FilterTests {
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
         assert(15 == caseStorage.getNumRecords());
-    }
-
-    @After
-    public void tearDown(){
-            SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
 }

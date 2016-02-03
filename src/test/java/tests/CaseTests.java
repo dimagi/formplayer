@@ -1,51 +1,31 @@
 package tests;
 
-import application.CaseController;
-import application.SessionController;
 import auth.HqAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
-import org.commcare.cases.model.Case;
-import org.commcare.core.sandbox.SandboxUtils;
-import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.xpath.XPathParseTool;
-import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.json.JSONObject;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.client.RestTemplate;
-import repo.SessionRepo;
-import services.RestoreService;
-import services.XFormService;
 import utils.FileUtils;
 import utils.TestContext;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -96,7 +76,7 @@ public class CaseTests extends BaseTestClass {
 
         String filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
         result = this.mockMvc.perform(
-                post("/filter_cases_session")
+                post("/filter_cases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filterRequestPayload))
                 .andExpect(status().isOk())
@@ -126,7 +106,7 @@ public class CaseTests extends BaseTestClass {
 
         filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
         result = this.mockMvc.perform(
-                post("/filter_cases_session")
+                post("/filter_cases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filterRequestPayload))
                 .andExpect(status().isOk())
@@ -175,7 +155,7 @@ public class CaseTests extends BaseTestClass {
 
         filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
         result = this.mockMvc.perform(
-                post("/filter_cases_session")
+                post("/filter_cases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filterRequestPayload))
                 .andExpect(status().isOk())
@@ -202,7 +182,7 @@ public class CaseTests extends BaseTestClass {
         filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
 
         result = this.mockMvc.perform(
-                post("/filter_cases_session")
+                post("/filter_cases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filterRequestPayload))
                 .andExpect(status().isOk())

@@ -158,10 +158,18 @@ public class SessionController {
         return mapper.readValue(response.toString(), RepeatResponseBean.class);
     }
 
-    @RequestMapping("/filter_cases_session  ")
+    @RequestMapping("/filter_cases")
     public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
         filterRequest.setRestoreService(restoreService);
         String caseResponse = CaseAPIs.filterCases(filterRequest);
         return new CaseFilterResponseBean(caseResponse);
+    }
+
+    @RequestMapping("/sync_db")
+    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest) throws Exception {
+        syncRequest.setRestoreService(restoreService);
+        String restoreXml = syncRequest.getRestoreXml();
+        CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), restoreXml);
+        return new SyncDbResponseBean();
     }
 }
