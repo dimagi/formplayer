@@ -57,25 +57,6 @@ public class RepeatTests extends BaseTestClass{
     @Test
     public void testRepeat() throws Exception {
 
-        final SerializableSession serializableSession =  new SerializableSession();
-
-        when(sessionRepoMock.find(anyString())).thenReturn(serializableSession);
-
-        ArgumentCaptor<SerializableSession> argumentCaptor = ArgumentCaptor.forClass(SerializableSession.class);
-
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableSession toBeSaved = (SerializableSession) args[0];
-                serializableSession.setInstanceXml(toBeSaved.getInstanceXml());
-                serializableSession.setFormXml(toBeSaved.getFormXml());
-                serializableSession.setRestoreXml(toBeSaved.getRestoreXml());
-                serializableSession.setUsername(toBeSaved.getUsername());
-                return null;
-            }
-        }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
-
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "xforms/repeat.xml"));
 

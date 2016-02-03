@@ -45,23 +45,7 @@ public class FormEntryTest extends BaseTestClass{
     @Test
     public void testFormEntry() throws Exception {
 
-        final SerializableSession serializableSession =  new SerializableSession();
         serializableSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
-
-        when(sessionRepoMock.find(anyString())).thenReturn(serializableSession);
-
-        ArgumentCaptor<SerializableSession> argumentCaptor = ArgumentCaptor.forClass(SerializableSession.class);
-
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableSession toBeSaved = (SerializableSession) args[0];
-                serializableSession.setInstanceXml(toBeSaved.getInstanceXml());
-                serializableSession.setFormXml(toBeSaved.getFormXml());
-                return null;
-            }
-        }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "xforms/question_types.xml"));
@@ -88,8 +72,6 @@ public class FormEntryTest extends BaseTestClass{
         response = answerQuestionGetResult("8","123456789", sessionId);
         response = answerQuestionGetResult("10", "2",sessionId);
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
-
-        mapper = new ObjectMapper();
 
         //Test Current Session
         CurrentRequestBean currentRequestBean = mapper.readValue

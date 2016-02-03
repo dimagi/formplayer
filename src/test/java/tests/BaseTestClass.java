@@ -5,13 +5,17 @@ import auth.HqAuth;
 import beans.AnswerQuestionRequestBean;
 import beans.AnswerQuestionResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,6 +30,7 @@ import java.io.IOException;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,6 +56,8 @@ public class BaseTestClass {
 
     ObjectMapper mapper;
 
+    final protected SerializableSession serializableSession = new SerializableSession();
+
     @Before
     public void setUp() throws IOException {
         Mockito.reset(sessionRepoMock);
@@ -62,6 +69,26 @@ public class BaseTestClass {
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore_3.xml"));
         mapper = new ObjectMapper();
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
+        setUpSessionRepoMock();
+    }
+
+    public void setUpSessionRepoMock(){
+
+        when(sessionRepoMock.find(anyString())).thenReturn(serializableSession);
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Object[] args = invocationOnMock.getArguments();
+                SerializableSession toBeSaved = (SerializableSession) args[0];
+                serializableSession.setInstanceXml(toBeSaved.getInstanceXml());
+                serializableSession.setFormXml(toBeSaved.getFormXml());
+                serializableSession.setRestoreXml(toBeSaved.getRestoreXml());
+                serializableSession.setUsername(toBeSaved.getUsername());
+                serializableSession.setSessionData(toBeSaved.getSessionData());
+                return null;
+            }
+        }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
     }
 
 
@@ -69,7 +96,6 @@ public class BaseTestClass {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
-
         MvcResult answerResult = this.mockMvc.perform(
                 post("/answer_question")
                         .contentType(MediaType.APPLICATION_JSON)
