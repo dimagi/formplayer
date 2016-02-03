@@ -39,47 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class FormEntryTest {
-
-    private MockMvc mockMvc;
-
-    @Autowired
-    private SessionRepo sessionRepoMock;
-
-    @Autowired
-    private XFormService xFormServiceMock;
-
-    @Autowired
-    private RestoreService restoreServiceMock;
-
-    @InjectMocks
-    private SessionController sessionController;
- 
-    @Before
-    public void setUp() {
-        Mockito.reset(sessionRepoMock);
-        Mockito.reset(xFormServiceMock);
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
-    }
-
-    public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
-        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-            ObjectMapper mapper = new ObjectMapper();
-        String jsonBody = mapper.writeValueAsString(answerQuestionBean);
-
-        MvcResult answerResult = this.mockMvc.perform(
-                post("/answer_question")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        AnswerQuestionResponseBean response = mapper.readValue(answerResult.getResponse().getContentAsString(),
-                AnswerQuestionResponseBean.class);
-        return response;
-    }
+public class FormEntryTest extends BaseTestClass{
 
     //Integration test of form entry functions
     @Test
@@ -172,10 +132,5 @@ public class FormEntryTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(submitRequestBean)));
         String submitResultString = submitResult.andReturn().getResponse().getContentAsString();
-    }
-
-    @After
-    public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
 }

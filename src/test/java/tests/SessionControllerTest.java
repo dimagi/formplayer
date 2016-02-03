@@ -35,30 +35,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class SessionControllerTest {
-
-    private MockMvc mockMvc;
-
-    @Autowired
-    private SessionRepo sessionRepoMock;
-
-    @Autowired
-    private XFormService xFormServiceMock;
-
-    @Autowired
-    private RestoreService restoreServiceMock;
-
-    @InjectMocks
-    private SessionController sessionController;
+public class SessionControllerTest extends BaseTestClass{
 
 
     @Before
     public void setUp() throws IOException {
-        Mockito.reset(sessionRepoMock);
-        Mockito.reset(xFormServiceMock);
-        Mockito.reset(restoreServiceMock);
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }

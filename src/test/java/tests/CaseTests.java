@@ -54,52 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class CaseTests {
-
-    private MockMvc mockMvc;
-
-    @Autowired
-    private SessionRepo sessionRepoMock;
-
-    @Autowired
-    private XFormService xFormServiceMock;
-
-    @Autowired
-    private RestoreService restoreServiceMock;
-
-    @InjectMocks
-    private SessionController sessionController;
-
-    ObjectMapper mapper;
-
-    @Before
-    public void setUp() throws IOException {
-        Mockito.reset(sessionRepoMock);
-        Mockito.reset(xFormServiceMock);
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
-        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore_3.xml"));
-        mapper = new ObjectMapper();
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
-    }
-
-    public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
-        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonBody = mapper.writeValueAsString(answerQuestionBean);
-
-        MvcResult answerResult = this.mockMvc.perform(
-                post("/answer_question")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        AnswerQuestionResponseBean response = mapper.readValue(answerResult.getResponse().getContentAsString(),
-                AnswerQuestionResponseBean.class);
-        return response;
-    }
+public class CaseTests extends BaseTestClass {
 
     @Test
     public void testCases() throws Exception {

@@ -48,34 +48,11 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class NewFormTests {
-
-    final String NEW_FORM_URL = "/new_session";
-
-    RestTemplate template = new TestRestTemplate();
-
-    private MockMvc mockMvc;
-
-    @Autowired
-    private SessionRepo sessionRepoMock;
-
-    @Autowired
-    private XFormService xFormServiceMock;
-
-    @Autowired
-    private RestoreService restoreServiceMock;
-
-    @InjectMocks
-    private SessionController sessionController;
-
+public class NewFormTests extends BaseTestClass{
 
     @Before
     public void setUp() throws IOException {
-        Mockito.reset(sessionRepoMock);
-        Mockito.reset(xFormServiceMock);
-        Mockito.reset(restoreServiceMock);
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }

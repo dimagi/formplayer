@@ -45,28 +45,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class RepeatTests {
-
-    private MockMvc mockMvc;
-
-    @Autowired
-    private SessionRepo sessionRepoMock;
-
-    @Autowired
-    private XFormService xFormServiceMock;
-
-    @Autowired
-    private RestoreService restoreServiceMock;
-
-    @InjectMocks
-    private SessionController sessionController;
+public class RepeatTests extends BaseTestClass{
 
     @Before
     public void setUp() throws IOException {
-        Mockito.reset(sessionRepoMock);
-        Mockito.reset(xFormServiceMock);
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }
@@ -190,10 +173,4 @@ public class RepeatTests {
         children = questionBean.getChildren();
         assert(children.length == 1);
     }
-
-    @After
-    public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
-    }
-
 }
