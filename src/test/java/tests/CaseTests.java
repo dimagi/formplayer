@@ -39,10 +39,6 @@ public class CaseTests extends BaseTestClass {
     @Test
     public void testCases() throws Exception {
 
-        MvcResult result;
-        String filterRequestPayload;
-        String[] caseArray;
-
         JSONObject newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
 
@@ -55,14 +51,9 @@ public class CaseTests extends BaseTestClass {
         answerQuestionGetResult("0", "Tom Brady", sessionId);
         answerQuestionGetResult("1", "1", sessionId);
 
-        SubmitRequestBean submitRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), "requests/submit/submit_request_case.json"), SubmitRequestBean.class);
-        submitRequestBean.setSessionId(sessionId);
+        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
 
-        result = this.mockMvc.perform(
-                post("/submit")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(submitRequestBean))).andReturn();
+        //TODO test this
 
         caseFilterResponseBean = filterCases("requests/filter/filter_cases_5.json");
 
@@ -70,25 +61,16 @@ public class CaseTests extends BaseTestClass {
 
         JSONObject jsonResponse = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
-        caseArray = filterCases("requests/filter/filter_cases_5.json").getCases();
-
-        assert(caseArray.length == 16);
+        assert(filterCases("requests/filter/filter_cases_5.json").getCases().length == 16);
 
         sessionId = jsonResponse.getString("session_id");
         answerQuestionGetResult("0", "1", sessionId);
 
-        submitRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), "requests/submit/submit_request_case.json"), SubmitRequestBean.class);
-        submitRequestBean.setSessionId(sessionId);
+        submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
 
-        result = this.mockMvc.perform(
-                post("/submit")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(submitRequestBean))).andReturn();
+        //TODO test this
 
-        caseArray = filterCases("requests/filter/filter_cases_5.json").getCases();
-
-        assert(caseArray.length == 15);
+        assert(filterCases("requests/filter/filter_cases_5.json").getCases().length == 15);
 
 
     }

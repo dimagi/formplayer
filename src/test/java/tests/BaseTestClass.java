@@ -139,6 +139,21 @@ public class BaseTestClass {
                 CaseFilterResponseBean.class);
     }
 
+    public SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {
+        SubmitRequestBean submitRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
+        submitRequestBean.setSessionId(sessionId);
+
+        String result = this.mockMvc.perform(
+                post("/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(submitRequestBean)))
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        return mapper.readValue(result, SubmitResponseBean.class);
+    }
+
     @After
     public void tearDown(){
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
