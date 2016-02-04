@@ -3,6 +3,7 @@ package tests;
 import application.SessionController;
 import auth.HqAuth;
 import beans.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
 import services.RestoreService;
@@ -32,6 +34,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -170,6 +173,38 @@ public class BaseTestClass {
         SyncDbResponseBean syncDbResponseBean = mapper.readValue(result.getResponse().getContentAsString(),
                 SyncDbResponseBean.class);
         return syncDbResponseBean;
+    }
+
+    public RepeatResponseBean newRepeatRequest(String path, String sessionId) throws Exception {
+
+        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), path);
+
+        RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
+                RepeatRequestBean.class);
+        newRepeatRequestBean.setSessionId(sessionId);
+
+        String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
+
+        String repeatResult = mockMvc.perform(get("/new_repeat")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
+        return mapper.readValue(repeatResult, RepeatResponseBean.class);
+    }
+
+    public RepeatResponseBean deleteRepeatRequest(String path, String sessionId) throws Exception {
+
+        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), path);
+
+        RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
+                RepeatRequestBean.class);
+        newRepeatRequestBean.setSessionId(sessionId);
+
+        String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
+
+        String repeatResult = mockMvc.perform(get("/delete_repeat")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
+        return mapper.readValue(repeatResult, RepeatResponseBean.class);
     }
 
     @After
