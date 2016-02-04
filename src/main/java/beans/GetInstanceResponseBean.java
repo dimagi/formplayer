@@ -13,9 +13,8 @@ public class GetInstanceResponseBean {
     private String output;
     private String xmlns;
 
-    public GetInstanceResponseBean(){
-
-    }
+    // Jackson requires the default constructor be present
+    public GetInstanceResponseBean(){}
 
     public GetInstanceResponseBean(FormEntrySession session) throws IOException {
         output = session.getInstanceXml();
@@ -40,6 +39,6 @@ public class GetInstanceResponseBean {
 
     @Override
     public String toString(){
-        return "CurrentResponseBean: [xmlns=" + xmlns + ", output=" + output + "]";
+        return "GetInstanceResponseBean: [xmlns=" + xmlns + ", output=" + output + "]";
     }
 }

@@ -17,11 +17,11 @@ public class EvaluateXPathResponseBean {
     private String output;
     private String status;
 
-    public EvaluateXPathResponseBean(){
-
-    }
+    //Jackson requires the default constructor
+    public EvaluateXPathResponseBean(){}
 
     public EvaluateXPathResponseBean(FormEntrySession formEntrySession, String xpath) throws IOException, XPathSyntaxException {
+        // TODO: this
         status = "success";
         EvaluationContext evaluationContext = formEntrySession.getFormEntryModel().getForm().getEvaluationContext();
         Text mText = Text.XPathText(xpath, new Hashtable<String, Text>());
@@ -46,6 +46,6 @@ public class EvaluateXPathResponseBean {
 
     @Override
     public String toString(){
-        return "CurrentResponseBean: [output=" + output + "]";
+        return "EvaluateXPathResponseBean: [output=" + output + "]";
     }
 }
