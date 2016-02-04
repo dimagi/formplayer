@@ -51,6 +51,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 public class NewFormTests extends BaseTestClass{
 
     @Before
+    @Override
     public void setUp() throws IOException {
         super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
@@ -60,23 +61,7 @@ public class NewFormTests extends BaseTestClass{
     @Test
     public void testNewForm() throws Exception {
         // setup files
-
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/basic.xml"));
-
-        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form.json");
-
-        JSONObject request = new JSONObject(requestPayload);
-
-        MvcResult result = this.mockMvc.perform(
-                post("/new_session")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(request.toString()))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-        JSONObject jsonResponse = new JSONObject(responseBody);
+        JSONObject jsonResponse = startNewSession("requests/new_form/new_form.json", "xforms/basic.xml");
 
         assert(jsonResponse.has("tree"));
         assert(jsonResponse.has("langs"));
@@ -99,22 +84,7 @@ public class NewFormTests extends BaseTestClass{
 
     @Test
     public void testNewForm2() throws Exception {
-        // setup files
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/question_types.xml"));
-        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_2.json");
-
-        JSONObject request = new JSONObject(requestPayload);
-
-        MvcResult result = this.mockMvc.perform(
-                post("/new_session")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(request.toString()))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-        JSONObject jsonResponse = new JSONObject(responseBody);
+        JSONObject jsonResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 
         assert(jsonResponse.has("tree"));
         assert(jsonResponse.has("langs"));
@@ -137,10 +107,4 @@ public class NewFormTests extends BaseTestClass{
             }
         }
     }
-
-    @After
-    public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
-    }
-
 }
