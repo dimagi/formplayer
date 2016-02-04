@@ -140,7 +140,7 @@ public class SessionController {
 
     @RequestMapping(value = "/delete_repeat", method = RequestMethod.GET)
     @ResponseBody
-    public RepeatResponseBean delete_repeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
+    public RepeatResponseBean deleteRepeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
         SerializableSession serializableSession = sessionRepo.find(repeatRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
 
