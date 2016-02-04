@@ -12,7 +12,7 @@ import java.util.Map;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties
-public class NewSessionBean {
+public class NewSessionRequestBean {
     private String formUrl;
     private String lang;
     private Map<String, String> hqAuth;
@@ -20,9 +20,9 @@ public class NewSessionBean {
     private Map<String, String> formContext;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public NewSessionBean(){}
+    public NewSessionRequestBean(){}
 
-    public NewSessionBean(String formUrl, String lang, Map<String, String> hqAuth) {
+    public NewSessionRequestBean(String formUrl, String lang, Map<String, String> hqAuth) {
         this.formUrl = formUrl;
         this.lang = lang;
         this.hqAuth = hqAuth;

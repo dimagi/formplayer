@@ -10,6 +10,7 @@ import java.util.ArrayList;
  * Created by willpride on 1/12/16.
  */
 public class NewSessionResponse {
+    // TODO: This should be a QuestionBean array
     JSONArray tree;
     String title;
     String[] langs;

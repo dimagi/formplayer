@@ -23,10 +23,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import repo.SessionRepo;
+import services.RestoreService;
 import services.XFormService;
 import utils.FileUtils;
 import utils.TestContext;
@@ -46,52 +48,20 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class NewFormTests {
-
-    final String NEW_FORM_URL = "/new_session";
-
-    RestTemplate template = new TestRestTemplate();
-
-    private MockMvc mockMvc;
-
-    @Autowired
-    private SessionRepo sessionRepoMock;
-
-    @Autowired
-    private XFormService xFormServiceMock;
-
-    @InjectMocks
-    private SessionController sessionController;
-
+public class NewFormTests extends BaseTestClass{
 
     @Before
+    @Override
     public void setUp() throws IOException {
-        Mockito.reset(sessionRepoMock);
-        Mockito.reset(xFormServiceMock);
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        super.setUp();
+        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }
 
     @Test
     public void testNewForm() throws Exception {
         // setup files
-
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/basic.xml"));
-
-        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form.json");
-
-        JSONObject request = new JSONObject(requestPayload);
-
-        MvcResult result = this.mockMvc.perform(
-                post("/new_session")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(request.toString()))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-        JSONObject jsonResponse = new JSONObject(responseBody);
+        JSONObject jsonResponse = startNewSession("requests/new_form/new_form.json", "xforms/basic.xml");
 
         assert(jsonResponse.has("tree"));
         assert(jsonResponse.has("langs"));
@@ -114,22 +84,7 @@ public class NewFormTests {
 
     @Test
     public void testNewForm2() throws Exception {
-        // setup files
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/question_types.xml"));
-        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_2.json");
-
-        JSONObject request = new JSONObject(requestPayload);
-
-        MvcResult result = this.mockMvc.perform(
-                post("/new_session")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(request.toString()))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-        JSONObject jsonResponse = new JSONObject(responseBody);
+        JSONObject jsonResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 
         assert(jsonResponse.has("tree"));
         assert(jsonResponse.has("langs"));
@@ -152,10 +107,4 @@ public class NewFormTests {
             }
         }
     }
-
-    @After
-    public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
-    }
-
 }

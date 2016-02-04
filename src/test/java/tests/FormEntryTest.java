@@ -5,7 +5,10 @@ import auth.HqAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
+import org.commcare.api.persistence.SqlSandboxUtils;
+import org.commcare.api.persistence.UserSqlSandbox;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +24,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
+import services.RestoreService;
 import services.XFormService;
 import utils.FileUtils;
 import utils.TestContext;
@@ -35,64 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class FormEntryTest {
-
-    private MockMvc mockMvc;
-
-    @Autowired
-    private SessionRepo sessionRepoMock;
-
-    @Autowired
-    private XFormService xFormServiceMock;
-
-    @InjectMocks
-    private SessionController sessionController;
- 
-    @Before
-    public void setUp() {
-        Mockito.reset(sessionRepoMock);
-        Mockito.reset(xFormServiceMock);
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
-    }
-
-    public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
-        AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonBody = mapper.writeValueAsString(answerQuestionBean);
-
-        MvcResult answerResult = this.mockMvc.perform(
-                post("/answer_question")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        AnswerQuestionResponseBean response = mapper.readValue(answerResult.getResponse().getContentAsString(),
-                AnswerQuestionResponseBean.class);
-        return response;
-    }
+public class FormEntryTest extends BaseTestClass{
 
     //Integration test of form entry functions
     @Test
     public void testFormEntry() throws Exception {
 
-        final SerializableSession serializableSession =  new SerializableSession();
-
-        when(sessionRepoMock.find(anyString())).thenReturn(serializableSession);
-
-        ArgumentCaptor<SerializableSession> argumentCaptor = ArgumentCaptor.forClass(SerializableSession.class);
-
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableSession toBeSaved = (SerializableSession) args[0];
-                serializableSession.setInstanceXml(toBeSaved.getInstanceXml());
-                serializableSession.setFormXml(toBeSaved.getFormXml());
-                return null;
-            }
-        }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
+        serializableSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "xforms/question_types.xml"));
@@ -100,7 +53,7 @@ public class FormEntryTest {
         String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_2.json");
 
         ObjectMapper mapper = new ObjectMapper();
-        NewSessionBean newFormRequest = mapper.readValue(requestPayload, NewSessionBean.class);
+        NewSessionRequestBean newFormRequest = mapper.readValue(requestPayload, NewSessionRequestBean.class);
 
         ResultActions result = mockMvc.perform(post("/new_session")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -119,8 +72,6 @@ public class FormEntryTest {
         response = answerQuestionGetResult("8","123456789", sessionId);
         response = answerQuestionGetResult("10", "2",sessionId);
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
-
-        mapper = new ObjectMapper();
 
         //Test Current Session
         CurrentRequestBean currentRequestBean = mapper.readValue
@@ -149,15 +100,19 @@ public class FormEntryTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
         String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
+        EvaluateXPathResponseBean evaluateXPathResponseBean = mapper.readValue(evaluateXpathResultString,
+                EvaluateXPathResponseBean.class);
+        assert evaluateXPathResponseBean.getStatus().equals("success");
+        assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 
         //Test Submission
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/submit/submit_request.json"), SubmitRequestBean.class);
-        currentRequestBean.setSessionId(sessionId);
+        submitRequestBean.setSessionId(sessionId);
 
         ResultActions submitResult = mockMvc.perform(post("/submit")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(currentRequestBean)));
+                .content(mapper.writeValueAsString(submitRequestBean)));
         String submitResultString = submitResult.andReturn().getResponse().getContentAsString();
     }
 }

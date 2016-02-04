@@ -3,14 +3,16 @@ package requests;
 import beans.NewSessionResponse;
 import auth.DjangoAuth;
 import auth.HqAuth;
-import beans.NewSessionBean;
+import beans.NewSessionRequestBean;
 import objects.SerializableSession;
 import org.springframework.stereotype.Service;
 import repo.SessionRepo;
+import services.RestoreService;
 import services.XFormService;
 import session.FormEntrySession;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created by willpride on 1/14/16.
@@ -22,16 +24,26 @@ public class NewFormRequest {
     FormEntrySession formEntrySession;
     SessionRepo sessionRepo;
     XFormService xFormService;
+    RestoreService restoreService;
     HqAuth auth;
+    String username;
+    String domain;
+    String restoreXml;
 
-    public NewFormRequest(NewSessionBean bean, SessionRepo sessionRepo, XFormService xFormService) throws IOException {
+    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
+                          XFormService xFormService, RestoreService restoreService) throws Exception {
         this.sessionRepo = sessionRepo;
         this.xFormService = xFormService;
+        this.restoreService = restoreService;
+
         formUrl = bean.getFormUrl();
         auth = new DjangoAuth(bean.getHqAuth().get("django-session"));
+        username = bean.getSessionData().getUsername();
+        domain = bean.getSessionData().getDomain();
         String initLang = bean.getLang();
+        Map<String, String> data = bean.getSessionData().getData();
         try {
-            formEntrySession = new FormEntrySession(getFormXml(), initLang);
+            formEntrySession = new FormEntrySession(getFormXml(), getRestoreXml(), initLang, username, data);
             sessionRepo.save(serialize());
         } catch(IOException e){
             e.printStackTrace();
@@ -43,6 +55,10 @@ public class NewFormRequest {
         return ret;
     }
 
+    public String getRestoreXml(){
+        return restoreService.getRestoreXml(domain, auth);
+    }
+
     public String getFormXml(){
         return xFormService.getFormXml(formUrl, auth);
     }
@@ -52,6 +68,11 @@ public class NewFormRequest {
         serializableSession.setInstanceXml(formEntrySession.getInstanceXml());
         serializableSession.setId(formEntrySession.getUUID());
         serializableSession.setFormXml(formEntrySession.getFormXml());
+        serializableSession.setUsername(username);
+        serializableSession.setRestoreXml(formEntrySession.getRestoreXml());
+        serializableSession.setSequenceId(formEntrySession.getSequenceId());
+        serializableSession.setInitLang(formEntrySession.getInitLang());
+        serializableSession.setSessionData(formEntrySession.getSessionData());
         return serializableSession;
     }
 }

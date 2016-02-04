@@ -1,32 +1,39 @@
 package beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
  * Created by willpride on 1/20/16.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AnswerQuestionResponseBean {
-    private String tree;
+    private QuestionBean[] tree;
     private String status;
     private String sequenceId;
+    private String reason;
+    private String type;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionResponseBean(){}
 
-    public AnswerQuestionResponseBean(String tree, String status, String sequenceId) {
+    public AnswerQuestionResponseBean(QuestionBean[] tree, String status, String sequenceId) {
         this.tree = tree;
         this.status = status;
         this.sequenceId = sequenceId;
     }
 
-    public String getTree() {
+    public QuestionBean[] getTree() {
         return tree;
     }
 
-    public void setTree(String tree) {
+    public void setTree(QuestionBean[] tree) {
         this.tree = tree;
     }
 
@@ -48,6 +55,22 @@ public class AnswerQuestionResponseBean {
 
     @Override
     public String toString(){
-        return "Answer Question Response Bean: [tree=" + tree + ", status=" + status + ", seq_id: " + sequenceId + "]";
+        return "AnswerQuestionResponseBean: [tree=" + Arrays.toString(tree) + ", status=" + status + ", seq_id: " + sequenceId + "]";
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

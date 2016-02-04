@@ -1,6 +1,7 @@
 package objects;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Created by willpride on 1/19/16.
@@ -9,7 +10,11 @@ public class SerializableSession implements Serializable{
     private String id;
     private String instanceXml;
     private String formXml;
-
+    private String restoreXml;
+    private String username;
+    private String initLang;
+    private int sequenceId;
+    private Map<String, String> sessionData;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -42,7 +47,7 @@ public class SerializableSession implements Serializable{
 
     @Override
     public String toString(){
-        return "Session [id=" + id + ", instance=" + instanceXml + ", form=" + formXml + "]";
+        return "Session [id=" + id + ", instance=" + instanceXml + ", form=" + formXml + ", username=" + username + "]";
     }
 
     public String getFormXml() {
@@ -51,5 +56,45 @@ public class SerializableSession implements Serializable{
 
     public void setFormXml(String formXml) {
         this.formXml = formXml;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getRestoreXml() {
+        return restoreXml;
+    }
+
+    public void setRestoreXml(String restoreXml){
+        this.restoreXml = restoreXml;
+    }
+
+    public String getInitLang() {
+        return initLang;
+    }
+
+    public void setInitLang(String initLang) {
+        this.initLang = initLang;
+    }
+
+    public int getSequenceId() {
+        return sequenceId;
+    }
+
+    public void setSequenceId(int sequenceId) {
+        this.sequenceId = sequenceId;
+    }
+
+    public Map<String, String> getSessionData() {
+        return sessionData;
+    }
+
+    public void setSessionData(Map<String, String> sessionData) {
+        this.sessionData = sessionData;
     }
 }
