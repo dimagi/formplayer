@@ -74,7 +74,6 @@ public class FormEntryTest extends BaseTestClass{
         assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 
         //Test Submission
-
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request.json", sessionId);
     }
 }

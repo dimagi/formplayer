@@ -240,7 +240,7 @@ public class BaseTestClass {
                 (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
-        ResultActions evaluateXpathResult = mockMvc.perform(get("/evaluate_xpath")
+        ResultActions evaluateXpathResult = mockMvc.perform(get(urlPrepend(Constants.URL_EVALUATE_XPATH))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
         String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
