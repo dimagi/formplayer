@@ -61,7 +61,6 @@ public class FilterTests extends BaseTestClass {
         CaseFilterResponseBean caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
                 CaseFilterResponseBean.class);
         String[] caseArray0 = caseFilterResponseBean0.getCases();
-        System.out.println("Case Array: " + Arrays.toString(caseArray0));
         assert(caseArray0.length == 3);
         assert(caseArray0[0].equals("2aa41fcf4d8a464b82b171a39959ccec"));
 

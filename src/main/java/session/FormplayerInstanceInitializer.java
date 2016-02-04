@@ -26,7 +26,6 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
     @Override
     protected AbstractTreeElement setupSessionData(ExternalDataInstance instance) {
-        System.out.println("Setup Session Data: " + injectedSessionData);
         if (this.mPlatform == null) {
             throw new RuntimeException("Cannot generate session instance with undeclared platform!");
         }

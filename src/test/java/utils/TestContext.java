@@ -73,12 +73,10 @@ public class TestContext {
 
     @Bean
     public RestoreService restoreService() {
-        System.out.println("Mock!");
         RestoreService impl = Mockito.mock(RestoreService.class);
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                System.out.println("Do Answer");
                 return FileUtils.getFile(this.getClass(), "test_restore.xml");
             }
         }).when(impl).getRestoreXml(anyString(), any(HqAuth.class));

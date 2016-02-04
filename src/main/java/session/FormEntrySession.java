@@ -74,7 +74,6 @@ public class FormEntrySession {
 
     public FormEntrySession(String formXml, String restoreXml, String initLang, String username,
                 Map<String, String> sessionData) throws Exception {
-        System.out.println("Session Data: " + sessionData);
         this.formXml = formXml;
         this.restoreXml = restoreXml;
         this.username = username;
