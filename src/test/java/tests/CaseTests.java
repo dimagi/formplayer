@@ -39,40 +39,18 @@ public class CaseTests extends BaseTestClass {
     @Test
     public void testCases() throws Exception {
 
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/cases/create_case.xml"));
+        MvcResult result;
+        String filterRequestPayload;
+        String[] caseArray;
 
-        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_3.json");
+        JSONObject newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
+                "xforms/cases/create_case.xml");
 
-        NewSessionRequestBean newSessionRequestBean = new ObjectMapper().readValue(requestPayload,
-                NewSessionRequestBean.class);
+        CaseFilterResponseBean caseFilterResponseBean = filterCases("requests/filter/filter_cases_5.json");
 
-        MvcResult result = this.mockMvc.perform(
-                post("/new_session")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
+        assert(caseFilterResponseBean.getCases().length == 15);
 
-        String responseBody = result.getResponse().getContentAsString();
-
-        JSONObject jsonResponse = new JSONObject(responseBody);
-
-        String filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
-        result = this.mockMvc.perform(
-                post("/filter_cases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        CaseFilterResponseBean caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterResponseBean.class);
-        String[] caseArray0 = caseFilterResponseBean0.getCases();
-
-        System.out.println("Cases: " + Arrays.toString(caseArray0));
-
-        assert(caseArray0.length == 15);
-
-        String sessionId = jsonResponse.getString("session_id");
+        String sessionId = newSessionResponse.getString("session_id");
 
         answerQuestionGetResult("0", "Tom Brady", sessionId);
         answerQuestionGetResult("1", "1", sessionId);
@@ -86,68 +64,15 @@ public class CaseTests extends BaseTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(submitRequestBean))).andReturn();
 
-        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
-        result = this.mockMvc.perform(
-                post("/filter_cases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
+        caseFilterResponseBean = filterCases("requests/filter/filter_cases_5.json");
 
-        caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterResponseBean.class);
-        caseArray0 = caseFilterResponseBean0.getCases();
+        assert(caseFilterResponseBean.getCases().length == 16);
 
-        assert(caseArray0.length == 16);
+        JSONObject jsonResponse = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
-        final SerializableSession serializableSession2 =  new SerializableSession();
+        caseArray = filterCases("requests/filter/filter_cases_5.json").getCases();
 
-        when(sessionRepoMock.find(anyString())).thenReturn(serializableSession2);
-
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableSession toBeSaved = (SerializableSession) args[0];
-                serializableSession2.setInstanceXml(toBeSaved.getInstanceXml());
-                serializableSession2.setFormXml(toBeSaved.getFormXml());
-                serializableSession2.setRestoreXml(toBeSaved.getRestoreXml());
-                serializableSession2.setUsername(toBeSaved.getUsername());
-                serializableSession2.setSessionData(toBeSaved.getSessionData());
-                return null;
-            }
-        }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
-
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/cases/close_case.xml"));
-
-        requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_4.json");
-
-        newSessionRequestBean = new ObjectMapper().readValue(requestPayload,
-                NewSessionRequestBean.class);
-
-        result = this.mockMvc.perform(
-                post("/new_session")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
-
-        responseBody = result.getResponse().getContentAsString();
-
-        jsonResponse = new JSONObject(responseBody);
-
-        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
-        result = this.mockMvc.perform(
-                post("/filter_cases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterResponseBean.class);
-        caseArray0 = caseFilterResponseBean0.getCases();
-
-        assert(caseArray0.length == 16);
+        assert(caseArray.length == 16);
 
         sessionId = jsonResponse.getString("session_id");
         answerQuestionGetResult("0", "1", sessionId);
@@ -161,20 +86,9 @@ public class CaseTests extends BaseTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(submitRequestBean))).andReturn();
 
-        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_5.json");
+        caseArray = filterCases("requests/filter/filter_cases_5.json").getCases();
 
-        result = this.mockMvc.perform(
-                post("/filter_cases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterResponseBean.class);
-        caseArray0 = caseFilterResponseBean0.getCases();
-
-        assert(caseArray0.length == 15);
+        assert(caseArray.length == 15);
 
 
     }

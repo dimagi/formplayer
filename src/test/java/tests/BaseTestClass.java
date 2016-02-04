@@ -2,12 +2,12 @@ package tests;
 
 import application.SessionController;
 import auth.HqAuth;
-import beans.AnswerQuestionRequestBean;
-import beans.AnswerQuestionResponseBean;
+import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.InjectMocks;
@@ -106,6 +106,37 @@ public class BaseTestClass {
         AnswerQuestionResponseBean response = mapper.readValue(answerResult.getResponse().getContentAsString(),
                 AnswerQuestionResponseBean.class);
         return response;
+    }
+
+    public JSONObject startNewSession(String requestPath, String formPath) throws Exception {
+
+        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(), formPath));
+        String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
+
+        NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
+                NewSessionRequestBean.class);
+        MvcResult result = this.mockMvc.perform(
+                post("/new_session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
+        String responseBody = result.getResponse().getContentAsString();
+        JSONObject ret = new JSONObject(responseBody);
+        return ret;
+    }
+
+    public CaseFilterResponseBean filterCases(String requestPath) throws Exception {
+
+        String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
+        MvcResult result = this.mockMvc.perform(
+                post("/filter_cases")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filterRequestPayload))
+                .andExpect(status().isOk())
+                .andReturn();
+
+         return mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterResponseBean.class);
     }
 
     @After
