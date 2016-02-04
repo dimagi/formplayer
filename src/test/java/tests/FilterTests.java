@@ -49,59 +49,21 @@ public class FilterTests extends BaseTestClass {
 
     @Test
     public void testRestoreFilter() throws Exception {
-        String filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases.json");
 
-        MvcResult result = this.mockMvc.perform(
-                post("/filter_cases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
+        String[] caseArray;
 
-        CaseFilterResponseBean caseFilterResponseBean0 = mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterResponseBean.class);
-        String[] caseArray0 = caseFilterResponseBean0.getCases();
-        assert(caseArray0.length == 3);
-        assert(caseArray0[0].equals("2aa41fcf4d8a464b82b171a39959ccec"));
+        CaseFilterResponseBean caseFilterResponseBean = filterCases("requests/filter/filter_cases.json");
+        caseArray = caseFilterResponseBean.getCases();
+        assert(caseArray.length == 3);
+        assert(caseArray[0].equals("2aa41fcf4d8a464b82b171a39959ccec"));
 
-        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_2.json");
-        result = this.mockMvc.perform(
-                post("/filter_cases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
+        assert(filterCases("requests/filter/filter_cases_2.json").getCases().length == 9);
 
-        CaseFilterResponseBean caseFilterResponseBean1 = mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterResponseBean.class);
-        String[] caseArray1 = caseFilterResponseBean1.getCases();
-        assert(caseArray1.length == 9);
+        caseArray = filterCases("requests/filter/filter_cases_3.json").getCases();
+        assert(caseArray.length == 1);
+        assert(caseArray[0].equals("e7ed3658d7394415a4bba5edc7055f1d"));
 
-        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_3.json");
-        result = this.mockMvc.perform(
-                post("/filter_cases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        CaseFilterResponseBean caseFilterResponseBean2 = mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterResponseBean.class);
-        String[] caseArray2 = caseFilterResponseBean2.getCases();
-        assert(caseArray2.length == 1);
-        assert(caseArray2[0].equals("e7ed3658d7394415a4bba5edc7055f1d"));
-
-        filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases_4.json");
-        result = this.mockMvc.perform(
-                post("/filter_cases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        CaseFilterResponseBean caseFilterResponseBean3 = mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterResponseBean.class);
-        String[] caseArray3 = caseFilterResponseBean3.getCases();
+        assert(filterCases("requests/filter/filter_cases_4.json").getCases().length == 15);
     }
 
     @Test
@@ -110,29 +72,18 @@ public class FilterTests extends BaseTestClass {
 
         assert(!SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
-        String syncDbRequestPayload = FileUtils.getFile(this.getClass(), "requests/sync_db/sync_db.json");
-
-        SyncDbRequestBean syncDbRequestBean = mapper.readValue(syncDbRequestPayload,
-                SyncDbRequestBean.class);
-
-        MvcResult result = this.mockMvc.perform(
-                post("/sync_db")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(syncDbRequestBean)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        SyncDbResponseBean syncDbResponseBean = mapper.readValue(result.getResponse().getContentAsString(),
-                SyncDbResponseBean.class);
+        SyncDbResponseBean syncDbResponseBean = syncDb("requests/sync_db/sync_db.json");
 
         assert(syncDbResponseBean.getStatus().equals("success"));
 
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
-        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage(syncDbRequestBean.getUsername());
+        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("test@test.commcarehq.org");
 
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
         assert(15 == caseStorage.getNumRecords());
+
+        //TODO add ledgers, fixtures, etc.
     }
 }

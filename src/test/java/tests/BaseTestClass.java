@@ -154,6 +154,24 @@ public class BaseTestClass {
         return mapper.readValue(result, SubmitResponseBean.class);
     }
 
+    public SyncDbResponseBean syncDb(String requestPath) throws Exception {
+        String syncDbRequestPayload = FileUtils.getFile(this.getClass(), "requests/sync_db/sync_db.json");
+
+        SyncDbRequestBean syncDbRequestBean = mapper.readValue(syncDbRequestPayload,
+                SyncDbRequestBean.class);
+
+        MvcResult result = this.mockMvc.perform(
+                post("/sync_db")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(syncDbRequestBean)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        SyncDbResponseBean syncDbResponseBean = mapper.readValue(result.getResponse().getContentAsString(),
+                SyncDbResponseBean.class);
+        return syncDbResponseBean;
+    }
+
     @After
     public void tearDown(){
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
