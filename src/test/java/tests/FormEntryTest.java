@@ -47,18 +47,7 @@ public class FormEntryTest extends BaseTestClass{
 
         serializableSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/question_types.xml"));
-
-        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_2.json");
-
-        ObjectMapper mapper = new ObjectMapper();
-        NewSessionRequestBean newFormRequest = mapper.readValue(requestPayload, NewSessionRequestBean.class);
-
-        ResultActions result = mockMvc.perform(post("/new_session")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(newFormRequest)));
-        JSONObject resultJson = new JSONObject(result.andReturn().getResponse().getContentAsString());
+        JSONObject resultJson = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 
         String sessionId = resultJson.getString("session_id");
 
@@ -74,45 +63,18 @@ public class FormEntryTest extends BaseTestClass{
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
 
         //Test Current Session
-        CurrentRequestBean currentRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), CurrentRequestBean.class);
-        currentRequestBean.setSessionId(sessionId);
-
-        ResultActions currentResult = mockMvc.perform(get("/current")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(currentRequestBean)));
-        String currentResultString = currentResult.andReturn().getResponse().getContentAsString();
+        CurrentResponseBean currentResponseBean = getCurrent(sessionId);
 
         //Test Get Instance
-        GetInstanceRequestBean getInstanceRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), GetInstanceRequestBean.class);
-        getInstanceRequestBean.setSessionId(sessionId);
-        ResultActions getInstanceResult = mockMvc.perform(get("/get_instance")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(getInstanceRequestBean)));
-        String getInstanceResultString = getInstanceResult.andReturn().getResponse().getContentAsString();
+        GetInstanceResponseBean getInstanceResponseBean = getInstance(sessionId);
 
-        //Test Get Instance
-        EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
-        evaluateXPathRequestBean.setSessionId(sessionId);
-        ResultActions evaluateXpathResult = mockMvc.perform(get("/evaluate_xpath")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
-        String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
-        EvaluateXPathResponseBean evaluateXPathResponseBean = mapper.readValue(evaluateXpathResultString,
-                EvaluateXPathResponseBean.class);
+        //Test Evaluate XPath
+        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/q_text");
         assert evaluateXPathResponseBean.getStatus().equals("success");
         assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 
         //Test Submission
-        SubmitRequestBean submitRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), "requests/submit/submit_request.json"), SubmitRequestBean.class);
-        submitRequestBean.setSessionId(sessionId);
 
-        ResultActions submitResult = mockMvc.perform(post("/submit")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(submitRequestBean)));
-        String submitResultString = submitResult.andReturn().getResponse().getContentAsString();
+        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request.json", sessionId);
     }
 }

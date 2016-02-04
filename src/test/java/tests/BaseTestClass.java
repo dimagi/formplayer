@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
 import services.RestoreService;
 import services.XFormService;
+import util.Constants;
 import utils.FileUtils;
 
 import java.io.IOException;
@@ -94,13 +95,17 @@ public class BaseTestClass {
         }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
     }
 
+    private String urlPrepend(String string){
+        return "/" + string;
+    }
+
 
     public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
         MvcResult answerResult = this.mockMvc.perform(
-                post("/answer_question")
+                post(urlPrepend(Constants.URL_ANSWER_QUESTION))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody))
                 .andExpect(status().isOk())
@@ -120,7 +125,7 @@ public class BaseTestClass {
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
         MvcResult result = this.mockMvc.perform(
-                post("/new_session")
+                post(urlPrepend(Constants.URL_NEW_SESSION))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
@@ -132,7 +137,7 @@ public class BaseTestClass {
 
         String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
         MvcResult result = this.mockMvc.perform(
-                post("/filter_cases")
+                post(urlPrepend(Constants.URL_FILTER_CASES))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filterRequestPayload))
                 .andExpect(status().isOk())
@@ -148,7 +153,7 @@ public class BaseTestClass {
         submitRequestBean.setSessionId(sessionId);
 
         String result = this.mockMvc.perform(
-                post("/submit")
+                post(urlPrepend(Constants.URL_SUBMIT_FORM))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(submitRequestBean)))
                         .andReturn()
@@ -164,7 +169,7 @@ public class BaseTestClass {
                 SyncDbRequestBean.class);
 
         MvcResult result = this.mockMvc.perform(
-                post("/sync_db")
+                post(urlPrepend(Constants.URL_SYNC_DB))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(syncDbRequestBean)))
                 .andExpect(status().isOk())
@@ -185,7 +190,7 @@ public class BaseTestClass {
 
         String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
 
-        String repeatResult = mockMvc.perform(get("/new_repeat")
+        String repeatResult = mockMvc.perform(get(urlPrepend(Constants.URL_NEW_REPEAT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
         return mapper.readValue(repeatResult, RepeatResponseBean.class);
@@ -201,10 +206,47 @@ public class BaseTestClass {
 
         String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
 
-        String repeatResult = mockMvc.perform(get("/delete_repeat")
+        String repeatResult = mockMvc.perform(get(urlPrepend(Constants.URL_DELETE_REPEAT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
         return mapper.readValue(repeatResult, RepeatResponseBean.class);
+    }
+
+    public CurrentResponseBean getCurrent(String sessionId) throws Exception{
+        CurrentRequestBean currentRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), CurrentRequestBean.class);
+        currentRequestBean.setSessionId(sessionId);
+
+        ResultActions currentResult = mockMvc.perform(get(urlPrepend(Constants.URL_CURRENT))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(currentRequestBean)));
+        String currentResultString = currentResult.andReturn().getResponse().getContentAsString();
+        return mapper.readValue(currentResultString, CurrentResponseBean.class);
+    }
+
+    public GetInstanceResponseBean getInstance(String sessionId) throws Exception{
+        GetInstanceRequestBean getInstanceRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), GetInstanceRequestBean.class);
+        getInstanceRequestBean.setSessionId(sessionId);
+        ResultActions getInstanceResult = mockMvc.perform(get(urlPrepend(Constants.URL_GET_INSTANCE))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(getInstanceRequestBean)));
+        String getInstanceResultString = getInstanceResult.andReturn().getResponse().getContentAsString();
+        return mapper.readValue(getInstanceResultString, GetInstanceResponseBean.class);
+    }
+
+    public EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception{
+        EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
+        evaluateXPathRequestBean.setSessionId(sessionId);
+        evaluateXPathRequestBean.setXpath(xPath);
+        ResultActions evaluateXpathResult = mockMvc.perform(get("/evaluate_xpath")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
+        String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
+        EvaluateXPathResponseBean evaluateXPathResponseBean = mapper.readValue(evaluateXpathResultString,
+                EvaluateXPathResponseBean.class);
+        return evaluateXPathResponseBean;
     }
 
     @After

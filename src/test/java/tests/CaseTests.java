@@ -31,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Created by willpride on 1/14/16.
+ *
+ * This test tests that we can create and delete a case via the form API
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
@@ -38,6 +40,8 @@ public class CaseTests extends BaseTestClass {
 
     @Test
     public void testCases() throws Exception {
+
+        // Start new session and submit create case form
 
         JSONObject newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
@@ -53,11 +57,15 @@ public class CaseTests extends BaseTestClass {
 
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
 
-        //TODO test this
+        assert submitResponseBean.getStatus().equals("success");
+
+        // Test that we now have an additional case
 
         caseFilterResponseBean = filterCases("requests/filter/filter_cases_5.json");
 
         assert(caseFilterResponseBean.getCases().length == 16);
+
+        // close this case
 
         JSONObject jsonResponse = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
@@ -68,7 +76,9 @@ public class CaseTests extends BaseTestClass {
 
         submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
 
-        //TODO test this
+        assert submitResponseBean.getStatus().equals("success");
+
+        // test that we have successfully removed this case
 
         assert(filterCases("requests/filter/filter_cases_5.json").getCases().length == 15);
 
