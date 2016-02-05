@@ -1,11 +1,13 @@
 package hq;
 
+import auth.HqAuth;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.core.sandbox.SandboxUtils;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import beans.CaseFilterRequestBean;
+import services.RestoreService;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +31,17 @@ public class CaseAPIs {
         if(db.exists()){
             return new UserSqlSandbox(username);
         } else{
+            return RestoreUtils.restoreUser(username, xml);
+        }
+    }
+
+    public static UserSqlSandbox restoreIfNotExists(String username, RestoreService restoreService,
+                                                    String domain, HqAuth auth) throws Exception{
+        File db = new File(getDbFilePath(username));
+        if(db.exists()){
+            return new UserSqlSandbox(username);
+        } else{
+            String xml = restoreService.getRestoreXml(domain, auth);
             return RestoreUtils.restoreUser(username, xml);
         }
     }

@@ -1,0 +1,6 @@
+{
+  "username": "install_test_username",
+  "password": "install_test_password",
+  "domain": "install_test_domain",
+  "install_reference": "/Users/willpride/Dimagi/commcare-spring/src/test/resources/archives/basic.ccz"
+}

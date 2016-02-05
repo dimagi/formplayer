@@ -28,7 +28,6 @@ public class NewFormRequest {
     HqAuth auth;
     String username;
     String domain;
-    String restoreXml;
 
     public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
                           XFormService xFormService, RestoreService restoreService) throws Exception {

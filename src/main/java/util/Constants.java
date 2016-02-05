@@ -17,4 +17,7 @@ public class Constants {
     public final static String URL_SYNC_DB = "sync_db";
     public final static String URL_LIST_SESSIONS = "sessions";
     public final static String URL_GET_SESSION = "get_session";
+    public static final String URL_INSTALL = "install";
+    //Menus
+    public static final String MENU_MODULE = "modules";
 }

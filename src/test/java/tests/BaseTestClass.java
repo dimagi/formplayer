@@ -3,7 +3,6 @@ package tests;
 import application.SessionController;
 import auth.HqAuth;
 import beans.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
@@ -247,6 +246,18 @@ public class BaseTestClass {
         EvaluateXPathResponseBean evaluateXPathResponseBean = mapper.readValue(evaluateXpathResultString,
                 EvaluateXPathResponseBean.class);
         return evaluateXPathResponseBean;
+    }
+
+    public MenuResponseBean doInstall(String requestPath) throws Exception {
+        InstallRequestBean installRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
+        ResultActions installResult = mockMvc.perform(get(urlPrepend(Constants.URL_INSTALL))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(installRequestBean)));
+        String installResultString = installResult.andReturn().getResponse().getContentAsString();
+        MenuResponseBean menuResponseBean = mapper.readValue(installResultString,
+                MenuResponseBean.class);
+        return menuResponseBean;
     }
 
     @After
