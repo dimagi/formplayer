@@ -260,6 +260,18 @@ public class BaseTestClass {
         return menuResponseBean;
     }
 
+    public MenuResponseBean selectMenu(String requestPath) throws Exception {
+        MenuSelectBean menuSelectBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), MenuSelectBean.class);
+        ResultActions selectResult = mockMvc.perform(get(urlPrepend(Constants.URL_MENU_SELECT))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(menuSelectBean)));
+        String resultString = selectResult.andReturn().getResponse().getContentAsString();
+        MenuResponseBean menuResponseBean = mapper.readValue(resultString,
+                MenuResponseBean.class);
+        return menuResponseBean;
+    }
+
     @After
     public void tearDown(){
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);

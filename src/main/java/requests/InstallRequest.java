@@ -8,6 +8,7 @@ import beans.MenuResponseBean;
 import com.sun.glass.ui.Menu;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
+import objects.SerializableMenuSession;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.tomcat.util.bcel.classfile.Constant;
 import org.commcare.api.persistence.UserSqlSandbox;
@@ -20,14 +21,19 @@ import org.javarosa.core.util.externalizable.LivePrototypeFactory;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import repo.MenuSessionRepo;
 import services.RestoreService;
 import services.XFormService;
+import session.FormEntrySession;
+import session.MenuSession;
 import util.Constants;
 import util.StringUtils;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by willpride on 2/4/16.
@@ -36,15 +42,12 @@ import java.util.Map;
 public class InstallRequest {
     XFormService xFormService;
     RestoreService restoreService;
-    FormplayerConfigEngine engine;
-    UserSqlSandbox sandbox;
-    SessionWrapper sessionWrapper;
     HqAuth auth;
     String installReference;
     String username;
     String password;
     String domain;
-    MenuDisplayable[] choices;
+    MenuSession menuSession;
 
     @Value("${commcarehq.host}")
     String host;
@@ -56,26 +59,8 @@ public class InstallRequest {
         this.username = bean.getUsername();
         this.password = bean.getPassword();
         this.domain = bean.getDomain();
-        String domainedUsername = StringUtils.getFullUsername(username, domain, host);
-        this.auth = new BasicAuth(domainedUsername, password);
-        engine = configureApplication(installReference);
-        sandbox = CaseAPIs.restoreIfNotExists(domainedUsername, restoreService, domain, auth);
-        sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
-        MenuScreen menuScreen = new MenuScreen();
-        menuScreen.init(sessionWrapper);
-        choices = menuScreen.getChoices();
-    }
-
-    public FormplayerConfigEngine configureApplication(String installReference){
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username);
-        if(installReference.endsWith(".ccz")){
-            engine.initFromArchive(installReference);
-        } else{
-            throw new RuntimeException("Can't instantiate with reference: " + installReference);
-        }
-        engine.initEnvironment();
-        return engine;
+        this.menuSession = new MenuSession(this.username, this.password, this.domain, this.host,
+                this.installReference, this.restoreService);
     }
 
     public String getInstallSource(){
@@ -89,7 +74,7 @@ public class InstallRequest {
     public MenuResponseBean getResponse(){
         MenuResponseBean menuResponseBean = new MenuResponseBean();
         menuResponseBean.setMenuType(Constants.MENU_MODULE);
-        menuResponseBean.setOptions(parseMenuChoices(choices));
+        menuResponseBean.setOptions(parseMenuChoices(this.menuSession.getChoices()));
         return menuResponseBean;
     }
 

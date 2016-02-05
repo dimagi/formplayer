@@ -6,6 +6,7 @@ import application.SessionController;
 import auth.HqAuth;
 import beans.InstallResponseBean;
 import beans.MenuResponseBean;
+import beans.MenuSelectBean;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.json.JSONArray;
@@ -74,6 +75,9 @@ public class InstallTests extends BaseTestClass{
         assert menuResponseBean.getOptions().size() == 12;
         assert menuResponseBean.getMenuType().equals(Constants.MENU_MODULE);
         assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
+
+        //MenuResponseBean menuResponseBean1 =
+        //        selectMenu("requests/menu/menu_select.json");
 
     }
 }
