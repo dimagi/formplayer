@@ -48,7 +48,7 @@ public class RestoreUtils {
      */
     public static FormDef loadInstance(InputStream formInput,
                                        InputStream instanceInput)
-            throws IOException {
+            throws Exception {
         FormDef formDef;
         FormInstance savedModel;
         FormEntryModel entryModel;
@@ -71,8 +71,7 @@ public class RestoreUtils {
         // weak check for matching forms
         if (!savedRoot.getName().equals(templateRoot.getName()) ||
                 savedRoot.getMult() != 0) {
-            System.out.println("Instance and template form definition don't match");
-            return null;
+            throw new Exception("Instance and template form definition don't match");
         } else {
             // populate the data model
             TreeReference tr = TreeReference.rootRef();

@@ -67,10 +67,6 @@ public class FormEntrySession {
         this.sequenceId = session.getSequenceId();
         initialize(true, session.getSessionData());
     }
-    public FormEntrySession(String formXml, String restoreXml, String initLang, String username) throws Exception {
-        this(formXml, restoreXml, initLang, username, null);
-    }
-
 
     public FormEntrySession(String formXml, String restoreXml, String initLang, String username,
                 Map<String, String> sessionData) throws Exception {

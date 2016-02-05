@@ -19,6 +19,7 @@ import services.RestoreService;
 import services.XFormService;
 import session.FormEntrySession;
 import org.apache.commons.logging.Log;
+import util.Constants;
 
 import java.util.List;
 import java.util.Map;
@@ -42,13 +43,13 @@ public class SessionController {
     Log log = LogFactory.getLog(SessionController.class);
     ObjectMapper mapper = new ObjectMapper();
 
-    @RequestMapping("/new_session")
+    @RequestMapping(Constants.URL_NEW_SESSION)
     public NewSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean) throws Exception {
         NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService, restoreService);
         return newFormRequest.getResponse();
     }
 
-    @RequestMapping(value = "/sessions", method = RequestMethod.GET, headers = "Accept=application/json")
+    @RequestMapping(value = Constants.URL_LIST_SESSIONS, method = RequestMethod.GET, headers = "Accept=application/json")
     public @ResponseBody List<SerializableSession> findAllSessions() {
 
         Map<Object, Object> mMap = sessionRepo.findAll();
@@ -60,7 +61,7 @@ public class SessionController {
         return sessionList;
     }
 
-    @RequestMapping(value = "/get_session", method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_GET_SESSION, method = RequestMethod.GET)
     @ResponseBody
     public SerializableSession getSession(@RequestParam(value="id") String id) {
         SerializableSession serializableSession = sessionRepo.find(id);
@@ -68,7 +69,7 @@ public class SessionController {
     }
 
 
-    @RequestMapping("/answer_question")
+    @RequestMapping(Constants.URL_ANSWER_QUESTION)
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         SerializableSession session = sessionRepo.find(answerQuestionBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(session);
@@ -87,7 +88,7 @@ public class SessionController {
 
     }
 
-    @RequestMapping(value = "/current", method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.GET)
     @ResponseBody
     public CurrentResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
         SerializableSession serializableSession = sessionRepo.find(currentRequestBean.getSessionId());
@@ -95,7 +96,7 @@ public class SessionController {
         return new CurrentResponseBean(formEntrySession);
     }
 
-    @RequestMapping(value = "/submit", method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
         SerializableSession serializableSession = sessionRepo.find(submitRequestBean.getSessionId());
@@ -104,7 +105,7 @@ public class SessionController {
         return new SubmitResponseBean(formEntrySession);
     }
 
-    @RequestMapping(value = "/get_instance", method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.GET)
     @ResponseBody
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         SerializableSession serializableSession = sessionRepo.find(getInstanceRequestBean.getSessionId());
@@ -112,7 +113,7 @@ public class SessionController {
         return new GetInstanceResponseBean(formEntrySession);
     }
 
-    @RequestMapping(value = "/evaluate_xpath", method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.GET)
     @ResponseBody
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         SerializableSession serializableSession = sessionRepo.find(evaluateXPathRequestBean.getSessionId());
@@ -120,7 +121,7 @@ public class SessionController {
         return new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
     }
 
-    @RequestMapping(value = "/new_repeat", method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.GET)
     @ResponseBody
     public RepeatResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         SerializableSession serializableSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
@@ -138,9 +139,9 @@ public class SessionController {
         return mapper.readValue(response.toString(), RepeatResponseBean.class);
     }
 
-    @RequestMapping(value = "/delete_repeat", method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.GET)
     @ResponseBody
-    public RepeatResponseBean delete_repeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
+    public RepeatResponseBean deleteRepeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
         SerializableSession serializableSession = sessionRepo.find(repeatRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableSession);
 
@@ -158,14 +159,14 @@ public class SessionController {
         return mapper.readValue(response.toString(), RepeatResponseBean.class);
     }
 
-    @RequestMapping("/filter_cases")
+    @RequestMapping(Constants.URL_FILTER_CASES)
     public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
         filterRequest.setRestoreService(restoreService);
         String caseResponse = CaseAPIs.filterCases(filterRequest);
         return new CaseFilterResponseBean(caseResponse);
     }
 
-    @RequestMapping("/sync_db")
+    @RequestMapping(Constants.URL_SYNC_DB)
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest) throws Exception {
         syncRequest.setRestoreService(restoreService);
         String restoreXml = syncRequest.getRestoreXml();

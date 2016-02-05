@@ -79,23 +79,7 @@ public class SessionControllerTest extends BaseTestClass{
 
     @Test
     public void newSession() throws Exception {
-
-        String requestPayload = FileUtils.getFile(this.getClass(), "requests/new_form/new_form_2.json");
-
-        ObjectMapper mapper = new ObjectMapper();
-        NewSessionRequestBean newSessionRequest = mapper.readValue(requestPayload, NewSessionRequestBean.class);
-
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "xforms/basic.xml"));
-
-        MvcResult result = this.mockMvc.perform(
-                post("/new_session")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(newSessionRequest)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        //result.andExpect(model().attributeExists("id"));
+        startNewSession("requests/new_form/new_form_2.json", "xforms/basic.xml");
         verify(sessionRepoMock, times(1)).save(Mockito.any(SerializableSession.class));
         verifyNoMoreInteractions(sessionRepoMock);
     }

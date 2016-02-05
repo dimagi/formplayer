@@ -21,7 +21,7 @@ public class EvaluateXPathResponseBean {
     public EvaluateXPathResponseBean(){}
 
     public EvaluateXPathResponseBean(FormEntrySession formEntrySession, String xpath) throws IOException, XPathSyntaxException {
-        // TODO: this
+        // TODO: don't always return success
         status = "success";
         EvaluationContext evaluationContext = formEntrySession.getFormEntryModel().getForm().getEvaluationContext();
         Text mText = Text.XPathText(xpath, new Hashtable<String, Text>());

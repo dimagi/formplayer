@@ -25,7 +25,7 @@ public class EvaluateXPathRequestBean {
         return xpath;
     }
     @JsonSetter(value = "xpath")
-    public void getXpath(String xpath) {
+    public void setXpath(String xpath) {
         this.xpath = xpath;
     }
     @JsonGetter(value = "session-id")
