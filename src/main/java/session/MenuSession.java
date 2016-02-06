@@ -11,12 +11,15 @@ import org.commcare.api.session.SessionWrapper;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.MenuScreen;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import services.RestoreService;
 import util.StringUtils;
 
 /**
  * Created by willpride on 2/5/16.
  */
+@Component
 public class MenuSession {
     FormplayerConfigEngine engine;
     UserSqlSandbox sandbox;
@@ -26,17 +29,17 @@ public class MenuSession {
     String username;
     String password;
     String domain;
+    @Value("${commcarehq.host}")
     String host;
     String sessionId;
     private MenuDisplayable[] choices;
 
-    public MenuSession(String username, String password, String domain, String host,
+    public MenuSession(String username, String password, String domain,
                        String installReference, RestoreService restoreService) throws Exception {
         String domainedUsername = StringUtils.getFullUsername(username, domain, host);
         this.username = username;
         this.password = password;
         this.domain = domain;
-        this.host = host;
         this.installReference = installReference;
         this.auth = new BasicAuth(domainedUsername, password);
         this.engine = configureApplication(installReference);
@@ -47,6 +50,12 @@ public class MenuSession {
         choices = menuScreen.getChoices();
     }
 
+    public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService) throws Exception {
+        this(serializableMenuSession.getUsername(), serializableMenuSession.getPassword(), serializableMenuSession.getDomain(),
+            serializableMenuSession.getInstallReference(), restoreService);
+
+    }
+
     public SerializableMenuSession serialize() {
         SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
         serializableMenuSession.setUsername(this.username);
@@ -54,6 +63,7 @@ public class MenuSession {
         serializableMenuSession.setDomain(this.domain);
         serializableMenuSession.setInstallReference(this.installReference);
         serializableMenuSession.setSessionId(this.sessionId);
+        System.out.println("Serialize Session: " + serializableMenuSession);
         return serializableMenuSession;
     }
 

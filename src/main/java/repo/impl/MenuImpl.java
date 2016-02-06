@@ -3,15 +3,14 @@ package repo.impl;
 import objects.SerializableMenuSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import repo.MenuSessionRepo;
-import repo.SessionRepo;
+import repo.MenuRepo;
 
 import java.util.Map;
 
 /**
  * Created by willpride on 1/19/16.
  */
-public class MenuSessionImpl implements MenuSessionRepo{
+public class MenuImpl implements MenuRepo {
 
     @Autowired
     private RedisTemplate<String, SerializableMenuSession> redisTemplate;

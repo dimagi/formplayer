@@ -1,39 +1,20 @@
 package requests;
 
-import auth.BasicAuth;
 import auth.HqAuth;
 import beans.InstallRequestBean;
-import beans.InstallResponseBean;
 import beans.MenuResponseBean;
-import com.sun.glass.ui.Menu;
-import hq.CaseAPIs;
-import install.FormplayerConfigEngine;
-import objects.SerializableMenuSession;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.tomcat.util.bcel.classfile.Constant;
-import org.commcare.api.persistence.UserSqlSandbox;
-import org.commcare.api.session.SessionWrapper;
+import beans.MenuSelectBean;
 import org.commcare.suite.model.MenuDisplayable;
-import org.commcare.util.CommCareConfigEngine;
-import org.commcare.util.cli.MenuScreen;
-import org.javarosa.core.api.ClassNameHasher;
-import org.javarosa.core.util.externalizable.LivePrototypeFactory;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import repo.MenuSessionRepo;
+import repo.MenuRepo;
 import services.RestoreService;
 import services.XFormService;
-import session.FormEntrySession;
 import session.MenuSession;
 import util.Constants;
-import util.StringUtils;
 
-import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by willpride on 2/4/16.
@@ -52,16 +33,26 @@ public class InstallRequest {
     @Value("${commcarehq.host}")
     String host;
 
-    public InstallRequest(InstallRequestBean bean, XFormService xFormService, RestoreService restoreService) throws Exception {
+    public InstallRequest(InstallRequestBean bean, XFormService xFormService,
+                          RestoreService restoreService, MenuRepo menuSessionRepo) throws Exception {
         this.xFormService = xFormService;
         this.restoreService = restoreService;
         this.installReference = bean.getInstallReference();
         this.username = bean.getUsername();
         this.password = bean.getPassword();
         this.domain = bean.getDomain();
-        this.menuSession = new MenuSession(this.username, this.password, this.domain, this.host,
+        this.menuSession = new MenuSession(this.username, this.password, this.domain,
                 this.installReference, this.restoreService);
+        menuSessionRepo.save(menuSession.serialize());
     }
+
+    public InstallRequest(MenuSelectBean bean, XFormService xFormService,
+                          RestoreService restoreService, MenuRepo menuSessionRepo) throws Exception {
+        this.xFormService = xFormService;
+        this.restoreService = restoreService;
+        this.menuSession = new MenuSession(menuSessionRepo.find(bean.getSessionId()), restoreService);
+    }
+
 
     public String getInstallSource(){
         return xFormService.getFormXml(installReference, auth);

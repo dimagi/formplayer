@@ -1,7 +1,6 @@
 package application;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,7 +12,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
+import repo.MenuRepo;
 import repo.SessionRepo;
+import repo.impl.MenuImpl;
 import repo.impl.SessionImpl;
 import services.RestoreService;
 import services.XFormService;
@@ -89,11 +90,15 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    public MenuRepo menuRepo(){
+        MenuImpl impl = new MenuImpl();
+        return impl;
+    }
+    @Bean
     public XFormService xFormService(){
         XFormServiceImpl impl = new XFormServiceImpl();
         return impl;
     }
-
 
     @Bean
     public RestoreService restoreService(){

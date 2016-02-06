@@ -1,12 +1,12 @@
 package application;
 
 import beans.InstallRequestBean;
-import beans.InstallResponseBean;
 import beans.MenuResponseBean;
 import beans.MenuSelectBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.RestController;
+import repo.MenuRepo;
 import requests.InstallRequest;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,16 +27,19 @@ public class InstallController {
     @Autowired
     private RestoreService restoreService;
 
+    @Autowired
+    private MenuRepo menuRepo;
+
     @RequestMapping(Constants.URL_INSTALL)
     public MenuResponseBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
-        InstallRequest installRequest = new InstallRequest(installRequestBean, xFormService, restoreService);
+        InstallRequest installRequest = new InstallRequest(installRequestBean, xFormService, restoreService, menuRepo);
         return installRequest.getResponse();
     }
-/*
+
     @RequestMapping(Constants.URL_MENU_SELECT)
     public MenuResponseBean selectMenu(@RequestBody MenuSelectBean menuSelectBean) throws Exception {
-        //InstallRequest installRequest = new InstallRequest(menuSelectBean, xFormService, restoreService);
-        //return installRequest.getResponse();
+        InstallRequest installRequest = new InstallRequest(menuSelectBean, xFormService, restoreService, menuRepo);
+        return installRequest.getResponse();
     }
-    */
+
 }
