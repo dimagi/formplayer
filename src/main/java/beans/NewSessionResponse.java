@@ -9,18 +9,17 @@ import java.util.ArrayList;
 /**
  * Created by willpride on 1/12/16.
  */
-public class NewSessionResponse {
+public class NewSessionResponse extends SessionBean{
     // TODO: This should be a QuestionBean array
     JSONArray tree;
     String title;
     String[] langs;
-    String session_id;
 
     public NewSessionResponse(FormEntrySession fes){
         this.tree = fes.getFormTree();
         this.langs = fes.getLanguages();
         this.title = fes.getTitle();
-        this.session_id = fes.getUUID();
+        this.sessionId = fes.getUUID();
     }
 
     public String getTree(){
@@ -35,5 +34,5 @@ public class NewSessionResponse {
         return title;
     }
 
-    public String getSession_id(){return session_id;}
+    public String getSession_id(){return sessionId;}
 }

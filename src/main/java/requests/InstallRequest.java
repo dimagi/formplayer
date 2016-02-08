@@ -42,9 +42,10 @@ public class InstallRequest {
         this.password = bean.getPassword();
         this.domain = bean.getDomain();
         this.menuSession = new MenuSession(this.username, this.password, this.domain,
-                this.installReference, null, this.restoreService);
+                this.installReference, null, this.restoreService, null);
+        System.out.println("Savving session: " + menuSession);
         menuSessionRepo.save(menuSession.serialize());
-        System.out.println("Save Session: " + menuSession.getCommCareSession().getFrame());
+        System.out.println("Save Session: " + menuSession);
     }
 
 

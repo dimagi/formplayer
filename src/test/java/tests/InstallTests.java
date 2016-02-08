@@ -1,20 +1,13 @@
 package tests;
 
-import application.Application;
-import application.InstallController;
 import application.SessionController;
 import auth.HqAuth;
 import beans.InstallRequestBean;
-import beans.InstallResponseBean;
 import beans.MenuResponseBean;
 import beans.MenuSelectBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableMenuSession;
-import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.api.persistence.UserSqlSandbox;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,18 +18,12 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.TestRestTemplate;
-import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.WebApplicationContext;
 import repo.MenuRepo;
 import repo.SessionRepo;
 import services.RestoreService;
@@ -46,16 +33,12 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 /**
  * Created by willpride on 1/14/16.
@@ -79,7 +62,7 @@ public class InstallTests {
     protected RestoreService restoreServiceMock;
 
     @InjectMocks
-    InstallController installController;
+    SessionController sessionController;
 
     ObjectMapper mapper;
 
@@ -97,7 +80,7 @@ public class InstallTests {
         Mockito.reset(menuRepoMock);
         MockitoAnnotations.initMocks(this);
         mapper = new ObjectMapper();
-        mockMvc = MockMvcBuilders.standaloneSetup(installController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
         setupMenuMock();
@@ -138,19 +121,18 @@ public class InstallTests {
 
         System.out.println("Session ID: " + sessionId);
 
-        MenuResponseBean menuResponseBean1 =
+        JSONObject menuResponseObject =
                 selectMenu("requests/menu/menu_select.json", sessionId);
 
 
-        System.out.println("Menu Response Bean 1: " + menuResponseBean1);
+        System.out.println("Menu Response Bean 1: " + menuResponseObject);
 
-        MenuResponseBean menuResponseBean2 =
-                selectMenu("requests/menu/menu_select.json", sessionId);
+        //JSONObject menuResponseObject2 =
+        //       selectMenu("requests/menu/menu_select.json", sessionId);
 
-        System.out.println("Menu Response Bean 2: " + menuResponseBean2);
+        //System.out.println("Menu Response Bean 2: " + menuResponseObject2);
 
     }
-
 
     public MenuResponseBean doInstall(String requestPath) throws Exception {
         InstallRequestBean installRequestBean = mapper.readValue
@@ -164,7 +146,7 @@ public class InstallTests {
         return menuResponseBean;
     }
 
-    public MenuResponseBean selectMenu(String requestPath, String sessionId) throws Exception {
+    public JSONObject selectMenu(String requestPath, String sessionId) throws Exception {
         MenuSelectBean menuSelectBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), MenuSelectBean.class);
         menuSelectBean.setSessionId(sessionId);
@@ -172,8 +154,7 @@ public class InstallTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(menuSelectBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        MenuResponseBean menuResponseBean = mapper.readValue(resultString,
-                MenuResponseBean.class);
-        return menuResponseBean;
+        JSONObject ret = new JSONObject(resultString);
+        return ret;
     }
 }

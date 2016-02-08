@@ -22,12 +22,6 @@ public class NewSessionRequestBean {
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public NewSessionRequestBean(){}
 
-    public NewSessionRequestBean(String formUrl, String lang, Map<String, String> hqAuth) {
-        this.formUrl = formUrl;
-        this.lang = lang;
-        this.hqAuth = hqAuth;
-    }
-
     public String getLang() {
         return lang;
     }

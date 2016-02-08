@@ -27,4 +27,9 @@ public class MenuSelectBean {
     public void setSelection(String selection) {
         this.selection = selection;
     }
+
+    @Override
+    public String toString(){
+        return "MenuSelectBean [sessionId=" + sessionId + ", selection=" + selection + "]";
+    }
 }

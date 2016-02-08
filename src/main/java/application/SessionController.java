@@ -9,18 +9,25 @@ import objects.SessionList;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
 import org.commcare.modern.process.FormRecordProcessorHelper;
+import org.commcare.suite.model.MenuDisplayable;
+import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.Screen;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
+import repo.MenuRepo;
 import repo.SessionRepo;
+import requests.InstallRequest;
 import requests.NewFormRequest;
 import services.RestoreService;
 import services.XFormService;
 import session.FormEntrySession;
 import org.apache.commons.logging.Log;
+import session.MenuSession;
 import util.Constants;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +46,9 @@ public class SessionController {
 
     @Autowired
     private RestoreService restoreService;
+
+    @Autowired
+    private MenuRepo menuRepo;
 
     Log log = LogFactory.getLog(SessionController.class);
     ObjectMapper mapper = new ObjectMapper();
@@ -172,5 +182,41 @@ public class SessionController {
         String restoreXml = syncRequest.getRestoreXml();
         CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), restoreXml);
         return new SyncDbResponseBean();
+    }
+
+    @RequestMapping(Constants.URL_INSTALL)
+    public MenuResponseBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
+        InstallRequest installRequest = new InstallRequest(installRequestBean, xFormService, restoreService, menuRepo);
+        return installRequest.getResponse();
+    }
+
+    @RequestMapping(Constants.URL_MENU_SELECT)
+    public SessionBean selectMenu(@RequestBody MenuSelectBean menuSelectBean) throws Exception {
+        System.out.println("Select Menu Select: " + menuSelectBean);
+        MenuSession menuSession = new MenuSession(menuRepo.find(menuSelectBean.getSessionId()), restoreService);
+        System.out.println("Select Menu Session: " + menuSession);
+        Screen nextScreen = menuSession.handleInput(menuSelectBean.getSelection());
+        System.out.println("Next Screen: " + nextScreen);
+        menuRepo.save(menuSession.serialize());
+        if(nextScreen instanceof MenuScreen){
+            MenuScreen menuScreen = (MenuScreen) nextScreen;
+            MenuDisplayable[] options = menuScreen.getChoices();
+            HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
+            for(int i=0; i <options.length; i++){
+                optionsStrings.put(i, options[i].getDisplayText());
+            }
+            MenuResponseBean menuResponseBean = new MenuResponseBean();
+            menuResponseBean.setMenuType(Constants.MENU_MODULE);
+            menuResponseBean.setOptions(optionsStrings);
+            menuResponseBean.setSessionId(menuSession.getSessionId());
+            return menuResponseBean;
+        } else if (nextScreen == null){
+            System.out.println("Next Screen null!");
+            NewSessionResponse response = menuSession.startFormEntry(sessionRepo, xFormService, restoreService).getResponse();
+            String stringResponse = new ObjectMapper().writeValueAsString(response);
+            System.out.println("New Session Response: " + stringResponse);
+            return response;
+        }
+        return null;
     }
 }

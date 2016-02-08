@@ -28,25 +28,34 @@ public class NewFormRequest {
     HqAuth auth;
     String username;
     String domain;
+    String lang;
 
-    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
+    public NewFormRequest(String formUrl, HqAuth auth, String username, String domain, String lang,
+                          Map<String, String> sessionData, SessionRepo sessionRepo,
                           XFormService xFormService, RestoreService restoreService) throws Exception {
         this.sessionRepo = sessionRepo;
         this.xFormService = xFormService;
         this.restoreService = restoreService;
-
-        formUrl = bean.getFormUrl();
-        auth = new DjangoAuth(bean.getHqAuth().get("django-session"));
-        username = bean.getSessionData().getUsername();
-        domain = bean.getSessionData().getDomain();
-        String initLang = bean.getLang();
-        Map<String, String> data = bean.getSessionData().getData();
+        this.formUrl = formUrl;
+        this.auth = auth;
+        this.username = username;
+        this.domain = domain;
+        this.lang = lang;
+        Map<String, String> data = sessionData;
         try {
-            formEntrySession = new FormEntrySession(getFormXml(), getRestoreXml(), initLang, username, data);
+            formEntrySession = new FormEntrySession(getFormXml(), getRestoreXml(), lang, username, data);
             sessionRepo.save(serialize());
         } catch(IOException e){
             e.printStackTrace();
         }
+
+    }
+
+    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
+                          XFormService xFormService, RestoreService restoreService) throws Exception {
+        this(bean.getFormUrl(), new DjangoAuth(bean.getHqAuth().get("django-session")),
+                bean.getSessionData().getUsername(), bean.getSessionData().getDomain(),
+                bean.getLang(), bean.getSessionData().getData(), sessionRepo, xFormService, restoreService);
     }
 
     public NewSessionResponse getResponse() throws IOException {

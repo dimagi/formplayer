@@ -6,9 +6,8 @@ import java.util.Map;
 /**
  * Created by willpride on 2/5/16.
  */
-public class MenuResponseBean {
+public class MenuResponseBean extends SessionBean{
     private String menuType;
-    private String sessionId;
     private Map<Integer, String> options;
 
     public String getMenuType() {
@@ -30,13 +29,5 @@ public class MenuResponseBean {
     @Override
     public String toString(){
         return "MenuResponseBean [menuType=" + menuType + ", options=" + options;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 }

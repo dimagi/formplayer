@@ -2,6 +2,7 @@ package session;
 
 import auth.BasicAuth;
 import auth.HqAuth;
+import beans.NewSessionRequestBean;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
 import objects.SerializableMenuSession;
@@ -28,14 +29,19 @@ import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import repo.SessionRepo;
+import requests.NewFormRequest;
 import services.RestoreService;
+import services.XFormService;
 import util.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.UUID;
 
 /**
  * Created by willpride on 2/5/16.
@@ -56,7 +62,8 @@ public class MenuSession {
     private MenuDisplayable[] choices;
 
     public MenuSession(String username, String password, String domain,
-                       String installReference, String serializedCommCareSession, RestoreService restoreService) throws Exception {
+                       String installReference, String serializedCommCareSession,
+                       RestoreService restoreService, String sessionId) throws Exception {
         String domainedUsername = StringUtils.getFullUsername(username, domain, host);
         this.username = username;
         this.password = password;
@@ -64,6 +71,13 @@ public class MenuSession {
         this.installReference = installReference;
         this.auth = new BasicAuth(domainedUsername, password);
         this.engine = configureApplication(installReference);
+
+        if(sessionId == null){
+            this.sessionId =  UUID.randomUUID().toString();
+        } else{
+            this.sessionId = sessionId;
+        }
+
         sandbox = CaseAPIs.restoreIfNotExists(domainedUsername, restoreService, domain, auth);
         sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         if(serializedCommCareSession != null){
@@ -77,7 +91,8 @@ public class MenuSession {
 
     public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService) throws Exception {
         this(serializableMenuSession.getUsername(), serializableMenuSession.getPassword(), serializableMenuSession.getDomain(),
-            serializableMenuSession.getInstallReference(), serializableMenuSession.getSerializedCommCareSession(), restoreService);
+            serializableMenuSession.getInstallReference(), serializableMenuSession.getSerializedCommCareSession(), restoreService,
+                serializableMenuSession.getSessionId());
 
     }
 
@@ -186,6 +201,19 @@ public class MenuSession {
         }
     }
 
+    public NewFormRequest startFormEntry(SessionRepo sessionRepo,
+                                         XFormService xFormService,
+                                         RestoreService restoreService) throws Exception {
+
+        System.out.println("Start Form Entry");
+        String formXmlns = sessionWrapper.getForm();
+        System.out.println("XMLNS: " + formXmlns);
+        NewFormRequest newSession = new NewFormRequest(null, auth, username, domain, "lang", null,
+                sessionRepo, xFormService, restoreService);
+
+        return newSession;
+    }
+
 
     public MenuDisplayable[] getChoices() {
         return choices;
@@ -205,5 +233,10 @@ public class MenuSession {
 
     public String getSessionId() {
         return this.sessionId;
+    }
+
+    @Override
+    public String toString(){
+        return "MenuSession [sessionId=" + sessionId + " choices=" + Arrays.toString(choices) + "]";
     }
 }
