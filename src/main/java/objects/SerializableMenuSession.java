@@ -11,6 +11,7 @@ public class SerializableMenuSession {
     private String username;
     private String password;
     private String domain;
+    private String serializedCommCareSession;
     private ArrayList<String> actions;
 
     @Override
@@ -78,5 +79,13 @@ public class SerializableMenuSession {
 
     public void setActions(ArrayList<String> actions) {
         this.actions = actions;
+    }
+
+    public String getSerializedCommCareSession() {
+        return serializedCommCareSession;
+    }
+
+    public void setSerializedCommCareSession(String serializedCommCareSession) {
+        this.serializedCommCareSession = serializedCommCareSession;
     }
 }

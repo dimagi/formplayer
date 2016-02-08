@@ -42,15 +42,9 @@ public class InstallRequest {
         this.password = bean.getPassword();
         this.domain = bean.getDomain();
         this.menuSession = new MenuSession(this.username, this.password, this.domain,
-                this.installReference, this.restoreService);
+                this.installReference, null, this.restoreService);
         menuSessionRepo.save(menuSession.serialize());
-    }
-
-    public InstallRequest(MenuSelectBean bean, XFormService xFormService,
-                          RestoreService restoreService, MenuRepo menuSessionRepo) throws Exception {
-        this.xFormService = xFormService;
-        this.restoreService = restoreService;
-        this.menuSession = new MenuSession(menuSessionRepo.find(bean.getSessionId()), restoreService);
+        System.out.println("Save Session: " + menuSession.getCommCareSession().getFrame());
     }
 
 
@@ -66,6 +60,7 @@ public class InstallRequest {
         MenuResponseBean menuResponseBean = new MenuResponseBean();
         menuResponseBean.setMenuType(Constants.MENU_MODULE);
         menuResponseBean.setOptions(parseMenuChoices(this.menuSession.getChoices()));
+        menuResponseBean.setSessionId(this.menuSession.getSessionId());
         return menuResponseBean;
     }
 

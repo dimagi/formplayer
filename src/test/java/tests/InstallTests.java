@@ -118,6 +118,7 @@ public class InstallTests {
                 serializableMenuSession.setSessionId(toBeSaved.getSessionId());
                 serializableMenuSession.setInstallReference(toBeSaved.getInstallReference());
                 serializableMenuSession.setPassword(toBeSaved.getPassword());
+                serializableMenuSession.setSerializedCommCareSession(toBeSaved.getSerializedCommCareSession());
                 System.out.println("Serializable menu session: " + serializableMenuSession);
                 System.out.println("Tobesaved: " + toBeSaved);
                 return null;
@@ -133,9 +134,20 @@ public class InstallTests {
         assert menuResponseBean.getOptions().size() == 12;
         assert menuResponseBean.getMenuType().equals(Constants.MENU_MODULE);
         assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
+        String sessionId = menuResponseBean.getSessionId();
+
+        System.out.println("Session ID: " + sessionId);
 
         MenuResponseBean menuResponseBean1 =
-                selectMenu("requests/menu/menu_select.json");
+                selectMenu("requests/menu/menu_select.json", sessionId);
+
+
+        System.out.println("Menu Response Bean 1: " + menuResponseBean1);
+
+        MenuResponseBean menuResponseBean2 =
+                selectMenu("requests/menu/menu_select.json", sessionId);
+
+        System.out.println("Menu Response Bean 2: " + menuResponseBean2);
 
     }
 
@@ -152,9 +164,10 @@ public class InstallTests {
         return menuResponseBean;
     }
 
-    public MenuResponseBean selectMenu(String requestPath) throws Exception {
+    public MenuResponseBean selectMenu(String requestPath, String sessionId) throws Exception {
         MenuSelectBean menuSelectBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), MenuSelectBean.class);
+        menuSelectBean.setSessionId(sessionId);
         ResultActions selectResult = mockMvc.perform(get(urlPrepend(Constants.URL_MENU_SELECT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(menuSelectBean)));
