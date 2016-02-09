@@ -42,7 +42,7 @@ public class InstallRequest {
         this.password = bean.getPassword();
         this.domain = bean.getDomain();
         this.menuSession = new MenuSession(this.username, this.password, this.domain,
-                this.installReference, null, this.restoreService, null);
+                this.installReference, null, this.restoreService, null, null);
         System.out.println("Savving session: " + menuSession);
         menuSessionRepo.save(menuSession.serialize());
         System.out.println("Save Session: " + menuSession);
@@ -65,10 +65,10 @@ public class InstallRequest {
         return menuResponseBean;
     }
 
-    public Map<Integer, String> parseMenuChoices(MenuDisplayable[] menuDisplayables){
+    public Map<Integer, String> parseMenuChoices(String[] menuDisplayables){
         Map<Integer, String> ret = new HashMap<Integer, String>();
         for(int i = 0; i < menuDisplayables.length; i++){
-            ret.put(new Integer(i), menuDisplayables[i].getDisplayText());
+            ret.put(new Integer(i), menuDisplayables[i]);
         }
         return ret;
     }

@@ -11,16 +11,11 @@ import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.api.session.SessionWrapper;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.Entry;
-import org.commcare.suite.model.Menu;
-import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.SessionDatum;
-import org.commcare.util.cli.CommCareSessionException;
-import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.MenuScreen;
-import org.commcare.util.cli.Screen;
+import org.commcare.util.cli.*;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.condition.pivot.IntegerRangeHint;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
@@ -60,11 +55,12 @@ public class MenuSession {
     @Value("${commcarehq.host}")
     String host;
     private String sessionId;
-    private MenuDisplayable[] choices;
+    private Screen screen;
+    private String currentSelection;
 
     public MenuSession(String username, String password, String domain,
                        String installReference, String serializedCommCareSession,
-                       RestoreService restoreService, String sessionId) throws Exception {
+                       RestoreService restoreService, String sessionId, String currentSelection) throws Exception {
         String domainedUsername = StringUtils.getFullUsername(username, domain, host);
         this.username = username;
         this.password = password;
@@ -72,6 +68,7 @@ public class MenuSession {
         this.installReference = installReference;
         this.auth = new BasicAuth(domainedUsername, password);
         this.engine = configureApplication(installReference);
+        this.currentSelection = currentSelection;
 
         if(sessionId == null){
             this.sessionId =  UUID.randomUUID().toString();
@@ -85,15 +82,20 @@ public class MenuSession {
             restoreSessionFromStream(serializedCommCareSession);
             System.out.println("Loaded Session: " + sessionWrapper.getFrame());
         }
-        MenuScreen menuScreen = new MenuScreen();
-        menuScreen.init(sessionWrapper);
-        choices = menuScreen.getChoices();
+        screen = getNextScreen();
+        System.out.println("NExt Screen: " +screen);
+        System.out.println("Current selection: " + currentSelection);
+        if(currentSelection != null){
+            if(screen instanceof EntityScreen){
+                handleInput(currentSelection);
+            }
+        }
     }
 
     public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService) throws Exception {
         this(serializableMenuSession.getUsername(), serializableMenuSession.getPassword(), serializableMenuSession.getDomain(),
             serializableMenuSession.getInstallReference(), serializableMenuSession.getSerializedCommCareSession(), restoreService,
-                serializableMenuSession.getSessionId());
+                serializableMenuSession.getSessionId(), serializableMenuSession.getCurrentSelection());
 
     }
 
@@ -125,6 +127,7 @@ public class MenuSession {
         serializableMenuSession.setInstallReference(this.installReference);
         serializableMenuSession.setSessionId(this.sessionId);
         serializableMenuSession.setSerializedCommCareSession(this.getSerializedCommCareSession());
+        serializableMenuSession.setCurrentSelection(this.currentSelection);
         return serializableMenuSession;
     }
 
@@ -140,26 +143,19 @@ public class MenuSession {
         return engine;
     }
 
-    public Screen handleInput(String input){
-        try {
-            int i = Integer.parseInt(input);
-            System.out.println("Handle input: " + input + "choices: " + choices[i]);
-            String commandId;
-            if (choices[i] instanceof Entry) {
-                commandId = ((Entry)choices[i]).getCommandId();
-            } else {
-                commandId = ((Menu)choices[i]).getId();
+    public boolean handleInput(String input) throws CommCareSessionException {
+        boolean redrawing = screen.handleInputAndUpdateSession(sessionWrapper, input);
+        if(screen instanceof EntityScreen){
+            EntityScreen entityScreen = (EntityScreen) screen;
+            if(entityScreen.getCurrentScreen() instanceof EntityDetailSubscreen){
+                EntityDetailSubscreen entityDetailSubscreen = (EntityDetailSubscreen) entityScreen.getCurrentScreen();
+                int currentIndex = entityDetailSubscreen.getCurrentIndex();
+                currentSelection = input;
             }
-            sessionWrapper.setCommand(commandId);
-            return getNextScreen();
-        } catch (NumberFormatException e) {
-            //This will result in things just executing again, which is fine.
-        } catch (CommCareSessionException e) {
-            e.printStackTrace();
         }
-        return null;
+        return redrawing;
     }
-    private Screen getNextScreen() throws CommCareSessionException {
+    public Screen getNextScreen() throws CommCareSessionException {
         String next = sessionWrapper.getNeededData();
 
         if (next == null) {
@@ -226,13 +222,8 @@ public class MenuSession {
         return new NewSessionResponse(formEntrySession);
     }
 
-
-    public MenuDisplayable[] getChoices() {
-        return choices;
-    }
-
-    public void setChoices(MenuDisplayable[] choices) {
-        this.choices = choices;
+    public String[] getChoices(){
+        return screen.getOptions();
     }
 
     public CommCareSession getCommCareSession(){
@@ -249,6 +240,10 @@ public class MenuSession {
 
     @Override
     public String toString(){
-        return "MenuSession [sessionId=" + sessionId + " choices=" + Arrays.toString(choices) + "]";
+        return "MenuSession [sessionId=" + sessionId + " choices=" + Arrays.toString(getChoices()) + "]";
+    }
+
+    public Screen getCurrentScreen(){
+        return screen;
     }
 }

@@ -10,10 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
 import org.commcare.modern.process.FormRecordProcessorHelper;
 import org.commcare.suite.model.MenuDisplayable;
-import org.commcare.util.cli.EntityListSubscreen;
-import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.MenuScreen;
-import org.commcare.util.cli.Screen;
+import org.commcare.util.cli.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -197,9 +194,19 @@ public class SessionController {
         System.out.println("Select Menu Select: " + menuSelectBean);
         MenuSession menuSession = new MenuSession(menuRepo.find(menuSelectBean.getSessionId()), restoreService);
         System.out.println("Select Menu Session: " + menuSession);
-        Screen nextScreen = menuSession.handleInput(menuSelectBean.getSelection());
-        System.out.println("Next Screen: " + nextScreen);
+        boolean redrawing = menuSession.handleInput(menuSelectBean.getSelection());
+        System.out.println("Handle input: " + menuSelectBean.getSelection() + " redrawing: " + redrawing);
         menuRepo.save(menuSession.serialize());
+        Screen nextScreen;
+
+        if(!redrawing){
+            nextScreen = menuSession.getNextScreen();
+        } else{
+            nextScreen = menuSession.getCurrentScreen();
+        }
+
+        System.out.println("Next Screen: " + nextScreen);
+
         if(nextScreen instanceof MenuScreen){
             MenuScreen menuScreen = (MenuScreen) nextScreen;
             MenuDisplayable[] options = menuScreen.getChoices();
@@ -214,17 +221,34 @@ public class SessionController {
             return menuResponseBean;
         } else if (nextScreen instanceof EntityScreen){
             EntityScreen entityScreen = (EntityScreen) nextScreen;
-            EntityListSubscreen entityListSubscreen = (EntityListSubscreen) entityScreen.getCurrentScreen();
-            String[] rows = entityListSubscreen.getRows();
-            HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
-            for(int i=0; i <rows.length; i++){
-                optionsStrings.put(i, rows[i]);
+
+            if (entityScreen.getCurrentScreen() instanceof EntityListSubscreen) {
+                EntityListSubscreen entityListSubscreen = (EntityListSubscreen) entityScreen.getCurrentScreen();
+                String[] rows = entityListSubscreen.getRows();
+                HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
+                for(int i=0; i <rows.length; i++){
+                    optionsStrings.put(i, rows[i]);
+                }
+                MenuResponseBean menuResponseBean = new MenuResponseBean();
+                menuResponseBean.setMenuType(Constants.MENU_ENTITY);
+                menuResponseBean.setOptions(optionsStrings);
+                menuResponseBean.setSessionId(menuSession.getSessionId());
+                return menuResponseBean;
+            } else if(entityScreen.getCurrentScreen() instanceof EntityDetailSubscreen){
+
+                EntityDetailSubscreen entityDetailSubscreen = (EntityDetailSubscreen) entityScreen.getCurrentScreen();
+                String[] rows = entityDetailSubscreen.getOptions();
+                HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
+                for(int i=0; i <rows.length; i++){
+                    optionsStrings.put(i, rows[i]);
+                }
+                MenuResponseBean menuResponseBean = new MenuResponseBean();
+                menuResponseBean.setMenuType(Constants.MENU_ENTITY);
+                menuResponseBean.setOptions(optionsStrings);
+                menuResponseBean.setSessionId(menuSession.getSessionId());
+                return menuResponseBean;
             }
-            MenuResponseBean menuResponseBean = new MenuResponseBean();
-            menuResponseBean.setMenuType(Constants.MENU_ENTITY);
-            menuResponseBean.setOptions(optionsStrings);
-            menuResponseBean.setSessionId(menuSession.getSessionId());
-            return menuResponseBean;
+
         }else if (nextScreen == null){
             System.out.println("Next Screen null!");
             NewSessionResponse response = menuSession.startFormEntry(sessionRepo);

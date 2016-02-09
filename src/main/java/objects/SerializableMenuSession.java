@@ -13,6 +13,7 @@ public class SerializableMenuSession {
     private String domain;
     private String serializedCommCareSession;
     private ArrayList<String> actions;
+    private String currentSelection;
 
     @Override
     public int hashCode(){
@@ -87,5 +88,13 @@ public class SerializableMenuSession {
 
     public void setSerializedCommCareSession(String serializedCommCareSession) {
         this.serializedCommCareSession = serializedCommCareSession;
+    }
+
+    public String getCurrentSelection() {
+        return currentSelection;
+    }
+
+    public void setCurrentSelection(String currentSelection) {
+        this.currentSelection = currentSelection;
     }
 }

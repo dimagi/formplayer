@@ -103,6 +103,7 @@ public class InstallTests {
                 serializableMenuSession.setInstallReference(toBeSaved.getInstallReference());
                 serializableMenuSession.setPassword(toBeSaved.getPassword());
                 serializableMenuSession.setSerializedCommCareSession(toBeSaved.getSerializedCommCareSession());
+                serializableMenuSession.setCurrentSelection(toBeSaved.getCurrentSelection());
                 System.out.println("Serializable menu session: " + serializableMenuSession);
                 System.out.println("Tobesaved: " + toBeSaved);
                 return null;
@@ -194,10 +195,15 @@ public class InstallTests {
 
         System.out.println("Length: " + options.length());
 
-        //JSONObject menuResponseObject3 =
-        //        selectMenu("requests/menu/menu_select.json", sessionId, "3");
+        JSONObject menuResponseObject3 =
+                selectMenu("requests/menu/menu_select.json", sessionId, "6");
 
-        //System.out.println("Case Select Bean 2: " + menuResponseObject3);
+        System.out.println("Case Select Bean 3: " + menuResponseObject3);
+
+        JSONObject menuResponseObject4 =
+                selectMenu("requests/menu/menu_select.json", sessionId, "");
+
+        System.out.println("Case Select Bean 4: " + menuResponseObject4);
 
     }
 
@@ -226,7 +232,6 @@ public class InstallTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(menuSelectBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        System.out.println("Select Menu result: " + resultString);
         JSONObject ret = new JSONObject(resultString);
         return ret;
     }
