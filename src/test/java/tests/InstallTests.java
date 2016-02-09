@@ -5,6 +5,7 @@ import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.MenuResponseBean;
 import beans.MenuSelectBean;
+import beans.NewSessionResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableMenuSession;
 import org.json.JSONObject;
@@ -127,10 +128,76 @@ public class InstallTests {
 
         System.out.println("Menu Response Bean 1: " + menuResponseObject);
 
-        //JSONObject menuResponseObject2 =
-        //       selectMenu("requests/menu/menu_select.json", sessionId);
+        JSONObject menuResponseObject2 =
+               selectMenu("requests/menu/menu_select.json", sessionId);
 
-        //System.out.println("Menu Response Bean 2: " + menuResponseObject2);
+        System.out.println("Menu Response Bean 2: " + menuResponseObject2);
+
+        assert menuResponseObject2.has("tree");
+        assert menuResponseObject2.has("title");
+
+    }
+
+
+    @Test
+    public void testCaseCreate() throws Exception {
+        // setup files
+        MenuResponseBean menuResponseBean =
+                doInstall("requests/install/install.json");
+        assert menuResponseBean.getOptions().size() == 12;
+        assert menuResponseBean.getMenuType().equals(Constants.MENU_MODULE);
+        assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
+        String sessionId = menuResponseBean.getSessionId();
+
+        System.out.println("Session ID: " + sessionId);
+        System.out.println("Menu Init: " + menuResponseBean);
+
+        JSONObject menuResponseObject =
+                selectMenu("requests/menu/menu_select.json", sessionId, "2");
+
+        System.out.println("Menu Response Bean 1: " + menuResponseObject);
+
+        JSONObject menuResponseObject2 =
+                selectMenu("requests/menu/menu_select.json", sessionId);
+
+        System.out.println("Menu Response Bean 2: " + menuResponseObject2);
+
+        assert menuResponseObject2.has("tree");
+        assert menuResponseObject2.has("title");
+
+    }
+
+    @Test
+    public void testCaseSelect() throws Exception {
+        // setup files
+        MenuResponseBean menuResponseBean =
+                doInstall("requests/install/install.json");
+        assert menuResponseBean.getOptions().size() == 12;
+        assert menuResponseBean.getMenuType().equals(Constants.MENU_MODULE);
+        assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
+        String sessionId = menuResponseBean.getSessionId();
+
+        System.out.println("Session ID: " + sessionId);
+        System.out.println("Case Select Init: " + menuResponseBean);
+
+        JSONObject menuResponseObject =
+                selectMenu("requests/menu/menu_select.json", sessionId, "2");
+
+        System.out.println("Case Select Bean 1: " + menuResponseObject);
+
+        JSONObject menuResponseObject2 =
+                selectMenu("requests/menu/menu_select.json", sessionId, "1");
+
+        System.out.println("Case Select Bean 2: " + menuResponseObject2);
+
+        JSONObject options = new JSONObject(menuResponseObject2.get("options"));
+
+        System.out.println("Length: " + options.length());
+
+        //JSONObject menuResponseObject3 =
+        //        selectMenu("requests/menu/menu_select.json", sessionId, "3");
+
+        //System.out.println("Case Select Bean 2: " + menuResponseObject3);
 
     }
 
@@ -147,13 +214,19 @@ public class InstallTests {
     }
 
     public JSONObject selectMenu(String requestPath, String sessionId) throws Exception {
+        return selectMenu(requestPath, sessionId, "0");
+    }
+
+    public JSONObject selectMenu(String requestPath, String sessionId, String selection) throws Exception {
         MenuSelectBean menuSelectBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), MenuSelectBean.class);
         menuSelectBean.setSessionId(sessionId);
+        menuSelectBean.setSelection(selection);
         ResultActions selectResult = mockMvc.perform(get(urlPrepend(Constants.URL_MENU_SELECT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(menuSelectBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
+        System.out.println("Select Menu result: " + resultString);
         JSONObject ret = new JSONObject(resultString);
         return ret;
     }

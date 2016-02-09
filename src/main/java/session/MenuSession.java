@@ -2,7 +2,7 @@ package session;
 
 import auth.BasicAuth;
 import auth.HqAuth;
-import beans.NewSessionRequestBean;
+import beans.NewSessionResponse;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
 import objects.SerializableMenuSession;
@@ -19,9 +19,11 @@ import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
 import org.commcare.util.cli.Screen;
+import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.core.util.externalizable.ExtUtil;
+import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
@@ -30,9 +32,7 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import repo.SessionRepo;
-import requests.NewFormRequest;
 import services.RestoreService;
-import services.XFormService;
 import util.StringUtils;
 
 import java.io.ByteArrayInputStream;
@@ -41,6 +41,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -102,7 +103,7 @@ public class MenuSession {
         SessionFrame restoredFrame = new SessionFrame();
         DataInputStream inputStream =
                 new DataInputStream(new ByteArrayInputStream(sessionBytes));
-        restoredFrame.readExternal(inputStream, ExtUtil.defaultPrototypes());
+        restoredFrame.readExternal(inputStream, new PrototypeFactory());
         this.sessionWrapper.frame = restoredFrame;
         this.sessionWrapper.syncState();
     }
@@ -169,7 +170,9 @@ public class MenuSession {
             menuScreen.init(sessionWrapper);
             return menuScreen;
         } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
-            return new EntityScreen();
+            EntityScreen entityScreen = new EntityScreen();
+            entityScreen.init(sessionWrapper);
+            return entityScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
             return getNextScreen();
@@ -201,17 +204,26 @@ public class MenuSession {
         }
     }
 
-    public NewFormRequest startFormEntry(SessionRepo sessionRepo,
-                                         XFormService xFormService,
-                                         RestoreService restoreService) throws Exception {
+    public HashMap<String, String> getSessionData(){
+        OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
+        HashMap<String, String> ret = new HashMap<>();
+        for(String key: sessionData.keySet()){
+            ret.put(key, sessionData.get(key));
+        }
+        System.out.println("Returning Session data: " + ret);
+        return ret;
+    }
 
+    public NewSessionResponse startFormEntry(SessionRepo sessionRepo) throws Exception {
         System.out.println("Start Form Entry");
         String formXmlns = sessionWrapper.getForm();
         System.out.println("XMLNS: " + formXmlns);
-        NewFormRequest newSession = new NewFormRequest(null, auth, username, domain, "lang", null,
-                sessionRepo, xFormService, restoreService);
-
-        return newSession;
+        FormDef formDef = engine.loadFormByXmlns(formXmlns);
+        System.out.println("Form Def: " + formDef);
+        HashMap<String, String> sessionData = getSessionData();
+        FormEntrySession formEntrySession = new FormEntrySession(sandbox, formDef, "en", username, sessionData);
+        sessionRepo.save(formEntrySession.serialize());
+        return new NewSessionResponse(formEntrySession);
     }
 
 

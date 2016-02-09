@@ -21,4 +21,5 @@ public class Constants {
     public static final String URL_MENU_SELECT = "menu_select";
     //Menus
     public static final String MENU_MODULE = "modules";
+    public static final String MENU_ENTITY = "entity";
 }

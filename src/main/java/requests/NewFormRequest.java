@@ -44,11 +44,10 @@ public class NewFormRequest {
         Map<String, String> data = sessionData;
         try {
             formEntrySession = new FormEntrySession(getFormXml(), getRestoreXml(), lang, username, data);
-            sessionRepo.save(serialize());
+            sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();
         }
-
     }
 
     public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
@@ -69,18 +68,5 @@ public class NewFormRequest {
 
     public String getFormXml(){
         return xFormService.getFormXml(formUrl, auth);
-    }
-
-    private SerializableSession serialize() throws IOException {
-        SerializableSession serializableSession = new SerializableSession();
-        serializableSession.setInstanceXml(formEntrySession.getInstanceXml());
-        serializableSession.setId(formEntrySession.getUUID());
-        serializableSession.setFormXml(formEntrySession.getFormXml());
-        serializableSession.setUsername(username);
-        serializableSession.setRestoreXml(formEntrySession.getRestoreXml());
-        serializableSession.setSequenceId(formEntrySession.getSequenceId());
-        serializableSession.setInitLang(formEntrySession.getInitLang());
-        serializableSession.setSessionData(formEntrySession.getSessionData());
-        return serializableSession;
     }
 }

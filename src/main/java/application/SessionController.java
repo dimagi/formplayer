@@ -10,6 +10,8 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
 import org.commcare.modern.process.FormRecordProcessorHelper;
 import org.commcare.suite.model.MenuDisplayable;
+import org.commcare.util.cli.EntityListSubscreen;
+import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
 import org.commcare.util.cli.Screen;
 import org.json.JSONObject;
@@ -210,9 +212,22 @@ public class SessionController {
             menuResponseBean.setOptions(optionsStrings);
             menuResponseBean.setSessionId(menuSession.getSessionId());
             return menuResponseBean;
-        } else if (nextScreen == null){
+        } else if (nextScreen instanceof EntityScreen){
+            EntityScreen entityScreen = (EntityScreen) nextScreen;
+            EntityListSubscreen entityListSubscreen = (EntityListSubscreen) entityScreen.getCurrentScreen();
+            String[] rows = entityListSubscreen.getRows();
+            HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
+            for(int i=0; i <rows.length; i++){
+                optionsStrings.put(i, rows[i]);
+            }
+            MenuResponseBean menuResponseBean = new MenuResponseBean();
+            menuResponseBean.setMenuType(Constants.MENU_ENTITY);
+            menuResponseBean.setOptions(optionsStrings);
+            menuResponseBean.setSessionId(menuSession.getSessionId());
+            return menuResponseBean;
+        }else if (nextScreen == null){
             System.out.println("Next Screen null!");
-            NewSessionResponse response = menuSession.startFormEntry(sessionRepo, xFormService, restoreService).getResponse();
+            NewSessionResponse response = menuSession.startFormEntry(sessionRepo);
             String stringResponse = new ObjectMapper().writeValueAsString(response);
             System.out.println("New Session Response: " + stringResponse);
             return response;
