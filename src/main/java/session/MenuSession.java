@@ -9,7 +9,6 @@ import objects.SerializableMenuSession;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.api.session.SessionWrapper;
-import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.cli.*;
@@ -79,11 +78,8 @@ public class MenuSession {
         sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         if(serializedCommCareSession != null){
             restoreSessionFromStream(serializedCommCareSession);
-            System.out.println("Loaded Session: " + sessionWrapper.getFrame());
         }
         screen = getNextScreen();
-        System.out.println("NExt Screen: " +screen);
-        System.out.println("Current selection: " + currentSelection);
         if(currentSelection != null){
             if(screen instanceof EntityScreen){
                 handleInput(currentSelection);
@@ -99,7 +95,6 @@ public class MenuSession {
     }
 
     private void restoreSessionFromStream(String serialiedCommCareSession) throws IOException, DeserializationException {
-        System.out.println("Restoring session: " + serialiedCommCareSession);
         byte [] sessionBytes = Base64.getDecoder().decode(serialiedCommCareSession);
         SessionFrame restoredFrame = new SessionFrame();
         DataInputStream inputStream =
@@ -114,7 +109,6 @@ public class MenuSession {
         DataOutputStream serializedStream = new DataOutputStream(baos);
         sessionWrapper.serializeSessionState(serializedStream);
         String encoded = Base64.getEncoder().encodeToString(baos.toByteArray());
-        System.out.println("Storing session: " + encoded);
         return encoded;
     }
 
@@ -219,10 +213,6 @@ public class MenuSession {
 
     public String[] getChoices(){
         return screen.getOptions();
-    }
-
-    public CommCareSession getCommCareSession(){
-        return sessionWrapper;
     }
 
     public void setSessionId(String sessionId) {

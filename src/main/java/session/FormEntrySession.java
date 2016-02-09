@@ -1,24 +1,17 @@
 package session;
 
 import hq.CaseAPIs;
-import objects.SerializableSession;
+import objects.SerializableFormSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.commcare.api.json.WalkJson;
-import org.commcare.api.persistence.UserSqlSandbox;
-import org.commcare.api.session.SessionWrapper;
 import org.commcare.api.xml.XmlUtil;
 import org.commcare.core.interfaces.UserSandbox;
-import org.commcare.core.process.CommCareInstanceInitializer;
-import org.commcare.session.CommCareSession;
-import org.commcare.session.SessionFrame;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.core.util.externalizable.ExtUtil;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.model.xform.XFormSerializingVisitor;
@@ -33,7 +26,14 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Created by willpride on 1/15/16.
+ *
+ * OK this (and MenuSession) is a total god object that basically amanges everything about the state of
+ * a form entry session. We turn this into a SerializableFormSession to persist it. Within that we also
+ * serialize the formDef to persist the session, in addition to a bunch of other information like the restoreXml.
+ * Confusingly we also have a SessionWrapper object within this session which tracks a bunch of other information. There
+ * is a lot of unification that needs to happen here.
+ *
+ * @author willpride
  */
 @Component
 public class FormEntrySession {
@@ -54,9 +54,8 @@ public class FormEntrySession {
     String uuid;
     String username;
 
-    public FormEntrySession(SerializableSession session) throws Exception{
+    public FormEntrySession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
-        this.restoreXml = session.getRestoreXml();
         this.username = session.getUsername();
         this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
         this.sessionData = session.getSessionData();
@@ -120,10 +119,6 @@ public class FormEntrySession {
         formDef.initialize(newInstance, sessionWrapper.getIIF());
     }
 
-    public void initialize(boolean newInstance) throws Exception {
-        initialize(newInstance, null);
-    }
-
     private FormDef parseFormDef(String formXml) throws IOException {
         XFormParser mParser = new XFormParser(new StringReader(formXml));
         return mParser.parse();
@@ -151,11 +146,6 @@ public class FormEntrySession {
 
     public JSONArray getFormTree() {
         JSONArray ret = WalkJson.walkToJSON(getFormEntryModel(), getFormEntryController());
-        return ret;
-    }
-
-    public String getFormTreeString() {
-        String ret = WalkJson.walkToString(getFormEntryModel(), getFormEntryController());
         return ret;
     }
 
@@ -219,12 +209,10 @@ public class FormEntrySession {
         DataOutputStream serializedStream = new DataOutputStream(baos);
         formDef.writeExternal(serializedStream);
         String encoded = Base64.getEncoder().encodeToString(baos.toByteArray());
-        System.out.println("Storing formdef: " + encoded);
         return encoded;
     }
 
     public void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
-        System.out.println("Restoring formDef: " + serializedFormDef);
         byte [] sessionBytes = Base64.getDecoder().decode(serializedFormDef);
         DataInputStream inputStream =
                 new DataInputStream(new ByteArrayInputStream(sessionBytes));
@@ -235,16 +223,15 @@ public class FormEntrySession {
         return sessionData;
     }
 
-    public SerializableSession serialize() throws IOException {
-        SerializableSession serializableSession = new SerializableSession();
-        serializableSession.setInstanceXml(getInstanceXml());
-        serializableSession.setId(getUUID());
-        serializableSession.setFormXml(serializeFormDef());
-        serializableSession.setUsername(username);
-        serializableSession.setRestoreXml(getRestoreXml());
-        serializableSession.setSequenceId(getSequenceId());
-        serializableSession.setInitLang(getInitLang());
-        serializableSession.setSessionData(getSessionData());
-        return serializableSession;
+    public SerializableFormSession serialize() throws IOException {
+        SerializableFormSession serializableFormSession = new SerializableFormSession();
+        serializableFormSession.setInstanceXml(getInstanceXml());
+        serializableFormSession.setId(getUUID());
+        serializableFormSession.setFormXml(serializeFormDef());
+        serializableFormSession.setUsername(username);
+        serializableFormSession.setSequenceId(getSequenceId());
+        serializableFormSession.setInitLang(getInitLang());
+        serializableFormSession.setSessionData(getSessionData());
+        return serializableFormSession;
     }
 }

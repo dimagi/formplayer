@@ -4,10 +4,9 @@ import application.SessionController;
 import auth.HqAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import objects.SerializableSession;
+import objects.SerializableFormSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.InjectMocks;
@@ -59,7 +58,7 @@ public class BaseTestClass {
 
     ObjectMapper mapper;
 
-    final protected SerializableSession serializableSession = new SerializableSession();
+    final protected SerializableFormSession serializableFormSession = new SerializableFormSession();
 
     @Before
     public void setUp() throws IOException {
@@ -77,21 +76,21 @@ public class BaseTestClass {
 
     public void setUpSessionRepoMock(){
 
-        when(sessionRepoMock.find(anyString())).thenReturn(serializableSession);
+        when(sessionRepoMock.find(anyString())).thenReturn(serializableFormSession);
 
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 Object[] args = invocationOnMock.getArguments();
-                SerializableSession toBeSaved = (SerializableSession) args[0];
-                serializableSession.setInstanceXml(toBeSaved.getInstanceXml());
-                serializableSession.setFormXml(toBeSaved.getFormXml());
-                serializableSession.setRestoreXml(toBeSaved.getRestoreXml());
-                serializableSession.setUsername(toBeSaved.getUsername());
-                serializableSession.setSessionData(toBeSaved.getSessionData());
+                SerializableFormSession toBeSaved = (SerializableFormSession) args[0];
+                serializableFormSession.setInstanceXml(toBeSaved.getInstanceXml());
+                serializableFormSession.setFormXml(toBeSaved.getFormXml());
+                serializableFormSession.setRestoreXml(toBeSaved.getRestoreXml());
+                serializableFormSession.setUsername(toBeSaved.getUsername());
+                serializableFormSession.setSessionData(toBeSaved.getSessionData());
                 return null;
             }
-        }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
+        }).when(sessionRepoMock).save(Matchers.any(SerializableFormSession.class));
     }
 
     private String urlPrepend(String string){

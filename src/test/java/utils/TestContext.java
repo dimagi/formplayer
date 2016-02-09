@@ -1,10 +1,9 @@
 package utils;
 
 import auth.HqAuth;
+import objects.SerializableFormSession;
 import objects.SerializableMenuSession;
-import objects.SerializableSession;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -12,14 +11,11 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.MenuRepo;
 import repo.SessionRepo;
-import requests.NewFormRequest;
 import services.RestoreService;
 import services.XFormService;
-import services.impl.RestoreServiceImpl;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -29,7 +25,7 @@ import static org.mockito.Mockito.when;
 @Configuration
 public class TestContext {
 
-    public static SerializableSession serializableSession;
+    public static SerializableFormSession serializableFormSession;
     public static SerializableMenuSession serializableMenuSession;
  
     @Bean
@@ -53,19 +49,19 @@ public class TestContext {
     @Bean
     public SessionRepo sessionRepo() {
         SessionRepo sessionRepo = Mockito.mock(SessionRepo.class);
-        when(sessionRepo.find(anyString())).thenReturn(serializableSession);
-        ArgumentCaptor<SerializableSession> argumentCaptor = ArgumentCaptor.forClass(SerializableSession.class);
+        when(sessionRepo.find(anyString())).thenReturn(serializableFormSession);
+        ArgumentCaptor<SerializableFormSession> argumentCaptor = ArgumentCaptor.forClass(SerializableFormSession.class);
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 Object[] args = invocationOnMock.getArguments();
-                SerializableSession toBeSaved = (SerializableSession) args[0];
-                serializableSession.setInstanceXml(toBeSaved.getInstanceXml());
-                serializableSession.setFormXml(toBeSaved.getFormXml());
-                serializableSession.setRestoreXml(toBeSaved.getRestoreXml());
+                SerializableFormSession toBeSaved = (SerializableFormSession) args[0];
+                serializableFormSession.setInstanceXml(toBeSaved.getInstanceXml());
+                serializableFormSession.setFormXml(toBeSaved.getFormXml());
+                serializableFormSession.setRestoreXml(toBeSaved.getRestoreXml());
                 return null;
             }
-        }).when(sessionRepo).save(any(SerializableSession.class));
+        }).when(sessionRepo).save(any(SerializableFormSession.class));
         return sessionRepo;
     }
 

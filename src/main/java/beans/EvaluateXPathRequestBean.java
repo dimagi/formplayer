@@ -9,16 +9,15 @@ import java.util.Map;
 
 /**
  * Created by willpride on 1/20/16.
+ * SessionBean that evaluates the given XPath against the current session evaluation context
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EvaluateXPathRequestBean {
+public class EvaluateXPathRequestBean extends SessionBean{
     private Map<String, String> formContext;
     private String xpath;
-    private String sessionId;
 
-    public EvaluateXPathRequestBean(){
-
-    }
+    // default constructor for Jackson
+    public EvaluateXPathRequestBean(){}
 
     @JsonGetter(value = "xpath")
     public String getXpath() {
@@ -27,14 +26,6 @@ public class EvaluateXPathRequestBean {
     @JsonSetter(value = "xpath")
     public void setXpath(String xpath) {
         this.xpath = xpath;
-    }
-    @JsonGetter(value = "session-id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session-id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     @JsonGetter(value = "form_context")

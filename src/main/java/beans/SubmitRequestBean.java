@@ -14,23 +14,13 @@ import java.util.Map;
  * TODO: Process in SQLite DB
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SubmitRequestBean {
+public class SubmitRequestBean extends SessionBean{
     private Map<String, String> formContext;
-    private String sessionId;
     private boolean prevalidated;
     private Map<String, String> answers;
 
     public SubmitRequestBean(){
 
-    }
-
-    @JsonGetter(value = "session-id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session-id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     @JsonGetter(value = "form_context")

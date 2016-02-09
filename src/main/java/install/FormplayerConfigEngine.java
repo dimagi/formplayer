@@ -102,7 +102,6 @@ public class FormplayerConfigEngine {
         StorageManager.registerStorage(Suite.STORAGE_KEY, Suite.class);
         StorageManager.registerStorage(FormDef.STORAGE_KEY,FormDef.class);
         StorageManager.registerStorage(FormInstance.STORAGE_KEY, FormInstance.class);
-        //StorageManager.registerStorage(Suite.STORAGE_KEY, Suite.class);
     }
 
     private void setRoots() {

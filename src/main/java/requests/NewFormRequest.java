@@ -1,10 +1,9 @@
 package requests;
 
-import beans.NewSessionResponse;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.NewSessionRequestBean;
-import objects.SerializableSession;
+import beans.NewSessionResponse;
 import org.springframework.stereotype.Service;
 import repo.SessionRepo;
 import services.RestoreService;

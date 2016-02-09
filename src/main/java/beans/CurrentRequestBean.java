@@ -12,21 +12,10 @@ import java.util.Map;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CurrentRequestBean {
+public class CurrentRequestBean extends SessionBean{
     private Map<String, String> formContext;
-    private String sessionId;
-
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public CurrentRequestBean(){}
-
-    @JsonGetter(value = "session-id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session-id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
 
     @JsonGetter(value = "form_context")
     public Map<String, String> getFormContext() {

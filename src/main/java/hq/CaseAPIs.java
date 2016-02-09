@@ -17,15 +17,6 @@ import java.io.IOException;
  */
 public class CaseAPIs {
 
-    public static UserSqlSandbox throwIfNotExists(String username) throws IOException{
-        File db = new File(getDbFilePath(username));
-        if(db.exists()){
-            return new UserSqlSandbox(username);
-        } else{
-            throw new IOException("This SqlSandbox doesn't exist");
-        }
-    }
-
     public static UserSqlSandbox restoreIfNotExists(String username, String xml) throws Exception{
         File db = new File(getDbFilePath(username));
         if(db.exists()){

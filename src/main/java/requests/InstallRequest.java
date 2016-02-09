@@ -1,15 +1,10 @@
 package requests;
 
-import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.MenuResponseBean;
-import beans.MenuSelectBean;
-import org.commcare.suite.model.MenuDisplayable;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import repo.MenuRepo;
 import services.RestoreService;
-import services.XFormService;
 import session.MenuSession;
 import util.Constants;
 
@@ -21,40 +16,13 @@ import java.util.Map;
  */
 @Component
 public class InstallRequest {
-    XFormService xFormService;
-    RestoreService restoreService;
-    HqAuth auth;
-    String installReference;
-    String username;
-    String password;
-    String domain;
     MenuSession menuSession;
 
-    @Value("${commcarehq.host}")
-    String host;
-
-    public InstallRequest(InstallRequestBean bean, XFormService xFormService,
-                          RestoreService restoreService, MenuRepo menuSessionRepo) throws Exception {
-        this.xFormService = xFormService;
-        this.restoreService = restoreService;
-        this.installReference = bean.getInstallReference();
-        this.username = bean.getUsername();
-        this.password = bean.getPassword();
-        this.domain = bean.getDomain();
-        this.menuSession = new MenuSession(this.username, this.password, this.domain,
-                this.installReference, null, this.restoreService, null, null);
-        System.out.println("Savving session: " + menuSession);
+    public InstallRequest(InstallRequestBean bean, RestoreService restoreService,
+                          MenuRepo menuSessionRepo) throws Exception {
+        this.menuSession = new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(),
+                bean.getInstallReference(), null, restoreService, null, null);
         menuSessionRepo.save(menuSession.serialize());
-        System.out.println("Save Session: " + menuSession);
-    }
-
-
-    public String getInstallSource(){
-        return xFormService.getFormXml(installReference, auth);
-    }
-
-    public String getRestoreXml(){
-        return restoreService.getRestoreXml(domain, auth);
     }
 
     public MenuResponseBean getResponse(){

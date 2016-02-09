@@ -8,10 +8,9 @@ import java.util.Map;
 /**
  * Created by willpride on 1/20/16.
  */
-public class AnswerQuestionRequestBean {
+public class AnswerQuestionRequestBean extends SessionBean {
     private String formIndex;
     private String answer;
-    private String sessionId;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionRequestBean(){}
@@ -37,14 +36,6 @@ public class AnswerQuestionRequestBean {
     @JsonSetter(value = "answer")
     public void setAnswer(String answer) {
         this.answer = answer;
-    }
-    @JsonGetter(value = "session-id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session-id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     @Override

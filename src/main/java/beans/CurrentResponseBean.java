@@ -12,11 +12,10 @@ import java.util.Map;
  *
  * Created by willpride on 1/20/16.
  */
-public class CurrentResponseBean {
+public class CurrentResponseBean extends SessionBean {
     private JSONArray tree;
     private String title;
     private String[] langs;
-    private String sessionId;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public CurrentResponseBean(){}
@@ -26,16 +25,6 @@ public class CurrentResponseBean {
         title = session.getTitle();
         langs = session.getLanguages();
         sessionId = session.getUUID();
-    }
-
-
-    @JsonGetter(value = "session_id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session_id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     public String getTree() {

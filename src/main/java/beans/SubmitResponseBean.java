@@ -10,29 +10,16 @@ import java.io.IOException;
 /**
  * Created by willpride on 1/20/16.
  */
-public class SubmitResponseBean {
+public class SubmitResponseBean extends SessionBean{
     private String output;
     private String status;
-    private String sessionId;
 
-    public SubmitResponseBean(){
-
-    }
+    // default constructor for Jackson
+    public SubmitResponseBean(){}
 
     public SubmitResponseBean(FormEntrySession session) throws IOException {
         status = "success";
         output = session.getInstanceXml();
-        sessionId = session.getUUID();
-    }
-
-
-    @JsonGetter(value = "session_id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session_id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     public String getOutput() {
@@ -53,6 +40,6 @@ public class SubmitResponseBean {
 
     @Override
     public String toString(){
-        return "CurrentResponseBean: [sessionId=" + sessionId + "]";
+        return "SubmitResponseBean: [sessionId=" + sessionId + "]";
     }
 }

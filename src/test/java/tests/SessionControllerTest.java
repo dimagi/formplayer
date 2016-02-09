@@ -1,17 +1,13 @@
 package tests;
 
 import auth.HqAuth;
-import beans.NewSessionRequestBean;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import objects.SerializableSession;
+import objects.SerializableFormSession;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import utils.FileUtils;
 import utils.TestContext;
@@ -21,7 +17,6 @@ import java.util.HashMap;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -39,7 +34,7 @@ public class SessionControllerTest extends BaseTestClass{
     @Test
     public void findSession() throws Exception {
 
-        SerializableSession first = new SerializableSession();
+        SerializableFormSession first = new SerializableFormSession();
         first.setId("1");
         first.setInstanceXml("<test1/>");
 
@@ -56,10 +51,10 @@ public class SessionControllerTest extends BaseTestClass{
     @Test
     public void findAllSessions() throws Exception {
 
-        SerializableSession first = new SerializableSession();
+        SerializableFormSession first = new SerializableFormSession();
         first.setId("1");
         first.setInstanceXml("<test1/>");
-        SerializableSession second = new SerializableSession();
+        SerializableFormSession second = new SerializableFormSession();
         second.setId("2");
         second.setInstanceXml("<test2/>");
 
@@ -80,7 +75,7 @@ public class SessionControllerTest extends BaseTestClass{
     @Test
     public void newSession() throws Exception {
         startNewSession("requests/new_form/new_form_2.json", "xforms/basic.xml");
-        verify(sessionRepoMock, times(1)).save(Mockito.any(SerializableSession.class));
+        verify(sessionRepoMock, times(1)).save(Mockito.any(SerializableFormSession.class));
         verifyNoMoreInteractions(sessionRepoMock);
     }
 }
