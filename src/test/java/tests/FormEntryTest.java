@@ -47,9 +47,9 @@ public class FormEntryTest extends BaseTestClass{
 
         serializableSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
-        JSONObject resultJson = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
+        NewSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 
-        String sessionId = resultJson.getString("session_id");
+        String sessionId = newSessionResponse.getSessionId();
 
         AnswerQuestionResponseBean response = answerQuestionGetResult("1","William Pride", sessionId);
 

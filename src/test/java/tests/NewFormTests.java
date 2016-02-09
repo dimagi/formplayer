@@ -3,6 +3,8 @@ package tests;
 import application.Application;
 import application.SessionController;
 import auth.HqAuth;
+import beans.NewSessionResponse;
+import beans.QuestionBean;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.json.JSONArray;
@@ -61,49 +63,36 @@ public class NewFormTests extends BaseTestClass{
     @Test
     public void testNewForm() throws Exception {
         // setup files
-        JSONObject jsonResponse = startNewSession("requests/new_form/new_form.json", "xforms/basic.xml");
+        NewSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/basic.xml");
 
-        assert(jsonResponse.has("tree"));
-        assert(jsonResponse.has("langs"));
-        assert(jsonResponse.has("title"));
-        assert(jsonResponse.has("session_id"));
-
-        assert(jsonResponse.getString("title").equals("Basic Form"));
-        assert(jsonResponse.getJSONArray("langs").length() == 2);
+        assert(newSessionResponse.getTitle().equals("Basic Form"));
+        assert(newSessionResponse.getLangs().length == 2);
 
         // tree parsing
-        String tree = jsonResponse.getString("tree");
-        JSONArray treeArray = new JSONArray(tree);
-        JSONObject treeObject = new JSONObject(treeArray.get(0).toString());
+        QuestionBean[] tree = newSessionResponse.getTree();
+        QuestionBean firstQuestion = tree[0];
 
-        assert(treeObject.getString("caption").equals("Enter a name:"));
-        assert(14 == treeObject.length());
-        assert(treeObject.getString("ix").contains("0,"));
-        assert(treeObject.getString("datatype").equals("str"));
+        assert(firstQuestion.getCaption().equals("Enter a name:"));
+        assert(tree.length == 1);
+        assert(firstQuestion.getIx().contains("0,"));
+        assert(firstQuestion.getDatatype().equals("str"));
     }
 
     @Test
     public void testNewForm2() throws Exception {
-        JSONObject jsonResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
+        NewSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 
-        assert(jsonResponse.has("tree"));
-        assert(jsonResponse.has("langs"));
-        assert(jsonResponse.has("title"));
-        assert(jsonResponse.has("session_id"));
-
-        assert(jsonResponse.getString("title").equals("Question Types"));
-        assert(jsonResponse.getJSONArray("langs").length() == 2);
+        assert(newSessionResponse.getTitle().equals("Question Types"));
+        assert(newSessionResponse.getLangs().length == 2);
 
         // tree parsing
-        String tree = jsonResponse.getString("tree");
-        JSONArray treeArray = new JSONArray(tree);
-        assert(treeArray.length() == 24);
-        for(int i=0; i<treeArray.length(); i++){
-            String currentString = treeArray.get(i).toString();
-            JSONObject currentQuestion = new JSONObject(currentString);
+        QuestionBean[] tree = newSessionResponse.getTree();
+        assert(tree.length == 24);
+        for(int i=0; i<tree.length; i++){
+            QuestionBean currentBean = tree[i];
             switch(i){
                 case 3:
-                    assert currentQuestion.get("binding").equals("/data/q_numeric");
+                    assert currentBean.getBinding().equals("/data/q_numeric");
             }
         }
     }

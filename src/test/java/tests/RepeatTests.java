@@ -34,9 +34,9 @@ public class RepeatTests extends BaseTestClass{
     @Test
     public void testRepeat() throws Exception {
 
-        JSONObject jsonResponse = startNewSession("requests/new_form/new_form.json", "xforms/repeat.xml");
+        NewSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/repeat.xml");
 
-        String sessionId = jsonResponse.getString("session_id");
+        String sessionId = newSessionResponse.getSessionId();
 
         RepeatResponseBean newRepeatResponseBean = newRepeatRequest( "requests/new_repeat/new_repeat.json", sessionId);
 

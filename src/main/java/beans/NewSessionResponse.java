@@ -1,9 +1,11 @@
 package beans;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import session.FormEntrySession;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -11,19 +13,21 @@ import java.util.ArrayList;
  */
 public class NewSessionResponse extends SessionBean{
     // TODO: This should be a QuestionBean array
-    JSONArray tree;
+    QuestionBean[] tree;
     String title;
     String[] langs;
 
-    public NewSessionResponse(FormEntrySession fes){
-        this.tree = fes.getFormTree();
+    public NewSessionResponse(){}
+
+    public NewSessionResponse(FormEntrySession fes) throws IOException {
+        this.tree = new ObjectMapper().readValue(fes.getFormTree().toString(), QuestionBean[].class);
         this.langs = fes.getLanguages();
         this.title = fes.getTitle();
         this.sessionId = fes.getUUID();
     }
 
-    public String getTree(){
-        return tree.toString();
+    public QuestionBean[] getTree(){
+        return tree;
     }
 
     public String[] getLangs(){

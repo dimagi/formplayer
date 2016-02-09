@@ -15,7 +15,6 @@ import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.cli.*;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.core.model.condition.pivot.IntegerRangeHint;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
@@ -206,16 +205,12 @@ public class MenuSession {
         for(String key: sessionData.keySet()){
             ret.put(key, sessionData.get(key));
         }
-        System.out.println("Returning Session data: " + ret);
         return ret;
     }
 
     public NewSessionResponse startFormEntry(SessionRepo sessionRepo) throws Exception {
-        System.out.println("Start Form Entry");
         String formXmlns = sessionWrapper.getForm();
-        System.out.println("XMLNS: " + formXmlns);
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
-        System.out.println("Form Def: " + formDef);
         HashMap<String, String> sessionData = getSessionData();
         FormEntrySession formEntrySession = new FormEntrySession(sandbox, formDef, "en", username, sessionData);
         sessionRepo.save(formEntrySession.serialize());

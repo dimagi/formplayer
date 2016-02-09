@@ -115,7 +115,7 @@ public class BaseTestClass {
         return response;
     }
 
-    public JSONObject startNewSession(String requestPath, String formPath) throws Exception {
+    public NewSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
@@ -128,8 +128,8 @@ public class BaseTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
-        JSONObject ret = new JSONObject(responseBody);
-        return ret;
+        NewSessionResponse newSessionResponse = mapper.readValue(responseBody, NewSessionResponse.class);
+        return newSessionResponse;
     }
 
     public CaseFilterResponseBean filterCases(String requestPath) throws Exception {
