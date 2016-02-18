@@ -2,6 +2,7 @@ package beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,18 +17,12 @@ import java.util.Map;
 public class AnswerQuestionResponseBean {
     private QuestionBean[] tree;
     private String status;
-    private String sequenceId;
+    private int sequenceId;
     private String reason;
     private String type;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionResponseBean(){}
-
-    public AnswerQuestionResponseBean(QuestionBean[] tree, String status, String sequenceId) {
-        this.tree = tree;
-        this.status = status;
-        this.sequenceId = sequenceId;
-    }
 
     public QuestionBean[] getTree() {
         return tree;
@@ -45,11 +40,11 @@ public class AnswerQuestionResponseBean {
         this.status = status;
     }
     @JsonGetter(value = "seq_id")
-    public String getSequenceId() {
+    public int getSequenceId() {
         return sequenceId;
     }
     @JsonSetter(value = "seq_id")
-    public void setSequenceId(String sequenceId) {
+    public void setSequenceId(int sequenceId) {
         this.sequenceId = sequenceId;
     }
 

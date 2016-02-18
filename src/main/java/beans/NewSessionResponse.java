@@ -1,12 +1,10 @@
 package beans;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import session.FormEntrySession;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by willpride on 1/12/16.
@@ -23,7 +21,8 @@ public class NewSessionResponse extends SessionBean{
         this.tree = new ObjectMapper().readValue(fes.getFormTree().toString(), QuestionBean[].class);
         this.langs = fes.getLanguages();
         this.title = fes.getTitle();
-        this.sessionId = fes.getUUID();
+        this.sessionId = fes.getSessionId();
+        this.sequenceId = fes.getSequenceId();
     }
 
     public QuestionBean[] getTree(){
@@ -39,4 +38,9 @@ public class NewSessionResponse extends SessionBean{
     }
 
     public String getSession_id(){return sessionId;}
+
+    public String toString(){
+        return "NewSessionResponse [sessionId=" + sessionId + ", title=" + title + " tree=" + Arrays.toString(tree) +
+                " sequenceId=" + sequenceId + " ]";
+    }
 }

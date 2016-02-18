@@ -74,7 +74,7 @@ public class FilterTests extends BaseTestClass {
 
         SyncDbResponseBean syncDbResponseBean = syncDb("requests/sync_db/sync_db.json");
 
-        assert(syncDbResponseBean.getStatus().equals("success"));
+        assert(syncDbResponseBean.getStatus().equals("accepted"));
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
         UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("test@test.commcarehq.org");

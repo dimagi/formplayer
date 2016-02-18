@@ -1,11 +1,7 @@
 package beans;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import org.json.JSONArray;
 import session.FormEntrySession;
-
-import java.util.Map;
 
 /**
  * Return the current state of the form entry session (tree, languages, title)
@@ -24,7 +20,7 @@ public class CurrentResponseBean extends SessionBean {
         tree = session.getFormTree();
         title = session.getTitle();
         langs = session.getLanguages();
-        sessionId = session.getUUID();
+        sessionId = session.getSessionId();
     }
 
     public String getTree() {

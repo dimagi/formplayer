@@ -22,7 +22,7 @@ public class EvaluateXPathResponseBean {
 
     public EvaluateXPathResponseBean(FormEntrySession formEntrySession, String xpath) throws IOException, XPathSyntaxException {
         // TODO: don't always return success
-        status = "success";
+        status = "accepted";
         EvaluationContext evaluationContext = formEntrySession.getFormEntryModel().getForm().getEvaluationContext();
         Text mText = Text.XPathText(xpath, new Hashtable<String, Text>());
         output = mText.evaluate(evaluationContext);

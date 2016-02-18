@@ -1,8 +1,5 @@
 package beans;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import org.json.JSONArray;
 import session.FormEntrySession;
 
 import java.io.IOException;
@@ -20,6 +17,7 @@ public class SubmitResponseBean extends SessionBean{
     public SubmitResponseBean(FormEntrySession session) throws IOException {
         status = "success";
         output = session.getInstanceXml();
+        sessionId = session.getSessionId();
     }
 
     public String getOutput() {
@@ -40,6 +38,6 @@ public class SubmitResponseBean extends SessionBean{
 
     @Override
     public String toString(){
-        return "SubmitResponseBean: [sessionId=" + sessionId + "]";
+        return "SubmitResponseBean: [sessionId=" + sessionId + ",output= " + output + "]";
     }
 }

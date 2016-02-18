@@ -91,7 +91,7 @@ public class FormEntrySession {
         langs = formEntryModel.getLanguages();
         this.initLang = initLang;
         uuid = UUID.randomUUID().toString();
-        this.sequenceId = 0;
+        this.sequenceId = 1;
         initialize(true, sessionData);
     }
 
@@ -150,7 +150,7 @@ public class FormEntrySession {
     }
 
 
-    public String getUUID(){
+    public String getSessionId(){
         return uuid;
     }
 
@@ -226,7 +226,7 @@ public class FormEntrySession {
     public SerializableFormSession serialize() throws IOException {
         SerializableFormSession serializableFormSession = new SerializableFormSession();
         serializableFormSession.setInstanceXml(getInstanceXml());
-        serializableFormSession.setId(getUUID());
+        serializableFormSession.setId(getSessionId());
         serializableFormSession.setFormXml(serializeFormDef());
         serializableFormSession.setUsername(username);
         serializableFormSession.setSequenceId(getSequenceId());

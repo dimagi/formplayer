@@ -5,10 +5,10 @@ package util;
  */
 public class Constants {
     //URLS
-    public final static String URL_NEW_SESSION = "new_session";
-    public final static String URL_ANSWER_QUESTION = "answer_question";
+    public final static String URL_NEW_SESSION = "new-form";
+    public final static String URL_ANSWER_QUESTION = "answer";
     public final static String URL_CURRENT = "current";
-    public final static String URL_SUBMIT_FORM = "submit";
+    public final static String URL_SUBMIT_FORM = "submit-all";
     public final static String URL_GET_INSTANCE = "get_instance";
     public final static String URL_EVALUATE_XPATH = "evaluate_xpath";
     public final static String URL_NEW_REPEAT = "new_repeat";

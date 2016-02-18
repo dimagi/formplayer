@@ -61,4 +61,8 @@ public class NewSessionRequestBean {
     public void setFormContext(Map<String, String> formContext) {
         this.formContext = formContext;
     }
+
+    public String toString(){
+        return "New Session Request Bean [form-url=" + formUrl + ", auth=" + hqAuth + ", sessionData= " + sessionData;
+    }
 }

@@ -53,13 +53,15 @@ public class SessionController {
 
     @RequestMapping(Constants.URL_NEW_SESSION)
     public NewSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean) throws Exception {
+        log.info("New form requests with bean: " + newSessionBean);
         NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService, restoreService);
-        return newFormRequest.getResponse();
+        NewSessionResponse newSessionResponse = newFormRequest.getResponse();
+        log.info("Return new session response: " + newSessionResponse);
+        return newSessionResponse;
     }
 
     @RequestMapping(value = Constants.URL_LIST_SESSIONS, method = RequestMethod.GET, headers = "Accept=application/json")
     public @ResponseBody List<SerializableFormSession> findAllSessions() {
-
         Map<Object, Object> mMap = sessionRepo.findAll();
         SessionList sessionList = new SessionList();
 
@@ -79,6 +81,7 @@ public class SessionController {
 
     @RequestMapping(Constants.URL_ANSWER_QUESTION)
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
+        log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = sessionRepo.find(answerQuestionBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(session);
 
@@ -92,6 +95,8 @@ public class SessionController {
         session.setSequenceId(formEntrySession.getSequenceId() + 1);
         sessionRepo.save(session);
         AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
+        responseBean.setSequenceId(formEntrySession.getSequenceId() + 1);
+        log.info("Answer response: " + responseBean);
         return responseBean;
 
     }
@@ -99,26 +104,35 @@ public class SessionController {
     @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.GET)
     @ResponseBody
     public CurrentResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
+        log.info("Current request: " + currentRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(currentRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
-        return new CurrentResponseBean(formEntrySession);
+        CurrentResponseBean currentResponseBean = new CurrentResponseBean(formEntrySession);
+        log.info("Current response: " + currentResponseBean);
+        return currentResponseBean;
     }
 
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
+        log.info("Submit form with bean: " + submitRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(submitRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
         FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
-        return new SubmitResponseBean(formEntrySession);
+        SubmitResponseBean submitResponseBean = new SubmitResponseBean(formEntrySession);
+        log.info("Submit response bean: " + submitResponseBean);
+        return submitResponseBean;
     }
 
     @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.GET)
     @ResponseBody
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
+        log.info("Get instance request: " + getInstanceRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(getInstanceRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
-        return new GetInstanceResponseBean(formEntrySession);
+        GetInstanceResponseBean getInstanceResponseBean = new GetInstanceResponseBean(formEntrySession);
+        log.info("Get instance response: " + getInstanceResponseBean);
+        return getInstanceResponseBean;
     }
 
     @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.GET)
@@ -132,6 +146,7 @@ public class SessionController {
     @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.GET)
     @ResponseBody
     public RepeatResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
+        log.info("New repeat: " + newRepeatRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
 
@@ -142,9 +157,11 @@ public class SessionController {
         serializableFormSession.setFormXml(formEntrySession.getFormXml());
         serializableFormSession.setInstanceXml(formEntrySession.getInstanceXml());
         sessionRepo.save(serializableFormSession);
-        JSONObject response =  AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
+        JSONObject response = AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel());
-        return mapper.readValue(response.toString(), RepeatResponseBean.class);
+        RepeatResponseBean repeatResponseBean = mapper.readValue(response.toString(), RepeatResponseBean.class);
+        log.info("New response: " + repeatResponseBean);
+        return repeatResponseBean;
     }
 
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.GET)

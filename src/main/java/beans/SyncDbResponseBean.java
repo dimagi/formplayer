@@ -9,7 +9,7 @@ public class SyncDbResponseBean {
     private String status;
 
     public String getStatus() {
-        return "success";
+        return "accepted";
     }
 
     public void setStatus(String status) {

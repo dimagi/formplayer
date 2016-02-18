@@ -1,9 +1,11 @@
 package beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Created by willpride on 1/27/16.
@@ -15,17 +17,21 @@ public class QuestionBean {
     private String binding;
     private String caption_image;
     private String question;
-    private String required;
-    private String relevant;
+    private int required;
+    private int relevant;
     private String help;
     private Object answer;
     private String datatype;
-    private StyleBean style;
+    private HashMap<String, String> style;
     private String caption_video;
     private String type;
     private String caption_markdown;
     private String ix;
     private String[] choices;
+    private String repeatable;
+    private String exists;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private QuestionBean[] children;
 
     public String getCaption_audio() {
@@ -68,19 +74,19 @@ public class QuestionBean {
         this.question = question;
     }
 
-    public String getRequired() {
+    public int getRequired() {
         return required;
     }
 
-    public void setRequired(String required) {
+    public void setRequired(int required) {
         this.required = required;
     }
 
-    public String getRelevant() {
+    public int getRelevant() {
         return relevant;
     }
 
-    public void setRelevant(String relevant) {
+    public void setRelevant(int relevant) {
         this.relevant = relevant;
     }
 
@@ -108,11 +114,14 @@ public class QuestionBean {
         this.datatype = datatype;
     }
 
-    public StyleBean getStyle() {
-        return style;
+    public HashMap<String, String> getStyle() {
+        if(style != null) {
+            return style;
+        }
+        return new HashMap<String, String>();
     }
 
-    public void setStyle(StyleBean style) {
+    public void setStyle(HashMap<String, String> style) {
         this.style = style;
     }
 
@@ -169,5 +178,21 @@ public class QuestionBean {
 
     public void setChildren(QuestionBean[] children) {
         this.children = children;
+    }
+
+    public String getRepeatable() {
+        return repeatable;
+    }
+
+    public void setRepeatable(String repeatable) {
+        this.repeatable = repeatable;
+    }
+
+    public String getExists() {
+        return exists;
+    }
+
+    public void setExists(String exists) {
+        this.exists = exists;
     }
 }
