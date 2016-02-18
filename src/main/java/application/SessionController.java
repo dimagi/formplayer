@@ -218,8 +218,6 @@ public class SessionController {
             nextScreen = menuSession.getCurrentScreen();
         }
 
-        System.out.println("Next Screen: " + nextScreen);
-
         if(nextScreen instanceof MenuScreen){
             MenuScreen menuScreen = (MenuScreen) nextScreen;
             MenuDisplayable[] options = menuScreen.getChoices();

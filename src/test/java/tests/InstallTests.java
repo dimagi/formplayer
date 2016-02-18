@@ -89,7 +89,6 @@ public class InstallTests {
 
     private void setupMenuMock() {
         when(menuRepoMock.find(anyString())).thenReturn(serializableMenuSession);
-        ArgumentCaptor<SerializableMenuSession> argumentCaptor = ArgumentCaptor.forClass(SerializableMenuSession.class);
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -104,8 +103,6 @@ public class InstallTests {
                 serializableMenuSession.setPassword(toBeSaved.getPassword());
                 serializableMenuSession.setSerializedCommCareSession(toBeSaved.getSerializedCommCareSession());
                 serializableMenuSession.setCurrentSelection(toBeSaved.getCurrentSelection());
-                System.out.println("Serializable menu session: " + serializableMenuSession);
-                System.out.println("Tobesaved: " + toBeSaved);
                 return null;
             }
         }).when(menuRepoMock).save(any(SerializableMenuSession.class));
@@ -150,18 +147,12 @@ public class InstallTests {
         assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
         String sessionId = menuResponseBean.getSessionId();
 
-        System.out.println("Session ID: " + sessionId);
-        System.out.println("Menu Init: " + menuResponseBean);
-
         JSONObject menuResponseObject =
                 selectMenu("requests/menu/menu_select.json", sessionId, "2");
 
-        System.out.println("Menu Response Bean 1: " + menuResponseObject);
 
         JSONObject menuResponseObject2 =
                 selectMenu("requests/menu/menu_select.json", sessionId);
-
-        System.out.println("Menu Response Bean 2: " + menuResponseObject2);
 
         assert menuResponseObject2.has("tree");
         assert menuResponseObject2.has("title");
@@ -178,32 +169,18 @@ public class InstallTests {
         assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
         String sessionId = menuResponseBean.getSessionId();
 
-        System.out.println("Session ID: " + sessionId);
-        System.out.println("Case Select Init: " + menuResponseBean);
-
         JSONObject menuResponseObject =
                 selectMenu("requests/menu/menu_select.json", sessionId, "2");
-
-        System.out.println("Case Select Bean 1: " + menuResponseObject);
 
         JSONObject menuResponseObject2 =
                 selectMenu("requests/menu/menu_select.json", sessionId, "1");
 
-        System.out.println("Case Select Bean 2: " + menuResponseObject2);
-
         JSONObject options = new JSONObject(menuResponseObject2.get("options"));
-
-        System.out.println("Length: " + options.length());
 
         JSONObject menuResponseObject3 =
                 selectMenu("requests/menu/menu_select.json", sessionId, "6");
-
-        System.out.println("Case Select Bean 3: " + menuResponseObject3);
-
         JSONObject menuResponseObject4 =
                 selectMenu("requests/menu/menu_select.json", sessionId, "");
-
-        System.out.println("Case Select Bean 4: " + menuResponseObject4);
 
     }
 
