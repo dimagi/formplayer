@@ -2,13 +2,9 @@ package beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.Arrays;
-import java.util.Map;
 
 /**
  * Created by willpride on 1/20/16.

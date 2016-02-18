@@ -1,16 +1,15 @@
 package hq;
 
 import auth.HqAuth;
+import beans.CaseFilterRequestBean;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.core.sandbox.SandboxUtils;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathFuncExpr;
-import beans.CaseFilterRequestBean;
 import services.RestoreService;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Created by willpride on 1/7/16.

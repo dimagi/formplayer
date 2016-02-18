@@ -1,7 +1,5 @@
 package beans;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import session.FormEntrySession;
 
 import java.io.IOException;
