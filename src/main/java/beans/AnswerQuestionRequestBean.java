@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 public class AnswerQuestionRequestBean extends SessionBean {
     private String formIndex;
-    private String answer;
+    private Object answer;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionRequestBean(){}
@@ -28,11 +28,11 @@ public class AnswerQuestionRequestBean extends SessionBean {
         this.formIndex = formIndex;
     }
     @JsonGetter(value = "answer")
-    public String getAnswer() {
+    public Object getAnswer() {
         return answer;
     }
     @JsonSetter(value = "answer")
-    public void setAnswer(String answer) {
+    public void setAnswer(Object answer) {
         this.answer = answer;
     }
 

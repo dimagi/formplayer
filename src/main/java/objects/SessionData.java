@@ -1,9 +1,8 @@
 package objects;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -17,8 +16,8 @@ public class SessionData {
     private String domain;
     private String userId;
     private String appId;
-    private Map<String, String> userData;
-    private Map<String, String> data;
+    private Map<String, String> data = new HashMap<>();
+    private Map<String, String> userData = new HashMap<>();
     private String host;
     private String sessionName;
     private String appVersion;
@@ -53,14 +52,6 @@ public class SessionData {
     @JsonSetter(value = "user_id")
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-    @JsonGetter(value = "user_data")
-    public Map<String, String> getUserData() {
-        return userData;
-    }
-    @JsonSetter(value = "user_data")
-    public void setUserData(Map<String, String> userData) {
-        this.userData = userData;
     }
 
     public String getHost() {
@@ -103,11 +94,32 @@ public class SessionData {
         this.appId = appId;
     }
 
+    @JsonAnyGetter
     public Map<String, String> getData() {
         return data;
     }
 
-    public void setData(Map<String, String> data) {
-        this.data = data;
+    @JsonAnySetter
+    public void setData(String key, Object value) {
+        data.put(key, value.toString());
+    }
+
+    public String get(String name) {
+        return data.get(name);
+    }
+
+    @Override
+    public String toString(){
+        return "SessionData: [username=" + username + ", domain=" + domain
+                + ", data=" + data + "]";
+    }
+
+    @JsonGetter(value = "user_data")
+    public Map<String, String> getUserData() {
+        return userData;
+    }
+    @JsonSetter(value="user_data")
+    public void setUserData(Map<String, String> userData) {
+        this.userData = userData;
     }
 }

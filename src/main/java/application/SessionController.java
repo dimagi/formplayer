@@ -87,7 +87,7 @@ public class SessionController {
 
         JSONObject resp = AnswerQuestionJson.questionAnswerToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-                answerQuestionBean.getAnswer(),
+                answerQuestionBean.getAnswer() != null? answerQuestionBean.getAnswer().toString() : null,
                 answerQuestionBean.getFormIndex());
 
         session.setFormXml(formEntrySession.getFormXml());
@@ -98,7 +98,6 @@ public class SessionController {
         responseBean.setSequenceId(formEntrySession.getSequenceId() + 1);
         log.info("Answer response: " + responseBean);
         return responseBean;
-
     }
 
     @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.GET)
