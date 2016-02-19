@@ -125,7 +125,8 @@ public class FormEntrySession {
     }
 
     public String getInstanceXml() throws IOException {
-        return XmlUtil.getPrettyXml(new XFormSerializingVisitor().serializeInstance(formDef.getInstance()));
+        byte[] bytes = new XFormSerializingVisitor().serializeInstance(formDef.getInstance());
+        return new String(bytes, "US-ASCII");
     }
 
     public FormEntryModel getFormEntryModel(){

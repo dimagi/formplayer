@@ -123,7 +123,7 @@ public class SessionController {
         return submitResponseBean;
     }
 
-    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_GET_INSTANCE)
     @ResponseBody
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
