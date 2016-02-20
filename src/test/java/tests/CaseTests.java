@@ -41,7 +41,7 @@ public class CaseTests extends BaseTestClass {
 
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
 
-        assert submitResponseBean.getStatus().equals("accepted");
+        assert submitResponseBean.getStatus().equals("success");
 
         // Test that we now have an additional case
 
@@ -60,7 +60,7 @@ public class CaseTests extends BaseTestClass {
 
         submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
 
-        assert submitResponseBean.getStatus().equals("accepted");
+        assert submitResponseBean.getStatus().equals("success");
 
         // test that we have successfully removed this case
 

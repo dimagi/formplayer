@@ -8,6 +8,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.FileUtils;
 import utils.TestContext;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import static org.mockito.Matchers.any;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -35,6 +38,23 @@ public class FormEntryTest extends BaseTestClass{
         response = answerQuestionGetResult("10", "2",sessionId);
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
 
+        QuestionBean[] tree = response.getTree();
+        QuestionBean multiSelectQuestion = tree[11];
+        assert(multiSelectQuestion.getAnswer() instanceof ArrayList);
+        ArrayList<Integer> answer = (ArrayList<Integer>) multiSelectQuestion.getAnswer();
+        assert(answer.size() == 3);
+        assert answer.get(0).equals(1);
+
+        response = answerQuestionGetResult("12", "1", sessionId);
+        tree = response.getTree();
+        multiSelectQuestion = tree[11];
+        assert(multiSelectQuestion.getAnswer() instanceof ArrayList);
+        answer = (ArrayList<Integer>) multiSelectQuestion.getAnswer();
+        assert(answer.size() == 3);
+        assert answer.get(0).equals(1);
+
+        response = answerQuestionGetResult("17", "[13.803252972154226, 7.723388671875]", sessionId);
+
         //Test Current Session
         CurrentResponseBean currentResponseBean = getCurrent(sessionId);
 
@@ -48,5 +68,47 @@ public class FormEntryTest extends BaseTestClass{
 
         //Test Submission
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request.json", sessionId);
+    }
+
+
+    //Integration test of form entry functions
+    @Test
+    public void testFormEntry2() throws Exception {
+
+        serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+
+        NewSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types_2.xml");
+
+        String sessionId = newSessionResponse.getSessionId();
+
+        answerQuestionGetResult("1","William Pride", sessionId);
+
+        answerQuestionGetResult("8,1","1", sessionId);
+        AnswerQuestionResponseBean response = answerQuestionGetResult("8,2","2", sessionId);
+
+        QuestionBean questionBean = response.getTree()[8];
+        QuestionBean[] children = questionBean.getChildren();
+
+        assert children.length == 4;
+
+        QuestionBean red = children[1];
+        QuestionBean blue = children[2];
+
+        assert red.getAnswer().equals(1);
+        assert blue.getAnswer().equals(2);
+
+        response = answerQuestionGetResult("8,3","2", sessionId);
+
+        questionBean = response.getTree()[8];
+        children = questionBean.getChildren();
+
+        red = children[1];
+        blue = children[2];
+        QuestionBean green = children[3];
+
+        assert red.getAnswer().equals(1);
+        assert blue.getAnswer().equals(2);
+        assert green.getAnswer().equals(2);
+
     }
 }

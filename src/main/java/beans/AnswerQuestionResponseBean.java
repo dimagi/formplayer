@@ -46,7 +46,8 @@ public class AnswerQuestionResponseBean {
 
     @Override
     public String toString(){
-        return "AnswerQuestionResponseBean: [tree=" + Arrays.toString(tree) + ", status=" + status + ", seq_id: " + sequenceId + "]";
+        return "AnswerQuestionResponseBean: [tree=" + Arrays.toString(tree) + ", status=" + status + ", seq_id: " + sequenceId
+                + (status.equals("error") ? ", reason=" + reason + ", type=" + type : "") +  "]";
     }
 
     public String getReason() {
