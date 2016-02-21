@@ -145,6 +145,20 @@ public class BaseTestClass {
                 CaseFilterResponseBean.class);
     }
 
+    public CaseFilterFullResponseBean filterCasesFull(String requestPath) throws Exception {
+
+        String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
+        MvcResult result = this.mockMvc.perform(
+                post(urlPrepend(Constants.URL_FILTER_CASES_FULL))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filterRequestPayload))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterFullResponseBean.class);
+    }
+
     public SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);

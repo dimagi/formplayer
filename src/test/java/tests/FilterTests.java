@@ -1,10 +1,9 @@
 package tests;
 
 import auth.HqAuth;
-import beans.CaseFilterResponseBean;
-import beans.SyncDbRequestBean;
-import beans.SyncDbResponseBean;
+import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hq.CaseAPIs;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
@@ -84,5 +83,10 @@ public class FilterTests extends BaseTestClass {
         assert(15 == caseStorage.getNumRecords());
 
         //TODO add ledgers, fixtures, etc.
+    }
+
+    @Test
+    public void testGetFullCase() throws Exception {
+        CaseFilterFullResponseBean caseFilterResponseBean = filterCasesFull("requests/filter/filter_cases.json");
     }
 }

@@ -190,6 +190,13 @@ public class SessionController {
         return new CaseFilterResponseBean(caseResponse);
     }
 
+    @RequestMapping(Constants.URL_FILTER_CASES_FULL)
+    public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
+        filterRequest.setRestoreService(restoreService);
+        CaseBean[] caseResponse = CaseAPIs.filterCasesFull(filterRequest);
+        return new CaseFilterFullResponseBean(caseResponse);
+    }
+
     @RequestMapping(Constants.URL_SYNC_DB)
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest) throws Exception {
         syncRequest.setRestoreService(restoreService);
