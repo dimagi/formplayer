@@ -4,8 +4,6 @@ import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.NewSessionRequestBean;
 import beans.NewSessionResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 import repo.SessionRepo;
 import services.RestoreService;
@@ -31,12 +29,9 @@ public class NewFormRequest {
     String domain;
     String lang;
 
-    Log log = LogFactory.getLog(NewFormRequest.class);
-
     public NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
                           Map<String, String> sessionData, SessionRepo sessionRepo,
                           XFormService xFormService, RestoreService restoreService) throws Exception {
-        log.info("NewformRequest auth: " + auth + " formUrl: " + formUrl);
         this.sessionRepo = sessionRepo;
         this.xFormService = xFormService;
         this.restoreService = restoreService;

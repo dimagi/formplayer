@@ -1,9 +1,5 @@
 package beans;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.ArrayList;
-
 /**
  * Created by willpride on 1/12/16.
  */

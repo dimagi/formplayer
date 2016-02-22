@@ -58,9 +58,7 @@ public class CaseAPIs {
         return "null";
     }
 
-    public static CaseBean getFullCase(String caseId, String username){
-        UserSqlSandbox mSandbox = new UserSqlSandbox(username);
-        SqliteIndexedStorageUtility<Case> caseStorage = mSandbox.getCaseStorage();
+    public static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
         Case cCase = caseStorage.getRecordForValue("case_id", caseId);
         CaseBean ret = new CaseBean(cCase);
         return ret;
@@ -73,9 +71,10 @@ public class CaseAPIs {
         String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         String[] splitCases = filteredCases.split(",");
         CaseBean[] ret = new CaseBean[splitCases.length];
+        SqliteIndexedStorageUtility<Case> caseStorage = mSandbox.getCaseStorage();
         int count = 0;
         for(String cCase: splitCases){
-            CaseBean caseBean = CaseAPIs.getFullCase(cCase, request.getSessionData().getUsername());
+            CaseBean caseBean = CaseAPIs.getFullCase(cCase, caseStorage);
             ret[count] = caseBean;
             count++;
         }

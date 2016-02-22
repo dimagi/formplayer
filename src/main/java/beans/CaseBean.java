@@ -3,7 +3,6 @@ package beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.cases.model.Case;
-import org.json.JSONObject;
 
 import java.util.Date;
 import java.util.HashMap;

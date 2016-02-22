@@ -5,7 +5,6 @@ import objects.SerializableFormSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.commcare.api.json.WalkJson;
-import org.commcare.api.xml.XmlUtil;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
@@ -53,7 +52,6 @@ public class FormEntrySession {
     String[] langs;
     String uuid;
     String username;
-
     public FormEntrySession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
         this.username = session.getUsername();
