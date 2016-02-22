@@ -74,6 +74,7 @@ public class FormEntrySession {
         uuid = UUID.randomUUID().toString();
         this.sequenceId = session.getSequenceId();
         initialize(true, session.getSessionData());
+        getFormTree();
     }
 
     public FormEntrySession(String formXml, String restoreXml, String initLang, String username,
@@ -93,6 +94,7 @@ public class FormEntrySession {
         uuid = UUID.randomUUID().toString();
         this.sequenceId = 1;
         initialize(true, sessionData);
+        getFormTree();
     }
 
     // Entry from menu selection. Assumes user has already been restored.
@@ -111,6 +113,7 @@ public class FormEntrySession {
         uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
         initialize(true, sessionData);
+        getFormTree();
     }
 
     public void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {

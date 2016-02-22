@@ -14,6 +14,7 @@ import org.commcare.util.cli.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import repo.MenuRepo;
 import repo.SessionRepo;
@@ -25,6 +26,7 @@ import session.FormEntrySession;
 import session.MenuSession;
 import util.Constants;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -273,4 +275,17 @@ public class SessionController {
         }
         return null;
     }
+
+    @ExceptionHandler(Exception.class)
+    public String handleError(HttpServletRequest req, Exception exception) {
+        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        exception.printStackTrace();
+
+        JSONObject errorReturn = new JSONObject();
+        errorReturn.put("exception", exception);
+        errorReturn.put("url", req.getRequestURL());
+        errorReturn.put("status", "error");
+        return errorReturn.toString();
+    }
+
 }
