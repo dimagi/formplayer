@@ -1,11 +1,10 @@
 package util;
 
 import org.commcare.resources.model.installers.*;
+import org.commcare.suite.model.FormEntry;
 import org.commcare.suite.model.PropertySetter;
 import org.commcare.suite.model.Text;
-import org.commcare.suite.model.graph.BubbleSeries;
-import org.commcare.suite.model.graph.Graph;
-import org.commcare.suite.model.graph.XYSeries;
+import org.commcare.xml.DummyGraphParser;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.locale.TableLocaleSource;
@@ -26,11 +25,10 @@ public class PrototypeUtils {
                 XFormInstaller.class.getName(),
                 Text.class.getName(),
                 PropertySetter.class.getName(),
-                Graph.class.getName(),
-                XYSeries.class.getName(),
-                BubbleSeries.class.getName(),
                 XPathReference.class.getName(),
                 TableLocaleSource.class.getName(),
+                DummyGraphParser.DummyGraphDetailTemplate.class.getName(),
+                FormEntry.class.getName(),
                 "org.javarosa.xpath.XPathConditional",
                 "org.javarosa.core.model.SubmissionProfile",
                 "org.javarosa.core.model.QuestionDef",

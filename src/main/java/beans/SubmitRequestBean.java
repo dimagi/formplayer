@@ -17,7 +17,7 @@ import java.util.Map;
 public class SubmitRequestBean extends SessionBean{
     private Map<String, String> formContext;
     private boolean prevalidated;
-    private Map<String, String> answers;
+    private Map<String, Object> answers;
 
     public SubmitRequestBean(){
 
@@ -40,11 +40,11 @@ public class SubmitRequestBean extends SessionBean{
         this.prevalidated = prevalidated;
     }
 
-    public Map<String, String> getAnswers() {
+    public Map<String, Object> getAnswers() {
         return answers;
     }
 
-    public void setAnswers(Map<String, String> answers) {
+    public void setAnswers(Map<String, Object> answers) {
         this.answers = answers;
     }
 
