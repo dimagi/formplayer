@@ -16,7 +16,7 @@ public class NewSessionRequestBean {
     private String lang;
     private Map<String, String> hqAuth;
     private SessionData sessionData;
-    private Map<String, String> formContext;
+    private Map<String, Object> formContext;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public NewSessionRequestBean(){}
@@ -53,11 +53,11 @@ public class NewSessionRequestBean {
         this.sessionData = sessionData;
     }
     @JsonGetter(value = "form_context")
-    public Map<String, String> getFormContext() {
+    public Map<String, Object> getFormContext() {
         return formContext;
     }
     @JsonSetter(value = "form_context")
-    public void setFormContext(Map<String, String> formContext) {
+    public void setFormContext(Map<String, Object> formContext) {
         this.formContext = formContext;
     }
 

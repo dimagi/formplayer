@@ -1,6 +1,8 @@
 package repo.impl;
 
 import objects.SerializableFormSession;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import repo.SessionRepo;
@@ -16,9 +18,11 @@ public class SessionImpl implements SessionRepo{
     private RedisTemplate<String, SerializableFormSession> redisTemplate;
 
     private static String SESSION_KEY = "Session";
+    Log log = LogFactory.getLog(SessionImpl.class);
 
     @Override
     public void save(SerializableFormSession session) {
+        log.info("Saving Session Instance XML: " +  session.getInstanceXml());
         this.redisTemplate.opsForHash().put(SESSION_KEY, session.getId(), session);
     }
 

@@ -15,7 +15,7 @@ import java.util.Map;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SubmitRequestBean extends SessionBean{
-    private Map<String, String> formContext;
+    private Map<String, Object> formContext;
     private boolean prevalidated;
     private Map<String, Object> answers;
 
@@ -24,11 +24,11 @@ public class SubmitRequestBean extends SessionBean{
     }
 
     @JsonGetter(value = "form_context")
-    public Map<String, String> getFormContext() {
+    public Map<String, Object> getFormContext() {
         return formContext;
     }
     @JsonSetter(value = "form_context")
-    public void setFormContext(Map<String, String> formContext) {
+    public void setFormContext(Map<String, Object> formContext) {
         this.formContext = formContext;
     }
 
