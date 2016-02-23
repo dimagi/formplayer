@@ -20,9 +20,9 @@ import org.springframework.stereotype.Component;
 import util.PrototypeUtils;
 
 import java.io.*;
-import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.commons.codec.binary.Base64;
 
 /**
  *
@@ -210,12 +210,12 @@ public class FormEntrySession {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream serializedStream = new DataOutputStream(baos);
         formDef.writeExternal(serializedStream);
-        String encoded = Base64.getEncoder().encodeToString(baos.toByteArray());
+        String encoded = Base64.encodeBase64String(baos.toByteArray());
         return encoded;
     }
 
     public void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
-        byte [] sessionBytes = Base64.getDecoder().decode(serializedFormDef);
+        byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
         DataInputStream inputStream =
                 new DataInputStream(new ByteArrayInputStream(sessionBytes));
         formDef.readExternal(inputStream, PrototypeManager.getDefault());

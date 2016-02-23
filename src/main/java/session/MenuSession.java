@@ -6,6 +6,7 @@ import beans.NewSessionResponse;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
 import objects.SerializableMenuSession;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.api.session.SessionWrapper;
@@ -33,7 +34,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -95,7 +95,7 @@ public class MenuSession {
     }
 
     private void restoreSessionFromStream(String serialiedCommCareSession) throws IOException, DeserializationException {
-        byte [] sessionBytes = Base64.getDecoder().decode(serialiedCommCareSession);
+        byte [] sessionBytes = Base64.decodeBase64(serialiedCommCareSession);
         SessionFrame restoredFrame = new SessionFrame();
         DataInputStream inputStream =
                 new DataInputStream(new ByteArrayInputStream(sessionBytes));
@@ -108,7 +108,7 @@ public class MenuSession {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream serializedStream = new DataOutputStream(baos);
         sessionWrapper.serializeSessionState(serializedStream);
-        String encoded = Base64.getEncoder().encodeToString(baos.toByteArray());
+        String encoded = Base64.encodeBase64String(baos.toByteArray());
         return encoded;
     }
 
@@ -195,7 +195,7 @@ public class MenuSession {
 
     public HashMap<String, String> getSessionData(){
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
-        HashMap<String, String> ret = new HashMap<>();
+        HashMap<String, String> ret = new HashMap<String, String>();
         for(String key: sessionData.keySet()){
             ret.put(key, sessionData.get(key));
         }
