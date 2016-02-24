@@ -71,7 +71,7 @@ public class FormEntrySession {
         langs = formEntryModel.getLanguages();
         uuid = UUID.randomUUID().toString();
         this.sequenceId = session.getSequenceId();
-        initialize(true, session.getSessionData());
+        initialize(false, session.getSessionData());
         getFormTree();
     }
 

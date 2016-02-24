@@ -76,7 +76,12 @@ public class BaseTestClass {
 
     public void setUpSessionRepoMock(){
 
-        when(sessionRepoMock.find(anyString())).thenReturn(serializableFormSession);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return serializableFormSession;
+            }
+        }).when(sessionRepoMock).find(anyString());
 
         doAnswer(new Answer<Object>() {
             @Override

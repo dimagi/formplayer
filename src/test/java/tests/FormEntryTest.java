@@ -10,6 +10,7 @@ import utils.TestContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import static org.mockito.Matchers.any;
 
@@ -28,7 +29,6 @@ public class FormEntryTest extends BaseTestClass{
         String sessionId = newSessionResponse.getSessionId();
 
         AnswerQuestionResponseBean response = answerQuestionGetResult("1","William Pride", sessionId);
-
         response = answerQuestionGetResult("2","345", sessionId);
         response = answerQuestionGetResult("3","2.54", sessionId);
         response = answerQuestionGetResult("4","1970-10-23", sessionId);
@@ -39,6 +39,21 @@ public class FormEntryTest extends BaseTestClass{
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
 
         QuestionBean[] tree = response.getTree();
+
+        System.out.println("Tree: " + Arrays.toString(tree));
+
+        QuestionBean textBean = tree[1];
+        assert textBean.getAnswer().equals("William Pride");
+
+        QuestionBean intBean = tree[2];
+        assert intBean.getAnswer().equals(345);
+
+        QuestionBean decimalBean = tree[3];
+        assert decimalBean.getAnswer().equals(2.54);
+
+        QuestionBean dateBean = tree[4];
+        assert dateBean.getAnswer().equals("1970-10-23");
+
         QuestionBean multiSelectQuestion = tree[11];
         assert(multiSelectQuestion.getAnswer() instanceof ArrayList);
         ArrayList<Integer> answer = (ArrayList<Integer>) multiSelectQuestion.getAnswer();
@@ -54,6 +69,14 @@ public class FormEntryTest extends BaseTestClass{
         assert answer.get(0).equals(1);
 
         response = answerQuestionGetResult("17", "[13.803252972154226, 7.723388671875]", sessionId);
+        QuestionBean geoBean = response.getTree()[17];
+        assert geoBean.getAnswer() instanceof  ArrayList;
+        ArrayList<Double> geoCoordinates = (ArrayList<Double>) geoBean.getAnswer();
+        Double latitude = geoCoordinates.get(0);
+        assert latitude.equals(13.803252972154226);
+        Double longitude = geoCoordinates.get(1);
+        assert longitude.equals(7.723388671875);
+
 
         //Test Current Session
         CurrentResponseBean currentResponseBean = getCurrent(sessionId);

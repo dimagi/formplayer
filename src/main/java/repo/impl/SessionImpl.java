@@ -22,13 +22,15 @@ public class SessionImpl implements SessionRepo{
 
     @Override
     public void save(SerializableFormSession session) {
-        log.info("Saving Session Instance XML: " +  session.getInstanceXml());
+        log.info("Saving Session " +  session.getInstanceXml());
         this.redisTemplate.opsForHash().put(SESSION_KEY, session.getId(), session);
     }
 
     @Override
     public SerializableFormSession find(String id) {
-        return (SerializableFormSession) this.redisTemplate.opsForHash().get(SESSION_KEY, id);
+        SerializableFormSession ret = (SerializableFormSession) this.redisTemplate.opsForHash().get(SESSION_KEY, id);
+        log.info("Returning Session: " + ret.getInstanceXml());
+        return ret;
     }
 
     @Override
