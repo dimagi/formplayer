@@ -6,3 +6,4 @@ gradle/
 *.idea/
 *.iml
 dbs/*
+gradle.properties
