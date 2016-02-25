@@ -26,6 +26,7 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import repo.SessionRepo;
+import services.InstallService;
 import services.RestoreService;
 import util.StringUtils;
 
@@ -58,14 +59,14 @@ public class MenuSession {
 
     public MenuSession(String username, String password, String domain,
                        String installReference, String serializedCommCareSession,
-                       RestoreService restoreService, String sessionId, String currentSelection) throws Exception {
+                       RestoreService restoreService, String sessionId, String currentSelection, InstallService installService) throws Exception {
         String domainedUsername = StringUtils.getFullUsername(username, domain, host);
         this.username = username;
         this.password = password;
         this.domain = domain;
         this.installReference = installReference;
         this.auth = new BasicAuth(domainedUsername, password);
-        this.engine = configureApplication(installReference);
+        this.engine = installService.configureApplication(installReference, username);
         this.currentSelection = currentSelection;
 
         if(sessionId == null){
@@ -87,10 +88,11 @@ public class MenuSession {
         }
     }
 
-    public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService) throws Exception {
+    public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService,
+                       InstallService installService) throws Exception {
         this(serializableMenuSession.getUsername(), serializableMenuSession.getPassword(), serializableMenuSession.getDomain(),
             serializableMenuSession.getInstallReference(), serializableMenuSession.getSerializedCommCareSession(), restoreService,
-                serializableMenuSession.getSessionId(), serializableMenuSession.getCurrentSelection());
+                serializableMenuSession.getSessionId(), serializableMenuSession.getCurrentSelection(), installService);
 
     }
 
@@ -122,18 +124,6 @@ public class MenuSession {
         serializableMenuSession.setSerializedCommCareSession(this.getSerializedCommCareSession());
         serializableMenuSession.setCurrentSelection(this.currentSelection);
         return serializableMenuSession;
-    }
-
-    public FormplayerConfigEngine configureApplication(String installReference){
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username);
-        if(installReference.endsWith(".ccz")){
-            engine.initFromArchive(installReference);
-        } else{
-            throw new RuntimeException("Can't instantiate with reference: " + installReference);
-        }
-        engine.initEnvironment();
-        return engine;
     }
 
     public boolean handleInput(String input) throws CommCareSessionException {

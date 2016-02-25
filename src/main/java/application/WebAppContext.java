@@ -16,8 +16,10 @@ import repo.MenuRepo;
 import repo.SessionRepo;
 import repo.impl.MenuImpl;
 import repo.impl.SessionImpl;
+import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
+import services.impl.InstallServiceImpl;
 import services.impl.RestoreServiceImpl;
 import services.impl.XFormServiceImpl;
 
@@ -103,6 +105,12 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public RestoreService restoreService(){
         RestoreService impl = new RestoreServiceImpl();
+        return impl;
+    }
+
+    @Bean
+    public InstallService installService(){
+        InstallService impl = new InstallServiceImpl();
         return impl;
     }
 }

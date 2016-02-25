@@ -20,6 +20,7 @@ import repo.MenuRepo;
 import repo.SessionRepo;
 import requests.InstallRequest;
 import requests.NewFormRequest;
+import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
 import session.FormEntrySession;
@@ -49,6 +50,9 @@ public class SessionController {
 
     @Autowired
     private MenuRepo menuRepo;
+
+    @Autowired
+    private InstallService installService;
 
     Log log = LogFactory.getLog(SessionController.class);
     ObjectMapper mapper = new ObjectMapper();
@@ -214,13 +218,13 @@ public class SessionController {
 
     @RequestMapping(Constants.URL_INSTALL)
     public MenuResponseBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
-        InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, menuRepo);
+        InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, menuRepo, installService);
         return installRequest.getResponse();
     }
 
     @RequestMapping(Constants.URL_MENU_SELECT)
     public SessionBean selectMenu(@RequestBody MenuSelectBean menuSelectBean) throws Exception {
-        MenuSession menuSession = new MenuSession(menuRepo.find(menuSelectBean.getSessionId()), restoreService);
+        MenuSession menuSession = new MenuSession(menuRepo.find(menuSelectBean.getSessionId()), restoreService, installService);
         boolean redrawing = menuSession.handleInput(menuSelectBean.getSelection());
         menuRepo.save(menuSession.serialize());
         Screen nextScreen;

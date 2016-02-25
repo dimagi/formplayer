@@ -3,6 +3,8 @@
  */
 package install;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.resources.ArchiveFileRoot;
 import org.commcare.resources.JavaFileRoot;
@@ -46,6 +48,7 @@ public class FormplayerConfigEngine {
     private CommCarePlatform platform;
     private int fileuricount = 0;
     private ArchiveFileRoot mArchiveRoot;
+    Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
     public FormplayerConfigEngine(OutputStream output, final String username) {
         this.print = new PrintStream(output);
@@ -91,7 +94,7 @@ public class FormplayerConfigEngine {
         ReferenceManager._().addReferenceFactory(new JavaResourceRoot(this.getClass()));
     }
 
-    public void initFromArchive(String archiveURL) {
+    public void initFromArchive(String archiveURL) throws IOException {
         String fileName;
         if(archiveURL.startsWith("http")) {
             fileName = downloadToTemp(archiveURL);
@@ -103,9 +106,9 @@ public class FormplayerConfigEngine {
             zip = new ZipFile(fileName);
         } catch (IOException e) {
             print.println("File at " + archiveURL + ": is not a valid CommCare Package. Downloaded to: " + fileName);
-            e.printStackTrace(print);
-            System.exit(-1);
-            return;
+            log.error("Init from archive failed: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
         String archiveGUID = this.mArchiveRoot.addArchiveFile(zip);
 

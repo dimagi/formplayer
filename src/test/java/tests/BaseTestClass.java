@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
+import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
 import util.Constants;

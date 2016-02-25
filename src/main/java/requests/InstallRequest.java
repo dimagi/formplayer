@@ -4,6 +4,7 @@ import beans.InstallRequestBean;
 import beans.MenuResponseBean;
 import org.springframework.stereotype.Component;
 import repo.MenuRepo;
+import services.InstallService;
 import services.RestoreService;
 import session.MenuSession;
 import util.Constants;
@@ -19,9 +20,9 @@ public class InstallRequest {
     MenuSession menuSession;
 
     public InstallRequest(InstallRequestBean bean, RestoreService restoreService,
-                          MenuRepo menuSessionRepo) throws Exception {
+                          MenuRepo menuSessionRepo, InstallService installService) throws Exception {
         this.menuSession = new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(),
-                bean.getInstallReference(), null, restoreService, null, null);
+                bean.getInstallReference(), null, restoreService, null, null, installService);
         menuSessionRepo.save(menuSession.serialize());
     }
 

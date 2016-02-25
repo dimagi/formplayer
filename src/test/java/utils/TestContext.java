@@ -14,8 +14,10 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.MenuRepo;
 import repo.SessionRepo;
+import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
+import services.impl.InstallServiceImpl;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -97,5 +99,10 @@ public class TestContext {
             }
         }).when(impl).getRestoreXml(anyString(), any(HqAuth.class));
         return impl;
+    }
+
+    @Bean
+    public InstallService installService(){
+        return Mockito.mock(InstallServiceImpl.class);
     }
 }

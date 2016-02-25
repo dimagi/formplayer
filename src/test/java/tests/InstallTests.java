@@ -7,7 +7,11 @@ import beans.MenuResponseBean;
 import beans.MenuSelectBean;
 import beans.NewSessionResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import install.FormplayerConfigEngine;
 import objects.SerializableMenuSession;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,13 +31,16 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.MenuRepo;
 import repo.SessionRepo;
+import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
 import util.Constants;
 import utils.FileUtils;
 import utils.TestContext;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -62,6 +69,9 @@ public class InstallTests {
     @Autowired
     protected RestoreService restoreServiceMock;
 
+    @Autowired
+    protected InstallService installService;
+
     @InjectMocks
     SessionController sessionController;
 
@@ -73,18 +83,52 @@ public class InstallTests {
         return "/" + string;
     }
 
+    Log log = LogFactory.getLog(InstallTests.class);
+
     @Before
     public void setUp() throws IOException {
         Mockito.reset(sessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
         Mockito.reset(menuRepoMock);
+        Mockito.reset(installService);
         MockitoAnnotations.initMocks(this);
         mapper = new ObjectMapper();
         mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
         setupMenuMock();
+        setupInstallServiceMock();
+    }
+
+    private String getTestResourcePath(String resourcePath){
+        URL url = this.getClass().getClassLoader().getResource(resourcePath);
+        File file = new File(url.getPath());
+        return file.getAbsolutePath();
+    }
+
+    private void setupInstallServiceMock() throws IOException {
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                try {
+                    Object[] args = invocationOnMock.getArguments();
+                    String ref = (String) args[0];
+                    String username = (String) args[1];
+                    log.info("Mock installing reference: " + ref + " for user: " + username);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username);
+                    String absolutePath = getTestResourcePath(ref);
+                    log.info("Mock installing full path: " + absolutePath);
+                    engine.initFromArchive(absolutePath);
+                    engine.initEnvironment();
+                    return engine;
+                } catch(Exception e){
+                    e.printStackTrace();
+                    throw e;
+                }
+            }
+        }).when(installService).configureApplication(anyString(), anyString());
     }
 
     private void setupMenuMock() {
@@ -118,18 +162,10 @@ public class InstallTests {
         assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
         String sessionId = menuResponseBean.getSessionId();
 
-        System.out.println("Session ID: " + sessionId);
-
         JSONObject menuResponseObject =
                 selectMenu("requests/menu/menu_select.json", sessionId);
-
-
-        System.out.println("Menu Response Bean 1: " + menuResponseObject);
-
         JSONObject menuResponseObject2 =
                selectMenu("requests/menu/menu_select.json", sessionId);
-
-        System.out.println("Menu Response Bean 2: " + menuResponseObject2);
 
         assert menuResponseObject2.has("tree");
         assert menuResponseObject2.has("title");
