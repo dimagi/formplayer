@@ -136,12 +136,16 @@ public class SessionController {
         return getInstanceResponseBean;
     }
 
-    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_EVALUATE_XPATH)
     @ResponseBody
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
+        log.info("Evaluate XPath Request: " + evaluateXPathRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(evaluateXPathRequestBean.getSessionId());
         FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
-        return new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
+        EvaluateXPathResponseBean evaluateXPathResponseBean =
+                new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
+        log.info("Evaluate XPath Response: " + evaluateXPathResponseBean);
+        return evaluateXPathResponseBean;
     }
 
     @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.GET)
@@ -201,6 +205,7 @@ public class SessionController {
 
     @RequestMapping(Constants.URL_SYNC_DB)
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest) throws Exception {
+        log.info("SyncDb Request: " + syncRequest);
         syncRequest.setRestoreService(restoreService);
         String restoreXml = syncRequest.getRestoreXml();
         CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), restoreXml);

@@ -12,7 +12,7 @@ import java.util.Map;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EvaluateXPathRequestBean extends SessionBean{
-    private Map<String, String> formContext;
+    private Map<String, Object> formContext;
     private String xpath;
 
     // default constructor for Jackson
@@ -28,11 +28,11 @@ public class EvaluateXPathRequestBean extends SessionBean{
     }
 
     @JsonGetter(value = "form_context")
-    public Map<String, String> getFormContext() {
+    public Map<String, Object> getFormContext() {
         return formContext;
     }
     @JsonSetter(value = "form_context")
-    public void setFormContext(Map<String, String> formContext) {
+    public void setFormContext(Map<String, Object> formContext) {
         this.formContext = formContext;
     }
 
