@@ -58,6 +58,4 @@ dependencies {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.3'
-    def currentJvm = org.gradle.internal.jvm.Jvm.current()
-    println currentJvm
 }

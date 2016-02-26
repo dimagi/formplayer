@@ -2,6 +2,7 @@ package session;
 
 import hq.CaseAPIs;
 import objects.SerializableFormSession;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.commcare.api.json.WalkJson;
@@ -22,7 +23,6 @@ import util.PrototypeUtils;
 import java.io.*;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.commons.codec.binary.Base64;
 
 /**
  *

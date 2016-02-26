@@ -45,9 +45,7 @@ public class Application {
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
             final HttpServletRequest httpRequest = (HttpServletRequest) request;
             final HttpServletResponse httpResponse = (HttpServletResponse) response;
-            log.info("Request " + httpRequest.getClass());
-            log.info("Request URL: " + httpRequest.getRequestURL());
-            log.info("Response: " + httpResponse.getClass());
+            log.info("Got request URL: " + httpRequest.getRequestURL() + " , response code: " + httpResponse.getStatus());
             filterChain.doFilter(request, response);
         }
     }

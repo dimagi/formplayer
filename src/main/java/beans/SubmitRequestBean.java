@@ -11,7 +11,6 @@ import java.util.Map;
  *
  * TODO: Validate answers
  * TODO: Error handling
- * TODO: Process in SQLite DB
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SubmitRequestBean extends SessionBean{
