@@ -31,15 +31,9 @@ public class Application {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
     }
 
-    @Bean
-    public CommonsRequestLoggingFilter requestLoggingFilter() {
-        CommonsRequestLoggingFilter crlf = new CommonsRequestLoggingFilter();
-        crlf.setIncludeClientInfo(true);
-        crlf.setIncludeQueryString(true);
-        crlf.setIncludePayload(true);
-        return crlf;
-    }
-
+    /**
+     * This filter intercepts responses before they're dispatched and logs the request URL and response status
+     */
     public class ResponseLoggingFilter extends GenericFilterBean {
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
@@ -50,6 +44,7 @@ public class Application {
         }
     }
 
+    // Autowire the filter above
     @Bean
     public Filter loggingFilter() {
         ResponseLoggingFilter loggingFilter = new ResponseLoggingFilter();

@@ -3,15 +3,12 @@ package tests;
 import beans.*;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.TestContext;
-
-import java.util.Arrays;
 
 /**
  * Created by willpride on 1/14/16.
@@ -27,7 +24,7 @@ public class CaseTests extends BaseTestClass {
 
         // Start new session and submit create case form
 
-        NewSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
 
         CaseFilterResponseBean caseFilterResponseBean = filterCases("requests/filter/filter_cases_5.json");
@@ -51,7 +48,7 @@ public class CaseTests extends BaseTestClass {
 
         // Try updating case
 
-        NewSessionResponse newSessionResponse1 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+        NewFormSessionResponse newSessionResponse1 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
         sessionId = newSessionResponse1.getSessionId();
 
         AnswerQuestionResponseBean responseBean = answerQuestionGetResult("0", "Test Response", sessionId);
@@ -70,7 +67,7 @@ public class CaseTests extends BaseTestClass {
 
         // close this case
 
-        NewSessionResponse newSessionResponse2 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
+        NewFormSessionResponse newSessionResponse2 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
         assert(filterCases("requests/filter/filter_cases_5.json").getCases().length == 16);
 

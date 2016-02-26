@@ -9,15 +9,15 @@ import java.util.Arrays;
 /**
  * Created by willpride on 1/12/16.
  */
-public class NewSessionResponse extends SessionBean{
+public class NewFormSessionResponse extends SessionBean{
     // TODO: This should be a QuestionBean array
     QuestionBean[] tree;
     String title;
     String[] langs;
 
-    public NewSessionResponse(){}
+    public NewFormSessionResponse(){}
 
-    public NewSessionResponse(FormEntrySession fes) throws IOException {
+    public NewFormSessionResponse(FormEntrySession fes) throws IOException {
         this.tree = new ObjectMapper().readValue(fes.getFormTree().toString(), QuestionBean[].class);
         this.langs = fes.getLanguages();
         this.title = fes.getTitle();
@@ -40,7 +40,7 @@ public class NewSessionResponse extends SessionBean{
     public String getSession_id(){return sessionId;}
 
     public String toString(){
-        return "NewSessionResponse [sessionId=" + sessionId + ", title=" + title + " tree=" + Arrays.toString(tree) +
+        return "NewFormSessionResponse [sessionId=" + sessionId + ", title=" + title + " tree=" + Arrays.toString(tree) +
                 " sequenceId=" + sequenceId + " ]";
     }
 }

@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
-import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
 import util.Constants;
@@ -120,7 +119,7 @@ public class BaseTestClass {
         return response;
     }
 
-    public NewSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
+    public NewFormSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
@@ -133,7 +132,7 @@ public class BaseTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
-        NewSessionResponse newSessionResponse = mapper.readValue(responseBody, NewSessionResponse.class);
+        NewFormSessionResponse newSessionResponse = mapper.readValue(responseBody, NewFormSessionResponse.class);
         return newSessionResponse;
     }
 

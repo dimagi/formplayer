@@ -2,7 +2,7 @@ package session;
 
 import auth.BasicAuth;
 import auth.HqAuth;
-import beans.NewSessionResponse;
+import beans.NewFormSessionResponse;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
 import objects.SerializableMenuSession;
@@ -132,7 +132,6 @@ public class MenuSession {
             EntityScreen entityScreen = (EntityScreen) screen;
             if(entityScreen.getCurrentScreen() instanceof EntityDetailSubscreen){
                 EntityDetailSubscreen entityDetailSubscreen = (EntityDetailSubscreen) entityScreen.getCurrentScreen();
-                int currentIndex = entityDetailSubscreen.getCurrentIndex();
                 currentSelection = input;
             }
         }
@@ -192,13 +191,13 @@ public class MenuSession {
         return ret;
     }
 
-    public NewSessionResponse startFormEntry(SessionRepo sessionRepo) throws Exception {
+    public NewFormSessionResponse startFormEntry(SessionRepo sessionRepo) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         FormEntrySession formEntrySession = new FormEntrySession(sandbox, formDef, "en", username, sessionData);
         sessionRepo.save(formEntrySession.serialize());
-        return new NewSessionResponse(formEntrySession);
+        return new NewFormSessionResponse(formEntrySession);
     }
 
     public String[] getChoices(){

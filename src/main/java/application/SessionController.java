@@ -9,7 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
 import org.commcare.modern.process.FormRecordProcessorHelper;
-import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.util.cli.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,7 @@ import session.MenuSession;
 import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,32 +57,13 @@ public class SessionController {
     ObjectMapper mapper = new ObjectMapper();
 
     @RequestMapping(Constants.URL_NEW_SESSION)
-    public NewSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean) throws Exception {
+    public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean) throws Exception {
         log.info("New form requests with bean: " + newSessionBean);
         NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService, restoreService);
-        NewSessionResponse newSessionResponse = newFormRequest.getResponse();
+        NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
         log.info("Return new session response: " + newSessionResponse);
         return newSessionResponse;
     }
-
-    @RequestMapping(value = Constants.URL_LIST_SESSIONS, method = RequestMethod.GET, headers = "Accept=application/json")
-    public @ResponseBody List<SerializableFormSession> findAllSessions() {
-        Map<Object, Object> mMap = sessionRepo.findAll();
-        SessionList sessionList = new SessionList();
-
-        for (Object obj : mMap.values()) {
-            sessionList.add((SerializableFormSession) obj);
-        }
-        return sessionList;
-    }
-
-    @RequestMapping(value = Constants.URL_GET_SESSION, method = RequestMethod.GET)
-    @ResponseBody
-    public SerializableFormSession getSession(@RequestParam(value="id") String id) {
-        SerializableFormSession serializableFormSession = sessionRepo.find(id);
-        return serializableFormSession;
-    }
-
 
     @RequestMapping(Constants.URL_ANSWER_QUESTION)
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
@@ -95,10 +76,8 @@ public class SessionController {
                 answerQuestionBean.getAnswer() != null? answerQuestionBean.getAnswer().toString() : null,
                 answerQuestionBean.getFormIndex());
 
-        session.setFormXml(formEntrySession.getFormXml());
-        session.setInstanceXml(formEntrySession.getInstanceXml());
-        session.setSequenceId(formEntrySession.getSequenceId() + 1);
-        sessionRepo.save(session);
+        updateSession(formEntrySession, session);
+
         AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
         responseBean.setSequenceId(formEntrySession.getSequenceId() + 1);
         log.info("Answer response: " + responseBean);
@@ -162,9 +141,8 @@ public class SessionController {
                 formEntrySession.getFormEntryModel(),
                 newRepeatRequestBean.getFormIndex());
 
-        serializableFormSession.setFormXml(formEntrySession.getFormXml());
-        serializableFormSession.setInstanceXml(formEntrySession.getInstanceXml());
-        sessionRepo.save(serializableFormSession);
+        updateSession(formEntrySession, serializableFormSession);
+
         JSONObject response = AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel());
         RepeatResponseBean repeatResponseBean = mapper.readValue(response.toString(), RepeatResponseBean.class);
@@ -182,14 +160,9 @@ public class SessionController {
                 formEntrySession.getFormEntryModel(),
                 repeatRequestBean.getFormIndex());
 
-        serializableFormSession.setFormXml(formEntrySession.getFormXml());
-        serializableFormSession.setInstanceXml(formEntrySession.getInstanceXml());
-        sessionRepo.save(serializableFormSession);
+        updateSession(formEntrySession, serializableFormSession);
 
-        JSONObject response =  AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
-                formEntrySession.getFormEntryModel());
-
-        return mapper.readValue(response.toString(), RepeatResponseBean.class);
+        return mapper.readValue(resp.toString(), RepeatResponseBean.class);
     }
 
     @RequestMapping(Constants.URL_FILTER_CASES)
@@ -221,74 +194,76 @@ public class SessionController {
         return installRequest.getResponse();
     }
 
+    /**
+     * Make a menu selection, return a new Menu or a Form to display. This form will load a MenuSession object
+     * from persistence, make the selection, and update the record. If the selection began form entry, this will
+     * also create a new FormSession object.
+     *
+     * @param menuSelectBean Give the selection to be made on the current MenuSession
+     *                       (could be a module, form, or case selection)
+     * @return A MenuResponseBean or a NewFormSessionResponse
+     * @throws Exception
+     */
     @RequestMapping(Constants.URL_MENU_SELECT)
     public SessionBean selectMenu(@RequestBody MenuSelectBean menuSelectBean) throws Exception {
-        MenuSession menuSession = new MenuSession(menuRepo.find(menuSelectBean.getSessionId()), restoreService, installService);
+        MenuSession menuSession = getMenuSession(menuSelectBean.getSessionId());
         boolean redrawing = menuSession.handleInput(menuSelectBean.getSelection());
         menuRepo.save(menuSession.serialize());
         Screen nextScreen;
 
-        if(!redrawing){
-            nextScreen = menuSession.getNextScreen();
-        } else{
+        // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
+        if(redrawing){
             nextScreen = menuSession.getCurrentScreen();
+        } else{
+            nextScreen = menuSession.getNextScreen();
         }
-
-        if(nextScreen instanceof MenuScreen){
-            MenuScreen menuScreen = (MenuScreen) nextScreen;
-            MenuDisplayable[] options = menuScreen.getChoices();
-            HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
-            for(int i=0; i <options.length; i++){
-                optionsStrings.put(i, options[i].getDisplayText());
-            }
+        // No next menu screen? Start form entry!
+        if (nextScreen == null){
+            return menuSession.startFormEntry(sessionRepo);
+        }
+        else{
             MenuResponseBean menuResponseBean = new MenuResponseBean();
-            menuResponseBean.setMenuType(Constants.MENU_MODULE);
-            menuResponseBean.setOptions(optionsStrings);
             menuResponseBean.setSessionId(menuSession.getSessionId());
-            return menuResponseBean;
-        } else if (nextScreen instanceof EntityScreen){
-            EntityScreen entityScreen = (EntityScreen) nextScreen;
-
-            if (entityScreen.getCurrentScreen() instanceof EntityListSubscreen) {
-                EntityListSubscreen entityListSubscreen = (EntityListSubscreen) entityScreen.getCurrentScreen();
-                String[] rows = entityListSubscreen.getRows();
-                HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
-                for(int i=0; i <rows.length; i++){
-                    optionsStrings.put(i, rows[i]);
-                }
-                MenuResponseBean menuResponseBean = new MenuResponseBean();
-                menuResponseBean.setMenuType(Constants.MENU_ENTITY);
-                menuResponseBean.setOptions(optionsStrings);
-                menuResponseBean.setSessionId(menuSession.getSessionId());
-                return menuResponseBean;
-            } else if(entityScreen.getCurrentScreen() instanceof EntityDetailSubscreen){
-
-                EntityDetailSubscreen entityDetailSubscreen = (EntityDetailSubscreen) entityScreen.getCurrentScreen();
-                String[] rows = entityDetailSubscreen.getOptions();
-                HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
-                for(int i=0; i <rows.length; i++){
-                    optionsStrings.put(i, rows[i]);
-                }
-                MenuResponseBean menuResponseBean = new MenuResponseBean();
-                menuResponseBean.setMenuType(Constants.MENU_ENTITY);
-                menuResponseBean.setOptions(optionsStrings);
-                menuResponseBean.setSessionId(menuSession.getSessionId());
-                return menuResponseBean;
+            // We're looking at a module or form menu
+            if(nextScreen instanceof MenuScreen){
+                MenuScreen menuScreen = (MenuScreen) nextScreen;
+                menuResponseBean.setMenuType(Constants.MENU_MODULE);
+                menuResponseBean.setOptions(getMenuRows(menuScreen));
             }
-
-        }else if (nextScreen == null){
-            NewSessionResponse response = menuSession.startFormEntry(sessionRepo);
-            String stringResponse = new ObjectMapper().writeValueAsString(response);
-            return response;
+            // We're looking at a case list or detail screen (probably)
+            else if (nextScreen instanceof EntityScreen) {
+                EntityScreen entityScreen = (EntityScreen) nextScreen;
+                menuResponseBean.setMenuType(Constants.MENU_ENTITY);
+                menuResponseBean.setOptions(getMenuRows(entityScreen.getCurrentScreen()));
+            }
+            return menuResponseBean;
         }
-        return null;
+    }
+
+    private void updateSession(FormEntrySession formEntrySession, SerializableFormSession serialSession) throws IOException {
+        serialSession.setFormXml(formEntrySession.getFormXml());
+        serialSession.setInstanceXml(formEntrySession.getInstanceXml());
+        serialSession.setSequenceId(formEntrySession.getSequenceId() + 1);
+        sessionRepo.save(serialSession);
+    }
+
+    private MenuSession getMenuSession(String sessionId) throws Exception {
+        return new MenuSession(menuRepo.find(sessionId), restoreService, installService);
+    }
+
+    private HashMap<Integer, String> getMenuRows(OptionsScreen nextScreen){
+        String[] rows = nextScreen.getOptions();
+        HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
+        for(int i=0; i <rows.length; i++){
+            optionsStrings.put(i, rows[i]);
+        }
+        return optionsStrings;
     }
 
     @ExceptionHandler(Exception.class)
     public String handleError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         exception.printStackTrace();
-
         JSONObject errorReturn = new JSONObject();
         errorReturn.put("exception", exception);
         errorReturn.put("url", req.getRequestURL());

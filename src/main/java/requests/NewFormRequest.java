@@ -3,7 +3,7 @@ package requests;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.NewSessionRequestBean;
-import beans.NewSessionResponse;
+import beans.NewFormSessionResponse;
 import org.springframework.stereotype.Service;
 import repo.SessionRepo;
 import services.RestoreService;
@@ -65,8 +65,8 @@ public class NewFormRequest {
                 bean.getLang(), bean.getSessionData().getData(), sessionRepo, xFormService, restoreService);
     }
 
-    public NewSessionResponse getResponse() throws IOException {
-        NewSessionResponse ret = new NewSessionResponse(formEntrySession);
+    public NewFormSessionResponse getResponse() throws IOException {
+        NewFormSessionResponse ret = new NewFormSessionResponse(formEntrySession);
         return ret;
     }
 

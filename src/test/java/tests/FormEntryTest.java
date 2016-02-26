@@ -10,7 +10,6 @@ import utils.TestContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 
 import static org.mockito.Matchers.any;
 
@@ -24,7 +23,7 @@ public class FormEntryTest extends BaseTestClass{
 
         serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
-        NewSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -100,7 +99,7 @@ public class FormEntryTest extends BaseTestClass{
 
         serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
-        NewSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types_2.xml");
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types_2.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
