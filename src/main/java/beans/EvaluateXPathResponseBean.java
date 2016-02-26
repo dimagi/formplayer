@@ -3,7 +3,8 @@ package beans;
 import org.commcare.suite.model.Text;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import session.FormEntrySession;
+import session.FormSession;
+import util.Constants;
 
 import java.io.IOException;
 import java.util.Hashtable;
@@ -18,9 +19,9 @@ public class EvaluateXPathResponseBean {
     //Jackson requires the default constructor
     public EvaluateXPathResponseBean(){}
 
-    public EvaluateXPathResponseBean(FormEntrySession formEntrySession, String xpath) throws IOException, XPathSyntaxException {
+    public EvaluateXPathResponseBean(FormSession formEntrySession, String xpath) throws IOException, XPathSyntaxException {
         // TODO: don't always return success
-        status = "accepted";
+        status = Constants.RESPONSE_STATUS_POSITIVE;
         EvaluationContext evaluationContext = formEntrySession.getFormEntryModel().getForm().getEvaluationContext();
         Text mText = Text.XPathText(xpath, new Hashtable<String, Text>());
         output = mText.evaluate(evaluationContext);

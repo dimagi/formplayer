@@ -26,19 +26,7 @@ public class InstallRequest {
         menuSessionRepo.save(menuSession.serialize());
     }
 
-    public MenuResponseBean getResponse(){
-        MenuResponseBean menuResponseBean = new MenuResponseBean();
-        menuResponseBean.setMenuType(Constants.MENU_MODULE);
-        menuResponseBean.setOptions(parseMenuChoices(this.menuSession.getChoices()));
-        menuResponseBean.setSessionId(this.menuSession.getSessionId());
-        return menuResponseBean;
-    }
-
-    public Map<Integer, String> parseMenuChoices(String[] menuDisplayables){
-        Map<Integer, String> ret = new HashMap<Integer, String>();
-        for(int i = 0; i < menuDisplayables.length; i++){
-            ret.put(new Integer(i), menuDisplayables[i]);
-        }
-        return ret;
+    public MenuSession getMenuSession(){
+        return menuSession;
     }
 }

@@ -1,7 +1,7 @@
 package beans;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import session.FormEntrySession;
+import session.FormSession;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -10,14 +10,13 @@ import java.util.Arrays;
  * Created by willpride on 1/12/16.
  */
 public class NewFormSessionResponse extends SessionBean{
-    // TODO: This should be a QuestionBean array
     QuestionBean[] tree;
     String title;
     String[] langs;
 
     public NewFormSessionResponse(){}
 
-    public NewFormSessionResponse(FormEntrySession fes) throws IOException {
+    public NewFormSessionResponse(FormSession fes) throws IOException {
         this.tree = new ObjectMapper().readValue(fes.getFormTree().toString(), QuestionBean[].class);
         this.langs = fes.getLanguages();
         this.title = fes.getTitle();

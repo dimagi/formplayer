@@ -36,10 +36,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
- * Created by willpride on 2/5/16.
+ * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
+ * primarily includes module and form navigation, along with case list/details and case selection. When ready,
+ * this object will create and hand off flow control to a FormSession object, loading up the proper session data.
+ *
+ * A lot of this is copied from the CLI. We need to merge that. Big TODO
  */
 @Component
 public class MenuSession {
@@ -165,7 +170,6 @@ public class MenuSession {
         try {
             form = XPathParseTool.parseXPath(datum.getValue());
         } catch (XPathSyntaxException e) {
-            //TODO: What.
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
@@ -195,7 +199,7 @@ public class MenuSession {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        FormEntrySession formEntrySession = new FormEntrySession(sandbox, formDef, "en", username, sessionData);
+        FormSession formEntrySession = new FormSession(sandbox, formDef, "en", username, sessionData);
         sessionRepo.save(formEntrySession.serialize());
         return new NewFormSessionResponse(formEntrySession);
     }
@@ -219,5 +223,14 @@ public class MenuSession {
 
     public Screen getCurrentScreen(){
         return screen;
+    }
+
+    public Map<Integer, String> getMenuOptions(){
+        Map<Integer, String> ret = new HashMap<Integer, String>();
+        String[] menuDisplayables = screen.getOptions();
+        for(int i = 0; i < menuDisplayables.length; i++){
+            ret.put(new Integer(i), menuDisplayables[i]);
+        }
+        return ret;
     }
 }

@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import services.RestoreService;
+import util.Constants;
 import utils.FileUtils;
 import utils.TestContext;
 
@@ -73,7 +74,7 @@ public class FilterTests extends BaseTestClass {
 
         SyncDbResponseBean syncDbResponseBean = syncDb("requests/sync_db/sync_db.json");
 
-        assert(syncDbResponseBean.getStatus().equals("accepted"));
+        assert(syncDbResponseBean.getStatus().equals(Constants.RESPONSE_STATUS_POSITIVE));
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
         UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("test@test.commcarehq.org");

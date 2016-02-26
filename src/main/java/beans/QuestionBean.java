@@ -21,7 +21,7 @@ public class QuestionBean {
     private String help;
     private Object answer;
     private String datatype;
-    private HashMap<String, String> style;
+    private HashMap<String, String> style = new HashMap<String, String>();
     private String caption_video;
     private String type;
     private String caption_markdown;
@@ -114,10 +114,7 @@ public class QuestionBean {
     }
 
     public HashMap<String, String> getStyle() {
-        if(style != null) {
-            return style;
-        }
-        return new HashMap<String, String>();
+        return style;
     }
 
     public void setStyle(HashMap<String, String> style) {
@@ -166,9 +163,8 @@ public class QuestionBean {
 
     @Override
     public String toString(){
-        return "QuestionBean bind: " + this.getBinding() + " answer: " + this.getAnswer() + ", ix: "+ ix +  ", type: "
-                + this.getType() + " children: " +
-                Arrays.toString(getChildren());
+        return "QuestionBean [ix: "+ ix + ", bind: " + this.getBinding() + " answer: " + this.getAnswer() + ", type: "
+                + this.getType() + " children: " + Arrays.toString(getChildren()) + "]";
     }
 
     public QuestionBean[] getChildren() {

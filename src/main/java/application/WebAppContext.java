@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.mail.MailSender;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -87,30 +88,25 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public SessionRepo sessionRepo(){
-        SessionImpl impl = new SessionImpl();
-        return impl;
+        return new SessionImpl();
     }
 
     @Bean
     public MenuRepo menuRepo(){
-        MenuImpl impl = new MenuImpl();
-        return impl;
+        return new MenuImpl();
     }
     @Bean
     public XFormService xFormService(){
-        XFormServiceImpl impl = new XFormServiceImpl();
-        return impl;
+        return new XFormServiceImpl();
     }
 
     @Bean
     public RestoreService restoreService(){
-        RestoreService impl = new RestoreServiceImpl();
-        return impl;
+        return new RestoreServiceImpl();
     }
 
     @Bean
     public InstallService installService(){
-        InstallService impl = new InstallServiceImpl();
-        return impl;
+        return new InstallServiceImpl();
     }
 }

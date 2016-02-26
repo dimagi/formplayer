@@ -4,7 +4,6 @@ import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hq.CaseAPIs;
 import objects.SerializableFormSession;
-import objects.SessionList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
@@ -21,15 +20,13 @@ import requests.NewFormRequest;
 import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
-import session.FormEntrySession;
+import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by willpride on 1/12/16.
@@ -69,7 +66,7 @@ public class SessionController {
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = sessionRepo.find(answerQuestionBean.getSessionId());
-        FormEntrySession formEntrySession = new FormEntrySession(session);
+        FormSession formEntrySession = new FormSession(session);
 
         JSONObject resp = AnswerQuestionJson.questionAnswerToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -89,7 +86,7 @@ public class SessionController {
     public CurrentResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
         log.info("Current request: " + currentRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(currentRequestBean.getSessionId());
-        FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
+        FormSession formEntrySession = new FormSession(serializableFormSession);
         CurrentResponseBean currentResponseBean = new CurrentResponseBean(formEntrySession);
         log.info("Current response: " + currentResponseBean);
         return currentResponseBean;
@@ -100,7 +97,7 @@ public class SessionController {
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
         log.info("Submit form with bean: " + submitRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(submitRequestBean.getSessionId());
-        FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
+        FormSession formEntrySession = new FormSession(serializableFormSession);
         FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
         SubmitResponseBean submitResponseBean = new SubmitResponseBean(formEntrySession);
         log.info("Submit response bean: " + submitResponseBean);
@@ -112,7 +109,7 @@ public class SessionController {
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(getInstanceRequestBean.getSessionId());
-        FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
+        FormSession formEntrySession = new FormSession(serializableFormSession);
         GetInstanceResponseBean getInstanceResponseBean = new GetInstanceResponseBean(formEntrySession);
         log.info("Get instance response: " + getInstanceResponseBean);
         return getInstanceResponseBean;
@@ -123,7 +120,7 @@ public class SessionController {
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         log.info("Evaluate XPath Request: " + evaluateXPathRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(evaluateXPathRequestBean.getSessionId());
-        FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
+        FormSession formEntrySession = new FormSession(serializableFormSession);
         EvaluateXPathResponseBean evaluateXPathResponseBean =
                 new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
         log.info("Evaluate XPath Response: " + evaluateXPathResponseBean);
@@ -135,7 +132,7 @@ public class SessionController {
     public RepeatResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         log.info("New repeat: " + newRepeatRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
-        FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
+        FormSession formEntrySession = new FormSession(serializableFormSession);
 
         AnswerQuestionJson.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -154,7 +151,7 @@ public class SessionController {
     @ResponseBody
     public RepeatResponseBean deleteRepeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = sessionRepo.find(repeatRequestBean.getSessionId());
-        FormEntrySession formEntrySession = new FormEntrySession(serializableFormSession);
+        FormSession formEntrySession = new FormSession(serializableFormSession);
 
         JSONObject resp = AnswerQuestionJson.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -189,9 +186,9 @@ public class SessionController {
     }
 
     @RequestMapping(Constants.URL_INSTALL)
-    public MenuResponseBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
+    public SessionBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
         InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, menuRepo, installService);
-        return installRequest.getResponse();
+        return getNextMenu(installRequest.getMenuSession(), true);
     }
 
     /**
@@ -209,14 +206,20 @@ public class SessionController {
         MenuSession menuSession = getMenuSession(menuSelectBean.getSessionId());
         boolean redrawing = menuSession.handleInput(menuSelectBean.getSelection());
         menuRepo.save(menuSession.serialize());
-        Screen nextScreen;
+        return getNextMenu(menuSession, redrawing);
+    }
+
+    private SessionBean getNextMenu(MenuSession menuSession, boolean redrawing) throws Exception {
+
+        OptionsScreen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
         if(redrawing){
             nextScreen = menuSession.getCurrentScreen();
-        } else{
+        }else{
             nextScreen = menuSession.getNextScreen();
         }
+
         // No next menu screen? Start form entry!
         if (nextScreen == null){
             return menuSession.startFormEntry(sessionRepo);
@@ -240,7 +243,7 @@ public class SessionController {
         }
     }
 
-    private void updateSession(FormEntrySession formEntrySession, SerializableFormSession serialSession) throws IOException {
+    private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
         serialSession.setFormXml(formEntrySession.getFormXml());
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
         serialSession.setSequenceId(formEntrySession.getSequenceId() + 1);
@@ -270,5 +273,7 @@ public class SessionController {
         errorReturn.put("status", "error");
         return errorReturn.toString();
     }
+
+
 
 }

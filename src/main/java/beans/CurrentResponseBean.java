@@ -1,7 +1,7 @@
 package beans;
 
 import org.json.JSONArray;
-import session.FormEntrySession;
+import session.FormSession;
 
 /**
  * Return the current state of the form entry session (tree, languages, title)
@@ -16,7 +16,7 @@ public class CurrentResponseBean extends SessionBean {
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public CurrentResponseBean(){}
 
-    public CurrentResponseBean(FormEntrySession session){
+    public CurrentResponseBean(FormSession session){
         tree = session.getFormTree();
         title = session.getTitle();
         langs = session.getLanguages();

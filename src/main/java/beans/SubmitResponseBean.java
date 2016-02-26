@@ -1,6 +1,6 @@
 package beans;
 
-import session.FormEntrySession;
+import session.FormSession;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ public class SubmitResponseBean extends SessionBean{
     // default constructor for Jackson
     public SubmitResponseBean(){}
 
-    public SubmitResponseBean(FormEntrySession session) throws IOException {
+    public SubmitResponseBean(FormSession session) throws IOException {
         status = "success";
         output = session.getInstanceXml();
         sessionId = session.getSessionId();

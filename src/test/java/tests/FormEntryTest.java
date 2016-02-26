@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import util.Constants;
 import utils.FileUtils;
 import utils.TestContext;
 
@@ -85,7 +86,7 @@ public class FormEntryTest extends BaseTestClass{
 
         //Test Evaluate XPath
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/q_text");
-        assert evaluateXPathResponseBean.getStatus().equals("accepted");
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.RESPONSE_STATUS_POSITIVE);
         assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 
         //Test Submission

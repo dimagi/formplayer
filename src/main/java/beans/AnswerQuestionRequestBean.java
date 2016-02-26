@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 public class AnswerQuestionRequestBean extends SessionBean {
     private String formIndex;
+    // This can be an array (multi select, geo point), integer, date, or String.
+    // Even though they always come in as Strings, Jackson will try to parse the String into the above classes
+    // and so needs this to be an Object to store them in
     private Object answer;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import repo.SessionRepo;
 import services.RestoreService;
 import services.XFormService;
-import session.FormEntrySession;
+import session.FormSession;
 
 import java.io.IOException;
 import java.util.Map;
@@ -20,7 +20,7 @@ import java.util.Map;
 public class NewFormRequest {
 
     String formUrl;
-    FormEntrySession formEntrySession;
+    FormSession formEntrySession;
     SessionRepo sessionRepo;
     XFormService xFormService;
     RestoreService restoreService;
@@ -42,7 +42,7 @@ public class NewFormRequest {
         this.lang = lang;
         Map<String, String> data = sessionData;
         try {
-            formEntrySession = new FormEntrySession(getFormXml(), getRestoreXml(), lang, username, data);
+            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, data);
             sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();

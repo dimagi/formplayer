@@ -26,7 +26,7 @@ import java.util.UUID;
 
 /**
  *
- * OK this (and MenuSession) is a total god object that basically amanges everything about the state of
+ * OK this (and MenuSession) is a total god object that basically mananges everything about the state of
  * a form entry session. We turn this into a SerializableFormSession to persist it. Within that we also
  * serialize the formDef to persist the session, in addition to a bunch of other information like the restoreXml.
  * Confusingly we also have a SessionWrapper object within this session which tracks a bunch of other information. There
@@ -35,7 +35,7 @@ import java.util.UUID;
  * @author willpride
  */
 @Component
-public class FormEntrySession {
+public class FormSession {
 
     private FormDef formDef;
     private FormEntryModel formEntryModel;
@@ -52,7 +52,7 @@ public class FormEntrySession {
     String[] langs;
     String uuid;
     String username;
-    public FormEntrySession(SerializableFormSession session) throws Exception{
+    public FormSession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
         this.username = session.getUsername();
         this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
@@ -75,8 +75,8 @@ public class FormEntrySession {
         getFormTree();
     }
 
-    public FormEntrySession(String formXml, String restoreXml, String initLang, String username,
-                Map<String, String> sessionData) throws Exception {
+    public FormSession(String formXml, String restoreXml, String initLang, String username,
+                       Map<String, String> sessionData) throws Exception {
         this.formXml = formXml;
         this.restoreXml = restoreXml;
         this.username = username;
@@ -96,8 +96,8 @@ public class FormEntrySession {
     }
 
     // Entry from menu selection. Assumes user has already been restored.
-    public FormEntrySession(UserSandbox sandbox, FormDef formDef, String initLang, String username,
-                            Map<String, String> sessionData) throws Exception {
+    public FormSession(UserSandbox sandbox, FormDef formDef, String initLang, String username,
+                       Map<String, String> sessionData) throws Exception {
         this.username = username;
         this.sessionData = sessionData;
         this.formDef = formDef;
