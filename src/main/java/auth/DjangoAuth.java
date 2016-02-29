@@ -24,4 +24,9 @@ public class DjangoAuth implements HqAuth {
             }
         };
     }
+
+    @Override
+    public String toString(){
+        return "DjangoAuth key=" + authKey;
+    }
 }

@@ -1,15 +1,15 @@
 package beans;
 
-import java.util.ArrayList;
+import util.Constants;
 
 /**
  * Created by willpride on 1/12/16.
  */
 public class SyncDbResponseBean {
-    private String status;
+    private String status = Constants.RESPONSE_STATUS_POSITIVE;
 
     public String getStatus() {
-        return "success";
+        return status;
     }
 
     public void setStatus(String status) {

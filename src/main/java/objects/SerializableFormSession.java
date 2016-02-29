@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Created by willpride on 1/19/16.
  */
-public class SerializableSession implements Serializable{
+public class SerializableFormSession implements Serializable{
     private String id;
     private String instanceXml;
     private String formXml;
@@ -39,7 +39,7 @@ public class SerializableSession implements Serializable{
 
     @Override
     public boolean equals(Object obj){
-        if(obj instanceof SerializableSession){
+        if(obj instanceof SerializableFormSession){
             return obj.hashCode() == hashCode();
         }
         return false;

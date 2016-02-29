@@ -1,9 +1,10 @@
 package beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.json.JSONObject;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Created by willpride on 1/27/16.
@@ -15,17 +16,21 @@ public class QuestionBean {
     private String binding;
     private String caption_image;
     private String question;
-    private String required;
-    private String relevant;
+    private int required;
+    private int relevant;
     private String help;
     private Object answer;
     private String datatype;
-    private StyleBean style;
+    private HashMap<String, String> style = new HashMap<String, String>();
     private String caption_video;
     private String type;
     private String caption_markdown;
     private String ix;
     private String[] choices;
+    private String repeatable;
+    private String exists;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private QuestionBean[] children;
 
     public String getCaption_audio() {
@@ -68,19 +73,19 @@ public class QuestionBean {
         this.question = question;
     }
 
-    public String getRequired() {
+    public int getRequired() {
         return required;
     }
 
-    public void setRequired(String required) {
+    public void setRequired(int required) {
         this.required = required;
     }
 
-    public String getRelevant() {
+    public int getRelevant() {
         return relevant;
     }
 
-    public void setRelevant(String relevant) {
+    public void setRelevant(int relevant) {
         this.relevant = relevant;
     }
 
@@ -108,11 +113,11 @@ public class QuestionBean {
         this.datatype = datatype;
     }
 
-    public StyleBean getStyle() {
+    public HashMap<String, String> getStyle() {
         return style;
     }
 
-    public void setStyle(StyleBean style) {
+    public void setStyle(HashMap<String, String> style) {
         this.style = style;
     }
 
@@ -158,9 +163,8 @@ public class QuestionBean {
 
     @Override
     public String toString(){
-        return "QuestionBean bind: " + this.getBinding() + " answer: " + this.getAnswer() + ", ix: "+ ix +  ", type: "
-                + this.getType() + " children: " +
-                Arrays.toString(getChildren());
+        return "QuestionBean [ix: "+ ix + ", bind: " + this.getBinding() + " answer: " + this.getAnswer() + ", type: "
+                + this.getType() + " children: " + Arrays.toString(getChildren()) + "]";
     }
 
     public QuestionBean[] getChildren() {
@@ -169,5 +173,21 @@ public class QuestionBean {
 
     public void setChildren(QuestionBean[] children) {
         this.children = children;
+    }
+
+    public String getRepeatable() {
+        return repeatable;
+    }
+
+    public void setRepeatable(String repeatable) {
+        this.repeatable = repeatable;
+    }
+
+    public String getExists() {
+        return exists;
+    }
+
+    public void setExists(String exists) {
+        this.exists = exists;
     }
 }

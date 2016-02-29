@@ -16,7 +16,6 @@ import org.javarosa.xform.util.XFormUtils;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
-import requests.RestoreRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,14 +49,21 @@ public class RestoreUtils {
                                        InputStream instanceInput)
             throws Exception {
         FormDef formDef;
-        FormInstance savedModel;
-        FormEntryModel entryModel;
 
         try {
             formDef = XFormUtils.getFormFromInputStream(formInput);
         } catch (XFormParseException e) {
             throw new IOException(e.getMessage());
         }
+
+        return loadInstance(formDef, instanceInput);
+    }
+
+    public static FormDef loadInstance(FormDef formDef,
+                                       InputStream instanceInput)
+            throws Exception {
+        FormInstance savedModel;
+        FormEntryModel entryModel;
 
         savedModel = XFormParser.restoreDataModel(instanceInput, null);
 

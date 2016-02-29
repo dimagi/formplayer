@@ -11,34 +11,23 @@ import java.util.Map;
  *
  * TODO: Validate answers
  * TODO: Error handling
- * TODO: Process in SQLite DB
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SubmitRequestBean {
-    private Map<String, String> formContext;
-    private String sessionId;
+public class SubmitRequestBean extends SessionBean{
+    private Map<String, Object> formContext;
     private boolean prevalidated;
-    private Map<String, String> answers;
+    private Map<String, Object> answers;
 
     public SubmitRequestBean(){
 
     }
 
-    @JsonGetter(value = "session-id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session-id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
     @JsonGetter(value = "form_context")
-    public Map<String, String> getFormContext() {
+    public Map<String, Object> getFormContext() {
         return formContext;
     }
     @JsonSetter(value = "form_context")
-    public void setFormContext(Map<String, String> formContext) {
+    public void setFormContext(Map<String, Object> formContext) {
         this.formContext = formContext;
     }
 
@@ -50,11 +39,11 @@ public class SubmitRequestBean {
         this.prevalidated = prevalidated;
     }
 
-    public Map<String, String> getAnswers() {
+    public Map<String, Object> getAnswers() {
         return answers;
     }
 
-    public void setAnswers(Map<String, String> answers) {
+    public void setAnswers(Map<String, Object> answers) {
         this.answers = answers;
     }
 

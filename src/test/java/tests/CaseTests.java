@@ -1,33 +1,14 @@
 package tests;
 
-import auth.HqAuth;
 import beans.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import objects.SerializableSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.MvcResult;
-import utils.FileUtils;
 import utils.TestContext;
-
-import java.util.Arrays;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Created by willpride on 1/14/16.
@@ -43,14 +24,14 @@ public class CaseTests extends BaseTestClass {
 
         // Start new session and submit create case form
 
-        JSONObject newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
 
         CaseFilterResponseBean caseFilterResponseBean = filterCases("requests/filter/filter_cases_5.json");
 
         assert(caseFilterResponseBean.getCases().length == 15);
 
-        String sessionId = newSessionResponse.getString("session_id");
+        String sessionId = newSessionResponse.getSessionId();
 
         answerQuestionGetResult("0", "Tom Brady", sessionId);
         answerQuestionGetResult("1", "1", sessionId);
@@ -65,13 +46,32 @@ public class CaseTests extends BaseTestClass {
 
         assert(caseFilterResponseBean.getCases().length == 16);
 
+        // Try updating case
+
+        NewFormSessionResponse newSessionResponse1 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+        sessionId = newSessionResponse1.getSessionId();
+
+        AnswerQuestionResponseBean responseBean = answerQuestionGetResult("0", "Test Response", sessionId);
+        QuestionBean firstResponseBean = responseBean.getTree()[0];
+        assert firstResponseBean.getAnswer().equals("Test Response");
+
+        responseBean = answerQuestionGetResult("1", "1", sessionId);
+        firstResponseBean = responseBean.getTree()[0];
+        QuestionBean secondResponseBean = responseBean.getTree()[1];
+        assert secondResponseBean.getAnswer().equals(1);
+        assert firstResponseBean.getAnswer().equals("Test Response");
+
+        answerQuestionGetResult("2", "[1, 2, 3]", sessionId);
+        AnswerQuestionResponseBean caseResult = answerQuestionGetResult("5", "2016-02-09", sessionId);
+        QuestionBean[] tree = caseResult.getTree();
+
         // close this case
 
-        JSONObject jsonResponse = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
+        NewFormSessionResponse newSessionResponse2 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
         assert(filterCases("requests/filter/filter_cases_5.json").getCases().length == 16);
 
-        sessionId = jsonResponse.getString("session_id");
+        sessionId = newSessionResponse2.getSessionId();
         answerQuestionGetResult("0", "1", sessionId);
 
         submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);

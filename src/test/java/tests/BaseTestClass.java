@@ -3,12 +3,10 @@ package tests;
 import application.SessionController;
 import auth.HqAuth;
 import beans.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import objects.SerializableSession;
+import objects.SerializableFormSession;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.InjectMocks;
@@ -60,7 +58,7 @@ public class BaseTestClass {
 
     ObjectMapper mapper;
 
-    final protected SerializableSession serializableSession = new SerializableSession();
+    final protected SerializableFormSession serializableFormSession = new SerializableFormSession();
 
     @Before
     public void setUp() throws IOException {
@@ -78,21 +76,26 @@ public class BaseTestClass {
 
     public void setUpSessionRepoMock(){
 
-        when(sessionRepoMock.find(anyString())).thenReturn(serializableSession);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return serializableFormSession;
+            }
+        }).when(sessionRepoMock).find(anyString());
 
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 Object[] args = invocationOnMock.getArguments();
-                SerializableSession toBeSaved = (SerializableSession) args[0];
-                serializableSession.setInstanceXml(toBeSaved.getInstanceXml());
-                serializableSession.setFormXml(toBeSaved.getFormXml());
-                serializableSession.setRestoreXml(toBeSaved.getRestoreXml());
-                serializableSession.setUsername(toBeSaved.getUsername());
-                serializableSession.setSessionData(toBeSaved.getSessionData());
+                SerializableFormSession toBeSaved = (SerializableFormSession) args[0];
+                serializableFormSession.setInstanceXml(toBeSaved.getInstanceXml());
+                serializableFormSession.setFormXml(toBeSaved.getFormXml());
+                serializableFormSession.setRestoreXml(toBeSaved.getRestoreXml());
+                serializableFormSession.setUsername(toBeSaved.getUsername());
+                serializableFormSession.setSessionData(toBeSaved.getSessionData());
                 return null;
             }
-        }).when(sessionRepoMock).save(Matchers.any(SerializableSession.class));
+        }).when(sessionRepoMock).save(Matchers.any(SerializableFormSession.class));
     }
 
     private String urlPrepend(String string){
@@ -116,7 +119,7 @@ public class BaseTestClass {
         return response;
     }
 
-    public JSONObject startNewSession(String requestPath, String formPath) throws Exception {
+    public NewFormSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
@@ -129,8 +132,8 @@ public class BaseTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
-        JSONObject ret = new JSONObject(responseBody);
-        return ret;
+        NewFormSessionResponse newSessionResponse = mapper.readValue(responseBody, NewFormSessionResponse.class);
+        return newSessionResponse;
     }
 
     public CaseFilterResponseBean filterCases(String requestPath) throws Exception {
@@ -145,6 +148,20 @@ public class BaseTestClass {
 
          return mapper.readValue(result.getResponse().getContentAsString(),
                 CaseFilterResponseBean.class);
+    }
+
+    public CaseFilterFullResponseBean filterCasesFull(String requestPath) throws Exception {
+
+        String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
+        MvcResult result = this.mockMvc.perform(
+                post(urlPrepend(Constants.URL_FILTER_CASES_FULL))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filterRequestPayload))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return mapper.readValue(result.getResponse().getContentAsString(),
+                CaseFilterFullResponseBean.class);
     }
 
     public SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {

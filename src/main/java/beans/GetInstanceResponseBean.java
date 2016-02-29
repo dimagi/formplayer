@@ -1,8 +1,6 @@
 package beans;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import session.FormEntrySession;
+import session.FormSession;
 
 import java.io.IOException;
 
@@ -16,7 +14,7 @@ public class GetInstanceResponseBean {
     // Jackson requires the default constructor be present
     public GetInstanceResponseBean(){}
 
-    public GetInstanceResponseBean(FormEntrySession session) throws IOException {
+    public GetInstanceResponseBean(FormSession session) throws IOException {
         output = session.getInstanceXml();
         xmlns = session.getXmlns();
     }

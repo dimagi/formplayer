@@ -2,7 +2,6 @@ package tests;
 
 import auth.HqAuth;
 import beans.*;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,9 +33,9 @@ public class RepeatTests extends BaseTestClass{
     @Test
     public void testRepeat() throws Exception {
 
-        JSONObject jsonResponse = startNewSession("requests/new_form/new_form.json", "xforms/repeat.xml");
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/repeat.xml");
 
-        String sessionId = jsonResponse.getString("session_id");
+        String sessionId = newSessionResponse.getSessionId();
 
         RepeatResponseBean newRepeatResponseBean = newRepeatRequest( "requests/new_repeat/new_repeat.json", sessionId);
 

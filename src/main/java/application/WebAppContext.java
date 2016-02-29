@@ -1,10 +1,10 @@
 package application;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.mail.MailSender;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -13,10 +13,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
+import repo.MenuRepo;
 import repo.SessionRepo;
+import repo.impl.MenuImpl;
 import repo.impl.SessionImpl;
+import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
+import services.impl.InstallServiceImpl;
 import services.impl.RestoreServiceImpl;
 import services.impl.XFormServiceImpl;
 
@@ -84,20 +88,25 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public SessionRepo sessionRepo(){
-        SessionImpl impl = new SessionImpl();
-        return impl;
+        return new SessionImpl();
     }
 
     @Bean
-    public XFormService xFormService(){
-        XFormServiceImpl impl = new XFormServiceImpl();
-        return impl;
+    public MenuRepo menuRepo(){
+        return new MenuImpl();
     }
-
+    @Bean
+    public XFormService xFormService(){
+        return new XFormServiceImpl();
+    }
 
     @Bean
     public RestoreService restoreService(){
-        RestoreService impl = new RestoreServiceImpl();
-        return impl;
+        return new RestoreServiceImpl();
+    }
+
+    @Bean
+    public InstallService installService(){
+        return new InstallServiceImpl();
     }
 }

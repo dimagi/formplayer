@@ -1,16 +1,11 @@
 package beans;
 
-import application.Application;
-import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import hq.RestoreUtils;
 import objects.SessionData;
-import org.json.JSONObject;
-import org.springframework.http.HttpHeaders;
 import services.RestoreService;
 
 import java.util.Map;

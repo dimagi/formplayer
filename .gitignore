@@ -5,3 +5,5 @@ gradle/
 *.DS_STORE
 *.idea/
 *.iml
+dbs/*
+gradle.properties

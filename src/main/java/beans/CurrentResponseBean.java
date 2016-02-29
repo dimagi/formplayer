@@ -1,41 +1,26 @@
 package beans;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import org.json.JSONArray;
-import session.FormEntrySession;
-
-import java.util.Map;
+import session.FormSession;
 
 /**
  * Return the current state of the form entry session (tree, languages, title)
  *
  * Created by willpride on 1/20/16.
  */
-public class CurrentResponseBean {
+public class CurrentResponseBean extends SessionBean {
     private JSONArray tree;
     private String title;
     private String[] langs;
-    private String sessionId;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public CurrentResponseBean(){}
 
-    public CurrentResponseBean(FormEntrySession session){
+    public CurrentResponseBean(FormSession session){
         tree = session.getFormTree();
         title = session.getTitle();
         langs = session.getLanguages();
-        sessionId = session.getUUID();
-    }
-
-
-    @JsonGetter(value = "session_id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session_id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+        sessionId = session.getSessionId();
     }
 
     public String getTree() {

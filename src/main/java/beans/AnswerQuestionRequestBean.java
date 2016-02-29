@@ -3,15 +3,15 @@ package beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-import java.util.Map;
-
 /**
  * Created by willpride on 1/20/16.
  */
-public class AnswerQuestionRequestBean {
+public class AnswerQuestionRequestBean extends SessionBean {
     private String formIndex;
-    private String answer;
-    private String sessionId;
+    // This can be an array (multi select, geo point), integer, date, or String.
+    // Even though they always come in as Strings, Jackson will try to parse the String into the above classes
+    // and so needs this to be an Object to store them in
+    private Object answer;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionRequestBean(){}
@@ -31,20 +31,12 @@ public class AnswerQuestionRequestBean {
         this.formIndex = formIndex;
     }
     @JsonGetter(value = "answer")
-    public String getAnswer() {
+    public Object getAnswer() {
         return answer;
     }
     @JsonSetter(value = "answer")
-    public void setAnswer(String answer) {
+    public void setAnswer(Object answer) {
         this.answer = answer;
-    }
-    @JsonGetter(value = "session-id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session-id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     @Override

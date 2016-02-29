@@ -1,7 +1,6 @@
 package beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
@@ -9,16 +8,15 @@ import java.util.Map;
 
 /**
  * Created by willpride on 1/20/16.
+ * SessionBean that evaluates the given XPath against the current session evaluation context
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EvaluateXPathRequestBean {
-    private Map<String, String> formContext;
+public class EvaluateXPathRequestBean extends SessionBean{
+    private Map<String, Object> formContext;
     private String xpath;
-    private String sessionId;
 
-    public EvaluateXPathRequestBean(){
-
-    }
+    // default constructor for Jackson
+    public EvaluateXPathRequestBean(){}
 
     @JsonGetter(value = "xpath")
     public String getXpath() {
@@ -28,21 +26,13 @@ public class EvaluateXPathRequestBean {
     public void setXpath(String xpath) {
         this.xpath = xpath;
     }
-    @JsonGetter(value = "session-id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session-id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
 
     @JsonGetter(value = "form_context")
-    public Map<String, String> getFormContext() {
+    public Map<String, Object> getFormContext() {
         return formContext;
     }
     @JsonSetter(value = "form_context")
-    public void setFormContext(Map<String, String> formContext) {
+    public void setFormContext(Map<String, Object> formContext) {
         this.formContext = formContext;
     }
 

@@ -1,10 +1,9 @@
 package tests;
 
 import auth.HqAuth;
-import beans.CaseFilterResponseBean;
-import beans.SyncDbRequestBean;
-import beans.SyncDbResponseBean;
+import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hq.CaseAPIs;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
@@ -24,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import services.RestoreService;
+import util.Constants;
 import utils.FileUtils;
 import utils.TestContext;
 
@@ -74,7 +74,7 @@ public class FilterTests extends BaseTestClass {
 
         SyncDbResponseBean syncDbResponseBean = syncDb("requests/sync_db/sync_db.json");
 
-        assert(syncDbResponseBean.getStatus().equals("success"));
+        assert(syncDbResponseBean.getStatus().equals(Constants.RESPONSE_STATUS_POSITIVE));
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
         UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("test@test.commcarehq.org");
@@ -84,5 +84,10 @@ public class FilterTests extends BaseTestClass {
         assert(15 == caseStorage.getNumRecords());
 
         //TODO add ledgers, fixtures, etc.
+    }
+
+    @Test
+    public void testGetFullCase() throws Exception {
+        CaseFilterFullResponseBean caseFilterResponseBean = filterCasesFull("requests/filter/filter_cases.json");
     }
 }

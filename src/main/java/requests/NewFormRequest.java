@@ -1,15 +1,14 @@
 package requests;
 
-import beans.NewSessionResponse;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.NewSessionRequestBean;
-import objects.SerializableSession;
+import beans.NewFormSessionResponse;
 import org.springframework.stereotype.Service;
 import repo.SessionRepo;
 import services.RestoreService;
 import services.XFormService;
-import session.FormEntrySession;
+import session.FormSession;
 
 import java.io.IOException;
 import java.util.Map;
@@ -21,58 +20,62 @@ import java.util.Map;
 public class NewFormRequest {
 
     String formUrl;
-    FormEntrySession formEntrySession;
+    FormSession formEntrySession;
     SessionRepo sessionRepo;
     XFormService xFormService;
     RestoreService restoreService;
     HqAuth auth;
     String username;
     String domain;
-    String restoreXml;
+    String lang;
 
-    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
+    public NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
+                          Map<String, String> sessionData, SessionRepo sessionRepo,
                           XFormService xFormService, RestoreService restoreService) throws Exception {
         this.sessionRepo = sessionRepo;
         this.xFormService = xFormService;
         this.restoreService = restoreService;
-
-        formUrl = bean.getFormUrl();
-        auth = new DjangoAuth(bean.getHqAuth().get("django-session"));
-        username = bean.getSessionData().getUsername();
-        domain = bean.getSessionData().getDomain();
-        String initLang = bean.getLang();
-        Map<String, String> data = bean.getSessionData().getData();
+        this.formUrl = formUrl;
+        this.auth = getAuth((authDict));
+        this.username = username;
+        this.domain = domain;
+        this.lang = lang;
+        Map<String, String> data = sessionData;
         try {
-            formEntrySession = new FormEntrySession(getFormXml(), getRestoreXml(), initLang, username, data);
-            sessionRepo.save(serialize());
+            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, data);
+            sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();
         }
     }
 
-    public NewSessionResponse getResponse() throws IOException {
-        NewSessionResponse ret = new NewSessionResponse(formEntrySession);
+    public HqAuth getAuth(Map<String, String> authMap){
+        if(authMap.containsKey("type")){
+            if(authMap.get("type").equals("django-session")){
+                return new DjangoAuth(authMap.get("key"));
+            }
+        }
+        return null;
+    }
+
+    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
+                          XFormService xFormService, RestoreService restoreService) throws Exception {
+        this(bean.getFormUrl(), bean.getHqAuth(),
+                bean.getSessionData().getUsername(), bean.getSessionData().getDomain(),
+                bean.getLang(), bean.getSessionData().getData(), sessionRepo, xFormService, restoreService);
+    }
+
+    public NewFormSessionResponse getResponse() throws IOException {
+        NewFormSessionResponse ret = new NewFormSessionResponse(formEntrySession);
         return ret;
     }
 
     public String getRestoreXml(){
-        return restoreService.getRestoreXml(domain, auth);
+        String restorePayload = restoreService.getRestoreXml(domain, auth);
+        return restorePayload;
     }
 
     public String getFormXml(){
         return xFormService.getFormXml(formUrl, auth);
-    }
-
-    private SerializableSession serialize() throws IOException {
-        SerializableSession serializableSession = new SerializableSession();
-        serializableSession.setInstanceXml(formEntrySession.getInstanceXml());
-        serializableSession.setId(formEntrySession.getUUID());
-        serializableSession.setFormXml(formEntrySession.getFormXml());
-        serializableSession.setUsername(username);
-        serializableSession.setRestoreXml(formEntrySession.getRestoreXml());
-        serializableSession.setSequenceId(formEntrySession.getSequenceId());
-        serializableSession.setInitLang(formEntrySession.getInitLang());
-        serializableSession.setSessionData(formEntrySession.getSessionData());
-        return serializableSession;
     }
 }
