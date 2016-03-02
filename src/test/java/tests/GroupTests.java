@@ -21,7 +21,8 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by willpride on 1/14/16.
+ * Fills out the "Basic Tests > Groups" Form from the QA plan.
+ * Provides coverage of fixtures, group expansion, selects from itemsets, conditional selects
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
