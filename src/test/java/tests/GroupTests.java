@@ -5,6 +5,8 @@ import beans.AnswerQuestionResponseBean;
 import beans.NewFormSessionResponse;
 import beans.QuestionBean;
 import beans.RepeatResponseBean;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +38,7 @@ public class GroupTests extends BaseTestClass{
     }
 
     @Test
-    public void testGroups() throws Exception {
+    public void testConditionalItemsets() throws Exception {
 
         NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/groups.xml");
 
@@ -70,5 +72,48 @@ public class GroupTests extends BaseTestClass{
         assert cityBean.getChoices().length == 3;
         assert labelBean.getCaption().equals("Selected county was: mx");
 
+    }
+
+    public String toPrettyTree(QuestionBean[] questionBean) {
+        try {
+            return new ObjectMapper().writeValueAsString(questionBean);
+        } catch(JsonProcessingException e){
+            return "Error: " + e;
+        }
+    }
+
+    @Test
+    public void testMultiSelectGroups() throws Exception {
+
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/groups.xml");
+
+        String sessionId = newSessionResponse.getSessionId();
+
+        QuestionBean groupBean = newSessionResponse.getTree()[1];
+        assert groupBean.getType().equals("sub-group");
+        QuestionBean[] children = groupBean.getChildren();
+        assert children.length == 1;
+
+        AnswerQuestionResponseBean mAnswerBean = answerQuestionGetResult(children[0].getIx(), "1", sessionId);
+        groupBean = mAnswerBean.getTree()[1];
+        children = groupBean.getChildren();
+
+        assert children.length == 2;
+        assert children[1].getBinding().equals("/data/onepagegroup/multiple_text");
+        assert children[1].getIx().contains("1, 4");
+
+        mAnswerBean = answerQuestionGetResult(children[0].getIx(), "2", sessionId);
+        groupBean = mAnswerBean.getTree()[1];
+        children = groupBean.getChildren();
+        assert children.length == 2;
+        assert children[1].getBinding().equals("/data/onepagegroup/multiple_select");
+        assert children[1].getIx().contains("1, 2");
+
+        mAnswerBean = answerQuestionGetResult(children[1].getIx(), "3", sessionId);
+        groupBean = mAnswerBean.getTree()[1];
+        children = groupBean.getChildren();
+        assert children.length == 3;
+        assert children[2].getBinding().equals("/data/onepagegroup/multiple_sel_other");
+        assert children[2].getIx().contains("1, 3");
     }
 }
