@@ -1,5 +1,7 @@
 package application;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -24,11 +26,18 @@ import services.impl.InstallServiceImpl;
 import services.impl.RestoreServiceImpl;
 import services.impl.XFormServiceImpl;
 
+import javax.annotation.PreDestroy;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Enumeration;
 import java.util.Properties;
 
 @Configuration
 @EnableWebMvc
 public class WebAppContext extends WebMvcConfigurerAdapter {
+
+    Log log = LogFactory.getLog(WebAppContext.class);
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -109,4 +118,21 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     public InstallService installService(){
         return new InstallServiceImpl();
     }
+
+    // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak
+    @PreDestroy
+    public void deregisterDrivers(){
+        Enumeration<Driver> drivers = DriverManager.getDrivers();
+        while (drivers.hasMoreElements()) {
+            Driver driver = drivers.nextElement();
+            try {
+                DriverManager.deregisterDriver(driver);
+                log.info(String.format("deregistering jdbc driver: %s", driver));
+            } catch (SQLException e) {
+                log.warn(String.format("Error deregistering driver %s", driver), e);
+            }
+
+        }
+    }
+
 }
