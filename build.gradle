@@ -43,6 +43,7 @@ dependencies {
     compile("com.fasterxml.jackson.core:jackson-core:2.4.3")
     compile("com.fasterxml.jackson.core:jackson-databind:2.4.3")
     compile("org.springframework.data:spring-data-redis:1.5.0.RELEASE")
+    compile("org.springframework.integration:spring-integration-redis:4.2.5.RELEASE")
     compile("javax.servlet:jstl:1.2")
     compile fileTree(dir: 'libs', include: '*.jar')
     compile project(':javarosa')

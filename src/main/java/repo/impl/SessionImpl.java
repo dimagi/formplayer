@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.integration.redis.util.RedisLockRegistry;
 import repo.SessionRepo;
 
 import java.util.Map;
