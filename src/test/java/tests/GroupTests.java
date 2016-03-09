@@ -100,6 +100,7 @@ public class GroupTests extends BaseTestClass{
 
         assert children.length == 2;
         assert children[1].getBinding().equals("/data/onepagegroup/multiple_text");
+        System.out.println("IX: " + children[1].getIx());
         assert children[1].getIx().contains("1, 4");
 
         mAnswerBean = answerQuestionGetResult(children[0].getIx(), "2", sessionId);
