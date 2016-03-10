@@ -59,8 +59,6 @@ public class GroupTests extends BaseTestClass{
         groupBean = mAnswerBean.getTree()[3];
         cityBean = groupBean.getChildren()[3];
         labelBean = groupBean.getChildren()[2];
-
-        System.out.println("City Bean: " + cityBean);
         assert labelBean.getCaption().equals("Selected county was: ex");
         assert cityBean.getChoices().length == 2;
 
@@ -72,14 +70,6 @@ public class GroupTests extends BaseTestClass{
         assert cityBean.getChoices().length == 3;
         assert labelBean.getCaption().equals("Selected county was: mx");
 
-    }
-
-    public String toPrettyTree(QuestionBean[] questionBean) {
-        try {
-            return new ObjectMapper().writeValueAsString(questionBean);
-        } catch(JsonProcessingException e){
-            return "Error: " + e;
-        }
     }
 
     @Test
@@ -100,7 +90,6 @@ public class GroupTests extends BaseTestClass{
 
         assert children.length == 2;
         assert children[1].getBinding().equals("/data/onepagegroup/multiple_text");
-        System.out.println("IX: " + children[1].getIx());
         assert children[1].getIx().contains("1, 4");
 
         mAnswerBean = answerQuestionGetResult(children[0].getIx(), "2", sessionId);
@@ -116,14 +105,5 @@ public class GroupTests extends BaseTestClass{
         assert children.length == 3;
         assert children[2].getBinding().equals("/data/onepagegroup/multiple_sel_other");
         assert children[2].getIx().contains("1, 3");
-    }
-
-    @Test
-    public void testInnerOuterGroups() throws Exception {
-
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/groups.xml");
-        String sessionId = newSessionResponse.getSessionId();
-
-        System.out.println("NewSessionREsponse: " + newSessionResponse);
     }
 }
