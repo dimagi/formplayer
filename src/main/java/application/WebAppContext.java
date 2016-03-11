@@ -6,9 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.integration.redis.util.RedisLockRegistry;
-import org.springframework.integration.support.locks.LockRegistry;
-import org.springframework.mail.MailSender;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -22,9 +19,11 @@ import repo.SessionRepo;
 import repo.impl.MenuImpl;
 import repo.impl.SessionImpl;
 import services.InstallService;
+import services.LockService;
 import services.RestoreService;
 import services.XFormService;
 import services.impl.InstallServiceImpl;
+import services.impl.LockServiceImpl;
 import services.impl.RestoreServiceImpl;
 import services.impl.XFormServiceImpl;
 
@@ -40,6 +39,8 @@ import java.util.Properties;
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
     Log log = LogFactory.getLog(WebAppContext.class);
+
+    JedisConnectionFactory jedisConnectionFactory;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -84,8 +85,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public JedisConnectionFactory jedisConnFactory(){
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
+    public JedisConnectionFactory jedisConnectionFactory(){
+        if(jedisConnectionFactory == null) {
+            jedisConnectionFactory = new JedisConnectionFactory();
+        }
         jedisConnectionFactory.setUsePool(true);
         return jedisConnectionFactory;
     }
@@ -93,7 +96,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public RedisTemplate redisTemplate(){
         RedisTemplate redisTemplate =  new RedisTemplate();
-        redisTemplate.setConnectionFactory(jedisConnFactory());
+        redisTemplate.setConnectionFactory(jedisConnectionFactory());
         return redisTemplate;
     }
 
@@ -122,9 +125,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public LockRegistry formSessionLockRegistry() {
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        return new RedisLockRegistry(jedisConnectionFactory, "form-session");
+    public LockService formSessionLockSerivce() {
+        return new LockServiceImpl();
     }
 
     // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak

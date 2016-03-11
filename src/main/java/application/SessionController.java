@@ -8,19 +8,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.AnswerQuestionJson;
 import org.commcare.modern.process.FormRecordProcessorHelper;
-import org.commcare.util.cli.*;
-import org.javarosa.engine.models.Session;
+import org.commcare.util.cli.EntityScreen;
+import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.OptionsScreen;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.integration.redis.util.RedisLockRegistry;
-import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.bind.annotation.*;
 import repo.MenuRepo;
 import repo.SessionRepo;
 import requests.InstallRequest;
 import requests.NewFormRequest;
 import services.InstallService;
+import services.LockService;
 import services.RestoreService;
 import services.XFormService;
 import session.FormSession;
@@ -55,7 +55,7 @@ public class SessionController {
     private InstallService installService;
 
     @Autowired
-    private LockRegistry formSessionLockRegistry;
+    private LockService formSessionLockSerivce;
 
     Log log = LogFactory.getLog(SessionController.class);
     ObjectMapper mapper = new ObjectMapper();
@@ -290,7 +290,7 @@ public class SessionController {
 
     public Lock getLockAndLock(SessionBean sessionBean){
         String sessionId = sessionBean.getSessionId();
-        Lock sessionLock = formSessionLockRegistry.obtain(sessionId);
+        Lock sessionLock =  formSessionLockSerivce.getLock(sessionId);
         sessionLock.lock();
         return sessionLock;
     }

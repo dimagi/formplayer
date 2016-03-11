@@ -15,9 +15,14 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.MenuRepo;
 import repo.SessionRepo;
 import services.InstallService;
+import services.LockService;
 import services.RestoreService;
 import services.XFormService;
 import services.impl.InstallServiceImpl;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -104,5 +109,11 @@ public class TestContext {
     @Bean
     public InstallService installService(){
         return Mockito.mock(InstallServiceImpl.class);
+    }
+
+    @Bean
+    public LockService formSessionLockSerivce() {
+        PassThruLockService lockService = Mockito.mock(PassThruLockService.class);
+        return lockService;
     }
 }
