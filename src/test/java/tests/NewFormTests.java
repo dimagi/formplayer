@@ -46,7 +46,7 @@ public class NewFormTests extends BaseTestClass{
 
         assert(firstQuestion.getCaption().equals("Enter a name:"));
         assert(tree.length == 1);
-        assert(firstQuestion.getIx().contains("0,"));
+        assert(firstQuestion.getIx().contains("0"));
         assert(firstQuestion.getDatatype().equals("str"));
     }
 
