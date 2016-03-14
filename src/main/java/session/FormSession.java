@@ -5,7 +5,7 @@ import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.commcare.api.json.WalkJson;
+import org.commcare.api.json.JsonActionUtils;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
@@ -147,7 +147,7 @@ public class FormSession {
     }
 
     public JSONArray getFormTree() {
-        JSONArray ret = WalkJson.walkToJSON(getFormEntryModel(), getFormEntryController());
+        JSONArray ret = JsonActionUtils.walkToJSON(getFormEntryModel(), getFormEntryController());
         return ret;
     }
 
