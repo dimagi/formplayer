@@ -6,7 +6,7 @@ import hq.CaseAPIs;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.json.AnswerQuestionJson;
+import org.commcare.api.json.JsonActionUtils;
 import org.commcare.modern.process.FormRecordProcessorHelper;
 import org.commcare.util.cli.*;
 import org.json.JSONObject;
@@ -68,7 +68,7 @@ public class SessionController {
         SerializableFormSession session = sessionRepo.find(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(session);
 
-        JSONObject resp = AnswerQuestionJson.questionAnswerToJson(formEntrySession.getFormEntryController(),
+        JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 answerQuestionBean.getAnswer() != null? answerQuestionBean.getAnswer().toString() : null,
                 answerQuestionBean.getFormIndex());
@@ -134,13 +134,13 @@ public class SessionController {
         SerializableFormSession serializableFormSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
 
-        AnswerQuestionJson.descendRepeatToJson(formEntrySession.getFormEntryController(),
+        JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 newRepeatRequestBean.getFormIndex());
 
         updateSession(formEntrySession, serializableFormSession);
 
-        JSONObject response = AnswerQuestionJson.getCurrentJson(formEntrySession.getFormEntryController(),
+        JSONObject response = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel());
         RepeatResponseBean repeatResponseBean = mapper.readValue(response.toString(), RepeatResponseBean.class);
         log.info("New response: " + repeatResponseBean);
@@ -153,7 +153,7 @@ public class SessionController {
         SerializableFormSession serializableFormSession = sessionRepo.find(repeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
 
-        JSONObject resp = AnswerQuestionJson.deleteRepeatToJson(formEntrySession.getFormEntryController(),
+        JSONObject resp = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 repeatRequestBean.getFormIndex());
 
