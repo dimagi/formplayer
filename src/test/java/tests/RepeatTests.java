@@ -47,11 +47,11 @@ public class RepeatTests extends BaseTestClass{
         QuestionBean[] children = questionBean.getChildren();
         assert(children.length == 1);
         QuestionBean child = children[0];
-        assert(child.getIx().contains("1_0,"));
+        assert(child.getIx().contains("1_0"));
         children = child.getChildren();
         assert(children.length == 1);
         child = children[0];
-        assert(child.getIx().contains("1_0, 0,"));
+        assert(child.getIx().contains("1_0,0"));
 
 
         newRepeatResponseBean = newRepeatRequest( "requests/new_repeat/new_repeat.json", sessionId);
@@ -64,17 +64,17 @@ public class RepeatTests extends BaseTestClass{
         assert(children.length == 2);
 
         child = children[0];
-        assert(child.getIx().contains("1_0,"));
+        assert(child.getIx().contains("1_0"));
         QuestionBean[] children2 = child.getChildren();
         assert(children2.length == 1);
         child = children2[0];
-        assert(child.getIx().contains("1_0, 0,"));
+        assert(child.getIx().contains("1_0,0"));
 
         child = children[1];
         children2 = child.getChildren();
         assert(children2.length == 1);
         child = children2[0];
-        assert(child.getIx().contains("1_1, 0,"));
+        assert(child.getIx().contains("1_1,0"));
 
         RepeatResponseBean deleteRepeatResponseBean = deleteRepeatRequest("requests/delete_repeat/delete_repeat.json", sessionId);
 

@@ -1,8 +1,8 @@
 package session;
 
-import org.commcare.api.session.SessionWrapper;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
+import org.commcare.core.session.SessionWrapper;
 import org.commcare.util.CommCarePlatform;
 
 import java.util.Map;
