@@ -52,7 +52,6 @@ public class PrototypeUtils {
                 "org.javarosa.core.model.data.StringData",
                 "org.javarosa.core.model.data.TimeData",
                 "org.javarosa.core.model.data.UncastData",
-                "org.javarosa.core.model.Action",
                 "org.javarosa.core.model.actions.SetValueAction",
                 "org.javarosa.xpath.expr.XPathArithExpr",
                 "org.javarosa.xpath.expr.XPathBoolExpr",
