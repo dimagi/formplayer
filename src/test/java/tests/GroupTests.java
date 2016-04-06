@@ -100,21 +100,21 @@ public class GroupTests extends BaseTestClass{
 
         assert children.length == 2;
         assert children[1].getBinding().equals("/data/onepagegroup/multiple_text");
-        assert children[1].getIx().contains("1, 4");
+        assert children[1].getIx().contains("1,4");
 
         mAnswerBean = answerQuestionGetResult(children[0].getIx(), "2", sessionId);
         groupBean = mAnswerBean.getTree()[1];
         children = groupBean.getChildren();
         assert children.length == 2;
         assert children[1].getBinding().equals("/data/onepagegroup/multiple_select");
-        assert children[1].getIx().contains("1, 2");
+        assert children[1].getIx().contains("1,2");
 
         mAnswerBean = answerQuestionGetResult(children[1].getIx(), "3", sessionId);
         groupBean = mAnswerBean.getTree()[1];
         children = groupBean.getChildren();
         assert children.length == 3;
         assert children[2].getBinding().equals("/data/onepagegroup/multiple_sel_other");
-        assert children[2].getIx().contains("1, 3");
+        assert children[2].getIx().contains("1,3");
     }
 
     @Test
