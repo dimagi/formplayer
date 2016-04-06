@@ -6,8 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.integration.redis.util.RedisLockRegistry;
-import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.mail.MailSender;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -119,12 +117,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public InstallService installService(){
         return new InstallServiceImpl();
-    }
-
-    @Bean
-    public LockRegistry formSessionLockRegistry() {
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        return new RedisLockRegistry(jedisConnectionFactory, "form-session");
     }
 
     // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak
