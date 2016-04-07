@@ -163,8 +163,19 @@ public class QuestionBean {
 
     @Override
     public String toString(){
-        return "QuestionBean [ix: "+ ix + ", bind: " + this.getBinding() + " answer: " + this.getAnswer() + ", type: "
-                + this.getType() + " children: " + Arrays.toString(getChildren()) + "]";
+        String ret= "QuestionBean [ix="+ ix + ", bind=" + this.getBinding() + ", answer=" + this.getAnswer() + ", type: "
+                + this.getType() + ", text=" + caption;
+
+        if(choices != null){
+            ret += ", choices=" + Arrays.toString(choices);
+        }
+
+        if(children != null){
+            ret +=", children=" + Arrays.toString(getChildren());
+        }
+
+        ret +="]";
+        return ret;
     }
 
     public QuestionBean[] getChildren() {
