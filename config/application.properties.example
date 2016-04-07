@@ -1,2 +1,2 @@
 # set to the URL of your CCHQ instance
-commcarehq.host=localhost:8000
+commcarehq.host=http://localhost:8000
