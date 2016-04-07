@@ -22,7 +22,7 @@ public class RestoreServiceImpl implements RestoreService {
     public String getRestoreXml(String domain, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
-                restTemplate.exchange("http://" + host
+                restTemplate.exchange(host
                                 + "/a/" + domain + "/phone/restore/?version=2.0",
                         HttpMethod.GET,
                         new HttpEntity<String>(auth.getAuthHeaders()), String.class);
