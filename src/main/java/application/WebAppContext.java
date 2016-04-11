@@ -2,8 +2,10 @@ package application;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailSender;
@@ -36,6 +38,9 @@ import java.util.Properties;
 @Configuration
 @EnableWebMvc
 public class WebAppContext extends WebMvcConfigurerAdapter {
+
+    @Value("${redis.hostname}")
+    private String redisHostName;
 
     Log log = LogFactory.getLog(WebAppContext.class);
 
@@ -85,6 +90,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     public JedisConnectionFactory jedisConnFactory(){
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
         jedisConnectionFactory.setUsePool(true);
+        jedisConnectionFactory.setHostName(redisHostName);
         return jedisConnectionFactory;
     }
 
