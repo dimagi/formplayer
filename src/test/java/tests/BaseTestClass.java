@@ -1,6 +1,6 @@
 package tests;
 
-import application.SessionController;
+import application.FormController;
 import auth.HqAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +54,7 @@ public class BaseTestClass {
     protected RestoreService restoreServiceMock;
 
     @InjectMocks
-    protected SessionController sessionController;
+    protected FormController formController;
 
     ObjectMapper mapper;
 
@@ -66,7 +66,7 @@ public class BaseTestClass {
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
         MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(formController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore_3.xml"));
         mapper = new ObjectMapper();

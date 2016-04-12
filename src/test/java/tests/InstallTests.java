@@ -1,6 +1,7 @@
 package tests;
 
-import application.SessionController;
+import application.FormController;
+import application.MenuController;
 import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.MenuResponseBean;
@@ -44,7 +45,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /**
@@ -72,7 +72,7 @@ public class InstallTests {
     protected InstallService installService;
 
     @InjectMocks
-    SessionController sessionController;
+    MenuController menuController;
 
     ObjectMapper mapper;
 
@@ -93,7 +93,7 @@ public class InstallTests {
         Mockito.reset(installService);
         MockitoAnnotations.initMocks(this);
         mapper = new ObjectMapper();
-        mockMvc = MockMvcBuilders.standaloneSetup(sessionController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(menuController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
         setupMenuMock();
