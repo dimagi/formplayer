@@ -32,6 +32,12 @@ When building on Linux it is sometimes necessary to run:
 
     $ gradle wrapper
     
+### Docs
+____________
+
+We automatically generate API documentation using the Swagger plug-in [SpringFox](https://github.com/springfox/springfox)
+for Spring. To view the generated docs, run the server (above) and navigate to localhost:8000/swagger-ui.html#/ (changing
+host and port as appropriate)
 
 Endpoints
 ------------
