@@ -2,12 +2,17 @@ package beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Created by willpride on 2/8/16.
  */
+@ApiModel("Answer Question Request")
 public class SessionBean {
+    @ApiModelProperty(value = "The id of the form entry session", required = true)
     protected String sessionId;
+    @ApiModelProperty(value = "The sequence number of the current command", required = true)
     protected int sequenceId;
 
     @JsonGetter(value = "session_id")

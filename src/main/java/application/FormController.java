@@ -33,7 +33,7 @@ import java.util.HashMap;
 /**
  * Created by willpride on 1/12/16.
  */
-@Api(value = "sessioncontroller", description = "Operations for navigating CommCare Menus, Cases, and Forms")
+@Api(value = "Form Controller", description = "Operations for navigating CommCare Forms")
 @RestController
 @EnableAutoConfiguration
 public class FormController {

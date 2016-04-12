@@ -28,7 +28,7 @@ import java.util.HashMap;
 /**
  * Created by willpride on 1/12/16.
  */
-@Api(value = "sessioncontroller", description = "Operations for navigating CommCare Menus, Cases, and Forms")
+@Api(value = "Menu Controllers", description = "Operations for navigating CommCare Menus and Cases")
 @RestController
 @EnableAutoConfiguration
 public class MenuController {
