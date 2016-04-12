@@ -3,6 +3,8 @@ package application;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hq.CaseAPIs;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 /**
  * Created by willpride on 1/12/16.
  */
+@Api(value = "sessioncontroller", description = "Operations for navigating CommCare Menus, Cases, and Forms")
 @RestController
 @EnableAutoConfiguration
 public class SessionController {
@@ -53,7 +56,8 @@ public class SessionController {
     Log log = LogFactory.getLog(SessionController.class);
     ObjectMapper mapper = new ObjectMapper();
 
-    @RequestMapping(Constants.URL_NEW_SESSION)
+    @ApiOperation(value = "Start a new form entry session")
+    @RequestMapping(value = Constants.URL_NEW_SESSION , method = RequestMethod.POST)
     public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean) throws Exception {
         log.info("New form requests with bean: " + newSessionBean);
         NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService, restoreService);
@@ -62,7 +66,8 @@ public class SessionController {
         return newSessionResponse;
     }
 
-    @RequestMapping(Constants.URL_ANSWER_QUESTION)
+    @ApiOperation(value = "Answer the question at the given index")
+    @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = sessionRepo.find(answerQuestionBean.getSessionId());
@@ -81,6 +86,7 @@ public class SessionController {
         return responseBean;
     }
 
+    @ApiOperation(value = "Get the current question (deprecated)")
     @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.GET)
     @ResponseBody
     public CurrentResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
@@ -91,7 +97,7 @@ public class SessionController {
         log.info("Current response: " + currentResponseBean);
         return currentResponseBean;
     }
-
+    @ApiOperation(value = "Submit the current form")
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
@@ -104,7 +110,8 @@ public class SessionController {
         return submitResponseBean;
     }
 
-    @RequestMapping(value = Constants.URL_GET_INSTANCE)
+    @ApiOperation(value = "Get the current instance XML")
+    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.GET)
     @ResponseBody
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
@@ -115,7 +122,8 @@ public class SessionController {
         return getInstanceResponseBean;
     }
 
-    @RequestMapping(value = Constants.URL_EVALUATE_XPATH)
+    @ApiOperation(value = "Evaluate the given XPath under the current context")
+    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.GET)
     @ResponseBody
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         log.info("Evaluate XPath Request: " + evaluateXPathRequestBean);
@@ -127,7 +135,8 @@ public class SessionController {
         return evaluateXPathResponseBean;
     }
 
-    @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.GET)
+    @ApiOperation(value = "Expand the repeat at the given index")
+    @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     public RepeatResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         log.info("New repeat: " + newRepeatRequestBean);
@@ -147,7 +156,8 @@ public class SessionController {
         return repeatResponseBean;
     }
 
-    @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.GET)
+    @ApiOperation(value = "Delete the repeat at the given index")
+    @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     public RepeatResponseBean deleteRepeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = sessionRepo.find(repeatRequestBean.getSessionId());
@@ -162,21 +172,24 @@ public class SessionController {
         return mapper.readValue(resp.toString(), RepeatResponseBean.class);
     }
 
-    @RequestMapping(Constants.URL_FILTER_CASES)
+    @ApiOperation(value = "Filter the user's casedb given a predicate expression")
+    @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
     public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
         filterRequest.setRestoreService(restoreService);
         String caseResponse = CaseAPIs.filterCases(filterRequest);
         return new CaseFilterResponseBean(caseResponse);
     }
 
-    @RequestMapping(Constants.URL_FILTER_CASES_FULL)
+    @ApiOperation(value = "Fitler the user's casedb given a predicate expression returning all case data")
+    @RequestMapping(value = Constants.URL_FILTER_CASES_FULL, method = RequestMethod.GET)
     public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
         filterRequest.setRestoreService(restoreService);
         CaseBean[] caseResponse = CaseAPIs.filterCasesFull(filterRequest);
         return new CaseFilterFullResponseBean(caseResponse);
     }
 
-    @RequestMapping(Constants.URL_SYNC_DB)
+    @ApiOperation(value = "Sync the user's database with the server")
+    @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest) throws Exception {
         log.info("SyncDb Request: " + syncRequest);
         syncRequest.setRestoreService(restoreService);
@@ -185,7 +198,8 @@ public class SessionController {
         return new SyncDbResponseBean();
     }
 
-    @RequestMapping(Constants.URL_INSTALL)
+    @ApiOperation(value = "Install the application at the given reference")
+    @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     public SessionBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
         InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, menuRepo, installService);
         return getNextMenu(installRequest.getMenuSession(), true);
@@ -201,7 +215,8 @@ public class SessionController {
      * @return A MenuResponseBean or a NewFormSessionResponse
      * @throws Exception
      */
-    @RequestMapping(Constants.URL_MENU_SELECT)
+    @ApiOperation(value = "Make the given menu selection and return the next set of options, or a form to play.")
+    @RequestMapping(value = Constants.URL_MENU_SELECT, method = RequestMethod.POST)
     public SessionBean selectMenu(@RequestBody MenuSelectBean menuSelectBean) throws Exception {
         MenuSession menuSession = getMenuSession(menuSelectBean.getSessionId());
         boolean redrawing = menuSession.handleInput(menuSelectBean.getSelection());

@@ -45,6 +45,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /**
  * Created by willpride on 1/14/16.
@@ -221,7 +222,8 @@ public class InstallTests {
     public MenuResponseBean doInstall(String requestPath) throws Exception {
         InstallRequestBean installRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
-        ResultActions installResult = mockMvc.perform(get(urlPrepend(Constants.URL_INSTALL))
+        ResultActions installResult = mockMvc.perform(
+                post(urlPrepend(Constants.URL_INSTALL))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(installRequestBean)));
         String installResultString = installResult.andReturn().getResponse().getContentAsString();
@@ -239,7 +241,8 @@ public class InstallTests {
                 (FileUtils.getFile(this.getClass(), requestPath), MenuSelectBean.class);
         menuSelectBean.setSessionId(sessionId);
         menuSelectBean.setSelection(selection);
-        ResultActions selectResult = mockMvc.perform(get(urlPrepend(Constants.URL_MENU_SELECT))
+        ResultActions selectResult = mockMvc.perform(
+                post(urlPrepend(Constants.URL_MENU_SELECT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(menuSelectBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();

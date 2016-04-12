@@ -140,7 +140,7 @@ public class BaseTestClass {
 
         String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
         MvcResult result = this.mockMvc.perform(
-                post(urlPrepend(Constants.URL_FILTER_CASES))
+                get(urlPrepend(Constants.URL_FILTER_CASES))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filterRequestPayload))
                 .andExpect(status().isOk())
@@ -154,7 +154,7 @@ public class BaseTestClass {
 
         String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
         MvcResult result = this.mockMvc.perform(
-                post(urlPrepend(Constants.URL_FILTER_CASES_FULL))
+                get(urlPrepend(Constants.URL_FILTER_CASES_FULL))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filterRequestPayload))
                 .andExpect(status().isOk())
@@ -207,7 +207,8 @@ public class BaseTestClass {
 
         String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
 
-        String repeatResult = mockMvc.perform(get(urlPrepend(Constants.URL_NEW_REPEAT))
+        String repeatResult = mockMvc.perform(
+                post(urlPrepend(Constants.URL_NEW_REPEAT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
         return mapper.readValue(repeatResult, RepeatResponseBean.class);
@@ -223,7 +224,8 @@ public class BaseTestClass {
 
         String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
 
-        String repeatResult = mockMvc.perform(get(urlPrepend(Constants.URL_DELETE_REPEAT))
+        String repeatResult = mockMvc.perform(
+                post(urlPrepend(Constants.URL_DELETE_REPEAT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
         return mapper.readValue(repeatResult, RepeatResponseBean.class);
@@ -234,7 +236,8 @@ public class BaseTestClass {
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), CurrentRequestBean.class);
         currentRequestBean.setSessionId(sessionId);
 
-        ResultActions currentResult = mockMvc.perform(get(urlPrepend(Constants.URL_CURRENT))
+        ResultActions currentResult = mockMvc.perform(
+                get(urlPrepend(Constants.URL_CURRENT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(currentRequestBean)));
         String currentResultString = currentResult.andReturn().getResponse().getContentAsString();
@@ -245,7 +248,8 @@ public class BaseTestClass {
         GetInstanceRequestBean getInstanceRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), GetInstanceRequestBean.class);
         getInstanceRequestBean.setSessionId(sessionId);
-        ResultActions getInstanceResult = mockMvc.perform(get(urlPrepend(Constants.URL_GET_INSTANCE))
+        ResultActions getInstanceResult = mockMvc.perform(
+                get(urlPrepend(Constants.URL_GET_INSTANCE))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(getInstanceRequestBean)));
         String getInstanceResultString = getInstanceResult.andReturn().getResponse().getContentAsString();
@@ -257,7 +261,8 @@ public class BaseTestClass {
                 (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
-        ResultActions evaluateXpathResult = mockMvc.perform(get(urlPrepend(Constants.URL_EVALUATE_XPATH))
+        ResultActions evaluateXpathResult = mockMvc.perform(
+                get(urlPrepend(Constants.URL_EVALUATE_XPATH))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
         String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
