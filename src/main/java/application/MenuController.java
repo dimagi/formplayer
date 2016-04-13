@@ -4,8 +4,13 @@ import beans.InstallRequestBean;
 import beans.MenuResponseBean;
 import beans.MenuSelectBean;
 import beans.SessionBean;
+import beans.menus.CommandListResponseBean;
+import beans.menus.EntityListResponseBean;
+import beans.menus.MenuSessionBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
 import org.commcare.util.cli.OptionsScreen;
@@ -87,31 +92,26 @@ public class MenuController {
             return menuSession.startFormEntry(sessionRepo);
         }
         else{
-            MenuResponseBean menuResponseBean = new MenuResponseBean();
+            MenuSessionBean menuResponseBean = new MenuSessionBean();
             menuResponseBean.setSessionId(menuSession.getSessionId());
             // We're looking at a module or form menu
             if(nextScreen instanceof MenuScreen){
-                MenuScreen menuScreen = (MenuScreen) nextScreen;
-                menuResponseBean.setMenuType(Constants.MENU_MODULE);
-                menuResponseBean.setOptions(getMenuRows(menuScreen));
+                menuResponseBean = generateMenuScreen((MenuScreen) nextScreen);
             }
             // We're looking at a case list or detail screen (probably)
             else if (nextScreen instanceof EntityScreen) {
-                EntityScreen entityScreen = (EntityScreen) nextScreen;
-                menuResponseBean.setMenuType(Constants.MENU_ENTITY);
-                menuResponseBean.setOptions(getMenuRows(entityScreen.getCurrentScreen()));
+                menuResponseBean = generateEntityListScreen((EntityScreen) nextScreen);
             }
             return menuResponseBean;
         }
     }
 
-    private HashMap<Integer, String> getMenuRows(OptionsScreen nextScreen){
-        String[] rows = nextScreen.getOptions();
-        HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
-        for(int i=0; i <rows.length; i++){
-            optionsStrings.put(i, rows[i]);
-        }
-        return optionsStrings;
+    private CommandListResponseBean generateMenuScreen(MenuScreen nextScreen){
+        return new CommandListResponseBean(nextScreen);
+    }
+
+    private EntityListResponseBean generateEntityListScreen(EntityScreen nextScreen){
+        return new EntityListResponseBean(nextScreen);
     }
 
     private MenuSession getMenuSession(String sessionId) throws Exception {

@@ -6,6 +6,8 @@ import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.MenuResponseBean;
 import beans.MenuSelectBean;
+import beans.menus.Command;
+import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import install.FormplayerConfigEngine;
 import objects.SerializableMenuSession;
@@ -154,11 +156,13 @@ public class InstallTests {
     @Test
     public void testNewForm() throws Exception {
         // setup files
-        MenuResponseBean menuResponseBean =
+        CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/install.json");
-        assert menuResponseBean.getOptions().size() == 12;
-        assert menuResponseBean.getMenuType().equals(Constants.MENU_MODULE);
-        assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
+        assert menuResponseBean.getCommands().length == 12;
+        System.out.println("Title 1: " + menuResponseBean.getTitle());
+        assert menuResponseBean.getTitle().equals("Remove point");
+        System.out.println("Title 2: " + menuResponseBean.getCommands()[0].getDisplayText());
+        assert menuResponseBean.getCommands()[0].getDisplayText().equals("Remove point");
         String sessionId = menuResponseBean.getSessionId();
 
         JSONObject menuResponseObject =
@@ -175,11 +179,8 @@ public class InstallTests {
     @Test
     public void testCaseCreate() throws Exception {
         // setup files
-        MenuResponseBean menuResponseBean =
+        CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/install.json");
-        assert menuResponseBean.getOptions().size() == 12;
-        assert menuResponseBean.getMenuType().equals(Constants.MENU_MODULE);
-        assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
         String sessionId = menuResponseBean.getSessionId();
 
         JSONObject menuResponseObject =
@@ -197,11 +198,8 @@ public class InstallTests {
     @Test
     public void testCaseSelect() throws Exception {
         // setup files
-        MenuResponseBean menuResponseBean =
+        CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/install.json");
-        assert menuResponseBean.getOptions().size() == 12;
-        assert menuResponseBean.getMenuType().equals(Constants.MENU_MODULE);
-        assert menuResponseBean.getOptions().get(0).equals("Basic Form Tests");
         String sessionId = menuResponseBean.getSessionId();
 
         JSONObject menuResponseObject =
@@ -210,8 +208,6 @@ public class InstallTests {
         JSONObject menuResponseObject2 =
                 selectMenu("requests/menu/menu_select.json", sessionId, "1");
 
-        JSONObject options = new JSONObject(menuResponseObject2.get("options"));
-
         JSONObject menuResponseObject3 =
                 selectMenu("requests/menu/menu_select.json", sessionId, "6");
         JSONObject menuResponseObject4 =
@@ -219,7 +215,7 @@ public class InstallTests {
 
     }
 
-    public MenuResponseBean doInstall(String requestPath) throws Exception {
+    public CommandListResponseBean doInstall(String requestPath) throws Exception {
         InstallRequestBean installRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
         ResultActions installResult = mockMvc.perform(
@@ -227,8 +223,8 @@ public class InstallTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(installRequestBean)));
         String installResultString = installResult.andReturn().getResponse().getContentAsString();
-        MenuResponseBean menuResponseBean = mapper.readValue(installResultString,
-                MenuResponseBean.class);
+        CommandListResponseBean menuResponseBean = mapper.readValue(installResultString,
+                CommandListResponseBean.class);
         return menuResponseBean;
     }
 
