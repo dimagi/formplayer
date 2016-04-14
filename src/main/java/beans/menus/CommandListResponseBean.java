@@ -26,11 +26,7 @@ public class CommandListResponseBean extends MenuSessionBean{
         MenuDisplayable[] options = menuScreen.getMenuDisplayables();
         Command[] commands = new Command[options.length];
         for(int i = 0; i < options.length; i++){
-            Command command = new Command();
-            command.setIndex(i);
-            command.setDisplayText(options[i].getDisplayText());
-            command.setImageUri(options[i].getImageURI());
-            command.setAudioUri(options[i].getAudioURI());
+            Command command = new Command(options[i], i);
             commands[i] = command;
         }
         this.setCommands(commands);

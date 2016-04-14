@@ -98,7 +98,7 @@ public class InstallTests extends BaseMenuTestClass {
                 doInstall("requests/install/install.json");
         assert menuResponseBean.getCommands().length == 12;
         System.out.println("Title 1: " + menuResponseBean.getTitle());
-        assert menuResponseBean.getTitle().equals("Remove point");
+        assert menuResponseBean.getTitle().equals("Basic Tests");
         System.out.println("Title 2: " + menuResponseBean.getCommands()[0].getDisplayText());
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Basic Form Tests");
         String sessionId = menuResponseBean.getSessionId();

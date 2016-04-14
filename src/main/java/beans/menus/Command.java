@@ -1,6 +1,7 @@
 package beans.menus;
 
 import io.swagger.annotations.Api;
+import org.commcare.suite.model.MenuDisplayable;
 
 /**
  * Created by willpride on 4/13/16.
@@ -11,6 +12,16 @@ public class Command {
     private String displayText;
     private String audioUri;
     private String imageUri;
+
+    public Command(){}
+
+    public Command(MenuDisplayable menuDisplayable, int index){
+        super();
+        this.setIndex(index);
+        this.setDisplayText(menuDisplayable.getDisplayText());
+        this.setImageUri(menuDisplayable.getImageURI());
+        this.setAudioUri(menuDisplayable.getAudioURI());
+    }
 
     public int getIndex() {
         return index;
