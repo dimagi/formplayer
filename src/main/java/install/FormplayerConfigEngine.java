@@ -21,6 +21,7 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.reference.ReferenceManager;
+import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.*;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -77,6 +78,8 @@ public class FormplayerConfigEngine {
             }
 
         });
+        // Need to do this to register the propertymanager with the new storage (ugh)
+        PropertyManager.initDefaultPropertyManager();
 
         StorageManager.registerStorage(Profile.STORAGE_KEY, Profile.class);
         StorageManager.registerStorage(Suite.STORAGE_KEY, Suite.class);
@@ -137,7 +140,6 @@ public class FormplayerConfigEngine {
 
     public void initFromLocalFileResource(String resource) {
         String reference = setFileSystemRootFromResourceAndReturnRelativeRef(resource);
-
         init(reference);
     }
 
