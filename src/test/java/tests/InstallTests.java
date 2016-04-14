@@ -30,38 +30,13 @@ public class InstallTests extends BaseMenuTestClass {
         super.setUp();
     }
 
-
-    @Test
-    public void testDoubleForm() throws Exception {
-        // setup files
-        CommandListResponseBean menuResponseBean =
-                doInstall("requests/install/double_mgmt_install.json");
-        System.out.println("Commands: " + Arrays.toString(menuResponseBean.getCommands()));
-        assert menuResponseBean.getCommands().length == 3;
-        System.out.println("Title 1: " + menuResponseBean.getTitle());
-        //assert menuResponseBean.getTitle().equals("Home");
-        System.out.println("Title 2: " + menuResponseBean.getCommands()[0].getDisplayText());
-        assert menuResponseBean.getCommands()[0].getDisplayText().equals("Parent");
-        String sessionId = menuResponseBean.getSessionId();
-
-        JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId);
-        JSONObject menuResponseObject2 =
-                selectMenu("requests/menu/menu_select.json", sessionId);
-
-        assert menuResponseObject2.has("tree");
-        assert menuResponseObject2.has("title");
-    }
-
     @Test
     public void testNewForm() throws Exception {
         // setup files
         CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/install.json");
         assert menuResponseBean.getCommands().length == 12;
-        System.out.println("Title 1: " + menuResponseBean.getTitle());
         assert menuResponseBean.getTitle().equals("Basic Tests");
-        System.out.println("Title 2: " + menuResponseBean.getCommands()[0].getDisplayText());
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Basic Form Tests");
         String sessionId = menuResponseBean.getSessionId();
 
@@ -92,7 +67,6 @@ public class InstallTests extends BaseMenuTestClass {
         assert menuResponseObject2.has("tree");
         assert menuResponseObject2.has("title");
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
-        StorageManager.forceClear();
     }
 
 

@@ -32,7 +32,7 @@ public class EntityListResponseBean extends MenuSessionBean {
         processTitle(session);
         processEntities(detail, references, ec);
         processFields(detail);
-        processActions(detail, nextScreen.getSession());
+        processActions(nextScreen.getSession());
     }
 
     private void processTitle(SessionWrapper session) {
@@ -95,11 +95,13 @@ public class EntityListResponseBean extends MenuSessionBean {
         }
     }
 
-    private void processActions(Detail detail, SessionWrapper session){
+    private void processActions(SessionWrapper session){
         Vector<Action> actions = session.getDetail(session.getNeededDatum().getShortDetail()).getCustomActions();
         // Assume we only have one TODO WSP: is that correct?
-        Action action = actions.firstElement();
-        setAction(new DisplayElement(action, session.getEvaluationContext()));
+        if(actions != null && !actions.isEmpty()) {
+            Action action = actions.firstElement();
+            setAction(new DisplayElement(action, session.getEvaluationContext()));
+        }
     }
 
     public Entity[] getEntities() {
