@@ -23,6 +23,7 @@ public class Constants {
     //Menus
     public static final String MENU_MODULE = "modules";
     public static final String MENU_ENTITY = "entity";
+    public static final String CASE_LIST_ACTION = "action";
     //Status
     public static final String RESPONSE_STATUS_POSITIVE = "accepted";
     //JSON

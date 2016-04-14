@@ -1,6 +1,7 @@
 package tests;
 
 import auth.HqAuth;
+import beans.NewFormSessionResponse;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponseBean;
 import org.commcare.api.persistence.SqlSandboxUtils;
@@ -39,7 +40,6 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         // setup files
         CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/double_mgmt_install.json");
-        System.out.println("Commands: " + Arrays.toString(menuResponseBean.getCommands()));
         assert menuResponseBean.getCommands().length == 3;
         assert menuResponseBean.getTitle().equals("Parent Child");
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Parent");
@@ -50,13 +50,21 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         JSONObject menuResponseObject =
                 selectMenu("requests/menu/menu_select.json", sessionId, "2");
 
-        EntityListResponseBean entityListResponseBean = mapper.readValue(menuResponseObject.toString(), EntityListResponseBean.class);
-
-        System.out.println("Menu Response Object: " + menuResponseObject);
+        EntityListResponseBean entityListResponseBean =
+                mapper.readValue(menuResponseObject.toString(), EntityListResponseBean.class);
 
         assert entityListResponseBean.getEntities().length == 2;
         assert entityListResponseBean.getTitle().equals("Parent (2)");
         assert entityListResponseBean.getAction() != null;
         assert entityListResponseBean.getAction().getText().equals("New Parent");
+
+        JSONObject actionResponseObject =
+                selectMenu("requests/menu/menu_select.json", sessionId, "action 0");
+
+        NewFormSessionResponse newFormSessionResponse =
+                mapper.readValue(actionResponseObject.toString(), NewFormSessionResponse.class);
+
+        assert newFormSessionResponse.getTitle().equals("Register Parent");
+        assert newFormSessionResponse.getTree().length == 2;
     }
 }
