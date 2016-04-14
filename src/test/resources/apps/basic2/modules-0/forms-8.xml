@@ -1,0 +1,94 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+	<h:head>
+		<h:title>Fixtures</h:title>
+		<model>
+			<instance>
+				<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="undefined" uiVersion="1" version="735" name="Fixtures">
+					<intro/>
+					<test/>
+					<county/>
+					<city/>
+					<onemb/>
+				<orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/><cc:location/></orx:meta></data>
+			</instance><instance id="commcaresession" src="jr://instance/session"/>
+			<instance src="jr://fixture/item-list:County" id="County"/>
+			<instance src="jr://fixture/item-list:City" id="City"/>
+			<instance src="jr://fixture/item-list:hypertension" id="hypertension"/>
+			<instance src="jr://fixture/item-list:Test" id="Test"/>
+			<bind nodeset="/data/intro"/>
+			<bind nodeset="/data/test" constraint="count-selected(.) &gt;= 2"/>
+			<bind nodeset="/data/county"/>
+			<bind nodeset="/data/city"/>
+			<bind nodeset="/data/onemb"/>
+			<itext>
+				<translation lang="en" default="">
+					<text id="intro-label">
+						<value>This form is used to test look up table questions!</value>
+					</text>
+					<text id="test-label">
+						<value>Select at least 2!</value>
+					</text>
+					<text id="county-label">
+						<value>Pick a county!</value>
+					</text>
+					<text id="city-label">
+						<value>Select a city!</value>
+					</text>
+					<text id="onemb-label">
+						<value>This lookup table is over 1mb. Please verify it loads and works properly.</value>
+					</text>
+				</translation>
+				<translation lang="hin">
+					<text id="intro-label">
+						<value>This form is used to test look up table questions!</value>
+					</text>
+					<text id="test-label">
+						<value>Select at least 2!</value>
+					</text>
+					<text id="county-label">
+						<value>Only vl1 and 2 should be able to see this! Select a county!</value>
+					</text>
+					<text id="city-label">
+						<value>Select a city!</value>
+					</text>
+					<text id="onemb-label">
+						<value>This lookup table is over 1mb. Please verify it loads and works properly.</value>
+					</text>
+				</translation>
+			</itext>
+		<setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/><orx:pollsensor event="xforms-ready" ref="/data/meta/location"/><bind nodeset="/data/meta/location" type="geopoint"/></model>
+	</h:head>
+	<h:body>
+		<trigger ref="/data/intro" appearance="minimal">
+			<label ref="jr:itext('intro-label')"/>
+		</trigger>
+		<select ref="/data/test">
+			<label ref="jr:itext('test-label')"/>
+			<itemset nodeset="instance('Test')/Test_list/Test">
+				<label ref="t2"/>
+				<value ref="t"/>
+			</itemset>
+		</select>
+		<select1 ref="/data/county">
+			<label ref="jr:itext('county-label')"/>
+			<itemset nodeset="instance('County')/County_list/County">
+				<label ref="county"/>
+				<value ref="id"/>
+			</itemset>
+		</select1>
+		<select1 ref="/data/city">
+			<label ref="jr:itext('city-label')"/>
+			<itemset nodeset="instance('City')/City_list/City[county_id = /data/county]">
+				<label ref="city"/>
+				<value ref="id"/>
+			</itemset>
+		</select1>
+		<select ref="/data/onemb">
+			<label ref="jr:itext('onemb-label')"/>
+			<itemset nodeset="instance('hypertension')/hypertension_list/hypertension">
+				<label ref="@dsr"/>
+				<value ref="@ldl_zone"/>
+			</itemset>
+		</select>
+	</h:body>
+</h:html>

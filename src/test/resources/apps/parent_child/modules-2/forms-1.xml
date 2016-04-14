@@ -1,0 +1,47 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+	<h:head>
+		<h:title>Parent Register Child</h:title>
+		<model>
+			<instance>
+				<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/6D15AF39-F41F-485D-84F1-C387BDEC5718" uiVersion="1" version="17" name="Parent Register Child">
+					<question3/>
+					<child_name/>
+					<child_age/>
+					<parent_name/>
+					<parent_id/>
+				<subcase_0><case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id=""><create><case_name/><owner_id/><case_type>child</case_type></create><update><child_age/></update><index><parent case_type="parent"/></index></case></subcase_0><case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id=""/><orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/></orx:meta></data>
+			</instance><instance id="casedb" src="jr://instance/casedb"/>
+			<instance src="jr://instance/session" id="commcaresession"/>
+			<bind nodeset="/data/question3"/>
+			<bind nodeset="/data/child_name" type="xsd:string" required="true()"/>
+			<bind nodeset="/data/child_age" type="xsd:int"/>
+			<bind nodeset="/data/parent_name" calculate="instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]/name"/>
+			<bind nodeset="/data/parent_id" calculate="instance('commcaresession')/session/data/case_id"/>
+			<itext>
+				<translation lang="en" default="">
+					<text id="question3-label">
+						<value>Parent name: <output value="/data/parent_name"/>
+Parent ID: <output value="/data/parent_id"/></value>
+					</text>
+					<text id="child_name-label">
+						<value>child_name</value>
+					</text>
+					<text id="child_age-label">
+						<value>child_age</value>
+					</text>
+				</translation>
+			</itext>
+		<bind calculate="/data/meta/timeEnd" nodeset="/data/case/@date_modified" type="xsd:dateTime"/><bind calculate="/data/meta/userID" nodeset="/data/case/@user_id"/><bind calculate="instance('commcaresession')/session/data/case_id" nodeset="/data/case/@case_id"/><setvalue event="xforms-ready" ref="/data/parent_name" value="instance('casedb')/casedb/case[@case_id=instance('commcaresession')/session/data/case_id]/case_name"/><bind calculate="/data/meta/timeEnd" nodeset="/data/subcase_0/case/@date_modified" type="xsd:dateTime"/><bind calculate="/data/meta/userID" nodeset="/data/subcase_0/case/@user_id"/><setvalue event="xforms-ready" ref="/data/subcase_0/case/@case_id" value="instance('commcaresession')/session/data/case_id_new_child_0"/><bind calculate="/data/child_name" nodeset="/data/subcase_0/case/create/case_name"/><bind calculate="/data/meta/userID" nodeset="/data/subcase_0/case/create/owner_id"/><bind calculate="/data/child_age" nodeset="/data/subcase_0/case/update/child_age" relevant="count(/data/child_age) &gt; 0"/><bind calculate="/data/case/@case_id" nodeset="/data/subcase_0/case/index/parent"/><setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/></model>
+	</h:head>
+	<h:body>
+		<trigger ref="/data/question3" appearance="minimal">
+			<label ref="jr:itext('question3-label')"/>
+		</trigger>
+		<input ref="/data/child_name">
+			<label ref="jr:itext('child_name-label')"/>
+		</input>
+		<input ref="/data/child_age">
+			<label ref="jr:itext('child_age-label')"/>
+		</input>
+	</h:body>
+</h:html>

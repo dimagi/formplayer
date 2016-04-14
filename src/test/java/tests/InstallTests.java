@@ -14,7 +14,11 @@ import objects.SerializableMenuSession;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.api.persistence.SqlSandboxUtils;
+import org.commcare.api.persistence.UserSqlSandbox;
+import org.javarosa.core.services.storage.StorageManager;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +46,7 @@ import utils.TestContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -54,103 +59,36 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class InstallTests {
-
-    protected MockMvc mockMvc;
-
-    @Autowired
-    protected MenuRepo menuRepoMock;
-
-    @Autowired
-    protected SessionRepo sessionRepoMock;
-
-    @Autowired
-    protected XFormService xFormServiceMock;
-
-    @Autowired
-    protected RestoreService restoreServiceMock;
-
-    @Autowired
-    protected InstallService installService;
-
-    @InjectMocks
-    MenuController menuController;
-
-    ObjectMapper mapper;
-
-    final protected SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
-
-    private String urlPrepend(String string){
-        return "/" + string;
-    }
+public class InstallTests extends BaseMenuTestClass {
 
     Log log = LogFactory.getLog(InstallTests.class);
 
-    @Before
+    @Override
     public void setUp() throws IOException {
-        Mockito.reset(sessionRepoMock);
-        Mockito.reset(xFormServiceMock);
-        Mockito.reset(restoreServiceMock);
-        Mockito.reset(menuRepoMock);
-        Mockito.reset(installService);
-        MockitoAnnotations.initMocks(this);
-        mapper = new ObjectMapper();
-        mockMvc = MockMvcBuilders.standaloneSetup(menuController).build();
-        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
-        setupMenuMock();
-        setupInstallServiceMock();
+        super.setUp();
     }
 
-    private String getTestResourcePath(String resourcePath){
-        URL url = this.getClass().getClassLoader().getResource(resourcePath);
-        File file = new File(url.getPath());
-        return file.getAbsolutePath();
-    }
 
-    private void setupInstallServiceMock() throws IOException {
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                try {
-                    Object[] args = invocationOnMock.getArguments();
-                    String ref = (String) args[0];
-                    String username = (String) args[1];
-                    log.info("Mock installing reference: " + ref + " for user: " + username);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username);
-                    String absolutePath = getTestResourcePath(ref);
-                    log.info("Mock installing full path: " + absolutePath);
-                    engine.initFromArchive(absolutePath);
-                    engine.initEnvironment();
-                    return engine;
-                } catch(Exception e){
-                    e.printStackTrace();
-                    throw e;
-                }
-            }
-        }).when(installService).configureApplication(anyString(), anyString());
-    }
+    @Test
+    public void testDoubleForm() throws Exception {
+        // setup files
+        CommandListResponseBean menuResponseBean =
+                doInstall("requests/install/double_mgmt_install.json");
+        System.out.println("Commands: " + Arrays.toString(menuResponseBean.getCommands()));
+        assert menuResponseBean.getCommands().length == 3;
+        System.out.println("Title 1: " + menuResponseBean.getTitle());
+        //assert menuResponseBean.getTitle().equals("Home");
+        System.out.println("Title 2: " + menuResponseBean.getCommands()[0].getDisplayText());
+        assert menuResponseBean.getCommands()[0].getDisplayText().equals("Parent");
+        String sessionId = menuResponseBean.getSessionId();
 
-    private void setupMenuMock() {
-        when(menuRepoMock.find(anyString())).thenReturn(serializableMenuSession);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
-                serializableMenuSession.setActions(toBeSaved.getActions());
-                serializableMenuSession.setUsername(toBeSaved.getUsername());
-                serializableMenuSession.setDomain(toBeSaved.getDomain());
-                serializableMenuSession.setActions(toBeSaved.getActions());
-                serializableMenuSession.setSessionId(toBeSaved.getSessionId());
-                serializableMenuSession.setInstallReference(toBeSaved.getInstallReference());
-                serializableMenuSession.setPassword(toBeSaved.getPassword());
-                serializableMenuSession.setSerializedCommCareSession(toBeSaved.getSerializedCommCareSession());
-                serializableMenuSession.setCurrentSelection(toBeSaved.getCurrentSelection());
-                return null;
-            }
-        }).when(menuRepoMock).save(any(SerializableMenuSession.class));
+        JSONObject menuResponseObject =
+                selectMenu("requests/menu/menu_select.json", sessionId);
+        JSONObject menuResponseObject2 =
+                selectMenu("requests/menu/menu_select.json", sessionId);
+
+        assert menuResponseObject2.has("tree");
+        assert menuResponseObject2.has("title");
     }
 
     @Test
@@ -162,7 +100,7 @@ public class InstallTests {
         System.out.println("Title 1: " + menuResponseBean.getTitle());
         assert menuResponseBean.getTitle().equals("Remove point");
         System.out.println("Title 2: " + menuResponseBean.getCommands()[0].getDisplayText());
-        assert menuResponseBean.getCommands()[0].getDisplayText().equals("Remove point");
+        assert menuResponseBean.getCommands()[0].getDisplayText().equals("Basic Form Tests");
         String sessionId = menuResponseBean.getSessionId();
 
         JSONObject menuResponseObject =
@@ -186,17 +124,19 @@ public class InstallTests {
         JSONObject menuResponseObject =
                 selectMenu("requests/menu/menu_select.json", sessionId, "2");
 
-
         JSONObject menuResponseObject2 =
                 selectMenu("requests/menu/menu_select.json", sessionId);
 
         assert menuResponseObject2.has("tree");
         assert menuResponseObject2.has("title");
-
+        SqlSandboxUtils.deleteDatabaseFolder("dbs");
+        StorageManager.forceClear();
     }
+
 
     @Test
     public void testCaseSelect() throws Exception {
+        SqlSandboxUtils.deleteDatabaseFolder("dbs");
         // setup files
         CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/install.json");
@@ -212,37 +152,12 @@ public class InstallTests {
                 selectMenu("requests/menu/menu_select.json", sessionId, "6");
         JSONObject menuResponseObject4 =
                 selectMenu("requests/menu/menu_select.json", sessionId, "");
-
+        SqlSandboxUtils.deleteDatabaseFolder("dbs");
+        StorageManager.forceClear();
     }
 
-    public CommandListResponseBean doInstall(String requestPath) throws Exception {
-        InstallRequestBean installRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
-        ResultActions installResult = mockMvc.perform(
-                post(urlPrepend(Constants.URL_INSTALL))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(installRequestBean)));
-        String installResultString = installResult.andReturn().getResponse().getContentAsString();
-        CommandListResponseBean menuResponseBean = mapper.readValue(installResultString,
-                CommandListResponseBean.class);
-        return menuResponseBean;
-    }
-
-    public JSONObject selectMenu(String requestPath, String sessionId) throws Exception {
-        return selectMenu(requestPath, sessionId, "0");
-    }
-
-    public JSONObject selectMenu(String requestPath, String sessionId, String selection) throws Exception {
-        MenuSelectBean menuSelectBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), requestPath), MenuSelectBean.class);
-        menuSelectBean.setSessionId(sessionId);
-        menuSelectBean.setSelection(selection);
-        ResultActions selectResult = mockMvc.perform(
-                post(urlPrepend(Constants.URL_MENU_SELECT))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(menuSelectBean)));
-        String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        JSONObject ret = new JSONObject(resultString);
-        return ret;
+    @After
+    public void tearDown(){
+        //SqlSandboxUtils.deleteDatabaseFolder("dbs");
     }
 }
