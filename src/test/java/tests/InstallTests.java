@@ -1,58 +1,20 @@
 package tests;
 
-import application.FormController;
-import application.MenuController;
-import auth.HqAuth;
-import beans.InstallRequestBean;
-import beans.MenuResponseBean;
-import beans.MenuSelectBean;
-import beans.menus.Command;
 import beans.menus.CommandListResponseBean;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import install.FormplayerConfigEngine;
-import objects.SerializableMenuSession;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.api.persistence.UserSqlSandbox;
 import org.javarosa.core.services.storage.StorageManager;
 import org.json.JSONObject;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import repo.MenuRepo;
-import repo.SessionRepo;
-import services.InstallService;
-import services.RestoreService;
-import services.XFormService;
-import util.Constants;
-import utils.FileUtils;
 import utils.TestContext;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /**
  * Created by willpride on 1/14/16.

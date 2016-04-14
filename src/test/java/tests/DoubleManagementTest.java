@@ -1,14 +1,23 @@
 package tests;
 
+import auth.HqAuth;
 import beans.menus.CommandListResponseBean;
+import beans.menus.EntityListResponseBean;
+import org.commcare.api.persistence.SqlSandboxUtils;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import utils.FileUtils;
 import utils.TestContext;
 
+import java.io.IOException;
 import java.util.Arrays;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by willpride on 4/14/16.
@@ -17,6 +26,14 @@ import java.util.Arrays;
 @ContextConfiguration(classes = TestContext.class)
 public class DoubleManagementTest  extends BaseMenuTestClass{
 
+    @Override
+    public void setUp() throws IOException {
+        super.setUp();
+        SqlSandboxUtils.deleteDatabaseFolder("dbs");
+        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(), "restores/parent_child.xml"));
+    }
+
     @Test
     public void testDoubleForm() throws Exception {
         // setup files
@@ -24,18 +41,22 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
                 doInstall("requests/install/double_mgmt_install.json");
         System.out.println("Commands: " + Arrays.toString(menuResponseBean.getCommands()));
         assert menuResponseBean.getCommands().length == 3;
-        System.out.println("Title 1: " + menuResponseBean.getTitle());
-        //assert menuResponseBean.getTitle().equals("Home");
-        System.out.println("Title 2: " + menuResponseBean.getCommands()[0].getDisplayText());
+        assert menuResponseBean.getTitle().equals("Parent Child");
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Parent");
+        assert menuResponseBean.getCommands()[1].getDisplayText().equals("Child");
+        assert menuResponseBean.getCommands()[2].getDisplayText().equals("Parent (2)");
         String sessionId = menuResponseBean.getSessionId();
 
         JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId);
-        JSONObject menuResponseObject2 =
-                selectMenu("requests/menu/menu_select.json", sessionId);
+                selectMenu("requests/menu/menu_select.json", sessionId, "2");
 
-        assert menuResponseObject2.has("tree");
-        assert menuResponseObject2.has("title");
+        EntityListResponseBean entityListResponseBean = mapper.readValue(menuResponseObject.toString(), EntityListResponseBean.class);
+
+        System.out.println("Menu Response Object: " + menuResponseObject);
+
+        assert entityListResponseBean.getEntities().length == 2;
+        assert entityListResponseBean.getTitle().equals("Parent (2)");
+        assert entityListResponseBean.getAction() != null;
+        assert entityListResponseBean.getAction().getText().equals("New Parent");
     }
 }

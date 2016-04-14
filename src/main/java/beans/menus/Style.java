@@ -40,7 +40,7 @@ public class Style {
         this.widthHint = widthHint;
     }
 
-    public void setDisplayFormat(String displayFormat){
+    public void setDisplayFormatFromString(String displayFormat){
         if(displayFormat.equals("image")){
             setDisplayFormat(DisplayFormat.Image);
         } else if(displayFormat.equals("audio")){

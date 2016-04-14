@@ -1,4 +1,5 @@
 app.display.name=Parent Child
+case_list_form.m2=New Parent
 cchq.case=Case
 cchq.referral=Referral
 en=English

@@ -1,12 +1,15 @@
 package beans.menus;
 
 import io.swagger.annotations.ApiModel;
+import org.commcare.modern.session.SessionWrapper;
+import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.util.cli.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
+import util.SessionUtils;
 
 import java.util.Vector;
 
@@ -16,16 +19,24 @@ import java.util.Vector;
 @ApiModel("Entity List Response")
 public class EntityListResponseBean extends MenuSessionBean {
     private Entity[] entities;
-    private boolean doubleManagementEnabled;
+    private DisplayElement action;
     private Style[] styles;
 
+    public EntityListResponseBean(){}
+
     public EntityListResponseBean(EntityScreen nextScreen) {
-        this.setTitle(nextScreen.getScreenTitle());
+        SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
-        EvaluationContext ec = nextScreen.getSession().getEvaluationContext();
-        Vector<TreeReference> references = ec.expandReference(nextScreen.getSession().getNeededDatum().getNodeset());
+        EvaluationContext ec = session.getEvaluationContext();
+        Vector<TreeReference> references = ec.expandReference(session.getNeededDatum().getNodeset());
+        processTitle(session);
         processEntities(detail, references, ec);
         processFields(detail);
+        processActions(detail, nextScreen.getSession());
+    }
+
+    private void processTitle(SessionWrapper session) {
+        setTitle(SessionUtils.getBestTitle(session));
     }
 
     private void processEntities(Detail detail, Vector<TreeReference> references, EvaluationContext ec) {
@@ -78,10 +89,17 @@ public class EntityListResponseBean extends MenuSessionBean {
             String form = field.getTemplateForm();
             String widthHint = field.getTemplateWidthHint();
             style.setWidthHint(widthHint);
-            style.setDisplayFormat(form);
+            style.setDisplayFormatFromString(form);
             styles[i] = style;
             i++;
         }
+    }
+
+    private void processActions(Detail detail, SessionWrapper session){
+        Vector<Action> actions = session.getDetail(session.getNeededDatum().getShortDetail()).getCustomActions();
+        // Assume we only have one TODO WSP: is that correct?
+        Action action = actions.firstElement();
+        setAction(new DisplayElement(action, session.getEvaluationContext()));
     }
 
     public Entity[] getEntities() {
@@ -92,19 +110,19 @@ public class EntityListResponseBean extends MenuSessionBean {
         this.entities = entities;
     }
 
-    public boolean isDoubleManagementEnabled() {
-        return doubleManagementEnabled;
-    }
-
-    public void setDoubleManagementEnabled(boolean doubleManagementEnabled) {
-        this.doubleManagementEnabled = doubleManagementEnabled;
-    }
-
     public Style[] getStyles() {
         return styles;
     }
 
     public void setStyles(Style[] styles) {
         this.styles = styles;
+    }
+
+    public DisplayElement getAction() {
+        return action;
+    }
+
+    public void setAction(DisplayElement action) {
+        this.action = action;
     }
 }

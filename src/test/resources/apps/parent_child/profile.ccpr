@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<profile version="25"
-         update="https://www.commcarehq.org/a/chadbrochill/apps/download/4cc4fedf29a6fb8783bffdbb9717be2b/media_profile.ccpr?latest=true"
+<profile version="26"
+         update="https://www.commcarehq.org/a/chadbrochill/apps/download/d72c2e5cc028b35bc34d040452423c30/media_profile.ccpr?latest=true"
          requiredMajor="2"
          requiredMinor="26"
          uniqueid="b222b1737c35ac9498a90b91e3a1c86b"
@@ -11,8 +11,8 @@
     <property key="restore-url" value="file:///E:/CommCare.Backup"/>
     <property key="ota-restore-url" value="https://www.commcarehq.org/a/chadbrochill/phone/restore/"/>
     <property key="ota-restore-url-testing" value="https://www.commcarehq.org/a/chadbrochill/phone/restore/"/>
-    <property key="PostURL" value="https://www.commcarehq.org/a/chadbrochill/receiver/4cc4fedf29a6fb8783bffdbb9717be2b/" force="true"/>
-    <property key="PostTestURL" value="https://www.commcarehq.org/a/chadbrochill/receiver/4cc4fedf29a6fb8783bffdbb9717be2b/" force="true"/>
+    <property key="PostURL" value="https://www.commcarehq.org/a/chadbrochill/receiver/d72c2e5cc028b35bc34d040452423c30/" force="true"/>
+    <property key="PostTestURL" value="https://www.commcarehq.org/a/chadbrochill/receiver/d72c2e5cc028b35bc34d040452423c30/" force="true"/>
     <property key="key_server" value="https://www.commcarehq.org/a/chadbrochill/phone/keys/"/>
     <property key="cur_locale" value="en"/>
     <property key="cc_user_domain" value="chadbrochill.commcarehq.org"/>
@@ -90,18 +90,18 @@
         </users>
     </features>
 
-    <suite><resource id="suite" version="25">
+    <suite><resource id="suite" version="26">
         
             <location authority="local">./suite.xml</location>
         
-        <location authority="remote">https://www.commcarehq.org/a/chadbrochill/apps/download/4cc4fedf29a6fb8783bffdbb9717be2b/suite.xml</location>
+        <location authority="remote">https://www.commcarehq.org/a/chadbrochill/apps/download/d72c2e5cc028b35bc34d040452423c30/suite.xml</location>
     </resource></suite>
     
-    <suite><resource id="media-suite" version="25">
+    <suite><resource id="media-suite" version="26">
         
             <location authority="local">./media_suite.xml</location>
         
-        <location authority="remote">https://www.commcarehq.org/a/chadbrochill/apps/download/4cc4fedf29a6fb8783bffdbb9717be2b/media_suite.xml</location>
+        <location authority="remote">https://www.commcarehq.org/a/chadbrochill/apps/download/d72c2e5cc028b35bc34d040452423c30/media_suite.xml</location>
     </resource></suite>
     
 </profile>
