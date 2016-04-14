@@ -1,5 +1,8 @@
 package beans.menus;
 
+import org.commcare.suite.model.Detail;
+import org.commcare.suite.model.DetailField;
+
 /**
  * Created by willpride on 4/13/16.
  */
@@ -8,6 +11,18 @@ public class Style {
     private DisplayFormat displayFormats;
     private int fontSize;
     private String widthHint;
+
+    public Style(){}
+
+    public Style(DetailField detail){
+        try {
+            setFontSize(Integer.parseInt(detail.getFontSize()));
+        } catch(NumberFormatException nfe){
+            nfe.printStackTrace();
+        }
+        setDisplayFormatFromString(detail.getTemplateForm());
+        setWidthHint(detail.getTemplateWidthHint());
+    }
 
     enum DisplayFormat {
         Image,

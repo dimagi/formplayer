@@ -31,8 +31,8 @@ public class EntityListResponseBean extends MenuSessionBean {
         Vector<TreeReference> references = ec.expandReference(session.getNeededDatum().getNodeset());
         processTitle(session);
         processEntities(detail, references, ec);
-        processFields(detail);
-        processActions(nextScreen.getSession());
+        processStyles(detail);
+        processActions(detail, nextScreen.getSession());
     }
 
     private void processTitle(SessionWrapper session) {
@@ -74,28 +74,19 @@ public class EntityListResponseBean extends MenuSessionBean {
         return ret;
     }
 
-    private void processFields(Detail detail) {
+
+    private void processStyles(Detail detail) {
         DetailField[] fields = detail.getFields();
         styles = new Style[fields.length];
         int i = 0;
         for (DetailField field : fields) {
-            Style style = new Style();
-            try {
-                int fontSize = Integer.parseInt(field.getFontSize());
-                style.setFontSize(fontSize);
-            } catch(NumberFormatException e){
-                // fine to ignore
-            }
-            String form = field.getTemplateForm();
-            String widthHint = field.getTemplateWidthHint();
-            style.setWidthHint(widthHint);
-            style.setDisplayFormatFromString(form);
+            Style style = new Style(field);
             styles[i] = style;
             i++;
         }
     }
 
-    private void processActions(SessionWrapper session){
+    private void processActions(Detail detail, SessionWrapper session){
         Vector<Action> actions = session.getDetail(session.getNeededDatum().getShortDetail()).getCustomActions();
         // Assume we only have one TODO WSP: is that correct?
         if(actions != null && !actions.isEmpty()) {

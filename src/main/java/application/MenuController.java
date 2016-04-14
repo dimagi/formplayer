@@ -5,15 +5,16 @@ import beans.MenuResponseBean;
 import beans.MenuSelectBean;
 import beans.SessionBean;
 import beans.menus.CommandListResponseBean;
+import beans.menus.EntityDetailResponseBean;
 import beans.menus.EntityListResponseBean;
 import beans.menus.MenuSessionBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.MenuScreen;
-import org.commcare.util.cli.OptionsScreen;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.commcare.util.cli.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,6 +51,8 @@ public class MenuController {
     @Autowired
     private SessionRepo sessionRepo;
 
+    Log log = LogFactory.getLog(MenuController.class);
+
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     public SessionBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
@@ -70,6 +73,7 @@ public class MenuController {
     @ApiOperation(value = "Make the given menu selection and return the next set of options, or a form to play.")
     @RequestMapping(value = Constants.URL_MENU_SELECT, method = RequestMethod.POST)
     public SessionBean selectMenu(@RequestBody MenuSelectBean menuSelectBean) throws Exception {
+        log.info("Select Menu with bean: " + menuSelectBean);
         MenuSession menuSession = getMenuSession(menuSelectBean.getSessionId());
         boolean redrawing = menuSession.handleInput(menuSelectBean.getSelection());
         menuRepo.save(menuSession.serialize());
@@ -100,7 +104,11 @@ public class MenuController {
             }
             // We're looking at a case list or detail screen (probably)
             else if (nextScreen instanceof EntityScreen) {
-                menuResponseBean = generateEntityListScreen((EntityScreen) nextScreen);
+                if(((EntityScreen) nextScreen).getCurrentScreen() instanceof EntityListSubscreen) {
+                    menuResponseBean = generateEntityListScreen((EntityScreen) nextScreen);
+                } else if (((EntityScreen) nextScreen).getCurrentScreen() instanceof EntityDetailSubscreen){
+                    menuResponseBean = generateEntityDetailScreen((EntityScreen) nextScreen);
+                }
             }
             return menuResponseBean;
         }
@@ -112,6 +120,10 @@ public class MenuController {
 
     private EntityListResponseBean generateEntityListScreen(EntityScreen nextScreen){
         return new EntityListResponseBean(nextScreen);
+    }
+
+    private EntityDetailResponseBean generateEntityDetailScreen(EntityScreen nextScreen){
+        return new EntityDetailResponseBean(nextScreen);
     }
 
     private MenuSession getMenuSession(String sessionId) throws Exception {
