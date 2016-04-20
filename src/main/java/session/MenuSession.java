@@ -11,6 +11,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.EntityDetailSubscreen;
@@ -178,7 +179,7 @@ public class MenuSession {
             throw new RuntimeException(e.getMessage());
         }
         EvaluationContext ec = sessionWrapper.getEvaluationContext();
-        if (datum.getType() == SessionDatum.DATUM_TYPE_FORM) {
+        if (datum instanceof FormIdDatum) {
             sessionWrapper.setXmlns(XPathFuncExpr.toString(form.eval(ec)));
             sessionWrapper.setDatum("", "awful");
         } else {

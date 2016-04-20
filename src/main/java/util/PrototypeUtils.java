@@ -2,9 +2,7 @@ package util;
 
 import org.commcare.cases.instance.CaseDataInstance;
 import org.commcare.resources.model.installers.*;
-import org.commcare.suite.model.FormEntry;
-import org.commcare.suite.model.PropertySetter;
-import org.commcare.suite.model.Text;
+import org.commcare.suite.model.*;
 import org.commcare.xml.DummyGraphParser;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.QuestionDef;
@@ -33,6 +31,9 @@ public class PrototypeUtils {
                 FormEntry.class.getName(),
                 CaseDataInstance.class.getName(),
                 QuestionDef.class.getName(),
+                ComputedDatum.class.getName(),
+                EntityDatum.class.getName(),
+                FormIdDatum.class.getName(),
                 "org.javarosa.xpath.XPathConditional",
                 "org.javarosa.core.model.SubmissionProfile",
                 "org.javarosa.core.model.QuestionDef",

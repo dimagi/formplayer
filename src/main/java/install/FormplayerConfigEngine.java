@@ -338,13 +338,13 @@ public class FormplayerConfigEngine {
             head +=      "|- ";
             emptyhead += "   ";
         }
-        print.println(head + "Entry: " + e.getText().evaluate());
         for(SessionDatum datum : e.getSessionDataReqs()) {
-            if(datum.getType() == SessionDatum.DATUM_TYPE_FORM) {
+            if(datum instanceof FormIdDatum) {
                 print.println(emptyhead + "Form: " + datum.getValue());
-            } else {
-                if(datum.getShortDetail() != null) {
-                    Detail d = s.getDetail(datum.getShortDetail());
+            } else if (datum instanceof EntityDatum) {
+                String shortDetailId = ((EntityDatum)datum).getShortDetail();
+                if(shortDetailId != null) {
+                    Detail d = s.getDetail(shortDetailId);
                     try {
                         print.println(emptyhead + "|Select: " + d.getTitle().getText().evaluate(new EvaluationContext(null)));
                     } catch(XPathMissingInstanceException ex) {

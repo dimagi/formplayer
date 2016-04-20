@@ -17,10 +17,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.util.cli.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import repo.MenuRepo;
 import repo.SessionRepo;
 import requests.InstallRequest;
@@ -37,6 +34,7 @@ import java.util.HashMap;
 @Api(value = "Menu Controllers", description = "Operations for navigating CommCare Menus and Cases")
 @RestController
 @EnableAutoConfiguration
+@CrossOrigin(origins = "http://localhost:8000")
 public class MenuController {
 
     @Autowired
@@ -56,6 +54,7 @@ public class MenuController {
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     public SessionBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
+        log.info("Received install request: " + installRequestBean);
         InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, menuRepo, installService);
         return getNextMenu(installRequest.getMenuSession(), true);
     }

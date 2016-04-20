@@ -5,6 +5,7 @@ import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.util.cli.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
@@ -28,7 +29,7 @@ public class EntityListResponseBean extends MenuSessionBean {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EvaluationContext ec = session.getEvaluationContext();
-        Vector<TreeReference> references = ec.expandReference(session.getNeededDatum().getNodeset());
+        Vector<TreeReference> references = ec.expandReference(((EntityDatum)session.getNeededDatum()).getNodeset());
         processTitle(session);
         processEntities(detail, references, ec);
         processStyles(detail);
@@ -87,7 +88,7 @@ public class EntityListResponseBean extends MenuSessionBean {
     }
 
     private void processActions(Detail detail, SessionWrapper session){
-        Vector<Action> actions = session.getDetail(session.getNeededDatum().getShortDetail()).getCustomActions();
+        Vector<Action> actions = session.getDetail(((EntityDatum)session.getNeededDatum()).getShortDetail()).getCustomActions();
         // Assume we only have one TODO WSP: is that correct?
         if(actions != null && !actions.isEmpty()) {
             Action action = actions.firstElement();

@@ -44,4 +44,9 @@ public class InstallRequestBean {
     public void setDomain(String domain) {
         this.domain = domain;
     }
+
+    public String toString(){
+        return "InstallRequestBean: [installReference=" + installReference +
+                ", username=" + username + ", domain=" + domain + "]";
+    }
 }
