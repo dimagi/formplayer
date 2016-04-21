@@ -3,6 +3,8 @@ package beans.menus;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.util.cli.MenuScreen;
 
+import java.util.Arrays;
+
 /**
  * Created by willpride on 4/13/16.
  */
@@ -30,5 +32,11 @@ public class CommandListResponseBean extends MenuSessionBean{
             commands[i] = command;
         }
         this.setCommands(commands);
+    }
+
+    @Override
+    public String toString(){
+        return "CommandListResponseBean [commands=" + Arrays.toString(commands)
+                + "MenuSessionBean= " + super.toString() + "]";
     }
 }

@@ -32,4 +32,10 @@ public class SessionBean {
     public void setSequenceId(int sequenceId) {
         this.sequenceId = sequenceId;
     }
+
+    @Override
+    public String toString(){
+        return "SessionBean [sessionId=" + sessionId + ", seqId=" + sequenceId + "]";
+    }
+
 }

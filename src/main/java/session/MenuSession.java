@@ -61,13 +61,14 @@ public class MenuSession {
     String username;
     String password;
     String domain;
+    String appId;
     @Value("${commcarehq.host}")
     String host;
     private String sessionId;
     private Screen screen;
     private String currentSelection;
 
-    public MenuSession(String username, String password, String domain,
+    public MenuSession(String username, String password, String domain, String appId,
                        String installReference, String serializedCommCareSession,
                        RestoreService restoreService, String sessionId, String currentSelection, InstallService installService) throws Exception {
         //TODO WSP: why host isn't host resolving?
@@ -75,9 +76,10 @@ public class MenuSession {
         this.username = username;
         this.password = password;
         this.domain = domain;
+        this.appId = appId;
         this.installReference = installReference;
         this.auth = new BasicAuth(domainedUsername, password);
-        this.engine = installService.configureApplication(installReference, username);
+        this.engine = installService.configureApplication(installReference, username, getDbPath());
         this.currentSelection = currentSelection;
 
         if(sessionId == null){
@@ -101,7 +103,7 @@ public class MenuSession {
 
     public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService,
                        InstallService installService) throws Exception {
-        this(serializableMenuSession.getUsername(), serializableMenuSession.getPassword(), serializableMenuSession.getDomain(),
+        this(serializableMenuSession.getUsername(), serializableMenuSession.getPassword(), serializableMenuSession.getDomain(), null,
             serializableMenuSession.getInstallReference(), serializableMenuSession.getSerializedCommCareSession(), restoreService,
                 serializableMenuSession.getSessionId(), serializableMenuSession.getCurrentSelection(), installService);
 
@@ -238,6 +240,14 @@ public class MenuSession {
             ret.put(new Integer(i), menuDisplayables[i]);
         }
         return ret;
+    }
+
+    private String getDbPath(){
+        if(appId == null){
+            return "dbs";
+        } else{
+            return "dbs/"+appId;
+        }
     }
 
 

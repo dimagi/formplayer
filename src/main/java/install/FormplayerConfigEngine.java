@@ -51,20 +51,21 @@ public class FormplayerConfigEngine {
     private ArchiveFileRoot mArchiveRoot;
     Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
-    public FormplayerConfigEngine(OutputStream output, final String username) {
+    public FormplayerConfigEngine(OutputStream output, final String username, final String dbPath) {
         this.print = new PrintStream(output);
         this.platform = new CommCarePlatform(2, 27);
+        log.info("FormplayerConfigEngine for username: " + username + " with dbPath: " + dbPath);
 
         PrototypeUtils.setupPrototypes();
 
         setRoots();
 
         table = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
-                "GLOBAL_RESOURCE_TABLE", username, "dbs"));
+                "GLOBAL_RESOURCE_TABLE", username, dbPath));
         updateTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
-                "UPDATE_RESOURCE_TABLE", username, "dbs"));
+                "UPDATE_RESOURCE_TABLE", username, dbPath));
         recoveryTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
-                "RECOVERY_RESOURCE_TABLE", username, "dbs"));
+                "RECOVERY_RESOURCE_TABLE", username, dbPath));
 
 
         //All of the below is on account of the fact that the installers
@@ -74,7 +75,7 @@ public class FormplayerConfigEngine {
         StorageManager.setStorageFactory(new IStorageFactory() {
             public IStorageUtility newStorage(String name, Class type) {
                 return new SqliteIndexedStorageUtility<>(type,
-                        name, username, "dbs");
+                        name, username, dbPath);
             }
 
         });

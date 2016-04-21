@@ -58,7 +58,9 @@ public class MenuController {
     public SessionBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
         log.info("Received install request: " + installRequestBean);
         InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, menuRepo, installService);
-        return getNextMenu(installRequest.getMenuSession(), true);
+        SessionBean response = getNextMenu(installRequest.getMenuSession(), true);
+        log.info("Returning install response: " + response);
+        return response;
     }
 
     /**

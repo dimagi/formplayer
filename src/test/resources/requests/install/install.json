@@ -2,5 +2,6 @@
   "username": "testuser",
   "password": "testpass",
   "domain": "testdomain",
-  "install_reference": "archives/basic.ccz"
+  "install_reference": "archives/basic.ccz",
+  "app_id": "test_id"
 }

@@ -21,7 +21,7 @@ public class InstallRequest {
 
     public InstallRequest(InstallRequestBean bean, RestoreService restoreService,
                           MenuRepo menuSessionRepo, InstallService installService) throws Exception {
-        this.menuSession = new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(),
+        this.menuSession = new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(), bean.getAppId(),
                 bean.getInstallReference(), null, restoreService, null, null, installService);
         menuSessionRepo.save(menuSession.serialize());
     }

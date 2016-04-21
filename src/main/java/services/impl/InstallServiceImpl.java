@@ -11,9 +11,9 @@ import java.io.IOException;
  */
 public class InstallServiceImpl implements InstallService {
     @Override
-    public FormplayerConfigEngine configureApplication(String reference, String username) throws IOException {
+    public FormplayerConfigEngine configureApplication(String reference, String username, String dbPath) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username);
+        FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username, dbPath);
         if(reference.endsWith(".ccz")){
             engine.initFromArchive(reference);
         } else if(reference.endsWith(".ccpr")) {

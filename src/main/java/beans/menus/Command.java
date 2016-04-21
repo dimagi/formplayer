@@ -1,5 +1,6 @@
 package beans.menus;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.Api;
 import org.commcare.suite.model.MenuDisplayable;
 
@@ -7,6 +8,7 @@ import org.commcare.suite.model.MenuDisplayable;
  * Created by willpride on 4/13/16.
  */
 @Api(description = "A menu command")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Command {
     private int index;
     private String displayText;
@@ -53,5 +55,11 @@ public class Command {
 
     public void setImageUri(String imageUri) {
         this.imageUri = imageUri;
+    }
+
+    @Override
+    public String toString(){
+        return "Command [index=" + index + ", text=" + displayText + ", " +
+                "audioUri=" + audioUri + ", imageUri=" + imageUri + "]";
     }
 }

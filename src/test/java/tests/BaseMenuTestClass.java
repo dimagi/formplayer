@@ -15,7 +15,6 @@ import org.commcare.api.persistence.SqlSandboxUtils;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -23,8 +22,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -35,7 +32,6 @@ import services.RestoreService;
 import services.XFormService;
 import util.Constants;
 import utils.FileUtils;
-import utils.TestContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -106,7 +102,7 @@ public class BaseMenuTestClass {
                     String ref = (String) args[0];
                     String username = (String) args[1];
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username);
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username, "dbs");
                     String absolutePath = getTestResourcePath(ref);
                     if(absolutePath.endsWith(".ccpr")) {
                         engine.initFromLocalFileResource(absolutePath);
@@ -122,7 +118,7 @@ public class BaseMenuTestClass {
                     throw e;
                 }
             }
-        }).when(installService).configureApplication(anyString(), anyString());
+        }).when(installService).configureApplication(anyString(), anyString(), anyString());
     }
 
     private void setupMenuMock() {

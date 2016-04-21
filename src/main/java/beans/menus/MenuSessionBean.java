@@ -16,4 +16,9 @@ public class MenuSessionBean extends SessionBean {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    @Override
+    public String toString(){
+        return "MenuSessionBean [title=" + title + ", SessionBean= " + super.toString() + "]";
+    }
 }
