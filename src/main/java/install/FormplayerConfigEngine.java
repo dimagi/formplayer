@@ -56,6 +56,11 @@ public class FormplayerConfigEngine {
         this.platform = new CommCarePlatform(2, 27);
         log.info("FormplayerConfigEngine for username: " + username + " with dbPath: " + dbPath);
 
+        File dbFolder = new File(dbPath);
+        if(!dbFolder.exists()){
+            dbFolder.mkdirs();
+        }
+
         PrototypeUtils.setupPrototypes();
 
         setRoots();

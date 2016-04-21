@@ -59,6 +59,7 @@ public class MenuController {
         log.info("Received install request: " + installRequestBean);
         InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, menuRepo, installService);
         SessionBean response = getNextMenu(installRequest.getMenuSession(), true);
+        response.setSequenceId(1);
         log.info("Returning install response: " + response);
         return response;
     }
@@ -100,7 +101,7 @@ public class MenuController {
         }
         else{
             MenuSessionBean menuResponseBean = new MenuSessionBean();
-            menuResponseBean.setSessionId(menuSession.getSessionId());
+
             // We're looking at a module or form menu
             if(nextScreen instanceof MenuScreen){
                 menuResponseBean = generateMenuScreen((MenuScreen) nextScreen);
@@ -113,6 +114,7 @@ public class MenuController {
                     menuResponseBean = generateEntityDetailScreen((EntityScreen) nextScreen);
                 }
             }
+            menuResponseBean.setSessionId(menuSession.getSessionId());
             return menuResponseBean;
         }
     }
