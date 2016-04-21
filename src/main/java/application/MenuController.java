@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiResponses;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.util.cli.*;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import services.RestoreService;
 import session.MenuSession;
 import util.Constants;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 
 /**
@@ -127,5 +129,16 @@ public class MenuController {
 
     private MenuSession getMenuSession(String sessionId) throws Exception {
         return new MenuSession(menuRepo.find(sessionId), restoreService, installService);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public String handleError(HttpServletRequest req, Exception exception) {
+        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        exception.printStackTrace();
+        JSONObject errorReturn = new JSONObject();
+        errorReturn.put("exception", exception);
+        errorReturn.put("url", req.getRequestURL());
+        errorReturn.put("status", "error");
+        return errorReturn.toString();
     }
 }

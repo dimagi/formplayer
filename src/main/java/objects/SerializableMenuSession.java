@@ -1,11 +1,12 @@
 package objects;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by willpride on 2/5/16.
  */
-public class SerializableMenuSession {
+public class SerializableMenuSession implements Serializable{
     private String sessionId;
     private String installReference;
     private String username;

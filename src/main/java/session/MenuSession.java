@@ -70,7 +70,8 @@ public class MenuSession {
     public MenuSession(String username, String password, String domain,
                        String installReference, String serializedCommCareSession,
                        RestoreService restoreService, String sessionId, String currentSelection, InstallService installService) throws Exception {
-        String domainedUsername = StringUtils.getFullUsername(username, domain, host);
+        //TODO WSP: why host isn't host resolving?
+        String domainedUsername = StringUtils.getFullUsername(username, domain, "commcarehq.org");
         this.username = username;
         this.password = password;
         this.domain = domain;
@@ -238,4 +239,6 @@ public class MenuSession {
         }
         return ret;
     }
+
+
 }
