@@ -2,8 +2,12 @@ package services.impl;
 
 import install.FormplayerConfigEngine;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.commcare.resources.model.InstallCancelledException;
+import org.commcare.resources.model.UnresolvedResourceException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import services.InstallService;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -11,9 +15,9 @@ import java.io.IOException;
  */
 public class InstallServiceImpl implements InstallService {
     @Override
-    public FormplayerConfigEngine configureApplication(String reference, String username, String dbPath) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username, dbPath);
+    public FormplayerConfigEngine configureApplication(String reference, String username, String dbPath) throws IOException, InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
+        boolean alreadyInstalled = new File(dbPath).exists();
+        FormplayerConfigEngine engine = new FormplayerConfigEngine(username, dbPath);
         if(reference.endsWith(".ccz")){
             engine.initFromArchive(reference);
         } else if(reference.endsWith(".ccpr")) {
@@ -21,7 +25,9 @@ public class InstallServiceImpl implements InstallService {
         } else {
             throw new RuntimeException("Can't instantiate with reference: " + reference);
         }
-        engine.initEnvironment();
+        if(!alreadyInstalled) {
+            engine.initEnvironment();
+        }
         return engine;
     }
 }

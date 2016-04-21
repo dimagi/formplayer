@@ -45,14 +45,12 @@ public class FormplayerConfigEngine {
     private ResourceTable table;
     private ResourceTable updateTable;
     private ResourceTable recoveryTable;
-    private PrintStream print;
     private CommCarePlatform platform;
     private int fileuricount = 0;
     private ArchiveFileRoot mArchiveRoot;
     Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
-    public FormplayerConfigEngine(OutputStream output, final String username, final String dbPath) {
-        this.print = new PrintStream(output);
+    public FormplayerConfigEngine(final String username, final String dbPath) {
         this.platform = new CommCarePlatform(2, 27);
         log.info("FormplayerConfigEngine for username: " + username + " with dbPath: " + dbPath);
 
@@ -103,7 +101,7 @@ public class FormplayerConfigEngine {
         ReferenceManager._().addReferenceFactory(new JavaResourceRoot(this.getClass()));
     }
 
-    public void initFromArchive(String archiveURL) throws IOException {
+    public void initFromArchive(String archiveURL) throws IOException, InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
         String fileName;
         if(archiveURL.startsWith("http")) {
             fileName = downloadToTemp(archiveURL);
@@ -114,8 +112,7 @@ public class FormplayerConfigEngine {
         try {
             zip = new ZipFile(fileName);
         } catch (IOException e) {
-            print.println("File at " + archiveURL + ": is not a valid CommCare Package. Downloaded to: " + fileName);
-            log.error("Init from archive failed: " + e.getMessage());
+            log.error("File at " + archiveURL + ": is not a valid CommCare Package. Downloaded to: " + fileName);
             e.printStackTrace();
             throw e;
         }
@@ -137,14 +134,14 @@ public class FormplayerConfigEngine {
             StreamsUtil.writeFromInputToOutput(new BufferedInputStream(conn.getInputStream()), fos);
             return file.getAbsolutePath();
         } catch(IOException e) {
-            print.println("Issue downloading or create stream for " +resource);
-            e.printStackTrace(print);
+            log.error("Issue downloading or create stream for " +resource);
+            e.printStackTrace();
             System.exit(-1);
             return null;
         }
     }
 
-    public void initFromLocalFileResource(String resource) {
+    public void initFromLocalFileResource(String resource) throws InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
         String reference = setFileSystemRootFromResourceAndReturnRelativeRef(resource);
         init(reference);
     }
@@ -212,29 +209,8 @@ public class FormplayerConfigEngine {
         }
     }
 
-
-    public void addResource(String reference) {
-
-    }
-
-    private void init(String profileRef) {
-            try {
-                installAppFromReference(profileRef);
-                print.println("Table resources intialized and fully resolved.");
-                print.println(table);
-            } catch (InstallCancelledException e) {
-                print.println("Install was cancelled by the user or system");
-                e.printStackTrace(print);
-                System.exit(-1);
-            } catch (UnresolvedResourceException e) {
-                print.println("While attempting to resolve the necessary resources, one couldn't be found: " + e.getResource().getResourceId());
-                e.printStackTrace(print);
-                System.exit(-1);
-            } catch (UnfullfilledRequirementsException e) {
-                print.println("While attempting to resolve the necessary resources, a requirement wasn't met");
-                e.printStackTrace(print);
-                System.exit(-1);
-            }
+    private void init(String profileRef) throws InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
+        installAppFromReference(profileRef);
     }
 
     public void installAppFromReference(String profileReference) throws UnresolvedResourceException,
@@ -252,7 +228,6 @@ public class FormplayerConfigEngine {
 
             Localization.setDefaultLocale("default");
 
-            print.println("Locales defined: ");
             String newLocale = null;
             for (String locale : Localization.getGlobalLocalizerAdvanced().getAvailableLocales()) {
                 if (newLocale == null) {
@@ -261,69 +236,10 @@ public class FormplayerConfigEngine {
                 System.out.println("* " + locale);
             }
 
-            print.println("Setting locale to: " + newLocale);
             Localization.setLocale(newLocale);
         } catch (ResourceInitializationException e) {
-            print.println("Error while initializing one of the resolved resources");
-            e.printStackTrace(print);
+            log.error("Error while initializing one of the resolved resources");
             System.exit(-1);
-        }
-    }
-
-    public void describeApplication() {
-        print.println("Locales defined: ");
-        for(String locale : Localization.getGlobalLocalizerAdvanced().getAvailableLocales()) {
-            System.out.println("* " + locale);
-        }
-
-        Localization.setDefaultLocale("default");
-
-        Vector<Menu> root = new Vector<Menu>();
-        Hashtable<String, Vector<Menu>> mapping = new Hashtable<String, Vector<Menu>>();
-        mapping.put("root",new Vector<Menu>());
-
-        for(Suite s : platform.getInstalledSuites()) {
-            for(Menu m : s.getMenus()) {
-                if(m.getId().equals("root")) {
-                    root.add(m);
-                } else {
-                    Vector<Menu> menus = mapping.get(m.getRoot());
-                    if(menus == null) {
-                        menus = new Vector<Menu>();
-                    }
-                    menus.add(m);
-                    mapping.put(m.getRoot(), menus);
-                }
-            }
-        }
-
-        for(String locale : Localization.getGlobalLocalizerAdvanced().getAvailableLocales()) {
-            Localization.setLocale(locale);
-
-            print.println("Application details for locale: " + locale);
-            print.println("CommCare");
-
-            for(Menu m : mapping.get("root")) {
-                print.println("|- " + m.getName().evaluate());
-                for(String command : m.getCommandIds()) {
-                    for(Suite s : platform.getInstalledSuites()) {
-                        if(s.getEntries().containsKey(command)) {
-                            print(s,s.getEntries().get(command),2);
-                        }
-                    }
-                }
-
-            }
-
-            for(Menu m : root) {
-                for(String command : m.getCommandIds()) {
-                    for(Suite s : platform.getInstalledSuites()) {
-                        if(s.getEntries().containsKey(command)) {
-                            print(s,s.getEntries().get(command),1);
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -336,36 +252,6 @@ public class FormplayerConfigEngine {
                 (IStorageUtilityIndexed)StorageManager.getStorage(FormDef.STORAGE_KEY);
         return formStorage.getRecordForValue("XMLNS", xmlns);
     }
-
-    private void print(Suite s, Entry e, int level) {
-        String head = "";
-        String emptyhead = "";
-        for(int i = 0; i < level; ++i ){
-            head +=      "|- ";
-            emptyhead += "   ";
-        }
-        for(SessionDatum datum : e.getSessionDataReqs()) {
-            if(datum instanceof FormIdDatum) {
-                print.println(emptyhead + "Form: " + datum.getValue());
-            } else if (datum instanceof EntityDatum) {
-                String shortDetailId = ((EntityDatum)datum).getShortDetail();
-                if(shortDetailId != null) {
-                    Detail d = s.getDetail(shortDetailId);
-                    try {
-                        print.println(emptyhead + "|Select: " + d.getTitle().getText().evaluate(new EvaluationContext(null)));
-                    } catch(XPathMissingInstanceException ex) {
-                        print.println(emptyhead + "|Select: " + "(dynamic title)");
-                    }
-                    print.print(emptyhead + "| ");
-                    for(DetailField f : d.getFields()) {
-                        print.print(f.getHeader().evaluate() + " | ");
-                    }
-                    print.print("\n");
-                }
-            }
-        }
-    }
-
 
     final static private class QuickStateListener implements TableStateListener{
         int lastComplete = 0;

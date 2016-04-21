@@ -94,31 +94,36 @@ public class BaseMenuTestClass {
     }
 
     private void setupInstallServiceMock() throws IOException {
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                try {
-                    Object[] args = invocationOnMock.getArguments();
-                    String ref = (String) args[0];
-                    String username = (String) args[1];
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    FormplayerConfigEngine engine = new FormplayerConfigEngine(baos, username, "dbs");
-                    String absolutePath = getTestResourcePath(ref);
-                    if(absolutePath.endsWith(".ccpr")) {
-                        engine.initFromLocalFileResource(absolutePath);
-                    } else if(absolutePath.endsWith(".ccz")){
-                        engine.initFromArchive(absolutePath);
-                    } else {
-                        throw new RuntimeException("Can't install with reference: " + absolutePath);
+        try {
+            doAnswer(new Answer<Object>() {
+                @Override
+                public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                    try {
+                        Object[] args = invocationOnMock.getArguments();
+                        String ref = (String) args[0];
+                        String username = (String) args[1];
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        FormplayerConfigEngine engine = new FormplayerConfigEngine(username, "dbs");
+                        String absolutePath = getTestResourcePath(ref);
+                        if (absolutePath.endsWith(".ccpr")) {
+                            engine.initFromLocalFileResource(absolutePath);
+                        } else if (absolutePath.endsWith(".ccz")) {
+                            engine.initFromArchive(absolutePath);
+                        } else {
+                            throw new RuntimeException("Can't install with reference: " + absolutePath);
+                        }
+                        engine.initEnvironment();
+                        return engine;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        throw e;
                     }
-                    engine.initEnvironment();
-                    return engine;
-                } catch(Exception e){
-                    e.printStackTrace();
-                    throw e;
                 }
-            }
-        }).when(installService).configureApplication(anyString(), anyString(), anyString());
+            }).when(installService).configureApplication(anyString(), anyString(), anyString());
+        } catch(Exception e){
+            // don't think we need error handling for mocking
+            e.printStackTrace();
+        }
     }
 
     private void setupMenuMock() {

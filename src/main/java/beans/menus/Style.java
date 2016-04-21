@@ -15,10 +15,12 @@ public class Style {
     public Style(){}
 
     public Style(DetailField detail){
-        try {
-            setFontSize(Integer.parseInt(detail.getFontSize()));
-        } catch(NumberFormatException nfe){
-            nfe.printStackTrace();
+        if(detail.getFontSize() != null) {
+            try {
+                setFontSize(Integer.parseInt(detail.getFontSize()));
+            } catch (NumberFormatException nfe) {
+                nfe.printStackTrace();
+            }
         }
         setDisplayFormatFromString(detail.getTemplateForm());
         setWidthHint(detail.getTemplateWidthHint());
