@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiResponses;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.util.cli.*;
+import org.javarosa.engine.models.Session;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -81,7 +82,9 @@ public class MenuController {
         MenuSession menuSession = getMenuSession(menuSelectBean.getSessionId());
         boolean redrawing = menuSession.handleInput(menuSelectBean.getSelection());
         menuRepo.save(menuSession.serialize());
-        return getNextMenu(menuSession, redrawing);
+        SessionBean nextMenu = getNextMenu(menuSession, redrawing);
+        log.info("Returning menu: " + nextMenu);
+        return nextMenu;
     }
 
     private SessionBean getNextMenu(MenuSession menuSession, boolean redrawing) throws Exception {

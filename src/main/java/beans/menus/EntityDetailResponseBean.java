@@ -1,6 +1,5 @@
 package beans.menus;
 
-import beans.SessionBean;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.util.cli.EntityDetailSubscreen;
@@ -11,7 +10,7 @@ import util.SessionUtils;
  * Created by willpride on 4/13/16.
  */
 public class EntityDetailResponseBean extends MenuSessionBean{
-    private Object[] data;
+    private Object[] details;
     private Style[] styles;
     private String[] headers;
 
@@ -19,16 +18,16 @@ public class EntityDetailResponseBean extends MenuSessionBean{
 
     public EntityDetailResponseBean(EntityScreen entityScreen){
         this.setTitle(SessionUtils.getBestTitle(entityScreen.getSession()));
-        this.data = ((EntityDetailSubscreen)entityScreen.getCurrentScreen()).getData();
-        this.headers = ((EntityDetailSubscreen)entityScreen.getCurrentScreen()).getDetailHeaders();
+        this.details = ((EntityDetailSubscreen)entityScreen.getCurrentScreen()).getData();
+        this.headers = ((EntityDetailSubscreen)entityScreen.getCurrentScreen()).getHeaders();
     }
 
-    public Object[] getData() {
-        return data;
+    public Object[] getDetails() {
+        return details;
     }
 
-    public void setData(Object[] data) {
-        this.data = data;
+    public void setDetails(Object[] data) {
+        this.details = data;
     }
 
     public Style[] getStyles() {

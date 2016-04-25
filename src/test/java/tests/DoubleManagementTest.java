@@ -98,6 +98,6 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
                 mapper.readValue(actionResponseObject.toString(), EntityDetailResponseBean.class);
 
         assert newFormSessionResponse.getTitle().equals("Parent (2)");
-        assert newFormSessionResponse.getData().length == 1;
+        assert newFormSessionResponse.getDetails().length == 1;
     }
 }
