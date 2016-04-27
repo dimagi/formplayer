@@ -6,6 +6,7 @@ package beans.menus;
 public class Entity {
     private int index;
     private Object[] data;
+    private EntityDetailResponse detail;
 
     public int getIndex() {
         return index;
@@ -21,5 +22,13 @@ public class Entity {
 
     public void setData(Object[] data) {
         this.data = data;
+    }
+
+    public EntityDetailResponse getDetail() {
+        return detail;
+    }
+
+    public void setDetail(EntityDetailResponse detail) {
+        this.detail = detail;
     }
 }

@@ -20,6 +20,7 @@ public class Constants {
     public final static String URL_GET_SESSION = "get_session";
     public static final String URL_INSTALL = "install";
     public static final String URL_MENU_SELECT = "menu_select";
+    public static final String URL_MENU_SELECT_REPEATER = "menu_select_repeater";
     //Menus
     public static final String MENU_MODULE = "modules";
     public static final String MENU_ENTITY = "entity";

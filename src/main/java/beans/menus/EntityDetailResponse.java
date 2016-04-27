@@ -9,17 +9,18 @@ import util.SessionUtils;
 /**
  * Created by willpride on 4/13/16.
  */
-public class EntityDetailResponseBean extends MenuSessionBean{
+public class EntityDetailResponse extends MenuSessionBean{
     private Object[] details;
     private Style[] styles;
     private String[] headers;
 
-    public EntityDetailResponseBean(){}
+    public EntityDetailResponse(){}
 
-    public EntityDetailResponseBean(EntityScreen entityScreen){
-        this.setTitle(SessionUtils.getBestTitle(entityScreen.getSession()));
-        this.details = ((EntityDetailSubscreen)entityScreen.getCurrentScreen()).getData();
-        this.headers = ((EntityDetailSubscreen)entityScreen.getCurrentScreen()).getHeaders();
+    public EntityDetailResponse(EntityDetailSubscreen entityScreen){
+        //TODO WSP Duh
+        this.setTitle("Details");
+        this.details = entityScreen.getData();
+        this.headers = entityScreen.getHeaders();
     }
 
     public Object[] getDetails() {

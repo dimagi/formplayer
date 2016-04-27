@@ -3,8 +3,8 @@ package tests;
 import auth.HqAuth;
 import beans.NewFormSessionResponse;
 import beans.menus.CommandListResponseBean;
-import beans.menus.EntityDetailResponseBean;
-import beans.menus.EntityListResponseBean;
+import beans.menus.EntityDetailResponse;
+import beans.menus.EntityListResponse;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -50,13 +50,13 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         JSONObject menuResponseObject =
                 selectMenu("requests/menu/menu_select.json", sessionId, "2");
 
-        EntityListResponseBean entityListResponseBean =
-                mapper.readValue(menuResponseObject.toString(), EntityListResponseBean.class);
+        EntityListResponse entityListResponse =
+                mapper.readValue(menuResponseObject.toString(), EntityListResponse.class);
 
-        assert entityListResponseBean.getEntities().length == 2;
-        assert entityListResponseBean.getTitle().equals("Parent (2)");
-        assert entityListResponseBean.getAction() != null;
-        assert entityListResponseBean.getAction().getText().equals("New Parent");
+        assert entityListResponse.getEntities().length == 2;
+        assert entityListResponse.getTitle().equals("Parent (2)");
+        assert entityListResponse.getAction() != null;
+        assert entityListResponse.getAction().getText().equals("New Parent");
 
         JSONObject actionResponseObject =
                 selectMenu("requests/menu/menu_select.json", sessionId, "action 0");
@@ -83,21 +83,40 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         JSONObject menuResponseObject =
                 selectMenu("requests/menu/menu_select.json", sessionId, "2");
 
-        EntityListResponseBean entityListResponseBean =
-                mapper.readValue(menuResponseObject.toString(), EntityListResponseBean.class);
+        EntityListResponse entityListResponse =
+                mapper.readValue(menuResponseObject.toString(), EntityListResponse.class);
 
-        assert entityListResponseBean.getEntities().length == 2;
-        assert entityListResponseBean.getTitle().equals("Parent (2)");
-        assert entityListResponseBean.getAction() != null;
-        assert entityListResponseBean.getAction().getText().equals("New Parent");
+        assert entityListResponse.getEntities().length == 2;
+        assert entityListResponse.getTitle().equals("Parent (2)");
+        assert entityListResponse.getAction() != null;
+        assert entityListResponse.getAction().getText().equals("New Parent");
 
-        JSONObject actionResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId, "0");
+        EntityDetailResponse newFormSessionResponse = entityListResponse.getEntities()[0].getDetail();
 
-        EntityDetailResponseBean newFormSessionResponse =
-                mapper.readValue(actionResponseObject.toString(), EntityDetailResponseBean.class);
-
-        assert newFormSessionResponse.getTitle().equals("Parent (2)");
+        assert newFormSessionResponse.getTitle().equals("Details");
         assert newFormSessionResponse.getDetails().length == 1;
     }
+
+    @Test
+    public void testRepeater() throws Exception {
+        // setup files
+        CommandListResponseBean menuResponseBean =
+                doInstall("requests/install/double_mgmt_install.json");
+        assert menuResponseBean.getCommands().length == 3;
+        assert menuResponseBean.getTitle().equals("Parent Child");
+        assert menuResponseBean.getCommands()[0].getDisplayText().equals("Parent");
+        assert menuResponseBean.getCommands()[1].getDisplayText().equals("Child");
+        assert menuResponseBean.getCommands()[2].getDisplayText().equals("Parent (2)");
+        String sessionId = menuResponseBean.getSessionId();
+
+        JSONObject repeaterResponseObject =
+                selectMenuRepeat("requests/repeaters/dbl_mgmt_repeat.json", sessionId);
+
+        NewFormSessionResponse newFormSessionResponse =
+                mapper.readValue(repeaterResponseObject.toString(), NewFormSessionResponse.class);
+
+        assert newFormSessionResponse.getTitle().equals("Register Parent");
+        assert newFormSessionResponse.getTree().length == 2;
+    }
+
 }

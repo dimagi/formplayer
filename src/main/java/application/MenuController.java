@@ -1,21 +1,14 @@
 package application;
 
-import beans.InstallRequestBean;
-import beans.MenuResponseBean;
-import beans.MenuSelectBean;
-import beans.SessionBean;
+import beans.*;
 import beans.menus.CommandListResponseBean;
-import beans.menus.EntityDetailResponseBean;
-import beans.menus.EntityListResponseBean;
+import beans.menus.EntityListResponse;
 import beans.menus.MenuSessionBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.util.cli.*;
-import org.javarosa.engine.models.Session;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -29,7 +22,6 @@ import session.MenuSession;
 import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 
 /**
  * Created by willpride on 1/12/16.
@@ -87,6 +79,31 @@ public class MenuController {
         return nextMenu;
     }
 
+    /**
+     * Make a a series of menu selections (as above, but can have multiple)
+     *
+     * @param menuSelectRepeater Give the selections to be made on the current MenuSession
+     *                             (could be a module, form, or case selection)
+     * @return A MenuResponseBean or a NewFormSessionResponse
+     * @throws Exception
+     */
+    @ApiOperation(value = "Make the given menu selection and return the next set of options, or a form to play.")
+    @RequestMapping(value = Constants.URL_MENU_SELECT_REPEATER, method = RequestMethod.POST)
+    public SessionBean selectMenuRepeater(@RequestBody MenuSelectRepeater menuSelectRepeater) throws Exception {
+        log.info("Select Menu with bean: " + menuSelectRepeater);
+        MenuSession menuSession = getMenuSession(menuSelectRepeater.getSessionId());
+        String[] selections = menuSelectRepeater.getSelections();
+        SessionBean nextMenu = getNextMenu(menuSession, false);
+        log.info("Got next menu: " + nextMenu);
+        for(String selection: selections){
+            menuSession.handleInput(selection);
+            menuSession.setScreen(menuSession.getNextScreen());
+        }
+        nextMenu = getNextMenu(menuSession, false);
+        log.info("Returning menu: " + nextMenu);
+        return nextMenu;
+    }
+
     private SessionBean getNextMenu(MenuSession menuSession, boolean redrawing) throws Exception {
 
         OptionsScreen nextScreen;
@@ -111,11 +128,9 @@ public class MenuController {
             }
             // We're looking at a case list or detail screen (probably)
             else if (nextScreen instanceof EntityScreen) {
-                if(((EntityScreen) nextScreen).getCurrentScreen() instanceof EntityListSubscreen) {
-                    menuResponseBean = generateEntityListScreen((EntityScreen) nextScreen);
-                } else if (((EntityScreen) nextScreen).getCurrentScreen() instanceof EntityDetailSubscreen){
-                    menuResponseBean = generateEntityDetailScreen((EntityScreen) nextScreen);
-                }
+                menuResponseBean = generateEntityScreen((EntityScreen) nextScreen);
+            } else{
+                throw new Exception("What screen are we on? " + nextScreen);
             }
             menuResponseBean.setSessionId(menuSession.getSessionId());
             return menuResponseBean;
@@ -126,14 +141,9 @@ public class MenuController {
         return new CommandListResponseBean(nextScreen);
     }
 
-    private EntityListResponseBean generateEntityListScreen(EntityScreen nextScreen){
-        return new EntityListResponseBean(nextScreen);
+    private EntityListResponse generateEntityScreen(EntityScreen nextScreen){
+        return new EntityListResponse(nextScreen);
     }
-
-    private EntityDetailResponseBean generateEntityDetailScreen(EntityScreen nextScreen){
-        return new EntityDetailResponseBean(nextScreen);
-    }
-
     private MenuSession getMenuSession(String sessionId) throws Exception {
         return new MenuSession(menuRepo.find(sessionId), restoreService, installService);
     }

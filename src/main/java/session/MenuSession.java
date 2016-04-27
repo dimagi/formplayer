@@ -8,6 +8,8 @@ import install.FormplayerConfigEngine;
 import objects.SerializableMenuSession;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
@@ -67,6 +69,8 @@ public class MenuSession {
     private String sessionId;
     private Screen screen;
     private String currentSelection;
+
+    Log log = LogFactory.getLog(MenuSession.class);
 
     public MenuSession(String username, String password, String domain, String appId,
                        String installReference, String serializedCommCareSession,
@@ -140,15 +144,8 @@ public class MenuSession {
     }
 
     public boolean handleInput(String input) throws CommCareSessionException {
-        boolean redrawing = screen.handleInputAndUpdateSession(sessionWrapper, input);
-        if(screen instanceof EntityScreen){
-            EntityScreen entityScreen = (EntityScreen) screen;
-            if(entityScreen.getCurrentScreen() instanceof EntityDetailSubscreen){
-                EntityDetailSubscreen entityDetailSubscreen = (EntityDetailSubscreen) entityScreen.getCurrentScreen();
-                currentSelection = input;
-            }
-        }
-        return redrawing;
+        log.info("Screen " + screen + " handling input " + input);
+        return screen.handleInputAndUpdateSession(sessionWrapper, input);
     }
     public Screen getNextScreen() throws CommCareSessionException {
         String next = sessionWrapper.getNeededData();
@@ -248,6 +245,10 @@ public class MenuSession {
         } else{
             return "dbs/"+appId;
         }
+    }
+
+    public void setScreen(Screen screen){
+        this.screen = screen;
     }
 
 

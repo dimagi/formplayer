@@ -4,6 +4,7 @@ import application.MenuController;
 import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.MenuSelectBean;
+import beans.MenuSelectRepeater;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import install.FormplayerConfigEngine;
@@ -166,6 +167,19 @@ public class BaseMenuTestClass {
                 post(urlPrepend(Constants.URL_MENU_SELECT))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(menuSelectBean)));
+        String resultString = selectResult.andReturn().getResponse().getContentAsString();
+        JSONObject ret = new JSONObject(resultString);
+        return ret;
+    }
+
+    public JSONObject selectMenuRepeat(String requestPath, String sessionId) throws Exception {
+        MenuSelectRepeater menuSelectRepeater = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), MenuSelectRepeater.class);
+        menuSelectRepeater.setSessionId(sessionId);
+        ResultActions selectResult = mockMvc.perform(
+                post(urlPrepend(Constants.URL_MENU_SELECT_REPEATER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(menuSelectRepeater)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
         JSONObject ret = new JSONObject(resultString);
         return ret;
