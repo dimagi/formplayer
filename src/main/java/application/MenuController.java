@@ -104,6 +104,39 @@ public class MenuController {
         return nextMenu;
     }
 
+    /**
+     * Make a a series of menu selections (as above, but can have multiple)
+     *
+     * @param sessionNavigationBean Give an installation code or path and a set of session selections
+     * @return A MenuResponseBean or a NewFormSessionResponse
+     * @throws Exception
+     */
+    @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
+    public SessionBean navigateSession(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
+        log.info("Navigate session with bean: " + sessionNavigationBean);
+        InstallRequest installRequest = new InstallRequest(sessionNavigationBean, restoreService, menuRepo, installService);
+
+        MenuSession menuSession = installRequest.getMenuSession();
+
+        String[] selections = sessionNavigationBean.getSelections();
+        SessionBean nextMenu = getNextMenu(menuSession, false);
+        if (selections == null){
+            log.info("Selections null, got next menu: " + nextMenu);
+            return nextMenu;
+        }
+        for(String selection: selections){
+            log.info("Selecting : " + selection);
+            menuSession.handleInput(selection);
+            menuSession.setScreen(menuSession.getNextScreen());
+            log.info("Next screen " + menuSession.getNextScreen());
+        }
+        nextMenu = getNextMenu(menuSession, false);
+        log.info("Returning menu: " + nextMenu);
+        return nextMenu;
+    }
+
+
+
     private SessionBean getNextMenu(MenuSession menuSession, boolean redrawing) throws Exception {
 
         OptionsScreen nextScreen;
@@ -120,7 +153,7 @@ public class MenuController {
             return menuSession.startFormEntry(sessionRepo);
         }
         else{
-            MenuSessionBean menuResponseBean = new MenuSessionBean();
+            MenuSessionBean menuResponseBean;
 
             // We're looking at a module or form menu
             if(nextScreen instanceof MenuScreen){

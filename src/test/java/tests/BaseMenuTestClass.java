@@ -5,6 +5,7 @@ import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.MenuSelectBean;
 import beans.MenuSelectRepeater;
+import beans.SessionNavigationBean;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import install.FormplayerConfigEngine;
@@ -94,7 +95,19 @@ public class BaseMenuTestClass {
         setupInstallServiceMock();
     }
 
-    private void setupInstallServiceMock() throws IOException {
+    private String resolveAppId(String ref){
+        log.info("Test resolving hack ref: " + ref);
+        String appId = ref.substring(ref.indexOf("app_id=") + "app_id=".length(),
+                ref.indexOf("#hack"));
+        log.info("Got appId: " + ref);
+        if(appId.equals("305d31c1457d6a41232fb52ecff038ff")){
+            ref = "apps/basic2/profile.ccpr";
+        }
+        log.info("Resolved ref: " + ref);
+        return ref;
+    }
+
+    protected void setupInstallServiceMock() throws IOException {
         try {
             doAnswer(new Answer<Object>() {
                 @Override
@@ -102,8 +115,10 @@ public class BaseMenuTestClass {
                     try {
                         Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
+                        if(ref.contains("#hack=commcare.ccz")){
+                            ref = resolveAppId(ref);
+                        }
                         String username = (String) args[1];
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         FormplayerConfigEngine engine = new FormplayerConfigEngine(username, "dbs");
                         String absolutePath = getTestResourcePath(ref);
                         if (absolutePath.endsWith(".ccpr")) {
@@ -148,7 +163,7 @@ public class BaseMenuTestClass {
         }).when(menuRepoMock).save(any(SerializableMenuSession.class));
     }
 
-    private String getTestResourcePath(String resourcePath){
+    protected String getTestResourcePath(String resourcePath){
         URL url = this.getClass().getClassLoader().getResource(resourcePath);
         File file = new File(url.getPath());
         return file.getAbsolutePath();
@@ -185,6 +200,18 @@ public class BaseMenuTestClass {
         return ret;
     }
 
+    public JSONObject sessionNavigate(String requestPath) throws Exception {
+        SessionNavigationBean sessionNavigationBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
+        ResultActions selectResult = mockMvc.perform(
+                post(urlPrepend(Constants.URL_MENU_NAVIGATION))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(sessionNavigationBean)));
+        String resultString = selectResult.andReturn().getResponse().getContentAsString();
+        JSONObject ret = new JSONObject(resultString);
+        return ret;
+    }
+
     public CommandListResponseBean doInstall(String requestPath) throws Exception {
         InstallRequestBean installRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
@@ -196,10 +223,5 @@ public class BaseMenuTestClass {
         CommandListResponseBean menuResponseBean = mapper.readValue(installResultString,
                 CommandListResponseBean.class);
         return menuResponseBean;
-    }
-
-    @After
-    public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder("doubledb");
     }
 }

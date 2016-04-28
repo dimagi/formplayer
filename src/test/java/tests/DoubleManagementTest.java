@@ -119,4 +119,15 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert newFormSessionResponse.getTree().length == 2;
     }
 
+    @Test
+    public void testNavigator() throws Exception {
+        SqlSandboxUtils.deleteDatabaseFolder("dbs");
+        JSONObject sessionNavigateResponse =
+                sessionNavigate("requests/navigators/navigator_0.json");
+        NewFormSessionResponse newFormSessionResponse =
+                mapper.readValue(sessionNavigateResponse.toString(), NewFormSessionResponse.class);
+        assert newFormSessionResponse.getTitle().equals("Update Parent");
+        assert newFormSessionResponse.getTree().length == 2;
+    }
+
 }

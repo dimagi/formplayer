@@ -83,7 +83,15 @@ public class MenuSession {
         this.appId = appId;
         this.installReference = installReference;
         this.auth = new BasicAuth(domainedUsername, password);
-        this.engine = installService.configureApplication(installReference, username, getDbPath());
+
+        System.out.println("Resolving reference: " + installReference);
+
+        if(installReference == null || installReference.equals("")){
+            this.installReference = getReferenceToLatest(appId);
+            System.out.println("Resolved reference: " + this.installReference);
+        }
+
+        this.engine = installService.configureApplication(this.installReference, username, getDbPath());
         this.currentSelection = currentSelection;
 
         if(sessionId == null){
@@ -103,6 +111,11 @@ public class MenuSession {
                 handleInput(currentSelection);
             }
         }
+    }
+
+    private String getReferenceToLatest(String appId) {
+        return "http://localhost:8000/a/" + this.domain +
+                "/apps/api/download_ccz/?app_id=" + appId + "#hack=commcare.ccz";
     }
 
     public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService,
@@ -145,7 +158,9 @@ public class MenuSession {
 
     public boolean handleInput(String input) throws CommCareSessionException {
         log.info("Screen " + screen + " handling input " + input);
-        return screen.handleInputAndUpdateSession(sessionWrapper, input);
+        boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
+        log.info("Screen "  + screen + " returning " + ret);
+        return ret;
     }
     public Screen getNextScreen() throws CommCareSessionException {
         String next = sessionWrapper.getNeededData();

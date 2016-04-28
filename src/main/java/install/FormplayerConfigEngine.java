@@ -57,6 +57,9 @@ public class FormplayerConfigEngine {
         File dbFolder = new File(dbPath);
         if(!dbFolder.exists()){
             dbFolder.mkdirs();
+        } else{
+            dbFolder.delete();
+            dbFolder.mkdirs();
         }
 
         PrototypeUtils.setupPrototypes();
