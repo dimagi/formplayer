@@ -10,7 +10,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
 import org.commcare.modern.process.FormRecordProcessorHelper;
-import org.commcare.util.cli.*;
+import org.commcare.util.cli.EntityScreen;
+import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.OptionsScreen;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -20,6 +22,7 @@ import repo.SessionRepo;
 import requests.InstallRequest;
 import requests.NewFormRequest;
 import services.InstallService;
+import services.LockService;
 import services.RestoreService;
 import services.XFormService;
 import session.FormSession;
@@ -29,6 +32,7 @@ import util.Constants;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Created by willpride on 1/12/16.
@@ -53,6 +57,9 @@ public class SessionController {
     @Autowired
     private InstallService installService;
 
+    @Autowired
+    private LockService formSessionLockSerivce;
+
     Log log = LogFactory.getLog(SessionController.class);
     ObjectMapper mapper = new ObjectMapper();
 
@@ -70,6 +77,7 @@ public class SessionController {
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
+        Lock sessionLock = getLockAndLock(answerQuestionBean);
         SerializableFormSession session = sessionRepo.find(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(session);
 
@@ -83,6 +91,7 @@ public class SessionController {
         AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
         responseBean.setSequenceId(formEntrySession.getSequenceId() + 1);
         log.info("Answer response: " + responseBean);
+        sessionLock.unlock();
         return responseBean;
     }
 
@@ -102,11 +111,13 @@ public class SessionController {
     @ResponseBody
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
         log.info("Submit form with bean: " + submitRequestBean);
+        Lock sessionLock = getLockAndLock(submitRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
         SubmitResponseBean submitResponseBean = new SubmitResponseBean(formEntrySession);
         log.info("Submit response bean: " + submitResponseBean);
+        sessionLock.unlock();
         return submitResponseBean;
     }
 
@@ -140,6 +151,7 @@ public class SessionController {
     @ResponseBody
     public RepeatResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         log.info("New repeat: " + newRepeatRequestBean);
+        Lock sessionLock = getLockAndLock(newRepeatRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
 
@@ -153,6 +165,7 @@ public class SessionController {
                 formEntrySession.getFormEntryModel());
         RepeatResponseBean repeatResponseBean = mapper.readValue(response.toString(), RepeatResponseBean.class);
         log.info("New response: " + repeatResponseBean);
+        sessionLock.unlock();
         return repeatResponseBean;
     }
 
@@ -160,6 +173,7 @@ public class SessionController {
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     public RepeatResponseBean deleteRepeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
+        Lock sessionLock = getLockAndLock(repeatRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.find(repeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
 
@@ -168,7 +182,7 @@ public class SessionController {
                 repeatRequestBean.getFormIndex());
 
         updateSession(formEntrySession, serializableFormSession);
-
+        sessionLock.unlock();
         return mapper.readValue(resp.toString(), RepeatResponseBean.class);
     }
 
@@ -289,6 +303,12 @@ public class SessionController {
         return errorReturn.toString();
     }
 
+    public Lock getLockAndLock(SessionBean sessionBean){
+        String sessionId = sessionBean.getSessionId();
+        Lock sessionLock =  formSessionLockSerivce.getLock(sessionId);
+        sessionLock.lock();
+        return sessionLock;
+    }
 
 
 }
