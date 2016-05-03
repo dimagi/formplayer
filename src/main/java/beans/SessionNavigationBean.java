@@ -19,6 +19,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     @Override
     public String toString() {
         return "SessionNavigationBean [selections="
-                + Arrays.toString(selections) + "]";
+                + Arrays.toString(selections) +  " parent="  + super.toString() + "]";
     }
 }

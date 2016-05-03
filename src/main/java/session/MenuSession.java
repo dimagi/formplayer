@@ -84,11 +84,8 @@ public class MenuSession {
         this.installReference = installReference;
         this.auth = new BasicAuth(domainedUsername, password);
 
-        System.out.println("Resolving reference: " + installReference);
-
         if(installReference == null || installReference.equals("")){
             this.installReference = getReferenceToLatest(appId);
-            System.out.println("Resolved reference: " + this.installReference);
         }
 
         this.engine = installService.configureApplication(this.installReference, username, getDbPath());
@@ -100,7 +97,7 @@ public class MenuSession {
             this.sessionId = sessionId;
         }
 
-        sandbox = CaseAPIs.restoreIfNotExists(domainedUsername, restoreService, domain, auth);
+        sandbox = CaseAPIs.restoreIfNotExists(username, restoreService, domain, auth);
         sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         if(serializedCommCareSession != null){
             restoreSessionFromStream(serializedCommCareSession);
@@ -219,7 +216,8 @@ public class MenuSession {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        FormSession formEntrySession = new FormSession(sandbox, formDef, "en", username, sessionData);
+        log.info("Start form entry with username: " + username + " domain " + domain);
+        FormSession formEntrySession = new FormSession(sandbox, formDef, "en", username, domain, sessionData);
         sessionRepo.save(formEntrySession.serialize());
         return new NewFormSessionResponse(formEntrySession);
     }

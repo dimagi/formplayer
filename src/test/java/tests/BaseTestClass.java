@@ -93,6 +93,7 @@ public class BaseTestClass {
                 serializableFormSession.setRestoreXml(toBeSaved.getRestoreXml());
                 serializableFormSession.setUsername(toBeSaved.getUsername());
                 serializableFormSession.setSessionData(toBeSaved.getSessionData());
+                serializableFormSession.setDomain(toBeSaved.getDomain());
                 return null;
             }
         }).when(sessionRepoMock).save(Matchers.any(SerializableFormSession.class));

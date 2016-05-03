@@ -65,6 +65,7 @@ public class FormController {
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = sessionRepo.find(answerQuestionBean.getSessionId());
+        log.info("Restored serialized session: " + session);
         FormSession formEntrySession = new FormSession(session);
 
         JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
@@ -188,7 +189,7 @@ public class FormController {
         log.info("SyncDb Request: " + syncRequest);
         syncRequest.setRestoreService(restoreService);
         String restoreXml = syncRequest.getRestoreXml();
-        CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), restoreXml);
+        CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), syncRequest.getDomain(), restoreXml);
         return new SyncDbResponseBean();
     }
 

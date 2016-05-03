@@ -15,6 +15,7 @@ public class SerializableFormSession implements Serializable{
     private String initLang;
     private int sequenceId;
     private Map<String, String> sessionData;
+    private String domain;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -47,7 +48,8 @@ public class SerializableFormSession implements Serializable{
 
     @Override
     public String toString(){
-        return "Session [id=" + id + ", instance=" + instanceXml + ", form=" + formXml + ", username=" + username + "]";
+        return "Session [id=" + id + ", username=" + username
+                + " domain=" + domain + ", instance=" + instanceXml + ", form=" + formXml +"]";
     }
 
     public String getFormXml() {
@@ -96,5 +98,13 @@ public class SerializableFormSession implements Serializable{
 
     public void setSessionData(Map<String, String> sessionData) {
         this.sessionData = sessionData;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 }

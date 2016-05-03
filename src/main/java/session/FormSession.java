@@ -5,6 +5,8 @@ import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.util.CommCarePlatform;
@@ -19,6 +21,7 @@ import org.javarosa.xform.parse.XFormParser;
 import org.json.JSONArray;
 import org.springframework.stereotype.Component;
 import util.PrototypeUtils;
+import util.StringUtils;
 
 import java.io.*;
 import java.util.Map;
@@ -37,6 +40,8 @@ import java.util.UUID;
 @Component
 public class FormSession {
 
+    Log log = LogFactory.getLog(FormSession.class);
+
     private FormDef formDef;
     private FormEntryModel formEntryModel;
     private FormEntryController formEntryController;
@@ -52,10 +57,14 @@ public class FormSession {
     String[] langs;
     String uuid;
     String username;
+    String domain;
+
     public FormSession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
         this.username = session.getUsername();
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
+        this.restoreXml = session.getRestoreXml();
+        this.domain = session.getDomain();
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, this.domain, restoreXml);
         this.sessionData = session.getSessionData();
         formDef = new FormDef();
         PrototypeUtils.setupPrototypes();
@@ -75,13 +84,14 @@ public class FormSession {
         getFormTree();
     }
 
-    public FormSession(String formXml, String restoreXml, String initLang, String username,
+    public FormSession(String formXml, String restoreXml, String initLang, String username, String domain,
                        Map<String, String> sessionData) throws Exception {
         this.formXml = formXml;
         this.restoreXml = restoreXml;
         this.username = username;
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, domain, restoreXml);
         this.sessionData = sessionData;
+        this.domain = domain;
         formDef = parseFormDef(formXml);
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -96,12 +106,13 @@ public class FormSession {
     }
 
     // Entry from menu selection. Assumes user has already been restored.
-    public FormSession(UserSandbox sandbox, FormDef formDef, String initLang, String username,
+    public FormSession(UserSandbox sandbox, FormDef formDef, String initLang, String username, String domain,
                        Map<String, String> sessionData) throws Exception {
         this.username = username;
         this.sessionData = sessionData;
         this.formDef = formDef;
         this.sandbox = sandbox;
+        this.domain = domain;
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
         formEntryController.setLanguage(initLang);
@@ -234,6 +245,12 @@ public class FormSession {
         serializableFormSession.setSequenceId(getSequenceId());
         serializableFormSession.setInitLang(getInitLang());
         serializableFormSession.setSessionData(getSessionData());
+        serializableFormSession.setDomain(getDomain());
+        serializableFormSession.setRestoreXml(getRestoreXml());
         return serializableFormSession;
+    }
+
+    public String getDomain() {
+        return domain;
     }
 }
