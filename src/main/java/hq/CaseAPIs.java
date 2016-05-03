@@ -24,6 +24,7 @@ public class CaseAPIs {
         if(db.exists()){
             return new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain);
         } else{
+            db.mkdirs();
             return RestoreUtils.restoreUser(username,UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain,  xml);
         }
     }
@@ -34,6 +35,7 @@ public class CaseAPIs {
         if(db.exists()){
             return new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain);
         } else{
+            db.mkdirs();
             String xml = restoreService.getRestoreXml(domain, auth);
             return RestoreUtils.restoreUser(username, UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain, xml);
         }

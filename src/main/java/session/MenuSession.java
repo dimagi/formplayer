@@ -16,10 +16,9 @@ import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.cli.CommCareSessionException;
-import org.commcare.util.cli.EntityDetailSubscreen;
 import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.Screen;
 import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.util.OrderedHashtable;
@@ -44,13 +43,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
  * primarily includes module and form navigation, along with case list/details and case selection. When ready,
  * this object will create and hand off flow control to a FormSession object, loading up the proper session data.
- *
+ * <p/>
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
  */
 @Component
@@ -66,7 +64,6 @@ public class MenuSession {
     String appId;
     @Value("${commcarehq.host}")
     String host;
-    private String sessionId;
     private Screen screen;
     private String currentSelection;
 
@@ -74,7 +71,7 @@ public class MenuSession {
 
     public MenuSession(String username, String password, String domain, String appId,
                        String installReference, String serializedCommCareSession,
-                       RestoreService restoreService, String sessionId, String currentSelection, InstallService installService) throws Exception {
+                       String currentSelection, InstallService installService, RestoreService restoreService) throws Exception {
         //TODO WSP: why host isn't host resolving?
         String domainedUsername = StringUtils.getFullUsername(username, domain, "commcarehq.org");
         this.username = username;
@@ -84,27 +81,21 @@ public class MenuSession {
         this.installReference = installReference;
         this.auth = new BasicAuth(domainedUsername, password);
 
-        if(installReference == null || installReference.equals("")){
+        if (installReference == null || installReference.equals("")) {
             this.installReference = getReferenceToLatest(appId);
         }
 
         this.engine = installService.configureApplication(this.installReference, username, getDbPath());
         this.currentSelection = currentSelection;
 
-        if(sessionId == null){
-            this.sessionId =  UUID.randomUUID().toString();
-        } else{
-            this.sessionId = sessionId;
-        }
-
         sandbox = CaseAPIs.restoreIfNotExists(username, restoreService, domain, auth);
         sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
-        if(serializedCommCareSession != null){
+        if (serializedCommCareSession != null) {
             restoreSessionFromStream(serializedCommCareSession);
         }
         screen = getNextScreen();
-        if(currentSelection != null){
-            if(screen instanceof EntityScreen){
+        if (currentSelection != null) {
+            if (screen instanceof EntityScreen) {
                 handleInput(currentSelection);
             }
         }
@@ -117,14 +108,20 @@ public class MenuSession {
 
     public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService,
                        InstallService installService) throws Exception {
-        this(serializableMenuSession.getUsername(), serializableMenuSession.getPassword(), serializableMenuSession.getDomain(), null,
-            serializableMenuSession.getInstallReference(), serializableMenuSession.getSerializedCommCareSession(), restoreService,
-                serializableMenuSession.getSessionId(), serializableMenuSession.getCurrentSelection(), installService);
+        this(serializableMenuSession.getUsername(),
+                serializableMenuSession.getPassword(),
+                serializableMenuSession.getDomain(),
+                null,
+                serializableMenuSession.getInstallReference(),
+                serializableMenuSession.getSerializedCommCareSession(),
+                serializableMenuSession.getCurrentSelection(),
+                installService,
+                restoreService);
 
     }
 
     private void restoreSessionFromStream(String serialiedCommCareSession) throws IOException, DeserializationException {
-        byte [] sessionBytes = Base64.decodeBase64(serialiedCommCareSession);
+        byte[] sessionBytes = Base64.decodeBase64(serialiedCommCareSession);
         SessionFrame restoredFrame = new SessionFrame();
         DataInputStream inputStream =
                 new DataInputStream(new ByteArrayInputStream(sessionBytes));
@@ -147,7 +144,6 @@ public class MenuSession {
         serializableMenuSession.setPassword(this.password);
         serializableMenuSession.setDomain(this.domain);
         serializableMenuSession.setInstallReference(this.installReference);
-        serializableMenuSession.setSessionId(this.sessionId);
         serializableMenuSession.setSerializedCommCareSession(this.getSerializedCommCareSession());
         serializableMenuSession.setCurrentSelection(this.currentSelection);
         return serializableMenuSession;
@@ -156,9 +152,10 @@ public class MenuSession {
     public boolean handleInput(String input) throws CommCareSessionException {
         log.info("Screen " + screen + " handling input " + input);
         boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
-        log.info("Screen "  + screen + " returning " + ret);
+        log.info("Screen " + screen + " returning " + ret);
         return ret;
     }
+
     public Screen getNextScreen() throws CommCareSessionException {
         String next = sessionWrapper.getNeededData();
 
@@ -203,10 +200,10 @@ public class MenuSession {
         }
     }
 
-    public HashMap<String, String> getSessionData(){
+    public HashMap<String, String> getSessionData() {
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
         HashMap<String, String> ret = new HashMap<String, String>();
-        for(String key: sessionData.keySet()){
+        for (String key : sessionData.keySet()) {
             ret.put(key, sessionData.get(key));
         }
         return ret;
@@ -222,45 +219,37 @@ public class MenuSession {
         return new NewFormSessionResponse(formEntrySession);
     }
 
-    public String[] getChoices(){
+    public String[] getChoices() {
         return screen.getOptions();
     }
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public String getSessionId() {
-        return this.sessionId;
-    }
-
     @Override
-    public String toString(){
-        return "MenuSession [sessionId=" + sessionId + " choices=" + Arrays.toString(getChoices()) + "]";
+    public String toString() {
+        return "MenuSession [choices=" + Arrays.toString(getChoices()) + "]";
     }
 
-    public Screen getCurrentScreen(){
+    public Screen getCurrentScreen() {
         return screen;
     }
 
-    public Map<Integer, String> getMenuOptions(){
+    public Map<Integer, String> getMenuOptions() {
         Map<Integer, String> ret = new HashMap<Integer, String>();
         String[] menuDisplayables = screen.getOptions();
-        for(int i = 0; i < menuDisplayables.length; i++){
+        for (int i = 0; i < menuDisplayables.length; i++) {
             ret.put(new Integer(i), menuDisplayables[i]);
         }
         return ret;
     }
 
-    private String getDbPath(){
-        if(appId == null){
+    private String getDbPath() {
+        if (appId == null) {
             return "dbs";
-        } else{
-            return "dbs/"+appId;
+        } else {
+            return "dbs/" + appId;
         }
     }
 
-    public void setScreen(Screen screen){
+    public void setScreen(Screen screen) {
         this.screen = screen;
     }
 

@@ -58,28 +58,6 @@ public class MenuController {
     }
 
     /**
-     * Make a menu selection, return a new Menu or a Form to display. This form will load a MenuSession object
-     * from persistence, make the selection, and update the record. If the selection began form entry, this will
-     * also create a new FormSession object.
-     *
-     * @param menuSelectBean Give the selection to be made on the current MenuSession
-     *                       (could be a module, form, or case selection)
-     * @return A MenuResponseBean or a NewFormSessionResponse
-     * @throws Exception
-     */
-    @ApiOperation(value = "Make the given menu selection and return the next set of options, or a form to play.")
-    @RequestMapping(value = Constants.URL_MENU_SELECT, method = RequestMethod.POST)
-    public SessionBean selectMenu(@RequestBody MenuSelectBean menuSelectBean) throws Exception {
-        log.info("Select Menu with bean: " + menuSelectBean);
-        MenuSession menuSession = getMenuSession(menuSelectBean.getSessionId());
-        boolean redrawing = menuSession.handleInput(menuSelectBean.getSelection());
-        menuRepo.save(menuSession.serialize());
-        SessionBean nextMenu = getNextMenu(menuSession, redrawing);
-        log.info("Returning menu: " + nextMenu);
-        return nextMenu;
-    }
-
-    /**
      * Make a a series of menu selections (as above, but can have multiple)
      *
      * @param menuSelectRepeater Give the selections to be made on the current MenuSession
@@ -165,7 +143,6 @@ public class MenuController {
             } else{
                 throw new Exception("What screen are we on? " + nextScreen);
             }
-            menuResponseBean.setSessionId(menuSession.getSessionId());
             return menuResponseBean;
         }
     }

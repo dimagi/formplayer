@@ -169,24 +169,6 @@ public class BaseMenuTestClass {
         return file.getAbsolutePath();
     }
 
-    public JSONObject selectMenu(String requestPath, String sessionId) throws Exception {
-        return selectMenu(requestPath, sessionId, "0");
-    }
-
-    public JSONObject selectMenu(String requestPath, String sessionId, String selection) throws Exception {
-        MenuSelectBean menuSelectBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), requestPath), MenuSelectBean.class);
-        menuSelectBean.setSessionId(sessionId);
-        menuSelectBean.setSelection(selection);
-        ResultActions selectResult = mockMvc.perform(
-                post(urlPrepend(Constants.URL_MENU_SELECT))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(menuSelectBean)));
-        String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        JSONObject ret = new JSONObject(resultString);
-        return ret;
-    }
-
     public JSONObject selectMenuRepeat(String requestPath, String sessionId) throws Exception {
         MenuSelectRepeater menuSelectRepeater = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), MenuSelectRepeater.class);
@@ -203,6 +185,18 @@ public class BaseMenuTestClass {
     public JSONObject sessionNavigate(String requestPath) throws Exception {
         SessionNavigationBean sessionNavigationBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
+        ResultActions selectResult = mockMvc.perform(
+                post(urlPrepend(Constants.URL_MENU_NAVIGATION))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(sessionNavigationBean)));
+        String resultString = selectResult.andReturn().getResponse().getContentAsString();
+        JSONObject ret = new JSONObject(resultString);
+        return ret;
+    }
+
+    public JSONObject sessionNavigate(String[] selections) throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setSelections(selections);
         ResultActions selectResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_MENU_NAVIGATION))
                         .contentType(MediaType.APPLICATION_JSON)

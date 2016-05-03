@@ -38,15 +38,11 @@ public class InstallTests extends BaseMenuTestClass {
         assert menuResponseBean.getCommands().length == 12;
         assert menuResponseBean.getTitle().equals("Basic Tests");
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Basic Form Tests");
-        String sessionId = menuResponseBean.getSessionId();
 
-        JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId);
-        JSONObject menuResponseObject2 =
-               selectMenu("requests/menu/menu_select.json", sessionId);
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"0", "0"});
 
-        assert menuResponseObject2.has("tree");
-        assert menuResponseObject2.has("title");
+        assert menuResponseObject.has("tree");
+        assert menuResponseObject.has("title");
 
     }
 
@@ -56,16 +52,11 @@ public class InstallTests extends BaseMenuTestClass {
         // setup files
         CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/install.json");
-        String sessionId = menuResponseBean.getSessionId();
 
-        JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId, "2");
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "0"});
 
-        JSONObject menuResponseObject2 =
-                selectMenu("requests/menu/menu_select.json", sessionId);
-
-        assert menuResponseObject2.has("tree");
-        assert menuResponseObject2.has("title");
+        assert menuResponseObject.has("tree");
+        assert menuResponseObject.has("title");
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
     }
 
@@ -78,16 +69,8 @@ public class InstallTests extends BaseMenuTestClass {
                 doInstall("requests/install/install.json");
         String sessionId = menuResponseBean.getSessionId();
 
-        JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId, "2");
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "6", ""});
 
-        JSONObject menuResponseObject2 =
-                selectMenu("requests/menu/menu_select.json", sessionId, "1");
-
-        JSONObject menuResponseObject3 =
-                selectMenu("requests/menu/menu_select.json", sessionId, "6");
-        JSONObject menuResponseObject4 =
-                selectMenu("requests/menu/menu_select.json", sessionId, "");
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         StorageManager.forceClear();
     }

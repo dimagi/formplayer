@@ -45,10 +45,9 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Parent");
         assert menuResponseBean.getCommands()[1].getDisplayText().equals("Child");
         assert menuResponseBean.getCommands()[2].getDisplayText().equals("Parent (2)");
-        String sessionId = menuResponseBean.getSessionId();
 
         JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId, "2");
+                sessionNavigate(new String[] {"2"});
 
         EntityListResponse entityListResponse =
                 mapper.readValue(menuResponseObject.toString(), EntityListResponse.class);
@@ -58,8 +57,7 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert entityListResponse.getAction() != null;
         assert entityListResponse.getAction().getText().equals("New Parent");
 
-        JSONObject actionResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId, "action 0");
+        JSONObject actionResponseObject = sessionNavigate(new String[] {"2", "action 0"});
 
         NewFormSessionResponse newFormSessionResponse =
                 mapper.readValue(actionResponseObject.toString(), NewFormSessionResponse.class);
@@ -78,10 +76,9 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Parent");
         assert menuResponseBean.getCommands()[1].getDisplayText().equals("Child");
         assert menuResponseBean.getCommands()[2].getDisplayText().equals("Parent (2)");
-        String sessionId = menuResponseBean.getSessionId();
 
         JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId, "2");
+                sessionNavigate(new String[] {"2"});
 
         EntityListResponse entityListResponse =
                 mapper.readValue(menuResponseObject.toString(), EntityListResponse.class);
