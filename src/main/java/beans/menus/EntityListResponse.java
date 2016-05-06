@@ -26,6 +26,8 @@ public class EntityListResponse extends MenuSessionBean {
     private DisplayElement action;
     private Style[] styles;
 
+    private int CASE_LENGTH_LIMIT = 50;
+
     public EntityListResponse(){}
 
     public EntityListResponse(EntityScreen nextScreen) {
@@ -44,7 +46,12 @@ public class EntityListResponse extends MenuSessionBean {
     }
 
     private void processEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec) {
-        entities = new Entity[references.size()];
+        Entity[] entities = generateEntities(screen, references, ec);
+
+    }
+
+    private Entity[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec){
+        Entity[] entities = new Entity[references.size()];
         int i = 0;
         for (TreeReference entity : references) {
             Entity newEntity = processEntity(entity, screen, ec);
@@ -52,6 +59,7 @@ public class EntityListResponse extends MenuSessionBean {
             entities[i] = newEntity;
             i++;
         }
+        return entities;
     }
 
     private Entity processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
