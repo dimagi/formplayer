@@ -30,7 +30,6 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
     @Override
     public void setUp() throws IOException {
         super.setUp();
-        SqlSandboxUtils.deleteDatabaseFolder("dbs");
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/parent_child.xml"));
     }
@@ -47,7 +46,7 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert menuResponseBean.getCommands()[2].getDisplayText().equals("Parent (2)");
 
         JSONObject menuResponseObject =
-                sessionNavigate(new String[] {"2"});
+                sessionNavigate(new String[] {"2"}, "doublemgmt");
 
         EntityListResponse entityListResponse =
                 mapper.readValue(menuResponseObject.toString(), EntityListResponse.class);
@@ -57,7 +56,7 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert entityListResponse.getAction() != null;
         assert entityListResponse.getAction().getText().equals("New Parent");
 
-        JSONObject actionResponseObject = sessionNavigate(new String[] {"2", "action 0"});
+        JSONObject actionResponseObject = sessionNavigate(new String[] {"2", "action 0"}, "doublemgmt");
 
         NewFormSessionResponse newFormSessionResponse =
                 mapper.readValue(actionResponseObject.toString(), NewFormSessionResponse.class);
@@ -78,7 +77,7 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert menuResponseBean.getCommands()[2].getDisplayText().equals("Parent (2)");
 
         JSONObject menuResponseObject =
-                sessionNavigate(new String[] {"2"});
+                sessionNavigate(new String[] {"2"}, "doublemgmt");
 
         EntityListResponse entityListResponse =
                 mapper.readValue(menuResponseObject.toString(), EntityListResponse.class);
@@ -95,30 +94,7 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
     }
 
     @Test
-    public void testRepeater() throws Exception {
-        // setup files
-        CommandListResponseBean menuResponseBean =
-                doInstall("requests/install/double_mgmt_install.json");
-        assert menuResponseBean.getCommands().length == 3;
-        assert menuResponseBean.getTitle().equals("Parent Child");
-        assert menuResponseBean.getCommands()[0].getDisplayText().equals("Parent");
-        assert menuResponseBean.getCommands()[1].getDisplayText().equals("Child");
-        assert menuResponseBean.getCommands()[2].getDisplayText().equals("Parent (2)");
-        String sessionId = menuResponseBean.getSessionId();
-
-        JSONObject repeaterResponseObject =
-                selectMenuRepeat("requests/repeaters/dbl_mgmt_repeat.json", sessionId);
-
-        NewFormSessionResponse newFormSessionResponse =
-                mapper.readValue(repeaterResponseObject.toString(), NewFormSessionResponse.class);
-
-        assert newFormSessionResponse.getTitle().equals("Register Parent");
-        assert newFormSessionResponse.getTree().length == 2;
-    }
-
-    @Test
     public void testNavigator() throws Exception {
-        SqlSandboxUtils.deleteDatabaseFolder("dbs");
         JSONObject sessionNavigateResponse =
                 sessionNavigate("requests/navigators/navigator_0.json");
         NewFormSessionResponse newFormSessionResponse =

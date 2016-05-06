@@ -19,11 +19,11 @@ import java.util.Map;
 public class InstallRequest {
     MenuSession menuSession;
 
-    public InstallRequest(InstallRequestBean bean, RestoreService restoreService,
-                          MenuRepo menuSessionRepo, InstallService installService) throws Exception {
+    public InstallRequest(InstallRequestBean bean,
+                          RestoreService restoreService,
+                          InstallService installService) throws Exception {
         this.menuSession = new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(), bean.getAppId(),
                 bean.getInstallReference(), null, null, installService, restoreService);
-        menuSessionRepo.save(menuSession.serialize());
     }
 
     public MenuSession getMenuSession(){

@@ -17,6 +17,7 @@ public class InstallServiceImpl implements InstallService {
     @Override
     public FormplayerConfigEngine configureApplication(String reference, String username, String dbPath) throws IOException, InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
         boolean alreadyInstalled = new File(dbPath).exists();
+        System.out.println("User: " + username + " dbpath: " + dbPath + " exists: " + alreadyInstalled);
         FormplayerConfigEngine engine = new FormplayerConfigEngine(username, dbPath);
         if(reference.endsWith(".ccz")){
             engine.initFromArchive(reference);

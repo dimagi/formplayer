@@ -52,9 +52,6 @@ public class BaseMenuTestClass {
     protected MockMvc mockMvc;
 
     @Autowired
-    protected MenuRepo menuRepoMock;
-
-    @Autowired
     protected SessionRepo sessionRepoMock;
 
     @Autowired
@@ -71,8 +68,6 @@ public class BaseMenuTestClass {
 
     protected ObjectMapper mapper;
 
-    final protected SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
-
     protected String urlPrepend(String string){
         return "/" + string;
     }
@@ -84,14 +79,12 @@ public class BaseMenuTestClass {
         Mockito.reset(sessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
-        Mockito.reset(menuRepoMock);
         Mockito.reset(installService);
         MockitoAnnotations.initMocks(this);
         mapper = new ObjectMapper();
         mockMvc = MockMvcBuilders.standaloneSetup(menuController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
-        setupMenuMock();
         setupInstallServiceMock();
     }
 
@@ -99,9 +92,17 @@ public class BaseMenuTestClass {
         log.info("Test resolving hack ref: " + ref);
         String appId = ref.substring(ref.indexOf("app_id=") + "app_id=".length(),
                 ref.indexOf("#hack"));
-        log.info("Got appId: " + ref);
-        if(appId.equals("305d31c1457d6a41232fb52ecff038ff")){
+        log.info("Got appId: " + appId);
+        if(appId.equals("doublemgmttestappid")){
             ref = "apps/basic2/profile.ccpr";
+        } else if(appId.equals("navigatorappid")){
+            ref = "apps/basic2/profile.ccpr";
+        } else if(appId.equals("casetestappid")){
+            ref = "apps/basic2/profile.ccpr";
+        } else if(appId.equals("createtestappid")){
+            ref = "archives/basic.ccz";
+        } else{
+            throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
         }
         log.info("Resolved ref: " + ref);
         return ref;
@@ -119,8 +120,10 @@ public class BaseMenuTestClass {
                             ref = resolveAppId(ref);
                         }
                         String username = (String) args[1];
-                        FormplayerConfigEngine engine = new FormplayerConfigEngine(username, "dbs");
+                        String path = (String) args[2];
+                        FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
                         String absolutePath = getTestResourcePath(ref);
+                        System.out.println("Init with path: " + absolutePath);
                         if (absolutePath.endsWith(".ccpr")) {
                             engine.initFromLocalFileResource(absolutePath);
                         } else if (absolutePath.endsWith(".ccz")) {
@@ -142,44 +145,16 @@ public class BaseMenuTestClass {
         }
     }
 
-    private void setupMenuMock() {
-        when(menuRepoMock.find(anyString())).thenReturn(serializableMenuSession);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
-                serializableMenuSession.setActions(toBeSaved.getActions());
-                serializableMenuSession.setUsername(toBeSaved.getUsername());
-                serializableMenuSession.setDomain(toBeSaved.getDomain());
-                serializableMenuSession.setActions(toBeSaved.getActions());
-                serializableMenuSession.setSessionId(toBeSaved.getSessionId());
-                serializableMenuSession.setInstallReference(toBeSaved.getInstallReference());
-                serializableMenuSession.setPassword(toBeSaved.getPassword());
-                serializableMenuSession.setSerializedCommCareSession(toBeSaved.getSerializedCommCareSession());
-                serializableMenuSession.setCurrentSelection(toBeSaved.getCurrentSelection());
-                return null;
-            }
-        }).when(menuRepoMock).save(any(SerializableMenuSession.class));
-    }
-
     protected String getTestResourcePath(String resourcePath){
-        URL url = this.getClass().getClassLoader().getResource(resourcePath);
-        File file = new File(url.getPath());
-        return file.getAbsolutePath();
-    }
-
-    public JSONObject selectMenuRepeat(String requestPath, String sessionId) throws Exception {
-        MenuSelectRepeater menuSelectRepeater = mapper.readValue
-                (FileUtils.getFile(this.getClass(), requestPath), MenuSelectRepeater.class);
-        menuSelectRepeater.setSessionId(sessionId);
-        ResultActions selectResult = mockMvc.perform(
-                post(urlPrepend(Constants.URL_MENU_SELECT_REPEATER))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(menuSelectRepeater)));
-        String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        JSONObject ret = new JSONObject(resultString);
-        return ret;
+        try {
+            URL url = this.getClass().getClassLoader().getResource(resourcePath);
+            File file = new File(url.getPath());
+            return file.getAbsolutePath();
+        } catch(NullPointerException npe){
+            log.error("Couldn't find resource at path " + resourcePath);
+            npe.printStackTrace();
+            throw npe;
+        }
     }
 
     public JSONObject sessionNavigate(String requestPath) throws Exception {
@@ -190,20 +165,21 @@ public class BaseMenuTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(sessionNavigationBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        JSONObject ret = new JSONObject(resultString);
-        return ret;
+        return new JSONObject(resultString);
     }
 
-    public JSONObject sessionNavigate(String[] selections) throws Exception {
+    public JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "testdomain");
+        sessionNavigationBean.setAppId(testName + "testappid");
+        sessionNavigationBean.setUsername(testName + "testusername");
         sessionNavigationBean.setSelections(selections);
         ResultActions selectResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_MENU_NAVIGATION))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(sessionNavigationBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        JSONObject ret = new JSONObject(resultString);
-        return ret;
+        return new JSONObject(resultString);
     }
 
     public CommandListResponseBean doInstall(String requestPath) throws Exception {

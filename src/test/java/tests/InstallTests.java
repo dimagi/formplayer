@@ -31,6 +31,22 @@ public class InstallTests extends BaseMenuTestClass {
     }
 
     @Test
+    public void testCaseCreate() throws Exception {
+        SqlSandboxUtils.deleteDatabaseFolder("dbs");
+        // setup files
+
+        CommandListResponseBean menuResponseBean =
+                doInstall("requests/install/install.json");
+
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "0"}, "create");
+
+        assert menuResponseObject.has("tree");
+        assert menuResponseObject.has("title");
+        SqlSandboxUtils.deleteDatabaseFolder("dbs");
+    }
+
+
+    @Test
     public void testNewForm() throws Exception {
         // setup files
         CommandListResponseBean menuResponseBean =
@@ -39,37 +55,22 @@ public class InstallTests extends BaseMenuTestClass {
         assert menuResponseBean.getTitle().equals("Basic Tests");
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Basic Form Tests");
 
-        JSONObject menuResponseObject = sessionNavigate(new String[] {"0", "0"});
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"0", "0"}, "case");
 
         assert menuResponseObject.has("tree");
         assert menuResponseObject.has("title");
 
     }
-
-
-    @Test
-    public void testCaseCreate() throws Exception {
-        // setup files
-        CommandListResponseBean menuResponseBean =
-                doInstall("requests/install/install.json");
-
-        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "0"});
-
-        assert menuResponseObject.has("tree");
-        assert menuResponseObject.has("title");
-        SqlSandboxUtils.deleteDatabaseFolder("dbs");
-    }
-
 
     @Test
     public void testCaseSelect() throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         // setup files
         CommandListResponseBean menuResponseBean =
-                doInstall("requests/install/install.json");
+                doInstall("requests/install/case_create_install.json");
         String sessionId = menuResponseBean.getSessionId();
 
-        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "6", ""});
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "6", ""}, "case");
 
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         StorageManager.forceClear();

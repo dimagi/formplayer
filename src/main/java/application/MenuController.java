@@ -22,6 +22,8 @@ import session.MenuSession;
 import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by willpride on 1/12/16.
@@ -31,9 +33,6 @@ import javax.servlet.http.HttpServletRequest;
 @EnableAutoConfiguration
 @CrossOrigin(origins = "http://localhost:8000")
 public class MenuController {
-
-    @Autowired
-    private MenuRepo menuRepo;
 
     @Autowired
     private RestoreService restoreService;
@@ -50,36 +49,11 @@ public class MenuController {
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     public SessionBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
         log.info("Received install request: " + installRequestBean);
-        InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, menuRepo, installService);
+        InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, installService);
         SessionBean response = getNextMenu(installRequest.getMenuSession(), true);
         response.setSequenceId(1);
         log.info("Returning install response: " + response);
         return response;
-    }
-
-    /**
-     * Make a a series of menu selections (as above, but can have multiple)
-     *
-     * @param menuSelectRepeater Give the selections to be made on the current MenuSession
-     *                             (could be a module, form, or case selection)
-     * @return A MenuResponseBean or a NewFormSessionResponse
-     * @throws Exception
-     */
-    @ApiOperation(value = "Make the given menu selection and return the next set of options, or a form to play.")
-    @RequestMapping(value = Constants.URL_MENU_SELECT_REPEATER, method = RequestMethod.POST)
-    public SessionBean selectMenuRepeater(@RequestBody MenuSelectRepeater menuSelectRepeater) throws Exception {
-        log.info("Select Menu with bean: " + menuSelectRepeater);
-        MenuSession menuSession = getMenuSession(menuSelectRepeater.getSessionId());
-        String[] selections = menuSelectRepeater.getSelections();
-        SessionBean nextMenu = getNextMenu(menuSession, false);
-        log.info("Got next menu: " + nextMenu);
-        for(String selection: selections){
-            menuSession.handleInput(selection);
-            menuSession.setScreen(menuSession.getNextScreen());
-        }
-        nextMenu = getNextMenu(menuSession, false);
-        log.info("Returning menu: " + nextMenu);
-        return nextMenu;
     }
 
     /**
@@ -92,21 +66,27 @@ public class MenuController {
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
     public SessionBean navigateSession(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
         log.info("Navigate session with bean: " + sessionNavigationBean);
-        InstallRequest installRequest = new InstallRequest(sessionNavigationBean, restoreService, menuRepo, installService);
-
+        InstallRequest installRequest = new InstallRequest(sessionNavigationBean, restoreService, installService);
         MenuSession menuSession = installRequest.getMenuSession();
-
         String[] selections = sessionNavigationBean.getSelections();
         SessionBean nextMenu = getNextMenu(menuSession, false);
         if (selections == null){
             log.info("Selections null, got next menu: " + nextMenu);
             return nextMenu;
         }
-        for(String selection: selections){
+        for(String selection: selections) {
             log.info("Selecting : " + selection);
             menuSession.handleInput(selection);
+            log.info("Current screen: " + menuSession.getCurrentScreen() +
+                    " options: " + Arrays.toString(menuSession.getCurrentScreen().getOptions()));
+            Screen nextScreen = menuSession.getNextScreen();
+            if (nextScreen != null){
+                log.info("Next Screen: " + nextScreen + " options: " + Arrays.toString(nextScreen.getOptions()));
+            }
+            else{
+                log.info("Next screen null, start form entry.");
+            }
             menuSession.setScreen(menuSession.getNextScreen());
-            log.info("Next screen " + menuSession.getNextScreen());
         }
         nextMenu = getNextMenu(menuSession, false);
         log.info("Returning menu: " + nextMenu);
@@ -153,9 +133,6 @@ public class MenuController {
 
     private EntityListResponse generateEntityScreen(EntityScreen nextScreen){
         return new EntityListResponse(nextScreen);
-    }
-    private MenuSession getMenuSession(String sessionId) throws Exception {
-        return new MenuSession(menuRepo.find(sessionId), restoreService, installService);
     }
 
     @ExceptionHandler(Exception.class)
