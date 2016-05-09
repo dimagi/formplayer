@@ -13,6 +13,7 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
 import util.SessionUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -129,5 +130,11 @@ public class EntityListResponse extends MenuSessionBean {
 
     public void setAction(DisplayElement action) {
         this.action = action;
+    }
+
+    @Override
+    public String toString(){
+        return "EntityListResponse Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
+                ", action=" + action + " parent=" + super.toString();
     }
 }
