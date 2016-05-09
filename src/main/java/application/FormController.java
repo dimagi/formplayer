@@ -15,15 +15,11 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
-import repo.MenuRepo;
 import repo.SessionRepo;
-import requests.InstallRequest;
 import requests.NewFormRequest;
-import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
 import session.FormSession;
-import session.MenuSession;
 import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;

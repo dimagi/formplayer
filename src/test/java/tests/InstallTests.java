@@ -68,9 +68,10 @@ public class InstallTests extends BaseMenuTestClass {
         // setup files
         CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/case_create_install.json");
-        String sessionId = menuResponseBean.getSessionId();
 
         JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "6", ""}, "case");
+
+        System.out.println("menu Response Object: " + menuResponseObject);
 
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         StorageManager.forceClear();

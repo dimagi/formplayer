@@ -1,11 +1,9 @@
 package beans.menus;
 
-import beans.SessionBean;
-
 /**
  * Created by willpride on 4/13/16.
  */
-public class MenuSessionBean extends SessionBean {
+public class MenuBean {
 
     private String title;
 
@@ -19,6 +17,6 @@ public class MenuSessionBean extends SessionBean {
 
     @Override
     public String toString(){
-        return "MenuSessionBean [title=" + title + ", SessionBean= " + super.toString() + "]";
+        return "MenuBean [title=" + title + "]";
     }
 }

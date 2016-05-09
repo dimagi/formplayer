@@ -2,6 +2,7 @@ package auth;
 
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.http.HttpHeaders;
+import util.StringUtils;
 
 import java.nio.charset.Charset;
 
@@ -11,9 +12,13 @@ import java.nio.charset.Charset;
 public class BasicAuth implements HqAuth {
     String username;
     String password;
+    String domain;
+    String host;
 
-    public BasicAuth(String username, String password ){
+    public BasicAuth(String username, String domain, String host, String password ){
         this.username = username;
+        this.domain = domain;
+        this.host = host;
         this.password = password;
     }
 
@@ -21,7 +26,7 @@ public class BasicAuth implements HqAuth {
     public HttpHeaders getAuthHeaders() {
         return new HttpHeaders(){
             {
-                String auth = username + ":" + password;
+                String auth = StringUtils.getFullUsername(username, domain, host) + ":" + password;
                 byte[] encodedAuth = Base64.encodeBase64(
                         auth.getBytes(Charset.forName("US-ASCII")) );
                 String authHeader = "Basic " + new String( encodedAuth );

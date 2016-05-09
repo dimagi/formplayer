@@ -3,13 +3,11 @@ package beans.menus;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.util.cli.EntityDetailSubscreen;
-import org.commcare.util.cli.EntityScreen;
-import util.SessionUtils;
 
 /**
  * Created by willpride on 4/13/16.
  */
-public class EntityDetailResponse extends MenuSessionBean{
+public class EntityDetailResponse extends MenuBean {
     private Object[] details;
     private Style[] styles;
     private String[] headers;

@@ -1,16 +1,10 @@
 package requests;
 
 import beans.InstallRequestBean;
-import beans.MenuResponseBean;
 import org.springframework.stereotype.Component;
-import repo.MenuRepo;
 import services.InstallService;
 import services.RestoreService;
 import session.MenuSession;
-import util.Constants;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by willpride on 2/4/16.
@@ -23,7 +17,7 @@ public class InstallRequest {
                           RestoreService restoreService,
                           InstallService installService) throws Exception {
         this.menuSession = new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), null, null, installService, restoreService);
+                bean.getInstallReference(), installService, restoreService);
     }
 
     public MenuSession getMenuSession(){
