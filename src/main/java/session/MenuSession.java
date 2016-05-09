@@ -86,6 +86,7 @@ public class MenuSession {
     public boolean handleInput(String input) throws CommCareSessionException {
         log.info("Screen " + screen + " handling input " + input);
         boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
+        screen = getNextScreen();
         log.info("Screen " + screen + " returning " + ret);
         return ret;
     }
@@ -143,32 +144,10 @@ public class MenuSession {
         return ret;
     }
 
-    public NewFormSessionResponse startFormEntry(SessionRepo sessionRepo) throws Exception {
+    public FormSession getFormEntrySession() throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        log.info("Start form entry with username: " + username + " domain " + domain);
-        FormSession formEntrySession = new FormSession(sandbox, formDef, "en", username, domain, sessionData);
-        sessionRepo.save(formEntrySession.serialize());
-        return new NewFormSessionResponse(formEntrySession);
+        return new FormSession(sandbox, formDef, "en", username, domain, sessionData);
     }
-
-    public String[] getChoices() {
-        return screen.getOptions();
-    }
-
-    @Override
-    public String toString() {
-        return "MenuSession [choices=" + Arrays.toString(getChoices()) + "]";
-    }
-
-    public Screen getCurrentScreen() {
-        return screen;
-    }
-
-    public void setScreen(Screen screen) {
-        this.screen = screen;
-    }
-
-
 }

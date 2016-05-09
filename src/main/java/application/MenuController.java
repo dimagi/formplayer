@@ -8,6 +8,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.suite.model.Menu;
 import org.commcare.util.cli.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import repo.SessionRepo;
 import requests.InstallRequest;
 import services.InstallService;
 import services.RestoreService;
+import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 
@@ -45,10 +47,9 @@ public class MenuController {
 
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
-    public Object performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
+    public Object installRequest(@RequestBody InstallRequestBean installRequestBean) throws Exception {
         log.info("Received install request: " + installRequestBean);
-        InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, installService);
-        Object response = getNextMenu(installRequest.getMenuSession());
+        Object response = getNextMenu(performInstall(installRequestBean));
         log.info("Returning install response: " + response);
         return response;
     }
@@ -63,8 +64,7 @@ public class MenuController {
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
     public Object navigateSession(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
         log.info("Navigate session with bean: " + sessionNavigationBean);
-        InstallRequest installRequest = new InstallRequest(sessionNavigationBean, restoreService, installService);
-        MenuSession menuSession = installRequest.getMenuSession();
+        MenuSession menuSession = performInstall(sessionNavigationBean);
         String[] selections = sessionNavigationBean.getSelections();
         Object nextMenu = getNextMenu(menuSession);
         if (selections == null){
@@ -73,25 +73,31 @@ public class MenuController {
         }
         for(String selection: selections) {
             menuSession.handleInput(selection);
-            menuSession.setScreen(menuSession.getNextScreen());
         }
         nextMenu = getNextMenu(menuSession);
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
     }
 
-
+    private MenuSession performInstall(InstallRequestBean bean) throws Exception {
+        if((bean.getAppId() == null || "".equals(bean.getAppId())) &&
+                bean.getInstallReference() == null || "".equals(bean.getInstallReference())){
+            throw new RuntimeException("Either app_id or install_reference must be non-null.");
+        }
+        return new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(), bean.getAppId(),
+                bean.getInstallReference(), installService, restoreService);
+    }
 
     private Object getNextMenu(MenuSession menuSession) throws Exception {
 
-        OptionsScreen nextScreen;
+        Screen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
         nextScreen = menuSession.getNextScreen();
 
         // No next menu screen? Start form entry!
         if (nextScreen == null){
-            return menuSession.startFormEntry(sessionRepo);
+            return generateFormEntryScreen(menuSession);
         }
         else{
             MenuBean menuResponseBean;
@@ -116,6 +122,13 @@ public class MenuController {
 
     private EntityListResponse generateEntityScreen(EntityScreen nextScreen){
         return new EntityListResponse(nextScreen);
+    }
+
+    private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
+        FormSession formEntrySession = menuSession.getFormEntrySession();
+        sessionRepo.save(formEntrySession.serialize());
+        log.info("Start form entry with session: " + formEntrySession);
+        return new NewFormSessionResponse(formEntrySession);
     }
 
     @ExceptionHandler(Exception.class)
