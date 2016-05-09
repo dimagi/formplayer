@@ -8,14 +8,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.suite.model.Menu;
 import org.commcare.util.cli.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.SessionRepo;
-import requests.InstallRequest;
 import services.InstallService;
 import services.RestoreService;
 import session.FormSession;
@@ -23,7 +21,6 @@ import session.MenuSession;
 import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 
 /**
  * Created by willpride on 1/12/16.

@@ -2,7 +2,6 @@ package session;
 
 import auth.BasicAuth;
 import auth.HqAuth;
-import beans.NewFormSessionResponse;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
@@ -12,7 +11,10 @@ import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
-import org.commcare.util.cli.*;
+import org.commcare.util.cli.CommCareSessionException;
+import org.commcare.util.cli.EntityScreen;
+import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.util.OrderedHashtable;
@@ -23,11 +25,9 @@ import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import repo.SessionRepo;
 import services.InstallService;
 import services.RestoreService;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
