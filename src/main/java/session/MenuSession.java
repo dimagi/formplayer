@@ -17,6 +17,7 @@ import org.commcare.util.cli.MenuScreen;
 import org.commcare.util.cli.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
@@ -148,6 +149,7 @@ public class MenuSession {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        return new FormSession(sandbox, formDef, "en", username, domain, sessionData);
+        String postUrl = new PropertyManager().getSingularProperty("PostURL");
+        return new FormSession(sandbox, formDef, "en", username, domain, sessionData, postUrl);
     }
 }

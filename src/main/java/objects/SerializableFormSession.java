@@ -16,6 +16,7 @@ public class SerializableFormSession implements Serializable{
     private int sequenceId;
     private Map<String, String> sessionData;
     private String domain;
+    private String postUrl;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -106,5 +107,13 @@ public class SerializableFormSession implements Serializable{
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public void setPostUrl(String postUrl) {
+        this.postUrl = postUrl;
+    }
+
+    public String getPostUrl() {
+        return postUrl;
     }
 }

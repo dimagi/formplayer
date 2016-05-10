@@ -9,7 +9,7 @@ import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
-import org.commcare.modern.process.FormRecordProcessorHelper;
+import org.commcare.api.process.FormRecordProcessorHelper;
 import org.commcare.util.cli.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
