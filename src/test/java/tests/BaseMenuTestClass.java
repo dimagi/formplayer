@@ -94,6 +94,8 @@ public class BaseMenuTestClass {
             ref = "apps/basic2/profile.ccpr";
         } else if(appId.equals("createtestappid")){
             ref = "archives/basic.ccz";
+        } else if(appId.equals("casemediaappid")){
+            ref = "archives/casemedia.ccz";
         } else{
             throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
         }

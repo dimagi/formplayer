@@ -142,9 +142,19 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert newFormSessionResponse.getTitle().equals("Update Parent");
         assert newFormSessionResponse.getTree().length == 2;
 
+    }
 
-
-
+    @Test
+    public void testMenuMedia() throws Exception {
+        CommandListResponseBean menuResponseBean =
+                doInstall("requests/install/case_media.json");
+        assert menuResponseBean.getCommands().length == 2;
+        assert menuResponseBean.getCommands()[0].getDisplayText().equals("Registration");
+        assert menuResponseBean.getCommands()[0].getAudioUri().equals("jr://file/commcare/audio/module0_form0_en.mp3");
+        assert menuResponseBean.getCommands()[0].getImageUri().equals("jr://file/commcare/image/module0_form0_en.png");
+        assert menuResponseBean.getCommands()[1].getDisplayText().equals("Follow Up");
+        assert menuResponseBean.getCommands()[1].getAudioUri().equals("jr://file/commcare/audio/module1_en.mp3");
+        assert menuResponseBean.getCommands()[1].getImageUri().equals("jr://file/commcare/image/module1_en.png");
     }
 
 }
