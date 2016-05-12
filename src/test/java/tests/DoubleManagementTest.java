@@ -157,4 +157,21 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert menuResponseBean.getCommands()[1].getImageUri().equals("jr://file/commcare/image/module1_en.png");
     }
 
+    @Test
+    public void testEndOfFormNavigation() throws Exception {
+        JSONObject parentResponseObject = sessionNavigate(new String[] {"0"}, "endform");
+        CommandListResponseBean response0 =
+                mapper.readValue(parentResponseObject.toString(), CommandListResponseBean.class);
+        System.out.println("response 0: " + response0);
+        assert response0.getCommands().length == 2;
+        assert response0.getCommands()[0].getDisplayText().equals("Link to Module 1");
+        assert response0.getCommands()[1].getDisplayText().equals("Link to Module Menu");
+
+        JSONObject formResponseObject = sessionNavigate(new String[] {"0", "0"}, "endform");
+        NewFormSessionResponse newFormSessionResponse =
+                mapper.readValue(formResponseObject.toString(), NewFormSessionResponse.class);
+        assert newFormSessionResponse.getTitle().equals("Link to Module 1");
+        assert newFormSessionResponse.getTree().length == 4;
+    }
+
 }

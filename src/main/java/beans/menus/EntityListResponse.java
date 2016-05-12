@@ -2,11 +2,13 @@ package beans.menus;
 
 import io.swagger.annotations.ApiModel;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.util.cli.EntityDetailSubscreen;
+import org.commcare.util.cli.EntityListSubscreen;
 import org.commcare.util.cli.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
@@ -24,6 +26,8 @@ public class EntityListResponse extends MenuBean {
     private Entity[] entities;
     private DisplayElement action;
     private Style[] styles;
+    private String[] headers;
+    private int[] widthHints;
 
     public EntityListResponse(){}
 
@@ -36,6 +40,13 @@ public class EntityListResponse extends MenuBean {
         processEntities(nextScreen, references, ec);
         processStyles(shortDetail);
         processActions(shortDetail, nextScreen.getSession());
+        processHeader(shortDetail, ec);
+    }
+
+    private void processHeader(Detail shortDetail, EvaluationContext ec) {
+        Pair<String[], int[]> mPair = EntityListSubscreen.getHeaders(shortDetail, ec);
+        headers = mPair.first;
+        widthHints = mPair.second;
     }
 
     private void processTitle(SessionWrapper session) {
@@ -132,7 +143,24 @@ public class EntityListResponse extends MenuBean {
 
     @Override
     public String toString(){
-        return "EntityListResponse Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
+        return "EntityListResponse headers=" + Arrays.toString(headers) + " width hints=" + Arrays.toString(widthHints)
+        + " Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
                 ", action=" + action + " parent=" + super.toString();
+    }
+
+    public String[] getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(String[] headers) {
+        this.headers = headers;
+    }
+
+    public int[] getWidthHints() {
+        return widthHints;
+    }
+
+    public void setWidthHints(int[] widthHints) {
+        this.widthHints = widthHints;
     }
 }

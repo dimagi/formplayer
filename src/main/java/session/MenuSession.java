@@ -48,7 +48,7 @@ public class MenuSession {
     private String username;
     private String domain;
     @Value("${commcarehq.host}")
-    private String host;
+    private String host = "commcarehq.org";
     private Screen screen;
 
     Log log = LogFactory.getLog(MenuSession.class);
