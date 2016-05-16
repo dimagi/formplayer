@@ -71,7 +71,7 @@ public class MenuController {
         for(String selection: selections) {
             menuSession.handleInput(selection);
         }
-        nextMenu = getNextMenu(menuSession);
+        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset());
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
     }
@@ -86,6 +86,10 @@ public class MenuController {
     }
 
     private Object getNextMenu(MenuSession menuSession) throws Exception {
+        return getNextMenu(menuSession, 0);
+    }
+
+    private Object getNextMenu(MenuSession menuSession, int offset) throws Exception {
 
         Screen nextScreen;
 
@@ -105,7 +109,7 @@ public class MenuController {
             }
             // We're looking at a case list or detail screen (probably)
             else if (nextScreen instanceof EntityScreen) {
-                menuResponseBean = generateEntityScreen((EntityScreen) nextScreen);
+                menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset);
             } else{
                 throw new Exception("What screen are we on? " + nextScreen);
             }
@@ -117,8 +121,8 @@ public class MenuController {
         return new CommandListResponseBean(nextScreen);
     }
 
-    private EntityListResponse generateEntityScreen(EntityScreen nextScreen){
-        return new EntityListResponse(nextScreen);
+    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, int offset){
+        return new EntityListResponse(nextScreen, offset);
     }
 
     private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {

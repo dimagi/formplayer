@@ -29,17 +29,24 @@ public class EntityListResponse extends MenuBean {
     private String[] headers;
     private int[] widthHints;
 
-    private int CASE_LENGTH_LIMIT = 50;
+    private int pageCount;
+    private int currentPage;
+
+    public static final int CASE_LENGTH_LIMIT = 10;
 
     public EntityListResponse(){}
 
-    public EntityListResponse(EntityScreen nextScreen) {
+    public EntityListResponse(EntityScreen nextScreen){
+        this(nextScreen, 0);
+    }
+
+    public EntityListResponse(EntityScreen nextScreen, int offset) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
         EvaluationContext ec = session.getEvaluationContext();
         Vector<TreeReference> references = ec.expandReference(((EntityDatum)session.getNeededDatum()).getNodeset());
         processTitle(session);
-        processEntities(nextScreen, references, ec);
+        processEntities(nextScreen, references, ec, offset);
         processStyles(shortDetail);
         processActions(shortDetail, nextScreen.getSession());
         processHeader(shortDetail, ec);
@@ -55,9 +62,27 @@ public class EntityListResponse extends MenuBean {
         setTitle(SessionUtils.getBestTitle(session));
     }
 
-    private void processEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec) {
-        Entity[] entities = generateEntities(screen, references, ec);
+    private void processEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec, int offset) {
+        Entity[] allEntities = generateEntities(screen, references, ec);
+        if(allEntities.length > CASE_LENGTH_LIMIT){
+            // we're doing pagination
+            int start = offset;
+            int end = offset + CASE_LENGTH_LIMIT;
+            int length = CASE_LENGTH_LIMIT;
+            if(end > allEntities.length){
+                end = allEntities.length;
+                length = end - start;
+            }
+            entities = new Entity[length];
+            for(int i = start; i< end; i++){
+                entities[i-offset] = allEntities[i];
+            }
 
+            setPageCount((int)Math.ceil((double)allEntities.length/CASE_LENGTH_LIMIT));
+            setCurrentPage(offset/CASE_LENGTH_LIMIT);
+        } else{
+            entities = allEntities.clone();
+        }
     }
 
     private Entity[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec){
@@ -170,5 +195,21 @@ public class EntityListResponse extends MenuBean {
 
     public void setWidthHints(int[] widthHints) {
         this.widthHints = widthHints;
+    }
+
+    public int getPageCount() {
+        return pageCount;
+    }
+
+    public void setPageCount(int pageCount) {
+        this.pageCount = pageCount;
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
     }
 }

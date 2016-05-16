@@ -1,5 +1,7 @@
 package beans.menus;
 
+import java.util.Arrays;
+
 /**
  * Created by willpride on 4/13/16.
  */
@@ -30,5 +32,10 @@ public class Entity {
 
     public void setDetail(EntityDetailResponse detail) {
         this.detail = detail;
+    }
+
+    @Override
+    public String toString(){
+        return "Entity at index=" + index + ", data=" + Arrays.toString(data);
     }
 }

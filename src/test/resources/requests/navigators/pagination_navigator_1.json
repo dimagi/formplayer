@@ -3,6 +3,7 @@
   "password": "loadpass",
   "domain": "loaddomain",
   "app_id": "loadappid",
-  "selections": [1],
-  "install_reference": "archives/loadtest.ccz"
+  "selections": [2, 1],
+  "offset": 70,
+  "install_reference": "archives/basic.ccz"
 }
