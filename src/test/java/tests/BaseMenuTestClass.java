@@ -3,19 +3,13 @@ package tests;
 import application.MenuController;
 import auth.HqAuth;
 import beans.InstallRequestBean;
-import beans.MenuSelectBean;
-import beans.MenuSelectRepeater;
 import beans.SessionNavigationBean;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import install.FormplayerConfigEngine;
-import objects.SerializableMenuSession;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.persistence.SqlSandboxUtils;
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
@@ -27,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import repo.MenuRepo;
 import repo.SessionRepo;
 import services.InstallService;
 import services.RestoreService;
@@ -93,14 +86,18 @@ public class BaseMenuTestClass {
         String appId = ref.substring(ref.indexOf("app_id=") + "app_id=".length(),
                 ref.indexOf("#hack"));
         log.info("Got appId: " + appId);
-        if(appId.equals("doublemgmttestappid")){
+        if(appId.equals("doublemgmtappid")){
             ref = "apps/basic2/profile.ccpr";
         } else if(appId.equals("navigatorappid")){
             ref = "apps/basic2/profile.ccpr";
-        } else if(appId.equals("casetestappid")){
+        } else if(appId.equals("caseappid")){
             ref = "apps/basic2/profile.ccpr";
-        } else if(appId.equals("createtestappid")){
+        } else if(appId.equals("createappid")){
             ref = "archives/basic.ccz";
+        } else if(appId.equals("casemediaappid")){
+            ref = "archives/casemedia.ccz";
+        } else if(appId.equals("endformappid")){
+            ref = "archives/formnav.ccz";
         } else{
             throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
         }
@@ -170,9 +167,9 @@ public class BaseMenuTestClass {
 
     public JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
-        sessionNavigationBean.setDomain(testName + "testdomain");
-        sessionNavigationBean.setAppId(testName + "testappid");
-        sessionNavigationBean.setUsername(testName + "testusername");
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         ResultActions selectResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_MENU_NAVIGATION))

@@ -2,7 +2,6 @@ package utils;
 
 import auth.HqAuth;
 import objects.SerializableFormSession;
-import objects.SerializableMenuSession;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -12,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
-import repo.MenuRepo;
 import repo.SessionRepo;
 import services.InstallService;
 import services.RestoreService;
@@ -28,7 +26,6 @@ import static org.mockito.Mockito.when;
 public class TestContext {
 
     public static SerializableFormSession serializableFormSession;
-    public static SerializableMenuSession serializableMenuSession;
  
     @Bean
     public MessageSource messageSource() {
@@ -65,23 +62,6 @@ public class TestContext {
             }
         }).when(sessionRepo).save(any(SerializableFormSession.class));
         return sessionRepo;
-    }
-
-    @Bean
-    public MenuRepo menuRepo() {
-        MenuRepo menuRepo = Mockito.mock(MenuRepo.class);
-        when(menuRepo.find(anyString())).thenReturn(serializableMenuSession);
-        ArgumentCaptor<SerializableMenuSession> argumentCaptor = ArgumentCaptor.forClass(SerializableMenuSession.class);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
-                serializableMenuSession.setActions(toBeSaved.getActions());
-                return null;
-            }
-        }).when(menuRepo).save(any(SerializableMenuSession.class));
-        return menuRepo;
     }
 
     @Bean

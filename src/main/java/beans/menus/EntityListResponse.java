@@ -2,29 +2,32 @@ package beans.menus;
 
 import io.swagger.annotations.ApiModel;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.util.cli.EntityDetailSubscreen;
+import org.commcare.util.cli.EntityListSubscreen;
 import org.commcare.util.cli.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
 import util.SessionUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Vector;
 
 /**
  * Created by willpride on 4/13/16.
  */
 @ApiModel("Entity List Response")
-public class EntityListResponse extends MenuSessionBean {
+public class EntityListResponse extends MenuBean {
     private Entity[] entities;
     private DisplayElement action;
     private Style[] styles;
+    private String[] headers;
+    private int[] widthHints;
 
     private int CASE_LENGTH_LIMIT = 50;
 
@@ -39,6 +42,13 @@ public class EntityListResponse extends MenuSessionBean {
         processEntities(nextScreen, references, ec);
         processStyles(shortDetail);
         processActions(shortDetail, nextScreen.getSession());
+        processHeader(shortDetail, ec);
+    }
+
+    private void processHeader(Detail shortDetail, EvaluationContext ec) {
+        Pair<String[], int[]> mPair = EntityListSubscreen.getHeaders(shortDetail, ec);
+        headers = mPair.first;
+        widthHints = mPair.second;
     }
 
     private void processTitle(SessionWrapper session) {
@@ -137,5 +147,28 @@ public class EntityListResponse extends MenuSessionBean {
 
     public void setAction(DisplayElement action) {
         this.action = action;
+    }
+
+    @Override
+    public String toString(){
+        return "EntityListResponse headers=" + Arrays.toString(headers) + " width hints=" + Arrays.toString(widthHints)
+        + " Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
+                ", action=" + action + " parent=" + super.toString();
+    }
+
+    public String[] getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(String[] headers) {
+        this.headers = headers;
+    }
+
+    public int[] getWidthHints() {
+        return widthHints;
+    }
+
+    public void setWidthHints(int[] widthHints) {
+        this.widthHints = widthHints;
     }
 }

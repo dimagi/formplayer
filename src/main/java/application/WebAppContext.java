@@ -5,10 +5,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.mail.MailSender;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -17,9 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
-import repo.MenuRepo;
 import repo.SessionRepo;
-import repo.impl.MenuImpl;
 import repo.impl.SessionImpl;
 import services.InstallService;
 import services.RestoreService;
@@ -109,10 +105,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         return new SessionImpl();
     }
 
-    @Bean
-    public MenuRepo menuRepo(){
-        return new MenuImpl();
-    }
     @Bean
     public XFormService xFormService(){
         return new XFormServiceImpl();

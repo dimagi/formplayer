@@ -46,7 +46,6 @@ public class FormplayerConfigEngine {
     private ResourceTable updateTable;
     private ResourceTable recoveryTable;
     private CommCarePlatform platform;
-    private int fileuricount = 0;
     private ArchiveFileRoot mArchiveRoot;
     Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
@@ -174,45 +173,6 @@ public class FormplayerConfigEngine {
         return "jr://file/" + filePart;
     }
 
-    /**
-     * super, super hacky for now, gets a jar directory and loads language resources
-     * from it.
-     * @param pathToResources
-     */
-    public void addJarResources(String pathToResources) {
-        File resources = new File(pathToResources);
-        if(!resources.exists() && resources.isDirectory()) {
-            throw new RuntimeException("Couldn't find jar resources at " + resources.getAbsolutePath() + " . Please correct the path, or use the -nojarresources flag to skip loading jar resources.");
-        }
-
-        fileuricount++;
-        String jrroot = "extfile" + fileuricount;
-        ReferenceManager._().addReferenceFactory(new JavaFileRoot(new String[]{jrroot}, resources.getAbsolutePath()));
-
-        for(File file : resources.listFiles()) {
-            String name = file.getName();
-            if(name.endsWith("txt")) {
-                ResourceLocation location = new ResourceLocation(Resource.RESOURCE_AUTHORITY_LOCAL, "jr://" + jrroot + "/" + name);
-                Vector<ResourceLocation> locations = new Vector<ResourceLocation>();
-                locations.add(location);
-                if(!(name.lastIndexOf("_") < name.lastIndexOf("."))) {
-                    //skip it
-                } else {
-                    String locale = name.substring(name.lastIndexOf("_") + 1, name.lastIndexOf("."));
-                    Resource test = new Resource(-2, name, locations, "Internal Strings: " + locale);
-                    try {
-                        table.addResource(test, new LocaleFileInstaller(locale),null);
-                    } catch (StorageFullException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-            } else {
-                //we don't support other file types yet
-            }
-        }
-    }
-
     private void init(String profileRef) throws InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
         installAppFromReference(profileRef);
     }
@@ -273,87 +233,5 @@ public class FormplayerConfigEngine {
                 System.out.print(".");
             }
         }
-    };
-
-    public void attemptAppUpdate(boolean forceNew) {
-        ResourceTable global = table;
-
-        // Ok, should figure out what the state of this bad boy is.
-        Resource profileRef = global.getResourceWithId(CommCarePlatform.APP_PROFILE_RESOURCE_ID);
-
-        Profile profileObj = this.getPlatform().getCurrentProfile();
-
-        global.setStateListener(new QuickStateListener());
-
-        updateTable.setStateListener(new QuickStateListener());
-
-        // When profileRef points is http, add appropriate dev flags
-        String authRef = profileObj.getAuthReference();
-
-        try {
-            URL authUrl = new URL(authRef);
-
-            // profileRef couldn't be parsed as a URL, so don't worry
-            // about adding dev flags to the url's query
-
-            // If we want to be using/updating to the latest build of the
-            // app (instead of latest release), add it to the query tags of
-            // the profile reference
-            if (forceNew &&
-                    ("https".equals(authUrl.getProtocol()) ||
-                            "http".equals(authUrl.getProtocol()))) {
-                if (authUrl.getQuery() != null) {
-                    // If the profileRef url already have query strings
-                    // just add a new one to the end
-                    authRef = authRef + "&target=build";
-                } else {
-                    // otherwise, start off the query string with a ?
-                    authRef = authRef + "?target=build";
-                }
-            }
-        } catch (MalformedURLException e) {
-            System.out.print("Warning: Unrecognized URL format: " + authRef);
-        }
-
-
-        try {
-
-            // This populates the upgrade table with resources based on
-            // binary files, starting with the profile file. If the new
-            // profile is not a newer version, statgeUpgradeTable doesn't
-            // actually pull in all the new references
-
-            System.out.println("Checking for updates....");
-            ResourceManager resourceManager = new ResourceManager(platform, global, updateTable, recoveryTable);
-            resourceManager.stageUpgradeTable(authRef, true);
-            Resource newProfile = updateTable.getResourceWithId(CommCarePlatform.APP_PROFILE_RESOURCE_ID);
-            if (!newProfile.isNewer(profileRef)) {
-                System.out.println("Your app is up to date!");
-                return;
-            }
-
-            System.out.println("Update found. New Version: " + newProfile.getVersion());
-            System.out.print("Installing update");
-
-            // Replaces global table with temporary, or w/ recovery if
-            // something goes wrong
-            resourceManager.upgrade();
-        } catch(UnresolvedResourceException e) {
-            System.out.println("Update Failed! Couldn't find or install one of the remote resources");
-            e.printStackTrace();
-            return;
-        } catch(UnfullfilledRequirementsException e) {
-            System.out.println("Update Failed! This CLI host is incompatible with the app");
-            e.printStackTrace();
-            return;
-        } catch(Exception e) {
-            System.out.println("Update Failed! There is a problem with one of the resources");
-            e.printStackTrace();
-            return;
-        }
-
-        // Initializes app resources and the app itself, including doing a check to see if this
-        // app record was converted by the db upgrader
-        initEnvironment();
     }
 }

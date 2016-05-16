@@ -52,6 +52,7 @@ public class FormSession {
     private String initLang;
     private Map<String, String> sessionData;
     private FormplayerSessionWrapper sessionWrapper;
+    private String postUrl;
 
     String title;
     String[] langs;
@@ -66,6 +67,7 @@ public class FormSession {
         this.domain = session.getDomain();
         this.sandbox = CaseAPIs.restoreIfNotExists(username, this.domain, restoreXml);
         this.sessionData = session.getSessionData();
+        this.postUrl = session.getPostUrl();
         formDef = new FormDef();
         PrototypeUtils.setupPrototypes();
         deserializeFormDef(session.getFormXml());
@@ -107,12 +109,13 @@ public class FormSession {
 
     // Entry from menu selection. Assumes user has already been restored.
     public FormSession(UserSandbox sandbox, FormDef formDef, String initLang, String username, String domain,
-                       Map<String, String> sessionData) throws Exception {
+                       Map<String, String> sessionData, String postUrl) throws Exception {
         this.username = username;
         this.sessionData = sessionData;
         this.formDef = formDef;
         this.sandbox = sandbox;
         this.domain = domain;
+        this.postUrl = postUrl;
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
         formEntryController.setLanguage(initLang);
@@ -247,10 +250,19 @@ public class FormSession {
         serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setDomain(getDomain());
         serializableFormSession.setRestoreXml(getRestoreXml());
+        serializableFormSession.setPostUrl(getPostUrl());
         return serializableFormSession;
     }
 
     public String getDomain() {
         return domain;
+    }
+
+    public String getPostUrl() {
+        return postUrl;
+    }
+
+    public void setPostUrl(String postUrl) {
+        this.postUrl = postUrl;
     }
 }
