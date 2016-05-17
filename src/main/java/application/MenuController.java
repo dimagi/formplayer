@@ -55,7 +55,7 @@ public class MenuController {
      * Make a a series of menu selections (as above, but can have multiple)
      *
      * @param sessionNavigationBean Give an installation code or path and a set of session selections
-     * @return A MenuResponseBean or a NewFormSessionResponse
+     * @return A MenuBean or a NewFormSessionResponse
      * @throws Exception
      */
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
