@@ -169,7 +169,6 @@ public class FormplayerConfigEngine {
         ReferenceManager._().addReferenceFactory(new JavaFileRoot(rootPath));
 
         //Now build the testing reference we'll use
-        System.out.println("Returning file root: " + "jr://file/" + filePart);
         return "jr://file/" + filePart;
     }
 
