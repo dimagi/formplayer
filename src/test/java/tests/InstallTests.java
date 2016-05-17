@@ -71,8 +71,6 @@ public class InstallTests extends BaseMenuTestClass {
 
         JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "6", ""}, "case");
 
-        System.out.println("menu Response Object: " + menuResponseObject);
-
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         StorageManager.forceClear();
     }
