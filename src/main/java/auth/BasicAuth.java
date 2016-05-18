@@ -32,6 +32,6 @@ public class BasicAuth implements HqAuth {
 
     @Override
     public String toString(){
-        return "BasicAuth [username=" + username + ", password=" + password + "]";
+        return "BasicAuth [username=" + username + "]";
     }
 }

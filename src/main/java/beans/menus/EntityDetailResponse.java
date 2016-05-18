@@ -17,7 +17,7 @@ public class EntityDetailResponse extends MenuSessionBean{
     public EntityDetailResponse(){}
 
     public EntityDetailResponse(EntityDetailSubscreen entityScreen){
-        //TODO WSP Duh
+        //TODO Get correct details title?
         this.setTitle("Details");
         this.details = entityScreen.getData();
         this.headers = entityScreen.getHeaders();
