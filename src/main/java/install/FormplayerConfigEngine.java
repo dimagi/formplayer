@@ -65,7 +65,15 @@ public class FormplayerConfigEngine {
         recoveryTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
                 "RECOVERY_RESOURCE_TABLE", username, "dbs"));
 
+        setupStorageManager(username);
 
+        StorageManager.registerStorage(Profile.STORAGE_KEY, Profile.class);
+        StorageManager.registerStorage(Suite.STORAGE_KEY, Suite.class);
+        StorageManager.registerStorage(FormDef.STORAGE_KEY,FormDef.class);
+        StorageManager.registerStorage(FormInstance.STORAGE_KEY, FormInstance.class);
+    }
+
+    public static void setupStorageManager(final String username){
         //All of the below is on account of the fact that the installers
         //aren't going through a factory method to handle them differently
         //per device.
@@ -77,11 +85,6 @@ public class FormplayerConfigEngine {
             }
 
         });
-
-        StorageManager.registerStorage(Profile.STORAGE_KEY, Profile.class);
-        StorageManager.registerStorage(Suite.STORAGE_KEY, Suite.class);
-        StorageManager.registerStorage(FormDef.STORAGE_KEY,FormDef.class);
-        StorageManager.registerStorage(FormInstance.STORAGE_KEY, FormInstance.class);
     }
 
     private void setRoots() {

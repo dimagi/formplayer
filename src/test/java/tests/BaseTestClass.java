@@ -249,7 +249,7 @@ public class BaseTestClass {
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), GetInstanceRequestBean.class);
         getInstanceRequestBean.setSessionId(sessionId);
         ResultActions getInstanceResult = mockMvc.perform(
-                get(urlPrepend(Constants.URL_GET_INSTANCE))
+                post(urlPrepend(Constants.URL_GET_INSTANCE))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(getInstanceRequestBean)));
         String getInstanceResultString = getInstanceResult.andReturn().getResponse().getContentAsString();
