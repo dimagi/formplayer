@@ -1,6 +1,7 @@
 package session;
 
 import hq.CaseAPIs;
+import install.FormplayerConfigEngine;
 import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -121,15 +122,7 @@ public class FormSession {
     public void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
         this.sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-
-        StorageManager.setStorageFactory(new IStorageFactory() {
-            public IStorageUtility newStorage(String name, Class type) {
-                return new SqliteIndexedStorageUtility<>(type,
-                        name, username, "dbs");
-            }
-
-        });
-
+        FormplayerConfigEngine.setupStorageManager(username);
         formDef.initialize(newInstance, sessionWrapper.getIIF());
     }
 
