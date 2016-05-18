@@ -6,6 +6,8 @@ import org.commcare.util.cli.EntityDetailSubscreen;
 import org.commcare.util.cli.EntityScreen;
 import util.SessionUtils;
 
+import java.util.ArrayList;
+
 /**
  * Created by willpride on 4/13/16.
  */
@@ -49,12 +51,10 @@ public class EntityDetailResponse extends MenuSessionBean{
 
     private void processStyles(Detail detail) {
         DetailField[] fields = detail.getFields();
-        styles = new Style[fields.length];
-        int i = 0;
+        ArrayList<Style> styleArrayList = new ArrayList<Style>();
         for (DetailField field : fields) {
-            Style style = new Style(field);
-            styles[i] = style;
-            i++;
+            styleArrayList.add(new Style(field));
         }
+        styles = (Style[]) styleArrayList.toArray();
     }
 }
