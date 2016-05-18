@@ -70,8 +70,7 @@ public class EntityListResponse extends MenuSessionBean {
             try {
                 o = field.getTemplate().evaluate(context);
             } catch(XPathException e) {
-                o = "error (see output)";
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
             data[i] = o;
             i ++;
