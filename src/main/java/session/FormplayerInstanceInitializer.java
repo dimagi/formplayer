@@ -2,6 +2,7 @@ package session;
 
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
+import org.commcare.session.SessionInstanceBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.AbstractTreeElement;
@@ -36,7 +37,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
             }
         }
         TreeElement root =
-                session.getSessionInstance(getDeviceId(),
+                SessionInstanceBuilder.getSessionInstance(session.getFrame(), getDeviceId(),
                         getVersionString(), u.getUsername(), u.getUniqueId(),
                         u.getProperties()).getRoot();
         root.setParent(instance.getBase());
