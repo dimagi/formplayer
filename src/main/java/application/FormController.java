@@ -105,7 +105,7 @@ public class FormController {
     }
 
     @ApiOperation(value = "Get the current instance XML")
-    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.POST)
     @ResponseBody
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
@@ -213,7 +213,7 @@ public class FormController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         exception.printStackTrace();
         JSONObject errorReturn = new JSONObject();
-        errorReturn.put("exception", exception);
+        errorReturn.put("message", exception);
         errorReturn.put("url", req.getRequestURL());
         errorReturn.put("status", "error");
         return errorReturn.toString();

@@ -13,33 +13,32 @@ import org.commcare.modern.reference.JavaResourceRoot;
 import org.commcare.resources.ResourceManager;
 import org.commcare.resources.model.*;
 import org.commcare.resources.model.installers.LocaleFileInstaller;
-import org.commcare.suite.model.*;
+import org.commcare.suite.model.Profile;
+import org.commcare.suite.model.Suite;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.io.BufferedInputStream;
 import org.javarosa.core.io.StreamsUtil;
 import org.javarosa.core.model.FormDef;
-import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.reference.ReferenceManager;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.*;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
-import org.javarosa.xpath.XPathMissingInstanceException;
 import util.PrototypeUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Hashtable;
 import java.util.Vector;
 import java.util.zip.ZipFile;
 
 
 /**
  * @author ctsims
- *
  */
 public class FormplayerConfigEngine {
     private ResourceTable table;
@@ -55,7 +54,7 @@ public class FormplayerConfigEngine {
         log.info("FormplayerConfigEngine for username: " + username + " with dbPath: " + dbPath);
 
         File dbFolder = new File(dbPath);
-        if(!dbFolder.exists()){
+        if (!dbFolder.exists()) {
             dbFolder.mkdirs();
         }
 
@@ -70,7 +69,10 @@ public class FormplayerConfigEngine {
         recoveryTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
                 "RECOVERY_RESOURCE_TABLE", username, dbPath));
 
+        setupStorageManager(username, dbPath);
+    }
 
+    public static void setupStorageManager(final String username, final String dbPath) {
         //All of the below is on account of the fact that the installers
         //aren't going through a factory method to handle them differently
         //per device.
@@ -87,7 +89,7 @@ public class FormplayerConfigEngine {
 
         StorageManager.registerStorage(Profile.STORAGE_KEY, Profile.class);
         StorageManager.registerStorage(Suite.STORAGE_KEY, Suite.class);
-        StorageManager.registerStorage(FormDef.STORAGE_KEY,FormDef.class);
+        StorageManager.registerStorage(FormDef.STORAGE_KEY, FormDef.class);
         StorageManager.registerStorage(FormInstance.STORAGE_KEY, FormInstance.class);
     }
 
@@ -103,7 +105,7 @@ public class FormplayerConfigEngine {
 
     public void initFromArchive(String archiveURL) throws IOException, InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
         String fileName;
-        if(archiveURL.startsWith("http")) {
+        if (archiveURL.startsWith("http")) {
             fileName = downloadToTemp(archiveURL);
         } else {
             fileName = archiveURL;
@@ -122,7 +124,7 @@ public class FormplayerConfigEngine {
     }
 
     private String downloadToTemp(String resource) {
-        try{
+        try {
             URL url = new URL(resource);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setInstanceFollowRedirects(true);  //you still need to handle redirect manully.
@@ -133,8 +135,8 @@ public class FormplayerConfigEngine {
             FileOutputStream fos = new FileOutputStream(file);
             StreamsUtil.writeFromInputToOutput(new BufferedInputStream(conn.getInputStream()), fos);
             return file.getAbsolutePath();
-        } catch(IOException e) {
-            log.error("Issue downloading or create stream for " +resource);
+        } catch (IOException e) {
+            log.error("Issue downloading or create stream for " + resource);
             e.printStackTrace();
             System.exit(-1);
             return null;
@@ -152,12 +154,12 @@ public class FormplayerConfigEngine {
         String rootPath;
         String filePart;
 
-        if(lastSeparator == -1 ) {
+        if (lastSeparator == -1) {
             rootPath = new File("").getAbsolutePath();
             filePart = resource;
         } else {
             //Get the location of the file. In the future, we'll treat this as the resource root
-            rootPath = resource.substring(0,resource.lastIndexOf(File.separator));
+            rootPath = resource.substring(0, resource.lastIndexOf(File.separator));
 
             //cut off the end
             filePart = resource.substring(resource.lastIndexOf(File.separator) + 1);
@@ -173,11 +175,12 @@ public class FormplayerConfigEngine {
     /**
      * super, super hacky for now, gets a jar directory and loads language resources
      * from it.
+     *
      * @param pathToResources
      */
     public void addJarResources(String pathToResources) {
         File resources = new File(pathToResources);
-        if(!resources.exists() && resources.isDirectory()) {
+        if (!resources.exists() && resources.isDirectory()) {
             throw new RuntimeException("Couldn't find jar resources at " + resources.getAbsolutePath() + " . Please correct the path, or use the -nojarresources flag to skip loading jar resources.");
         }
 
@@ -185,19 +188,19 @@ public class FormplayerConfigEngine {
         String jrroot = "extfile" + fileuricount;
         ReferenceManager._().addReferenceFactory(new JavaFileRoot(new String[]{jrroot}, resources.getAbsolutePath()));
 
-        for(File file : resources.listFiles()) {
+        for (File file : resources.listFiles()) {
             String name = file.getName();
-            if(name.endsWith("txt")) {
+            if (name.endsWith("txt")) {
                 ResourceLocation location = new ResourceLocation(Resource.RESOURCE_AUTHORITY_LOCAL, "jr://" + jrroot + "/" + name);
                 Vector<ResourceLocation> locations = new Vector<ResourceLocation>();
                 locations.add(location);
-                if(!(name.lastIndexOf("_") < name.lastIndexOf("."))) {
+                if (!(name.lastIndexOf("_") < name.lastIndexOf("."))) {
                     //skip it
                 } else {
                     String locale = name.substring(name.lastIndexOf("_") + 1, name.lastIndexOf("."));
                     Resource test = new Resource(-2, name, locations, "Internal Strings: " + locale);
                     try {
-                        table.addResource(test, new LocaleFileInstaller(locale),null);
+                        table.addResource(test, new LocaleFileInstaller(locale), null);
                     } catch (StorageFullException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -249,11 +252,11 @@ public class FormplayerConfigEngine {
 
     public FormDef loadFormByXmlns(String xmlns) {
         IStorageUtilityIndexed<FormDef> formStorage =
-                (IStorageUtilityIndexed)StorageManager.getStorage(FormDef.STORAGE_KEY);
+                (IStorageUtilityIndexed) StorageManager.getStorage(FormDef.STORAGE_KEY);
         return formStorage.getRecordForValue("XMLNS", xmlns);
     }
 
-    final static private class QuickStateListener implements TableStateListener{
+    final static private class QuickStateListener implements TableStateListener {
         int lastComplete = 0;
 
         @Override
@@ -265,11 +268,13 @@ public class FormplayerConfigEngine {
         public void incrementProgress(int complete, int total) {
             int diff = complete - lastComplete;
             lastComplete = complete;
-            for(int i = 0 ; i < diff ; ++i) {
+            for (int i = 0; i < diff; ++i) {
                 System.out.print(".");
             }
         }
-    };
+    }
+
+    ;
 
     public void attemptAppUpdate(boolean forceNew) {
         ResourceTable global = table;
@@ -334,15 +339,15 @@ public class FormplayerConfigEngine {
             // Replaces global table with temporary, or w/ recovery if
             // something goes wrong
             resourceManager.upgrade();
-        } catch(UnresolvedResourceException e) {
+        } catch (UnresolvedResourceException e) {
             System.out.println("Update Failed! Couldn't find or install one of the remote resources");
             e.printStackTrace();
             return;
-        } catch(UnfullfilledRequirementsException e) {
+        } catch (UnfullfilledRequirementsException e) {
             System.out.println("Update Failed! This CLI host is incompatible with the app");
             e.printStackTrace();
             return;
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.out.println("Update Failed! There is a problem with one of the resources");
             e.printStackTrace();
             return;
