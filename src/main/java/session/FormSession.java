@@ -120,8 +120,8 @@ public class FormSession {
 
     public void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
-        FormplayerSessionWrapper sessionWrapper; = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        FormplayerConfigEngine.setupStorageManager(username);
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+        FormplayerConfigEngine.setupStorageManager(username, "dbs");
         formDef.initialize(newInstance, sessionWrapper.getIIF());
     }
 
