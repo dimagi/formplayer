@@ -283,7 +283,7 @@ public class SessionController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         exception.printStackTrace();
         JSONObject errorReturn = new JSONObject();
-        errorReturn.put("exception", exception);
+        errorReturn.put("message", exception);
         errorReturn.put("url", req.getRequestURL());
         errorReturn.put("status", "error");
         return errorReturn.toString();
