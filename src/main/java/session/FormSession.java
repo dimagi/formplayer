@@ -51,7 +51,6 @@ public class FormSession {
     private int sequenceId;
     private String initLang;
     private Map<String, String> sessionData;
-    private FormplayerSessionWrapper sessionWrapper;
 
     String title;
     String[] langs;
@@ -121,7 +120,7 @@ public class FormSession {
 
     public void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
-        this.sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+        FormplayerSessionWrapper sessionWrapper; = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         FormplayerConfigEngine.setupStorageManager(username);
         formDef.initialize(newInstance, sessionWrapper.getIIF());
     }

@@ -274,8 +274,6 @@ public class FormplayerConfigEngine {
         }
     }
 
-    ;
-
     public void attemptAppUpdate(boolean forceNew) {
         ResourceTable global = table;
 

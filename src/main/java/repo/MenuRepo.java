@@ -6,8 +6,8 @@ import objects.SerializableMenuSession;
  * Created by willpride on 2/5/16.
  */
 public interface MenuRepo {
-    public void save (SerializableMenuSession session);
-    public SerializableMenuSession find(String id);
-    public java.util.Map<Object, Object> findAll();
-    public void delete(String id);
+    void save(SerializableMenuSession session);
+    SerializableMenuSession find(String id);
+    java.util.Map<Object, Object> findAll();
+    void delete(String id);
 }
