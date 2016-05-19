@@ -44,9 +44,9 @@ public class EntityListResponse extends MenuBean {
     }
 
     private void processHeader(Detail shortDetail, EvaluationContext ec) {
-        Pair<String[], int[]> mPair = EntityListSubscreen.getHeaders(shortDetail, ec);
-        headers = mPair.first;
-        widthHints = mPair.second;
+        Pair<String[], int[]> pair = EntityListSubscreen.getHeaders(shortDetail, ec);
+        headers = pair.first;
+        widthHints = pair.second;
     }
 
     private void processTitle(SessionWrapper session) {
