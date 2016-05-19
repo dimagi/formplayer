@@ -10,7 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
 import org.commcare.api.process.FormRecordProcessorHelper;
-import org.commcare.util.cli.*;
+import org.commcare.util.cli.OptionsScreen;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -102,7 +102,7 @@ public class FormController {
     }
 
     @ApiOperation(value = "Get the current instance XML")
-    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.POST)
     @ResponseBody
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
@@ -210,7 +210,7 @@ public class FormController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         exception.printStackTrace();
         JSONObject errorReturn = new JSONObject();
-        errorReturn.put("exception", exception);
+        errorReturn.put("message", exception);
         errorReturn.put("url", req.getRequestURL());
         errorReturn.put("status", "error");
         return errorReturn.toString();
