@@ -1,6 +1,7 @@
 package session;
 
 import hq.CaseAPIs;
+import install.FormplayerConfigEngine;
 import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -8,11 +9,15 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
+import org.javarosa.core.services.storage.IStorageFactory;
+import org.javarosa.core.services.storage.IStorageUtility;
+import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -51,7 +56,6 @@ public class FormSession {
     private int sequenceId;
     private String initLang;
     private Map<String, String> sessionData;
-    private FormplayerSessionWrapper sessionWrapper;
 
     String title;
     String[] langs;
@@ -127,7 +131,8 @@ public class FormSession {
 
     public void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
-        this.sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+        FormplayerConfigEngine.setupStorageManager(username, "dbs");
         formDef.initialize(newInstance, sessionWrapper.getIIF());
     }
 
