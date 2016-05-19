@@ -86,7 +86,7 @@ class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    private JedisConnectionFactory jedisConnFactory(){
+    public JedisConnectionFactory jedisConnFactory(){
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
         jedisConnectionFactory.setUsePool(true);
         jedisConnectionFactory.setHostName(redisHostName);

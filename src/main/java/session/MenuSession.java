@@ -47,19 +47,16 @@ public class MenuSession {
     private String username;
     private String domain;
     @Value("${commcarehq.host}")
-    private String host = "commcarehq.org";
+    private String host = "http://localhost:8000";
     private Screen screen;
 
     private Log log = LogFactory.getLog(MenuSession.class);
 
-    public MenuSession(String username, String password, String domain, String appId, String installReference,
-                       InstallService installService, RestoreService restoreService) throws Exception {
+    public MenuSession(String username, String domain, String appId, String installReference,
+                       InstallService installService, RestoreService restoreService, HqAuth auth) throws Exception {
         //TODO WSP: why host isn't host resolving?
         this.username = username;
         this.domain = domain;
-
-        HqAuth auth = new BasicAuth(username, domain, host, password);
-
         resolveInstallReference(installReference, appId);
 
         this.engine = installService.configureApplication(this.installReference, username, "dbs/" + appId);

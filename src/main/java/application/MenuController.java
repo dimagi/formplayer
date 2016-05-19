@@ -1,5 +1,8 @@
 package application;
 
+import auth.BasicAuth;
+import auth.DjangoAuth;
+import auth.HqAuth;
 import beans.*;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
@@ -28,7 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 @Api(value = "Menu Controllers", description = "Operations for navigating CommCare Menus and Cases")
 @RestController
 @EnableAutoConfiguration
-@CrossOrigin(origins = "http://localhost:8000")
+@CrossOrigin(origins = "localhost:8000")
 public class MenuController {
 
     @Autowired
@@ -44,9 +47,10 @@ public class MenuController {
 
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
-    public Object installRequest(@RequestBody InstallRequestBean installRequestBean) throws Exception {
+    public Object installRequest(@RequestBody InstallRequestBean installRequestBean,
+                                 @CookieValue("sessionid") String authToken) throws Exception {
         log.info("Received install request: " + installRequestBean);
-        Object response = getNextMenu(performInstall(installRequestBean));
+        Object response = getNextMenu(performInstall(installRequestBean, authToken));
         log.info("Returning install response: " + response);
         return response;
     }
@@ -55,13 +59,17 @@ public class MenuController {
      * Make a a series of menu selections (as above, but can have multiple)
      *
      * @param sessionNavigationBean Give an installation code or path and a set of session selections
+     * @param authToken The Django session id auth token
      * @return A MenuBean or a NewFormSessionResponse
      * @throws Exception
      */
+
+
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
-    public Object navigateSession(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
-        log.info("Navigate session with bean: " + sessionNavigationBean);
-        MenuSession menuSession = performInstall(sessionNavigationBean);
+    public Object navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
+                                          @CookieValue("sessionid") String authToken) throws Exception {
+        log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
+        MenuSession menuSession = performInstall(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
         Object nextMenu = getNextMenu(menuSession);
         if (selections == null){
@@ -76,13 +84,25 @@ public class MenuController {
         return nextMenu;
     }
 
-    private MenuSession performInstall(InstallRequestBean bean) throws Exception {
+    private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         if((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())){
             throw new RuntimeException("Either app_id or install_reference must be non-null.");
         }
-        return new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), installService, restoreService);
+
+        HqAuth auth;
+        if(authToken != null && !authToken.trim().equals("")){
+            auth = new DjangoAuth(authToken);
+        } else{
+            String password = bean.getPassword();
+            if(password == null || "".equals(password.trim())){
+                throw new RuntimeException("Either authToken or password must be non-null");
+            }
+            auth = new BasicAuth(bean.getUsername(), bean.getDomain(), "commcarehq.org", password);
+        }
+
+        return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
+                bean.getInstallReference(), installService, restoreService, auth);
     }
 
     private Object getNextMenu(MenuSession menuSession) throws Exception {
