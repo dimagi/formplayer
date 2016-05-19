@@ -1,6 +1,5 @@
 package beans.menus;
 
-import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 
 /**

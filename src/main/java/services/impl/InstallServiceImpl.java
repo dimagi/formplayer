@@ -1,13 +1,11 @@
 package services.impl;
 
 import install.FormplayerConfigEngine;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.commcare.resources.model.InstallCancelledException;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import services.InstallService;
 
-import java.io.File;
 import java.io.IOException;
 
 /**

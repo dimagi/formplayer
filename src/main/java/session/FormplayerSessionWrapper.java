@@ -3,14 +3,9 @@ package session;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.session.CommCareSession;
-import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.CommCarePlatform;
-import org.javarosa.core.util.NoLocalizedTextException;
 
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * Created by willpride on 1/29/16.

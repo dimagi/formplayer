@@ -12,8 +12,6 @@ import utils.TestContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static org.mockito.Matchers.any;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
 public class FormEntryTest extends BaseTestClass{

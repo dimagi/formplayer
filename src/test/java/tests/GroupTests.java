@@ -4,7 +4,6 @@ import auth.HqAuth;
 import beans.AnswerQuestionResponseBean;
 import beans.NewFormSessionResponse;
 import beans.QuestionBean;
-import beans.RepeatResponseBean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -16,7 +15,6 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;

@@ -12,7 +12,6 @@ import org.commcare.modern.reference.JavaHttpRoot;
 import org.commcare.modern.reference.JavaResourceRoot;
 import org.commcare.resources.ResourceManager;
 import org.commcare.resources.model.*;
-import org.commcare.resources.model.installers.LocaleFileInstaller;
 import org.commcare.suite.model.Profile;
 import org.commcare.suite.model.Suite;
 import org.commcare.util.CommCarePlatform;
@@ -31,9 +30,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Vector;
 import java.util.zip.ZipFile;
 
 
