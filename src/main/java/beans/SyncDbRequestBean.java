@@ -43,8 +43,7 @@ public class SyncDbRequestBean {
     public String getUsername() {
         return username;
     }
-
-    // hacky as fuck. Get the username from the domained username
+    
     public void setUsername(String username) {
         this.username = username;
     }
