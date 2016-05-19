@@ -66,15 +66,14 @@ public class EntityListResponse extends MenuBean {
         Entity[] allEntities = generateEntities(screen, references, ec);
         if(allEntities.length > CASE_LENGTH_LIMIT){
             // we're doing pagination
-            int start = offset;
             int end = offset + CASE_LENGTH_LIMIT;
             int length = CASE_LENGTH_LIMIT;
             if(end > allEntities.length){
                 end = allEntities.length;
-                length = end - start;
+                length = end - offset;
             }
             entities = new Entity[length];
-            System.arraycopy(allEntities, start, entities, start - offset, end - start);
+            System.arraycopy(allEntities, offset, entities, offset - offset, end - offset);
 
             setPageCount((int)Math.ceil((double)allEntities.length/CASE_LENGTH_LIMIT));
             setCurrentPage(offset/CASE_LENGTH_LIMIT);

@@ -46,7 +46,6 @@ public class Application {
     // Autowire the filter above
     @Bean
     public Filter loggingFilter() {
-        ResponseLoggingFilter loggingFilter = new ResponseLoggingFilter();
-        return loggingFilter;
+        return new ResponseLoggingFilter();
     }
 }

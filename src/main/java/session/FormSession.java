@@ -161,8 +161,7 @@ public class FormSession {
     }
 
     public JSONArray getFormTree() {
-        JSONArray ret = JsonActionUtils.walkToJSON(getFormEntryModel(), getFormEntryController());
-        return ret;
+        return JsonActionUtils.walkToJSON(getFormEntryModel(), getFormEntryController());
     }
 
 
@@ -224,8 +223,7 @@ public class FormSession {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream serializedStream = new DataOutputStream(baos);
         formDef.writeExternal(serializedStream);
-        String encoded = Base64.encodeBase64String(baos.toByteArray());
-        return encoded;
+        return Base64.encodeBase64String(baos.toByteArray());
     }
 
     private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {

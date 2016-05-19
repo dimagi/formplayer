@@ -37,9 +37,8 @@ public class NewFormRequest {
         String username1 = username;
         this.domain = domain;
         String lang1 = lang;
-        Map<String, String> data = sessionData;
         try {
-            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, domain, data);
+            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, domain, sessionData);
             sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();
@@ -63,13 +62,11 @@ public class NewFormRequest {
     }
 
     public NewFormSessionResponse getResponse() throws IOException {
-        NewFormSessionResponse ret = new NewFormSessionResponse(formEntrySession);
-        return ret;
+        return new NewFormSessionResponse(formEntrySession);
     }
 
     private String getRestoreXml(){
-        String restorePayload = restoreService.getRestoreXml(domain, auth);
-        return restorePayload;
+        return restoreService.getRestoreXml(domain, auth);
     }
 
     private String getFormXml(){

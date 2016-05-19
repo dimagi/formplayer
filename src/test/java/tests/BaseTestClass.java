@@ -111,9 +111,8 @@ public class BaseTestClass {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        AnswerQuestionResponseBean response = mapper.readValue(answerResult.getResponse().getContentAsString(),
+        return mapper.readValue(answerResult.getResponse().getContentAsString(),
                 AnswerQuestionResponseBean.class);
-        return response;
     }
 
     NewFormSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
@@ -129,8 +128,7 @@ public class BaseTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
-        NewFormSessionResponse newSessionResponse = mapper.readValue(responseBody, NewFormSessionResponse.class);
-        return newSessionResponse;
+        return mapper.readValue(responseBody, NewFormSessionResponse.class);
     }
 
     CaseFilterResponseBean filterCases(String requestPath) throws Exception {
@@ -189,9 +187,8 @@ public class BaseTestClass {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        SyncDbResponseBean syncDbResponseBean = mapper.readValue(result.getResponse().getContentAsString(),
+        return mapper.readValue(result.getResponse().getContentAsString(),
                 SyncDbResponseBean.class);
-        return syncDbResponseBean;
     }
 
     RepeatResponseBean newRepeatRequest(String path, String sessionId) throws Exception {
@@ -263,8 +260,7 @@ public class BaseTestClass {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
         String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
-        EvaluateXPathResponseBean evaluateXPathResponseBean = mapper.readValue(evaluateXpathResultString,
+        return mapper.readValue(evaluateXpathResultString,
                 EvaluateXPathResponseBean.class);
-        return evaluateXPathResponseBean;
     }
 }

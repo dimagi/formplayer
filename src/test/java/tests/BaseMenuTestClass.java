@@ -194,8 +194,7 @@ public class BaseMenuTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(installRequestBean)));
         String installResultString = installResult.andReturn().getResponse().getContentAsString();
-        CommandListResponseBean menuResponseBean = mapper.readValue(installResultString,
+        return mapper.readValue(installResultString,
                 CommandListResponseBean.class);
-        return menuResponseBean;
     }
 }
