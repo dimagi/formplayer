@@ -34,7 +34,7 @@ import java.util.HashMap;
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
  * primarily includes module and form navigation, along with case list/details and case selection. When ready,
  * this object will create and hand off flow control to a FormSession object, loading up the proper session data.
- * <p/>
+ *
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
  */
 @Component
@@ -79,7 +79,7 @@ public class MenuSession {
     }
 
     private String getReferenceToLatest(String appId) {
-        return "http://localhost:8000/a/" + this.domain +
+        return host + "/a/" + this.domain +
                 "/apps/api/download_ccz/?app_id=" + appId + "#hack=commcare.ccz";
     }
 
