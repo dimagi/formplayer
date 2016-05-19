@@ -145,9 +145,9 @@ public class BaseTestClass {
                 CaseFilterResponseBean.class);
     }
 
-    CaseFilterFullResponseBean filterCasesFull(String requestPath) throws Exception {
+    CaseFilterFullResponseBean filterCasesFull() throws Exception {
 
-        String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
+        String filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases.json");
         MvcResult result = this.mockMvc.perform(
                 get(urlPrepend(Constants.URL_FILTER_CASES_FULL))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -174,7 +174,7 @@ public class BaseTestClass {
         return mapper.readValue(result, SubmitResponseBean.class);
     }
 
-    SyncDbResponseBean syncDb(String requestPath) throws Exception {
+    SyncDbResponseBean syncDb() throws Exception {
         String syncDbRequestPayload = FileUtils.getFile(this.getClass(), "requests/sync_db/sync_db.json");
 
         SyncDbRequestBean syncDbRequestBean = mapper.readValue(syncDbRequestPayload,
@@ -191,9 +191,9 @@ public class BaseTestClass {
                 SyncDbResponseBean.class);
     }
 
-    RepeatResponseBean newRepeatRequest(String path, String sessionId) throws Exception {
+    RepeatResponseBean newRepeatRequest(String sessionId) throws Exception {
 
-        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), path);
+        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
 
         RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
                 RepeatRequestBean.class);
@@ -208,9 +208,9 @@ public class BaseTestClass {
         return mapper.readValue(repeatResult, RepeatResponseBean.class);
     }
 
-    RepeatResponseBean deleteRepeatRequest(String path, String sessionId) throws Exception {
+    RepeatResponseBean deleteRepeatRequest(String sessionId) throws Exception {
 
-        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), path);
+        String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/delete_repeat/delete_repeat.json");
 
         RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
                 RepeatRequestBean.class);
@@ -250,11 +250,11 @@ public class BaseTestClass {
         return mapper.readValue(getInstanceResultString, GetInstanceResponseBean.class);
     }
 
-    EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception{
+    EvaluateXPathResponseBean evaluateXPath(String sessionId) throws Exception{
         EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
         evaluateXPathRequestBean.setSessionId(sessionId);
-        evaluateXPathRequestBean.setXpath(xPath);
+        evaluateXPathRequestBean.setXpath("/data/q_text");
         ResultActions evaluateXpathResult = mockMvc.perform(
                 get(urlPrepend(Constants.URL_EVALUATE_XPATH))
                 .contentType(MediaType.APPLICATION_JSON)

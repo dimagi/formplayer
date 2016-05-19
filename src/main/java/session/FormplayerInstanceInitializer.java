@@ -16,7 +16,7 @@ import java.util.Map;
  */
 class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
-    private Map<String, String> injectedSessionData;
+    private final Map<String, String> injectedSessionData;
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
                                          UserSandbox mSandbox, CommCarePlatform mPlatform,

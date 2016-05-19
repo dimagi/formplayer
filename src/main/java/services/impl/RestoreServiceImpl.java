@@ -21,7 +21,7 @@ public class RestoreServiceImpl implements RestoreService {
     private
     String host;
 
-    private Log log = LogFactory.getLog(RestoreServiceImpl.class);
+    private final Log log = LogFactory.getLog(RestoreServiceImpl.class);
 
     @Override
     public String getRestoreXml(String domain, HqAuth auth) {

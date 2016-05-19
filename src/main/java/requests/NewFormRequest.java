@@ -19,12 +19,12 @@ import java.util.Map;
 @Service
 public class NewFormRequest {
 
-    private String formUrl;
+    private final String formUrl;
     private FormSession formEntrySession;
-    private XFormService xFormService;
-    private RestoreService restoreService;
-    private HqAuth auth;
-    private String domain;
+    private final XFormService xFormService;
+    private final RestoreService restoreService;
+    private final HqAuth auth;
+    private final String domain;
 
     private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
                            Map<String, String> sessionData, SessionRepo sessionRepo,

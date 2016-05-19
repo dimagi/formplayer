@@ -65,7 +65,7 @@ public class BaseMenuTestClass {
         return "/" + string;
     }
 
-    private Log log = LogFactory.getLog(BaseMenuTestClass.class);
+    private final Log log = LogFactory.getLog(BaseMenuTestClass.class);
 
     @Before
     public void setUp() throws IOException {
@@ -112,7 +112,7 @@ public class BaseMenuTestClass {
         return ref;
     }
 
-    private void setupInstallServiceMock() throws IOException {
+    private void setupInstallServiceMock() {
         try {
             doAnswer(new Answer<Object>() {
                 @Override

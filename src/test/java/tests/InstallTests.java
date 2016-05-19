@@ -24,11 +24,6 @@ public class InstallTests extends BaseMenuTestClass {
 
     Log log = LogFactory.getLog(InstallTests.class);
 
-    @Override
-    public void setUp() throws IOException {
-        super.setUp();
-    }
-
     @Test
     public void testCaseCreate() throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
@@ -74,8 +69,4 @@ public class InstallTests extends BaseMenuTestClass {
         StorageManager.forceClear();
     }
 
-    @After
-    public void tearDown(){
-        //SqlSandboxUtils.deleteDatabaseFolder("dbs");
-    }
 }

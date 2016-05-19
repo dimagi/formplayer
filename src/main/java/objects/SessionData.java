@@ -16,7 +16,7 @@ public class SessionData {
     private String domain;
     private String userId;
     private String appId;
-    private Map<String, String> data = new HashMap<>();
+    private final Map<String, String> data = new HashMap<>();
     private Map<String, String> userData = new HashMap<>();
     private String host;
     private String sessionName;

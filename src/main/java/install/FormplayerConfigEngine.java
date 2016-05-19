@@ -38,10 +38,10 @@ import java.util.zip.ZipFile;
  * @author ctsims
  */
 public class FormplayerConfigEngine {
-    private ResourceTable table;
-    private CommCarePlatform platform;
+    private final ResourceTable table;
+    private final CommCarePlatform platform;
     private ArchiveFileRoot mArchiveRoot;
-    private Log log = LogFactory.getLog(FormplayerConfigEngine.class);
+    private final Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
     public FormplayerConfigEngine(final String username, final String dbPath) {
         this.platform = new CommCarePlatform(2, 27);

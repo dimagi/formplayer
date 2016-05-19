@@ -41,7 +41,7 @@ public class CaseAPIs {
         }
     }
 
-    public static String filterCases(CaseFilterRequestBean request) throws Exception{
+    public static String filterCases(CaseFilterRequestBean request) {
         try {
             String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
             UserSqlSandbox mSandbox = restoreIfNotExists(

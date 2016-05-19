@@ -24,7 +24,7 @@ import java.io.IOException;
 @Component
 public class Application {
 
-    private Log log = LogFactory.getLog(Application.class);
+    private final Log log = LogFactory.getLog(Application.class);
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);

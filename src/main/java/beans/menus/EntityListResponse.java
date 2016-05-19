@@ -48,7 +48,7 @@ public class EntityListResponse extends MenuBean {
         processTitle(session);
         processEntities(nextScreen, references, ec, offset);
         processStyles(shortDetail);
-        processActions(shortDetail, nextScreen.getSession());
+        processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
     }
 
@@ -137,7 +137,7 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
-    private void processActions(Detail detail, SessionWrapper session){
+    private void processActions(SessionWrapper session){
         Vector<Action> actions = session.getDetail(((EntityDatum)session.getNeededDatum()).getShortDetail()).getCustomActions();
         // Assume we only have one TODO WSP: is that correct?
         if(actions != null && !actions.isEmpty()) {

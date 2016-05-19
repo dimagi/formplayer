@@ -54,7 +54,7 @@ public class FilterTests extends BaseTestClass {
     @Test
     public void testSyncDb() throws Exception {
 
-        SyncDbResponseBean syncDbResponseBean = syncDb("requests/sync_db/sync_db.json");
+        SyncDbResponseBean syncDbResponseBean = syncDb();
 
         assert(syncDbResponseBean.getStatus().equals(Constants.RESPONSE_STATUS_POSITIVE));
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
@@ -72,6 +72,6 @@ public class FilterTests extends BaseTestClass {
 
     @Test
     public void testGetFullCase() throws Exception {
-        CaseFilterFullResponseBean caseFilterResponseBean = filterCasesFull("requests/filter/filter_cases.json");
+        CaseFilterFullResponseBean caseFilterResponseBean = filterCasesFull();
     }
 }
