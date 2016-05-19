@@ -107,7 +107,7 @@ public class MenuController {
             else if (nextScreen instanceof EntityScreen) {
                 menuResponseBean = generateEntityScreen((EntityScreen) nextScreen);
             } else{
-                throw new Exception("What screen are we on? " + nextScreen);
+                throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
             return menuResponseBean;
         }

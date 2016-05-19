@@ -80,8 +80,7 @@ public class EntityListResponse extends MenuBean {
             try {
                 o = field.getTemplate().evaluate(context);
             } catch(XPathException e) {
-                o = "error (see output)";
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
             data[i] = o;
             i ++;
@@ -143,9 +142,8 @@ public class EntityListResponse extends MenuBean {
 
     @Override
     public String toString(){
-        return "EntityListResponse headers=" + Arrays.toString(headers) + " width hints=" + Arrays.toString(widthHints)
-        + " Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
-                ", action=" + action + " parent=" + super.toString();
+        return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
+                ", action=" + action + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) + "]";
     }
 
     public String[] getHeaders() {
