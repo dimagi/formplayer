@@ -38,7 +38,7 @@ class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${redis.hostname}")
     private String redisHostName;
 
-    private Log log = LogFactory.getLog(WebAppContext.class);
+    private final Log log = LogFactory.getLog(WebAppContext.class);
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

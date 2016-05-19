@@ -19,12 +19,12 @@ import java.util.Map;
 @Service
 public class NewFormRequest {
 
-    private String formUrl;
+    private final String formUrl;
     private FormSession formEntrySession;
-    private XFormService xFormService;
-    private RestoreService restoreService;
-    private HqAuth auth;
-    private String domain;
+    private final XFormService xFormService;
+    private final RestoreService restoreService;
+    private final HqAuth auth;
+    private final String domain;
 
     private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
                            Map<String, String> sessionData, SessionRepo sessionRepo,
@@ -37,9 +37,8 @@ public class NewFormRequest {
         String username1 = username;
         this.domain = domain;
         String lang1 = lang;
-        Map<String, String> data = sessionData;
         try {
-            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, domain, data);
+            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, domain, sessionData);
             sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();
@@ -63,13 +62,11 @@ public class NewFormRequest {
     }
 
     public NewFormSessionResponse getResponse() throws IOException {
-        NewFormSessionResponse ret = new NewFormSessionResponse(formEntrySession);
-        return ret;
+        return new NewFormSessionResponse(formEntrySession);
     }
 
     private String getRestoreXml(){
-        String restorePayload = restoreService.getRestoreXml(domain, auth);
-        return restorePayload;
+        return restoreService.getRestoreXml(domain, auth);
     }
 
     private String getFormXml(){

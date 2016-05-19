@@ -44,13 +44,14 @@ public class MenuSession {
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
     private String installReference;
-    private String username;
-    private String domain;
+    private final String username;
+    private final String domain;
     @Value("${commcarehq.host}")
-    private String host = "http://localhost:8000";
+    private final String host = "commcarehq.org";
+
     private Screen screen;
 
-    private Log log = LogFactory.getLog(MenuSession.class);
+    private final Log log = LogFactory.getLog(MenuSession.class);
 
     public MenuSession(String username, String domain, String appId, String installReference,
                        InstallService installService, RestoreService restoreService, HqAuth auth) throws Exception {
@@ -80,12 +81,11 @@ public class MenuSession {
                 "/apps/api/download_ccz/?app_id=" + appId + "#hack=commcare.ccz";
     }
 
-    public boolean handleInput(String input) throws CommCareSessionException {
+    public void handleInput(String input) throws CommCareSessionException {
         log.info("Screen " + screen + " handling input " + input);
         boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
         screen = getNextScreen();
-        log.info("Screen " + screen + " returning " + ret);
-        return ret;
+        log.info("Screen " + screen + " set to " + ret);
     }
 
     public Screen getNextScreen() throws CommCareSessionException {
@@ -146,6 +146,6 @@ public class MenuSession {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, "en", username, domain, sessionData, postUrl);
+        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl);
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.http.HttpHeaders;
  */
 public class DjangoAuth implements HqAuth {
 
-    private String authKey;
+    private final String authKey;
 
     public DjangoAuth(String authKey) {
         this.authKey = authKey;

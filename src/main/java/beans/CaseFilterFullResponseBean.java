@@ -9,7 +9,7 @@ public class CaseFilterFullResponseBean {
     public CaseFilterFullResponseBean(){
 
     }
-    public CaseFilterFullResponseBean(CaseBean[] caseBeans) throws Exception{
+    public CaseFilterFullResponseBean(CaseBean[] caseBeans) {
         cases = caseBeans;
     }
 

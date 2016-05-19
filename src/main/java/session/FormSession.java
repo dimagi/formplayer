@@ -56,7 +56,7 @@ public class FormSession {
     private String title;
     private String[] langs;
     private String uuid;
-    private String username;
+    private final String username;
     private String domain;
 
     public FormSession(SerializableFormSession session) throws Exception{
@@ -107,7 +107,7 @@ public class FormSession {
     }
 
     // Entry from menu selection. Assumes user has already been restored.
-    public FormSession(UserSandbox sandbox, FormDef formDef, String initLang, String username, String domain,
+    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
                        Map<String, String> sessionData, String postUrl) throws Exception {
         this.username = username;
         this.sessionData = sessionData;
@@ -117,17 +117,17 @@ public class FormSession {
         this.postUrl = postUrl;
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
-        formEntryController.setLanguage(initLang);
+        formEntryController.setLanguage("en");
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
-        this.initLang = initLang;
+        this.initLang = "en";
         uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
         initialize(true, sessionData);
         getFormTree();
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {
+    private void initialize(boolean newInstance, Map<String, String> sessionData) {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         FormplayerConfigEngine.setupStorageManager(username, "dbs");
@@ -161,8 +161,7 @@ public class FormSession {
     }
 
     public JSONArray getFormTree() {
-        JSONArray ret = JsonActionUtils.walkToJSON(getFormEntryModel(), getFormEntryController());
-        return ret;
+        return JsonActionUtils.walkToJSON(getFormEntryModel(), getFormEntryController());
     }
 
 
@@ -224,8 +223,7 @@ public class FormSession {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream serializedStream = new DataOutputStream(baos);
         formDef.writeExternal(serializedStream);
-        String encoded = Base64.encodeBase64String(baos.toByteArray());
-        return encoded;
+        return Base64.encodeBase64String(baos.toByteArray());
     }
 
     private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {

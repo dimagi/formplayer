@@ -43,7 +43,7 @@ public class MenuController {
     @Autowired
     private SessionRepo sessionRepo;
 
-    private Log log = LogFactory.getLog(MenuController.class);
+    private final Log log = LogFactory.getLog(MenuController.class);
 
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
