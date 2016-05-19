@@ -1,6 +1,8 @@
 package services.impl;
 
 import auth.HqAuth;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -16,11 +18,15 @@ import services.RestoreService;
 public class RestoreServiceImpl implements RestoreService {
 
     @Value("${commcarehq.host}")
+    private
     String host;
+
+    private final Log log = LogFactory.getLog(RestoreServiceImpl.class);
 
     @Override
     public String getRestoreXml(String domain, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
+        log.info("Restoring at domain: " + domain + " with auth: " + auth);
         ResponseEntity<String> response =
                 restTemplate.exchange(host
                                 + "/a/" + domain + "/phone/restore/?version=2.0",

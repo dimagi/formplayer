@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetInstanceRequestBean {
 
-    protected String sessionId;
+    private String sessionId;
 
     public GetInstanceRequestBean(){}
 

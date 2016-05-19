@@ -6,16 +6,14 @@ import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
-import org.javarosa.core.services.storage.IStorageFactory;
-import org.javarosa.core.services.storage.IStorageUtility;
-import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -42,6 +40,8 @@ import java.util.UUID;
 @Component
 public class FormSession {
 
+    Log log = LogFactory.getLog(FormSession.class);
+
     private FormDef formDef;
     private FormEntryModel formEntryModel;
     private FormEntryController formEntryController;
@@ -51,17 +51,22 @@ public class FormSession {
     private int sequenceId;
     private String initLang;
     private Map<String, String> sessionData;
-    private FormplayerSessionWrapper sessionWrapper;
+    private String postUrl;
 
-    String title;
-    String[] langs;
-    String uuid;
-    String username;
+    private String title;
+    private String[] langs;
+    private String uuid;
+    private final String username;
+    private String domain;
+
     public FormSession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
         this.username = session.getUsername();
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
+        this.restoreXml = session.getRestoreXml();
+        this.domain = session.getDomain();
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, this.domain, restoreXml);
         this.sessionData = session.getSessionData();
+        this.postUrl = session.getPostUrl();
         formDef = new FormDef();
         PrototypeUtils.setupPrototypes();
         deserializeFormDef(session.getFormXml());
@@ -80,13 +85,14 @@ public class FormSession {
         getFormTree();
     }
 
-    public FormSession(String formXml, String restoreXml, String initLang, String username,
+    public FormSession(String formXml, String restoreXml, String initLang, String username, String domain,
                        Map<String, String> sessionData) throws Exception {
         this.formXml = formXml;
         this.restoreXml = restoreXml;
         this.username = username;
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreXml);
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, domain, restoreXml);
         this.sessionData = sessionData;
+        this.domain = domain;
         formDef = parseFormDef(formXml);
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -101,28 +107,30 @@ public class FormSession {
     }
 
     // Entry from menu selection. Assumes user has already been restored.
-    public FormSession(UserSandbox sandbox, FormDef formDef, String initLang, String username,
-                       Map<String, String> sessionData) throws Exception {
+    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
+                       Map<String, String> sessionData, String postUrl) throws Exception {
         this.username = username;
         this.sessionData = sessionData;
         this.formDef = formDef;
         this.sandbox = sandbox;
+        this.domain = domain;
+        this.postUrl = postUrl;
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
-        formEntryController.setLanguage(initLang);
+        formEntryController.setLanguage("en");
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
-        this.initLang = initLang;
+        this.initLang = "en";
         uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
         initialize(true, sessionData);
         getFormTree();
     }
 
-    public void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {
+    private void initialize(boolean newInstance, Map<String, String> sessionData) {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
-        this.sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        FormplayerConfigEngine.setupStorageManager(username);
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+        FormplayerConfigEngine.setupStorageManager(username, "dbs");
         formDef.initialize(newInstance, sessionWrapper.getIIF());
     }
 
@@ -153,8 +161,7 @@ public class FormSession {
     }
 
     public JSONArray getFormTree() {
-        JSONArray ret = JsonActionUtils.walkToJSON(getFormEntryModel(), getFormEntryController());
-        return ret;
+        return JsonActionUtils.walkToJSON(getFormEntryModel(), getFormEntryController());
     }
 
 
@@ -178,7 +185,7 @@ public class FormSession {
         return metaData.toString();
     }
 
-    public String getRestoreXml() {
+    private String getRestoreXml() {
         return restoreXml;
     }
 
@@ -194,7 +201,7 @@ public class FormSession {
         this.sequenceId = sequenceId;
     }
 
-    public String getInitLang() {
+    private String getInitLang() {
         return initLang;
     }
 
@@ -212,22 +219,21 @@ public class FormSession {
         return getInstanceXml();
     }
 
-    public String serializeFormDef() throws IOException {
+    private String serializeFormDef() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream serializedStream = new DataOutputStream(baos);
         formDef.writeExternal(serializedStream);
-        String encoded = Base64.encodeBase64String(baos.toByteArray());
-        return encoded;
+        return Base64.encodeBase64String(baos.toByteArray());
     }
 
-    public void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
+    private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
         byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
         DataInputStream inputStream =
                 new DataInputStream(new ByteArrayInputStream(sessionBytes));
         formDef.readExternal(inputStream, PrototypeManager.getDefault());
     }
 
-    public Map<String, String> getSessionData() {
+    private Map<String, String> getSessionData() {
         return sessionData;
     }
 
@@ -240,6 +246,21 @@ public class FormSession {
         serializableFormSession.setSequenceId(getSequenceId());
         serializableFormSession.setInitLang(getInitLang());
         serializableFormSession.setSessionData(getSessionData());
+        serializableFormSession.setDomain(getDomain());
+        serializableFormSession.setRestoreXml(getRestoreXml());
+        serializableFormSession.setPostUrl(getPostUrl());
         return serializableFormSession;
+    }
+
+    private String getDomain() {
+        return domain;
+    }
+
+    public String getPostUrl() {
+        return postUrl;
+    }
+
+    public void setPostUrl(String postUrl) {
+        this.postUrl = postUrl;
     }
 }

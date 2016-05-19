@@ -37,7 +37,7 @@ public class RepeatTests extends BaseTestClass{
 
         String sessionId = newSessionResponse.getSessionId();
 
-        RepeatResponseBean newRepeatResponseBean = newRepeatRequest( "requests/new_repeat/new_repeat.json", sessionId);
+        RepeatResponseBean newRepeatResponseBean = newRepeatRequest(sessionId);
 
         QuestionBean[] tree = newRepeatResponseBean.getTree();
 
@@ -54,7 +54,7 @@ public class RepeatTests extends BaseTestClass{
         assert(child.getIx().contains("1_0,0"));
 
 
-        newRepeatResponseBean = newRepeatRequest( "requests/new_repeat/new_repeat.json", sessionId);
+        newRepeatResponseBean = newRepeatRequest(sessionId);
 
         tree = newRepeatResponseBean.getTree();
         assert(tree.length == 2);
@@ -76,7 +76,7 @@ public class RepeatTests extends BaseTestClass{
         child = children2[0];
         assert(child.getIx().contains("1_1,0"));
 
-        RepeatResponseBean deleteRepeatResponseBean = deleteRepeatRequest("requests/delete_repeat/delete_repeat.json", sessionId);
+        RepeatResponseBean deleteRepeatResponseBean = deleteRepeatRequest(sessionId);
 
         tree = deleteRepeatResponseBean.getTree();
         assert(tree.length == 2);

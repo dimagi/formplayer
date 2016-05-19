@@ -10,6 +10,7 @@ import java.io.IOException;
 public class SubmitResponseBean extends SessionBean{
     private String output;
     private String status;
+    private String postUrl;
 
     // default constructor for Jackson
     public SubmitResponseBean(){}
@@ -18,6 +19,7 @@ public class SubmitResponseBean extends SessionBean{
         status = "success";
         output = session.getInstanceXml();
         sessionId = session.getSessionId();
+        postUrl = session.getPostUrl();
     }
 
     public String getOutput() {
@@ -39,5 +41,13 @@ public class SubmitResponseBean extends SessionBean{
     @Override
     public String toString(){
         return "SubmitResponseBean: [sessionId=" + sessionId + ",output= " + output + "]";
+    }
+
+    public String getPostUrl() {
+        return postUrl;
+    }
+
+    public void setPostUrl(String postUrl) {
+        this.postUrl = postUrl;
     }
 }

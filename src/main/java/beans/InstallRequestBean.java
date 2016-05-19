@@ -11,6 +11,7 @@ public class InstallRequestBean {
     private String username;
     private String password;
     private String domain;
+    private String appId;
 
     @JsonGetter(value = "install_reference")
     public String getInstallReference() {
@@ -43,5 +44,18 @@ public class InstallRequestBean {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public String toString(){
+        return "InstallRequestBean: [installReference=" + installReference +
+                ", username=" + username + ", domain=" + domain + ", appId=" + appId + "]";
+    }
+    @JsonGetter(value = "app_id")
+    public String getAppId() {
+        return appId;
+    }
+    @JsonSetter(value = "app_id")
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }

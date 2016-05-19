@@ -5,10 +5,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.mail.MailSender;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -17,9 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
-import repo.MenuRepo;
 import repo.SessionRepo;
-import repo.impl.MenuImpl;
 import repo.impl.SessionImpl;
 import services.InstallService;
 import services.RestoreService;
@@ -37,12 +33,12 @@ import java.util.Properties;
 
 @Configuration
 @EnableWebMvc
-public class WebAppContext extends WebMvcConfigurerAdapter {
+class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${redis.hostname}")
     private String redisHostName;
 
-    Log log = LogFactory.getLog(WebAppContext.class);
+    private final Log log = LogFactory.getLog(WebAppContext.class);
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -82,7 +78,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public ViewResolver viewResolver() {
         InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
-
         viewResolver.setViewClass(JstlView.class);
         viewResolver.setPrefix("/WEB-INF/jsp/");
         viewResolver.setSuffix(".jsp");
@@ -91,7 +86,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public JedisConnectionFactory jedisConnFactory(){
+    private JedisConnectionFactory jedisConnFactory(){
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
         jedisConnectionFactory.setUsePool(true);
         jedisConnectionFactory.setHostName(redisHostName);
@@ -110,10 +105,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         return new SessionImpl();
     }
 
-    @Bean
-    public MenuRepo menuRepo(){
-        return new MenuImpl();
-    }
     @Bean
     public XFormService xFormService(){
         return new XFormServiceImpl();

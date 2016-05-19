@@ -1,0 +1,184 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+	<h:head>
+		<h:title>Nested Field Lists (NV)</h:title>
+		<model>
+			<instance>
+				<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/4AF87985-67D3-4DD0-82AF-23AFA62A2D91" uiVersion="1" version="711" name="Nested Field Lists (NV)">
+					<nestedintro/>
+					<outmost>
+						<field_list_one>
+							<non_nested_one/>
+							<nested_field_list_one>
+								<question7/>
+								<question8/>
+							</nested_field_list_one>
+							<non_nested_two/>
+							<nested_two>
+								<question11/>
+								<question12/>
+								<deeply_nested>
+									<question14/>
+									<question15/>
+								</deeply_nested>
+							</nested_two>
+						</field_list_one>
+					</outmost>
+					<hidden_q/>
+				<orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/><cc:location/></orx:meta></data>
+			</instance><instance id="commcaresession" src="jr://instance/session"/>
+			<bind nodeset="/data/nestedintro"/>
+			<bind nodeset="/data/outmost"/>
+			<bind nodeset="/data/outmost/field_list_one"/>
+			<bind nodeset="/data/outmost/field_list_one/non_nested_one"/>
+			<bind nodeset="/data/outmost/field_list_one/nested_field_list_one"/>
+			<bind nodeset="/data/outmost/field_list_one/nested_field_list_one/question7"/>
+			<bind nodeset="/data/outmost/field_list_one/nested_field_list_one/question8"/>
+			<bind nodeset="/data/outmost/field_list_one/non_nested_two"/>
+			<bind nodeset="/data/outmost/field_list_one/nested_two"/>
+			<bind nodeset="/data/outmost/field_list_one/nested_two/question11"/>
+			<bind nodeset="/data/outmost/field_list_one/nested_two/question12"/>
+			<bind nodeset="/data/outmost/field_list_one/nested_two/deeply_nested"/>
+			<bind nodeset="/data/outmost/field_list_one/nested_two/deeply_nested/question14"/>
+			<bind nodeset="/data/outmost/field_list_one/nested_two/deeply_nested/question15"/>
+			<bind nodeset="/data/hidden_q"/>
+			<itext>
+				<translation lang="en" default="">
+					<text id="nestedintro-label">
+						<value>The following questions are only compatible with CommCare version 2.16 and up.
+
+The next screen contains a field list with nested groups inside. You should see 2 questions, 4 nested questions, and 2 deep nest questions (for a total of 8 in the list).</value>
+					</text>
+					<text id="outmost-label">
+						<value>(Outmost Group)</value>
+					</text>
+					<text id="outmost/field_list_one-label">
+						<value>Field One</value>
+					</text>
+					<text id="outmost/field_list_one/non_nested_one-label">
+						<value>Question One</value>
+					</text>
+					<text id="outmost/field_list_one/nested_field_list_one-label">
+						<value>Nested One</value>
+					</text>
+					<text id="outmost/field_list_one/nested_field_list_one/question7-label">
+						<value>Nested Q. One</value>
+					</text>
+					<text id="outmost/field_list_one/nested_field_list_one/question8-label">
+						<value>Nested Q. Two</value>
+					</text>
+					<text id="outmost/field_list_one/non_nested_two-label">
+						<value>Question Two</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two-label">
+						<value>Nested Two</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/question11-label">
+						<value>Nested Q. Three</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/question12-label">
+						<value>Nested Q. Four</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/deeply_nested-label">
+						<value>Deeply Nested</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/deeply_nested/question14-label">
+						<value>Deep Nest One</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/deeply_nested/question15-label">
+						<value>Deep Nest Two</value>
+					</text>
+				</translation>
+				<translation lang="hin">
+					<text id="nestedintro-label">
+						<value>The following questions are only compatible with CommCare version 2.16 and up.
+
+The next screen contains a field list with nested groups inside. You should see 2 questions, 4 nested questions, and 2 deep nest questions (for a total of 8 in the list).</value>
+					</text>
+					<text id="outmost-label">
+						<value>(Outmost Group)</value>
+					</text>
+					<text id="outmost/field_list_one-label">
+						<value>Field One</value>
+					</text>
+					<text id="outmost/field_list_one/non_nested_one-label">
+						<value>Question One</value>
+					</text>
+					<text id="outmost/field_list_one/nested_field_list_one-label">
+						<value>Nested One</value>
+					</text>
+					<text id="outmost/field_list_one/nested_field_list_one/question7-label">
+						<value>Nested Q. One</value>
+					</text>
+					<text id="outmost/field_list_one/nested_field_list_one/question8-label">
+						<value>Nested Q. Two</value>
+					</text>
+					<text id="outmost/field_list_one/non_nested_two-label">
+						<value>Question Two</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two-label">
+						<value>Nested Two</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/question11-label">
+						<value>Nested Q. Three</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/question12-label">
+						<value>Nested Q. Four</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/deeply_nested-label">
+						<value>Deeply Nested</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/deeply_nested/question14-label">
+						<value>Deep Nest One</value>
+					</text>
+					<text id="outmost/field_list_one/nested_two/deeply_nested/question15-label">
+						<value>Deep Nest Two</value>
+					</text>
+				</translation>
+			</itext>
+		<setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/><orx:pollsensor event="xforms-ready" ref="/data/meta/location"/><bind nodeset="/data/meta/location" type="geopoint"/></model>
+	</h:head>
+	<h:body>
+		<trigger ref="/data/nestedintro">
+			<label ref="jr:itext('nestedintro-label')"/>
+		</trigger>
+		<group ref="/data/outmost">
+			<label ref="jr:itext('outmost-label')"/>
+			<group ref="/data/outmost/field_list_one" appearance="field-list">
+				<label ref="jr:itext('outmost/field_list_one-label')"/>
+				<trigger ref="/data/outmost/field_list_one/non_nested_one" appearance="minimal">
+					<label ref="jr:itext('outmost/field_list_one/non_nested_one-label')"/>
+				</trigger>
+				<group ref="/data/outmost/field_list_one/nested_field_list_one">
+					<label ref="jr:itext('outmost/field_list_one/nested_field_list_one-label')"/>
+					<trigger ref="/data/outmost/field_list_one/nested_field_list_one/question7" appearance="minimal">
+						<label ref="jr:itext('outmost/field_list_one/nested_field_list_one/question7-label')"/>
+					</trigger>
+					<trigger ref="/data/outmost/field_list_one/nested_field_list_one/question8" appearance="minimal">
+						<label ref="jr:itext('outmost/field_list_one/nested_field_list_one/question8-label')"/>
+					</trigger>
+				</group>
+				<trigger ref="/data/outmost/field_list_one/non_nested_two" appearance="minimal">
+					<label ref="jr:itext('outmost/field_list_one/non_nested_two-label')"/>
+				</trigger>
+				<group ref="/data/outmost/field_list_one/nested_two">
+					<label ref="jr:itext('outmost/field_list_one/nested_two-label')"/>
+					<trigger ref="/data/outmost/field_list_one/nested_two/question11" appearance="minimal">
+						<label ref="jr:itext('outmost/field_list_one/nested_two/question11-label')"/>
+					</trigger>
+					<trigger ref="/data/outmost/field_list_one/nested_two/question12" appearance="minimal">
+						<label ref="jr:itext('outmost/field_list_one/nested_two/question12-label')"/>
+					</trigger>
+					<group ref="/data/outmost/field_list_one/nested_two/deeply_nested">
+						<label ref="jr:itext('outmost/field_list_one/nested_two/deeply_nested-label')"/>
+						<trigger ref="/data/outmost/field_list_one/nested_two/deeply_nested/question14" appearance="minimal">
+							<label ref="jr:itext('outmost/field_list_one/nested_two/deeply_nested/question14-label')"/>
+						</trigger>
+						<trigger ref="/data/outmost/field_list_one/nested_two/deeply_nested/question15" appearance="minimal">
+							<label ref="jr:itext('outmost/field_list_one/nested_two/deeply_nested/question15-label')"/>
+						</trigger>
+					</group>
+				</group>
+			</group>
+		</group>
+	</h:body>
+</h:html>

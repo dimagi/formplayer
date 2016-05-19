@@ -2,26 +2,23 @@ package session;
 
 import auth.BasicAuth;
 import auth.HqAuth;
-import beans.NewFormSessionResponse;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
-import objects.SerializableMenuSession;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.cli.CommCareSessionException;
-import org.commcare.util.cli.EntityDetailSubscreen;
 import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.Screen;
 import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.OrderedHashtable;
-import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
@@ -29,19 +26,10 @@ import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import repo.SessionRepo;
 import services.InstallService;
 import services.RestoreService;
-import util.StringUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
@@ -52,100 +40,56 @@ import java.util.UUID;
  */
 @Component
 public class MenuSession {
-    FormplayerConfigEngine engine;
-    UserSqlSandbox sandbox;
-    SessionWrapper sessionWrapper;
-    HqAuth auth;
-    String installReference;
-    String username;
-    String password;
-    String domain;
+    private FormplayerConfigEngine engine;
+    private UserSqlSandbox sandbox;
+    private SessionWrapper sessionWrapper;
+    private String installReference;
+    private final String username;
+    private final String domain;
     @Value("${commcarehq.host}")
-    String host;
-    private String sessionId;
+    private final String host = "commcarehq.org";
     private Screen screen;
-    private String currentSelection;
 
-    public MenuSession(String username, String password, String domain,
-                       String installReference, String serializedCommCareSession,
-                       RestoreService restoreService, String sessionId, String currentSelection, InstallService installService) throws Exception {
-        String domainedUsername = StringUtils.getFullUsername(username, domain, host);
+    private final Log log = LogFactory.getLog(MenuSession.class);
+
+    public MenuSession(String username, String password, String domain, String appId, String installReference,
+                       InstallService installService, RestoreService restoreService) throws Exception {
+        //TODO WSP: why host isn't host resolving?
         this.username = username;
-        this.password = password;
         this.domain = domain;
-        this.installReference = installReference;
-        this.auth = new BasicAuth(domainedUsername, password);
-        this.engine = installService.configureApplication(installReference, username);
-        this.currentSelection = currentSelection;
 
-        if(sessionId == null){
-            this.sessionId =  UUID.randomUUID().toString();
-        } else{
-            this.sessionId = sessionId;
-        }
+        HqAuth auth = new BasicAuth(username, domain, host, password);
 
-        sandbox = CaseAPIs.restoreIfNotExists(domainedUsername, restoreService, domain, auth);
-        sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
-        if(serializedCommCareSession != null){
-            restoreSessionFromStream(serializedCommCareSession);
+        resolveInstallReference(installReference, appId);
+
+        this.engine = installService.configureApplication(this.installReference, username, "dbs/" + appId);
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreService, domain, auth);
+        this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
+        this.screen = getNextScreen();
+    }
+    private void resolveInstallReference(String installReference, String appId){
+        if (installReference == null || installReference.equals("")) {
+            if(appId == null || "".equals(appId)){
+                throw new RuntimeException("Can't install - either install_reference or app_id must be non-null");
+            }
+            this.installReference = getReferenceToLatest(appId);
+        } else {
+            this.installReference = installReference;
         }
+    }
+
+    private String getReferenceToLatest(String appId) {
+        return host + "/a/" + this.domain +
+                "/apps/api/download_ccz/?app_id=" + appId + "#hack=commcare.ccz";
+    }
+
+    public void handleInput(String input) throws CommCareSessionException {
+        log.info("Screen " + screen + " handling input " + input);
+        boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
         screen = getNextScreen();
-        if(currentSelection != null){
-            if(screen instanceof EntityScreen){
-                handleInput(currentSelection);
-            }
-        }
+        log.info("Screen " + screen + " set to " + ret);
     }
 
-    public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService,
-                       InstallService installService) throws Exception {
-        this(serializableMenuSession.getUsername(), serializableMenuSession.getPassword(), serializableMenuSession.getDomain(),
-            serializableMenuSession.getInstallReference(), serializableMenuSession.getSerializedCommCareSession(), restoreService,
-                serializableMenuSession.getSessionId(), serializableMenuSession.getCurrentSelection(), installService);
-
-    }
-
-    private void restoreSessionFromStream(String serialiedCommCareSession) throws IOException, DeserializationException {
-        byte [] sessionBytes = Base64.decodeBase64(serialiedCommCareSession);
-        SessionFrame restoredFrame = new SessionFrame();
-        DataInputStream inputStream =
-                new DataInputStream(new ByteArrayInputStream(sessionBytes));
-        restoredFrame.readExternal(inputStream, new PrototypeFactory());
-        this.sessionWrapper.frame = restoredFrame;
-        this.sessionWrapper.syncState();
-    }
-
-    private String getSerializedCommCareSession() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream serializedStream = new DataOutputStream(baos);
-        sessionWrapper.serializeSessionState(serializedStream);
-        String encoded = Base64.encodeBase64String(baos.toByteArray());
-        return encoded;
-    }
-
-    public SerializableMenuSession serialize() throws IOException {
-        SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
-        serializableMenuSession.setUsername(this.username);
-        serializableMenuSession.setPassword(this.password);
-        serializableMenuSession.setDomain(this.domain);
-        serializableMenuSession.setInstallReference(this.installReference);
-        serializableMenuSession.setSessionId(this.sessionId);
-        serializableMenuSession.setSerializedCommCareSession(this.getSerializedCommCareSession());
-        serializableMenuSession.setCurrentSelection(this.currentSelection);
-        return serializableMenuSession;
-    }
-
-    public boolean handleInput(String input) throws CommCareSessionException {
-        boolean redrawing = screen.handleInputAndUpdateSession(sessionWrapper, input);
-        if(screen instanceof EntityScreen){
-            EntityScreen entityScreen = (EntityScreen) screen;
-            if(entityScreen.getCurrentScreen() instanceof EntityDetailSubscreen){
-                EntityDetailSubscreen entityDetailSubscreen = (EntityDetailSubscreen) entityScreen.getCurrentScreen();
-                currentSelection = input;
-            }
-        }
-        return redrawing;
-    }
     public Screen getNextScreen() throws CommCareSessionException {
         String next = sessionWrapper.getNeededData();
 
@@ -178,7 +122,7 @@ public class MenuSession {
             throw new RuntimeException(e.getMessage());
         }
         EvaluationContext ec = sessionWrapper.getEvaluationContext();
-        if (datum.getType() == SessionDatum.DATUM_TYPE_FORM) {
+        if (datum instanceof FormIdDatum) {
             sessionWrapper.setXmlns(XPathFuncExpr.toString(form.eval(ec)));
             sessionWrapper.setDatum("", "awful");
         } else {
@@ -190,51 +134,20 @@ public class MenuSession {
         }
     }
 
-    public HashMap<String, String> getSessionData(){
+    private HashMap<String, String> getSessionData() {
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
-        HashMap<String, String> ret = new HashMap<String, String>();
-        for(String key: sessionData.keySet()){
+        HashMap<String, String> ret = new HashMap<>();
+        for (String key : sessionData.keySet()) {
             ret.put(key, sessionData.get(key));
         }
         return ret;
     }
 
-    public NewFormSessionResponse startFormEntry(SessionRepo sessionRepo) throws Exception {
+    public FormSession getFormEntrySession() throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        FormSession formEntrySession = new FormSession(sandbox, formDef, "en", username, sessionData);
-        sessionRepo.save(formEntrySession.serialize());
-        return new NewFormSessionResponse(formEntrySession);
-    }
-
-    public String[] getChoices(){
-        return screen.getOptions();
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public String getSessionId() {
-        return this.sessionId;
-    }
-
-    @Override
-    public String toString(){
-        return "MenuSession [sessionId=" + sessionId + " choices=" + Arrays.toString(getChoices()) + "]";
-    }
-
-    public Screen getCurrentScreen(){
-        return screen;
-    }
-
-    public Map<Integer, String> getMenuOptions(){
-        Map<Integer, String> ret = new HashMap<Integer, String>();
-        String[] menuDisplayables = screen.getOptions();
-        for(int i = 0; i < menuDisplayables.length; i++){
-            ret.put(new Integer(i), menuDisplayables[i]);
-        }
-        return ret;
+        String postUrl = new PropertyManager().getSingularProperty("PostURL");
+        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl);
     }
 }
