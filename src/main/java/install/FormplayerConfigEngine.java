@@ -39,8 +39,6 @@ import java.util.zip.ZipFile;
  */
 public class FormplayerConfigEngine {
     private ResourceTable table;
-    private ResourceTable updateTable;
-    private ResourceTable recoveryTable;
     private CommCarePlatform platform;
     private ArchiveFileRoot mArchiveRoot;
     private Log log = LogFactory.getLog(FormplayerConfigEngine.class);
@@ -63,9 +61,9 @@ public class FormplayerConfigEngine {
 
         table = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
                 "GLOBAL_RESOURCE_TABLE", username, dbPath));
-        updateTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
+        ResourceTable updateTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
                 "UPDATE_RESOURCE_TABLE", username, dbPath));
-        recoveryTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
+        ResourceTable recoveryTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
                 "RECOVERY_RESOURCE_TABLE", username, dbPath));
 
         setupStorageManager(username, dbPath);

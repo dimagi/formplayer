@@ -21,25 +21,22 @@ public class NewFormRequest {
 
     private String formUrl;
     private FormSession formEntrySession;
-    private SessionRepo sessionRepo;
     private XFormService xFormService;
     private RestoreService restoreService;
     private HqAuth auth;
-    private String username;
     private String domain;
-    private String lang;
 
     private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
                            Map<String, String> sessionData, SessionRepo sessionRepo,
                            XFormService xFormService, RestoreService restoreService) throws Exception {
-        this.sessionRepo = sessionRepo;
+        SessionRepo sessionRepo1 = sessionRepo;
         this.xFormService = xFormService;
         this.restoreService = restoreService;
         this.formUrl = formUrl;
         this.auth = getAuth((authDict));
-        this.username = username;
+        String username1 = username;
         this.domain = domain;
-        this.lang = lang;
+        String lang1 = lang;
         Map<String, String> data = sessionData;
         try {
             formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, domain, data);

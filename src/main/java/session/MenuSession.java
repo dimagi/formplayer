@@ -43,7 +43,6 @@ public class MenuSession {
     private FormplayerConfigEngine engine;
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
-    private HqAuth auth;
     private String installReference;
     private String username;
     private String domain;
@@ -59,7 +58,7 @@ public class MenuSession {
         this.username = username;
         this.domain = domain;
 
-        this.auth = new BasicAuth(username, domain, host, password);
+        HqAuth auth = new BasicAuth(username, domain, host, password);
 
         resolveInstallReference(installReference, appId);
 
