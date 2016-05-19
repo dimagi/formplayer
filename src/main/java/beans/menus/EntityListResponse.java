@@ -132,7 +132,7 @@ public class EntityListResponse extends MenuBean {
 
     @Override
     public String toString(){
-        return "EntityListResponse Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
-                ", action=" + action + " parent=" + super.toString();
+        return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
+                ", action=" + action + " parent=" + super.toString() +"]";
     }
 }
