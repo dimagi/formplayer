@@ -13,7 +13,7 @@ public class CaseFilterResponseBean {
     }
     public CaseFilterResponseBean(String caseString){
         String[] caseIds = caseString.split(",");
-        ArrayList<String> caseIdArray = new ArrayList<String>();
+        ArrayList<String> caseIdArray = new ArrayList<>();
         for(String caseId: caseIds){
             if(!caseId.trim().equals("")){
                 caseIdArray.add(caseId);

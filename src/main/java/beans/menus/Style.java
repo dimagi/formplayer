@@ -58,14 +58,19 @@ public class Style {
     }
 
     private void setDisplayFormatFromString(String displayFormat){
-        if(displayFormat.equals("image")){
-            setDisplayFormat(DisplayFormat.Image);
-        } else if(displayFormat.equals("audio")){
-            setDisplayFormat(DisplayFormat.Audio);
-        } else if(displayFormat.equals("Text")){
-            setDisplayFormat(DisplayFormat.Text);
-        } else if(displayFormat.equals("Graph")){
-            setDisplayFormat(DisplayFormat.Graph);
+        switch (displayFormat) {
+            case "image":
+                setDisplayFormat(DisplayFormat.Image);
+                break;
+            case "audio":
+                setDisplayFormat(DisplayFormat.Audio);
+                break;
+            case "Text":
+                setDisplayFormat(DisplayFormat.Text);
+                break;
+            case "Graph":
+                setDisplayFormat(DisplayFormat.Graph);
+                break;
         }
     }
 }

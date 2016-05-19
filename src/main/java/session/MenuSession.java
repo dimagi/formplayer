@@ -138,7 +138,7 @@ public class MenuSession {
 
     private HashMap<String, String> getSessionData() {
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
-        HashMap<String, String> ret = new HashMap<String, String>();
+        HashMap<String, String> ret = new HashMap<>();
         for (String key : sessionData.keySet()) {
             ret.put(key, sessionData.get(key));
         }

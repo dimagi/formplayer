@@ -74,9 +74,7 @@ public class EntityListResponse extends MenuBean {
                 length = end - start;
             }
             entities = new Entity[length];
-            for(int i = start; i< end; i++){
-                entities[i-offset] = allEntities[i];
-            }
+            System.arraycopy(allEntities, start, entities, start - offset, end - start);
 
             setPageCount((int)Math.ceil((double)allEntities.length/CASE_LENGTH_LIMIT));
             setCurrentPage(offset/CASE_LENGTH_LIMIT);

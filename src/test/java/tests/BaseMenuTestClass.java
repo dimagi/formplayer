@@ -86,20 +86,27 @@ public class BaseMenuTestClass {
         String appId = ref.substring(ref.indexOf("app_id=") + "app_id=".length(),
                 ref.indexOf("#hack"));
         log.info("Got appId: " + appId);
-        if(appId.equals("doublemgmtappid")){
-            ref = "apps/basic2/profile.ccpr";
-        } else if(appId.equals("navigatorappid")){
-            ref = "apps/basic2/profile.ccpr";
-        } else if(appId.equals("caseappid")){
-            ref = "apps/basic2/profile.ccpr";
-        } else if(appId.equals("createappid")){
-            ref = "archives/basic.ccz";
-        } else if(appId.equals("casemediaappid")){
-            ref = "archives/casemedia.ccz";
-        } else if(appId.equals("endformappid")){
-            ref = "archives/formnav.ccz";
-        } else{
-            throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
+        switch (appId) {
+            case "doublemgmtappid":
+                ref = "apps/basic2/profile.ccpr";
+                break;
+            case "navigatorappid":
+                ref = "apps/basic2/profile.ccpr";
+                break;
+            case "caseappid":
+                ref = "apps/basic2/profile.ccpr";
+                break;
+            case "createappid":
+                ref = "archives/basic.ccz";
+                break;
+            case "casemediaappid":
+                ref = "archives/casemedia.ccz";
+                break;
+            case "endformappid":
+                ref = "archives/formnav.ccz";
+                break;
+            default:
+                throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
         }
         log.info("Resolved ref: " + ref);
         return ref;

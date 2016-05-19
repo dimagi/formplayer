@@ -22,7 +22,7 @@ public class CaseBean {
     }
 
     public CaseBean(Case cCase){
-        properties = new HashMap<String, String>();
+        properties = new HashMap<>();
         setCaseId(cCase.getCaseId());
         setClosed(cCase.isClosed());
         setUserId(cCase.getUserId());
