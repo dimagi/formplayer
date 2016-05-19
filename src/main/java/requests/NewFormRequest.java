@@ -19,19 +19,19 @@ import java.util.Map;
 @Service
 public class NewFormRequest {
 
-    String formUrl;
-    FormSession formEntrySession;
-    SessionRepo sessionRepo;
-    XFormService xFormService;
-    RestoreService restoreService;
-    HqAuth auth;
-    String username;
-    String domain;
-    String lang;
+    private String formUrl;
+    private FormSession formEntrySession;
+    private SessionRepo sessionRepo;
+    private XFormService xFormService;
+    private RestoreService restoreService;
+    private HqAuth auth;
+    private String username;
+    private String domain;
+    private String lang;
 
-    public NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
-                          Map<String, String> sessionData, SessionRepo sessionRepo,
-                          XFormService xFormService, RestoreService restoreService) throws Exception {
+    private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
+                           Map<String, String> sessionData, SessionRepo sessionRepo,
+                           XFormService xFormService, RestoreService restoreService) throws Exception {
         this.sessionRepo = sessionRepo;
         this.xFormService = xFormService;
         this.restoreService = restoreService;
@@ -49,7 +49,7 @@ public class NewFormRequest {
         }
     }
 
-    public HqAuth getAuth(Map<String, String> authMap){
+    private HqAuth getAuth(Map<String, String> authMap){
         if(authMap.containsKey("type")){
             if(authMap.get("type").equals("django-session")){
                 return new DjangoAuth(authMap.get("key"));
@@ -70,12 +70,12 @@ public class NewFormRequest {
         return ret;
     }
 
-    public String getRestoreXml(){
+    private String getRestoreXml(){
         String restorePayload = restoreService.getRestoreXml(domain, auth);
         return restorePayload;
     }
 
-    public String getFormXml(){
+    private String getFormXml(){
         return xFormService.getFormXml(formUrl, auth);
     }
 }

@@ -42,23 +42,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class BaseTestClass {
 
-    protected MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Autowired
-    protected SessionRepo sessionRepoMock;
+    private SessionRepo sessionRepoMock;
 
     @Autowired
-    protected XFormService xFormServiceMock;
+    private XFormService xFormServiceMock;
 
     @Autowired
-    protected RestoreService restoreServiceMock;
+    RestoreService restoreServiceMock;
 
     @InjectMocks
     protected FormController formController;
 
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
-    final protected SerializableFormSession serializableFormSession = new SerializableFormSession();
+    final SerializableFormSession serializableFormSession = new SerializableFormSession();
 
     @Before
     public void setUp() throws IOException {
@@ -73,7 +73,7 @@ public class BaseTestClass {
         setUpSessionRepoMock();
     }
 
-    public void setUpSessionRepoMock(){
+    private void setUpSessionRepoMock(){
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -103,7 +103,7 @@ public class BaseTestClass {
     }
 
 
-    public AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
+    AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
@@ -119,7 +119,7 @@ public class BaseTestClass {
         return response;
     }
 
-    public NewFormSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
+    NewFormSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
 
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
@@ -136,7 +136,7 @@ public class BaseTestClass {
         return newSessionResponse;
     }
 
-    public CaseFilterResponseBean filterCases(String requestPath) throws Exception {
+    CaseFilterResponseBean filterCases(String requestPath) throws Exception {
 
         String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
         MvcResult result = this.mockMvc.perform(
@@ -150,7 +150,7 @@ public class BaseTestClass {
                 CaseFilterResponseBean.class);
     }
 
-    public CaseFilterFullResponseBean filterCasesFull(String requestPath) throws Exception {
+    CaseFilterFullResponseBean filterCasesFull(String requestPath) throws Exception {
 
         String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
         MvcResult result = this.mockMvc.perform(
@@ -164,7 +164,7 @@ public class BaseTestClass {
                 CaseFilterFullResponseBean.class);
     }
 
-    public SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {
+    SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
         submitRequestBean.setSessionId(sessionId);
@@ -179,7 +179,7 @@ public class BaseTestClass {
         return mapper.readValue(result, SubmitResponseBean.class);
     }
 
-    public SyncDbResponseBean syncDb(String requestPath) throws Exception {
+    SyncDbResponseBean syncDb(String requestPath) throws Exception {
         String syncDbRequestPayload = FileUtils.getFile(this.getClass(), "requests/sync_db/sync_db.json");
 
         SyncDbRequestBean syncDbRequestBean = mapper.readValue(syncDbRequestPayload,
@@ -197,7 +197,7 @@ public class BaseTestClass {
         return syncDbResponseBean;
     }
 
-    public RepeatResponseBean newRepeatRequest(String path, String sessionId) throws Exception {
+    RepeatResponseBean newRepeatRequest(String path, String sessionId) throws Exception {
 
         String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), path);
 
@@ -214,7 +214,7 @@ public class BaseTestClass {
         return mapper.readValue(repeatResult, RepeatResponseBean.class);
     }
 
-    public RepeatResponseBean deleteRepeatRequest(String path, String sessionId) throws Exception {
+    RepeatResponseBean deleteRepeatRequest(String path, String sessionId) throws Exception {
 
         String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), path);
 
@@ -231,7 +231,7 @@ public class BaseTestClass {
         return mapper.readValue(repeatResult, RepeatResponseBean.class);
     }
 
-    public CurrentResponseBean getCurrent(String sessionId) throws Exception{
+    CurrentResponseBean getCurrent(String sessionId) throws Exception{
         CurrentRequestBean currentRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), CurrentRequestBean.class);
         currentRequestBean.setSessionId(sessionId);
@@ -244,7 +244,7 @@ public class BaseTestClass {
         return mapper.readValue(currentResultString, CurrentResponseBean.class);
     }
 
-    public GetInstanceResponseBean getInstance(String sessionId) throws Exception{
+    GetInstanceResponseBean getInstance(String sessionId) throws Exception{
         GetInstanceRequestBean getInstanceRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), GetInstanceRequestBean.class);
         getInstanceRequestBean.setSessionId(sessionId);
@@ -256,7 +256,7 @@ public class BaseTestClass {
         return mapper.readValue(getInstanceResultString, GetInstanceResponseBean.class);
     }
 
-    public EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception{
+    EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception{
         EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
         evaluateXPathRequestBean.setSessionId(sessionId);

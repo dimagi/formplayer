@@ -169,7 +169,7 @@ public class EntityListResponse extends MenuBean {
         return action;
     }
 
-    public void setAction(DisplayElement action) {
+    private void setAction(DisplayElement action) {
         this.action = action;
     }
 
@@ -199,7 +199,7 @@ public class EntityListResponse extends MenuBean {
         return pageCount;
     }
 
-    public void setPageCount(int pageCount) {
+    private void setPageCount(int pageCount) {
         this.pageCount = pageCount;
     }
 
@@ -207,7 +207,7 @@ public class EntityListResponse extends MenuBean {
         return currentPage;
     }
 
-    public void setCurrentPage(int currentPage) {
+    private void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
     }
 }

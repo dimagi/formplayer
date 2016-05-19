@@ -15,7 +15,7 @@ import java.util.Vector;
 /**
  * Created by willpride on 1/29/16.
  */
-public class FormplayerSessionWrapper extends SessionWrapper {
+class FormplayerSessionWrapper extends SessionWrapper {
 
     private Map<String, String> injectedSessionData;
 

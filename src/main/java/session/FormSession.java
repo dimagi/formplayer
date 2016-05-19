@@ -58,11 +58,11 @@ public class FormSession {
     private Map<String, String> sessionData;
     private String postUrl;
 
-    String title;
-    String[] langs;
-    String uuid;
-    String username;
-    String domain;
+    private String title;
+    private String[] langs;
+    private String uuid;
+    private String username;
+    private String domain;
 
     public FormSession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
@@ -132,7 +132,7 @@ public class FormSession {
         getFormTree();
     }
 
-    public void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {
+    private void initialize(boolean newInstance, Map<String, String> sessionData) throws Exception {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         FormplayerConfigEngine.setupStorageManager(username, "dbs");
@@ -191,7 +191,7 @@ public class FormSession {
         return metaData.toString();
     }
 
-    public String getRestoreXml() {
+    private String getRestoreXml() {
         return restoreXml;
     }
 
@@ -207,7 +207,7 @@ public class FormSession {
         this.sequenceId = sequenceId;
     }
 
-    public String getInitLang() {
+    private String getInitLang() {
         return initLang;
     }
 
@@ -225,7 +225,7 @@ public class FormSession {
         return getInstanceXml();
     }
 
-    public String serializeFormDef() throws IOException {
+    private String serializeFormDef() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream serializedStream = new DataOutputStream(baos);
         formDef.writeExternal(serializedStream);
@@ -233,14 +233,14 @@ public class FormSession {
         return encoded;
     }
 
-    public void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
+    private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
         byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
         DataInputStream inputStream =
                 new DataInputStream(new ByteArrayInputStream(sessionBytes));
         formDef.readExternal(inputStream, PrototypeManager.getDefault());
     }
 
-    public Map<String, String> getSessionData() {
+    private Map<String, String> getSessionData() {
         return sessionData;
     }
 
@@ -259,7 +259,7 @@ public class FormSession {
         return serializableFormSession;
     }
 
-    public String getDomain() {
+    private String getDomain() {
         return domain;
     }
 

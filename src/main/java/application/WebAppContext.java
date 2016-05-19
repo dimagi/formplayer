@@ -33,12 +33,12 @@ import java.util.Properties;
 
 @Configuration
 @EnableWebMvc
-public class WebAppContext extends WebMvcConfigurerAdapter {
+class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${redis.hostname}")
     private String redisHostName;
 
-    Log log = LogFactory.getLog(WebAppContext.class);
+    private Log log = LogFactory.getLog(WebAppContext.class);
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -86,7 +86,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public JedisConnectionFactory jedisConnFactory(){
+    private JedisConnectionFactory jedisConnFactory(){
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
         jedisConnectionFactory.setUsePool(true);
         jedisConnectionFactory.setHostName(redisHostName);

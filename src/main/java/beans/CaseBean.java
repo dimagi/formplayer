@@ -52,7 +52,7 @@ public class CaseBean {
         return userId;
     }
     @JsonSetter(value="user_id")
-    public void setUserId(String userId) {
+    private void setUserId(String userId) {
         this.userId = userId;
     }
     @JsonGetter(value="case_id")
@@ -60,7 +60,7 @@ public class CaseBean {
         return caseId;
     }
     @JsonSetter(value="case_id")
-    public void setCaseId(String caseId) {
+    private void setCaseId(String caseId) {
         this.caseId = caseId;
     }
     @JsonGetter(value="closed")
@@ -68,7 +68,7 @@ public class CaseBean {
         return closed;
     }
     @JsonSetter(value="closed")
-    public void setClosed(boolean closed) {
+    private void setClosed(boolean closed) {
         this.closed = closed;
     }
 

@@ -11,7 +11,7 @@ public class MenuBean {
         return title;
     }
 
-    public void setTitle(String title) {
+    void setTitle(String title) {
         this.title = title;
     }
 

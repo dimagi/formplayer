@@ -18,9 +18,10 @@ import services.RestoreService;
 public class RestoreServiceImpl implements RestoreService {
 
     @Value("${commcarehq.host}")
+    private
     String host;
 
-    Log log = LogFactory.getLog(RestoreServiceImpl.class);
+    private Log log = LogFactory.getLog(RestoreServiceImpl.class);
 
     @Override
     public String getRestoreXml(String domain, HqAuth auth) {

@@ -18,7 +18,7 @@ public class SessionImpl implements SessionRepo{
     private RedisTemplate<String, SerializableFormSession> redisTemplate;
 
     private static String SESSION_KEY = "Session";
-    Log log = LogFactory.getLog(SessionImpl.class);
+    private Log log = LogFactory.getLog(SessionImpl.class);
 
     @Override
     public void save(SerializableFormSession session) {

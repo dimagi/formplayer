@@ -10,10 +10,10 @@ import java.nio.charset.Charset;
  * Created by willpride on 1/13/16.
  */
 public class BasicAuth implements HqAuth {
-    String username;
-    String password;
-    String domain;
-    String host;
+    private String username;
+    private String password;
+    private String domain;
+    private String host;
 
     public BasicAuth(String username, String domain, String host, String password ){
         this.username = username;

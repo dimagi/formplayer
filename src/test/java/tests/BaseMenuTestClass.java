@@ -42,30 +42,30 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  * Created by willpride on 4/13/16.
  */
 public class BaseMenuTestClass {
-    protected MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Autowired
-    protected SessionRepo sessionRepoMock;
+    private SessionRepo sessionRepoMock;
 
     @Autowired
-    protected XFormService xFormServiceMock;
+    private XFormService xFormServiceMock;
 
     @Autowired
-    protected RestoreService restoreServiceMock;
+    RestoreService restoreServiceMock;
 
     @Autowired
-    protected InstallService installService;
+    private InstallService installService;
 
     @InjectMocks
     MenuController menuController;
 
-    protected ObjectMapper mapper;
+    ObjectMapper mapper;
 
-    protected String urlPrepend(String string){
+    private String urlPrepend(String string){
         return "/" + string;
     }
 
-    Log log = LogFactory.getLog(BaseMenuTestClass.class);
+    private Log log = LogFactory.getLog(BaseMenuTestClass.class);
 
     @Before
     public void setUp() throws IOException {
@@ -105,7 +105,7 @@ public class BaseMenuTestClass {
         return ref;
     }
 
-    protected void setupInstallServiceMock() throws IOException {
+    private void setupInstallServiceMock() throws IOException {
         try {
             doAnswer(new Answer<Object>() {
                 @Override
@@ -142,7 +142,7 @@ public class BaseMenuTestClass {
         }
     }
 
-    protected String getTestResourcePath(String resourcePath){
+    private String getTestResourcePath(String resourcePath){
         try {
             URL url = this.getClass().getClassLoader().getResource(resourcePath);
             File file = new File(url.getPath());
@@ -154,7 +154,7 @@ public class BaseMenuTestClass {
         }
     }
 
-    public JSONObject sessionNavigate(String requestPath) throws Exception {
+    JSONObject sessionNavigate(String requestPath) throws Exception {
         SessionNavigationBean sessionNavigationBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
         ResultActions selectResult = mockMvc.perform(
@@ -165,7 +165,7 @@ public class BaseMenuTestClass {
         return new JSONObject(resultString);
     }
 
-    public JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
+    JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
@@ -179,7 +179,7 @@ public class BaseMenuTestClass {
         return new JSONObject(resultString);
     }
 
-    public CommandListResponseBean doInstall(String requestPath) throws Exception {
+    CommandListResponseBean doInstall(String requestPath) throws Exception {
         InstallRequestBean installRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
         ResultActions installResult = mockMvc.perform(

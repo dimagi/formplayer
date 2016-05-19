@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * Created by willpride on 1/12/16.
  */
 public class CaseFilterResponseBean {
-    String[] cases; // comma separated case list
+    private String[] cases; // comma separated case list
 
     public CaseFilterResponseBean(){
 

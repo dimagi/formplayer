@@ -46,7 +46,7 @@ public class FormplayerConfigEngine {
     private ResourceTable recoveryTable;
     private CommCarePlatform platform;
     private ArchiveFileRoot mArchiveRoot;
-    Log log = LogFactory.getLog(FormplayerConfigEngine.class);
+    private Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
     public FormplayerConfigEngine(final String username, final String dbPath) {
         this.platform = new CommCarePlatform(2, 27);
@@ -178,7 +178,7 @@ public class FormplayerConfigEngine {
         installAppFromReference(profileRef);
     }
 
-    public void installAppFromReference(String profileReference) throws UnresolvedResourceException,
+    private void installAppFromReference(String profileReference) throws UnresolvedResourceException,
             UnfullfilledRequirementsException, InstallCancelledException {
         ResourceManager.installAppResources(platform, profileReference, this.table, true);
     }

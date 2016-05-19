@@ -51,7 +51,7 @@ public class MenuSession {
     private String host = "commcarehq.org";
     private Screen screen;
 
-    Log log = LogFactory.getLog(MenuSession.class);
+    private Log log = LogFactory.getLog(MenuSession.class);
 
     public MenuSession(String username, String password, String domain, String appId, String installReference,
                        InstallService installService, RestoreService restoreService) throws Exception {
@@ -136,7 +136,7 @@ public class MenuSession {
         }
     }
 
-    public HashMap<String, String> getSessionData() {
+    private HashMap<String, String> getSessionData() {
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
         HashMap<String, String> ret = new HashMap<String, String>();
         for (String key : sessionData.keySet()) {

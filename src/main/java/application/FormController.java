@@ -43,8 +43,8 @@ public class FormController {
     @Autowired
     private RestoreService restoreService;
 
-    Log log = LogFactory.getLog(FormController.class);
-    ObjectMapper mapper = new ObjectMapper();
+    private Log log = LogFactory.getLog(FormController.class);
+    private ObjectMapper mapper = new ObjectMapper();
 
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION , method = RequestMethod.POST)

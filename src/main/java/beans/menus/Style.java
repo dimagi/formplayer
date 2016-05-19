@@ -37,7 +37,7 @@ public class Style {
         return displayFormats;
     }
 
-    public void setDisplayFormat(DisplayFormat displayFormats) {
+    private void setDisplayFormat(DisplayFormat displayFormats) {
         this.displayFormats = displayFormats;
     }
 
@@ -45,7 +45,7 @@ public class Style {
         return fontSize;
     }
 
-    public void setFontSize(int fontSize) {
+    private void setFontSize(int fontSize) {
         this.fontSize = fontSize;
     }
 
@@ -53,11 +53,11 @@ public class Style {
         return widthHint;
     }
 
-    public void setWidthHint(String widthHint) {
+    private void setWidthHint(String widthHint) {
         this.widthHint = widthHint;
     }
 
-    public void setDisplayFormatFromString(String displayFormat){
+    private void setDisplayFormatFromString(String displayFormat){
         if(displayFormat.equals("image")){
             setDisplayFormat(DisplayFormat.Image);
         } else if(displayFormat.equals("audio")){

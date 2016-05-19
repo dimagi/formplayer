@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Created by willpride on 1/29/16.
  */
-public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
+class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
     private Map<String, String> injectedSessionData;
 
