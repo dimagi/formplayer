@@ -3,18 +3,13 @@ package tests;
 import application.MenuController;
 import auth.HqAuth;
 import beans.InstallRequestBean;
-import beans.MenuSelectBean;
-import beans.MenuSelectRepeater;
+import beans.SessionNavigationBean;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import install.FormplayerConfigEngine;
-import objects.SerializableMenuSession;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.persistence.SqlSandboxUtils;
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
@@ -26,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import repo.MenuRepo;
 import repo.SessionRepo;
 import services.InstallService;
 import services.RestoreService;
@@ -51,9 +45,6 @@ public class BaseMenuTestClass {
     protected MockMvc mockMvc;
 
     @Autowired
-    protected MenuRepo menuRepoMock;
-
-    @Autowired
     protected SessionRepo sessionRepoMock;
 
     @Autowired
@@ -70,8 +61,6 @@ public class BaseMenuTestClass {
 
     protected ObjectMapper mapper;
 
-    final protected SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
-
     protected String urlPrepend(String string){
         return "/" + string;
     }
@@ -83,18 +72,36 @@ public class BaseMenuTestClass {
         Mockito.reset(sessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
-        Mockito.reset(menuRepoMock);
         Mockito.reset(installService);
         MockitoAnnotations.initMocks(this);
         mapper = new ObjectMapper();
         mockMvc = MockMvcBuilders.standaloneSetup(menuController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
-        setupMenuMock();
         setupInstallServiceMock();
     }
 
-    private void setupInstallServiceMock() throws IOException {
+    private String resolveAppId(String ref){
+        log.info("Test resolving hack ref: " + ref);
+        String appId = ref.substring(ref.indexOf("app_id=") + "app_id=".length(),
+                ref.indexOf("#hack"));
+        log.info("Got appId: " + appId);
+        if(appId.equals("doublemgmttestappid")){
+            ref = "apps/basic2/profile.ccpr";
+        } else if(appId.equals("navigatorappid")){
+            ref = "apps/basic2/profile.ccpr";
+        } else if(appId.equals("casetestappid")){
+            ref = "apps/basic2/profile.ccpr";
+        } else if(appId.equals("createtestappid")){
+            ref = "archives/basic.ccz";
+        } else{
+            throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
+        }
+        log.info("Resolved ref: " + ref);
+        return ref;
+    }
+
+    protected void setupInstallServiceMock() throws IOException {
         try {
             doAnswer(new Answer<Object>() {
                 @Override
@@ -102,10 +109,14 @@ public class BaseMenuTestClass {
                     try {
                         Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
+                        if(ref.contains("#hack=commcare.ccz")){
+                            ref = resolveAppId(ref);
+                        }
                         String username = (String) args[1];
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        FormplayerConfigEngine engine = new FormplayerConfigEngine(username, "dbs");
+                        String path = (String) args[2];
+                        FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
                         String absolutePath = getTestResourcePath(ref);
+                        System.out.println("Init with path: " + absolutePath);
                         if (absolutePath.endsWith(".ccpr")) {
                             engine.initFromLocalFileResource(absolutePath);
                         } else if (absolutePath.endsWith(".ccz")) {
@@ -127,62 +138,41 @@ public class BaseMenuTestClass {
         }
     }
 
-    private void setupMenuMock() {
-        when(menuRepoMock.find(anyString())).thenReturn(serializableMenuSession);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
-                serializableMenuSession.setActions(toBeSaved.getActions());
-                serializableMenuSession.setUsername(toBeSaved.getUsername());
-                serializableMenuSession.setDomain(toBeSaved.getDomain());
-                serializableMenuSession.setActions(toBeSaved.getActions());
-                serializableMenuSession.setSessionId(toBeSaved.getSessionId());
-                serializableMenuSession.setInstallReference(toBeSaved.getInstallReference());
-                serializableMenuSession.setPassword(toBeSaved.getPassword());
-                serializableMenuSession.setSerializedCommCareSession(toBeSaved.getSerializedCommCareSession());
-                serializableMenuSession.setCurrentSelection(toBeSaved.getCurrentSelection());
-                return null;
-            }
-        }).when(menuRepoMock).save(any(SerializableMenuSession.class));
+    protected String getTestResourcePath(String resourcePath){
+        try {
+            URL url = this.getClass().getClassLoader().getResource(resourcePath);
+            File file = new File(url.getPath());
+            return file.getAbsolutePath();
+        } catch(NullPointerException npe){
+            log.error("Couldn't find resource at path " + resourcePath);
+            npe.printStackTrace();
+            throw npe;
+        }
     }
 
-    private String getTestResourcePath(String resourcePath){
-        URL url = this.getClass().getClassLoader().getResource(resourcePath);
-        File file = new File(url.getPath());
-        return file.getAbsolutePath();
-    }
-
-    public JSONObject selectMenu(String requestPath, String sessionId) throws Exception {
-        return selectMenu(requestPath, sessionId, "0");
-    }
-
-    public JSONObject selectMenu(String requestPath, String sessionId, String selection) throws Exception {
-        MenuSelectBean menuSelectBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), requestPath), MenuSelectBean.class);
-        menuSelectBean.setSessionId(sessionId);
-        menuSelectBean.setSelection(selection);
+    public JSONObject sessionNavigate(String requestPath) throws Exception {
+        SessionNavigationBean sessionNavigationBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
         ResultActions selectResult = mockMvc.perform(
-                post(urlPrepend(Constants.URL_MENU_SELECT))
+                post(urlPrepend(Constants.URL_MENU_NAVIGATION))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(menuSelectBean)));
+                        .content(mapper.writeValueAsString(sessionNavigationBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        JSONObject ret = new JSONObject(resultString);
-        return ret;
+        return new JSONObject(resultString);
     }
 
-    public JSONObject selectMenuRepeat(String requestPath, String sessionId) throws Exception {
-        MenuSelectRepeater menuSelectRepeater = mapper.readValue
-                (FileUtils.getFile(this.getClass(), requestPath), MenuSelectRepeater.class);
-        menuSelectRepeater.setSessionId(sessionId);
+    public JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "testdomain");
+        sessionNavigationBean.setAppId(testName + "testappid");
+        sessionNavigationBean.setUsername(testName + "testusername");
+        sessionNavigationBean.setSelections(selections);
         ResultActions selectResult = mockMvc.perform(
-                post(urlPrepend(Constants.URL_MENU_SELECT_REPEATER))
+                post(urlPrepend(Constants.URL_MENU_NAVIGATION))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(menuSelectRepeater)));
+                        .content(mapper.writeValueAsString(sessionNavigationBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        JSONObject ret = new JSONObject(resultString);
-        return ret;
+        return new JSONObject(resultString);
     }
 
     public CommandListResponseBean doInstall(String requestPath) throws Exception {
@@ -196,10 +186,5 @@ public class BaseMenuTestClass {
         CommandListResponseBean menuResponseBean = mapper.readValue(installResultString,
                 CommandListResponseBean.class);
         return menuResponseBean;
-    }
-
-    @After
-    public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder("doubledb");
     }
 }

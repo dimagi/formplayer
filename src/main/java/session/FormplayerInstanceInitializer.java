@@ -43,8 +43,4 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         root.setParent(instance.getBase());
         return root;
     }
-
-    public void setInjectedSessionData(Map<String, String> injectedSessionData) {
-        this.injectedSessionData = injectedSessionData;
-    }
 }

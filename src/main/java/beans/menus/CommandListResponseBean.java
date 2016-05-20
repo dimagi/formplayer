@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by willpride on 4/13/16.
  */
-public class CommandListResponseBean extends MenuSessionBean{
+public class CommandListResponseBean extends MenuBean {
 
     private Command[] commands;
 
@@ -37,6 +37,6 @@ public class CommandListResponseBean extends MenuSessionBean{
     @Override
     public String toString(){
         return "CommandListResponseBean [commands=" + Arrays.toString(commands)
-                + "MenuSessionBean= " + super.toString() + "]";
+                + "MenuBean= " + super.toString() + "]";
     }
 }

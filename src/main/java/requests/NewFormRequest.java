@@ -42,7 +42,7 @@ public class NewFormRequest {
         this.lang = lang;
         Map<String, String> data = sessionData;
         try {
-            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, data);
+            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, domain, data);
             sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();

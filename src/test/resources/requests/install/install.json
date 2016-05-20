@@ -1,7 +1,7 @@
 {
-  "username": "testuser",
-  "password": "testpass",
-  "domain": "testdomain",
+  "username": "casetestuser",
+  "password": "casetestpass",
+  "domain": "casetestdomain",
   "install_reference": "archives/basic.ccz",
-  "app_id": "test_id"
+  "app_id": "casetestappid"
 }

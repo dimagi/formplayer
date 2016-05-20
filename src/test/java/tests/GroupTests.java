@@ -40,7 +40,7 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testConditionalItemsets() throws Exception {
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/groups.xml");
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -85,7 +85,7 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testMultiSelectGroups() throws Exception {
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/groups.xml");
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -119,10 +119,6 @@ public class GroupTests extends BaseTestClass{
 
     @Test
     public void testInnerOuterGroups() throws Exception {
-
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/groups.xml");
-        String sessionId = newSessionResponse.getSessionId();
-
-        System.out.println("NewSessionREsponse: " + newSessionResponse);
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
     }
 }
