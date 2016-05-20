@@ -61,6 +61,6 @@ public class InstallRequestBean {
 
     public String toString() {
         return "InstallRequestBean: [installReference=" + installReference +
-                ", username=" + username + ", domain=" + domain + ", appId=" + appId + ", AuthMap=" + hqAuth + "]";
+                ", username=" + username + ", domain=" + domain + ", appId=" + appId + "]";
     }
 }

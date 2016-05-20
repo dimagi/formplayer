@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.util.cli.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.SessionRepo;
@@ -31,8 +32,11 @@ import javax.servlet.http.HttpServletRequest;
 @Api(value = "Menu Controllers", description = "Operations for navigating CommCare Menus and Cases")
 @RestController
 @EnableAutoConfiguration
-@CrossOrigin(origins = "localhost:8000")
+@CrossOrigin()
 public class MenuController {
+
+    @Value("${commcarehq.host}")
+    private String host;
 
     @Autowired
     private RestoreService restoreService;

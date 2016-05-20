@@ -28,10 +28,14 @@ public class RestoreServiceImpl implements RestoreService {
         RestTemplate restTemplate = new RestTemplate();
         log.info("Restoring at domain: " + domain + " with auth: " + auth);
         ResponseEntity<String> response =
-                restTemplate.exchange(host
-                                + "/a/" + domain + "/phone/restore/?version=2.0",
+                restTemplate.exchange(getRestoreUrl(domain),
                         HttpMethod.GET,
                         new HttpEntity<String>(auth.getAuthHeaders()), String.class);
         return response.getBody();
+    }
+
+    public String getRestoreUrl(String domain){
+        log.info("Restoring from URL " + host + "/a/" + domain + "/phone/restore/?version=2.0");
+        return host + "/a/" + domain + "/phone/restore/?version=2.0";
     }
 }
