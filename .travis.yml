@@ -11,3 +11,5 @@ before_script:
   - gradle wrapper
 script:
   - ./gradlew test --stacktrace --i
+jdk:
+  - oraclejdk8
