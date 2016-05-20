@@ -10,9 +10,9 @@ import java.util.Arrays;
  * Created by willpride on 1/12/16.
  */
 public class NewFormSessionResponse extends SessionBean{
-    QuestionBean[] tree;
-    String title;
-    String[] langs;
+    private QuestionBean[] tree;
+    private String title;
+    private String[] langs;
 
     public NewFormSessionResponse(){}
 

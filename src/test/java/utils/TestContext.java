@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 @Configuration
 public class TestContext {
 
-    public static SerializableFormSession serializableFormSession;
+    private static SerializableFormSession serializableFormSession;
  
     @Bean
     public MessageSource messageSource() {

@@ -1,6 +1,5 @@
 package beans.menus;
 
-import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 
 /**
@@ -37,7 +36,7 @@ public class Style {
         return displayFormats;
     }
 
-    public void setDisplayFormat(DisplayFormat displayFormats) {
+    private void setDisplayFormat(DisplayFormat displayFormats) {
         this.displayFormats = displayFormats;
     }
 
@@ -45,7 +44,7 @@ public class Style {
         return fontSize;
     }
 
-    public void setFontSize(int fontSize) {
+    private void setFontSize(int fontSize) {
         this.fontSize = fontSize;
     }
 
@@ -53,19 +52,24 @@ public class Style {
         return widthHint;
     }
 
-    public void setWidthHint(String widthHint) {
+    private void setWidthHint(String widthHint) {
         this.widthHint = widthHint;
     }
 
-    public void setDisplayFormatFromString(String displayFormat){
-        if(displayFormat.equals("image")){
-            setDisplayFormat(DisplayFormat.Image);
-        } else if(displayFormat.equals("audio")){
-            setDisplayFormat(DisplayFormat.Audio);
-        } else if(displayFormat.equals("Text")){
-            setDisplayFormat(DisplayFormat.Text);
-        } else if(displayFormat.equals("Graph")){
-            setDisplayFormat(DisplayFormat.Graph);
+    private void setDisplayFormatFromString(String displayFormat){
+        switch (displayFormat) {
+            case "image":
+                setDisplayFormat(DisplayFormat.Image);
+                break;
+            case "audio":
+                setDisplayFormat(DisplayFormat.Audio);
+                break;
+            case "Text":
+                setDisplayFormat(DisplayFormat.Text);
+                break;
+            case "Graph":
+                setDisplayFormat(DisplayFormat.Graph);
+                break;
         }
     }
 }

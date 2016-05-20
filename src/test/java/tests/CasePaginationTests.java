@@ -1,8 +1,6 @@
 package tests;
 
 import auth.HqAuth;
-import beans.NewFormSessionResponse;
-import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
 import org.json.JSONObject;
 import org.junit.Test;

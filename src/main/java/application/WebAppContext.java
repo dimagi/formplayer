@@ -4,7 +4,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.ViewResolver;
@@ -33,12 +36,17 @@ import java.util.Properties;
 
 @Configuration
 @EnableWebMvc
-public class WebAppContext extends WebMvcConfigurerAdapter {
+@ComponentScan
+@PropertySource(value="file:config/application.properties")
+class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${redis.hostname}")
     private String redisHostName;
 
-    Log log = LogFactory.getLog(WebAppContext.class);
+    @Value("${commcarehq.host}")
+    private String hqHost;
+
+    private final Log log = LogFactory.getLog(WebAppContext.class);
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -99,6 +107,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         redisTemplate.setConnectionFactory(jedisConnFactory());
         return redisTemplate;
     }
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertiesResolver() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
 
     @Bean
     public SessionRepo sessionRepo(){
@@ -117,7 +129,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public InstallService installService(){
-        return new InstallServiceImpl();
+        return new InstallServiceImpl(hqHost);
     }
 
     // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak

@@ -48,7 +48,7 @@ public class EntityListResponse extends MenuBean {
         processTitle(session);
         processEntities(nextScreen, references, ec, offset);
         processStyles(shortDetail);
-        processActions(shortDetail, nextScreen.getSession());
+        processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
     }
 
@@ -66,17 +66,14 @@ public class EntityListResponse extends MenuBean {
         Entity[] allEntities = generateEntities(screen, references, ec);
         if(allEntities.length > CASE_LENGTH_LIMIT){
             // we're doing pagination
-            int start = offset;
             int end = offset + CASE_LENGTH_LIMIT;
             int length = CASE_LENGTH_LIMIT;
             if(end > allEntities.length){
                 end = allEntities.length;
-                length = end - start;
+                length = end - offset;
             }
             entities = new Entity[length];
-            for(int i = start; i< end; i++){
-                entities[i-offset] = allEntities[i];
-            }
+            System.arraycopy(allEntities, offset, entities, offset - offset, end - offset);
 
             setPageCount((int)Math.ceil((double)allEntities.length/CASE_LENGTH_LIMIT));
             setCurrentPage(offset/CASE_LENGTH_LIMIT);
@@ -140,7 +137,7 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
-    private void processActions(Detail detail, SessionWrapper session){
+    private void processActions(SessionWrapper session){
         Vector<Action> actions = session.getDetail(((EntityDatum)session.getNeededDatum()).getShortDetail()).getCustomActions();
         // Assume we only have one TODO WSP: is that correct?
         if(actions != null && !actions.isEmpty()) {
@@ -169,7 +166,7 @@ public class EntityListResponse extends MenuBean {
         return action;
     }
 
-    public void setAction(DisplayElement action) {
+    private void setAction(DisplayElement action) {
         this.action = action;
     }
 
@@ -199,7 +196,7 @@ public class EntityListResponse extends MenuBean {
         return pageCount;
     }
 
-    public void setPageCount(int pageCount) {
+    private void setPageCount(int pageCount) {
         this.pageCount = pageCount;
     }
 
@@ -207,7 +204,7 @@ public class EntityListResponse extends MenuBean {
         return currentPage;
     }
 
-    public void setCurrentPage(int currentPage) {
+    private void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
     }
 }

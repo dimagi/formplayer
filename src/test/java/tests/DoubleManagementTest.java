@@ -6,8 +6,6 @@ import beans.menus.CommandListResponseBean;
 import beans.menus.DisplayElement;
 import beans.menus.EntityDetailResponse;
 import beans.menus.EntityListResponse;
-import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.suite.model.DisplayUnit;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
