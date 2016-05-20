@@ -3,7 +3,7 @@ package application;
 import beans.*;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
-import beans.menus.MenuSessionBean;
+import beans.menus.MenuBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
@@ -13,11 +13,10 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
-import repo.MenuRepo;
 import repo.SessionRepo;
-import requests.InstallRequest;
 import services.InstallService;
 import services.RestoreService;
+import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 
@@ -33,9 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 public class MenuController {
 
     @Autowired
-    private MenuRepo menuRepo;
-
-    @Autowired
     private RestoreService restoreService;
 
     @Autowired
@@ -48,79 +44,60 @@ public class MenuController {
 
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
-    public SessionBean performInstall(@RequestBody InstallRequestBean installRequestBean) throws Exception {
+    public Object installRequest(@RequestBody InstallRequestBean installRequestBean) throws Exception {
         log.info("Received install request: " + installRequestBean);
-        InstallRequest installRequest = new InstallRequest(installRequestBean, restoreService, menuRepo, installService);
-        SessionBean response = getNextMenu(installRequest.getMenuSession(), true);
-        response.setSequenceId(1);
+        Object response = getNextMenu(performInstall(installRequestBean));
         log.info("Returning install response: " + response);
         return response;
     }
 
     /**
-     * Make a menu selection, return a new Menu or a Form to display. This form will load a MenuSession object
-     * from persistence, make the selection, and update the record. If the selection began form entry, this will
-     * also create a new FormSession object.
-     *
-     * @param menuSelectBean Give the selection to be made on the current MenuSession
-     *                       (could be a module, form, or case selection)
-     * @return A MenuResponseBean or a NewFormSessionResponse
-     * @throws Exception
-     */
-    @ApiOperation(value = "Make the given menu selection and return the next set of options, or a form to play.")
-    @RequestMapping(value = Constants.URL_MENU_SELECT, method = RequestMethod.POST)
-    public SessionBean selectMenu(@RequestBody MenuSelectBean menuSelectBean) throws Exception {
-        log.info("Select Menu with bean: " + menuSelectBean);
-        MenuSession menuSession = getMenuSession(menuSelectBean.getSessionId());
-        boolean redrawing = menuSession.handleInput(menuSelectBean.getSelection());
-        menuRepo.save(menuSession.serialize());
-        SessionBean nextMenu = getNextMenu(menuSession, redrawing);
-        log.info("Returning menu: " + nextMenu);
-        return nextMenu;
-    }
-
-    /**
      * Make a a series of menu selections (as above, but can have multiple)
      *
-     * @param menuSelectRepeater Give the selections to be made on the current MenuSession
-     *                             (could be a module, form, or case selection)
-     * @return A MenuResponseBean or a NewFormSessionResponse
+     * @param sessionNavigationBean Give an installation code or path and a set of session selections
+     * @return A MenuBean or a NewFormSessionResponse
      * @throws Exception
      */
-    @ApiOperation(value = "Make the given menu selection and return the next set of options, or a form to play.")
-    @RequestMapping(value = Constants.URL_MENU_SELECT_REPEATER, method = RequestMethod.POST)
-    public SessionBean selectMenuRepeater(@RequestBody MenuSelectRepeater menuSelectRepeater) throws Exception {
-        log.info("Select Menu with bean: " + menuSelectRepeater);
-        MenuSession menuSession = getMenuSession(menuSelectRepeater.getSessionId());
-        String[] selections = menuSelectRepeater.getSelections();
-        SessionBean nextMenu = getNextMenu(menuSession, false);
-        log.info("Got next menu: " + nextMenu);
-        for(String selection: selections){
-            menuSession.handleInput(selection);
-            menuSession.setScreen(menuSession.getNextScreen());
+    @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
+    public Object navigateSession(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
+        log.info("Navigate session with bean: " + sessionNavigationBean);
+        MenuSession menuSession = performInstall(sessionNavigationBean);
+        String[] selections = sessionNavigationBean.getSelections();
+        Object nextMenu = getNextMenu(menuSession);
+        if (selections == null){
+            log.info("Selections null, got next menu: " + nextMenu);
+            return nextMenu;
         }
-        nextMenu = getNextMenu(menuSession, false);
+        for(String selection: selections) {
+            menuSession.handleInput(selection);
+        }
+        nextMenu = getNextMenu(menuSession);
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
     }
 
-    private SessionBean getNextMenu(MenuSession menuSession, boolean redrawing) throws Exception {
+    private MenuSession performInstall(InstallRequestBean bean) throws Exception {
+        if((bean.getAppId() == null || "".equals(bean.getAppId())) &&
+                bean.getInstallReference() == null || "".equals(bean.getInstallReference())){
+            throw new RuntimeException("Either app_id or install_reference must be non-null.");
+        }
+        return new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(), bean.getAppId(),
+                bean.getInstallReference(), installService, restoreService);
+    }
 
-        OptionsScreen nextScreen;
+    private Object getNextMenu(MenuSession menuSession) throws Exception {
+
+        Screen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
-        if(redrawing){
-            nextScreen = menuSession.getCurrentScreen();
-        }else{
-            nextScreen = menuSession.getNextScreen();
-        }
+        nextScreen = menuSession.getNextScreen();
 
         // No next menu screen? Start form entry!
         if (nextScreen == null){
-            return menuSession.startFormEntry(sessionRepo);
+            return generateFormEntryScreen(menuSession);
         }
         else{
-            MenuSessionBean menuResponseBean = new MenuSessionBean();
+            MenuBean menuResponseBean;
 
             // We're looking at a module or form menu
             if(nextScreen instanceof MenuScreen){
@@ -132,7 +109,6 @@ public class MenuController {
             } else{
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
-            menuResponseBean.setSessionId(menuSession.getSessionId());
             return menuResponseBean;
         }
     }
@@ -144,8 +120,12 @@ public class MenuController {
     private EntityListResponse generateEntityScreen(EntityScreen nextScreen){
         return new EntityListResponse(nextScreen);
     }
-    private MenuSession getMenuSession(String sessionId) throws Exception {
-        return new MenuSession(menuRepo.find(sessionId), restoreService, installService);
+
+    private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
+        FormSession formEntrySession = menuSession.getFormEntrySession();
+        sessionRepo.save(formEntrySession.serialize());
+        log.info("Start form entry with session: " + formEntrySession);
+        return new NewFormSessionResponse(formEntrySession);
     }
 
     @ExceptionHandler(Exception.class)

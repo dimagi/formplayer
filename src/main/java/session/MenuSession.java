@@ -2,12 +2,8 @@ package session;
 
 import auth.BasicAuth;
 import auth.HqAuth;
-import beans.NewFormSessionResponse;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
-import objects.SerializableMenuSession;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.UserSqlSandbox;
@@ -16,15 +12,12 @@ import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.cli.CommCareSessionException;
-import org.commcare.util.cli.EntityDetailSubscreen;
 import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.Screen;
 import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.util.OrderedHashtable;
-import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
@@ -32,19 +25,10 @@ import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import repo.SessionRepo;
 import services.InstallService;
 import services.RestoreService;
-import util.StringUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
@@ -55,98 +39,58 @@ import java.util.UUID;
  */
 @Component
 public class MenuSession {
-    FormplayerConfigEngine engine;
-    UserSqlSandbox sandbox;
-    SessionWrapper sessionWrapper;
-    HqAuth auth;
-    String installReference;
-    String username;
-    String password;
-    String domain;
-    String appId;
+    private FormplayerConfigEngine engine;
+    private UserSqlSandbox sandbox;
+    private SessionWrapper sessionWrapper;
+    private HqAuth auth;
+    private String installReference;
+    private String username;
+    private String domain;
     @Value("${commcarehq.host}")
-    String host;
-    private String sessionId;
+    private String host;
     private Screen screen;
-    private String currentSelection;
 
     Log log = LogFactory.getLog(MenuSession.class);
 
-    public MenuSession(String username, String password, String domain, String appId,
-                       String installReference, String serializedCommCareSession,
-                       RestoreService restoreService, String sessionId, String currentSelection, InstallService installService) throws Exception {
+    public MenuSession(String username, String password, String domain, String appId, String installReference,
+                       InstallService installService, RestoreService restoreService) throws Exception {
         //TODO WSP: why host isn't host resolving?
-        String domainedUsername = StringUtils.getFullUsername(username, domain, "commcarehq.org");
         this.username = username;
-        this.password = password;
         this.domain = domain;
-        this.appId = appId;
-        this.installReference = installReference;
-        this.auth = new BasicAuth(domainedUsername, password);
-        this.engine = installService.configureApplication(installReference, username, getDbPath());
-        this.currentSelection = currentSelection;
 
-        if(sessionId == null){
-            this.sessionId =  UUID.randomUUID().toString();
-        } else{
-            this.sessionId = sessionId;
-        }
+        this.auth = new BasicAuth(username, domain, host, password);
 
-        sandbox = CaseAPIs.restoreIfNotExists(domainedUsername, restoreService, domain, auth);
-        sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
-        if(serializedCommCareSession != null){
-            restoreSessionFromStream(serializedCommCareSession);
-        }
-        screen = getNextScreen();
-        if(currentSelection != null){
-            if(screen instanceof EntityScreen){
-                handleInput(currentSelection);
+        resolveInstallReference(installReference, appId);
+
+        this.engine = installService.configureApplication(this.installReference, username, "dbs/" + appId);
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreService, domain, auth);
+        this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
+        this.screen = getNextScreen();
+    }
+    private void resolveInstallReference(String installReference, String appId){
+        if (installReference == null || installReference.equals("")) {
+            if(appId == null || "".equals(appId)){
+                throw new RuntimeException("Can't install - either install_reference or app_id must be non-null");
             }
+            this.installReference = getReferenceToLatest(appId);
+        } else {
+            this.installReference = installReference;
         }
     }
 
-    public MenuSession(SerializableMenuSession serializableMenuSession, RestoreService restoreService,
-                       InstallService installService) throws Exception {
-        this(serializableMenuSession.getUsername(), serializableMenuSession.getPassword(), serializableMenuSession.getDomain(), null,
-            serializableMenuSession.getInstallReference(), serializableMenuSession.getSerializedCommCareSession(), restoreService,
-                serializableMenuSession.getSessionId(), serializableMenuSession.getCurrentSelection(), installService);
-
-    }
-
-    private void restoreSessionFromStream(String serialiedCommCareSession) throws IOException, DeserializationException {
-        byte [] sessionBytes = Base64.decodeBase64(serialiedCommCareSession);
-        SessionFrame restoredFrame = new SessionFrame();
-        DataInputStream inputStream =
-                new DataInputStream(new ByteArrayInputStream(sessionBytes));
-        restoredFrame.readExternal(inputStream, new PrototypeFactory());
-        this.sessionWrapper.frame = restoredFrame;
-        this.sessionWrapper.syncState();
-    }
-
-    private String getSerializedCommCareSession() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream serializedStream = new DataOutputStream(baos);
-        sessionWrapper.serializeSessionState(serializedStream);
-        String encoded = Base64.encodeBase64String(baos.toByteArray());
-        return encoded;
-    }
-
-    public SerializableMenuSession serialize() throws IOException {
-        SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
-        serializableMenuSession.setUsername(this.username);
-        serializableMenuSession.setPassword(this.password);
-        serializableMenuSession.setDomain(this.domain);
-        serializableMenuSession.setInstallReference(this.installReference);
-        serializableMenuSession.setSessionId(this.sessionId);
-        serializableMenuSession.setSerializedCommCareSession(this.getSerializedCommCareSession());
-        serializableMenuSession.setCurrentSelection(this.currentSelection);
-        return serializableMenuSession;
+    private String getReferenceToLatest(String appId) {
+        return host + "/a/" + this.domain +
+                "/apps/api/download_ccz/?app_id=" + appId + "#hack=commcare.ccz";
     }
 
     public boolean handleInput(String input) throws CommCareSessionException {
         log.info("Screen " + screen + " handling input " + input);
-        return screen.handleInputAndUpdateSession(sessionWrapper, input);
+        boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
+        screen = getNextScreen();
+        log.info("Screen " + screen + " returning " + ret);
+        return ret;
     }
+
     public Screen getNextScreen() throws CommCareSessionException {
         String next = sessionWrapper.getNeededData();
 
@@ -191,65 +135,19 @@ public class MenuSession {
         }
     }
 
-    public HashMap<String, String> getSessionData(){
+    public HashMap<String, String> getSessionData() {
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
         HashMap<String, String> ret = new HashMap<String, String>();
-        for(String key: sessionData.keySet()){
+        for (String key : sessionData.keySet()) {
             ret.put(key, sessionData.get(key));
         }
         return ret;
     }
 
-    public NewFormSessionResponse startFormEntry(SessionRepo sessionRepo) throws Exception {
+    public FormSession getFormEntrySession() throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        FormSession formEntrySession = new FormSession(sandbox, formDef, "en", username, sessionData);
-        sessionRepo.save(formEntrySession.serialize());
-        return new NewFormSessionResponse(formEntrySession);
+        return new FormSession(sandbox, formDef, "en", username, domain, sessionData);
     }
-
-    public String[] getChoices(){
-        return screen.getOptions();
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public String getSessionId() {
-        return this.sessionId;
-    }
-
-    @Override
-    public String toString(){
-        return "MenuSession [sessionId=" + sessionId + " choices=" + Arrays.toString(getChoices()) + "]";
-    }
-
-    public Screen getCurrentScreen(){
-        return screen;
-    }
-
-    public Map<Integer, String> getMenuOptions(){
-        Map<Integer, String> ret = new HashMap<Integer, String>();
-        String[] menuDisplayables = screen.getOptions();
-        for(int i = 0; i < menuDisplayables.length; i++){
-            ret.put(new Integer(i), menuDisplayables[i]);
-        }
-        return ret;
-    }
-
-    private String getDbPath(){
-        if(appId == null){
-            return "dbs";
-        } else{
-            return "dbs/"+appId;
-        }
-    }
-
-    public void setScreen(Screen screen){
-        this.screen = screen;
-    }
-
-
 }

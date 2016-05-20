@@ -31,6 +31,22 @@ public class InstallTests extends BaseMenuTestClass {
     }
 
     @Test
+    public void testCaseCreate() throws Exception {
+        SqlSandboxUtils.deleteDatabaseFolder("dbs");
+        // setup files
+
+        CommandListResponseBean menuResponseBean =
+                doInstall("requests/install/install.json");
+
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "0"}, "create");
+
+        assert menuResponseObject.has("tree");
+        assert menuResponseObject.has("title");
+        SqlSandboxUtils.deleteDatabaseFolder("dbs");
+    }
+
+
+    @Test
     public void testNewForm() throws Exception {
         // setup files
         CommandListResponseBean menuResponseBean =
@@ -38,56 +54,23 @@ public class InstallTests extends BaseMenuTestClass {
         assert menuResponseBean.getCommands().length == 12;
         assert menuResponseBean.getTitle().equals("Basic Tests");
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Basic Form Tests");
-        String sessionId = menuResponseBean.getSessionId();
 
-        JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId);
-        JSONObject menuResponseObject2 =
-               selectMenu("requests/menu/menu_select.json", sessionId);
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"0", "0"}, "case");
 
-        assert menuResponseObject2.has("tree");
-        assert menuResponseObject2.has("title");
+        assert menuResponseObject.has("tree");
+        assert menuResponseObject.has("title");
 
     }
-
-
-    @Test
-    public void testCaseCreate() throws Exception {
-        // setup files
-        CommandListResponseBean menuResponseBean =
-                doInstall("requests/install/install.json");
-        String sessionId = menuResponseBean.getSessionId();
-
-        JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId, "2");
-
-        JSONObject menuResponseObject2 =
-                selectMenu("requests/menu/menu_select.json", sessionId);
-
-        assert menuResponseObject2.has("tree");
-        assert menuResponseObject2.has("title");
-        SqlSandboxUtils.deleteDatabaseFolder("dbs");
-    }
-
 
     @Test
     public void testCaseSelect() throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         // setup files
         CommandListResponseBean menuResponseBean =
-                doInstall("requests/install/install.json");
-        String sessionId = menuResponseBean.getSessionId();
+                doInstall("requests/install/case_create_install.json");
 
-        JSONObject menuResponseObject =
-                selectMenu("requests/menu/menu_select.json", sessionId, "2");
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "6", ""}, "case");
 
-        JSONObject menuResponseObject2 =
-                selectMenu("requests/menu/menu_select.json", sessionId, "1");
-
-        JSONObject menuResponseObject3 =
-                selectMenu("requests/menu/menu_select.json", sessionId, "6");
-        JSONObject menuResponseObject4 =
-                selectMenu("requests/menu/menu_select.json", sessionId, "");
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         StorageManager.forceClear();
     }

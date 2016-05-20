@@ -68,18 +68,17 @@ public class FilterTests extends BaseTestClass {
 
     @Test
     public void testSyncDb() throws Exception {
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
-
-        assert(!SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
         SyncDbResponseBean syncDbResponseBean = syncDb("requests/sync_db/sync_db.json");
 
         assert(syncDbResponseBean.getStatus().equals(Constants.RESPONSE_STATUS_POSITIVE));
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
-        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("test@test.commcarehq.org");
+        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("synctestuser", "dbs/synctestdomain");
 
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+
+        System.out.println("Case Storage records: " + caseStorage.getNumRecords());
 
         assert(15 == caseStorage.getNumRecords());
 

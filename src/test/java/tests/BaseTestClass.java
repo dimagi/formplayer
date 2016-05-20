@@ -70,7 +70,6 @@ public class BaseTestClass {
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore_3.xml"));
         mapper = new ObjectMapper();
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
         setUpSessionRepoMock();
     }
 
@@ -93,6 +92,7 @@ public class BaseTestClass {
                 serializableFormSession.setRestoreXml(toBeSaved.getRestoreXml());
                 serializableFormSession.setUsername(toBeSaved.getUsername());
                 serializableFormSession.setSessionData(toBeSaved.getSessionData());
+                serializableFormSession.setDomain(toBeSaved.getDomain());
                 return null;
             }
         }).when(sessionRepoMock).save(Matchers.any(SerializableFormSession.class));
@@ -269,10 +269,5 @@ public class BaseTestClass {
         EvaluateXPathResponseBean evaluateXPathResponseBean = mapper.readValue(evaluateXpathResultString,
                 EvaluateXPathResponseBean.class);
         return evaluateXPathResponseBean;
-    }
-
-    @After
-    public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
 }

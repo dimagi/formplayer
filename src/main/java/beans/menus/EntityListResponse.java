@@ -13,15 +13,14 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
 import util.SessionUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Vector;
 
 /**
  * Created by willpride on 4/13/16.
  */
 @ApiModel("Entity List Response")
-public class EntityListResponse extends MenuSessionBean {
+public class EntityListResponse extends MenuBean {
     private Entity[] entities;
     private DisplayElement action;
     private Style[] styles;
@@ -128,5 +127,11 @@ public class EntityListResponse extends MenuSessionBean {
 
     public void setAction(DisplayElement action) {
         this.action = action;
+    }
+
+    @Override
+    public String toString(){
+        return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
+                ", action=" + action + " parent=" + super.toString() +"]";
     }
 }
