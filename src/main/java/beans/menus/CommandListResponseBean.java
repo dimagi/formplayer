@@ -18,7 +18,7 @@ public class CommandListResponseBean extends MenuBean {
         return commands;
     }
 
-    public void setCommands(Command[] commands) {
+    private void setCommands(Command[] commands) {
         this.commands = commands;
     }
 

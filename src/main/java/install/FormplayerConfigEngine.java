@@ -12,7 +12,6 @@ import org.commcare.modern.reference.JavaHttpRoot;
 import org.commcare.modern.reference.JavaResourceRoot;
 import org.commcare.resources.ResourceManager;
 import org.commcare.resources.model.*;
-import org.commcare.resources.model.installers.LocaleFileInstaller;
 import org.commcare.suite.model.Profile;
 import org.commcare.suite.model.Suite;
 import org.commcare.util.CommCarePlatform;
@@ -31,22 +30,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Vector;
 import java.util.zip.ZipFile;
 
 
 /**
- * @author ctsims
+ * @author wspride
  */
 public class FormplayerConfigEngine {
-    private ResourceTable table;
-    private ResourceTable updateTable;
-    private ResourceTable recoveryTable;
-    private CommCarePlatform platform;
+    private final ResourceTable table;
+    private final CommCarePlatform platform;
     private ArchiveFileRoot mArchiveRoot;
-    Log log = LogFactory.getLog(FormplayerConfigEngine.class);
+    private final Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
     public FormplayerConfigEngine(final String username, final String dbPath) {
         this.platform = new CommCarePlatform(2, 27);
@@ -66,9 +61,9 @@ public class FormplayerConfigEngine {
 
         table = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
                 "GLOBAL_RESOURCE_TABLE", username, dbPath));
-        updateTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
+        ResourceTable updateTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
                 "UPDATE_RESOURCE_TABLE", username, dbPath));
-        recoveryTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
+        ResourceTable recoveryTable = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,
                 "RECOVERY_RESOURCE_TABLE", username, dbPath));
 
         setupStorageManager(username, dbPath);
@@ -178,7 +173,7 @@ public class FormplayerConfigEngine {
         installAppFromReference(profileRef);
     }
 
-    public void installAppFromReference(String profileReference) throws UnresolvedResourceException,
+    private void installAppFromReference(String profileReference) throws UnresolvedResourceException,
             UnfullfilledRequirementsException, InstallCancelledException {
         ResourceManager.installAppResources(platform, profileReference, this.table, true);
     }

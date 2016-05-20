@@ -1,6 +1,6 @@
 {
-  "username": "createtestuser",
-  "password": "casetestpass",
-  "domain": "createstdomain",
-  "app_id": "createtestappid"
+  "username": "createuser",
+  "password": "createpass",
+  "domain": "createdomain",
+  "app_id": "createappid"
 }

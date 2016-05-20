@@ -2,11 +2,13 @@ package beans.menus;
 
 import io.swagger.annotations.ApiModel;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.util.cli.EntityDetailSubscreen;
+import org.commcare.util.cli.EntityListSubscreen;
 import org.commcare.util.cli.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
@@ -24,26 +26,64 @@ public class EntityListResponse extends MenuBean {
     private Entity[] entities;
     private DisplayElement action;
     private Style[] styles;
+    private String[] headers;
+    private int[] widthHints;
+
+    private int pageCount;
+    private int currentPage;
+
+    public static final int CASE_LENGTH_LIMIT = 10;
 
     public EntityListResponse(){}
 
-    public EntityListResponse(EntityScreen nextScreen) {
+    public EntityListResponse(EntityScreen nextScreen){
+        this(nextScreen, 0);
+    }
+
+    public EntityListResponse(EntityScreen nextScreen, int offset) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
         EvaluationContext ec = session.getEvaluationContext();
         Vector<TreeReference> references = ec.expandReference(((EntityDatum)session.getNeededDatum()).getNodeset());
         processTitle(session);
-        processEntities(nextScreen, references, ec);
+        processEntities(nextScreen, references, ec, offset);
         processStyles(shortDetail);
-        processActions(shortDetail, nextScreen.getSession());
+        processActions(nextScreen.getSession());
+        processHeader(shortDetail, ec);
+    }
+
+    private void processHeader(Detail shortDetail, EvaluationContext ec) {
+        Pair<String[], int[]> pair = EntityListSubscreen.getHeaders(shortDetail, ec);
+        headers = pair.first;
+        widthHints = pair.second;
     }
 
     private void processTitle(SessionWrapper session) {
         setTitle(SessionUtils.getBestTitle(session));
     }
 
-    private void processEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec) {
-        entities = new Entity[references.size()];
+    private void processEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec, int offset) {
+        Entity[] allEntities = generateEntities(screen, references, ec);
+        if(allEntities.length > CASE_LENGTH_LIMIT){
+            // we're doing pagination
+            int end = offset + CASE_LENGTH_LIMIT;
+            int length = CASE_LENGTH_LIMIT;
+            if(end > allEntities.length){
+                end = allEntities.length;
+                length = end - offset;
+            }
+            entities = new Entity[length];
+            System.arraycopy(allEntities, offset, entities, offset - offset, end - offset);
+
+            setPageCount((int)Math.ceil((double)allEntities.length/CASE_LENGTH_LIMIT));
+            setCurrentPage(offset/CASE_LENGTH_LIMIT);
+        } else{
+            entities = allEntities.clone();
+        }
+    }
+
+    private Entity[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec){
+        Entity[] entities = new Entity[references.size()];
         int i = 0;
         for (TreeReference entity : references) {
             Entity newEntity = processEntity(entity, screen, ec);
@@ -51,6 +91,7 @@ public class EntityListResponse extends MenuBean {
             entities[i] = newEntity;
             i++;
         }
+        return entities;
     }
 
     private Entity processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
@@ -96,7 +137,7 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
-    private void processActions(Detail detail, SessionWrapper session){
+    private void processActions(SessionWrapper session){
         Vector<Action> actions = session.getDetail(((EntityDatum)session.getNeededDatum()).getShortDetail()).getCustomActions();
         // Assume we only have one TODO WSP: is that correct?
         if(actions != null && !actions.isEmpty()) {
@@ -125,13 +166,45 @@ public class EntityListResponse extends MenuBean {
         return action;
     }
 
-    public void setAction(DisplayElement action) {
+    private void setAction(DisplayElement action) {
         this.action = action;
     }
 
     @Override
     public String toString(){
         return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
-                ", action=" + action + " parent=" + super.toString() +"]";
+                ", action=" + action + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) + "]";
+    }
+
+    public String[] getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(String[] headers) {
+        this.headers = headers;
+    }
+
+    public int[] getWidthHints() {
+        return widthHints;
+    }
+
+    public void setWidthHints(int[] widthHints) {
+        this.widthHints = widthHints;
+    }
+
+    public int getPageCount() {
+        return pageCount;
+    }
+
+    private void setPageCount(int pageCount) {
+        this.pageCount = pageCount;
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    private void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
     }
 }

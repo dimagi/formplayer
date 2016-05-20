@@ -10,9 +10,9 @@ import java.util.Map;
 /**
  * Created by willpride on 1/29/16.
  */
-public class FormplayerSessionWrapper extends SessionWrapper {
+class FormplayerSessionWrapper extends SessionWrapper {
 
-    private Map<String, String> injectedSessionData;
+    private final Map<String, String> injectedSessionData;
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox, Map<String, String> injectedSessionData) {
         super(platform, sandbox);

@@ -28,6 +28,7 @@ import services.XFormService;
 import util.Constants;
 import utils.FileUtils;
 
+import javax.servlet.http.Cookie;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -42,30 +43,30 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  * Created by willpride on 4/13/16.
  */
 public class BaseMenuTestClass {
-    protected MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Autowired
-    protected SessionRepo sessionRepoMock;
+    private SessionRepo sessionRepoMock;
 
     @Autowired
-    protected XFormService xFormServiceMock;
+    private XFormService xFormServiceMock;
 
     @Autowired
-    protected RestoreService restoreServiceMock;
+    RestoreService restoreServiceMock;
 
     @Autowired
-    protected InstallService installService;
+    private InstallService installService;
 
     @InjectMocks
     MenuController menuController;
 
-    protected ObjectMapper mapper;
+    ObjectMapper mapper;
 
-    protected String urlPrepend(String string){
+    private String urlPrepend(String string){
         return "/" + string;
     }
 
-    Log log = LogFactory.getLog(BaseMenuTestClass.class);
+    private final Log log = LogFactory.getLog(BaseMenuTestClass.class);
 
     @Before
     public void setUp() throws IOException {
@@ -86,22 +87,33 @@ public class BaseMenuTestClass {
         String appId = ref.substring(ref.indexOf("app_id=") + "app_id=".length(),
                 ref.indexOf("#hack"));
         log.info("Got appId: " + appId);
-        if(appId.equals("doublemgmttestappid")){
-            ref = "apps/basic2/profile.ccpr";
-        } else if(appId.equals("navigatorappid")){
-            ref = "apps/basic2/profile.ccpr";
-        } else if(appId.equals("casetestappid")){
-            ref = "apps/basic2/profile.ccpr";
-        } else if(appId.equals("createtestappid")){
-            ref = "archives/basic.ccz";
-        } else{
-            throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
+        switch (appId) {
+            case "doublemgmtappid":
+                ref = "apps/basic2/profile.ccpr";
+                break;
+            case "navigatorappid":
+                ref = "apps/basic2/profile.ccpr";
+                break;
+            case "caseappid":
+                ref = "apps/basic2/profile.ccpr";
+                break;
+            case "createappid":
+                ref = "archives/basic.ccz";
+                break;
+            case "casemediaappid":
+                ref = "archives/casemedia.ccz";
+                break;
+            case "endformappid":
+                ref = "archives/formnav.ccz";
+                break;
+            default:
+                throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
         }
         log.info("Resolved ref: " + ref);
         return ref;
     }
 
-    protected void setupInstallServiceMock() throws IOException {
+    private void setupInstallServiceMock() {
         try {
             doAnswer(new Answer<Object>() {
                 @Override
@@ -138,7 +150,7 @@ public class BaseMenuTestClass {
         }
     }
 
-    protected String getTestResourcePath(String resourcePath){
+    private String getTestResourcePath(String resourcePath){
         try {
             URL url = this.getClass().getClassLoader().getResource(resourcePath);
             File file = new File(url.getPath());
@@ -150,41 +162,43 @@ public class BaseMenuTestClass {
         }
     }
 
-    public JSONObject sessionNavigate(String requestPath) throws Exception {
+    JSONObject sessionNavigate(String requestPath) throws Exception {
         SessionNavigationBean sessionNavigationBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
         ResultActions selectResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_MENU_NAVIGATION))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new Cookie("sessionid", "derp"))
                         .content(mapper.writeValueAsString(sessionNavigationBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
         return new JSONObject(resultString);
     }
 
-    public JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
+    JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
-        sessionNavigationBean.setDomain(testName + "testdomain");
-        sessionNavigationBean.setAppId(testName + "testappid");
-        sessionNavigationBean.setUsername(testName + "testusername");
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         ResultActions selectResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_MENU_NAVIGATION))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new Cookie("sessionid", "derp"))
                         .content(mapper.writeValueAsString(sessionNavigationBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
         return new JSONObject(resultString);
     }
 
-    public CommandListResponseBean doInstall(String requestPath) throws Exception {
+    CommandListResponseBean doInstall(String requestPath) throws Exception {
         InstallRequestBean installRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
         ResultActions installResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_INSTALL))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new Cookie("sessionid", "derp"))
                         .content(mapper.writeValueAsString(installRequestBean)));
         String installResultString = installResult.andReturn().getResponse().getContentAsString();
-        CommandListResponseBean menuResponseBean = mapper.readValue(installResultString,
+        return mapper.readValue(installResultString,
                 CommandListResponseBean.class);
-        return menuResponseBean;
     }
 }

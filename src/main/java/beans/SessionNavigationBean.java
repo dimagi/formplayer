@@ -10,6 +10,7 @@ import java.util.Arrays;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SessionNavigationBean extends InstallRequestBean {
     private String[] selections;
+    private int offset;
 
     public String[] getSelections() {
         return selections;
@@ -23,5 +24,13 @@ public class SessionNavigationBean extends InstallRequestBean {
     public String toString() {
         return "SessionNavigationBean [selections="
                 + Arrays.toString(selections) +  " parent="  + super.toString() + "]";
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
     }
 }

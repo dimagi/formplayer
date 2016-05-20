@@ -21,7 +21,7 @@ public class QuestionBean {
     private String help;
     private Object answer;
     private String datatype;
-    private HashMap<String, String> style = new HashMap<String, String>();
+    private HashMap<String, String> style = new HashMap<>();
     private String caption_video;
     private String type;
     private String caption_markdown;

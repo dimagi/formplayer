@@ -6,8 +6,6 @@ import beans.menus.CommandListResponseBean;
 import beans.menus.DisplayElement;
 import beans.menus.EntityDetailResponse;
 import beans.menus.EntityListResponse;
-import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.suite.model.DisplayUnit;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -142,9 +140,36 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert newFormSessionResponse.getTitle().equals("Update Parent");
         assert newFormSessionResponse.getTree().length == 2;
 
+    }
 
+    @Test
+    public void testMenuMedia() throws Exception {
+        CommandListResponseBean menuResponseBean =
+                doInstall("requests/install/case_media.json");
+        assert menuResponseBean.getCommands().length == 2;
+        assert menuResponseBean.getCommands()[0].getDisplayText().equals("Registration");
+        assert menuResponseBean.getCommands()[0].getAudioUri().equals("jr://file/commcare/audio/module0_form0_en.mp3");
+        assert menuResponseBean.getCommands()[0].getImageUri().equals("jr://file/commcare/image/module0_form0_en.png");
+        assert menuResponseBean.getCommands()[1].getDisplayText().equals("Follow Up");
+        assert menuResponseBean.getCommands()[1].getAudioUri().equals("jr://file/commcare/audio/module1_en.mp3");
+        assert menuResponseBean.getCommands()[1].getImageUri().equals("jr://file/commcare/image/module1_en.png");
+    }
 
+    @Test
+    public void testEndOfFormNavigation() throws Exception {
+        JSONObject parentResponseObject = sessionNavigate(new String[] {"0"}, "endform");
+        CommandListResponseBean response0 =
+                mapper.readValue(parentResponseObject.toString(), CommandListResponseBean.class);
+        System.out.println("response 0: " + response0);
+        assert response0.getCommands().length == 2;
+        assert response0.getCommands()[0].getDisplayText().equals("Link to Module 1");
+        assert response0.getCommands()[1].getDisplayText().equals("Link to Module Menu");
 
+        JSONObject formResponseObject = sessionNavigate(new String[] {"0", "0"}, "endform");
+        NewFormSessionResponse newFormSessionResponse =
+                mapper.readValue(formResponseObject.toString(), NewFormSessionResponse.class);
+        assert newFormSessionResponse.getTitle().equals("Link to Module 1");
+        assert newFormSessionResponse.getTree().length == 4;
     }
 
 }
