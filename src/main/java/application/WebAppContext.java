@@ -37,7 +37,7 @@ import java.util.Properties;
 @Configuration
 @EnableWebMvc
 @ComponentScan
-@PropertySource(value="file:/Users/willpride/Dimagi/commcare-hq/submodules/formplayer/config/application.properties")
+@PropertySource(value="file:config/application.properties")
 class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${redis.hostname}")
