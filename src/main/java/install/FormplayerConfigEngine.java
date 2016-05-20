@@ -35,7 +35,7 @@ import java.util.zip.ZipFile;
 
 
 /**
- * @author ctsims
+ * @author wspride
  */
 public class FormplayerConfigEngine {
     private final ResourceTable table;

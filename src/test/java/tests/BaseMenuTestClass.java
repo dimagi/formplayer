@@ -195,6 +195,7 @@ public class BaseMenuTestClass {
         ResultActions installResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_INSTALL))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new Cookie("sessionid", "derp"))
                         .content(mapper.writeValueAsString(installRequestBean)));
         String installResultString = installResult.andReturn().getResponse().getContentAsString();
         return mapper.readValue(installResultString,

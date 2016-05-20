@@ -1,6 +1,5 @@
 package session;
 
-import auth.BasicAuth;
 import auth.HqAuth;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
@@ -24,7 +23,6 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import services.InstallService;
 import services.RestoreService;
@@ -46,8 +44,6 @@ public class MenuSession {
     private String installReference;
     private final String username;
     private final String domain;
-    @Value("${commcarehq.host}")
-    private final String host = "commcarehq.org";
 
     private Screen screen;
 
@@ -55,13 +51,12 @@ public class MenuSession {
 
     public MenuSession(String username, String domain, String appId, String installReference,
                        InstallService installService, RestoreService restoreService, HqAuth auth) throws Exception {
-        //TODO WSP: why host isn't host resolving?
         this.username = username;
         this.domain = domain;
         resolveInstallReference(installReference, appId);
 
-        this.engine = installService.configureApplication(this.installReference, username, "dbs/" + appId);
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, restoreService, domain, auth);
+        this.engine = installService.configureApplication(this.installReference, this.username, "dbs/" + appId);
+        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         this.screen = getNextScreen();
     }
@@ -77,8 +72,7 @@ public class MenuSession {
     }
 
     private String getReferenceToLatest(String appId) {
-        return host + "/a/" + this.domain +
-                "/apps/api/download_ccz/?app_id=" + appId + "#hack=commcare.ccz";
+        return  "/a/" + this.domain + "/apps/api/download_ccz/?app_id=" + appId + "#hack=commcare.ccz";
     }
 
     public void handleInput(String input) throws CommCareSessionException {
@@ -146,6 +140,6 @@ public class MenuSession {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl);
+        return new FormSession(sandbox, formDef, this.username, domain, sessionData, postUrl);
     }
 }
