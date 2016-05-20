@@ -29,7 +29,7 @@ public class Command {
         return index;
     }
 
-    public void setIndex(int index) {
+    private void setIndex(int index) {
         this.index = index;
     }
 
@@ -37,7 +37,7 @@ public class Command {
         return displayText;
     }
 
-    public void setDisplayText(String displayText) {
+    private void setDisplayText(String displayText) {
         this.displayText = displayText;
     }
 
@@ -45,7 +45,7 @@ public class Command {
         return audioUri;
     }
 
-    public void setAudioUri(String audioUri) {
+    private void setAudioUri(String audioUri) {
         this.audioUri = audioUri;
     }
 
@@ -53,7 +53,7 @@ public class Command {
         return imageUri;
     }
 
-    public void setImageUri(String imageUri) {
+    private void setImageUri(String imageUri) {
         this.imageUri = imageUri;
     }
 

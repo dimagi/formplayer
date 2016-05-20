@@ -41,7 +41,7 @@ public class CaseAPIs {
         }
     }
 
-    public static String filterCases(CaseFilterRequestBean request) throws Exception{
+    public static String filterCases(CaseFilterRequestBean request) {
         try {
             String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
             UserSqlSandbox mSandbox = restoreIfNotExists(
@@ -49,18 +49,16 @@ public class CaseAPIs {
                     request.getSessionData().getDomain(),
                     request.getRestoreXml());
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
-            String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
-            return filteredCases;
+            return XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         } catch (Exception e) {
             e.printStackTrace();
         }
         return "null";
     }
 
-    public static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
+    private static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
         Case cCase = caseStorage.getRecordForValue("case_id", caseId);
-        CaseBean ret = new CaseBean(cCase);
-        return ret;
+        return new CaseBean(cCase);
     }
 
     public static CaseBean[] filterCasesFull(CaseFilterRequestBean request) throws Exception{

@@ -29,17 +29,26 @@ public class EntityListResponse extends MenuBean {
     private String[] headers;
     private int[] widthHints;
 
+    private int pageCount;
+    private int currentPage;
+
+    public static final int CASE_LENGTH_LIMIT = 10;
+
     public EntityListResponse(){}
 
-    public EntityListResponse(EntityScreen nextScreen) {
+    public EntityListResponse(EntityScreen nextScreen){
+        this(nextScreen, 0);
+    }
+
+    public EntityListResponse(EntityScreen nextScreen, int offset) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
         EvaluationContext ec = session.getEvaluationContext();
         Vector<TreeReference> references = ec.expandReference(((EntityDatum)session.getNeededDatum()).getNodeset());
         processTitle(session);
-        processEntities(nextScreen, references, ec);
+        processEntities(nextScreen, references, ec, offset);
         processStyles(shortDetail);
-        processActions(shortDetail, nextScreen.getSession());
+        processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
     }
 
@@ -53,8 +62,28 @@ public class EntityListResponse extends MenuBean {
         setTitle(SessionUtils.getBestTitle(session));
     }
 
-    private void processEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec) {
-        entities = new Entity[references.size()];
+    private void processEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec, int offset) {
+        Entity[] allEntities = generateEntities(screen, references, ec);
+        if(allEntities.length > CASE_LENGTH_LIMIT){
+            // we're doing pagination
+            int end = offset + CASE_LENGTH_LIMIT;
+            int length = CASE_LENGTH_LIMIT;
+            if(end > allEntities.length){
+                end = allEntities.length;
+                length = end - offset;
+            }
+            entities = new Entity[length];
+            System.arraycopy(allEntities, offset, entities, offset - offset, end - offset);
+
+            setPageCount((int)Math.ceil((double)allEntities.length/CASE_LENGTH_LIMIT));
+            setCurrentPage(offset/CASE_LENGTH_LIMIT);
+        } else{
+            entities = allEntities.clone();
+        }
+    }
+
+    private Entity[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec){
+        Entity[] entities = new Entity[references.size()];
         int i = 0;
         for (TreeReference entity : references) {
             Entity newEntity = processEntity(entity, screen, ec);
@@ -62,6 +91,7 @@ public class EntityListResponse extends MenuBean {
             entities[i] = newEntity;
             i++;
         }
+        return entities;
     }
 
     private Entity processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
@@ -107,7 +137,7 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
-    private void processActions(Detail detail, SessionWrapper session){
+    private void processActions(SessionWrapper session){
         Vector<Action> actions = session.getDetail(((EntityDatum)session.getNeededDatum()).getShortDetail()).getCustomActions();
         // Assume we only have one TODO WSP: is that correct?
         if(actions != null && !actions.isEmpty()) {
@@ -136,7 +166,7 @@ public class EntityListResponse extends MenuBean {
         return action;
     }
 
-    public void setAction(DisplayElement action) {
+    private void setAction(DisplayElement action) {
         this.action = action;
     }
 
@@ -160,5 +190,21 @@ public class EntityListResponse extends MenuBean {
 
     public void setWidthHints(int[] widthHints) {
         this.widthHints = widthHints;
+    }
+
+    public int getPageCount() {
+        return pageCount;
+    }
+
+    private void setPageCount(int pageCount) {
+        this.pageCount = pageCount;
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    private void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
     }
 }

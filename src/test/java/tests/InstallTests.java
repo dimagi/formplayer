@@ -14,7 +14,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Created by willpride on 1/14/16.
@@ -24,11 +23,6 @@ import java.util.Arrays;
 public class InstallTests extends BaseMenuTestClass {
 
     Log log = LogFactory.getLog(InstallTests.class);
-
-    @Override
-    public void setUp() throws IOException {
-        super.setUp();
-    }
 
     @Test
     public void testCaseCreate() throws Exception {
@@ -75,8 +69,4 @@ public class InstallTests extends BaseMenuTestClass {
         StorageManager.forceClear();
     }
 
-    @After
-    public void tearDown(){
-        //SqlSandboxUtils.deleteDatabaseFolder("dbs");
-    }
 }

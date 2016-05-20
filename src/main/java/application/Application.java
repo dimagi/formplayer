@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
@@ -25,7 +24,7 @@ import java.io.IOException;
 @Component
 public class Application {
 
-    Log log = LogFactory.getLog(Application.class);
+    private final Log log = LogFactory.getLog(Application.class);
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
@@ -34,7 +33,7 @@ public class Application {
     /**
      * This filter intercepts responses before they're dispatched and logs the request URL and response status
      */
-    public class ResponseLoggingFilter extends GenericFilterBean {
+    private class ResponseLoggingFilter extends GenericFilterBean {
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
             final HttpServletRequest httpRequest = (HttpServletRequest) request;
@@ -47,7 +46,6 @@ public class Application {
     // Autowire the filter above
     @Bean
     public Filter loggingFilter() {
-        ResponseLoggingFilter loggingFilter = new ResponseLoggingFilter();
-        return loggingFilter;
+        return new ResponseLoggingFilter();
     }
 }

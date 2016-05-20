@@ -11,9 +11,9 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel("Answer Question Request")
 public class SessionBean {
     @ApiModelProperty(value = "The id of the form entry session", required = true)
-    protected String sessionId;
+    String sessionId;
     @ApiModelProperty(value = "The sequence number of the current command", required = true)
-    protected int sequenceId;
+    int sequenceId;
 
     @JsonGetter(value = "session_id")
     public String getSessionId() {

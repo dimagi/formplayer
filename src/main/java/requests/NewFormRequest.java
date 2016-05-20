@@ -19,37 +19,33 @@ import java.util.Map;
 @Service
 public class NewFormRequest {
 
-    String formUrl;
-    FormSession formEntrySession;
-    SessionRepo sessionRepo;
-    XFormService xFormService;
-    RestoreService restoreService;
-    HqAuth auth;
-    String username;
-    String domain;
-    String lang;
+    private final String formUrl;
+    private FormSession formEntrySession;
+    private final XFormService xFormService;
+    private final RestoreService restoreService;
+    private final HqAuth auth;
+    private final String domain;
 
-    public NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
-                          Map<String, String> sessionData, SessionRepo sessionRepo,
-                          XFormService xFormService, RestoreService restoreService) throws Exception {
-        this.sessionRepo = sessionRepo;
+    private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
+                           Map<String, String> sessionData, SessionRepo sessionRepo,
+                           XFormService xFormService, RestoreService restoreService) throws Exception {
+        SessionRepo sessionRepo1 = sessionRepo;
         this.xFormService = xFormService;
         this.restoreService = restoreService;
         this.formUrl = formUrl;
         this.auth = getAuth((authDict));
-        this.username = username;
+        String username1 = username;
         this.domain = domain;
-        this.lang = lang;
-        Map<String, String> data = sessionData;
+        String lang1 = lang;
         try {
-            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, domain, data);
+            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, domain, sessionData);
             sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();
         }
     }
 
-    public HqAuth getAuth(Map<String, String> authMap){
+    private HqAuth getAuth(Map<String, String> authMap){
         if(authMap.containsKey("type")){
             if(authMap.get("type").equals("django-session")){
                 return new DjangoAuth(authMap.get("key"));
@@ -66,16 +62,14 @@ public class NewFormRequest {
     }
 
     public NewFormSessionResponse getResponse() throws IOException {
-        NewFormSessionResponse ret = new NewFormSessionResponse(formEntrySession);
-        return ret;
+        return new NewFormSessionResponse(formEntrySession);
     }
 
-    public String getRestoreXml(){
-        String restorePayload = restoreService.getRestoreXml(domain, auth);
-        return restorePayload;
+    private String getRestoreXml(){
+        return restoreService.getRestoreXml(domain, auth);
     }
 
-    public String getFormXml(){
+    private String getFormXml(){
         return xFormService.getFormXml(formUrl, auth);
     }
 }

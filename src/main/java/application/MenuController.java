@@ -1,5 +1,8 @@
 package application;
 
+import auth.BasicAuth;
+import auth.DjangoAuth;
+import auth.HqAuth;
 import beans.*;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
@@ -11,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.util.cli.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.SessionRepo;
@@ -28,8 +32,10 @@ import javax.servlet.http.HttpServletRequest;
 @Api(value = "Menu Controllers", description = "Operations for navigating CommCare Menus and Cases")
 @RestController
 @EnableAutoConfiguration
-@CrossOrigin(origins = "http://localhost:8000")
 public class MenuController {
+
+    @Value("${commcarehq.host}")
+    private String host;
 
     @Autowired
     private RestoreService restoreService;
@@ -40,13 +46,14 @@ public class MenuController {
     @Autowired
     private SessionRepo sessionRepo;
 
-    Log log = LogFactory.getLog(MenuController.class);
+    private final Log log = LogFactory.getLog(MenuController.class);
 
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
-    public Object installRequest(@RequestBody InstallRequestBean installRequestBean) throws Exception {
+    public Object installRequest(@RequestBody InstallRequestBean installRequestBean,
+                                 @CookieValue("sessionid") String authToken) throws Exception {
         log.info("Received install request: " + installRequestBean);
-        Object response = getNextMenu(performInstall(installRequestBean));
+        Object response = getNextMenu(performInstall(installRequestBean, authToken));
         log.info("Returning install response: " + response);
         return response;
     }
@@ -55,13 +62,17 @@ public class MenuController {
      * Make a a series of menu selections (as above, but can have multiple)
      *
      * @param sessionNavigationBean Give an installation code or path and a set of session selections
+     * @param authToken The Django session id auth token
      * @return A MenuBean or a NewFormSessionResponse
      * @throws Exception
      */
+
+
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
-    public Object navigateSession(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
-        log.info("Navigate session with bean: " + sessionNavigationBean);
-        MenuSession menuSession = performInstall(sessionNavigationBean);
+    public Object navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
+                                          @CookieValue("sessionid") String authToken) throws Exception {
+        log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
+        MenuSession menuSession = performInstall(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
         Object nextMenu = getNextMenu(menuSession);
         if (selections == null){
@@ -71,21 +82,37 @@ public class MenuController {
         for(String selection: selections) {
             menuSession.handleInput(selection);
         }
-        nextMenu = getNextMenu(menuSession);
+        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset());
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
     }
 
-    private MenuSession performInstall(InstallRequestBean bean) throws Exception {
+    private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         if((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())){
             throw new RuntimeException("Either app_id or install_reference must be non-null.");
         }
-        return new MenuSession(bean.getUsername(), bean.getPassword(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), installService, restoreService);
+
+        HqAuth auth;
+        if(authToken != null && !authToken.trim().equals("")){
+            auth = new DjangoAuth(authToken);
+        } else{
+            String password = bean.getPassword();
+            if(password == null || "".equals(password.trim())){
+                throw new RuntimeException("Either authToken or password must be non-null");
+            }
+            auth = new BasicAuth(bean.getUsername(), bean.getDomain(), "commcarehq.org", password);
+        }
+
+        return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
+                bean.getInstallReference(), installService, restoreService, auth);
     }
 
     private Object getNextMenu(MenuSession menuSession) throws Exception {
+        return getNextMenu(menuSession, 0);
+    }
+
+    private Object getNextMenu(MenuSession menuSession, int offset) throws Exception {
 
         Screen nextScreen;
 
@@ -105,7 +132,7 @@ public class MenuController {
             }
             // We're looking at a case list or detail screen (probably)
             else if (nextScreen instanceof EntityScreen) {
-                menuResponseBean = generateEntityScreen((EntityScreen) nextScreen);
+                menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset);
             } else{
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
@@ -117,8 +144,8 @@ public class MenuController {
         return new CommandListResponseBean(nextScreen);
     }
 
-    private EntityListResponse generateEntityScreen(EntityScreen nextScreen){
-        return new EntityListResponse(nextScreen);
+    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, int offset){
+        return new EntityListResponse(nextScreen, offset);
     }
 
     private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {

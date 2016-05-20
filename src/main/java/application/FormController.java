@@ -43,8 +43,8 @@ public class FormController {
     @Autowired
     private RestoreService restoreService;
 
-    Log log = LogFactory.getLog(FormController.class);
-    ObjectMapper mapper = new ObjectMapper();
+    private final Log log = LogFactory.getLog(FormController.class);
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION , method = RequestMethod.POST)
@@ -198,7 +198,7 @@ public class FormController {
 
     private HashMap<Integer, String> getMenuRows(OptionsScreen nextScreen){
         String[] rows = nextScreen.getOptions();
-        HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
+        HashMap<Integer, String> optionsStrings = new HashMap<>();
         for(int i=0; i <rows.length; i++){
             optionsStrings.put(i, rows[i]);
         }
