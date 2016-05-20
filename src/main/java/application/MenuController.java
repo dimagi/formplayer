@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 @Api(value = "Menu Controllers", description = "Operations for navigating CommCare Menus and Cases")
 @RestController
 @EnableAutoConfiguration
-@CrossOrigin()
 public class MenuController {
 
     @Value("${commcarehq.host}")
