@@ -6,14 +6,14 @@ import java.util.ArrayList;
  * Created by willpride on 1/12/16.
  */
 public class CaseFilterResponseBean {
-    String[] cases; // comma separated case list
+    private String[] cases; // comma separated case list
 
     public CaseFilterResponseBean(){
 
     }
     public CaseFilterResponseBean(String caseString){
         String[] caseIds = caseString.split(",");
-        ArrayList<String> caseIdArray = new ArrayList<String>();
+        ArrayList<String> caseIdArray = new ArrayList<>();
         for(String caseId: caseIds){
             if(!caseId.trim().equals("")){
                 caseIdArray.add(caseId);

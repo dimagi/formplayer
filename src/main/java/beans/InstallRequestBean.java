@@ -3,6 +3,8 @@ package beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
+import java.util.Map;
+
 /**
  * Created by willpride on 2/4/16.
  */
@@ -17,6 +19,7 @@ public class InstallRequestBean {
     public String getInstallReference() {
         return installReference;
     }
+
     @JsonSetter(value = "install_reference")
     public void setInstallReference(String installReference) {
         this.installReference = installReference;
@@ -46,16 +49,18 @@ public class InstallRequestBean {
         this.domain = domain;
     }
 
-    public String toString(){
-        return "InstallRequestBean: [installReference=" + installReference +
-                ", username=" + username + ", domain=" + domain + ", appId=" + appId + "]";
-    }
     @JsonGetter(value = "app_id")
     public String getAppId() {
         return appId;
     }
+
     @JsonSetter(value = "app_id")
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public String toString() {
+        return "InstallRequestBean: [installReference=" + installReference +
+                ", username=" + username + ", domain=" + domain + ", appId=" + appId + "]";
     }
 }

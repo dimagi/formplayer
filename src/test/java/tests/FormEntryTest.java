@@ -12,8 +12,6 @@ import utils.TestContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static org.mockito.Matchers.any;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
 public class FormEntryTest extends BaseTestClass{
@@ -85,7 +83,7 @@ public class FormEntryTest extends BaseTestClass{
         GetInstanceResponseBean getInstanceResponseBean = getInstance(sessionId);
 
         //Test Evaluate XPath
-        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/q_text");
+        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId);
         assert evaluateXPathResponseBean.getStatus().equals(Constants.RESPONSE_STATUS_POSITIVE);
         assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 

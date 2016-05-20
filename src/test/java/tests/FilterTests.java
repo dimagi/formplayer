@@ -2,39 +2,24 @@ package tests;
 
 import auth.HqAuth;
 import beans.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import hq.CaseAPIs;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import services.RestoreService;
 import util.Constants;
 import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
@@ -69,7 +54,7 @@ public class FilterTests extends BaseTestClass {
     @Test
     public void testSyncDb() throws Exception {
 
-        SyncDbResponseBean syncDbResponseBean = syncDb("requests/sync_db/sync_db.json");
+        SyncDbResponseBean syncDbResponseBean = syncDb();
 
         assert(syncDbResponseBean.getStatus().equals(Constants.RESPONSE_STATUS_POSITIVE));
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
@@ -87,6 +72,6 @@ public class FilterTests extends BaseTestClass {
 
     @Test
     public void testGetFullCase() throws Exception {
-        CaseFilterFullResponseBean caseFilterResponseBean = filterCasesFull("requests/filter/filter_cases.json");
+        CaseFilterFullResponseBean caseFilterResponseBean = filterCasesFull();
     }
 }

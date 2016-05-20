@@ -40,11 +40,8 @@ public class SerializableFormSession implements Serializable{
     }
 
     @Override
-    public boolean equals(Object obj){
-        if(obj instanceof SerializableFormSession){
-            return obj.hashCode() == hashCode();
-        }
-        return false;
+    public boolean equals(Object obj) {
+        return obj instanceof SerializableFormSession && obj.hashCode() == hashCode();
     }
 
     @Override

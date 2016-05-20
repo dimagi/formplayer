@@ -49,7 +49,7 @@ public class EntityDetailResponse extends MenuBean {
 
     private void processStyles(Detail detail) {
         DetailField[] fields = detail.getFields();
-        ArrayList<Style> styleArrayList = new ArrayList<Style>();
+        ArrayList<Style> styleArrayList = new ArrayList<>();
         for (DetailField field : fields) {
             styleArrayList.add(new Style(field));
         }
