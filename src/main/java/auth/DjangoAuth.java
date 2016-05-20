@@ -19,7 +19,7 @@ public class DjangoAuth implements HqAuth {
         return new HttpHeaders(){
             {
                 add( "Cookie",  "sessionid=" + authKey);
-                add( "sessionid",  "sessionid=" + authKey);
+                add( "sessionid",  authKey);
                 add( "Authorization",  "sessionid=" + authKey);
             }
         };
