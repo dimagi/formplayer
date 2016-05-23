@@ -7,7 +7,7 @@ import org.springframework.http.HttpHeaders;
  */
 public class DjangoAuth implements HqAuth {
 
-    String authKey;
+    private final String authKey;
 
     public DjangoAuth(String authKey) {
         this.authKey = authKey;
@@ -19,7 +19,7 @@ public class DjangoAuth implements HqAuth {
         return new HttpHeaders(){
             {
                 add( "Cookie",  "sessionid=" + authKey);
-                add( "sessionid",  "sessionid=" + authKey);
+                add( "sessionid",  authKey);
                 add( "Authorization",  "sessionid=" + authKey);
             }
         };

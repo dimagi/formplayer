@@ -1,0 +1,29 @@
+{
+  "lang": "en",
+  "session-data": {
+    "username": "grouptestuser",
+    "additional_filters": {
+      "footprint": true
+    },
+    "domain": "grouptestdomain",
+    "user_id": "grouptestappid",
+    "app_id": "10a706429116a3e55f1d1302cd3db69f",
+    "user_data": {
+      "commcare_first_name": "",
+      "commcare_last_name": "",
+      "commcare_phone_number": null
+    },
+    "host": "http://localhost:8000",
+    "session_name": "ccqa > Basic Form",
+    "app_version": "2.0",
+    "device_id": "cloudcare"
+  },
+  "hq_auth": {
+    "type": "django-session",
+    "key": "3fu61g0hqz1743tjejdrr40j4e98wohk"
+  },
+  "form-url": "http://localhost:8000/a/test/apps/download/10a706429116a3e55f1d1302cd3db69f/modules-0/forms-0.xml",
+  "form_context": {
+    "case_model": null
+  }
+}

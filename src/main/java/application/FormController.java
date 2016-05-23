@@ -9,21 +9,17 @@ import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
-import org.commcare.modern.process.FormRecordProcessorHelper;
-import org.commcare.util.cli.*;
+import org.commcare.api.process.FormRecordProcessorHelper;
+import org.commcare.util.cli.OptionsScreen;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
-import repo.MenuRepo;
 import repo.SessionRepo;
-import requests.InstallRequest;
 import requests.NewFormRequest;
-import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
 import session.FormSession;
-import session.MenuSession;
 import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,8 +43,8 @@ public class FormController {
     @Autowired
     private RestoreService restoreService;
 
-    Log log = LogFactory.getLog(FormController.class);
-    ObjectMapper mapper = new ObjectMapper();
+    private final Log log = LogFactory.getLog(FormController.class);
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION , method = RequestMethod.POST)
@@ -65,6 +61,7 @@ public class FormController {
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = sessionRepo.find(answerQuestionBean.getSessionId());
+        log.info("Restored serialized session: " + session);
         FormSession formEntrySession = new FormSession(session);
 
         JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
@@ -188,7 +185,7 @@ public class FormController {
         log.info("SyncDb Request: " + syncRequest);
         syncRequest.setRestoreService(restoreService);
         String restoreXml = syncRequest.getRestoreXml();
-        CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), restoreXml);
+        CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), syncRequest.getDomain(), restoreXml);
         return new SyncDbResponseBean();
     }
 
@@ -201,7 +198,7 @@ public class FormController {
 
     private HashMap<Integer, String> getMenuRows(OptionsScreen nextScreen){
         String[] rows = nextScreen.getOptions();
-        HashMap<Integer, String> optionsStrings = new HashMap<Integer, String>();
+        HashMap<Integer, String> optionsStrings = new HashMap<>();
         for(int i=0; i <rows.length; i++){
             optionsStrings.put(i, rows[i]);
         }
