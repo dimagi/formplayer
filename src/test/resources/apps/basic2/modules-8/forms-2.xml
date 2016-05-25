@@ -1,0 +1,75 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+	<h:head>
+		<h:title>Add a Point</h:title>
+		<model>
+			<instance>
+				<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/8A88484D-71AB-4181-9836-C7279635B2D6" uiVersion="1" version="711" name="Add a Point">
+					<questions>
+						<x/>
+						<y/>
+						<radius/>
+						<datetime/>
+					</questions>
+				<subcase_0><case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id=""><create><case_name/><owner_id/><case_type>graphing_test_point</case_type></create><update><datetime/><radius/><x/><y/></update><index><parent case_type="graphing_test_cases"/></index></case></subcase_0><case xmlns="http://commcarehq.org/case/transaction/v2" case_id="" date_modified="" user_id=""/><orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/><cc:location/></orx:meta></data>
+			</instance><instance id="commcaresession" src="jr://instance/session"/><instance id="groups" src="jr://fixture/user-groups"/>
+			<bind nodeset="/data/questions"/>
+			<bind nodeset="/data/questions/x" type="xsd:int" constraint=". &gt;= 0 and . &lt;= 10" required="true()"/>
+			<bind nodeset="/data/questions/y" type="xsd:int" constraint=". &gt;= 0 and . &lt;= 10"/>
+			<bind nodeset="/data/questions/radius" type="xsd:int" constraint=". &gt;= 1 and . &lt;= 5"/>
+			<bind nodeset="/data/questions/datetime" type="xsd:dateTime"/>
+			<itext>
+				<translation lang="en" default="">
+					<text id="questions-label">
+						<value>questions</value>
+					</text>
+					<text id="questions/x-label">
+						<value>Enter an x value (0 to 10):</value>
+					</text>
+					<text id="questions/y-label">
+						<value>Enter a y value (0 to 10):</value>
+					</text>
+					<text id="questions/radius-label">
+						<value>Enter a value for a radius (1 to 5):</value>
+					</text>
+					<text id="questions/datetime-label">
+						<value>Enter a date and time (in 2014):</value>
+					</text>
+				</translation>
+				<translation lang="hin">
+					<text id="questions-label">
+						<value>questions</value>
+					</text>
+					<text id="questions/x-label">
+						<value>Enter an x value (0 to 10):</value>
+					</text>
+					<text id="questions/y-label">
+						<value>Enter a y value (0 to 10):</value>
+					</text>
+					<text id="questions/radius-label">
+						<value>Enter a value for a radius (1 to 5):</value>
+					</text>
+					<text id="questions/datetime-label">
+						<value>Enter a date and time (in 2014):</value>
+					</text>
+				</translation>
+			</itext>
+		<bind calculate="/data/meta/timeEnd" nodeset="/data/case/@date_modified" type="xsd:dateTime"/><bind calculate="/data/meta/userID" nodeset="/data/case/@user_id"/><bind calculate="instance('commcaresession')/session/data/case_id" nodeset="/data/case/@case_id"/><bind calculate="/data/meta/timeEnd" nodeset="/data/subcase_0/case/@date_modified" type="xsd:dateTime"/><bind calculate="/data/meta/userID" nodeset="/data/subcase_0/case/@user_id"/><setvalue event="xforms-ready" ref="/data/subcase_0/case/@case_id" value="instance('commcaresession')/session/data/case_id_new_graphing_test_point_0"/><bind calculate="/data/questions/x" nodeset="/data/subcase_0/case/create/case_name"/><setvalue event="xforms-ready" ref="/data/subcase_0/case/create/owner_id" value="instance('groups')/groups/group/@id"/><bind calculate="/data/questions/datetime" nodeset="/data/subcase_0/case/update/datetime" relevant="count(/data/questions/datetime) &gt; 0"/><bind calculate="/data/questions/radius" nodeset="/data/subcase_0/case/update/radius" relevant="count(/data/questions/radius) &gt; 0"/><bind calculate="/data/questions/x" nodeset="/data/subcase_0/case/update/x" relevant="count(/data/questions/x) &gt; 0"/><bind calculate="/data/questions/y" nodeset="/data/subcase_0/case/update/y" relevant="count(/data/questions/y) &gt; 0"/><bind calculate="/data/case/@case_id" nodeset="/data/subcase_0/case/index/parent"/><setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/><orx:pollsensor event="xforms-ready" ref="/data/meta/location"/><bind nodeset="/data/meta/location" type="geopoint"/></model>
+	</h:head>
+	<h:body>
+		<group ref="/data/questions" appearance="field-list">
+			<label ref="jr:itext('questions-label')"/>
+			<input ref="/data/questions/x">
+				<label ref="jr:itext('questions/x-label')"/>
+			</input>
+			<input ref="/data/questions/y">
+				<label ref="jr:itext('questions/y-label')"/>
+			</input>
+			<input ref="/data/questions/radius">
+				<label ref="jr:itext('questions/radius-label')"/>
+			</input>
+			<input ref="/data/questions/datetime">
+				<label ref="jr:itext('questions/datetime-label')"/>
+			</input>
+		</group>
+	</h:body>
+</h:html>

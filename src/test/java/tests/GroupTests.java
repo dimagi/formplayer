@@ -4,7 +4,6 @@ import auth.HqAuth;
 import beans.AnswerQuestionResponseBean;
 import beans.NewFormSessionResponse;
 import beans.QuestionBean;
-import beans.RepeatResponseBean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -16,7 +15,6 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -40,7 +38,7 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testConditionalItemsets() throws Exception {
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/groups.xml");
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -85,7 +83,7 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testMultiSelectGroups() throws Exception {
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/groups.xml");
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -119,10 +117,6 @@ public class GroupTests extends BaseTestClass{
 
     @Test
     public void testInnerOuterGroups() throws Exception {
-
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/groups.xml");
-        String sessionId = newSessionResponse.getSessionId();
-
-        System.out.println("NewSessionREsponse: " + newSessionResponse);
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
     }
 }

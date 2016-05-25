@@ -15,6 +15,8 @@ public class SerializableFormSession implements Serializable{
     private String initLang;
     private int sequenceId;
     private Map<String, String> sessionData;
+    private String domain;
+    private String postUrl;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -38,16 +40,14 @@ public class SerializableFormSession implements Serializable{
     }
 
     @Override
-    public boolean equals(Object obj){
-        if(obj instanceof SerializableFormSession){
-            return obj.hashCode() == hashCode();
-        }
-        return false;
+    public boolean equals(Object obj) {
+        return obj instanceof SerializableFormSession && obj.hashCode() == hashCode();
     }
 
     @Override
     public String toString(){
-        return "Session [id=" + id + ", instance=" + instanceXml + ", form=" + formXml + ", username=" + username + "]";
+        return "Session [id=" + id + ", username=" + username
+                + " domain=" + domain + ", instance=" + instanceXml + ", form=" + formXml +"]";
     }
 
     public String getFormXml() {
@@ -96,5 +96,21 @@ public class SerializableFormSession implements Serializable{
 
     public void setSessionData(Map<String, String> sessionData) {
         this.sessionData = sessionData;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public void setPostUrl(String postUrl) {
+        this.postUrl = postUrl;
+    }
+
+    public String getPostUrl() {
+        return postUrl;
     }
 }

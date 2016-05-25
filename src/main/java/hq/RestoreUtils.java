@@ -10,9 +10,7 @@ import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.form.api.FormEntryModel;
-import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
-import org.javarosa.xform.util.XFormUtils;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
@@ -25,9 +23,9 @@ import java.io.InputStream;
  */
 public class RestoreUtils {
 
-    public static UserSqlSandbox restoreUser(String username, String restorePayload) throws
+    public static UserSqlSandbox restoreUser(String username, String path, String restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
-        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username);
+        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
         return mSandbox;
@@ -38,27 +36,13 @@ public class RestoreUtils {
      * The FormDef object returned isn't initialized, and hence will not have
      * 'instance(...)' data set.
      *
-     * @param formInput     XML stream of the form definition
+     * @param formDef     the form definition
      * @param instanceInput XML stream of an instance of the form
      * @return The form definition with the given instance loaded. Returns null
      * if the instance doesn't match the form provided.
      * @throws IOException thrown when XML input streams aren't successfully
      *                     parsed
      */
-    public static FormDef loadInstance(InputStream formInput,
-                                       InputStream instanceInput)
-            throws Exception {
-        FormDef formDef;
-
-        try {
-            formDef = XFormUtils.getFormFromInputStream(formInput);
-        } catch (XFormParseException e) {
-            throw new IOException(e.getMessage());
-        }
-
-        return loadInstance(formDef, instanceInput);
-    }
-
     public static FormDef loadInstance(FormDef formDef,
                                        InputStream instanceInput)
             throws Exception {

@@ -1,0 +1,7 @@
+{
+  "username": "doublemgmtuser",
+  "password": "testpass",
+  "domain": "doublemgmtdomain",
+  "install_reference": "apps/parent_child/profile.ccpr",
+  "app_id": "doublemgmtappid"
+}

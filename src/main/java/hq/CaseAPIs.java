@@ -19,54 +19,54 @@ import java.io.File;
  */
 public class CaseAPIs {
 
-    public static UserSqlSandbox restoreIfNotExists(String username, String xml) throws Exception{
-        File db = new File(getDbFilePath(username));
+    public static UserSqlSandbox restoreIfNotExists(String username, String domain, String xml) throws Exception{
+        File db = new File(UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain + "/" + username + ".db");
         if(db.exists()){
-            return new UserSqlSandbox(username);
+            return new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain);
         } else{
-            return RestoreUtils.restoreUser(username, xml);
+            db.getParentFile().mkdirs();
+            return RestoreUtils.restoreUser(username,UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain,  xml);
         }
     }
 
     public static UserSqlSandbox restoreIfNotExists(String username, RestoreService restoreService,
                                                     String domain, HqAuth auth) throws Exception{
-        File db = new File(getDbFilePath(username));
+        File db = new File(UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain + "/" + username + ".db");
         if(db.exists()){
-            return new UserSqlSandbox(username);
+            return new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain);
         } else{
+            db.getParentFile().mkdirs();
             String xml = restoreService.getRestoreXml(domain, auth);
-            return RestoreUtils.restoreUser(username, xml);
+            return RestoreUtils.restoreUser(username, UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain, xml);
         }
     }
 
-
-    private static String getDbFilePath(String username){
-        String path = UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + username + ".db";
-        return path;
-    }
-
-    public static String filterCases(CaseFilterRequestBean request) throws Exception{
+    public static String filterCases(CaseFilterRequestBean request) {
         try {
             String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
-            UserSqlSandbox mSandbox = restoreIfNotExists(request.getSessionData().getUsername(), request.getRestoreXml());
+            UserSqlSandbox mSandbox = restoreIfNotExists(
+                    request.getSessionData().getUsername(),
+                    request.getSessionData().getDomain(),
+                    request.getRestoreXml());
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
-            String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
-            return filteredCases;
+            return XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         } catch (Exception e) {
             e.printStackTrace();
         }
         return "null";
     }
 
-    public static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
+    private static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
         Case cCase = caseStorage.getRecordForValue("case_id", caseId);
-        CaseBean ret = new CaseBean(cCase);
-        return ret;
+        return new CaseBean(cCase);
     }
 
     public static CaseBean[] filterCasesFull(CaseFilterRequestBean request) throws Exception{
         String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
-        UserSqlSandbox mSandbox = restoreIfNotExists(request.getSessionData().getUsername(), request.getRestoreXml());
+        UserSqlSandbox mSandbox = restoreIfNotExists(
+                request.getSessionData().getUsername(),
+                request.getSessionData().getDomain(),
+                request.getRestoreXml());
         EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
         String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         String[] splitCases = filteredCases.split(",");

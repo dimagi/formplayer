@@ -19,10 +19,11 @@ public class Constants {
     public final static String URL_LIST_SESSIONS = "sessions";
     public final static String URL_GET_SESSION = "get_session";
     public static final String URL_INSTALL = "install";
-    public static final String URL_MENU_SELECT = "menu_select";
+    public static final String URL_MENU_NAVIGATION = "navigate_menu";
     //Menus
     public static final String MENU_MODULE = "modules";
     public static final String MENU_ENTITY = "entity";
+    public static final String CASE_LIST_ACTION = "action";
     //Status
     public static final String RESPONSE_STATUS_POSITIVE = "accepted";
     //JSON
