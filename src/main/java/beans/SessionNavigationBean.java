@@ -11,6 +11,7 @@ import java.util.Arrays;
 public class SessionNavigationBean extends InstallRequestBean {
     private String[] selections;
     private int offset;
+    private String searchText;
 
     public String[] getSelections() {
         return selections;
@@ -32,5 +33,13 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     public void setOffset(int offset) {
         this.offset = offset;
+    }
+
+    public String getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 }
