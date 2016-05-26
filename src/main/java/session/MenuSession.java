@@ -142,4 +142,8 @@ public class MenuSession {
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, this.username, domain, sessionData, postUrl);
     }
+
+    public SessionWrapper getSessionWrapper(){
+        return this.sessionWrapper;
+    }
 }

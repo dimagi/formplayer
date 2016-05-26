@@ -1,5 +1,6 @@
 package beans.menus;
 
+import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.util.cli.MenuScreen;
 
@@ -22,13 +23,13 @@ public class CommandListResponseBean extends MenuBean {
         this.commands = commands;
     }
 
-    public CommandListResponseBean(MenuScreen menuScreen){
+    public CommandListResponseBean(MenuScreen menuScreen, SessionWrapper session){
         this.setTitle(menuScreen.getScreenTitle());
 
         MenuDisplayable[] options = menuScreen.getMenuDisplayables();
         Command[] commands = new Command[options.length];
         for(int i = 0; i < options.length; i++){
-            Command command = new Command(options[i], i);
+            Command command = new Command(options[i], i, session);
             commands[i] = command;
         }
         this.setCommands(commands);
