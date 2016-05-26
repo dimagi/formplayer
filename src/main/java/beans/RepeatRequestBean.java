@@ -9,22 +9,25 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RepeatRequestBean extends SessionBean {
-    private String ix;
+    private String repeatIndex;
     private String formIndex;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public RepeatRequestBean(){}
 
-    public String getIx() {
-        return ix;
+    // in delete commands this will represent the iteration of the repeat to be deleted
+    @JsonGetter(value = "ix")
+    public String getRepeatIndex() {
+        return repeatIndex;
     }
-    public void setIx(String ix) {
-        this.ix = ix;
+    @JsonSetter(value = "ix")
+    public void setRepeatIndex(String repeatIndex) {
+        this.repeatIndex = repeatIndex;
     }
 
     @Override
     public String toString(){
-        return "RepeatRequestBean [ix: " + ix + ", sessionId: " + sessionId + "]";
+        return "RepeatRequestBean [repeatIndex: " + repeatIndex + ", sessionId: " + sessionId + "]";
     }
 
     @JsonGetter(value = "form_ix")
