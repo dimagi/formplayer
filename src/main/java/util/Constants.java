@@ -11,8 +11,8 @@ public class Constants {
     public final static String URL_SUBMIT_FORM = "submit-all";
     public final static String URL_GET_INSTANCE = "get-instance";
     public final static String URL_EVALUATE_XPATH = "evaluate-xpath";
-    public final static String URL_NEW_REPEAT = "new_repeat";
-    public final static String URL_DELETE_REPEAT = "delete_repeat";
+    public final static String URL_NEW_REPEAT = "new-repeat";
+    public final static String URL_DELETE_REPEAT = "delete-repeat";
     public final static String URL_FILTER_CASES = "filter_cases";
     public final static String URL_FILTER_CASES_FULL = "filter_cases_full";
     public final static String URL_SYNC_DB = "sync-db";
