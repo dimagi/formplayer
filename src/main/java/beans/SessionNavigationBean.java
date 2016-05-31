@@ -1,6 +1,8 @@
 package beans;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.util.Arrays;
 
@@ -35,10 +37,11 @@ public class SessionNavigationBean extends InstallRequestBean {
         this.offset = offset;
     }
 
+    @JsonGetter(value = "search_text")
     public String getSearchText() {
         return searchText;
     }
-
+    @JsonSetter(value = "search_text")
     public void setSearchText(String searchText) {
         this.searchText = searchText;
     }
