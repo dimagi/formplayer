@@ -1,7 +1,6 @@
 package beans.menus;
 
 import io.swagger.annotations.ApiModel;
-import org.commcare.modern.models.NodeEntityFactory;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
@@ -16,7 +15,8 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
 import util.SessionUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Vector;
 
 /**
  * Created by willpride on 4/13/16.
@@ -49,8 +49,6 @@ public class EntityListResponse extends MenuBean {
         Detail shortDetail = nextScreen.getShortDetail();
 
         EvaluationContext ec = session.getEvaluationContext();
-
-        NodeEntityFactory factory = new NodeEntityFactory(shortDetail, ec);
 
         Vector<TreeReference> references = ec.expandReference(((EntityDatum)session.getNeededDatum()).getNodeset());
         processTitle(session);
@@ -153,69 +151,6 @@ public class EntityListResponse extends MenuBean {
             setAction(new DisplayElement(action, session.getEvaluationContext()));
         }
     }
-
-    private void buildMatchList(Vector<TreeReference> fullEntityList, String[] searchTerms) {
-        Locale currentLocale = Locale.getDefault();
-        //It's a bit sketchy here, because this DB lock will prevent
-        //anything else from processing
-        for (int index = 0; index < fullEntityList.size(); ++index) {
-            //Every once and a while we should make sure we're not blocking anything with the database
-            if (index % 500 == 0) {
-                db.yieldIfContendedSafely();
-            }
-            Entity<TreeReference> e = fullEntityList.get(index);
-            if (isCancelled()) {
-                break;
-            }
-
-            boolean add = false;
-            int score = 0;
-            filter:
-            for (String filter : searchTerms) {
-                add = false;
-                for (int i = 0; i < e.getNumFields(); ++i) {
-                    String field = e.getNormalizedField(i);
-                    if (!"".equals(field) && field.toLowerCase(currentLocale).contains(filter)) {
-                        add = true;
-                        continue filter;
-                    } else if (isFuzzySearchEnabled) {
-                        // We possibly now want to test for edit distance for
-                        // fuzzy matching
-                        for (String fieldChunk : e.getSortFieldPieces(i)) {
-                            Pair<Boolean, Integer> match = StringUtils.fuzzyMatch(filter, fieldChunk);
-                            if (match.first) {
-                                add = true;
-                                score += match.second;
-                                continue filter;
-                            }
-                        }
-                    }
-                }
-                if (!add) {
-                    break;
-                }
-            }
-            if (add) {
-                matchScores.add(Pair.create(index, score));
-            }
-        }
-        if (isAsyncMode) {
-            Collections.sort(matchScores, new Comparator<Pair<Integer, Integer>>() {
-                @Override
-                public int compare(Pair<Integer, Integer> lhs, Pair<Integer, Integer> rhs) {
-                    return lhs.second - rhs.second;
-                }
-            });
-        }
-
-        for (Pair<Integer, Integer> match : matchScores) {
-            matchList.add(fullEntityList.get(match.first));
-        }
-
-        db.setTransactionSuccessful();
-        db.endTransaction();
-    }
-
 
     public Entity[] getEntities() {
         return entities;
