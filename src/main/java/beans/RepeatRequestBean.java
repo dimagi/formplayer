@@ -9,22 +9,34 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RepeatRequestBean extends SessionBean {
+    private String repeatIndex;
     private String formIndex;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public RepeatRequestBean(){}
 
+    // in delete commands this will represent the iteration of the repeat to be deleted
     @JsonGetter(value = "ix")
-    public String getFormIndex() {
-        return formIndex;
+    public String getRepeatIndex() {
+        return repeatIndex;
     }
     @JsonSetter(value = "ix")
-    public void setFormIndex(String formIndex) {
-        this.formIndex = formIndex;
+    public void setRepeatIndex(String repeatIndex) {
+        this.repeatIndex = repeatIndex;
     }
 
     @Override
     public String toString(){
-        return "RepeatRequestBean [formIndex: " + formIndex + ", sessionId: " + sessionId + "]";
+        return "RepeatRequestBean [repeatIndex: " + repeatIndex + ", sessionId: " + sessionId + "]";
+    }
+
+    @JsonGetter(value = "form_ix")
+    public String getFormIndex() {
+        return formIndex;
+    }
+
+    @JsonSetter(value = "form_ix")
+    public void setFormIndex(String formIndex) {
+        this.formIndex = formIndex;
     }
 }

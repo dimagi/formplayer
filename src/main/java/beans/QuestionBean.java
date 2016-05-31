@@ -1,7 +1,10 @@
 package beans;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,6 +32,8 @@ public class QuestionBean {
     private String[] choices;
     private String repeatable;
     private String exists;
+    private String addChoice;
+    private String header;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private QuestionBean[] children;
@@ -200,5 +205,22 @@ public class QuestionBean {
 
     public void setExists(String exists) {
         this.exists = exists;
+    }
+
+    @JsonGetter(value = "add-choice")
+    public String getAddChoice() {
+        return addChoice;
+    }
+    @JsonSetter(value = "add-choice")
+    public void setAddChoice(String addChoice) {
+        this.addChoice = addChoice;
+    }
+
+    public String getHeader() {
+        return header;
+    }
+
+    public void setHeader(String header) {
+        this.header = header;
     }
 }

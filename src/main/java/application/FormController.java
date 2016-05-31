@@ -136,7 +136,7 @@ public class FormController {
 
         JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-                newRepeatRequestBean.getFormIndex());
+                newRepeatRequestBean.getRepeatIndex());
 
         updateSession(formEntrySession, serializableFormSession);
 
@@ -156,7 +156,7 @@ public class FormController {
 
         JSONObject resp = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-                repeatRequestBean.getFormIndex());
+                repeatRequestBean.getRepeatIndex(), repeatRequestBean.getFormIndex());
 
         updateSession(formEntrySession, serializableFormSession);
 
