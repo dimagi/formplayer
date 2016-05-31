@@ -11,6 +11,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.cli.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,7 +137,7 @@ public class MenuController {
 
             // We're looking at a module or form menu
             if(nextScreen instanceof MenuScreen){
-                menuResponseBean = generateMenuScreen((MenuScreen) nextScreen);
+                menuResponseBean = generateMenuScreen((MenuScreen) nextScreen, menuSession.getSessionWrapper());
             }
             // We're looking at a case list or detail screen (probably)
             else if (nextScreen instanceof EntityScreen) {
@@ -148,8 +149,8 @@ public class MenuController {
         }
     }
 
-    private CommandListResponseBean generateMenuScreen(MenuScreen nextScreen){
-        return new CommandListResponseBean(nextScreen);
+    private CommandListResponseBean generateMenuScreen(MenuScreen nextScreen, SessionWrapper session){
+        return new CommandListResponseBean(nextScreen, session);
     }
 
     private EntityListResponse generateEntityScreen(EntityScreen nextScreen, int offset, String searchText){
