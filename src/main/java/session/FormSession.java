@@ -49,7 +49,7 @@ public class FormSession {
     private String restoreXml;
     private UserSandbox sandbox;
     private int sequenceId;
-    private String initLang;
+    private String locale;
     private Map<String, String> sessionData;
     private String postUrl;
 
@@ -79,13 +79,14 @@ public class FormSession {
         this.sequenceId = session.getSequenceId();
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
+        setLocale(session.getInitLang(), langs);
         uuid = UUID.randomUUID().toString();
         this.sequenceId = session.getSequenceId();
         initialize(false, session.getSessionData());
         getFormTree();
     }
 
-    public FormSession(String formXml, String restoreXml, String initLang, String username, String domain,
+    public FormSession(String formXml, String restoreXml, String locale, String username, String domain,
                        Map<String, String> sessionData) throws Exception {
         this.formXml = formXml;
         this.restoreXml = restoreXml;
@@ -96,10 +97,10 @@ public class FormSession {
         formDef = parseFormDef(formXml);
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
-        formEntryController.setLanguage(initLang);
+        formEntryController.setLanguage(locale);
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
-        this.initLang = initLang;
+        setLocale(locale, langs);
         uuid = UUID.randomUUID().toString();
         this.sequenceId = 1;
         initialize(true, sessionData);
@@ -108,7 +109,7 @@ public class FormSession {
 
     // Entry from menu selection. Assumes user has already been restored.
     public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
-                       Map<String, String> sessionData, String postUrl) throws Exception {
+                       Map<String, String> sessionData, String postUrl, String locale) throws Exception {
         this.username = username;
         this.sessionData = sessionData;
         this.formDef = formDef;
@@ -117,21 +118,28 @@ public class FormSession {
         this.postUrl = postUrl;
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
-        formEntryController.setLanguage("en");
-        title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
-        this.initLang = "en";
+        setLocale(locale, langs);
+        title = formDef.getTitle();
         uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
         initialize(true, sessionData);
         getFormTree();
     }
 
+    private void setLocale(String locale, String[] langs){
+        if(locale == null){
+            this.locale = langs[0];
+        } else{
+            this.locale = locale;
+        }
+    }
+
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         FormplayerConfigEngine.setupStorageManager(username, "dbs");
-        formDef.initialize(newInstance, sessionWrapper.getIIF());
+        formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
     }
 
     private FormDef parseFormDef(String formXml) throws IOException {
@@ -201,12 +209,12 @@ public class FormSession {
         this.sequenceId = sequenceId;
     }
 
-    private String getInitLang() {
-        return initLang;
+    private String getLocale() {
+        return locale;
     }
 
-    public void setInitLang(String initLang) {
-        this.initLang = initLang;
+    public void setLocale(String locale) {
+        this.locale = locale;
     }
 
     public UserSandbox getSandbox(){
@@ -244,7 +252,7 @@ public class FormSession {
         serializableFormSession.setFormXml(serializeFormDef());
         serializableFormSession.setUsername(username);
         serializableFormSession.setSequenceId(getSequenceId());
-        serializableFormSession.setInitLang(getInitLang());
+        serializableFormSession.setInitLang(getLocale());
         serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setDomain(getDomain());
         serializableFormSession.setRestoreXml(getRestoreXml());

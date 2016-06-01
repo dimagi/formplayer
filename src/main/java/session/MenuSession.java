@@ -17,8 +17,6 @@ import org.commcare.util.cli.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
-import org.javarosa.core.services.locale.Localization;
-import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
@@ -28,6 +26,7 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.stereotype.Component;
 import services.InstallService;
 import services.RestoreService;
+import util.SessionUtils;
 
 import java.util.HashMap;
 
@@ -47,6 +46,7 @@ public class MenuSession {
     private final String username;
     private final String domain;
 
+    private String locale;
     private Screen screen;
 
     private final Log log = LogFactory.getLog(MenuSession.class);
@@ -60,7 +60,8 @@ public class MenuSession {
         this.engine = installService.configureApplication(this.installReference, this.username, "dbs/" + appId);
         this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
-        setLocale(locale);
+        this.locale = locale;
+        SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
     }
     private void resolveInstallReference(String installReference, String appId){
@@ -143,25 +144,10 @@ public class MenuSession {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, this.username, domain, sessionData, postUrl);
-    }
-
-    private void setLocale(String locale) {
-        if(locale == null || "".equals(locale.trim())){
-            return;
-        }
-        Localizer localizer = Localization.getGlobalLocalizerAdvanced();
-        log.info("Setting locale to : " + locale + " available: " + localizer.getAvailableLocales());
-        for (String availabile : localizer.getAvailableLocales()) {
-            if (locale.equals(availabile)) {
-                localizer.setLocale(locale);
-
-                return;
-            }
-        }
+        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale);
     }
 
     public SessionWrapper getSessionWrapper(){
-        return this.sessionWrapper;
+        return sessionWrapper;
     }
 }
