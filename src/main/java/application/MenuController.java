@@ -106,7 +106,7 @@ public class MenuController {
         }
 
         return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), installService, restoreService, auth);
+                bean.getInstallReference(), bean.getLocale(), installService, restoreService, auth);
     }
 
     private Object getNextMenu(MenuSession menuSession) throws Exception {

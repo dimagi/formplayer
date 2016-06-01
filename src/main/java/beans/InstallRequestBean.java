@@ -14,6 +14,7 @@ public class InstallRequestBean {
     private String password;
     private String domain;
     private String appId;
+    private String locale;
 
     @JsonGetter(value = "install_reference")
     public String getInstallReference() {
@@ -62,5 +63,13 @@ public class InstallRequestBean {
     public String toString() {
         return "InstallRequestBean: [installReference=" + installReference +
                 ", username=" + username + ", domain=" + domain + ", appId=" + appId + "]";
+    }
+
+    public String getLocale() {
+        return locale;
+    }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
     }
 }
