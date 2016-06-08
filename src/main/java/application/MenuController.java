@@ -78,10 +78,14 @@ public class MenuController {
         Object nextMenu = getNextMenu(menuSession);
         if (selections == null){
             log.info("Selections null, got next menu: " + nextMenu);
+            System.out.println("Menu Session Options: " + menuSession.getNextScreen().getOptions());
             return nextMenu;
         }
         for(String selection: selections) {
             menuSession.handleInput(selection);
+            if(menuSession.getNextScreen() != null){
+                System.out.println("Menu Session Options: " + menuSession.getNextScreen().getOptions());
+            }
         }
         nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset());
         log.info("Returning menu: " + nextMenu);
