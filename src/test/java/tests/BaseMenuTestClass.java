@@ -89,10 +89,10 @@ public class BaseMenuTestClass {
         log.info("Got appId: " + appId);
         switch (appId) {
             case "doublemgmtappid":
-                ref = "apps/parent_child/profile.ccpr";
+                ref = "archives/parent_child.ccz";
                 break;
             case "navigatorappid":
-                ref = "apps/basic2/profile.ccpr";
+                ref = "archives/parent_child.ccz";
                 break;
             case "caseappid":
                 ref = "apps/basic2/profile.ccpr";
