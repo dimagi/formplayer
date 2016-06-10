@@ -1,5 +1,6 @@
 package beans.menus;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModel;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
@@ -27,12 +28,15 @@ public class EntityListResponse extends MenuBean {
     private DisplayElement action;
     private Style[] styles;
     private String[] headers;
+    private Tile[] tiles;
     private int[] widthHints;
 
     private int pageCount;
     private int currentPage;
 
     public static final int CASE_LENGTH_LIMIT = 10;
+
+    private boolean usesCaseTiles;
 
     public EntityListResponse(){}
 
@@ -43,6 +47,7 @@ public class EntityListResponse extends MenuBean {
     public EntityListResponse(EntityScreen nextScreen, int offset) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
+        nextScreen.getLongDetailList();
         EvaluationContext ec = session.getEvaluationContext();
         Vector<TreeReference> references = ec.expandReference(((EntityDatum)session.getNeededDatum()).getNodeset());
         processTitle(session);
@@ -50,6 +55,24 @@ public class EntityListResponse extends MenuBean {
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
+        processCaseTiles(shortDetail);
+    }
+
+    private void processCaseTiles(Detail shortDetail) {
+        DetailField[] fields = shortDetail.getFields();
+        tiles = new Tile[fields.length];
+        if(!shortDetail.usesGridView()){
+            return;
+        }
+        setUsesCaseTiles(true);
+        for(int i = 0; i < fields.length; i++){
+            if(fields[i].isCaseTileField()){
+                tiles[i] = new Tile(fields[i]);
+            }
+            else{
+                tiles[i] = null;
+            }
+        }
     }
 
     private void processHeader(Detail shortDetail, EvaluationContext ec) {
@@ -206,5 +229,17 @@ public class EntityListResponse extends MenuBean {
 
     private void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
+    }
+
+    public boolean getUsesCaseTiles() {
+        return usesCaseTiles;
+    }
+
+    public void setUsesCaseTiles(boolean usesCaseTiles) {
+        this.usesCaseTiles = usesCaseTiles;
+    }
+
+    public Tile[] getTiles(){
+        return tiles;
     }
 }
