@@ -18,7 +18,7 @@ public class Style {
             try {
                 setFontSize(Integer.parseInt(detail.getFontSize()));
             } catch (NumberFormatException nfe) {
-                nfe.printStackTrace();
+                //nfe.printStackTrace();
             }
         }
         setDisplayFormatFromString(detail.getTemplateForm());
@@ -64,12 +64,17 @@ public class Style {
             case "audio":
                 setDisplayFormat(DisplayFormat.Audio);
                 break;
-            case "Text":
+            case "text":
                 setDisplayFormat(DisplayFormat.Text);
                 break;
-            case "Graph":
+            case "graph":
                 setDisplayFormat(DisplayFormat.Graph);
                 break;
         }
+    }
+
+    @Override
+    public String toString(){
+        return "Style: [displayFormat=" + displayFormats + ", fontSize=" + fontSize + "]";
     }
 }

@@ -109,6 +109,9 @@ public class BaseMenuTestClass {
             case "langsappid":
                 ref = "archives/langs.ccz";
                 break;
+            case "casetilesappid":
+                ref = "archives/casetiles.ccz";
+                break;
             default:
                 throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
         }
