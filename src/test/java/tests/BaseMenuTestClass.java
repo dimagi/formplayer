@@ -106,6 +106,12 @@ public class BaseMenuTestClass {
             case "endformappid":
                 ref = "archives/formnav.ccz";
                 break;
+            case "langsappid":
+                ref = "archives/langs.ccz";
+                break;
+            case "casetilesappid":
+                ref = "archives/casetiles.ccz";
+                break;
             default:
                 throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
         }
@@ -175,11 +181,18 @@ public class BaseMenuTestClass {
     }
 
     JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
+        return sessionNavigate(selections, testName, null);
+    }
+
+    JSONObject sessionNavigate(String[] selections, String testName, String locale) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
+        if(locale != null && !"".equals(locale.trim())){
+            sessionNavigationBean.setLocale(locale);
+        }
         ResultActions selectResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_MENU_NAVIGATION))
                         .contentType(MediaType.APPLICATION_JSON)
