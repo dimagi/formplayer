@@ -47,6 +47,8 @@ public class LocalizationTests extends BaseMenuTestClass {
 
         assert commandListResponseSpanish.getCommands().length == 2;
 
+        assert commandListResponseSpanish.getLocales().length == 3;
+
         assert commandListResponseSpanish.getCommands()[0].getDisplayText().equals("Spanish Form 1");
 
         assert commandListResponseSpanish.getCommands()[1].getDisplayText().equals("Spanish Form 2");
