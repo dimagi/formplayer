@@ -15,6 +15,7 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -55,7 +56,6 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert entityListResponse.getTitle().equals("Parent (2)");
         assert entityListResponse.getAction() != null;
         assert entityListResponse.getAction().getText().equals("New Parent");
-
         JSONObject actionResponseObject = sessionNavigate(new String[] {"2", "action 0"}, "doublemgmt");
 
         NewFormSessionResponse newFormSessionResponse =

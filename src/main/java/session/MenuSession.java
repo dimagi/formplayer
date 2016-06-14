@@ -17,6 +17,7 @@ import org.commcare.util.cli.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
