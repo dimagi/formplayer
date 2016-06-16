@@ -17,7 +17,7 @@ public class SessionImpl implements SessionRepo{
     @Autowired
     private RedisTemplate<String, SerializableFormSession> redisTemplate;
 
-    private static final String SESSION_KEY = "Session";
+    private static final String SESSION_KEY = "formplayer-session";
     private final Log log = LogFactory.getLog(SessionImpl.class);
 
     @Override
@@ -35,6 +35,7 @@ public class SessionImpl implements SessionRepo{
 
     @Override
     public Map<Object, Object> findAll() {
+        log.info("Getting all keys");
         return this.redisTemplate.opsForHash().entries(SESSION_KEY);
 
     }
