@@ -99,8 +99,6 @@ public class FormSession {
             loadInstanceXml(formDef, instanceContent);
         }
 
-        System.out.println("Instance Content: " + instanceContent);
-
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
         formEntryController.setLanguage(initLang);
