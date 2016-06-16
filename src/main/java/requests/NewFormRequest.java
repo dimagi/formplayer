@@ -26,19 +26,17 @@ public class NewFormRequest {
     private final HqAuth auth;
     private final String domain;
 
-    private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
-                           Map<String, String> sessionData, SessionRepo sessionRepo,
-                           XFormService xFormService, RestoreService restoreService) throws Exception {
-        SessionRepo sessionRepo1 = sessionRepo;
+    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
+                          XFormService xFormService, RestoreService restoreService) throws Exception {
         this.xFormService = xFormService;
         this.restoreService = restoreService;
-        this.formUrl = formUrl;
-        this.auth = getAuth((authDict));
-        String username1 = username;
-        this.domain = domain;
-        String lang1 = lang;
+        this.formUrl = bean.getFormUrl();
+        this.auth = getAuth(bean.getHqAuth());
+        this.domain = bean.getSessionData().getDomain();
         try {
-            formEntrySession = new FormSession(getFormXml(), getRestoreXml(), lang, username, domain, sessionData);
+            formEntrySession = new FormSession(getFormXml(), getRestoreXml(),
+                    bean.getLang(), bean.getSessionData().getUsername(),
+                    domain, bean.getSessionData().getData(), bean.getInstanceContent());
             sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();
@@ -52,13 +50,6 @@ public class NewFormRequest {
             }
         }
         return null;
-    }
-
-    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
-                          XFormService xFormService, RestoreService restoreService) throws Exception {
-        this(bean.getFormUrl(), bean.getHqAuth(),
-                bean.getSessionData().getUsername(), bean.getSessionData().getDomain(),
-                bean.getLang(), bean.getSessionData().getData(), sessionRepo, xFormService, restoreService);
     }
 
     public NewFormSessionResponse getResponse() throws IOException {

@@ -86,7 +86,7 @@ public class FormSession {
     }
 
     public FormSession(String formXml, String restoreXml, String initLang, String username, String domain,
-                       Map<String, String> sessionData) throws Exception {
+                       Map<String, String> sessionData, String instanceContent) throws Exception {
         this.formXml = formXml;
         this.restoreXml = restoreXml;
         this.username = username;
@@ -94,6 +94,13 @@ public class FormSession {
         this.sessionData = sessionData;
         this.domain = domain;
         formDef = parseFormDef(formXml);
+
+        if(instanceContent != null){
+            loadInstanceXml(formDef, instanceContent);
+        }
+
+        System.out.println("Instance Content: " + instanceContent);
+
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
         formEntryController.setLanguage(initLang);
@@ -104,6 +111,12 @@ public class FormSession {
         this.sequenceId = 1;
         initialize(true, sessionData);
         getFormTree();
+    }
+
+    private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
+        StringReader stringReader = new StringReader(instanceContent);
+        XFormParser xFormParser = new XFormParser(stringReader);
+        xFormParser.loadXmlInstance(formDef, stringReader);
     }
 
     // Entry from menu selection. Assumes user has already been restored.
