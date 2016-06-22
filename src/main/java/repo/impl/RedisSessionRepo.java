@@ -12,13 +12,13 @@ import java.util.Map;
 /**
  * Created by willpride on 1/19/16.
  */
-public class SessionImpl implements SessionRepo{
+public class RedisSessionRepo implements SessionRepo{
 
     @Autowired
     private RedisTemplate<String, SerializableFormSession> redisTemplate;
 
     private static final String SESSION_KEY = "Session";
-    private final Log log = LogFactory.getLog(SessionImpl.class);
+    private final Log log = LogFactory.getLog(RedisSessionRepo.class);
 
     @Override
     public void save(SerializableFormSession session) {

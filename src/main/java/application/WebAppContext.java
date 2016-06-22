@@ -19,7 +19,8 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import repo.SessionRepo;
-import repo.impl.SessionImpl;
+import repo.impl.PostgresSessionRepo;
+import repo.impl.RedisSessionRepo;
 import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
@@ -114,7 +115,7 @@ class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public SessionRepo sessionRepo(){
-        return new SessionImpl();
+        return new PostgresSessionRepo();
     }
 
     @Bean

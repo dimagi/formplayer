@@ -50,7 +50,6 @@ public class FormSession {
     private UserSandbox sandbox;
     private int sequenceId;
     private String initLang;
-    private Map<String, String> sessionData;
     private String postUrl;
 
     private String title;
@@ -65,7 +64,6 @@ public class FormSession {
         this.restoreXml = session.getRestoreXml();
         this.domain = session.getDomain();
         this.sandbox = CaseAPIs.restoreIfNotExists(username, this.domain, restoreXml);
-        this.sessionData = session.getSessionData();
         this.postUrl = session.getPostUrl();
         formDef = new FormDef();
         PrototypeUtils.setupPrototypes();
@@ -91,7 +89,6 @@ public class FormSession {
         this.restoreXml = restoreXml;
         this.username = username;
         this.sandbox = CaseAPIs.restoreIfNotExists(username, domain, restoreXml);
-        this.sessionData = sessionData;
         this.domain = domain;
         formDef = parseFormDef(formXml);
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -110,7 +107,6 @@ public class FormSession {
     public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
                        Map<String, String> sessionData, String postUrl) throws Exception {
         this.username = username;
-        this.sessionData = sessionData;
         this.formDef = formDef;
         this.sandbox = sandbox;
         this.domain = domain;
@@ -233,9 +229,6 @@ public class FormSession {
         formDef.readExternal(inputStream, PrototypeManager.getDefault());
     }
 
-    private Map<String, String> getSessionData() {
-        return sessionData;
-    }
 
     public SerializableFormSession serialize() throws IOException {
         SerializableFormSession serializableFormSession = new SerializableFormSession();
@@ -245,7 +238,6 @@ public class FormSession {
         serializableFormSession.setUsername(username);
         serializableFormSession.setSequenceId(getSequenceId());
         serializableFormSession.setInitLang(getInitLang());
-        serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setDomain(getDomain());
         serializableFormSession.setRestoreXml(getRestoreXml());
         serializableFormSession.setPostUrl(getPostUrl());
