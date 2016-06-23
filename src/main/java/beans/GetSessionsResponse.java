@@ -1,23 +1,36 @@
 package beans;
 
+import objects.SerializableFormSession;
+
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by willpride on 6/15/16.
  */
 public class GetSessionsResponse {
-    private String[] sessionIds;
 
-    public String[] getSessionIds() {
-        return sessionIds;
+    private SessionListItem[] sessions;
+
+    public GetSessionsResponse(){}
+
+    public GetSessionsResponse(List<SerializableFormSession> sessionList){
+        sessions = new SessionListItem[sessionList.size()];
+        for(int i = 0; i < sessionList.size(); i++){
+            sessions[i] = new SessionListItem(sessionList.get(i));
+        }
     }
 
-    public void setSessionIds(String[] sessionIds) {
-        this.sessionIds = sessionIds;
+    public SessionListItem[] getSessions() {
+        return sessions;
+    }
+
+    public void setSessions(SessionListItem[] sessions) {
+        this.sessions = sessions;
     }
 
     @Override
     public String toString(){
-        return "GetSessionsResponse sessionIds=" + Arrays.toString(sessionIds);
+        return "GetSessionsResponse sessions=" + Arrays.toString(sessions);
     }
 }
