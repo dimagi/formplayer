@@ -40,8 +40,7 @@ public class PostgresSessionRepo implements SessionRepo{
 
         String query = "INSERT into sessions (id, instanceXml, formXml, " +
                 "restoreXml, username, initLang, sequenceId, " +
-                "domain, postUrl) VALUES " +
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "domain, postUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
                 session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
                 session.getDomain(), session.getPostUrl()}, new int[] {

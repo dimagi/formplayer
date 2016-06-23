@@ -50,8 +50,8 @@ public class FormSession {
     private UserSandbox sandbox;
     private int sequenceId;
     private String initLang;
+    private Map<String, String> sessionData;
     private String postUrl;
-
     private String title;
     private String[] langs;
     private String uuid;
@@ -65,6 +65,7 @@ public class FormSession {
         this.domain = session.getDomain();
         this.sandbox = CaseAPIs.restoreIfNotExists(username, this.domain, restoreXml);
         this.postUrl = session.getPostUrl();
+        this.sessionData = session.getSessionData();
         formDef = new FormDef();
         PrototypeUtils.setupPrototypes();
         deserializeFormDef(session.getFormXml());
@@ -90,6 +91,7 @@ public class FormSession {
         this.username = username;
         this.sandbox = CaseAPIs.restoreIfNotExists(username, domain, restoreXml);
         this.domain = domain;
+        this.sessionData = sessionData;
         formDef = parseFormDef(formXml);
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -109,6 +111,7 @@ public class FormSession {
         this.username = username;
         this.formDef = formDef;
         this.sandbox = sandbox;
+        this.sessionData = sessionData;
         this.domain = domain;
         this.postUrl = postUrl;
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -215,6 +218,10 @@ public class FormSession {
         return getInstanceXml();
     }
 
+    private Map<String, String> getSessionData(){
+        return sessionData;
+    }
+
     private String serializeFormDef() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream serializedStream = new DataOutputStream(baos);
@@ -236,6 +243,7 @@ public class FormSession {
         serializableFormSession.setId(getSessionId());
         serializableFormSession.setFormXml(serializeFormDef());
         serializableFormSession.setUsername(username);
+        serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setSequenceId(getSequenceId());
         serializableFormSession.setInitLang(getInitLang());
         serializableFormSession.setDomain(getDomain());
