@@ -1,6 +1,7 @@
 package repo.impl;
 
 import objects.SerializableFormSession;
+import objects.SessionData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,24 +29,34 @@ public class PostgresSessionRepo implements SessionRepo{
     @Override
     public void save(SerializableFormSession session) {
 
-        int countOfActorsNamedJoe = this.jdbcTemplate.queryForObject(
-                "select count(*) from sessions where id = ?", Integer.class, session.getId());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(baos);
+            oos.writeObject(session.getSessionData());
+            byte[] sessionDataBytes = baos.toByteArray();
 
-        if(countOfActorsNamedJoe > 0){
-            String query = "UPDATE sessions SET instanceXml = ? WHERE id = ?";
-            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), session.getId()},
-                    new int[] {Types.VARCHAR, Types.VARCHAR});
-            return;
+            int sessionCount = this.jdbcTemplate.queryForObject(
+                    "select count(*) from sessions where id = ?", Integer.class, session.getId());
+
+            if(sessionCount > 0){
+                String query = "UPDATE sessions SET instanceXml = ?, sessionData = ? WHERE id = ?";
+                this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), sessionDataBytes, session.getId()},
+                        new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR});
+                return;
+            }
+
+            String query = "INSERT into sessions (id, instanceXml, formXml, " +
+                    "restoreXml, username, initLang, sequenceId, " +
+                    "domain, postUrl, sessionData) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
+                    session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
+                    session.getDomain(), session.getPostUrl(), sessionDataBytes}, new int[] {
+                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY});
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        String query = "INSERT into sessions (id, instanceXml, formXml, " +
-                "restoreXml, username, initLang, sequenceId, " +
-                "domain, postUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
-                session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
-                session.getDomain(), session.getPostUrl()}, new int[] {
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR});
     }
 
     @Autowired
@@ -89,6 +100,20 @@ public class PostgresSessionRepo implements SessionRepo{
             session.setSequenceId(Integer.parseInt(rs.getString("sequenceId")));
             session.setDomain(rs.getString("domain"));
             session.setPostUrl(rs.getString("postUrl"));
+
+            byte[] st = (byte[]) rs.getObject("sessionData");
+            ByteArrayInputStream baip = new ByteArrayInputStream(st);
+            ObjectInputStream ois = null;
+            try {
+                ois = new ObjectInputStream(baip);
+                Map<String, String> sessionData = (HashMap) ois.readObject();
+                session.setSessionData(sessionData);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
             return session;
         }
     }

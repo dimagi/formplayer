@@ -16,7 +16,7 @@ public class RedisSessionRepo implements SessionRepo{
 
     @Autowired
     private RedisTemplate<String, SerializableFormSession> redisTemplate;
-    
+
     private final Log log = LogFactory.getLog(RedisSessionRepo.class);
     private static final String SESSION_KEY = "formplayer-session";
 
