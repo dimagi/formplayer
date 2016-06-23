@@ -30,7 +30,7 @@ public class PostgresSessionRepo implements SessionRepo{
     public void save(SerializableFormSession session) {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = null;
+        ObjectOutputStream oos;
         try {
             oos = new ObjectOutputStream(baos);
             oos.writeObject(session.getSessionData());
@@ -71,6 +71,15 @@ public class PostgresSessionRepo implements SessionRepo{
     }
 
     @Override
+    public List<SerializableFormSession> findUserSessions(String username) {
+        List<SerializableFormSession> sessions = this.jdbcTemplate.query(
+                "SELECT * FROM sessions WHERE username = ?",
+                new Object[] {username},
+                new SessionMapper());
+        return sessions;
+    }
+
+    @Override
     public Map<Object, Object> findAll() {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
                 "SELECT * FROM sessions",
@@ -90,6 +99,7 @@ public class PostgresSessionRepo implements SessionRepo{
     private static final class SessionMapper implements RowMapper<SerializableFormSession> {
 
         public SerializableFormSession mapRow(ResultSet rs, int rowNum) throws SQLException {
+
             SerializableFormSession session = new SerializableFormSession();
             session.setId(rs.getString("id"));
             session.setInstanceXml(rs.getString("instanceXml"));
@@ -102,16 +112,19 @@ public class PostgresSessionRepo implements SessionRepo{
             session.setPostUrl(rs.getString("postUrl"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
-            ByteArrayInputStream baip = new ByteArrayInputStream(st);
-            ObjectInputStream ois = null;
-            try {
-                ois = new ObjectInputStream(baip);
-                Map<String, String> sessionData = (HashMap) ois.readObject();
-                session.setSessionData(sessionData);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+
+            if(st != null) {
+                ByteArrayInputStream byteInputStream = new ByteArrayInputStream(st);
+                ObjectInputStream objectInputStream;
+                try {
+                    objectInputStream = new ObjectInputStream(byteInputStream);
+                    Map<String, String> sessionData = (HashMap) objectInputStream.readObject();
+                    session.setSessionData(sessionData);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
 
             return session;
