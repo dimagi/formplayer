@@ -28,6 +28,7 @@ import util.Constants;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -198,14 +199,9 @@ public class FormController {
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
         log.info("Get Session Request: " + getSessionRequest);
-        try {
-            Map<Object, Object> sessions = sessionRepo.findAll();
-            log.info("Got Sessions: " + sessions);
-        } catch (Exception e){
-            log.info("Got exception: " + e);
-            e.printStackTrace();
-        }
-        return new GetSessionsResponse();
+        String username = getSessionRequest.getUsername();
+        List<SerializableFormSession> sessions = sessionRepo.findUserSessions(username);
+        return new GetSessionsResponse(sessions);
     }
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
