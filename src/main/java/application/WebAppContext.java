@@ -39,7 +39,7 @@ import java.util.Properties;
 @EnableWebMvc
 @ComponentScan
 @PropertySource(value="file:config/application.properties")
-class WebAppContext extends WebMvcConfigurerAdapter {
+public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${redis.hostname}")
     private String redisHostName;

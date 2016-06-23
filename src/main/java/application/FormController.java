@@ -28,6 +28,7 @@ import util.Constants;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by willpride on 1/12/16.
@@ -193,6 +194,20 @@ public class FormController {
         return new SyncDbResponseBean();
     }
 
+    @ApiOperation(value = "Get a list of the current user's sessions")
+    @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
+    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
+        log.info("Get Session Request: " + getSessionRequest);
+        try {
+            Map<Object, Object> sessions = sessionRepo.findAll();
+            log.info("Got Sessions: " + sessions);
+        } catch (Exception e){
+            log.info("Got exception: " + e);
+            e.printStackTrace();
+        }
+        return new GetSessionsResponse();
+    }
+
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
         serialSession.setFormXml(formEntrySession.getFormXml());
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
@@ -200,14 +215,6 @@ public class FormController {
         sessionRepo.save(serialSession);
     }
 
-    private HashMap<Integer, String> getMenuRows(OptionsScreen nextScreen){
-        String[] rows = nextScreen.getOptions();
-        HashMap<Integer, String> optionsStrings = new HashMap<>();
-        for(int i=0; i <rows.length; i++){
-            optionsStrings.put(i, rows[i]);
-        }
-        return optionsStrings;
-    }
 
     @ExceptionHandler(Exception.class)
     public String handleError(HttpServletRequest req, Exception exception) {
