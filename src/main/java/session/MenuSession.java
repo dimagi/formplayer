@@ -54,7 +54,6 @@ public class MenuSession {
         this.username = username;
         this.domain = domain;
         resolveInstallReference(installReference, appId);
-
         this.engine = installService.configureApplication(this.installReference, this.username, "dbs/" + appId);
         this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);

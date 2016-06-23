@@ -6,6 +6,7 @@ package util;
 public class Constants {
     //URLS
     public final static String URL_NEW_SESSION = "new-form";
+    public final static String URL_INCOMPLETE_SESSION = "incomplete-form";
     public final static String URL_ANSWER_QUESTION = "answer";
     public final static String URL_CURRENT = "current";
     public final static String URL_SUBMIT_FORM = "submit-all";

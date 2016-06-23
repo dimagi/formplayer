@@ -62,6 +62,18 @@ public class FormController {
         return newSessionResponse;
     }
 
+    @ApiOperation(value = "Open an incomplete form session")
+    @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
+    public NewFormSessionResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+                                                  @CookieValue("sessionid") String authToken) throws Exception {
+        log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
+        SerializableFormSession session = sessionRepo.find(incompleteSessionRequestBean.getSessionId());
+        FormSession formSession = new FormSession(session);
+        NewFormSessionResponse response = new NewFormSessionResponse(formSession);
+        log.info("Return incomplete session response: " + response);
+        return response;
+    }
+
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
