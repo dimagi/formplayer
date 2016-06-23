@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import repo.SessionRepo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +32,12 @@ public class RedisSessionRepo implements SessionRepo{
         SerializableFormSession ret = (SerializableFormSession) this.redisTemplate.opsForHash().get(SESSION_KEY, id);
         log.info("Returning Session: " + ret.getInstanceXml());
         return ret;
+    }
+
+    @Override
+    public List<SerializableFormSession> findUserSessions(String username) {
+        // not yet implemented
+        return null;
     }
 
     @Override
