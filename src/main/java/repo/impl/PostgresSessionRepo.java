@@ -47,8 +47,6 @@ public class PostgresSessionRepo implements SessionRepo{
                 return;
             }
 
-            System.out.println("Saving Session: " + session.getRestoreXml());
-
             String query = replaceTableName("INSERT into %s " +
                     "(id, instanceXml, formXml, " +
                     "restoreXml, username, initLang, sequenceId, " +

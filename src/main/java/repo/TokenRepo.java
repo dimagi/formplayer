@@ -1,11 +1,7 @@
 package repo;
 
-import objects.SerializableFormSession;
-
-import java.util.List;
-
 /**
- * Created by willpride on 1/19/16.
+ * A token repo accepts a String key and returns whether or not this is a valid authorization token
  */
 public interface TokenRepo {
     boolean isAuthorized(String token);

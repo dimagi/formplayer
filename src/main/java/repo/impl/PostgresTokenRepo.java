@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import repo.TokenRepo;
+import util.Constants;
 
 import java.io.*;
 import java.sql.*;
@@ -13,7 +14,7 @@ import java.sql.Date;
 import java.util.*;
 
 /**
- * Created by willpride on 1/19/16.
+ * DAO implementation for HQ's django_session key table
  */
 public class PostgresTokenRepo implements TokenRepo{
 
@@ -24,8 +25,8 @@ public class PostgresTokenRepo implements TokenRepo{
 
     @Override
     public boolean isAuthorized(String tokenId) {
-        log.info("Searching for token " + tokenId);
-        String sql = "SELECT * FROM django_session WHERE session_key = ?";
+        String sql = String.format("SELECT %s FROM django_session WHERE session_key = ?",
+                Constants.POSTGRES_TOKEN_TABLE_NAME);
         SessionToken token = jdbcTemplate.queryForObject(sql, new Object[] {tokenId}, new TokenMapper());
         if(token != null){
             return token.getExpireDate().after(new java.util.Date());
