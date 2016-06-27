@@ -37,10 +37,10 @@ public class PostgresSessionRepo implements SessionRepo{
             byte[] sessionDataBytes = baos.toByteArray();
 
             int sessionCount = this.jdbcTemplate.queryForObject(
-                    "select count(*) from sessions where id = ?", Integer.class, session.getId());
+                    "select count(*) from new_formplayer_sessions where id = ?", Integer.class, session.getId());
 
             if(sessionCount > 0){
-                String query = "UPDATE sessions SET instanceXml = ?, sessionData = ? WHERE id = ?";
+                String query = "UPDATE new_formplayer_sessions SET instanceXml = ?, sessionData = ? WHERE id = ?";
                 this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), sessionDataBytes, session.getId()},
                         new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR});
                 return;
@@ -48,7 +48,7 @@ public class PostgresSessionRepo implements SessionRepo{
 
             System.out.println("Saving Session: " + session.getRestoreXml());
 
-            String query = "INSERT into sessions (id, instanceXml, formXml, " +
+            String query = "INSERT into new_formplayer_sessions (id, instanceXml, formXml, " +
                     "restoreXml, username, initLang, sequenceId, " +
                     "domain, postUrl, sessionData) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
@@ -68,14 +68,14 @@ public class PostgresSessionRepo implements SessionRepo{
 
     @Override
     public SerializableFormSession find(String id) {
-        String sql = "SELECT * FROM sessions WHERE id = ?";
+        String sql = "SELECT * FROM new_formplayer_sessions WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, new Object[] {id}, new SessionMapper());
     }
 
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
-                "SELECT * FROM sessions WHERE username = ?",
+                "SELECT * FROM new_formplayer_sessions WHERE username = ?",
                 new Object[] {username},
                 new SessionMapper());
         return sessions;
@@ -84,7 +84,7 @@ public class PostgresSessionRepo implements SessionRepo{
     @Override
     public Map<Object, Object> findAll() {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
-                "SELECT * FROM sessions",
+                "SELECT * FROM new_formplayer_sessions",
                 new SessionMapper());
         Map<Object, Object> ret = new HashMap<>();
         for (SerializableFormSession session : sessions){
@@ -95,7 +95,7 @@ public class PostgresSessionRepo implements SessionRepo{
 
     @Override
     public void delete(String id) {
-        this.jdbcTemplate.update("DELETE FROM sessions WHERE id = ?", Long.valueOf(id));
+        this.jdbcTemplate.update("DELETE FROM new_formplayer_sessions WHERE id = ?", Long.valueOf(id));
     }
 
     private static final class SessionMapper implements RowMapper<SerializableFormSession> {

@@ -19,7 +19,9 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import repo.SessionRepo;
+import repo.TokenRepo;
 import repo.impl.PostgresSessionRepo;
+import repo.impl.PostgresTokenRepo;
 import repo.impl.RedisSessionRepo;
 import services.InstallService;
 import services.RestoreService;
@@ -111,6 +113,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertiesResolver() {
         return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Bean
+    public TokenRepo tokenRepo(){
+        return new PostgresTokenRepo();
     }
 
     @Bean
