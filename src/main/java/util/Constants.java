@@ -30,4 +30,8 @@ public class Constants {
     public static final String RESPONSE_STATUS_POSITIVE = "accepted";
     //JSON
     public static final String QUESTION_TREE_KEY = "tree";
+
+    // Postgres sesions
+    public static final String POSTGRES_SESSION_TABLE_NAME = "new_formplayer_sessions";
+
 }

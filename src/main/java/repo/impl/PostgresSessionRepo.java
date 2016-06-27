@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import repo.SessionRepo;
+import util.Constants;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -37,10 +38,10 @@ public class PostgresSessionRepo implements SessionRepo{
             byte[] sessionDataBytes = baos.toByteArray();
 
             int sessionCount = this.jdbcTemplate.queryForObject(
-                    "select count(*) from new_formplayer_sessions where id = ?", Integer.class, session.getId());
+                    replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
 
             if(sessionCount > 0){
-                String query = "UPDATE new_formplayer_sessions SET instanceXml = ?, sessionData = ? WHERE id = ?";
+                String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ? WHERE id = ?");
                 this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), sessionDataBytes, session.getId()},
                         new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR});
                 return;
@@ -48,9 +49,10 @@ public class PostgresSessionRepo implements SessionRepo{
 
             System.out.println("Saving Session: " + session.getRestoreXml());
 
-            String query = "INSERT into new_formplayer_sessions (id, instanceXml, formXml, " +
+            String query = replaceTableName("INSERT into %s " +
+                    "(id, instanceXml, formXml, " +
                     "restoreXml, username, initLang, sequenceId, " +
-                    "domain, postUrl, sessionData) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "domain, postUrl, sessionData) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
                     session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
                     session.getDomain(), session.getPostUrl(), sessionDataBytes}, new int[] {
@@ -68,14 +70,14 @@ public class PostgresSessionRepo implements SessionRepo{
 
     @Override
     public SerializableFormSession find(String id) {
-        String sql = "SELECT * FROM new_formplayer_sessions WHERE id = ?";
+        String sql = replaceTableName("SELECT * FROM %s WHERE id = ?");
         return jdbcTemplate.queryForObject(sql, new Object[] {id}, new SessionMapper());
     }
 
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
-                "SELECT * FROM new_formplayer_sessions WHERE username = ?",
+                replaceTableName("SELECT * FROM %s WHERE username = ?"),
                 new Object[] {username},
                 new SessionMapper());
         return sessions;
@@ -84,7 +86,7 @@ public class PostgresSessionRepo implements SessionRepo{
     @Override
     public Map<Object, Object> findAll() {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
-                "SELECT * FROM new_formplayer_sessions",
+                replaceTableName("SELECT * FROM %s"),
                 new SessionMapper());
         Map<Object, Object> ret = new HashMap<>();
         for (SerializableFormSession session : sessions){
@@ -95,7 +97,7 @@ public class PostgresSessionRepo implements SessionRepo{
 
     @Override
     public void delete(String id) {
-        this.jdbcTemplate.update("DELETE FROM new_formplayer_sessions WHERE id = ?", Long.valueOf(id));
+        this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), Long.valueOf(id));
     }
 
     private static final class SessionMapper implements RowMapper<SerializableFormSession> {
@@ -131,6 +133,10 @@ public class PostgresSessionRepo implements SessionRepo{
 
             return session;
         }
+    }
+
+    public String replaceTableName(String query){
+        return String.format(query, Constants.POSTGRES_SESSION_TABLE_NAME);
     }
 
 }
