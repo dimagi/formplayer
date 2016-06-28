@@ -5,10 +5,12 @@ import objects.SessionData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import repo.SessionRepo;
 import util.Constants;
 
@@ -22,9 +24,11 @@ import java.util.Map;
 /**
  * Created by willpride on 1/19/16.
  */
+@Repository
 public class PostgresSessionRepo implements SessionRepo{
 
     @Autowired
+    @Qualifier("jdbcFormplayer")
     private JdbcTemplate jdbcTemplate;
 
     @Override
@@ -59,11 +63,6 @@ public class PostgresSessionRepo implements SessionRepo{
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Autowired
-    public void setDataSource(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     @Override

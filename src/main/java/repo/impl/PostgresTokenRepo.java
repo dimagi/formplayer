@@ -3,8 +3,10 @@ package repo.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import repo.TokenRepo;
 import util.Constants;
 
@@ -16,11 +18,13 @@ import java.util.*;
 /**
  * DAO implementation for HQ's django_session key table.
  */
+@Repository
 public class PostgresTokenRepo implements TokenRepo{
 
     private final Log log = LogFactory.getLog(PostgresTokenRepo.class);
 
     @Autowired
+    @Qualifier("jdbcHq")
     private JdbcTemplate jdbcTemplate;
 
     @Override

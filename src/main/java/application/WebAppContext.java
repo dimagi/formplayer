@@ -3,6 +3,8 @@ package application;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +24,6 @@ import repo.SessionRepo;
 import repo.TokenRepo;
 import repo.impl.PostgresSessionRepo;
 import repo.impl.PostgresTokenRepo;
-import repo.impl.RedisSessionRepo;
 import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
@@ -37,9 +38,11 @@ import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
 
+//have to exclude this to use two DataSources (HQ and Formplayer dbs)
+@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 @Configuration
 @EnableWebMvc
-@ComponentScan
+@ComponentScan(basePackages = {"application", "repo"})
 @PropertySource(value="file:config/application.properties")
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
