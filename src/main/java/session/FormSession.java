@@ -130,7 +130,7 @@ public class FormSession {
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        FormplayerConfigEngine.setupStorageManager(username, "dbs");
+        FormplayerConfigEngine.setupStorageManager("test", "dbs/" + domain + "/" + username);
         formDef.initialize(newInstance, sessionWrapper.getIIF());
     }
 

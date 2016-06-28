@@ -24,6 +24,7 @@ import services.XFormService;
 import util.Constants;
 import utils.FileUtils;
 
+import javax.servlet.http.Cookie;
 import java.io.IOException;
 
 import static org.mockito.Matchers.any;
@@ -126,6 +127,7 @@ public class BaseTestClass {
         MvcResult result = this.mockMvc.perform(
                 post(urlPrepend(Constants.URL_NEW_SESSION))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new Cookie("sessionid", "derp"))
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
         return mapper.readValue(responseBody, NewFormSessionResponse.class);

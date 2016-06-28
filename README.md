@@ -32,6 +32,8 @@ When building on Linux it is sometimes necessary to run:
 
     $ gradle wrapper
     
+Finally, turn on the "Use the new formplayer frontend" feature flag on your CommCareHQ domain
+    
 ### Docs
 ____________
 
