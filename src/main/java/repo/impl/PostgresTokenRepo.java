@@ -14,7 +14,7 @@ import java.sql.Date;
 import java.util.*;
 
 /**
- * DAO implementation for HQ's django_session key table
+ * DAO implementation for HQ's django_session key table.
  */
 public class PostgresTokenRepo implements TokenRepo{
 
@@ -25,7 +25,7 @@ public class PostgresTokenRepo implements TokenRepo{
 
     @Override
     public boolean isAuthorized(String tokenId) {
-        String sql = String.format("SELECT %s FROM django_session WHERE session_key = ?",
+        String sql = String.format("SELECT * FROM %s WHERE session_key = ?",
                 Constants.POSTGRES_TOKEN_TABLE_NAME);
         SessionToken token = jdbcTemplate.queryForObject(sql, new Object[] {tokenId}, new TokenMapper());
         if(token != null){
