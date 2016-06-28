@@ -127,7 +127,7 @@ public class BaseTestClass {
         MvcResult result = this.mockMvc.perform(
                 post(urlPrepend(Constants.URL_NEW_SESSION))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("sessionid", "derp"))
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
         return mapper.readValue(responseBody, NewFormSessionResponse.class);

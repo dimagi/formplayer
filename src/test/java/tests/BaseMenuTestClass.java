@@ -168,7 +168,7 @@ public class BaseMenuTestClass {
         ResultActions selectResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_MENU_NAVIGATION))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("sessionid", "derp"))
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(mapper.writeValueAsString(sessionNavigationBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
         return new JSONObject(resultString);
@@ -183,7 +183,7 @@ public class BaseMenuTestClass {
         ResultActions selectResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_MENU_NAVIGATION))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("sessionid", "derp"))
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(mapper.writeValueAsString(sessionNavigationBean)));
         String resultString = selectResult.andReturn().getResponse().getContentAsString();
         return new JSONObject(resultString);
@@ -195,7 +195,7 @@ public class BaseMenuTestClass {
         ResultActions installResult = mockMvc.perform(
                 post(urlPrepend(Constants.URL_INSTALL))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("sessionid", "derp"))
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(mapper.writeValueAsString(installRequestBean)));
         String installResultString = installResult.andReturn().getResponse().getContentAsString();
         return mapper.readValue(installResultString,

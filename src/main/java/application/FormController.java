@@ -49,7 +49,7 @@ public class FormController {
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION , method = RequestMethod.POST)
     public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
-                                                  @CookieValue("sessionid") String authToken) throws Exception {
+                                                  @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("New form requests with bean: " + newSessionBean + " sessionId :" + authToken);
         NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService, restoreService, authToken);
         NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
@@ -60,7 +60,7 @@ public class FormController {
     @ApiOperation(value = "Open an incomplete form session")
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
     public NewFormSessionResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
-                                                  @CookieValue("sessionid") String authToken) throws Exception {
+                                                  @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
         SerializableFormSession session = sessionRepo.find(incompleteSessionRequestBean.getSessionId());
         NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, authToken);

@@ -53,7 +53,7 @@ public class MenuController {
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     public Object installRequest(@RequestBody InstallRequestBean installRequestBean,
-                                 @CookieValue("sessionid") String authToken) throws Exception {
+                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Received install request: " + installRequestBean);
         Object response = getNextMenu(performInstall(installRequestBean, authToken));
         log.info("Returning install response: " + response);
@@ -72,7 +72,7 @@ public class MenuController {
 
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
     public Object navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
-                                          @CookieValue("sessionid") String authToken) throws Exception {
+                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
         MenuSession menuSession = performInstall(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
