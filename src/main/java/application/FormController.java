@@ -110,6 +110,7 @@ public class FormController {
         FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
         SubmitResponseBean submitResponseBean = new SubmitResponseBean(formEntrySession);
         log.info("Submit response bean: " + submitResponseBean);
+        sessionRepo.delete(submitRequestBean.getSessionId());
         return submitResponseBean;
     }
 

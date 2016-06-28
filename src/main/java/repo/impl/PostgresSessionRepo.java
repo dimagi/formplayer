@@ -95,7 +95,7 @@ public class PostgresSessionRepo implements SessionRepo{
 
     @Override
     public void delete(String id) {
-        this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), Long.valueOf(id));
+        this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
     }
 
     private static final class SessionMapper implements RowMapper<SerializableFormSession> {
