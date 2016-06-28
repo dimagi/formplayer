@@ -8,6 +8,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
+/**
+ * DataSource configuration for accessing formplayer PostgresDB
+ * Corresponds to spring.ds_formplayer.* application.properties
+ */
 @Configuration
 @ConfigurationProperties(value = "spring.ds_formplayer")
 public class FormplayerPostgresConfig extends TomcatDataSourceConfiguration {

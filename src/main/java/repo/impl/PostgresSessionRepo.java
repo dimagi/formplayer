@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by willpride on 1/19/16.
+ * Postgres implementation for storing form entry sessions
+ * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
 public class PostgresSessionRepo implements SessionRepo{
@@ -81,22 +82,11 @@ public class PostgresSessionRepo implements SessionRepo{
     }
 
     @Override
-    public Map<Object, Object> findAll() {
-        List<SerializableFormSession> sessions = this.jdbcTemplate.query(
-                replaceTableName("SELECT * FROM %s"),
-                new SessionMapper());
-        Map<Object, Object> ret = new HashMap<>();
-        for (SerializableFormSession session : sessions){
-            ret.put(session.getId(), session);
-        }
-        return ret;
-    }
-
-    @Override
     public void delete(String id) {
         this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
     }
 
+    // helper class for mapping a db row to a serialized session
     private static final class SessionMapper implements RowMapper<SerializableFormSession> {
 
         public SerializableFormSession mapRow(ResultSet rs, int rowNum) throws SQLException {

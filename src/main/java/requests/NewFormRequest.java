@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Created by willpride on 1/14/16.
+ * Class containing logic for accepting a NewSessionRequest and services,
+ * restoring the user, opening the new form, and returning the question list response.
+ * TODO WSP this should probably just be a static helper class, or merged with FormSession
  */
 @Service
 public class NewFormRequest {

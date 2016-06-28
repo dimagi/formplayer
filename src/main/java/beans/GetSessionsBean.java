@@ -1,7 +1,7 @@
 package beans;
 
 /**
- * Created by willpride on 6/15/16.
+ * POST request for getting a list of the user's incomplete form sessions
  */
 public class GetSessionsBean {
     private String username;

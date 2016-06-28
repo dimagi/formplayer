@@ -1,7 +1,7 @@
 package beans;
 
 /**
- * Created by willpride on 6/23/16.
+ * Request to open an incomplete form session (starts form entry)
  */
 public class IncompleteSessionRequestBean {
     private String sessionId;

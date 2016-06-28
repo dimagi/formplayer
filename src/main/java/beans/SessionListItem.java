@@ -3,12 +3,11 @@ package beans;
 import objects.SerializableFormSession;
 
 /**
- * Created by willpride on 6/23/16.
+ * Individual display item in list of incomplete form sessions
  */
 public class SessionListItem {
 
     private String sessionId;
-
 
     public SessionListItem(SerializableFormSession session){
         this.sessionId = session.getId();

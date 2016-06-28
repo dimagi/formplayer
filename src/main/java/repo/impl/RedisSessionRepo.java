@@ -41,13 +41,6 @@ public class RedisSessionRepo implements SessionRepo{
     }
 
     @Override
-    public Map<Object, Object> findAll() {
-        log.info("Getting all keys");
-        return this.redisTemplate.opsForHash().entries(SESSION_KEY);
-
-    }
-
-    @Override
     public void delete(String id) {
         this.redisTemplate.opsForHash().delete(SESSION_KEY,id);
     }

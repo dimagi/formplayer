@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by willpride on 6/15/16.
+ * Response containing a list of the user's incomplete form sessions
  */
 public class GetSessionsResponse {
 

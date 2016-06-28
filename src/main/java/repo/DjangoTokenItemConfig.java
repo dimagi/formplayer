@@ -8,6 +8,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
+/**
+ * DataSource configuration for accessing commcarehq PostgresDB
+ * Corresponds to spring.ds_hq.* application.properties
+ */
 @Configuration
 @ConfigurationProperties(value = "spring.ds_hq")
 public class DjangoTokenItemConfig extends TomcatDataSourceConfiguration {
@@ -19,7 +23,6 @@ public class DjangoTokenItemConfig extends TomcatDataSourceConfiguration {
 
     @Bean(name = "jdbcHq")
     public JdbcTemplate jdbcTemplate(DataSource dsHq) {
-        System.out.println("Returning HQ JDBC template");
         return new JdbcTemplate(dsHq);
     }
 }
