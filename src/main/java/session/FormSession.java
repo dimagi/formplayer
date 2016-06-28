@@ -63,7 +63,6 @@ public class FormSession {
         this.username = session.getUsername();
         this.restoreXml = session.getRestoreXml();
         this.domain = session.getDomain();
-        System.out.println("Restore XML: " + restoreXml);
         this.sandbox = CaseAPIs.restoreIfNotExists(username, this.domain, restoreXml);
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
