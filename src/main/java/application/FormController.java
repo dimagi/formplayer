@@ -1,8 +1,5 @@
 package application;
 
-import auth.BasicAuth;
-import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hq.CaseAPIs;
@@ -13,7 +10,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
 import org.commcare.api.process.FormRecordProcessorHelper;
-import org.commcare.util.cli.OptionsScreen;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -27,9 +23,7 @@ import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by willpride on 1/12/16.
@@ -68,8 +62,8 @@ public class FormController {
                                                   @CookieValue("sessionid") String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
         SerializableFormSession session = sessionRepo.find(incompleteSessionRequestBean.getSessionId());
-        FormSession formSession = new FormSession(session);
-        NewFormSessionResponse response = new NewFormSessionResponse(formSession);
+        NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, authToken);
+        NewFormSessionResponse response = newFormRequest.getResponse();
         log.info("Return incomplete session response: " + response);
         return response;
     }

@@ -4,6 +4,7 @@ import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.NewSessionRequestBean;
 import beans.NewFormSessionResponse;
+import objects.SerializableFormSession;
 import org.springframework.stereotype.Service;
 import repo.SessionRepo;
 import services.RestoreService;
@@ -19,12 +20,12 @@ import java.util.Map;
 @Service
 public class NewFormRequest {
 
-    private final String formUrl;
+    private String formUrl;
     private FormSession formEntrySession;
-    private final XFormService xFormService;
+    private XFormService xFormService;
     private final RestoreService restoreService;
     private final HqAuth auth;
-    private final String domain;
+    private String domain;
 
     public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
                           XFormService xFormService, RestoreService restoreService, String authToken) throws Exception {
@@ -41,6 +42,14 @@ public class NewFormRequest {
         } catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    public NewFormRequest(SerializableFormSession session, RestoreService restoreService, String authToken) throws Exception {
+        this.restoreService = restoreService;
+        this.auth = getAuth(null, authToken);
+        this.domain = session.getDomain();
+        session.setRestoreXml(getRestoreXml());
+        formEntrySession = new FormSession(session);
     }
 
     //TODO WSP combine this with logic in MenuController
