@@ -1,6 +1,5 @@
 package beans.menus;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModel;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
@@ -16,6 +15,7 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
 import util.SessionUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -44,14 +44,20 @@ public class EntityListResponse extends MenuBean {
         this(nextScreen, 0);
     }
 
-    public EntityListResponse(EntityScreen nextScreen, int offset) {
+    public EntityListResponse(EntityScreen nextScreen, int offset){
+        this(nextScreen, offset, "");
+    }
+
+    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
         nextScreen.getLongDetailList();
+
         EvaluationContext ec = session.getEvaluationContext();
+
         Vector<TreeReference> references = ec.expandReference(((EntityDatum)session.getNeededDatum()).getNodeset());
         processTitle(session);
-        processEntities(nextScreen, references, ec, offset);
+        processEntities(nextScreen, references, ec, offset, searchText);
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
@@ -85,8 +91,13 @@ public class EntityListResponse extends MenuBean {
         setTitle(SessionUtils.getBestTitle(session));
     }
 
-    private void processEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec, int offset) {
+    private void processEntities(EntityScreen screen, Vector<TreeReference> references,
+                                 EvaluationContext ec, int offset,
+                                 String searchText) {
         Entity[] allEntities = generateEntities(screen, references, ec);
+        if(searchText != null && !searchText.trim().equals("")) {
+            allEntities = filterEntities(allEntities, searchText);
+        }
         if(allEntities.length > CASE_LENGTH_LIMIT){
             // we're doing pagination
             int end = offset + CASE_LENGTH_LIMIT;
@@ -103,6 +114,41 @@ public class EntityListResponse extends MenuBean {
         } else{
             entities = allEntities.clone();
         }
+    }
+
+    /**
+     * @param allEntities the set of Entity objects to filter
+     * @param searchText the raw (space separated) searchText entry to split and filter with
+     * @return all Entitys containing one of the searchText strings
+     */
+    private Entity[] filterEntities(Entity[] allEntities, String searchText) {
+
+        ArrayList<Entity> compiler = new ArrayList<Entity>();
+        for(Entity entity: allEntities){
+            if (matchEntity(entity, searchText)) {
+                compiler.add(entity);
+            }
+        }
+        Entity[] ret = new Entity[compiler.size()];
+        ret = compiler.toArray(ret);
+        return ret;
+    }
+
+    /**
+     * @param entity The Entity being matched against
+     * @param searchText The String being searched for
+     * @return whether the Entity's data[] contains this string, ignoring case
+     */
+    private boolean matchEntity(Entity entity, String searchText) {
+        String[] searchStrings = searchText.split(" ");
+        for(Object data: entity.getData()){
+            for(String searchString: searchStrings) {
+                if (data != null && data.toString().toLowerCase().contains(searchString.toLowerCase())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private Entity[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec){
