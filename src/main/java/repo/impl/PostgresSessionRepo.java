@@ -33,37 +33,33 @@ public class PostgresSessionRepo implements SessionRepo{
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public void save(SerializableFormSession session) {
+    public void save(SerializableFormSession session) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos;
-        try {
-            oos = new ObjectOutputStream(baos);
-            oos.writeObject(session.getSessionData());
-            byte[] sessionDataBytes = baos.toByteArray();
+        oos = new ObjectOutputStream(baos);
+        oos.writeObject(session.getSessionData());
+        byte[] sessionDataBytes = baos.toByteArray();
 
-            int sessionCount = this.jdbcTemplate.queryForObject(
-                    replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
+        int sessionCount = this.jdbcTemplate.queryForObject(
+                replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
 
-            if(sessionCount > 0){
-                String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ? WHERE id = ?");
-                this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), sessionDataBytes, session.getId()},
-                        new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR});
-                return;
-            }
-
-            String query = replaceTableName("INSERT into %s " +
-                    "(id, instanceXml, formXml, " +
-                    "restoreXml, username, initLang, sequenceId, " +
-                    "domain, postUrl, sessionData) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
-                    session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
-                    session.getDomain(), session.getPostUrl(), sessionDataBytes}, new int[] {
-                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY});
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(sessionCount > 0){
+            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ? WHERE id = ?");
+            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), sessionDataBytes, session.getId()},
+                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR});
+            return;
         }
+
+        String query = replaceTableName("INSERT into %s " +
+                "(id, instanceXml, formXml, " +
+                "restoreXml, username, initLang, sequenceId, " +
+                "domain, postUrl, sessionData) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
+                session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
+                session.getDomain(), session.getPostUrl(), sessionDataBytes}, new int[] {
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY});
     }
 
     @Override
@@ -112,9 +108,9 @@ public class PostgresSessionRepo implements SessionRepo{
                     Map<String, String> sessionData = (HashMap) objectInputStream.readObject();
                     session.setSessionData(sessionData);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    throw new SQLException(e);
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    throw new SQLException(e);
                 }
             }
 

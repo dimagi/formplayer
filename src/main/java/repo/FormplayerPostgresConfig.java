@@ -23,7 +23,6 @@ public class FormplayerPostgresConfig extends TomcatDataSourceConfiguration {
 
     @Bean(name = "jdbcFormplayer")
     public JdbcTemplate jdbcTemplate(DataSource dsFormplayer) {
-        System.out.println("Returning Formplayer JDBC template: " + this.getUrl());
         return new JdbcTemplate(dsFormplayer);
     }
 }

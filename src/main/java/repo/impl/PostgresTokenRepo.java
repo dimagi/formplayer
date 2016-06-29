@@ -29,7 +29,7 @@ public class PostgresTokenRepo implements TokenRepo{
 
     @Override
     public boolean isAuthorized(String tokenId) {
-        String sql = String.format("SELECT * FROM %s WHERE session_key = ?",
+        String sql = String.format("SELECT * FROM %s WHERE session_key = ? and expire_date > now()",
                 Constants.POSTGRES_TOKEN_TABLE_NAME);
         SessionToken token = jdbcTemplate.queryForObject(sql, new Object[] {tokenId}, new TokenMapper());
         if(token != null){
