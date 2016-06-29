@@ -26,30 +26,47 @@ public class NewFormRequest {
     private final HqAuth auth;
     private final String domain;
 
-    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
-                          XFormService xFormService, RestoreService restoreService) throws Exception {
+    private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
+                           Map<String, String> sessionData, String instanceContent,
+                           SessionRepo sessionRepo, XFormService xFormService,
+                           RestoreService restoreService, String authToken) throws Exception {
         this.xFormService = xFormService;
         this.restoreService = restoreService;
-        this.formUrl = bean.getFormUrl();
-        this.auth = getAuth(bean.getHqAuth());
-        this.domain = bean.getSessionData().getDomain();
+        this.formUrl = formUrl;
+        this.auth = getAuth(authDict, authToken);
+        this.domain = domain;
         try {
             formEntrySession = new FormSession(getFormXml(), getRestoreXml(),
-                    bean.getLang(), bean.getSessionData().getUsername(),
-                    domain, bean.getSessionData().getData(), bean.getInstanceContent());
+                    lang, username, domain, sessionData, instanceContent);
             sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();
         }
     }
 
-    private HqAuth getAuth(Map<String, String> authMap){
-        if(authMap.containsKey("type")){
+    //TODO WSP combine this with logic in MenuController
+    private HqAuth getAuth(Map<String, String> authMap, String authToken){
+        HqAuth auth = null;
+        if(authToken != null && !authToken.trim().equals("")){
+            auth = new DjangoAuth(authToken);
+        } else if(authMap.containsKey("type")){
             if(authMap.get("type").equals("django-session")){
-                return new DjangoAuth(authMap.get("key"));
+                auth = new DjangoAuth(authMap.get("key"));
             }
         }
-        return null;
+        return auth;
+    }
+
+    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
+                          XFormService xFormService, RestoreService restoreService, String authToken) throws Exception {
+        this(bean.getFormUrl(),
+                bean.getHqAuth(),
+                bean.getSessionData().getUsername(),
+                bean.getSessionData().getDomain(),
+                bean.getLang(),
+                bean.getSessionData().getData(),
+                bean.getInstanceContent(),
+                sessionRepo, xFormService, restoreService, authToken);
     }
 
     public NewFormSessionResponse getResponse() throws IOException {

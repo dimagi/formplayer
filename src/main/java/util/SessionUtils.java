@@ -1,8 +1,12 @@
 package util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.StackFrameStep;
+import org.javarosa.core.services.locale.Localization;
+import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
 
 import java.util.Vector;
@@ -11,6 +15,9 @@ import java.util.Vector;
  * Created by willpride on 4/14/16.
  */
 public class SessionUtils {
+
+    private static final Log log = LogFactory.getLog(SessionUtils.class);
+
     public static String getBestTitle(SessionWrapper session){
 
         String[] stepTitles;
@@ -38,5 +45,20 @@ public class SessionUtils {
             }
         }
         return bestTitle;
+    }
+
+    public static void setLocale(String locale){
+        if(locale == null || "".equals(locale.trim())){
+            return;
+        }
+        Localizer localizer = Localization.getGlobalLocalizerAdvanced();
+        log.info("Setting locale to : " + locale + " available: " + localizer.getAvailableLocales());
+        for (String availabile : localizer.getAvailableLocales()) {
+            if (locale.equals(availabile)) {
+                localizer.setLocale(locale);
+
+                return;
+            }
+        }
     }
 }
