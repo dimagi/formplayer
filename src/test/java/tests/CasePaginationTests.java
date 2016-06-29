@@ -54,4 +54,32 @@ public class CasePaginationTests extends BaseMenuTestClass {
         assert entityListResponse2.getCurrentPage() == 7;
         assert entityListResponse2.getPageCount() == 8;
     }
+
+    // test that searching (filtering the case list) works
+    @Test
+    public void testSearch() throws Exception {
+        JSONObject sessionNavigateResponse =
+                sessionNavigate("requests/navigators/search_navigator.json");
+        EntityListResponse entityListResponse =
+                mapper.readValue(sessionNavigateResponse.toString(), EntityListResponse.class);
+        assert entityListResponse.getEntities().length == 9;
+        assert entityListResponse.getEntities()[0].getData()[0].equals("Casetest");
+        assert entityListResponse.getEntities()[1].getData()[0].equals("Test 2");
+        assert entityListResponse.getCurrentPage() == 0;
+        assert entityListResponse.getPageCount() == 0;
+    }
+    // test that searching and paginating simultaneously works
+    @Test
+    public void testSearchAndPagination() throws Exception {
+        JSONObject sessionNavigateResponse =
+                sessionNavigate("requests/navigators/search_paginate_navigator.json");
+        EntityListResponse entityListResponse =
+                mapper.readValue(sessionNavigateResponse.toString(), EntityListResponse.class);
+
+        assert entityListResponse.getEntities().length == 10;
+        assert entityListResponse.getPageCount() == 2;
+        assert entityListResponse.getCurrentPage() == 1;
+        assert entityListResponse.getEntities()[0].getData()[0].equals("RESTOSE");
+        assert entityListResponse.getEntities()[1].getData()[0].equals("Test 1");
+    }
 }
