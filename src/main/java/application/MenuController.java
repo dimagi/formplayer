@@ -26,6 +26,7 @@ import session.MenuSession;
 import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 
 /**
  * Created by willpride on 1/12/16.
@@ -78,12 +79,16 @@ public class MenuController {
         Object nextMenu = getNextMenu(menuSession);
         if (selections == null){
             log.info("Selections null, got next menu: " + nextMenu);
+            System.out.println("Menu Session Options: " + Arrays.toString(menuSession.getNextScreen().getOptions()));
             return nextMenu;
         }
         for(String selection: selections) {
             menuSession.handleInput(selection);
+            if(menuSession.getNextScreen() != null){
+                System.out.println("Menu Session Options: " + Arrays.toString(menuSession.getNextScreen().getOptions()));
+            }
         }
-        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset());
+        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(), sessionNavigationBean.getSearchText());
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
     }
@@ -114,6 +119,14 @@ public class MenuController {
     }
 
     private Object getNextMenu(MenuSession menuSession, int offset) throws Exception {
+        return getNextMenu(menuSession, offset, "");
+    }
+
+    private Object getNextMenu(MenuSession menuSession, String searchText) throws Exception {
+        return getNextMenu(menuSession, 0, searchText);
+    }
+
+    private Object getNextMenu(MenuSession menuSession, int offset, String searchText) throws Exception {
 
         Screen nextScreen;
 
@@ -133,7 +146,7 @@ public class MenuController {
             }
             // We're looking at a case list or detail screen (probably)
             else if (nextScreen instanceof EntityScreen) {
-                menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset);
+                menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset, searchText);
             } else{
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
@@ -145,8 +158,8 @@ public class MenuController {
         return new CommandListResponseBean(nextScreen, session);
     }
 
-    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, int offset){
-        return new EntityListResponse(nextScreen, offset);
+    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, int offset, String searchText){
+        return new EntityListResponse(nextScreen, offset, searchText);
     }
 
     private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {

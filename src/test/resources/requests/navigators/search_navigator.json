@@ -1,0 +1,9 @@
+{
+  "username": "loaduser",
+  "password": "loadpass",
+  "domain": "loaddomain",
+  "app_id": "loadappid",
+  "selections": [2, 1],
+  "search_text": "test",
+  "install_reference": "archives/basic.ccz"
+}

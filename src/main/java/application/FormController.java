@@ -1,5 +1,8 @@
 package application;
 
+import auth.BasicAuth;
+import auth.DjangoAuth;
+import auth.HqAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hq.CaseAPIs;
@@ -48,9 +51,10 @@ public class FormController {
 
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION , method = RequestMethod.POST)
-    public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean) throws Exception {
-        log.info("New form requests with bean: " + newSessionBean);
-        NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService, restoreService);
+    public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
+                                                  @CookieValue("sessionid") String authToken) throws Exception {
+        log.info("New form requests with bean: " + newSessionBean + " sessionId :" + authToken);
+        NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, sessionRepo, xFormService, restoreService, authToken);
         NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
         log.info("Return new session response: " + newSessionResponse);
         return newSessionResponse;
