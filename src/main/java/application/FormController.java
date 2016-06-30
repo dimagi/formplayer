@@ -62,7 +62,7 @@ public class FormController {
     public NewFormSessionResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
-        SerializableFormSession session = sessionRepo.find(incompleteSessionRequestBean.getSessionId());
+        SerializableFormSession session = sessionRepo.findOne(incompleteSessionRequestBean.getSessionId());
         NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, authToken);
         NewFormSessionResponse response = newFormRequest.getResponse();
         log.info("Return incomplete session response: " + response);
@@ -73,7 +73,7 @@ public class FormController {
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
-        SerializableFormSession session = sessionRepo.find(answerQuestionBean.getSessionId());
+        SerializableFormSession session = sessionRepo.findOne(answerQuestionBean.getSessionId());
         log.info("Restored serialized session: " + session);
         FormSession formEntrySession = new FormSession(session);
 
@@ -95,7 +95,7 @@ public class FormController {
     @ResponseBody
     public CurrentResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
         log.info("Current request: " + currentRequestBean);
-        SerializableFormSession serializableFormSession = sessionRepo.find(currentRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = sessionRepo.findOne(currentRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         CurrentResponseBean currentResponseBean = new CurrentResponseBean(formEntrySession);
         log.info("Current response: " + currentResponseBean);
@@ -106,7 +106,7 @@ public class FormController {
     @ResponseBody
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
         log.info("Submit form with bean: " + submitRequestBean);
-        SerializableFormSession serializableFormSession = sessionRepo.find(submitRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = sessionRepo.findOne(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
         SubmitResponseBean submitResponseBean = new SubmitResponseBean(formEntrySession);
@@ -120,7 +120,7 @@ public class FormController {
     @ResponseBody
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
-        SerializableFormSession serializableFormSession = sessionRepo.find(getInstanceRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = sessionRepo.findOne(getInstanceRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         GetInstanceResponseBean getInstanceResponseBean = new GetInstanceResponseBean(formEntrySession);
         log.info("Get instance response: " + getInstanceResponseBean);
@@ -132,7 +132,7 @@ public class FormController {
     @ResponseBody
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         log.info("Evaluate XPath Request: " + evaluateXPathRequestBean);
-        SerializableFormSession serializableFormSession = sessionRepo.find(evaluateXPathRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = sessionRepo.findOne(evaluateXPathRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         EvaluateXPathResponseBean evaluateXPathResponseBean =
                 new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
@@ -145,7 +145,7 @@ public class FormController {
     @ResponseBody
     public RepeatResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         log.info("New repeat: " + newRepeatRequestBean);
-        SerializableFormSession serializableFormSession = sessionRepo.find(newRepeatRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = sessionRepo.findOne(newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
 
         JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
@@ -165,7 +165,7 @@ public class FormController {
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     public RepeatResponseBean deleteRepeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = sessionRepo.find(repeatRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = sessionRepo.findOne(repeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
 
         JSONObject resp = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),

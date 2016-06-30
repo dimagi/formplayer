@@ -33,12 +33,33 @@ public class PostgresSessionRepo implements SessionRepo{
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public void save(SerializableFormSession session) throws IOException {
+    public List<SerializableFormSession> findUserSessions(String username) {
+        List<SerializableFormSession> sessions = this.jdbcTemplate.query(
+                replaceTableName("SELECT * FROM %s WHERE username = ?"),
+                new Object[] {username},
+                new SessionMapper());
+        return sessions;
+    }
+
+    @Override
+    public <S extends SerializableFormSession> Iterable<S> save(Iterable<S> entities) {
+        for(SerializableFormSession session: entities){
+            save(session);
+        }
+        return entities;
+    }
+
+    @Override
+    public <S extends SerializableFormSession> S save(S session) {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos;
-        oos = new ObjectOutputStream(baos);
-        oos.writeObject(session.getSessionData());
+        try {
+            oos = new ObjectOutputStream(baos);
+            oos.writeObject(session.getSessionData());
+        } catch(IOException e){
+            throw new RuntimeException(e);
+        }
         byte[] sessionDataBytes = baos.toByteArray();
 
         int sessionCount = this.jdbcTemplate.queryForObject(
@@ -48,7 +69,7 @@ public class PostgresSessionRepo implements SessionRepo{
             String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ? WHERE id = ?");
             this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), sessionDataBytes, session.getId()},
                     new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR});
-            return;
+            return session;
         }
 
         String query = replaceTableName("INSERT into %s " +
@@ -60,26 +81,67 @@ public class PostgresSessionRepo implements SessionRepo{
                 session.getDomain(), session.getPostUrl(), sessionDataBytes}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY});
+        return session;
     }
 
     @Override
-    public SerializableFormSession find(String id) {
+    public SerializableFormSession findOne(String id) {
         String sql = replaceTableName("SELECT * FROM %s WHERE id = ?");
         return jdbcTemplate.queryForObject(sql, new Object[] {id}, new SessionMapper());
     }
 
     @Override
-    public List<SerializableFormSession> findUserSessions(String username) {
+    public boolean exists(String s) {
+        String sql = replaceTableName("select exists(select 1 from %s where id = ?)");
+        return this.jdbcTemplate.queryForObject(sql, boolean.class, s);
+    }
+
+    @Override
+    public Iterable<SerializableFormSession> findAll() {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
-                replaceTableName("SELECT * FROM %s WHERE username = ?"),
-                new Object[] {username},
+                replaceTableName("SELECT * FROM %s"),
                 new SessionMapper());
         return sessions;
     }
 
     @Override
+    public Iterable<SerializableFormSession> findAll(Iterable<String> strings) {
+        List<SerializableFormSession> sessions = this.jdbcTemplate.query(
+                replaceTableName("SELECT * FROM %s WHERE id in(SELECT * FROM UNNEST (?)"),
+                new Object[] {strings},
+                new SessionMapper());
+        return sessions;
+    }
+
+    @Override
+    public long count() {
+        return this.jdbcTemplate.queryForObject(
+                replaceTableName("select count(*) from %s"), Integer.class);
+    }
+
+    @Override
     public void delete(String id) {
         this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
+    }
+
+    @Override
+    public void delete(SerializableFormSession entity) {
+        delete(entity.getId());
+    }
+
+    @Override
+    public void delete(Iterable<? extends SerializableFormSession> entities) {
+        for(SerializableFormSession session: entities){
+            delete(session.getId());
+        }
+    }
+
+    @Override
+    public void deleteAll() {
+        Iterable<SerializableFormSession> allSessions = findAll();
+        for(SerializableFormSession session: allSessions){
+            delete(session.getId());
+        }
     }
 
     // helper class for mapping a db row to a serialized session
