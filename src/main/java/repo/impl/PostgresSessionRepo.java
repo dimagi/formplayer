@@ -29,7 +29,7 @@ import java.util.Map;
 public class PostgresSessionRepo implements SessionRepo{
 
     @Autowired
-    @Qualifier("jdbcFormplayer")
+    @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
 
     @Override

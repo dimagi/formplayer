@@ -32,7 +32,7 @@ public class Constants {
     public static final String QUESTION_TREE_KEY = "tree";
 
     // Postgres sesions
-    public static final String POSTGRES_SESSION_TABLE_NAME = "new_formplayer_sessions";
+    public static final String POSTGRES_SESSION_TABLE_NAME = "formplayer_sessions";
     public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
 
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";

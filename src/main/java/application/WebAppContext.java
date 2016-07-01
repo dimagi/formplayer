@@ -4,14 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -32,6 +27,7 @@ import services.impl.RestoreServiceImpl;
 import services.impl.XFormServiceImpl;
 
 import javax.annotation.PreDestroy;
+import javax.sql.DataSource;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -39,10 +35,10 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
-@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
+@EnableAutoConfiguration
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"application", "repo"})
+@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*"})
 @PropertySource(value="file:config/application.properties")
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
@@ -100,23 +96,46 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public JedisConnectionFactory jedisConnFactory(){
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        jedisConnectionFactory.setUsePool(true);
-        jedisConnectionFactory.setHostName(redisHostName);
-        return jedisConnectionFactory;
-    }
-
-    @Bean
-    public RedisTemplate redisTemplate(){
-        RedisTemplate redisTemplate =  new RedisTemplate();
-        redisTemplate.setConnectionFactory(jedisConnFactory());
-        return redisTemplate;
-    }
-    @Bean
     public static PropertySourcesPlaceholderConfigurer propertiesResolver() {
         return new PropertySourcesPlaceholderConfigurer();
     }
+
+    @Bean
+    public JdbcTemplate formplayerTemplate(){
+        return new JdbcTemplate(formplayerDataSource());
+    }
+
+    @Bean
+    public JdbcTemplate hqTemplate(){
+        return new JdbcTemplate(hqDataSource());
+    }
+
+    @Primary
+    @Bean
+    public static DataSource formplayerDataSource() {
+        org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
+        String url = "jdbc:postgresql://localhost:5432/formplayer";
+        String user = "flyway";
+        String pass = "flyway";
+        ds.setDriverClassName("org.postgresql.Driver");
+        ds.setUrl(url);
+        ds.setUsername(user);
+        ds.setPassword(pass);
+        return ds;
+    }
+    @Bean
+    public static DataSource hqDataSource() {
+        org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
+        String url = "jdbc:postgresql://localhost:5432/commcarehq";
+        String user = "postgres";
+        String pass = "123";
+        ds.setDriverClassName("org.postgresql.Driver");
+        ds.setUrl(url);
+        ds.setUsername(user);
+        ds.setPassword(pass);
+        return ds;
+    }
+
 
     @Bean
     public TokenRepo tokenRepo(){

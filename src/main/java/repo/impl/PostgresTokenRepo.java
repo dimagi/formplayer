@@ -24,7 +24,7 @@ public class PostgresTokenRepo implements TokenRepo{
     private final Log log = LogFactory.getLog(PostgresTokenRepo.class);
 
     @Autowired
-    @Qualifier("jdbcHq")
+    @Qualifier("hqTemplate")
     private JdbcTemplate jdbcTemplate;
 
     @Override
