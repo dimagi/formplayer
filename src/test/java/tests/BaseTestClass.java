@@ -13,7 +13,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -72,6 +74,8 @@ public class BaseTestClass {
         mockMvc = MockMvcBuilders.standaloneSetup(formController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore_3.xml"));
+        when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
+                .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
         mapper = new ObjectMapper();
         setUpSessionRepoMock();
     }
