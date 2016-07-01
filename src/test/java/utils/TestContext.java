@@ -19,6 +19,7 @@ import services.RestoreService;
 import services.SubmitService;
 import services.XFormService;
 import services.impl.InstallServiceImpl;
+import services.impl.SubmitServiceImpl;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -91,13 +92,6 @@ public class TestContext {
 
     @Bean
     public SubmitService submitService() {
-        SubmitService impl = Mockito.mock(SubmitService.class);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return new ResponseEntity(HttpStatus.OK);
-            }
-        }).when(impl).submitForm(anyString(), anyString(), any(HqAuth.class));
-        return impl;
+        return Mockito.mock(SubmitServiceImpl.class);
     }
 }

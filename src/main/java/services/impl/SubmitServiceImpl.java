@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import services.SubmitService;
 
 /**
- * Created by willpride on 7/1/16.
+ * RestTemplate implementation for submitting forms to HQ
  */
 public class SubmitServiceImpl implements SubmitService{
 
@@ -17,7 +17,6 @@ public class SubmitServiceImpl implements SubmitService{
         RestTemplate restTemplate = new RestTemplate();
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
-        body.add("data", formXml);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
