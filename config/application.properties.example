@@ -1,3 +1,26 @@
 # set to the URL of your CCHQ instance
 commcarehq.host=http://localhost:8000
-redis.host=localhost
+user.suffix=commcarehq.org
+logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=DEBUG
+redis.hostname=localhost
+server.port=8090
+
+// Properties for HQ db
+datasource.hq.driverClassName=org.postgresql.Driver
+datasource.hq.url=jdbc:postgresql://localhost:5432/commcarehq
+datasource.hq.username=postgres
+datasource.hq.password=postgres
+
+datasource.formplayer.driverClassName=org.postgresql.Driver
+datasource.formplayer.url=jdbc:postgresql://localhost:5432/formplayer
+datasource.formplayer.username=postgres
+datasource.formplayer.password=postgres
+
+// set flyway URL to Formplayer's own DB
+flyway.url=jdbc:postgresql://localhost:5432/formplayer
+flyway.user=flyway
+flyway.password=flyway
+flyway.driverClassName=org.postgresql.Driver
+flyway.location=classpath:db/migrations
+
+spring.jpa.hibernate.ddl-auto

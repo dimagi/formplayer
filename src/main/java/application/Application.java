@@ -38,11 +38,20 @@ public class Application {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
+        migrate();
+    }
+
+    /**
+     * Attempt to run any outstanding migrations in db.migrations
+     * Does nothing if DB is up to date
+     */
+    private static void migrate() {
         Flyway flyway = new Flyway();
         flyway.setDataSource(dataSource);
         flyway.migrate();
     }
 
+    // automatically pulls the @Primary DataSource from WebAppContext
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;

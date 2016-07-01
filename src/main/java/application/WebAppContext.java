@@ -42,11 +42,33 @@ import java.util.Properties;
 @PropertySource(value="file:config/application.properties")
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
-    @Value("${redis.hostname}")
-    private String redisHostName;
-
     @Value("${commcarehq.host}")
     private String hqHost;
+
+    @Value("${datasource.hq.url}")
+    private String hqPostgresUrl;
+
+    @Value("${datasource.hq.username}")
+    private String hqPostgresUsername;
+
+    @Value("${datasource.hq.password}")
+    private String hqPostgresPassword;
+
+    @Value("${datasource.hq.driverClassName}")
+    private String hqPostgresDriverName;
+
+    @Value("${datasource.formplayer.url}")
+    private String formplayerPostgresUrl;
+
+    @Value("${datasource.formplayer.username}")
+    private String formplayerPostgresUsername;
+
+    @Value("${datasource.formplayer.password}")
+    private String formplayerPostgresPassword;
+
+    @Value("${datasource.formplayer.driverClassName}")
+    private String formplayerPostgresDriverName;
+
 
     private final Log log = LogFactory.getLog(WebAppContext.class);
 
@@ -112,27 +134,21 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Primary
     @Bean
-    public static DataSource formplayerDataSource() {
+    public DataSource formplayerDataSource() {
         org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
-        String url = "jdbc:postgresql://localhost:5432/formplayer";
-        String user = "flyway";
-        String pass = "flyway";
-        ds.setDriverClassName("org.postgresql.Driver");
-        ds.setUrl(url);
-        ds.setUsername(user);
-        ds.setPassword(pass);
+        ds.setDriverClassName(formplayerPostgresDriverName);
+        ds.setUrl(formplayerPostgresUrl);
+        ds.setUsername(formplayerPostgresUsername);
+        ds.setPassword(formplayerPostgresPassword);
         return ds;
     }
     @Bean
-    public static DataSource hqDataSource() {
+    public DataSource hqDataSource() {
         org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
-        String url = "jdbc:postgresql://localhost:5432/commcarehq";
-        String user = "postgres";
-        String pass = "123";
-        ds.setDriverClassName("org.postgresql.Driver");
-        ds.setUrl(url);
-        ds.setUsername(user);
-        ds.setPassword(pass);
+        ds.setDriverClassName(hqPostgresDriverName);
+        ds.setUrl(hqPostgresUrl);
+        ds.setUsername(hqPostgresUsername);
+        ds.setPassword(hqPostgresPassword);
         return ds;
     }
 
