@@ -42,7 +42,7 @@ public class Application {
     }
 
     /**
-     * Attempt to run any outstanding migrations in db.migrations
+     * Attempt to run any outstanding migration in migration
      * Does nothing if DB is up to date
      */
     private static void migrate() {

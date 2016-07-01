@@ -2,7 +2,6 @@
 commcarehq.host=http://localhost:8000
 user.suffix=commcarehq.org
 logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=DEBUG
-redis.hostname=localhost
 server.port=8090
 
 // Properties for HQ db
@@ -21,6 +20,6 @@ flyway.url=jdbc:postgresql://localhost:5432/formplayer
 flyway.user=flyway
 flyway.password=flyway
 flyway.driverClassName=org.postgresql.Driver
-flyway.location=classpath:db/migrations
+flyway.location=classpath:db/migration
 
 spring.jpa.hibernate.ddl-auto
