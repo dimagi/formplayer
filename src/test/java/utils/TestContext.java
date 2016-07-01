@@ -10,10 +10,13 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.SessionRepo;
 import services.InstallService;
 import services.RestoreService;
+import services.SubmitService;
 import services.XFormService;
 import services.impl.InstallServiceImpl;
 
@@ -84,5 +87,17 @@ public class TestContext {
     @Bean
     public InstallService installService(){
         return Mockito.mock(InstallServiceImpl.class);
+    }
+
+    @Bean
+    public SubmitService submitService() {
+        SubmitService impl = Mockito.mock(SubmitService.class);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return new ResponseEntity(HttpStatus.OK);
+            }
+        }).when(impl).submitForm(anyString(), anyString(), any(HqAuth.class));
+        return impl;
     }
 }

@@ -21,9 +21,11 @@ import repo.impl.PostgresSessionRepo;
 import repo.impl.PostgresTokenRepo;
 import services.InstallService;
 import services.RestoreService;
+import services.SubmitService;
 import services.XFormService;
 import services.impl.InstallServiceImpl;
 import services.impl.RestoreServiceImpl;
+import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
 
 import javax.annotation.PreDestroy;
@@ -176,6 +178,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public InstallService installService(){
         return new InstallServiceImpl(hqHost);
+    }
+
+    @Bean
+    public SubmitService submitService(){
+        return new SubmitServiceImpl();
     }
 
     // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak

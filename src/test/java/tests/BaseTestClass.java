@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
 import services.RestoreService;
+import services.SubmitService;
 import services.XFormService;
 import util.Constants;
 import utils.FileUtils;
@@ -51,6 +52,9 @@ public class BaseTestClass {
     @Autowired
     RestoreService restoreServiceMock;
 
+    @Autowired
+    SubmitService submitServiceMock;
+
     @InjectMocks
     protected FormController formController;
 
@@ -63,6 +67,7 @@ public class BaseTestClass {
         Mockito.reset(sessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
+        Mockito.reset(submitServiceMock);
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(formController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
@@ -169,6 +174,7 @@ public class BaseTestClass {
         String result = this.mockMvc.perform(
                 post(urlPrepend(Constants.URL_SUBMIT_FORM))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(new ObjectMapper().writeValueAsString(submitRequestBean)))
                         .andReturn()
                         .getResponse()

@@ -1,5 +1,6 @@
 package application;
 
+import auth.DjangoAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hq.CaseAPIs;
@@ -13,11 +14,12 @@ import org.commcare.api.process.FormRecordProcessorHelper;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.SessionRepo;
-import repo.impl.PostgresTokenRepo;
 import requests.NewFormRequest;
 import services.RestoreService;
+import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
 import util.Constants;
@@ -42,6 +44,9 @@ public class FormController {
 
     @Autowired
     private RestoreService restoreService;
+
+    @Autowired
+    private SubmitService submitService;
 
     private final Log log = LogFactory.getLog(FormController.class);
     private final ObjectMapper mapper = new ObjectMapper();
@@ -104,14 +109,27 @@ public class FormController {
     @ApiOperation(value = "Submit the current form")
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
-    public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
+    public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
+                                             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Submit form with bean: " + submitRequestBean);
+
         SerializableFormSession serializableFormSession = sessionRepo.findOne(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
+
         SubmitResponseBean submitResponseBean = new SubmitResponseBean(formEntrySession);
-        log.info("Submit response bean: " + submitResponseBean);
-        sessionRepo.delete(submitRequestBean.getSessionId());
+
+        ResponseEntity<String> submitResponse =
+                submitService.submitForm(submitResponseBean.getOutput(),
+                        submitResponseBean.getPostUrl(),
+                        new DjangoAuth(authToken));
+
+        log.info("Submit response bean: " + submitResponse);
+        if(submitResponse.getStatusCode().is2xxSuccessful()){
+            sessionRepo.delete(submitRequestBean.getSessionId());
+        } else{
+            submitResponseBean.setStatus("error");
+        }
         return submitResponseBean;
     }
 

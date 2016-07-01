@@ -1,0 +1,32 @@
+package services.impl;
+
+import auth.HqAuth;
+import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import services.SubmitService;
+
+/**
+ * Created by willpride on 7/1/16.
+ */
+public class SubmitServiceImpl implements SubmitService{
+
+    @Override
+    public ResponseEntity<String> submitForm(String formXml, String submitUrl, HqAuth auth) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
+        body.add("data", formXml);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<?> entity = new HttpEntity<Object>(formXml, auth.getAuthHeaders());
+
+        ResponseEntity<String> response =
+                restTemplate.exchange(submitUrl,
+                        HttpMethod.POST,
+                        entity, String.class);
+        return response;
+    }
+}
