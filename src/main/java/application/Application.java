@@ -34,17 +34,21 @@ public class Application {
 
     private final Log log = LogFactory.getLog(Application.class);
 
-    @Autowired
     static DataSource dataSource;
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         Flyway flyway = new Flyway();
         flyway.setLocations("classpath:db/migrations");
-        dataSource = WebAppContext.formplayerDataSource();
-        System.out.println("Setting datasource: " + dataSource);
+        //dataSource = WebAppContext.formplayerDataSource();
         flyway.setDataSource(dataSource);
         flyway.migrate();
+    }
+
+    @Autowired
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+        System.out.println("Set data source: " + dataSource);
     }
 
     /**
