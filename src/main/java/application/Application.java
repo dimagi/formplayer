@@ -39,8 +39,6 @@ public class Application {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         Flyway flyway = new Flyway();
-        flyway.setLocations("classpath:db/migrations");
-        //dataSource = WebAppContext.formplayerDataSource();
         flyway.setDataSource(dataSource);
         flyway.migrate();
     }
@@ -48,7 +46,6 @@ public class Application {
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
-        System.out.println("Set data source: " + dataSource);
     }
 
     /**
