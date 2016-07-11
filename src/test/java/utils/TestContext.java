@@ -48,7 +48,7 @@ public class TestContext {
     @Bean
     public SessionRepo sessionRepo() {
         SessionRepo sessionRepo = Mockito.mock(SessionRepo.class);
-        when(sessionRepo.find(anyString())).thenReturn(serializableFormSession);
+        when(sessionRepo.findOne(anyString())).thenReturn(serializableFormSession);
         ArgumentCaptor<SerializableFormSession> argumentCaptor = ArgumentCaptor.forClass(SerializableFormSession.class);
         doAnswer(new Answer<Object>() {
             @Override

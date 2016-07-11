@@ -1,13 +1,14 @@
 package repo;
 
 import objects.SerializableFormSession;
+import org.springframework.data.repository.CrudRepository;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
- * Created by willpride on 1/19/16.
+ * Repository for storing and accessing form entry sessions
  */
-public interface SessionRepo {
-    void save(SerializableFormSession session);
-    SerializableFormSession find(String id);
-    java.util.Map<Object, Object> findAll();
-    void delete(String id);
+public interface SessionRepo extends CrudRepository<SerializableFormSession, String> {
+    List<SerializableFormSession> findUserSessions(String username);
 }
