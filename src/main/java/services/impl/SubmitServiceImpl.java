@@ -15,13 +15,7 @@ public class SubmitServiceImpl implements SubmitService{
     @Override
     public ResponseEntity<String> submitForm(String formXml, String submitUrl, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<?> entity = new HttpEntity<Object>(formXml, auth.getAuthHeaders());
-
         ResponseEntity<String> response =
                 restTemplate.exchange(submitUrl,
                         HttpMethod.POST,
