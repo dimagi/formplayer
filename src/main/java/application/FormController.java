@@ -129,6 +129,7 @@ public class FormController {
             sessionRepo.delete(submitRequestBean.getSessionId());
         } else{
             submitResponseBean.setStatus("error");
+            submitResponseBean.setOutput(submitResponse.getBody());
         }
         return submitResponseBean;
     }
