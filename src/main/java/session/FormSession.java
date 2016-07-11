@@ -108,7 +108,7 @@ public class FormSession {
         setLocale(locale, langs);
         uuid = UUID.randomUUID().toString();
         this.sequenceId = 1;
-        initialize(true, sessionData);
+        initialize(false, sessionData);
         getFormTree();
     }
 
