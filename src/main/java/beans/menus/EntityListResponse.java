@@ -66,10 +66,10 @@ public class EntityListResponse extends MenuBean {
 
     private void processCaseTiles(Detail shortDetail) {
         DetailField[] fields = shortDetail.getFields();
-        tiles = new Tile[fields.length];
         if(!shortDetail.usesGridView()){
             return;
         }
+        tiles = new Tile[fields.length];
         setUsesCaseTiles(true);
         for(int i = 0; i < fields.length; i++){
             if(fields[i].isCaseTileField()){
