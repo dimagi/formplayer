@@ -8,7 +8,8 @@ import objects.SessionData;
 import java.util.Map;
 
 /**
- * Created by willpride on 1/20/16.
+ * Request to start a new form entry sessios
+ * Optionally contains instanceContent for form editing or incomplete forms
  */
 @JsonIgnoreProperties
 public class NewSessionRequestBean {
