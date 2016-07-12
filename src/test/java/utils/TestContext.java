@@ -10,12 +10,16 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.SessionRepo;
 import services.InstallService;
 import services.RestoreService;
+import services.SubmitService;
 import services.XFormService;
 import services.impl.InstallServiceImpl;
+import services.impl.SubmitServiceImpl;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -84,5 +88,10 @@ public class TestContext {
     @Bean
     public InstallService installService(){
         return Mockito.mock(InstallServiceImpl.class);
+    }
+
+    @Bean
+    public SubmitService submitService() {
+        return Mockito.mock(SubmitServiceImpl.class);
     }
 }
