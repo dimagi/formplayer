@@ -1,5 +1,2 @@
-include ':javarosa'
-project(':javarosa').projectDir = new File('libs/javarosa')
-
 include ':commcare'
 project(':commcare').projectDir = new File('libs/commcare')

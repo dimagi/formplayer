@@ -22,7 +22,7 @@ To make properties file:
 
 To run:
 
-    $ ./gradlew build; java -jar build/libs/formplayer
+    $ ./gradlew build; java -jar build/libs/formplayer.jar
 
 To test:
 

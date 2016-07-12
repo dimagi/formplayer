@@ -1,11 +1,15 @@
 package objects;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Map;
 
 /**
  * Created by willpride on 1/19/16.
  */
+@Entity
+@Table(name = "formplayer_sessions")
 public class SerializableFormSession implements Serializable{
     private String id;
     private String instanceXml;

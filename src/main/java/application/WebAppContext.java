@@ -3,13 +3,10 @@ package application;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -19,32 +16,61 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import repo.SessionRepo;
-import repo.impl.SessionImpl;
+import repo.TokenRepo;
+import repo.impl.PostgresSessionRepo;
+import repo.impl.PostgresTokenRepo;
 import services.InstallService;
 import services.RestoreService;
+import services.SubmitService;
 import services.XFormService;
 import services.impl.InstallServiceImpl;
 import services.impl.RestoreServiceImpl;
+import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
 
 import javax.annotation.PreDestroy;
+import javax.sql.DataSource;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
 
+//have to exclude this to use two DataSources (HQ and Formplayer dbs)
+@EnableAutoConfiguration
 @Configuration
 @EnableWebMvc
-@ComponentScan
+@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*"})
 @PropertySource(value="file:config/application.properties")
-class WebAppContext extends WebMvcConfigurerAdapter {
-
-    @Value("${redis.hostname}")
-    private String redisHostName;
+public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${commcarehq.host}")
     private String hqHost;
+
+    @Value("${datasource.hq.url}")
+    private String hqPostgresUrl;
+
+    @Value("${datasource.hq.username}")
+    private String hqPostgresUsername;
+
+    @Value("${datasource.hq.password}")
+    private String hqPostgresPassword;
+
+    @Value("${datasource.hq.driverClassName}")
+    private String hqPostgresDriverName;
+
+    @Value("${datasource.formplayer.url}")
+    private String formplayerPostgresUrl;
+
+    @Value("${datasource.formplayer.username}")
+    private String formplayerPostgresUsername;
+
+    @Value("${datasource.formplayer.password}")
+    private String formplayerPostgresPassword;
+
+    @Value("${datasource.formplayer.driverClassName}")
+    private String formplayerPostgresDriverName;
+
 
     private final Log log = LogFactory.getLog(WebAppContext.class);
 
@@ -94,27 +120,49 @@ class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public JedisConnectionFactory jedisConnFactory(){
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        jedisConnectionFactory.setUsePool(true);
-        jedisConnectionFactory.setHostName(redisHostName);
-        return jedisConnectionFactory;
-    }
-
-    @Bean
-    public RedisTemplate redisTemplate(){
-        RedisTemplate redisTemplate =  new RedisTemplate();
-        redisTemplate.setConnectionFactory(jedisConnFactory());
-        return redisTemplate;
-    }
-    @Bean
     public static PropertySourcesPlaceholderConfigurer propertiesResolver() {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
     @Bean
+    public JdbcTemplate formplayerTemplate(){
+        return new JdbcTemplate(formplayerDataSource());
+    }
+
+    @Bean
+    public JdbcTemplate hqTemplate(){
+        return new JdbcTemplate(hqDataSource());
+    }
+
+    @Primary
+    @Bean
+    public DataSource formplayerDataSource() {
+        org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
+        ds.setDriverClassName(formplayerPostgresDriverName);
+        ds.setUrl(formplayerPostgresUrl);
+        ds.setUsername(formplayerPostgresUsername);
+        ds.setPassword(formplayerPostgresPassword);
+        return ds;
+    }
+    @Bean
+    public DataSource hqDataSource() {
+        org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
+        ds.setDriverClassName(hqPostgresDriverName);
+        ds.setUrl(hqPostgresUrl);
+        ds.setUsername(hqPostgresUsername);
+        ds.setPassword(hqPostgresPassword);
+        return ds;
+    }
+
+
+    @Bean
+    public TokenRepo tokenRepo(){
+        return new PostgresTokenRepo();
+    }
+
+    @Bean
     public SessionRepo sessionRepo(){
-        return new SessionImpl();
+        return new PostgresSessionRepo();
     }
 
     @Bean
@@ -130,6 +178,11 @@ class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public InstallService installService(){
         return new InstallServiceImpl(hqHost);
+    }
+
+    @Bean
+    public SubmitService submitService(){
+        return new SubmitServiceImpl();
     }
 
     // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak

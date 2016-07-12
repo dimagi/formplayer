@@ -52,7 +52,6 @@ public class FormSession {
     private String locale;
     private Map<String, String> sessionData;
     private String postUrl;
-
     private String title;
     private String[] langs;
     private String uuid;
@@ -65,8 +64,8 @@ public class FormSession {
         this.restoreXml = session.getRestoreXml();
         this.domain = session.getDomain();
         this.sandbox = CaseAPIs.restoreIfNotExists(username, this.domain, restoreXml);
-        this.sessionData = session.getSessionData();
         this.postUrl = session.getPostUrl();
+        this.sessionData = session.getSessionData();
         formDef = new FormDef();
         PrototypeUtils.setupPrototypes();
         deserializeFormDef(session.getFormXml());
@@ -79,8 +78,8 @@ public class FormSession {
         this.sequenceId = session.getSequenceId();
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
+        uuid = session.getId();
         setLocale(session.getInitLang(), langs);
-        uuid = UUID.randomUUID().toString();
         this.sequenceId = session.getSequenceId();
         initialize(false, session.getSessionData());
         getFormTree();
@@ -92,8 +91,8 @@ public class FormSession {
         this.restoreXml = restoreXml;
         this.username = username;
         this.sandbox = CaseAPIs.restoreIfNotExists(username, domain, restoreXml);
-        this.sessionData = sessionData;
         this.domain = domain;
+        this.sessionData = sessionData;
         formDef = parseFormDef(formXml);
 
         if(instanceContent != null){
@@ -124,9 +123,9 @@ public class FormSession {
     public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
                        Map<String, String> sessionData, String postUrl, String locale) throws Exception {
         this.username = username;
-        this.sessionData = sessionData;
         this.formDef = formDef;
         this.sandbox = sandbox;
+        this.sessionData = sessionData;
         this.domain = domain;
         this.postUrl = postUrl;
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -240,6 +239,10 @@ public class FormSession {
         return getInstanceXml();
     }
 
+    private Map<String, String> getSessionData(){
+        return sessionData;
+    }
+
     private String serializeFormDef() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream serializedStream = new DataOutputStream(baos);
@@ -254,9 +257,6 @@ public class FormSession {
         formDef.readExternal(inputStream, PrototypeManager.getDefault());
     }
 
-    private Map<String, String> getSessionData() {
-        return sessionData;
-    }
 
     public SerializableFormSession serialize() throws IOException {
         SerializableFormSession serializableFormSession = new SerializableFormSession();
@@ -264,6 +264,7 @@ public class FormSession {
         serializableFormSession.setId(getSessionId());
         serializableFormSession.setFormXml(serializeFormDef());
         serializableFormSession.setUsername(username);
+        serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setSequenceId(getSequenceId());
         serializableFormSession.setInitLang(getLocale());
         serializableFormSession.setSessionData(getSessionData());

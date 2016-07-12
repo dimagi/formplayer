@@ -13,13 +13,16 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
 import services.RestoreService;
+import services.SubmitService;
 import services.XFormService;
 import util.Constants;
 import utils.FileUtils;
@@ -51,6 +54,9 @@ public class BaseTestClass {
     @Autowired
     RestoreService restoreServiceMock;
 
+    @Autowired
+    SubmitService submitServiceMock;
+
     @InjectMocks
     protected FormController formController;
 
@@ -63,10 +69,13 @@ public class BaseTestClass {
         Mockito.reset(sessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
+        Mockito.reset(submitServiceMock);
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(formController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore_3.xml"));
+        when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
+                .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
         mapper = new ObjectMapper();
         setUpSessionRepoMock();
     }
@@ -78,7 +87,7 @@ public class BaseTestClass {
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 return serializableFormSession;
             }
-        }).when(sessionRepoMock).find(anyString());
+        }).when(sessionRepoMock).findOne(anyString());
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -127,7 +136,7 @@ public class BaseTestClass {
         MvcResult result = this.mockMvc.perform(
                 post(urlPrepend(Constants.URL_NEW_SESSION))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("sessionid", "derp"))
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
         return mapper.readValue(responseBody, NewFormSessionResponse.class);
@@ -169,6 +178,7 @@ public class BaseTestClass {
         String result = this.mockMvc.perform(
                 post(urlPrepend(Constants.URL_SUBMIT_FORM))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(new ObjectMapper().writeValueAsString(submitRequestBean)))
                         .andReturn()
                         .getResponse()

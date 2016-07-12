@@ -1,9 +1,10 @@
 package auth;
 
 import org.springframework.http.HttpHeaders;
+import util.Constants;
 
 /**
- * Created by willpride on 1/13/16.
+ * Class for storing a Django auth key and returning its respective headers
  */
 public class DjangoAuth implements HqAuth {
 
@@ -14,13 +15,14 @@ public class DjangoAuth implements HqAuth {
     }
 
 
+    // We seem to need all of these headers at different times. TODO WSP figure that out
     @Override
     public HttpHeaders getAuthHeaders() {
         return new HttpHeaders(){
             {
-                add( "Cookie",  "sessionid=" + authKey);
-                add( "sessionid",  authKey);
-                add( "Authorization",  "sessionid=" + authKey);
+                add("Cookie",  Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authKey);
+                add(Constants.POSTGRES_DJANGO_SESSION_ID,  authKey);
+                add("Authorization",  Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authKey);
             }
         };
     }

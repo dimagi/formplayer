@@ -6,6 +6,7 @@ package util;
 public class Constants {
     //URLS
     public final static String URL_NEW_SESSION = "new-form";
+    public final static String URL_INCOMPLETE_SESSION = "incomplete-form";
     public final static String URL_ANSWER_QUESTION = "answer";
     public final static String URL_CURRENT = "current";
     public final static String URL_SUBMIT_FORM = "submit-all";
@@ -20,6 +21,7 @@ public class Constants {
     public final static String URL_GET_SESSION = "get_session";
     public static final String URL_INSTALL = "install";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
+    public static final String URL_GET_SESSIONS = "get_sessions";
     //Menus
     public static final String MENU_MODULE = "modules";
     public static final String MENU_ENTITY = "entity";
@@ -28,4 +30,10 @@ public class Constants {
     public static final String RESPONSE_STATUS_POSITIVE = "accepted";
     //JSON
     public static final String QUESTION_TREE_KEY = "tree";
+
+    // Postgres sesions
+    public static final String POSTGRES_SESSION_TABLE_NAME = "formplayer_sessions";
+    public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
+
+    public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
 }
