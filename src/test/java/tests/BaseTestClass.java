@@ -195,6 +195,7 @@ public class BaseTestClass {
         MvcResult result = this.mockMvc.perform(
                 post(urlPrepend(Constants.URL_SYNC_DB))
                         .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(mapper.writeValueAsString(syncDbRequestBean)))
                 .andExpect(status().isOk())
                 .andReturn();

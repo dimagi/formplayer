@@ -1,9 +1,5 @@
 {
   "action": "sync-db",
-  "hq_auth": {
-    "type": "django-session",
-    "key": "wo7xo9rwlds5vjt8g7el9hkjfum5585h"
-  },
   "username": "synctestuser",
   "domain": "synctestdomain",
   "app_id": "synctestappid"
