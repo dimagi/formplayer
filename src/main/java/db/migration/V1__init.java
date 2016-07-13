@@ -4,7 +4,8 @@ import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Example of a Java-based migration.
+ * Initialize the formplayer session database
+ * @author wspride
  */
 public class V1__init implements SpringJdbcMigration {
 
