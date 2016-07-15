@@ -16,24 +16,25 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncDbRequestBean {
 
-    private Map<String, String> hqAuth;
+    private HqAuth hqAuth;
     private String username;
     private RestoreService restoreService;
     private String domain;
 
+    public SyncDbRequestBean(){}
+
     @JsonGetter(value = "hq_auth")
-    public Map<String, String> getHqAuth() {
+    public HqAuth getHqAuth() {
         return hqAuth;
     }
     @JsonSetter(value = "hq_auth")
-    public void setHqAuth(Map<String, String> hqAuth) {
+    public void setHqAuth(HqAuth hqAuth) {
         this.hqAuth = hqAuth;
     }
 
     @JsonIgnore
     public String getRestoreXml(){
-        HqAuth auth = new DjangoAuth(hqAuth.get("key"));
-        return restoreService.getRestoreXml(domain, auth);
+        return restoreService.getRestoreXml(domain, hqAuth);
     }
 
     public void setRestoreService(RestoreService restoreService) {
