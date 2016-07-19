@@ -6,6 +6,7 @@ import install.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.UserSqlSandbox;
+import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
@@ -54,7 +55,7 @@ public class MenuSession {
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
                        InstallService installService, RestoreService restoreService, HqAuth auth) throws Exception {
-        this.username = username;
+        this.username = TableBuilder.scrubName(username);
         this.domain = domain;
         resolveInstallReference(installReference, appId);
         this.engine = installService.configureApplication(this.installReference, this.username, "dbs/" + appId);
