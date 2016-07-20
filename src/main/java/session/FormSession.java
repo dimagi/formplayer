@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
 import org.commcare.core.interfaces.UserSandbox;
+import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.FormInstance;
@@ -89,8 +90,8 @@ public class FormSession {
                        Map<String, String> sessionData, String instanceContent) throws Exception {
         this.formXml = formXml;
         this.restoreXml = restoreXml;
-        this.username = username;
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, domain, restoreXml);
+        this.username = TableBuilder.scrubName(username);
+        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, domain, restoreXml);
         this.domain = domain;
         this.sessionData = sessionData;
         formDef = parseFormDef(formXml);
@@ -122,7 +123,7 @@ public class FormSession {
     // Entry from menu selection. Assumes user has already been restored.
     public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
                        Map<String, String> sessionData, String postUrl, String locale) throws Exception {
-        this.username = username;
+        this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         this.sandbox = sandbox;
         this.sessionData = sessionData;
