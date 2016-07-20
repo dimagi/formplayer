@@ -3,7 +3,6 @@ package application;
 import auth.DjangoAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -16,34 +15,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import repo.SessionRepo;
 import requests.NewFormRequest;
-import services.RestoreService;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
 import util.Constants;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.List;
 
 /**
- * Created by willpride on 1/12/16.
+ * Controller class (API endpoint) containing all form entry logic. This includes
+ * opening a new form, question answering, and form submission.
  */
 @Api(value = "Form Controller", description = "Operations for navigating CommCare Forms")
 @RestController
 @EnableAutoConfiguration
-public class FormController {
-
-    @Autowired
-    private SessionRepo sessionRepo;
+public class FormController extends AbstractBaseController{
 
     @Autowired
     private XFormService xFormService;
-
-    @Autowired
-    private RestoreService restoreService;
 
     @Autowired
     private SubmitService submitService;
@@ -196,62 +186,10 @@ public class FormController {
         return mapper.readValue(resp.toString(), RepeatResponseBean.class);
     }
 
-    @ApiOperation(value = "Filter the user's casedb given a predicate expression")
-    @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
-    public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
-        String caseResponse = CaseAPIs.filterCases(filterRequest);
-        return new CaseFilterResponseBean(caseResponse);
-    }
-
-    @ApiOperation(value = "Fitler the user's casedb given a predicate expression returning all case data")
-    @RequestMapping(value = Constants.URL_FILTER_CASES_FULL, method = RequestMethod.GET)
-    public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
-        CaseBean[] caseResponse = CaseAPIs.filterCasesFull(filterRequest);
-        return new CaseFilterFullResponseBean(caseResponse);
-    }
-
-    @ApiOperation(value = "Sync the user's database with the server")
-    @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
-    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
-                                         @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("SyncDb Request: " + syncRequest);
-        syncRequest.setRestoreService(restoreService);
-        syncRequest.setHqAuth(new DjangoAuth(authToken));
-        String restoreXml = syncRequest.getRestoreXml();
-        CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), syncRequest.getDomain(), restoreXml);
-        return new SyncDbResponseBean();
-    }
-
-    @ApiOperation(value = "Get a list of the current user's sessions")
-    @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
-    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
-        log.info("Get Session Request: " + getSessionRequest);
-        String username = getSessionRequest.getUsername();
-        List<SerializableFormSession> sessions = sessionRepo.findUserSessions(username);
-        return new GetSessionsResponse(sessions);
-    }
-
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
         serialSession.setFormXml(formEntrySession.getFormXml());
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
         serialSession.setSequenceId(formEntrySession.getSequenceId() + 1);
         sessionRepo.save(serialSession);
     }
-
-
-    @ExceptionHandler(Exception.class)
-    public String handleError(HttpServletRequest req, Exception exception) {
-        log.error("Request: " + req.getRequestURL() + " raised " + exception);
-        exception.printStackTrace();
-        JSONObject errorReturn = new JSONObject();
-        errorReturn.put("message", exception);
-        errorReturn.put("url", req.getRequestURL());
-        errorReturn.put("status", "error");
-        return errorReturn.toString();
-    }
-
-
-
 }

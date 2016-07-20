@@ -6,20 +6,25 @@ server.port=8090
 
 // Properties for HQ db
 datasource.hq.driverClassName=org.postgresql.Driver
-datasource.hq.url=jdbc:postgresql://localhost:5432/commcarehq
+datasource.hq.url=jdbc:postgresql://localhost:5432/commcarehq?prepareThreshold=0
 datasource.hq.username=postgres
 datasource.hq.password=postgres
 
 datasource.formplayer.driverClassName=org.postgresql.Driver
-datasource.formplayer.url=jdbc:postgresql://localhost:5432/formplayer
+datasource.formplayer.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
 datasource.formplayer.username=postgres
 datasource.formplayer.password=postgres
 
 // set flyway URL to Formplayer's own DB
-flyway.url=jdbc:postgresql://localhost:5432/formplayer
+flyway.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
 flyway.user=flyway
 flyway.password=flyway
 flyway.driverClassName=org.postgresql.Driver
 flyway.location=classpath:db/migration
 
 spring.jpa.hibernate.ddl-auto
+
+smtp.host=127.0.0.1
+smtp.port=8888
+smtp.from.address=mail.formplayer.commcarehq.org
+smtp.to.address=exceptions@commcarehq.org
