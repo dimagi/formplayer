@@ -107,7 +107,6 @@ public class BaseTestClass {
         return "/" + string;
     }
 
-
     AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         String result = generateMockQuery(RequestType.POST, Constants.URL_ANSWER_QUESTION, answerQuestionBean);
