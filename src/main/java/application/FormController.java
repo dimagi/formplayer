@@ -16,34 +16,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import repo.SessionRepo;
 import requests.NewFormRequest;
-import services.RestoreService;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
 import util.Constants;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
 /**
- * Created by willpride on 1/12/16.
+ * Controller class (API endpoint) containing all form entry logic. This includes
+ * opening a new form, question answering, and form submission.
  */
 @Api(value = "Form Controller", description = "Operations for navigating CommCare Forms")
 @RestController
 @EnableAutoConfiguration
-public class FormController {
-
-    @Autowired
-    private SessionRepo sessionRepo;
+public class FormController extends AbstractBaseController{
 
     @Autowired
     private XFormService xFormService;
-
-    @Autowired
-    private RestoreService restoreService;
 
     @Autowired
     private SubmitService submitService;
@@ -239,19 +231,4 @@ public class FormController {
         serialSession.setSequenceId(formEntrySession.getSequenceId() + 1);
         sessionRepo.save(serialSession);
     }
-
-
-    @ExceptionHandler(Exception.class)
-    public String handleError(HttpServletRequest req, Exception exception) {
-        log.error("Request: " + req.getRequestURL() + " raised " + exception);
-        exception.printStackTrace();
-        JSONObject errorReturn = new JSONObject();
-        errorReturn.put("message", exception);
-        errorReturn.put("url", req.getRequestURL());
-        errorReturn.put("status", "error");
-        return errorReturn.toString();
-    }
-
-
-
 }
