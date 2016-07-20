@@ -3,7 +3,6 @@ package application;
 import auth.DjangoAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -23,7 +22,6 @@ import session.FormSession;
 import util.Constants;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -186,43 +184,6 @@ public class FormController extends AbstractBaseController{
         updateSession(formEntrySession, serializableFormSession);
 
         return mapper.readValue(resp.toString(), RepeatResponseBean.class);
-    }
-
-    @ApiOperation(value = "Filter the user's casedb given a predicate expression")
-    @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
-    public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
-        String caseResponse = CaseAPIs.filterCases(filterRequest);
-        return new CaseFilterResponseBean(caseResponse);
-    }
-
-    @ApiOperation(value = "Fitler the user's casedb given a predicate expression returning all case data")
-    @RequestMapping(value = Constants.URL_FILTER_CASES_FULL, method = RequestMethod.GET)
-    public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
-        CaseBean[] caseResponse = CaseAPIs.filterCasesFull(filterRequest);
-        return new CaseFilterFullResponseBean(caseResponse);
-    }
-
-    @ApiOperation(value = "Sync the user's database with the server")
-    @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
-    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
-                                         @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("SyncDb Request: " + syncRequest);
-        syncRequest.setRestoreService(restoreService);
-        syncRequest.setHqAuth(new DjangoAuth(authToken));
-        String restoreXml = syncRequest.getRestoreXml();
-        CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), syncRequest.getDomain(), restoreXml);
-        return new SyncDbResponseBean();
-    }
-
-    @ApiOperation(value = "Get a list of the current user's sessions")
-    @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
-    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
-        log.info("Get Session Request: " + getSessionRequest);
-        String username = getSessionRequest.getUsername();
-        List<SerializableFormSession> sessions = sessionRepo.findUserSessions(username);
-        return new GetSessionsResponse(sessions);
     }
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {

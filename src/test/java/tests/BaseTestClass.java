@@ -1,6 +1,7 @@
 package tests;
 
 import application.FormController;
+import application.UtilController;
 import auth.HqAuth;
 import beans.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +44,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class BaseTestClass {
 
-    private MockMvc mockMvc;
+    private MockMvc mockFormController;
+
+    private MockMvc mockUtilController;
 
     @Autowired
     private SessionRepo sessionRepoMock;
@@ -60,6 +63,9 @@ public class BaseTestClass {
     @InjectMocks
     protected FormController formController;
 
+    @InjectMocks
+    protected UtilController utilController;
+
     private ObjectMapper mapper;
 
     final SerializableFormSession serializableFormSession = new SerializableFormSession();
@@ -71,7 +77,8 @@ public class BaseTestClass {
         Mockito.reset(restoreServiceMock);
         Mockito.reset(submitServiceMock);
         MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(formController).build();
+        mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
+        mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore_3.xml"));
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
@@ -114,7 +121,7 @@ public class BaseTestClass {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
-        MvcResult answerResult = this.mockMvc.perform(
+        MvcResult answerResult = this.mockFormController.perform(
                 post(urlPrepend(Constants.URL_ANSWER_QUESTION))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody))
@@ -133,7 +140,7 @@ public class BaseTestClass {
 
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
-        MvcResult result = this.mockMvc.perform(
+        MvcResult result = this.mockFormController.perform(
                 post(urlPrepend(Constants.URL_NEW_SESSION))
                         .contentType(MediaType.APPLICATION_JSON)
                         .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
@@ -145,7 +152,7 @@ public class BaseTestClass {
     CaseFilterResponseBean filterCases(String requestPath) throws Exception {
 
         String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
-        MvcResult result = this.mockMvc.perform(
+        MvcResult result = this.mockUtilController.perform(
                 get(urlPrepend(Constants.URL_FILTER_CASES))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filterRequestPayload))
@@ -159,7 +166,7 @@ public class BaseTestClass {
     CaseFilterFullResponseBean filterCasesFull() throws Exception {
 
         String filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases.json");
-        MvcResult result = this.mockMvc.perform(
+        MvcResult result = this.mockUtilController.perform(
                 get(urlPrepend(Constants.URL_FILTER_CASES_FULL))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filterRequestPayload))
@@ -175,7 +182,7 @@ public class BaseTestClass {
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
         submitRequestBean.setSessionId(sessionId);
 
-        String result = this.mockMvc.perform(
+        String result = this.mockFormController.perform(
                 post(urlPrepend(Constants.URL_SUBMIT_FORM))
                         .contentType(MediaType.APPLICATION_JSON)
                         .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
@@ -192,7 +199,7 @@ public class BaseTestClass {
         SyncDbRequestBean syncDbRequestBean = mapper.readValue(syncDbRequestPayload,
                 SyncDbRequestBean.class);
 
-        MvcResult result = this.mockMvc.perform(
+        MvcResult result = this.mockUtilController.perform(
                 post(urlPrepend(Constants.URL_SYNC_DB))
                         .contentType(MediaType.APPLICATION_JSON)
                         .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
@@ -214,7 +221,7 @@ public class BaseTestClass {
 
         String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
 
-        String repeatResult = mockMvc.perform(
+        String repeatResult = mockFormController.perform(
                 post(urlPrepend(Constants.URL_NEW_REPEAT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
@@ -231,7 +238,7 @@ public class BaseTestClass {
 
         String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
 
-        String repeatResult = mockMvc.perform(
+        String repeatResult = mockFormController.perform(
                 post(urlPrepend(Constants.URL_DELETE_REPEAT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
@@ -243,7 +250,7 @@ public class BaseTestClass {
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), CurrentRequestBean.class);
         currentRequestBean.setSessionId(sessionId);
 
-        ResultActions currentResult = mockMvc.perform(
+        ResultActions currentResult = mockFormController.perform(
                 get(urlPrepend(Constants.URL_CURRENT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(currentRequestBean)));
@@ -255,7 +262,7 @@ public class BaseTestClass {
         GetInstanceRequestBean getInstanceRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), GetInstanceRequestBean.class);
         getInstanceRequestBean.setSessionId(sessionId);
-        ResultActions getInstanceResult = mockMvc.perform(
+        ResultActions getInstanceResult = mockFormController.perform(
                 post(urlPrepend(Constants.URL_GET_INSTANCE))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(getInstanceRequestBean)));
@@ -268,7 +275,7 @@ public class BaseTestClass {
                 (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath("/data/q_text");
-        ResultActions evaluateXpathResult = mockMvc.perform(
+        ResultActions evaluateXpathResult = mockFormController.perform(
                 get(urlPrepend(Constants.URL_EVALUATE_XPATH))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
