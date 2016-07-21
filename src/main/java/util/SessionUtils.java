@@ -9,6 +9,7 @@ import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
 
+import java.util.Arrays;
 import java.util.Vector;
 
 /**
@@ -28,6 +29,8 @@ public class SessionUtils {
             // of an update, so default to a generic title
             return null;
         }
+
+        System.out.println("Got Step titles: " + Arrays.toString(stepTitles));
 
         Vector<StackFrameStep> v = session.getFrame().getSteps();
 

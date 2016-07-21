@@ -9,6 +9,7 @@ import beans.menus.EntityListResponse;
 import beans.menus.MenuBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import util.SessionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
@@ -76,20 +77,24 @@ public class MenuController {
         log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
         MenuSession menuSession = performInstall(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
+        String[] titles = new String[selections.length];
         Object nextMenu = getNextMenu(menuSession);
         if (selections == null){
             log.info("Selections null, got next menu: " + nextMenu);
             System.out.println("Menu Session Options: " + Arrays.toString(menuSession.getNextScreen().getOptions()));
             return nextMenu;
         }
-        for(String selection: selections) {
+        for(int i=0; i < selections.length; i++) {
+            String selection = selections[i];
             menuSession.handleInput(selection);
+            titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             if(menuSession.getNextScreen() != null){
                 System.out.println("Menu Session Options: " + Arrays.toString(menuSession.getNextScreen().getOptions()));
             }
         }
-        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(), sessionNavigationBean.getSearchText());
-        log.info("Returning menu: " + nextMenu);
+        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(),
+                sessionNavigationBean.getSearchText(), titles);
+        log.info("Returning menu: " + nextMenu + ", titles: " + Arrays.toString(titles));
         return nextMenu;
     }
 
@@ -119,14 +124,10 @@ public class MenuController {
     }
 
     private Object getNextMenu(MenuSession menuSession, int offset) throws Exception {
-        return getNextMenu(menuSession, offset, "");
+        return getNextMenu(menuSession, offset, "", null);
     }
 
-    private Object getNextMenu(MenuSession menuSession, String searchText) throws Exception {
-        return getNextMenu(menuSession, 0, searchText);
-    }
-
-    private Object getNextMenu(MenuSession menuSession, int offset, String searchText) throws Exception {
+    private Object getNextMenu(MenuSession menuSession, int offset, String searchText, String[] breadcrumbs) throws Exception {
 
         Screen nextScreen;
 
@@ -150,6 +151,7 @@ public class MenuController {
             } else{
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
+            menuResponseBean.setBreadcrumbs(breadcrumbs);
             return menuResponseBean;
         }
     }

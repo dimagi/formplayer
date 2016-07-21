@@ -9,6 +9,7 @@ public class MenuBean {
 
     private String title;
     private String[] locales;
+    private String[] breadcrumbs;
 
     public String getTitle() {
         return title;
@@ -29,5 +30,13 @@ public class MenuBean {
 
     public void setLocales(String[] locales) {
         this.locales = locales;
+    }
+
+    public String[] getBreadcrumbs() {
+        return breadcrumbs;
+    }
+
+    public void setBreadcrumbs(String[] breadcrumbs) {
+        this.breadcrumbs = breadcrumbs;
     }
 }
