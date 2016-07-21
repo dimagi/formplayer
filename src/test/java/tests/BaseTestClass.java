@@ -286,7 +286,7 @@ public class BaseTestClass {
     RepeatResponseBean deleteRepeatRequest(String sessionId) throws Exception {
         String deleteRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/delete_repeat/delete_repeat.json");
         RepeatRequestBean deleteRepeatRequestBean = mapper.readValue(deleteRepeatRequestPayload,
-                RepeatRequestBean.class);x
+                RepeatRequestBean.class);
         deleteRepeatRequestBean.setSessionId(sessionId);
         String repeatResult = generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
@@ -333,7 +333,7 @@ public class BaseTestClass {
     JSONObject sessionNavigate(String requestPath) throws Exception {
         SessionNavigationBean sessionNavigationBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
-        String result = generateMockQuery(ControllerType.UTIL,
+        String result = generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
                 sessionNavigationBean);
@@ -353,7 +353,7 @@ public class BaseTestClass {
         if(locale != null && !"".equals(locale.trim())){
             sessionNavigationBean.setLocale(locale);
         }
-        String result = generateMockQuery(ControllerType.UTIL,
+        String result = generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
                 sessionNavigationBean);
