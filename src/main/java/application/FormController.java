@@ -79,17 +79,7 @@ public class FormController {
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = sessionRepo.findOne(answerQuestionBean.getSessionId());
-        int sequenceId = session.getSequenceId();
         FormSession formEntrySession = new FormSession(session);
-
-        if(answerQuestionBean.getSequenceId() <= sequenceId){
-            log.error("Got sequenceId " + answerQuestionBean.getSequenceId() + " less than current " +
-                sequenceId + " with session: " + session);
-            JSONObject currentJson = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(),
-                    formEntrySession.getFormEntryModel());
-            return mapper.readValue(currentJson.toString(), FormEntryResponseBean.class);
-        }
-
         JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 answerQuestionBean.getAnswer() != null? answerQuestionBean.getAnswer().toString() : null,
@@ -176,25 +166,11 @@ public class FormController {
         log.info("New repeat: " + newRepeatRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.findOne(newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
-        int sequenceId = formEntrySession.getSequenceId();
-
-        if(newRepeatRequestBean.getSequenceId() <= sequenceId){
-            log.error("Got sequenceId " + newRepeatRequestBean.getSequenceId() + " less than current " +
-                    sequenceId + " with session: " + formEntrySession);
-            JSONObject currentJson = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(),
-                    formEntrySession.getFormEntryModel());
-            return mapper.readValue(currentJson.toString(), FormEntryResponseBean.class);
-        }
-
-
-        JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
+        JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 newRepeatRequestBean.getRepeatIndex());
-
         updateSession(formEntrySession, serializableFormSession);
-
-        JSONObject response = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(),
-                formEntrySession.getFormEntryModel());
+        formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
         FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         log.info("New response: " + repeatResponseBean);
         return repeatResponseBean;
@@ -206,22 +182,11 @@ public class FormController {
     public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = sessionRepo.findOne(deleteRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
-
-        int sequenceId = formEntrySession.getSequenceId();
-        if(deleteRepeatRequestBean.getSequenceId() <= sequenceId){
-            log.error("Got sequenceId " + deleteRepeatRequestBean.getSequenceId() + " less than current " +
-                    sequenceId + " with session: " + formEntrySession);
-            JSONObject currentJson = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(),
-                    formEntrySession.getFormEntryModel());
-            return mapper.readValue(currentJson.toString(), FormEntryResponseBean.class);
-        }
-
         JSONObject resp = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
-
         updateSession(formEntrySession, serializableFormSession);
-
+        formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
         return mapper.readValue(resp.toString(), FormEntryResponseBean.class);
     }
 
