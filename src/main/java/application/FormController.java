@@ -176,6 +176,16 @@ public class FormController {
         log.info("New repeat: " + newRepeatRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.findOne(newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
+        int sequenceId = formEntrySession.getSequenceId();
+
+        if(newRepeatRequestBean.getSequenceId() <= sequenceId){
+            log.error("Got sequenceId " + newRepeatRequestBean.getSequenceId() + " less than current " +
+                    sequenceId + " with session: " + formEntrySession);
+            JSONObject currentJson = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel());
+            return mapper.readValue(currentJson.toString(), FormEntryResponseBean.class);
+        }
+
 
         JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -193,13 +203,22 @@ public class FormController {
     @ApiOperation(value = "Delete the repeat at the given index")
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
-    public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = sessionRepo.findOne(repeatRequestBean.getSessionId());
+    public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
+        SerializableFormSession serializableFormSession = sessionRepo.findOne(deleteRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
+
+        int sequenceId = formEntrySession.getSequenceId();
+        if(deleteRepeatRequestBean.getSequenceId() <= sequenceId){
+            log.error("Got sequenceId " + deleteRepeatRequestBean.getSequenceId() + " less than current " +
+                    sequenceId + " with session: " + formEntrySession);
+            JSONObject currentJson = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel());
+            return mapper.readValue(currentJson.toString(), FormEntryResponseBean.class);
+        }
 
         JSONObject resp = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-                repeatRequestBean.getRepeatIndex(), repeatRequestBean.getFormIndex());
+                deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
 
         updateSession(formEntrySession, serializableFormSession);
 
