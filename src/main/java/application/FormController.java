@@ -214,9 +214,11 @@ public class FormController {
 
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
-    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest) throws Exception {
+    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
+                                         @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("SyncDb Request: " + syncRequest);
         syncRequest.setRestoreService(restoreService);
+        syncRequest.setHqAuth(new DjangoAuth(authToken));
         String restoreXml = syncRequest.getRestoreXml();
         CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), syncRequest.getDomain(), restoreXml);
         return new SyncDbResponseBean();
