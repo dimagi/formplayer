@@ -138,6 +138,7 @@ public class EntityListResponse extends MenuBean {
             EntityDetailResponse[] responses = new EntityDetailResponse[subscreens.length];
             for(int j = 0; j < subscreens.length; j++){
                 responses[j] = new EntityDetailResponse(subscreens[j]);
+                responses[j].setTitle(subscreens[j].getTitles()[j]);
             }
             newEntity.setDetails(responses);
             entities[i] = newEntity;
