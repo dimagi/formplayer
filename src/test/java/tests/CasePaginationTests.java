@@ -46,8 +46,6 @@ public class CasePaginationTests extends BaseMenuTestClass {
                 sessionNavigate("requests/navigators/pagination_navigator_1.json");
         EntityListResponse entityListResponse2 =
                 mapper.readValue(sessionNavigateResponse2.toString(), EntityListResponse.class);
-        System.out.println("Entities: " + Arrays.toString(entityListResponse2.getEntities()));
-        System.out.println("Length: " + entityListResponse2.getEntities().length);
         assert entityListResponse2.getEntities().length == 2;
         assert entityListResponse2.getEntities()[0].getData()[0].equals("clqrk test");
         assert entityListResponse2.getEntities()[0].getData()[1].equals("21/04/16");

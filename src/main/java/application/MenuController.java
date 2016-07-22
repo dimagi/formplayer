@@ -77,13 +77,13 @@ public class MenuController {
         log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
         MenuSession menuSession = performInstall(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
-        String[] titles = new String[selections.length];
         Object nextMenu = getNextMenu(menuSession);
         if (selections == null){
             log.info("Selections null, got next menu: " + nextMenu);
             System.out.println("Menu Session Options: " + Arrays.toString(menuSession.getNextScreen().getOptions()));
             return nextMenu;
         }
+        String[] titles = new String[selections.length];
         for(int i=0; i < selections.length; i++) {
             String selection = selections[i];
             menuSession.handleInput(selection);
