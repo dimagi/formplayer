@@ -134,7 +134,12 @@ public class EntityListResponse extends MenuBean {
         int i = 0;
         for (TreeReference entity : references) {
             Entity newEntity = processEntity(entity, screen, ec);
-            newEntity.setDetail(new EntityDetailResponse(processDetails(screen, ec, entity)));
+            EntityDetailSubscreen[] subscreens = processDetails(screen, ec, entity);
+            EntityDetailResponse[] responses = new EntityDetailResponse[subscreens.length];
+            for(int j = 0; j < subscreens.length; j++){
+                responses[j] = new EntityDetailResponse(subscreens[j]);
+            }
+            newEntity.setDetails(responses);
             entities[i] = newEntity;
             i++;
         }
@@ -166,11 +171,14 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private EntityDetailSubscreen processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref){
+    private EntityDetailSubscreen[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref){
         EvaluationContext subContext = new EvaluationContext(ec, ref);
-        //TODO WSP: don't hardcode first screen
-        return new EntityDetailSubscreen(0, screen.getLongDetailList()[0],
-                subContext, screen.getDetailListTitles(subContext));
+        Detail[] detailList = screen.getLongDetailList();
+        EntityDetailSubscreen[] ret = new EntityDetailSubscreen[detailList.length];
+        for(int i = 0; i < detailList.length; i++){
+            ret[i] = new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext));
+        }
+        return ret;
     }
 
     private void processStyles(Detail detail) {
