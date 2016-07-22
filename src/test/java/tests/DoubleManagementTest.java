@@ -87,7 +87,7 @@ public class DoubleManagementTest  extends BaseMenuTestClass{
         assert entityListResponse.getAction() != null;
         assert entityListResponse.getAction().getText().equals("New Parent");
 
-        EntityDetailResponse newFormSessionResponse = entityListResponse.getEntities()[0].getDetail();
+        EntityDetailResponse newFormSessionResponse = entityListResponse.getEntities()[0].getDetails()[0];
 
         assert newFormSessionResponse.getTitle().equals("Details");
         assert newFormSessionResponse.getDetails().length == 1;
