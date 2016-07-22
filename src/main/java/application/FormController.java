@@ -84,7 +84,6 @@ public class FormController {
                 formEntrySession.getFormEntryModel(),
                 answerQuestionBean.getAnswer() != null? answerQuestionBean.getAnswer().toString() : null,
                 answerQuestionBean.getFormIndex());
-        formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
         updateSession(formEntrySession, session);
 
         FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
@@ -170,7 +169,6 @@ public class FormController {
                 formEntrySession.getFormEntryModel(),
                 newRepeatRequestBean.getRepeatIndex());
         updateSession(formEntrySession, serializableFormSession);
-        formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
         FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         log.info("New response: " + repeatResponseBean);
         return repeatResponseBean;
@@ -186,7 +184,6 @@ public class FormController {
                 formEntrySession.getFormEntryModel(),
                 deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
         updateSession(formEntrySession, serializableFormSession);
-        formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
         return mapper.readValue(resp.toString(), FormEntryResponseBean.class);
     }
 
@@ -228,10 +225,10 @@ public class FormController {
     }
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
+        formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
         serialSession.setFormXml(formEntrySession.getFormXml());
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
         serialSession.setSequenceId(formEntrySession.getSequenceId());
-        System.out.println("Increment sequence id from: " + formEntrySession.getSequenceId());
         sessionRepo.save(serialSession);
     }
 
