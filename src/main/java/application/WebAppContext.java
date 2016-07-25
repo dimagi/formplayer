@@ -84,6 +84,12 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${smtp.port}")
     private int smtpPort;
 
+    @Value("${smtp.username")
+    private String smtpUsername;
+
+    @Value("${smtp.password")
+    private String smtpPassword;
+
     @Value("${smtp.from.address}")
     private String smtpFromAddress;
 
@@ -178,6 +184,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
         sender.setHost(smtpHost);
         sender.setPort(smtpPort);
+        sender.setUsername(smtpUsername);
+        sender.setPassword(smtpPassword);
         return sender;
     }
 
