@@ -81,9 +81,15 @@ public class CaseTests extends BaseTestClass {
         // test that we have successfully removed this case
 
         assert(filterCases("requests/filter/filter_cases_5.json").getCases().length == 15);
-
-
     }
+
+    @Test
+    public void testSqlEscape() throws Exception {
+        CaseFilterResponseBean caseFilterResponseBean = filterCases("requests/filter/filter_cases_sql_escape.json");
+        assert(caseFilterResponseBean.getCases().length == 15);
+    }
+
+
 
     @After
     public void tearDown(){
