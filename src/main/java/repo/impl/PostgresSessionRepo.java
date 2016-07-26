@@ -3,12 +3,14 @@ package repo.impl;
 import objects.SerializableFormSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import repo.SessionRepo;
 import util.Constants;
 
+import javax.persistence.LockModeType;
 import java.io.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,6 +40,7 @@ public class PostgresSessionRepo implements SessionRepo{
     }
 
     @Override
+    @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> Iterable<S> save(Iterable<S> entities) {
         for(SerializableFormSession session: entities){
             save(session);
@@ -46,6 +49,7 @@ public class PostgresSessionRepo implements SessionRepo{
     }
 
     @Override
+    @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> S save(S session) {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -62,9 +66,10 @@ public class PostgresSessionRepo implements SessionRepo{
                 replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
 
         if(sessionCount > 0){
-            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ? WHERE id = ?");
-            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), sessionDataBytes, session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR});
+            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, sequenceId = ? WHERE id = ?");
+            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
+                    sessionDataBytes, session.getSequenceId(), session.getId()},
+                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR});
             return session;
         }
 
@@ -116,6 +121,7 @@ public class PostgresSessionRepo implements SessionRepo{
     }
 
     @Override
+    @Lock(LockModeType.OPTIMISTIC)
     public void delete(String id) {
         this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
     }
