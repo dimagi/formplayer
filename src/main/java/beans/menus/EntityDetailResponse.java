@@ -5,9 +5,10 @@ import org.commcare.suite.model.DetailField;
 import org.commcare.util.cli.EntityDetailSubscreen;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
- * Created by willpride on 4/13/16.
+ * Represents one detail tab in a case details page.
  */
 public class EntityDetailResponse extends MenuBean {
     private Object[] details;
@@ -54,5 +55,12 @@ public class EntityDetailResponse extends MenuBean {
             styleArrayList.add(new Style(field));
         }
         styles = (Style[]) styleArrayList.toArray();
+    }
+
+    @Override
+    public String toString(){
+        return "EntityDetailResponse [details=" + Arrays.toString(details)
+                + ", styles=" + Arrays.toString(styles)
+                + ", headers=" + Arrays.toString(headers) + "]";
     }
 }
