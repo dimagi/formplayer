@@ -1,6 +1,8 @@
 package tests;
 
 import auth.HqAuth;
+import beans.menus.Entity;
+import beans.menus.EntityDetailResponse;
 import beans.menus.EntityListResponse;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -41,6 +43,7 @@ public class CasePaginationTests extends BaseMenuTestClass {
         assert entityListResponse.getEntities()[2].getData()[1].equals("22/04/16");
         assert entityListResponse.getCurrentPage() == 0;
         assert entityListResponse.getPageCount() == 8;
+        assert entityListResponse.getEntities()[0].getDetails().length == 2;
 
         JSONObject sessionNavigateResponse2 =
                 sessionNavigate("requests/navigators/pagination_navigator_1.json");
@@ -51,6 +54,20 @@ public class CasePaginationTests extends BaseMenuTestClass {
         assert entityListResponse2.getEntities()[0].getData()[1].equals("30/04/15");
         assert entityListResponse2.getCurrentPage() == 7;
         assert entityListResponse2.getPageCount() == 8;
+
+        assert entityListResponse2.getEntities()[0].getDetails().length == 2;
+        EntityDetailResponse firstDetail = entityListResponse2.getEntities()[0].getDetails()[0];
+        EntityDetailResponse secondDetail = entityListResponse2.getEntities()[0].getDetails()[1];
+
+        assert firstDetail.getDetails().length == 4;
+        assert secondDetail.getDetails().length == 6;
+
+        assert firstDetail.getDetails()[0].equals("clqrk test");
+        assert secondDetail.getDetails()[0].equals("51");
+        assert secondDetail.getDetails()[1].equals("21/04/16");
+
+        assert firstDetail.getHeaders()[0].equals("Name");
+        assert secondDetail.getHeaders()[2].equals("Intval");
     }
 
     // test that searching (filtering the case list) works

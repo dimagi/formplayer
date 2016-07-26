@@ -81,6 +81,7 @@ public class FormSession {
         langs = formEntryModel.getLanguages();
         uuid = session.getId();
         setLocale(session.getInitLang(), langs);
+        System.out.println("Restore session with sequence ID: " + session.getSequenceId());
         this.sequenceId = session.getSequenceId();
         initialize(false, session.getSessionData());
         getFormTree();
@@ -110,7 +111,7 @@ public class FormSession {
         langs = formEntryModel.getLanguages();
         setLocale(locale, langs);
         uuid = UUID.randomUUID().toString();
-        this.sequenceId = 1;
+        this.sequenceId = 0;
         getFormTree();
     }
 
