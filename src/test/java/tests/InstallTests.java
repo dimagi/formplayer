@@ -20,7 +20,7 @@ import java.io.IOException;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class InstallTests extends BaseMenuTestClass {
+public class InstallTests extends BaseTestClass {
 
     Log log = LogFactory.getLog(InstallTests.class);
 
