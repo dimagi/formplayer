@@ -37,7 +37,7 @@ public class RepeatTests extends BaseTestClass{
 
         String sessionId = newSessionResponse.getSessionId();
 
-        RepeatResponseBean newRepeatResponseBean = newRepeatRequest(sessionId);
+        FormEntryResponseBean newRepeatResponseBean = newRepeatRequest(sessionId);
 
         QuestionBean[] tree = newRepeatResponseBean.getTree();
 
@@ -76,7 +76,7 @@ public class RepeatTests extends BaseTestClass{
         child = children2[0];
         assert(child.getIx().contains("1_1,0"));
 
-        RepeatResponseBean deleteRepeatResponseBean = deleteRepeatRequest(sessionId);
+        FormEntryResponseBean deleteRepeatResponseBean = deleteRepeatRequest(sessionId);
 
         tree = deleteRepeatResponseBean.getTree();
         assert(tree.length == 2);

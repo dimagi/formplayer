@@ -62,9 +62,10 @@ public class PostgresSessionRepo implements SessionRepo{
                 replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
 
         if(sessionCount > 0){
-            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ? WHERE id = ?");
-            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), sessionDataBytes, session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR});
+            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, sequenceId = ? WHERE id = ?");
+            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
+                    sessionDataBytes, session.getSequenceId(), session.getId()},
+                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR});
             return session;
         }
 

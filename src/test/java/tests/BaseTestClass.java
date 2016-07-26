@@ -110,8 +110,9 @@ public class BaseTestClass {
     }
 
 
-    AnswerQuestionResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
+    FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId, int sequenceId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
+        answerQuestionBean.setSequenceId(sequenceId);
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
         MvcResult answerResult = this.mockMvc.perform(
@@ -122,7 +123,7 @@ public class BaseTestClass {
                 .andReturn();
 
         return mapper.readValue(answerResult.getResponse().getContentAsString(),
-                AnswerQuestionResponseBean.class);
+                FormEntryResponseBean.class);
     }
 
     NewFormSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
@@ -139,6 +140,7 @@ public class BaseTestClass {
                         .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
+        serializableFormSession.setSequenceId(0);
         return mapper.readValue(responseBody, NewFormSessionResponse.class);
     }
 
@@ -204,7 +206,7 @@ public class BaseTestClass {
                 SyncDbResponseBean.class);
     }
 
-    RepeatResponseBean newRepeatRequest(String sessionId) throws Exception {
+    FormEntryResponseBean newRepeatRequest(String sessionId) throws Exception {
 
         String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
 
@@ -218,10 +220,10 @@ public class BaseTestClass {
                 post(urlPrepend(Constants.URL_NEW_REPEAT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
-        return mapper.readValue(repeatResult, RepeatResponseBean.class);
+        return mapper.readValue(repeatResult, FormEntryResponseBean.class);
     }
 
-    RepeatResponseBean deleteRepeatRequest(String sessionId) throws Exception {
+    FormEntryResponseBean deleteRepeatRequest(String sessionId) throws Exception {
 
         String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/delete_repeat/delete_repeat.json");
 
@@ -235,10 +237,10 @@ public class BaseTestClass {
                 post(urlPrepend(Constants.URL_DELETE_REPEAT))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
-        return mapper.readValue(repeatResult, RepeatResponseBean.class);
+        return mapper.readValue(repeatResult, FormEntryResponseBean.class);
     }
 
-    CurrentResponseBean getCurrent(String sessionId) throws Exception{
+    FormEntryResponseBean getCurrent(String sessionId) throws Exception{
         CurrentRequestBean currentRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), CurrentRequestBean.class);
         currentRequestBean.setSessionId(sessionId);
@@ -248,7 +250,7 @@ public class BaseTestClass {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(currentRequestBean)));
         String currentResultString = currentResult.andReturn().getResponse().getContentAsString();
-        return mapper.readValue(currentResultString, CurrentResponseBean.class);
+        return mapper.readValue(currentResultString, FormEntryResponseBean.class);
     }
 
     GetInstanceResponseBean getInstance(String sessionId) throws Exception{
