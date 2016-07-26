@@ -1,11 +1,15 @@
 package tests;
 
 import application.FormController;
+import application.MenuController;
 import application.UtilController;
 import auth.HqAuth;
 import beans.*;
+import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import install.FormplayerConfigEngine;
 import objects.SerializableFormSession;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
@@ -22,6 +26,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.SessionRepo;
+import services.InstallService;
 import services.RestoreService;
 import services.SubmitService;
 import services.XFormService;
@@ -29,7 +34,9 @@ import util.Constants;
 import utils.FileUtils;
 
 import javax.servlet.http.Cookie;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -48,6 +55,8 @@ public class BaseTestClass {
 
     private MockMvc mockUtilController;
 
+    private MockMvc mockMenuController;
+
     @Autowired
     private SessionRepo sessionRepoMock;
 
@@ -60,13 +69,19 @@ public class BaseTestClass {
     @Autowired
     SubmitService submitServiceMock;
 
+    @Autowired
+    private InstallService installService;
+
     @InjectMocks
     protected FormController formController;
 
     @InjectMocks
     protected UtilController utilController;
 
-    private ObjectMapper mapper;
+    @InjectMocks
+    protected MenuController menuController;
+
+    protected ObjectMapper mapper;
 
     final SerializableFormSession serializableFormSession = new SerializableFormSession();
 
@@ -76,18 +91,100 @@ public class BaseTestClass {
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
         Mockito.reset(submitServiceMock);
+        Mockito.reset(installService);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
+        mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore_3.xml"));
+                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
                 .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
         mapper = new ObjectMapper();
         setUpSessionRepoMock();
+        setupInstallServiceMock();
     }
 
-    private void setUpSessionRepoMock(){
+    private String resolveAppId(String ref){
+        String appId = ref.substring(ref.indexOf("app_id=") + "app_id=".length(),
+                ref.indexOf("#hack"));
+        switch (appId) {
+            case "doublemgmtappid":
+                ref = "archives/parent_child.ccz";
+                break;
+            case "navigatorappid":
+                ref = "archives/parent_child.ccz";
+                break;
+            case "caseappid":
+                ref = "apps/basic2/profile.ccpr";
+                break;
+            case "createappid":
+                ref = "archives/basic.ccz";
+                break;
+            case "casemediaappid":
+                ref = "archives/casemedia.ccz";
+                break;
+            case "endformappid":
+                ref = "archives/formnav.ccz";
+                break;
+            case "langsappid":
+                ref = "archives/langs.ccz";
+                break;
+            default:
+                throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
+        }
+        return ref;
+    }
+
+    private void setupInstallServiceMock() {
+        try {
+            doAnswer(new Answer<Object>() {
+                @Override
+                public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                    try {
+                        Object[] args = invocationOnMock.getArguments();
+                        String ref = (String) args[0];
+                        if(ref.contains("#hack=commcare.ccz")){
+                            ref = resolveAppId(ref);
+                        }
+                        String username = (String) args[1];
+                        String path = (String) args[2];
+                        FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
+                        String absolutePath = getTestResourcePath(ref);
+                        System.out.println("Init with path: " + absolutePath);
+                        if (absolutePath.endsWith(".ccpr")) {
+                            engine.initFromLocalFileResource(absolutePath);
+                        } else if (absolutePath.endsWith(".ccz")) {
+                            engine.initFromArchive(absolutePath);
+                        } else {
+                            throw new RuntimeException("Can't install with reference: " + absolutePath);
+                        }
+                        engine.initEnvironment();
+                        return engine;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        throw e;
+                    }
+                }
+            }).when(installService).configureApplication(anyString(), anyString(), anyString());
+        } catch(Exception e){
+            // don't think we need error handling for mocking
+            e.printStackTrace();
+        }
+    }
+
+    private String getTestResourcePath(String resourcePath){
+        try {
+            URL url = this.getClass().getClassLoader().getResource(resourcePath);
+            File file = new File(url.getPath());
+            return file.getAbsolutePath();
+        } catch(NullPointerException npe){
+            npe.printStackTrace();
+            throw npe;
+        }
+    }
+
+    private void setUpSessionRepoMock() {
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -112,10 +209,9 @@ public class BaseTestClass {
         }).when(sessionRepoMock).save(Matchers.any(SerializableFormSession.class));
     }
 
-    private String urlPrepend(String string){
+    private String urlPrepend(String string) {
         return "/" + string;
     }
-
 
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId, int sequenceId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
@@ -134,7 +230,6 @@ public class BaseTestClass {
     }
 
     NewFormSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
-
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
@@ -152,71 +247,47 @@ public class BaseTestClass {
     }
 
     CaseFilterResponseBean filterCases(String requestPath) throws Exception {
-
         String filterRequestPayload = FileUtils.getFile(this.getClass(), requestPath);
-        MvcResult result = this.mockUtilController.perform(
-                get(urlPrepend(Constants.URL_FILTER_CASES))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
-
-         return mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterResponseBean.class);
+        String result = generateMockQuery(ControllerType.UTIL,
+                RequestType.GET,
+                Constants.URL_FILTER_CASES,
+                filterRequestPayload);
+        return mapper.readValue(result, CaseFilterResponseBean.class);
     }
 
     CaseFilterFullResponseBean filterCasesFull() throws Exception {
-
         String filterRequestPayload = FileUtils.getFile(this.getClass(), "requests/filter/filter_cases.json");
-        MvcResult result = this.mockUtilController.perform(
-                get(urlPrepend(Constants.URL_FILTER_CASES_FULL))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filterRequestPayload))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        return mapper.readValue(result.getResponse().getContentAsString(),
-                CaseFilterFullResponseBean.class);
+        String result = generateMockQuery(ControllerType.UTIL,
+                RequestType.GET,
+                Constants.URL_FILTER_CASES_FULL,
+                filterRequestPayload);
+        return mapper.readValue(result, CaseFilterFullResponseBean.class);
     }
 
     SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
         submitRequestBean.setSessionId(sessionId);
-
-        String result = this.mockFormController.perform(
-                post(urlPrepend(Constants.URL_SUBMIT_FORM))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                        .content(new ObjectMapper().writeValueAsString(submitRequestBean)))
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString();
+        String result = generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_SUBMIT_FORM,
+                submitRequestBean);
         return mapper.readValue(result, SubmitResponseBean.class);
     }
 
     SyncDbResponseBean syncDb() throws Exception {
         String syncDbRequestPayload = FileUtils.getFile(this.getClass(), "requests/sync_db/sync_db.json");
-
         SyncDbRequestBean syncDbRequestBean = mapper.readValue(syncDbRequestPayload,
                 SyncDbRequestBean.class);
-
-        MvcResult result = this.mockUtilController.perform(
-                post(urlPrepend(Constants.URL_SYNC_DB))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                        .content(mapper.writeValueAsString(syncDbRequestBean)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        return mapper.readValue(result.getResponse().getContentAsString(),
-                SyncDbResponseBean.class);
+        String syncResult = generateMockQuery(ControllerType.UTIL,
+                RequestType.POST,
+                Constants.URL_SYNC_DB,
+                syncDbRequestBean);
+        return mapper.readValue(syncResult, SyncDbResponseBean.class);
     }
 
     FormEntryResponseBean newRepeatRequest(String sessionId) throws Exception {
-
         String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
-
         RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
                 RepeatRequestBean.class);
         newRepeatRequestBean.setSessionId(sessionId);
@@ -260,29 +331,117 @@ public class BaseTestClass {
         return mapper.readValue(currentResultString, FormEntryResponseBean.class);
     }
 
-    GetInstanceResponseBean getInstance(String sessionId) throws Exception{
+    GetInstanceResponseBean getInstance(String sessionId) throws Exception {
         GetInstanceRequestBean getInstanceRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), GetInstanceRequestBean.class);
         getInstanceRequestBean.setSessionId(sessionId);
-        ResultActions getInstanceResult = mockFormController.perform(
-                post(urlPrepend(Constants.URL_GET_INSTANCE))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(getInstanceRequestBean)));
-        String getInstanceResultString = getInstanceResult.andReturn().getResponse().getContentAsString();
+        String getInstanceResultString = generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_GET_INSTANCE,
+                getInstanceRequestBean);
         return mapper.readValue(getInstanceResultString, GetInstanceResponseBean.class);
     }
 
-    EvaluateXPathResponseBean evaluateXPath(String sessionId) throws Exception{
+    EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception {
         EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
         evaluateXPathRequestBean.setSessionId(sessionId);
-        evaluateXPathRequestBean.setXpath("/data/q_text");
-        ResultActions evaluateXpathResult = mockFormController.perform(
-                get(urlPrepend(Constants.URL_EVALUATE_XPATH))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(evaluateXPathRequestBean)));
-        String evaluateXpathResultString = evaluateXpathResult.andReturn().getResponse().getContentAsString();
+        evaluateXPathRequestBean.setXpath(xPath);
+        String evaluateXpathResultString = generateMockQuery(ControllerType.FORM,
+                RequestType.GET,
+                Constants.URL_EVALUATE_XPATH,
+                evaluateXPathRequestBean);
         return mapper.readValue(evaluateXpathResultString,
                 EvaluateXPathResponseBean.class);
+    }
+
+    JSONObject sessionNavigate(String requestPath) throws Exception {
+        SessionNavigationBean sessionNavigationBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
+        String result = generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean);
+        return new JSONObject(result);
+    }
+
+    JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
+        return sessionNavigate(selections, testName, null);
+    }
+
+    JSONObject sessionNavigate(String[] selections, String testName, String locale) throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setSelections(selections);
+        if(locale != null && !"".equals(locale.trim())){
+            sessionNavigationBean.setLocale(locale);
+        }
+        String result = generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean);
+        return new JSONObject(result);
+    }
+
+    CommandListResponseBean doInstall(String requestPath) throws Exception {
+        InstallRequestBean installRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
+        String result = generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_INSTALL,
+                installRequestBean);
+        return mapper.readValue(result,
+                CommandListResponseBean.class);
+    }
+
+    public enum RequestType {
+        POST, GET
+    }
+
+    public enum ControllerType {
+        FORM, MENU, UTIL
+    }
+
+    private String generateMockQuery(ControllerType controllerType,
+                                     RequestType requestType,
+                                     String urlPath,
+                                     Object bean) throws Exception {
+        MockMvc controller = null;
+        ResultActions evaluateXpathResult = null;
+        if (!(bean instanceof String)) {
+            bean = mapper.writeValueAsString(bean);
+        }
+        switch (controllerType) {
+            case FORM:
+                controller = mockFormController;
+                break;
+            case MENU:
+                controller = mockMenuController;
+                break;
+            case UTIL:
+                System.out.println("Setting To Util");
+                controller = mockUtilController;
+                break;
+        }
+        switch (requestType) {
+            case POST:
+                evaluateXpathResult = controller.perform(
+                        post(urlPrepend(urlPath))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
+                                .content((String) bean));
+                break;
+
+            case GET:
+                evaluateXpathResult = controller.perform(
+                        get(urlPrepend(urlPath))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
+                                .content((String) bean));
+                break;
+        }
+        return evaluateXpathResult.andReturn().getResponse().getContentAsString();
     }
 }
