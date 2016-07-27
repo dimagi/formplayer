@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class CasePaginationTests extends BaseMenuTestClass {
+public class CasePaginationTests extends BaseTestClass {
     @Override
     public void setUp() throws IOException {
         super.setUp();
@@ -39,8 +39,6 @@ public class CasePaginationTests extends BaseMenuTestClass {
         EntityListResponse entityListResponse =
                 mapper.readValue(sessionNavigateResponse.toString(), EntityListResponse.class);
         assert entityListResponse.getEntities().length == EntityListResponse.CASE_LENGTH_LIMIT;
-        assert entityListResponse.getEntities()[2].getData()[0].equals("Amanda");
-        assert entityListResponse.getEntities()[2].getData()[1].equals("27/01/16");
         assert entityListResponse.getCurrentPage() == 0;
         assert entityListResponse.getPageCount() == 8;
         assert entityListResponse.getEntities()[0].getDetails().length == 2;
@@ -50,8 +48,6 @@ public class CasePaginationTests extends BaseMenuTestClass {
         EntityListResponse entityListResponse2 =
                 mapper.readValue(sessionNavigateResponse2.toString(), EntityListResponse.class);
         assert entityListResponse2.getEntities().length == 2;
-        assert entityListResponse2.getEntities()[0].getData()[0].equals("clqrk test");
-        assert entityListResponse2.getEntities()[0].getData()[1].equals("21/04/16");
         assert entityListResponse2.getCurrentPage() == 7;
         assert entityListResponse2.getPageCount() == 8;
 
@@ -61,10 +57,6 @@ public class CasePaginationTests extends BaseMenuTestClass {
 
         assert firstDetail.getDetails().length == 4;
         assert secondDetail.getDetails().length == 6;
-
-        assert firstDetail.getDetails()[0].equals("clqrk test");
-        assert secondDetail.getDetails()[0].equals("51");
-        assert secondDetail.getDetails()[1].equals("21/04/16");
 
         assert firstDetail.getHeaders()[0].equals("Name");
         assert secondDetail.getHeaders()[2].equals("Intval");
@@ -78,8 +70,6 @@ public class CasePaginationTests extends BaseMenuTestClass {
         EntityListResponse entityListResponse =
                 mapper.readValue(sessionNavigateResponse.toString(), EntityListResponse.class);
         assert entityListResponse.getEntities().length == 9;
-        assert entityListResponse.getEntities()[0].getData()[0].equals("Casetest");
-        assert entityListResponse.getEntities()[1].getData()[0].equals("Test 2");
         assert entityListResponse.getCurrentPage() == 0;
         assert entityListResponse.getPageCount() == 0;
     }
@@ -90,11 +80,8 @@ public class CasePaginationTests extends BaseMenuTestClass {
                 sessionNavigate("requests/navigators/search_paginate_navigator.json");
         EntityListResponse entityListResponse =
                 mapper.readValue(sessionNavigateResponse.toString(), EntityListResponse.class);
-
         assert entityListResponse.getEntities().length == 10;
         assert entityListResponse.getPageCount() == 2;
         assert entityListResponse.getCurrentPage() == 1;
-        assert entityListResponse.getEntities()[0].getData()[0].equals("RESTOSE");
-        assert entityListResponse.getEntities()[1].getData()[0].equals("Test 1");
     }
 }
