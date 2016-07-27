@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -29,10 +31,15 @@ import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
 
 import javax.annotation.PreDestroy;
+import javax.print.attribute.DateTimeSyntax;
 import javax.sql.DataSource;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -70,6 +77,24 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${datasource.formplayer.driverClassName}")
     private String formplayerPostgresDriverName;
+
+    @Value("${smtp.host}")
+    private String smtpHost;
+
+    @Value("${smtp.port}")
+    private int smtpPort;
+
+    @Value("${smtp.username")
+    private String smtpUsername;
+
+    @Value("${smtp.password")
+    private String smtpPassword;
+
+    @Value("${smtp.from.address}")
+    private String smtpFromAddress;
+
+    @Value("${smtp.to.address}")
+    private String smtpToAddress;
 
 
     private final Log log = LogFactory.getLog(WebAppContext.class);
@@ -154,6 +179,23 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         return ds;
     }
 
+    @Bean
+    public JavaMailSenderImpl exceptionSender(){
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setHost(smtpHost);
+        sender.setPort(smtpPort);
+        sender.setUsername(smtpUsername);
+        sender.setPassword(smtpPassword);
+        return sender;
+    }
+
+    @Bean
+    public SimpleMailMessage exceptionMessage(){
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(smtpFromAddress);
+        message.setTo(smtpToAddress);
+        return message;
+    }
 
     @Bean
     public TokenRepo tokenRepo(){

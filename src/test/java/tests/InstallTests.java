@@ -20,7 +20,7 @@ import java.io.IOException;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class InstallTests extends BaseMenuTestClass {
+public class InstallTests extends BaseTestClass {
 
     Log log = LogFactory.getLog(InstallTests.class);
 
@@ -63,7 +63,7 @@ public class InstallTests extends BaseMenuTestClass {
         CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/case_create_install.json");
 
-        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "6", ""}, "case");
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "6"}, "case");
 
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         StorageManager.forceClear();
