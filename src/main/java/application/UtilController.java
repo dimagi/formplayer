@@ -66,4 +66,9 @@ public class UtilController extends AbstractBaseController {
         return new GetSessionsResponse(sessions);
     }
 
+    @ApiOperation(value = "Gets the status of the Formplayer service")
+    @RequestMapping(value = Constants.URL_SERVER_UP, method = RequestMethod.GET)
+    public ServerUpBean serverUp() throws Exception {
+        return new ServerUpBean();
+    }
 }
