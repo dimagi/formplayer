@@ -168,18 +168,6 @@ public class BaseMenuTestClass {
         }
     }
 
-    JSONObject sessionNavigate(String requestPath) throws Exception {
-        SessionNavigationBean sessionNavigationBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
-        ResultActions selectResult = mockMvc.perform(
-                post(urlPrepend(Constants.URL_MENU_NAVIGATION))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                        .content(mapper.writeValueAsString(sessionNavigationBean)));
-        String resultString = selectResult.andReturn().getResponse().getContentAsString();
-        return new JSONObject(resultString);
-    }
-
     JSONObject sessionNavigate(String[] selections, String testName) throws Exception {
         return sessionNavigate(selections, testName, null);
     }
