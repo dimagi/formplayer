@@ -24,6 +24,10 @@ To make properties file:
 
     $ cp config/application.properties.example config/application.properties // Update properties as necessary
 
+Make sure you have the formplayer database created
+
+    $ createdb formplayer -U commcarehq -h localhost  // Update connection info as necessary
+
 To run:
 
     $ ./gradlew build; java -jar build/libs/formplayer.jar
