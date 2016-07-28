@@ -16,9 +16,13 @@ libraries (included as subrepositories). FormPlayer is built via gradle (wrapper
 Building and Running
 ------------
 
+Download submodule dependencies
+
+    $ git submodule update --init --recursive
+
 To make properties file:
 
-    $ mv config/application.properties.example config/application.properties // Update properties as necessary
+    $ cp config/application.properties.example config/application.properties // Update properties as necessary
 
 To run:
 
