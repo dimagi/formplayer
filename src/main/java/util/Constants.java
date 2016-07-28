@@ -27,7 +27,9 @@ public class Constants {
     public static final String MENU_ENTITY = "entity";
     public static final String CASE_LIST_ACTION = "action";
     //Status
-    public static final String RESPONSE_STATUS_POSITIVE = "accepted";
+    public static final String ANSWER_RESPONSE_STATUS_POSITIVE = "accepted";
+    public static final String ANSWER_RESPONSE_STATUS_NEGATIVE = "validation-error";
+    public static final String SYNC_RESPONSE_STATUS_POSITIVE = "success";
     //JSON
     public static final String QUESTION_TREE_KEY = "tree";
 

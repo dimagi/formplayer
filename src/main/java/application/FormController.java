@@ -2,6 +2,7 @@ package application;
 
 import auth.DjangoAuth;
 import beans.*;
+import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
@@ -11,6 +12,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
 import org.commcare.api.process.FormRecordProcessorHelper;
+import org.commcare.api.util.ApiConstants;
+import org.javarosa.form.api.FormEntryController;
+import org.javarosa.form.api.FormEntryModel;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -22,11 +26,15 @@ import services.RestoreService;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
+import springfox.documentation.spring.web.json.Json;
 import util.Constants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by willpride on 1/12/16.
@@ -117,20 +125,60 @@ public class FormController {
         FormSession formEntrySession = new FormSession(serializableFormSession);
         FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
 
-        SubmitResponseBean submitResponseBean = new SubmitResponseBean(formEntrySession);
+        SubmitResponseBean submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
+                formEntrySession.getFormEntryModel(),
+                submitRequestBean.getAnswers());
 
-        ResponseEntity<String> submitResponse =
-                submitService.submitForm(submitResponseBean.getOutput(),
-                        submitResponseBean.getPostUrl(),
-                        new DjangoAuth(authToken));
+        if(!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
+                || !submitRequestBean.isPrevalidated()) {
+            submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+        } else {
 
-        log.info("Submit response bean: " + submitResponse);
-        if(submitResponse.getStatusCode().is2xxSuccessful()){
-            sessionRepo.delete(submitRequestBean.getSessionId());
-        } else{
-            submitResponseBean.setStatus("error");
-            submitResponseBean.setOutput(submitResponse.getBody());
+            ResponseEntity<String> submitResponse =
+                    submitService.submitForm(formEntrySession.getInstanceXml(),
+                            formEntrySession.getPostUrl(),
+                            new DjangoAuth(authToken));
+
+            if (submitResponse.getStatusCode().is2xxSuccessful()) {
+                sessionRepo.delete(submitRequestBean.getSessionId());
+            } else {
+                submitResponseBean.setStatus("error");
+                //TODO: need new way to communicate erros with submitting (vs. validation)
+            }
         }
+        log.info("Submit response bean: " + submitResponseBean);
+        return submitResponseBean;
+    }
+
+    /**
+     * Iterate over all answers and attempt to save them to check for validity.
+     * Submit the complete XML instance to HQ if valid.
+     */
+    private SubmitResponseBean validateSubmitAnswers(FormEntryController formEntryController,
+                                       FormEntryModel formEntryModel,
+                                       Map<String, Object> answers) {
+        SubmitResponseBean submitResponseBean = new SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
+        HashMap<String, ErrorBean> errors = new HashMap<>();
+        for(String key: answers.keySet()){
+            int questionType = JsonActionUtils.getQuestionType(formEntryModel, key, formEntryModel.getForm());
+            if(!(questionType == FormEntryController.EVENT_QUESTION)){
+                continue;
+            }
+            String answer = answers.get(key) == null ? null : answers.get(key).toString();
+            JSONObject answerResult =
+                    JsonActionUtils.questionAnswerToJson(formEntryController,
+                            formEntryModel,
+                            answer,
+                            key);
+            if(!answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
+                submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+                ErrorBean error = new ErrorBean();
+                error.setStatus(answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).toString());
+                error.setType(answerResult.getString(ApiConstants.ERROR_TYPE_KEY));
+                errors.put(key, error);
+            }
+        }
+        submitResponseBean.setErrors(errors);
         return submitResponseBean;
     }
 
