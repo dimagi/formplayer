@@ -18,7 +18,6 @@ public class QuestionBean {
     private String caption;
     private String binding;
     private String caption_image;
-    private String question;
     private int required;
     private int relevant;
     private String help;
@@ -68,14 +67,6 @@ public class QuestionBean {
 
     public void setCaption_image(String caption_image) {
         this.caption_image = caption_image;
-    }
-
-    public String getQuestion() {
-        return question;
-    }
-
-    public void setQuestion(String question) {
-        this.question = question;
     }
 
     public int getRequired() {

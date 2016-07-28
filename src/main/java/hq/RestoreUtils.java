@@ -71,10 +71,6 @@ public class RestoreUtils {
             // populated model to current form
             formDef.getInstance().setRoot(templateRoot);
 
-            if (entryModel.getLanguages() != null) {
-                formDef.localeChanged(entryModel.getLanguage(),
-                        formDef.getLocalizer());
-            }
         }
 
         return formDef;

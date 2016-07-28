@@ -7,3 +7,4 @@ gradle/
 *.iml
 dbs/*
 gradle.properties
+.java-version

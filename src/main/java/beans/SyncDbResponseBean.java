@@ -6,7 +6,7 @@ import util.Constants;
  * Created by willpride on 1/12/16.
  */
 public class SyncDbResponseBean {
-    private String status = Constants.RESPONSE_STATUS_POSITIVE;
+    private String status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
 
     public String getStatus() {
         return status;
