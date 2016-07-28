@@ -110,7 +110,6 @@ public class FormController extends AbstractBaseController{
 
         SerializableFormSession serializableFormSession = sessionRepo.findOne(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
-        FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
 
         SubmitResponseBean submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -120,6 +119,8 @@ public class FormController extends AbstractBaseController{
                 || !submitRequestBean.isPrevalidated()) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
+
+            FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
 
             ResponseEntity<String> submitResponse =
                     submitService.submitForm(formEntrySession.getInstanceXml(),

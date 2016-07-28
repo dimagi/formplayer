@@ -22,4 +22,9 @@ public class ErrorBean {
     public void setType(String type) {
         this.type = type;
     }
+
+    @Override
+    public String toString(){
+        return "ErrorBean: [status=" + status + ", type=" + type +"]";
+    }
 }
