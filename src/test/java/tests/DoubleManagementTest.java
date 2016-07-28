@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class DoubleManagementTest  extends BaseMenuTestClass{
+public class DoubleManagementTest  extends BaseTestClass{
 
     @Override
     public void setUp() throws IOException {

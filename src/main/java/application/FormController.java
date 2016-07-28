@@ -4,7 +4,6 @@ import auth.DjangoAuth;
 import beans.*;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -20,38 +19,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import repo.SessionRepo;
 import requests.NewFormRequest;
-import services.RestoreService;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
-import springfox.documentation.spring.web.json.Json;
 import util.Constants;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * Created by willpride on 1/12/16.
+ * Controller class (API endpoint) containing all form entry logic. This includes
+ * opening a new form, question answering, and form submission.
  */
 @Api(value = "Form Controller", description = "Operations for navigating CommCare Forms")
 @RestController
 @EnableAutoConfiguration
-public class FormController {
-
-    @Autowired
-    private SessionRepo sessionRepo;
+public class FormController extends AbstractBaseController{
 
     @Autowired
     private XFormService xFormService;
-
-    @Autowired
-    private RestoreService restoreService;
 
     @Autowired
     private SubmitService submitService;
@@ -84,21 +72,18 @@ public class FormController {
 
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
-    public AnswerQuestionResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
+    public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = sessionRepo.findOne(answerQuestionBean.getSessionId());
-        log.info("Restored serialized session: " + session);
         FormSession formEntrySession = new FormSession(session);
-
         JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 answerQuestionBean.getAnswer() != null? answerQuestionBean.getAnswer().toString() : null,
                 answerQuestionBean.getFormIndex());
-
         updateSession(formEntrySession, session);
 
-        AnswerQuestionResponseBean responseBean = mapper.readValue(resp.toString(), AnswerQuestionResponseBean.class);
-        responseBean.setSequenceId(formEntrySession.getSequenceId() + 1);
+        FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+        responseBean.setSequenceId(formEntrySession.getSequenceId());
         log.info("Answer response: " + responseBean);
         return responseBean;
     }
@@ -106,14 +91,16 @@ public class FormController {
     @ApiOperation(value = "Get the current question (deprecated)")
     @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.GET)
     @ResponseBody
-    public CurrentResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
+    public FormEntryResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
         log.info("Current request: " + currentRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.findOne(currentRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
-        CurrentResponseBean currentResponseBean = new CurrentResponseBean(formEntrySession);
-        log.info("Current response: " + currentResponseBean);
-        return currentResponseBean;
+        JSONObject resp = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(), formEntrySession.getFormEntryModel());
+        FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+        log.info("Current response: " + responseBean);
+        return responseBean;
     }
+
     @ApiOperation(value = "Submit the current form")
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
@@ -210,20 +197,15 @@ public class FormController {
     @ApiOperation(value = "Expand the repeat at the given index")
     @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.POST)
     @ResponseBody
-    public RepeatResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
+    public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         log.info("New repeat: " + newRepeatRequestBean);
         SerializableFormSession serializableFormSession = sessionRepo.findOne(newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
-
-        JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
+        JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 newRepeatRequestBean.getRepeatIndex());
-
         updateSession(formEntrySession, serializableFormSession);
-
-        JSONObject response = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(),
-                formEntrySession.getFormEntryModel());
-        RepeatResponseBean repeatResponseBean = mapper.readValue(response.toString(), RepeatResponseBean.class);
+        FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         log.info("New response: " + repeatResponseBean);
         return repeatResponseBean;
     }
@@ -231,75 +213,21 @@ public class FormController {
     @ApiOperation(value = "Delete the repeat at the given index")
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
-    public RepeatResponseBean deleteRepeat(@RequestBody RepeatRequestBean repeatRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = sessionRepo.findOne(repeatRequestBean.getSessionId());
+    public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
+        SerializableFormSession serializableFormSession = sessionRepo.findOne(deleteRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
-
         JSONObject resp = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-                repeatRequestBean.getRepeatIndex(), repeatRequestBean.getFormIndex());
-
+                deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
         updateSession(formEntrySession, serializableFormSession);
-
-        return mapper.readValue(resp.toString(), RepeatResponseBean.class);
-    }
-
-    @ApiOperation(value = "Filter the user's casedb given a predicate expression")
-    @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
-    public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
-        String caseResponse = CaseAPIs.filterCases(filterRequest);
-        return new CaseFilterResponseBean(caseResponse);
-    }
-
-    @ApiOperation(value = "Fitler the user's casedb given a predicate expression returning all case data")
-    @RequestMapping(value = Constants.URL_FILTER_CASES_FULL, method = RequestMethod.GET)
-    public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
-        CaseBean[] caseResponse = CaseAPIs.filterCasesFull(filterRequest);
-        return new CaseFilterFullResponseBean(caseResponse);
-    }
-
-    @ApiOperation(value = "Sync the user's database with the server")
-    @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
-    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
-                                         @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("SyncDb Request: " + syncRequest);
-        syncRequest.setRestoreService(restoreService);
-        syncRequest.setHqAuth(new DjangoAuth(authToken));
-        String restoreXml = syncRequest.getRestoreXml();
-        CaseAPIs.restoreIfNotExists(syncRequest.getUsername(), syncRequest.getDomain(), restoreXml);
-        return new SyncDbResponseBean();
-    }
-
-    @ApiOperation(value = "Get a list of the current user's sessions")
-    @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
-    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
-        log.info("Get Session Request: " + getSessionRequest);
-        String username = getSessionRequest.getUsername();
-        List<SerializableFormSession> sessions = sessionRepo.findUserSessions(username);
-        return new GetSessionsResponse(sessions);
+        return mapper.readValue(resp.toString(), FormEntryResponseBean.class);
     }
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
+        formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
         serialSession.setFormXml(formEntrySession.getFormXml());
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
-        serialSession.setSequenceId(formEntrySession.getSequenceId() + 1);
+        serialSession.setSequenceId(formEntrySession.getSequenceId());
         sessionRepo.save(serialSession);
     }
-
-
-    @ExceptionHandler(Exception.class)
-    public String handleError(HttpServletRequest req, Exception exception) {
-        log.error("Request: " + req.getRequestURL() + " raised " + exception);
-        exception.printStackTrace();
-        JSONObject errorReturn = new JSONObject();
-        errorReturn.put("message", exception);
-        errorReturn.put("url", req.getRequestURL());
-        errorReturn.put("status", "error");
-        return errorReturn.toString();
-    }
-
-
-
 }

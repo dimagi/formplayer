@@ -3,6 +3,8 @@ package beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import org.javarosa.form.api.FormEntrySession;
+import session.FormSession;
 
 import java.util.Arrays;
 
@@ -10,7 +12,7 @@ import java.util.Arrays;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AnswerQuestionResponseBean {
+public class FormEntryResponseBean {
     private QuestionBean[] tree;
     private String status;
     private int sequenceId;
@@ -18,7 +20,7 @@ public class AnswerQuestionResponseBean {
     private String type;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public AnswerQuestionResponseBean(){}
+    public FormEntryResponseBean(){}
 
     public QuestionBean[] getTree() {
         return tree;
@@ -46,8 +48,8 @@ public class AnswerQuestionResponseBean {
 
     @Override
     public String toString(){
-        return "AnswerQuestionResponseBean: [tree=" + Arrays.toString(tree) + ", status=" + status + ", seq_id: " + sequenceId
-                + (status.equals("error") ? ", reason=" + reason + ", type=" + type : "") +  "]";
+        return "FormEntryResponseBean: [tree=" + Arrays.toString(tree) + ", status=" + status + ", seq_id: " + sequenceId
+                + ( status != null && status.equals("error") ? ", reason=" + reason + ", type=" + type : "") +  "]";
     }
 
     public String getReason() {
