@@ -2,6 +2,7 @@ package application;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.apache.commons.lang3.StringUtils;
 import repo.TokenRepo;
 import util.Constants;
 
@@ -61,6 +62,10 @@ public class FormplayerAuthFilter implements Filter {
      * @return request needs to be authorized
      */
     private boolean isAuthorizationRequired(HttpServletRequest request){
+        String uri = StringUtils.strip(request.getRequestURI(), "/");
+        if (uri.equals(Constants.URL_SERVER_UP)) {
+            return false;
+        }
         return (request.getMethod().equals("POST") || request.getMethod().equals("GET"));
     }
 

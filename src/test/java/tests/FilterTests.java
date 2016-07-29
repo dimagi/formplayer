@@ -56,7 +56,7 @@ public class FilterTests extends BaseTestClass {
 
         SyncDbResponseBean syncDbResponseBean = syncDb();
 
-        assert(syncDbResponseBean.getStatus().equals(Constants.RESPONSE_STATUS_POSITIVE));
+        assert(syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
         UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("synctestuser", "dbs/synctestdomain");
