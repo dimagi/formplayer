@@ -48,7 +48,6 @@ import java.util.Properties;
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = {"application.*", "repo.*", "objects.*"})
-@PropertySource(value="file:config/application.properties")
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${commcarehq.host}")
