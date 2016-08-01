@@ -8,9 +8,11 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
+import org.commcare.util.CommCarePlatform;
 import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
@@ -20,17 +22,24 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.util.OrderedHashtable;
+import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.stereotype.Component;
+import repo.SerializableMenuSession;
 import services.InstallService;
 import services.RestoreService;
 import util.SessionUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
@@ -50,8 +59,28 @@ public class MenuSession {
 
     private String locale;
     private Screen screen;
+    private String uuid;
 
     private final Log log = LogFactory.getLog(MenuSession.class);
+    private String appId;
+
+    public MenuSession(SerializableMenuSession session, InstallService installService,
+                       RestoreService restoreService, HqAuth auth) throws Exception {
+        this.username = TableBuilder.scrubName(session.getUsername());
+        this.domain = session.getDomain();
+        this.locale = session.getLocale();
+        this.appId = session.getAppId();
+        this.uuid = session.getId();
+        this.installReference = session.getInstallReference();
+
+        resolveInstallReference(installReference, appId);
+        this.engine = installService.configureApplication(this.installReference, this.username, "dbs/" + appId);
+        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
+        this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
+                engine.getPlatform(), sandbox);
+        SessionUtils.setLocale(this.locale);
+        this.screen = getNextScreen();
+    }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
                        InstallService installService, RestoreService restoreService, HqAuth auth) throws Exception {
@@ -64,7 +93,10 @@ public class MenuSession {
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
+        this.appId = appId;
+        this.uuid = UUID.randomUUID().toString();
     }
+
     private void resolveInstallReference(String installReference, String appId){
         if (installReference == null || installReference.equals("")) {
             if(appId == null || "".equals(appId)){
@@ -145,10 +177,59 @@ public class MenuSession {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale);
+        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale, uuid);
+    }
+
+    private byte[] serializeSession(CommCareSession session){
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        DataOutputStream oos;
+        try {
+            oos = new DataOutputStream(baos);
+            session.serializeSessionState(oos);
+        } catch(IOException e){
+            throw new RuntimeException(e);
+        }
+        return baos.toByteArray();
+    }
+
+    private CommCareSession deserializeSession(CommCarePlatform platform, byte[] bytes) throws DeserializationException, IOException {
+        DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes));
+        return CommCareSession.restoreSessionFromStream(platform, in);
     }
 
     public SessionWrapper getSessionWrapper(){
         return sessionWrapper;
+    }
+
+    public String getId() {
+        return uuid;
+    }
+
+    public void setId(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public Object getAppId() {
+        return appId;
+    }
+
+    public String getInstallReference() {
+        return installReference;
+    }
+
+    public byte[] getCommcareSession(){
+        return serializeSession(sessionWrapper);
+    }
+
+    public String getLocale() {
+        return locale;
     }
 }

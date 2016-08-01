@@ -80,12 +80,12 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         String query = replaceTableName("INSERT into %s " +
                 "(id, instanceXml, formXml, " +
                 "restoreXml, username, initLang, sequenceId, " +
-                "domain, postUrl, sessionData, navSession) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "domain, postUrl, sessionData, menuSessionId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
                 session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
-                session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getCommCareSession()}, new int[] {
+                session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId()}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY, Types.BINARY});
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY, Types.VARCHAR});
         return session;
     }
 
@@ -165,7 +165,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setSequenceId(Integer.parseInt(rs.getString("sequenceId")));
             session.setDomain(rs.getString("domain"));
             session.setPostUrl(rs.getString("postUrl"));
-            session.setCommCareSession(rs.getBytes("navSession"));
+            session.setMenuSessionId(rs.getString("menuSessionId"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if(st != null) {

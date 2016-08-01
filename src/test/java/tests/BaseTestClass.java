@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import repo.SessionRepo;
+import repo.FormSessionRepo;
 import services.InstallService;
 import services.RestoreService;
 import services.SubmitService;
@@ -58,7 +58,7 @@ public class BaseTestClass {
     private MockMvc mockMenuController;
 
     @Autowired
-    private SessionRepo sessionRepoMock;
+    private FormSessionRepo formSessionRepoMock;
 
     @Autowired
     private XFormService xFormServiceMock;
@@ -87,7 +87,7 @@ public class BaseTestClass {
 
     @Before
     public void setUp() throws IOException {
-        Mockito.reset(sessionRepoMock);
+        Mockito.reset(formSessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
         Mockito.reset(submitServiceMock);
@@ -191,7 +191,7 @@ public class BaseTestClass {
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 return serializableFormSession;
             }
-        }).when(sessionRepoMock).findOne(anyString());
+        }).when(formSessionRepoMock).findOne(anyString());
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -206,7 +206,7 @@ public class BaseTestClass {
                 serializableFormSession.setDomain(toBeSaved.getDomain());
                 return null;
             }
-        }).when(sessionRepoMock).save(Matchers.any(SerializableFormSession.class));
+        }).when(formSessionRepoMock).save(Matchers.any(SerializableFormSession.class));
     }
 
     private String urlPrepend(String string) {

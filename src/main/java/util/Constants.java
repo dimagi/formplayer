@@ -37,6 +37,7 @@ public class Constants {
     // Postgres sesions
     public static final String POSTGRES_SESSION_TABLE_NAME = "formplayer_sessions";
     public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
+    public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "formplayer_menu_sessions";
 
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
 }

@@ -13,26 +13,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.cli.*;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.mail.MailSendException;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.bind.annotation.*;
-import repo.SessionRepo;
 import services.InstallService;
-import services.RestoreService;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 
-import javax.servlet.http.HttpServletRequest;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -45,9 +35,6 @@ public class MenuController extends AbstractBaseController{
 
     @Value("${commcarehq.host}")
     private String host;
-
-    @Autowired
-    private InstallService installService;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -164,7 +151,7 @@ public class MenuController extends AbstractBaseController{
 
     private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession();
-        sessionRepo.save(formEntrySession.serialize());
+        formSessionRepo.save(formEntrySession.serialize());
         log.info("Start form entry with session: " + formEntrySession);
         return new NewFormSessionResponse(formEntrySession);
     }

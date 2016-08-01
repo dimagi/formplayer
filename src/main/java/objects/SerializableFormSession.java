@@ -1,5 +1,7 @@
 package objects;
 
+import org.commcare.session.CommCareSession;
+
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -21,6 +23,7 @@ public class SerializableFormSession implements Serializable{
     private Map<String, String> sessionData;
     private String domain;
     private String postUrl;
+    private String menuSessionId;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -116,5 +119,13 @@ public class SerializableFormSession implements Serializable{
 
     public String getPostUrl() {
         return postUrl;
+    }
+
+    public String getMenuSessionId() {
+        return menuSessionId;
+    }
+
+    public void setMenuSessionId(String menuSessionId) {
+        this.menuSessionId = menuSessionId;
     }
 }

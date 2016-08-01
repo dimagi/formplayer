@@ -8,7 +8,9 @@ import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import repo.SessionRepo;
+import repo.FormSessionRepo;
+import repo.MenuSessionRepo;
+import services.InstallService;
 import services.RestoreService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +29,13 @@ public abstract class AbstractBaseController {
     protected RestoreService restoreService;
 
     @Autowired
-    protected SessionRepo sessionRepo;
+    protected FormSessionRepo formSessionRepo;
+
+    @Autowired
+    protected MenuSessionRepo menuSessionRepo;
+
+    @Autowired
+    protected InstallService installService;
 
     @Autowired
     private JavaMailSenderImpl exceptionSender;
