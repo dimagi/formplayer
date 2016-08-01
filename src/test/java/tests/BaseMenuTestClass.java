@@ -124,30 +124,25 @@ public class BaseMenuTestClass {
             doAnswer(new Answer<Object>() {
                 @Override
                 public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                    try {
-                        Object[] args = invocationOnMock.getArguments();
-                        String ref = (String) args[0];
-                        if(ref.contains("#hack=commcare.ccz")){
-                            ref = resolveAppId(ref);
-                        }
-                        String username = (String) args[1];
-                        String path = (String) args[2];
-                        FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
-                        String absolutePath = getTestResourcePath(ref);
-                        System.out.println("Init with path: " + absolutePath);
-                        if (absolutePath.endsWith(".ccpr")) {
-                            engine.initFromLocalFileResource(absolutePath);
-                        } else if (absolutePath.endsWith(".ccz")) {
-                            engine.initFromArchive(absolutePath);
-                        } else {
-                            throw new RuntimeException("Can't install with reference: " + absolutePath);
-                        }
-                        engine.initEnvironment();
-                        return engine;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw e;
+                    Object[] args = invocationOnMock.getArguments();
+                    String ref = (String) args[0];
+                    if(ref.contains("#hack=commcare.ccz")){
+                        ref = resolveAppId(ref);
                     }
+                    String username = (String) args[1];
+                    String path = (String) args[2];
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
+                    String absolutePath = getTestResourcePath(ref);
+                    System.out.println("Init with path: " + absolutePath);
+                    if (absolutePath.endsWith(".ccpr")) {
+                        engine.initFromLocalFileResource(absolutePath);
+                    } else if (absolutePath.endsWith(".ccz")) {
+                        engine.initFromArchive(absolutePath);
+                    } else {
+                        throw new RuntimeException("Can't install with reference: " + absolutePath);
+                    }
+                    engine.initEnvironment();
+                    return engine;
                 }
             }).when(installService).configureApplication(anyString(), anyString(), anyString());
         } catch(Exception e){
