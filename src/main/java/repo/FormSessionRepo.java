@@ -9,6 +9,6 @@ import java.util.List;
 /**
  * Repository for storing and accessing form entry sessions
  */
-public interface SessionRepo extends CrudRepository<SerializableFormSession, String> {
+public interface FormSessionRepo extends CrudRepository<SerializableFormSession, String> {
     List<SerializableFormSession> findUserSessions(String username);
 }
