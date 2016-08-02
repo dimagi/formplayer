@@ -78,6 +78,7 @@ public class MenuController extends AbstractBaseController{
             }
         }
         nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(), sessionNavigationBean.getSearchText());
+        menuSessionRepo.save(new SerializableMenuSession(menuSession));
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
     }
@@ -103,6 +104,14 @@ public class MenuController extends AbstractBaseController{
                 bean.getInstallReference(), bean.getLocale(), installService, restoreService, auth);
     }
 
+    public Object resolveFormGetNext(MenuSession menuSession) throws Exception {
+        menuSession.getSessionWrapper().syncState();
+        if(menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
+            return getNextMenu(menuSession);
+        }
+        return null;
+    }
+
     public Object getNextMenu(MenuSession menuSession) throws Exception {
         return getNextMenu(menuSession, 0);
     }
@@ -117,6 +126,9 @@ public class MenuController extends AbstractBaseController{
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
         nextScreen = menuSession.getNextScreen();
+
+        System.out.println("Getting next session frame: " + menuSession.getSessionWrapper().getFrame()
+                + " stack: " + menuSession.getSessionWrapper().getFrameStack());
 
         // No next menu screen? Start form entry!
         if (nextScreen == null) {

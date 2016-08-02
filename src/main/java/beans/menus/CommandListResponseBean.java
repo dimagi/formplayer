@@ -12,6 +12,7 @@ import java.util.Arrays;
 public class CommandListResponseBean extends MenuBean {
 
     private Command[] commands;
+    private final String type = "commands";
 
     CommandListResponseBean(){}
 
@@ -39,5 +40,9 @@ public class CommandListResponseBean extends MenuBean {
     public String toString(){
         return "CommandListResponseBean [commands=" + Arrays.toString(commands)
                 + "MenuBean= " + super.toString() + "]";
+    }
+
+    public String getType() {
+        return type;
     }
 }

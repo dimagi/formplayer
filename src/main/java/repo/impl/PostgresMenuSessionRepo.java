@@ -45,15 +45,11 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
 
 
         if(sessionCount > 0){
+            String query = replaceTableName("UPDATE %s SET commcaresession = ? WHERE id = ?");
+            this.jdbcTemplate.update(query,  new Object[] {session.getCommcareSession(), session.getId()},
+                    new int[] {Types.BINARY, Types.VARCHAR});
             return session;
-            //TODO: Do we ever need to update?
-            /*
-            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, sequenceId = ? WHERE id = ?");
-            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
-                    sessionDataBytes, session.getSequenceId(), session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR});
-            return session;
-            */
+
         }
 
         String query = replaceTableName("INSERT into %s " +

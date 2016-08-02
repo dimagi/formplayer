@@ -107,7 +107,7 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Submit the current form")
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
-    public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
+    public Object submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Submit form with bean: " + submitRequestBean);
 
@@ -138,9 +138,10 @@ public class FormController extends AbstractBaseController{
             }
             if(formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                System.out.println("Menu Session ID: " + formEntrySession.getMenuSessionId());
                 Object nav = doEndOfFormNav(menuSessionRepo.findOne(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
-                System.out.println("Nav: " + nav);
+                if(nav != null){
+                    submitResponseBean.setNextScreen(nav);
+                }
             }
             formSessionRepo.delete(submitRequestBean.getSessionId());
 
@@ -152,7 +153,7 @@ public class FormController extends AbstractBaseController{
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
         MenuSession menuSession = new MenuSession(serializedSession, installService, restoreService, auth);
         MenuController menuController = new MenuController();
-        return menuController.getNextMenu(menuSession);
+        return menuController.resolveFormGetNext(menuSession);
     }
 
     /**

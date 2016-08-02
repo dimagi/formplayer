@@ -32,6 +32,7 @@ public class EntityListResponse extends MenuBean {
 
     private int pageCount;
     private int currentPage;
+    private final String type = "entities";
 
     public static final int CASE_LENGTH_LIMIT = 10;
 
@@ -262,5 +263,9 @@ public class EntityListResponse extends MenuBean {
 
     private void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
+    }
+
+    public String getType() {
+        return type;
     }
 }
