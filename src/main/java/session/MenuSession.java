@@ -217,7 +217,7 @@ public class MenuSession {
         return domain;
     }
 
-    public Object getAppId() {
+    public String getAppId() {
         return appId;
     }
 

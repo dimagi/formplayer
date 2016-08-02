@@ -138,7 +138,9 @@ public class FormController extends AbstractBaseController{
             }
             if(formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                doEndOfFormNav(menuSessionRepo.findOne(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
+                System.out.println("Menu Session ID: " + formEntrySession.getMenuSessionId());
+                Object nav = doEndOfFormNav(menuSessionRepo.findOne(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
+                System.out.println("Nav: " + nav);
             }
             formSessionRepo.delete(submitRequestBean.getSessionId());
 
@@ -147,8 +149,10 @@ public class FormController extends AbstractBaseController{
         return submitResponseBean;
     }
 
-    private void doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
+    private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
         MenuSession menuSession = new MenuSession(serializedSession, installService, restoreService, auth);
+        MenuController menuController = new MenuController();
+        return menuController.getNextMenu(menuSession);
     }
 
     /**

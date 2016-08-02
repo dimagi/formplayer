@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
+import repo.SerializableMenuSession;
 import services.InstallService;
 import session.FormSession;
 import session.MenuSession;
@@ -102,16 +103,12 @@ public class MenuController extends AbstractBaseController{
                 bean.getInstallReference(), bean.getLocale(), installService, restoreService, auth);
     }
 
-    private Object getNextMenu(MenuSession menuSession) throws Exception {
+    public Object getNextMenu(MenuSession menuSession) throws Exception {
         return getNextMenu(menuSession, 0);
     }
 
     private Object getNextMenu(MenuSession menuSession, int offset) throws Exception {
         return getNextMenu(menuSession, offset, "");
-    }
-
-    private Object getNextMenu(MenuSession menuSession, String searchText) throws Exception {
-        return getNextMenu(menuSession, 0, searchText);
     }
 
     private Object getNextMenu(MenuSession menuSession, int offset, String searchText) throws Exception {
@@ -152,6 +149,7 @@ public class MenuController extends AbstractBaseController{
     private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession();
         formSessionRepo.save(formEntrySession.serialize());
+        menuSessionRepo.save(new SerializableMenuSession(menuSession));
         log.info("Start form entry with session: " + formEntrySession);
         return new NewFormSessionResponse(formEntrySession);
     }

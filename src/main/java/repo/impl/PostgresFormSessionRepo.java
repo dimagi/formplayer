@@ -80,7 +80,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         String query = replaceTableName("INSERT into %s " +
                 "(id, instanceXml, formXml, " +
                 "restoreXml, username, initLang, sequenceId, " +
-                "domain, postUrl, sessionData, menuSessionId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "domain, postUrl, sessionData, menu_session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
                 session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
                 session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId()}, new int[] {
@@ -165,7 +165,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setSequenceId(Integer.parseInt(rs.getString("sequenceId")));
             session.setDomain(rs.getString("domain"));
             session.setPostUrl(rs.getString("postUrl"));
-            session.setMenuSessionId(rs.getString("menuSessionId"));
+            session.setMenuSessionId(rs.getString("menu_session_id"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if(st != null) {
