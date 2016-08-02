@@ -28,12 +28,15 @@ public class EntityListResponse extends MenuBean {
     private DisplayElement action;
     private Style[] styles;
     private String[] headers;
+    private Tile[] tiles;
     private int[] widthHints;
 
     private int pageCount;
     private int currentPage;
 
     public static final int CASE_LENGTH_LIMIT = 10;
+
+    private boolean usesCaseTiles;
 
     public EntityListResponse(){}
 
@@ -48,6 +51,7 @@ public class EntityListResponse extends MenuBean {
     public EntityListResponse(EntityScreen nextScreen, int offset, String searchText) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
+        nextScreen.getLongDetailList();
 
         EvaluationContext ec = session.getEvaluationContext();
 
@@ -57,6 +61,24 @@ public class EntityListResponse extends MenuBean {
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
+        processCaseTiles(shortDetail);
+    }
+
+    private void processCaseTiles(Detail shortDetail) {
+        DetailField[] fields = shortDetail.getFields();
+        if(!shortDetail.usesGridView()){
+            return;
+        }
+        tiles = new Tile[fields.length];
+        setUsesCaseTiles(true);
+        for(int i = 0; i < fields.length; i++){
+            if(fields[i].isCaseTileField()){
+                tiles[i] = new Tile(fields[i]);
+            }
+            else{
+                tiles[i] = null;
+            }
+        }
     }
 
     private void processHeader(Detail shortDetail, EvaluationContext ec) {
@@ -228,8 +250,9 @@ public class EntityListResponse extends MenuBean {
 
     @Override
     public String toString(){
-        return "EntityListResponse [count=" + entities.length + ", Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
-                ", action=" + action + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) + "]";
+        return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
+                ", action=" + action + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) +
+                ", locales=" + Arrays.toString(getLocales()) + "]";
     }
 
     public String[] getHeaders() {
@@ -262,5 +285,17 @@ public class EntityListResponse extends MenuBean {
 
     private void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
+    }
+
+    public boolean getUsesCaseTiles() {
+        return usesCaseTiles;
+    }
+
+    public void setUsesCaseTiles(boolean usesCaseTiles) {
+        this.usesCaseTiles = usesCaseTiles;
+    }
+
+    public Tile[] getTiles(){
+        return tiles;
     }
 }
