@@ -26,6 +26,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.FormSessionRepo;
+import repo.MenuSessionRepo;
+import repo.SerializableMenuSession;
 import services.InstallService;
 import services.RestoreService;
 import services.SubmitService;
@@ -61,6 +63,9 @@ public class BaseTestClass {
     private FormSessionRepo formSessionRepoMock;
 
     @Autowired
+    private MenuSessionRepo menuSessionRepoMock;
+
+    @Autowired
     private XFormService xFormServiceMock;
 
     @Autowired
@@ -84,10 +89,12 @@ public class BaseTestClass {
     protected ObjectMapper mapper;
 
     final SerializableFormSession serializableFormSession = new SerializableFormSession();
+    final SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
 
     @Before
     public void setUp() throws IOException {
         Mockito.reset(formSessionRepoMock);
+        Mockito.reset(menuSessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
         Mockito.reset(submitServiceMock);
@@ -101,7 +108,8 @@ public class BaseTestClass {
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
                 .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
         mapper = new ObjectMapper();
-        setUpSessionRepoMock();
+        setupFormSessionRepoMock();
+        setupMenuSessionRepoMock();
         setupInstallServiceMock();
     }
 
@@ -184,7 +192,7 @@ public class BaseTestClass {
         }
     }
 
-    private void setUpSessionRepoMock() {
+    private void setupFormSessionRepoMock() {
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -207,6 +215,26 @@ public class BaseTestClass {
                 return null;
             }
         }).when(formSessionRepoMock).save(Matchers.any(SerializableFormSession.class));
+    }
+
+    private void setupMenuSessionRepoMock() {
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return serializableMenuSession;
+            }
+        }).when(menuSessionRepoMock).findOne(anyString());
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Object[] args = invocationOnMock.getArguments();
+                SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
+                serializableMenuSession.setCommcareSession(toBeSaved.getCommcareSession());
+                return null;
+            }
+        }).when(menuSessionRepoMock).save(Matchers.any(SerializableMenuSession.class));
     }
 
     private String urlPrepend(String string) {

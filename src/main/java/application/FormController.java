@@ -122,7 +122,6 @@ public class FormController extends AbstractBaseController{
                 || !submitRequestBean.isPrevalidated()) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
-
             FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
 
             ResponseEntity<String> submitResponse =

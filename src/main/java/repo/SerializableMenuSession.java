@@ -15,6 +15,8 @@ public class SerializableMenuSession {
     private String locale;
     private byte[] commcareSession;
 
+    public SerializableMenuSession(){}
+
     public SerializableMenuSession(MenuSession session) {
         this.uuid = session.getId();
         this.username = session.getUsername();
