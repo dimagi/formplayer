@@ -45,6 +45,8 @@ public class CaseTests extends BaseTestClass {
 
         caseFilterResponseBean = filterCases("requests/filter/filter_cases_5.json");
 
+        System.out.println("Got case filte response: " + caseFilterResponseBean);
+
         assert(caseFilterResponseBean.getCases().length == 16);
 
         // Try updating case
