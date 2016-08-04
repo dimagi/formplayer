@@ -152,8 +152,7 @@ public class FormController extends AbstractBaseController{
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
         MenuSession menuSession = new MenuSession(serializedSession, installService, restoreService, auth);
-        MenuController menuController = new MenuController();
-        return menuController.resolveFormGetNext(menuSession);
+        return resolveFormGetNext(menuSession);
     }
 
     /**

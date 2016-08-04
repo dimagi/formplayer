@@ -24,7 +24,7 @@ public class CommandListResponseBean extends MenuBean {
         this.commands = commands;
     }
 
-    public CommandListResponseBean(MenuScreen menuScreen, SessionWrapper session){
+    public CommandListResponseBean(MenuScreen menuScreen, SessionWrapper session, String menuSessionId){
         this.setTitle(menuScreen.getScreenTitle());
 
         MenuDisplayable[] options = menuScreen.getMenuDisplayables();
@@ -34,6 +34,7 @@ public class CommandListResponseBean extends MenuBean {
             commands[i] = command;
         }
         this.setCommands(commands);
+        this.setMenuSessionId(menuSessionId);
     }
 
     @Override

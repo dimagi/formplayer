@@ -78,6 +78,7 @@ public class MenuSession {
         this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
+        sessionWrapper.syncState();
         this.screen = getNextScreen();
     }
 

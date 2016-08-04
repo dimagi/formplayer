@@ -38,15 +38,7 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse(){}
 
-    public EntityListResponse(EntityScreen nextScreen){
-        this(nextScreen, 0);
-    }
-
-    public EntityListResponse(EntityScreen nextScreen, int offset){
-        this(nextScreen, offset, "");
-    }
-
-    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText) {
+    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
 
@@ -58,6 +50,7 @@ public class EntityListResponse extends MenuBean {
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
+        setMenuSessionId(id);
     }
 
     private void processHeader(Detail shortDetail, EvaluationContext ec) {
