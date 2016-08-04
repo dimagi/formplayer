@@ -94,4 +94,10 @@ public class SerializableMenuSession {
     public void setCommcareSession(byte[] commcareSession) {
         this.commcareSession = commcareSession;
     }
+
+    @Override
+    public String toString(){
+        return "SerializedMenuSesison id=" + uuid + ", username=" + username +", domain=" + domain
+                + ", ref=" + installReference +", appId=" + appId;
+    }
 }

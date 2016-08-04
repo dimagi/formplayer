@@ -138,6 +138,9 @@ public class BaseTestClass {
             case "langsappid":
                 ref = "archives/langs.ccz";
                 break;
+            case "casetilesappid":
+                ref = "archives/casetiles.ccz";
+                break;
             default:
                 throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
         }
@@ -212,6 +215,7 @@ public class BaseTestClass {
                 serializableFormSession.setUsername(toBeSaved.getUsername());
                 serializableFormSession.setSessionData(toBeSaved.getSessionData());
                 serializableFormSession.setDomain(toBeSaved.getDomain());
+                serializableFormSession.setMenuSessionId(toBeSaved.getMenuSessionId());
                 return null;
             }
         }).when(formSessionRepoMock).save(Matchers.any(SerializableFormSession.class));
@@ -232,6 +236,11 @@ public class BaseTestClass {
                 Object[] args = invocationOnMock.getArguments();
                 SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
                 serializableMenuSession.setCommcareSession(toBeSaved.getCommcareSession());
+                serializableMenuSession.setUsername(toBeSaved.getUsername());
+                serializableMenuSession.setDomain(toBeSaved.getDomain());
+                serializableMenuSession.setAppId(toBeSaved.getAppId());
+                serializableMenuSession.setInstallReference(toBeSaved.getInstallReference());
+                serializableMenuSession.setLocale(toBeSaved.getLocale());
                 return null;
             }
         }).when(menuSessionRepoMock).save(Matchers.any(SerializableMenuSession.class));
@@ -406,6 +415,21 @@ public class BaseTestClass {
         if(locale != null && !"".equals(locale.trim())){
             sessionNavigationBean.setLocale(locale);
         }
+        String result = generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean);
+        return new JSONObject(result);
+    }
+
+    JSONObject sessionNavigateWithId(String[] selections, String sessionId) throws Exception {
+        SerializableMenuSession menuSession = menuSessionRepoMock.findOne(sessionId);
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(menuSession.getDomain());
+        sessionNavigationBean.setAppId(menuSession.getAppId());
+        sessionNavigationBean.setUsername(menuSession.getUsername());
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setMenuSessionId(sessionId);
         String result = generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,

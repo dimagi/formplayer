@@ -114,6 +114,8 @@ public class FormController extends AbstractBaseController{
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
 
+        log.info("Submitting form entry session has menuId: " + formEntrySession.getMenuSessionId());
+
         SubmitResponseBean submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 submitRequestBean.getAnswers());
@@ -150,6 +152,7 @@ public class FormController extends AbstractBaseController{
     }
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
+        log.info("End of form navigation with serialized menu session: " + serializedSession);
         MenuSession menuSession = new MenuSession(serializedSession, installService, restoreService, auth);
         return resolveFormGetNext(menuSession);
     }
