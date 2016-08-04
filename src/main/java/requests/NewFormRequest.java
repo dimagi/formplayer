@@ -85,7 +85,9 @@ public class NewFormRequest {
     }
 
     private String getRestoreXml(){
-        return restoreService.getRestoreXml(domain, auth);
+        String xml =  restoreService.getRestoreXml(domain, auth);
+        System.out.println("Restoring XML: " + xml);
+        return xml;
     }
 
     private String getFormXml(){

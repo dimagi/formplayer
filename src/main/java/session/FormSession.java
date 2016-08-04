@@ -83,6 +83,7 @@ public class FormSession {
         uuid = session.getId();
         setLocale(session.getInitLang(), langs);
         this.sequenceId = session.getSequenceId();
+        initialize(false, session.getSessionData());
         getFormTree();
         this.menuSessionId = session.getMenuSessionId();
     }
