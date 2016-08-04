@@ -81,6 +81,12 @@ dependencies {
     testCompile("com.jayway.jsonpath:json-path-assert:0.8.1")
 }
 
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = '2.3'
 }
