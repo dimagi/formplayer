@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.FormSessionRepo;
+import repo.MenuSessionRepo;
 import services.InstallService;
 import services.RestoreService;
 import services.XFormService;
@@ -46,7 +47,10 @@ public class BaseMenuTestClass {
     private MockMvc mockMvc;
 
     @Autowired
-    private FormSessionRepo sessionRepoMock;
+    private FormSessionRepo formSessionRepoMock;
+
+    @Autowired
+    private MenuSessionRepo menuSessionRepoMock;
 
     @Autowired
     private XFormService xFormServiceMock;
@@ -70,7 +74,8 @@ public class BaseMenuTestClass {
 
     @Before
     public void setUp() throws IOException {
-        Mockito.reset(sessionRepoMock);
+        Mockito.reset(formSessionRepoMock);
+        Mockito.reset(menuSessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
         Mockito.reset(installService);
