@@ -83,10 +83,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${smtp.port}")
     private int smtpPort;
 
-    @Value("${smtp.username")
+    @Value("${smtp.username}")
     private String smtpUsername;
 
-    @Value("${smtp.password")
+    @Value("${smtp.password}")
     private String smtpPassword;
 
     @Value("${smtp.from.address}")
