@@ -76,9 +76,10 @@ public class MenuController extends AbstractBaseController{
             return nextMenu;
         }
 
-        String[] titles = new String[selections.length];
-        for(int i=0; i < selections.length; i++) {
-            String selection = selections[i];
+        String[] titles = new String[selections.length + 1];
+        titles[0] = menuSession.getNextScreen().getScreenTitle();
+        for(int i=1; i <= selections.length; i++) {
+            String selection = selections[i - 1];
             menuSession.handleInput(selection);
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             if(menuSession.getNextScreen() != null){
@@ -92,6 +93,7 @@ public class MenuController extends AbstractBaseController{
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
     }
+
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
