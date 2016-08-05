@@ -1,4 +1,4 @@
-package requests;
+package services;
 
 import auth.DjangoAuth;
 import auth.HqAuth;
