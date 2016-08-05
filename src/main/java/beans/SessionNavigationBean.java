@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.util.Arrays;
+import java.util.Hashtable;
 
 /**
  * Created by willpride on 4/28/16.
@@ -15,6 +16,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private int offset;
     private String searchText;
     private String menuSessionId;
+    private Hashtable<Integer, String> queryDictionary;
 
     public String[] getSelections() {
         return selections;
@@ -53,5 +55,13 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "menu_session_id")
     public void setMenuSessionId(String menuSessionId) {
         this.menuSessionId = menuSessionId;
+    }
+    @JsonGetter(value = "query_dictionary")
+    public Hashtable<Integer, String> getQueryDictionary() {
+        return queryDictionary;
+    }
+    @JsonSetter(value = "query_dictionary")
+    public void setQueryDictionary(Hashtable<Integer, String> queryDictionary) {
+        this.queryDictionary = queryDictionary;
     }
 }

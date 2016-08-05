@@ -16,6 +16,7 @@ import org.commcare.util.CommCarePlatform;
 import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.QueryScreen;
 import org.commcare.util.cli.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -136,6 +137,10 @@ public class MenuSession {
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
             return getNextScreen();
+        } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
+            QueryScreen queryScreen = new QueryScreen();
+            queryScreen.init(sessionWrapper);
+            return queryScreen;
         }
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
     }

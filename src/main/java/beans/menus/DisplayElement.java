@@ -3,6 +3,7 @@ package beans.menus;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Action;
+import org.commcare.suite.model.DisplayUnit;
 import org.javarosa.core.model.condition.EvaluationContext;
 
 /**
@@ -22,6 +23,16 @@ public class DisplayElement {
         }
         if(action.getDisplay().getImageURI() != null) {
             this.imageUri = action.getDisplay().getImageURI().evaluate(ec);
+        }
+    }
+
+    public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec) {
+        this.text = displayUnit.getText().evaluate(ec);
+        if(displayUnit.getImageURI() !=  null){
+            this.imageUri = displayUnit.getImageURI().evaluate(ec);
+        }
+        if(displayUnit.getAudioURI() != null){
+            this.audioUri = displayUnit.getAudioURI().evaluate(ec);
         }
     }
 
@@ -48,5 +59,10 @@ public class DisplayElement {
     @JsonSetter(value = "image_uri")
     public void setImageUri(String imageUri) {
         this.imageUri = imageUri;
+    }
+
+    @Override
+    public String toString(){
+        return "DisplayElement text=" + text + ", imageUri=" + imageUri + ", audioUri=" + audioUri;
     }
 }
