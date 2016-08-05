@@ -14,6 +14,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private String[] selections;
     private int offset;
     private String searchText;
+    private String menuSessionId;
 
     public String[] getSelections() {
         return selections;
@@ -25,7 +26,7 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     @Override
     public String toString() {
-        return "SessionNavigationBean [selections="
+        return "SessionNavigationBean [id= " + menuSessionId + ", selections="
                 + Arrays.toString(selections) +  " parent="  + super.toString() + "]";
     }
 
@@ -44,5 +45,13 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "search_text")
     public void setSearchText(String searchText) {
         this.searchText = searchText;
+    }
+    @JsonGetter(value = "menu_session_id")
+    public String getMenuSessionId() {
+        return menuSessionId;
+    }
+    @JsonSetter(value = "menu_session_id")
+    public void setMenuSessionId(String menuSessionId) {
+        this.menuSessionId = menuSessionId;
     }
 }

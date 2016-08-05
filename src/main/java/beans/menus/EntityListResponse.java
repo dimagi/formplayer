@@ -28,26 +28,23 @@ public class EntityListResponse extends MenuBean {
     private DisplayElement action;
     private Style[] styles;
     private String[] headers;
+    private Tile[] tiles;
     private int[] widthHints;
 
     private int pageCount;
     private int currentPage;
+    private final String type = "entities";
 
     public static final int CASE_LENGTH_LIMIT = 10;
 
+    private boolean usesCaseTiles;
+
     public EntityListResponse(){}
 
-    public EntityListResponse(EntityScreen nextScreen){
-        this(nextScreen, 0);
-    }
-
-    public EntityListResponse(EntityScreen nextScreen, int offset){
-        this(nextScreen, offset, "");
-    }
-
-    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText) {
+    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
+        nextScreen.getLongDetailList();
 
         EvaluationContext ec = session.getEvaluationContext();
 
@@ -57,6 +54,25 @@ public class EntityListResponse extends MenuBean {
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
+        setMenuSessionId(id);
+        processCaseTiles(shortDetail);
+    }
+
+    private void processCaseTiles(Detail shortDetail) {
+        DetailField[] fields = shortDetail.getFields();
+        if(!shortDetail.usesGridView()){
+            return;
+        }
+        tiles = new Tile[fields.length];
+        setUsesCaseTiles(true);
+        for(int i = 0; i < fields.length; i++){
+            if(fields[i].isCaseTileField()){
+                tiles[i] = new Tile(fields[i]);
+            }
+            else{
+                tiles[i] = null;
+            }
+        }
     }
 
     private void processHeader(Detail shortDetail, EvaluationContext ec) {
@@ -134,7 +150,13 @@ public class EntityListResponse extends MenuBean {
         int i = 0;
         for (TreeReference entity : references) {
             Entity newEntity = processEntity(entity, screen, ec);
-            newEntity.setDetail(new EntityDetailResponse(processDetails(screen, ec, entity)));
+            EntityDetailSubscreen[] subscreens = processDetails(screen, ec, entity);
+            EntityDetailResponse[] responses = new EntityDetailResponse[subscreens.length];
+            for(int j = 0; j < subscreens.length; j++){
+                responses[j] = new EntityDetailResponse(subscreens[j]);
+                responses[j].setTitle(subscreens[j].getTitles()[j]);
+            }
+            newEntity.setDetails(responses);
             entities[i] = newEntity;
             i++;
         }
@@ -166,11 +188,14 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private EntityDetailSubscreen processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref){
+    private EntityDetailSubscreen[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref){
         EvaluationContext subContext = new EvaluationContext(ec, ref);
-        //TODO WSP: don't hardcode first screen
-        return new EntityDetailSubscreen(0, screen.getLongDetailList()[0],
-                subContext, screen.getDetailListTitles(subContext));
+        Detail[] detailList = screen.getLongDetailList();
+        EntityDetailSubscreen[] ret = new EntityDetailSubscreen[detailList.length];
+        for(int i = 0; i < detailList.length; i++){
+            ret[i] = new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext));
+        }
+        return ret;
     }
 
     private void processStyles(Detail detail) {
@@ -219,8 +244,9 @@ public class EntityListResponse extends MenuBean {
 
     @Override
     public String toString(){
-        return "EntityListResponse [count=" + entities.length + ", Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
-                ", action=" + action + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) + "]";
+        return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
+                ", action=" + action + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) +
+                ", locales=" + Arrays.toString(getLocales()) + "]";
     }
 
     public String[] getHeaders() {
@@ -253,5 +279,20 @@ public class EntityListResponse extends MenuBean {
 
     private void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
+    }
+
+    public String getType() {
+        return type;
+    }
+    public boolean getUsesCaseTiles() {
+        return usesCaseTiles;
+    }
+
+    public void setUsesCaseTiles(boolean usesCaseTiles) {
+        this.usesCaseTiles = usesCaseTiles;
+    }
+
+    public Tile[] getTiles(){
+        return tiles;
     }
 }

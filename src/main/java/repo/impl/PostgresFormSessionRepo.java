@@ -3,12 +3,14 @@ package repo.impl;
 import objects.SerializableFormSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import repo.SessionRepo;
+import repo.FormSessionRepo;
 import util.Constants;
 
+import javax.persistence.LockModeType;
 import java.io.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,7 +24,7 @@ import java.util.Map;
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
-public class PostgresSessionRepo implements SessionRepo{
+public class PostgresFormSessionRepo implements FormSessionRepo {
 
     @Autowired
     @Qualifier("formplayerTemplate")
@@ -38,6 +40,7 @@ public class PostgresSessionRepo implements SessionRepo{
     }
 
     @Override
+    @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> Iterable<S> save(Iterable<S> entities) {
         for(SerializableFormSession session: entities){
             save(session);
@@ -45,38 +48,44 @@ public class PostgresSessionRepo implements SessionRepo{
         return entities;
     }
 
-    @Override
-    public <S extends SerializableFormSession> S save(S session) {
-
+    private byte[] writeToBytes(Object object){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos;
         try {
             oos = new ObjectOutputStream(baos);
-            oos.writeObject(session.getSessionData());
+            oos.writeObject(object);
         } catch(IOException e){
             throw new RuntimeException(e);
         }
-        byte[] sessionDataBytes = baos.toByteArray();
+        return baos.toByteArray();
+    }
+
+    @Override
+    @Lock(LockModeType.OPTIMISTIC)
+    public <S extends SerializableFormSession> S save(S session) {
+
+        byte[] sessionDataBytes = writeToBytes(session.getSessionData());
 
         int sessionCount = this.jdbcTemplate.queryForObject(
                 replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
 
         if(sessionCount > 0){
-            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ? WHERE id = ?");
-            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(), sessionDataBytes, session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR});
+            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, sequenceId = ? WHERE id = ?");
+            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
+                    sessionDataBytes, session.getSequenceId(), session.getId()},
+                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR});
             return session;
         }
 
         String query = replaceTableName("INSERT into %s " +
                 "(id, instanceXml, formXml, " +
                 "restoreXml, username, initLang, sequenceId, " +
-                "domain, postUrl, sessionData) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "domain, postUrl, sessionData, menu_session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
                 session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
-                session.getDomain(), session.getPostUrl(), sessionDataBytes}, new int[] {
+                session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId()}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY});
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY, Types.VARCHAR});
         return session;
     }
 
@@ -116,6 +125,7 @@ public class PostgresSessionRepo implements SessionRepo{
     }
 
     @Override
+    @Lock(LockModeType.OPTIMISTIC)
     public void delete(String id) {
         this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
     }
@@ -155,9 +165,9 @@ public class PostgresSessionRepo implements SessionRepo{
             session.setSequenceId(Integer.parseInt(rs.getString("sequenceId")));
             session.setDomain(rs.getString("domain"));
             session.setPostUrl(rs.getString("postUrl"));
+            session.setMenuSessionId(rs.getString("menu_session_id"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
-
             if(st != null) {
                 ByteArrayInputStream byteInputStream = new ByteArrayInputStream(st);
                 ObjectInputStream objectInputStream;
@@ -171,7 +181,6 @@ public class PostgresSessionRepo implements SessionRepo{
                     throw new SQLException(e);
                 }
             }
-
             return session;
         }
     }

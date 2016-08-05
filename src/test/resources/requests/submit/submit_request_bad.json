@@ -1,0 +1,11 @@
+{
+  "action": "submit-all",
+  "answers": {
+    "0": "should_be_int"
+  },
+  "prevalidated": true,
+  "form_context": {
+    "case_model": null
+  },
+  "session_id": "derp"
+}

@@ -1,7 +1,7 @@
 package tests;
 
 import auth.HqAuth;
-import beans.AnswerQuestionResponseBean;
+import beans.FormEntryResponseBean;
 import beans.NewFormSessionResponse;
 import beans.QuestionBean;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -52,7 +52,7 @@ public class GroupTests extends BaseTestClass{
         assert cityBean.getChoices().length == 0;
         assert labelBean.getCaption().equals("Selected county was: ");
 
-        AnswerQuestionResponseBean mAnswerBean = answerQuestionGetResult(countyBean.getIx(), "1", sessionId);
+        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(countyBean.getIx(), "1", sessionId, 1);
         // test that after making a selection our city list populates
         groupBean = mAnswerBean.getTree()[3];
         cityBean = groupBean.getChildren()[3];
@@ -63,7 +63,7 @@ public class GroupTests extends BaseTestClass{
         assert cityBean.getChoices().length == 2;
 
         // test that when we change the answer the possible choices update
-        mAnswerBean = answerQuestionGetResult(countyBean.getIx(), "2", sessionId);
+        mAnswerBean = answerQuestionGetResult(countyBean.getIx(), "2", sessionId, 2);
         groupBean = mAnswerBean.getTree()[3];
         cityBean = groupBean.getChildren()[3];
         labelBean = groupBean.getChildren()[2];
@@ -92,7 +92,7 @@ public class GroupTests extends BaseTestClass{
         QuestionBean[] children = groupBean.getChildren();
         assert children.length == 1;
 
-        AnswerQuestionResponseBean mAnswerBean = answerQuestionGetResult(children[0].getIx(), "1", sessionId);
+        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(children[0].getIx(), "1", sessionId, 1);
         groupBean = mAnswerBean.getTree()[1];
         children = groupBean.getChildren();
 
@@ -100,14 +100,14 @@ public class GroupTests extends BaseTestClass{
         assert children[1].getBinding().equals("/data/onepagegroup/multiple_text");
         assert children[1].getIx().contains("1,4");
 
-        mAnswerBean = answerQuestionGetResult(children[0].getIx(), "2", sessionId);
+        mAnswerBean = answerQuestionGetResult(children[0].getIx(), "2", sessionId, 2);
         groupBean = mAnswerBean.getTree()[1];
         children = groupBean.getChildren();
         assert children.length == 2;
         assert children[1].getBinding().equals("/data/onepagegroup/multiple_select");
         assert children[1].getIx().contains("1,2");
 
-        mAnswerBean = answerQuestionGetResult(children[1].getIx(), "3", sessionId);
+        mAnswerBean = answerQuestionGetResult(children[1].getIx(), "3", sessionId, 3);
         groupBean = mAnswerBean.getTree()[1];
         children = groupBean.getChildren();
         assert children.length == 3;

@@ -19,6 +19,11 @@ import java.io.File;
  */
 public class CaseAPIs {
 
+    public static UserSqlSandbox forceRestore(String username, String domain, String xml) throws Exception {
+        new File(UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain + "/" + username + ".db").delete();
+        return restoreIfNotExists(username, domain, xml);
+    }
+
     public static UserSqlSandbox restoreIfNotExists(String username, String domain, String xml) throws Exception{
         File db = new File(UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain + "/" + username + ".db");
         if(db.exists()){

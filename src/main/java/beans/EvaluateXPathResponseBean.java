@@ -6,7 +6,6 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import session.FormSession;
 import util.Constants;
 
-import java.io.IOException;
 import java.util.Hashtable;
 
 /**
@@ -21,7 +20,7 @@ public class EvaluateXPathResponseBean {
 
     public EvaluateXPathResponseBean(FormSession formEntrySession, String xpath) throws XPathSyntaxException {
         // TODO: don't always return success
-        status = Constants.RESPONSE_STATUS_POSITIVE;
+        status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
         EvaluationContext evaluationContext = formEntrySession.getFormEntryModel().getForm().getEvaluationContext();
         Text mText = Text.XPathText(xpath, new Hashtable<String, Text>());
         output = mText.evaluate(evaluationContext);
