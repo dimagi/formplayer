@@ -26,19 +26,17 @@ public class FormEntryTest extends BaseTestClass{
 
         String sessionId = newSessionResponse.getSessionId();
 
-        AnswerQuestionResponseBean response = answerQuestionGetResult("1","William Pride", sessionId);
-        response = answerQuestionGetResult("2","345", sessionId);
-        response = answerQuestionGetResult("3","2.54", sessionId);
-        response = answerQuestionGetResult("4","1970-10-23", sessionId);
-        response = answerQuestionGetResult("6", "12:30:30", sessionId);
-        response = answerQuestionGetResult("7", "ben rudolph", sessionId);
-        response = answerQuestionGetResult("8","123456789", sessionId);
-        response = answerQuestionGetResult("10", "2",sessionId);
-        response = answerQuestionGetResult("11", "1 2 3", sessionId);
+        FormEntryResponseBean response = answerQuestionGetResult("1","William Pride", sessionId, 1);
+        response = answerQuestionGetResult("2","345", sessionId, 2);
+        response = answerQuestionGetResult("3","2.54", sessionId, 3);
+        response = answerQuestionGetResult("4","1970-10-23", sessionId, 4);
+        response = answerQuestionGetResult("6", "12:30:30", sessionId, 5);
+        response = answerQuestionGetResult("7", "ben rudolph", sessionId, 6);
+        response = answerQuestionGetResult("8","123456789", sessionId, 7);
+        response = answerQuestionGetResult("10", "2",sessionId, 8);
+        response = answerQuestionGetResult("11", "1 2 3", sessionId, 9);
 
         QuestionBean[] tree = response.getTree();
-
-        System.out.println("Tree: " + Arrays.toString(tree));
 
         QuestionBean textBean = tree[1];
         assert textBean.getAnswer().equals("William Pride");
@@ -58,7 +56,7 @@ public class FormEntryTest extends BaseTestClass{
         assert(answer.size() == 3);
         assert answer.get(0).equals(1);
 
-        response = answerQuestionGetResult("12", "1", sessionId);
+        response = answerQuestionGetResult("12", "1", sessionId, 10);
         tree = response.getTree();
         multiSelectQuestion = tree[11];
         assert(multiSelectQuestion.getAnswer() instanceof ArrayList);
@@ -66,7 +64,7 @@ public class FormEntryTest extends BaseTestClass{
         assert(answer.size() == 3);
         assert answer.get(0).equals(1);
 
-        response = answerQuestionGetResult("17", "[13.803252972154226, 7.723388671875]", sessionId);
+        response = answerQuestionGetResult("17", "[13.803252972154226, 7.723388671875]", sessionId, 11);
         QuestionBean geoBean = response.getTree()[17];
         assert geoBean.getAnswer() instanceof  ArrayList;
         ArrayList<Double> geoCoordinates = (ArrayList<Double>) geoBean.getAnswer();
@@ -77,14 +75,14 @@ public class FormEntryTest extends BaseTestClass{
 
 
         //Test Current Session
-        CurrentResponseBean currentResponseBean = getCurrent(sessionId);
+        FormEntryResponseBean formEntryResponseBean = getCurrent(sessionId);
 
         //Test Get Instance
         GetInstanceResponseBean getInstanceResponseBean = getInstance(sessionId);
 
         //Test Evaluate XPath
-        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId);
-        assert evaluateXPathResponseBean.getStatus().equals(Constants.RESPONSE_STATUS_POSITIVE);
+        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/q_text");
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 
         //Test Submission
@@ -102,10 +100,10 @@ public class FormEntryTest extends BaseTestClass{
 
         String sessionId = newSessionResponse.getSessionId();
 
-        answerQuestionGetResult("1","William Pride", sessionId);
+        answerQuestionGetResult("1","William Pride", sessionId, 1);
 
-        answerQuestionGetResult("8,1","1", sessionId);
-        AnswerQuestionResponseBean response = answerQuestionGetResult("8,2","2", sessionId);
+        answerQuestionGetResult("8,1","1", sessionId, 2);
+        FormEntryResponseBean response = answerQuestionGetResult("8,2","2", sessionId, 3);
 
         QuestionBean questionBean = response.getTree()[8];
         QuestionBean[] children = questionBean.getChildren();
@@ -118,7 +116,7 @@ public class FormEntryTest extends BaseTestClass{
         assert red.getAnswer().equals(1);
         assert blue.getAnswer().equals(2);
 
-        response = answerQuestionGetResult("8,3","2", sessionId);
+        response = answerQuestionGetResult("8,3","2", sessionId, 4);
 
         questionBean = response.getTree()[8];
         children = questionBean.getChildren();

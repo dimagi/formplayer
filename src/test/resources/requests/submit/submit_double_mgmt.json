@@ -1,0 +1,12 @@
+{
+  "action": "submit-all",
+  "answers": {
+    "0": "David Ortiz",
+    "1": "40"
+  },
+  "prevalidated": true,
+  "form_context": {
+    "case_model": null
+  },
+  "session_id": "chazz"
+}

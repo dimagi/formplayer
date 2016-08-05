@@ -10,6 +10,7 @@ public class MenuBean {
     private String title;
     private String[] locales;
     private String[] breadcrumbs;
+    private String menuSessionId;
 
     public String getTitle() {
         return title;
@@ -38,5 +39,12 @@ public class MenuBean {
 
     public void setBreadcrumbs(String[] breadcrumbs) {
         this.breadcrumbs = breadcrumbs;
+    }
+    public String getMenuSessionId() {
+        return menuSessionId;
+    }
+
+    public void setMenuSessionId(String menuSessionId) {
+        this.menuSessionId = menuSessionId;
     }
 }

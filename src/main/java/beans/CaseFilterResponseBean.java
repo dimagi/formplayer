@@ -1,6 +1,7 @@
 package beans;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by willpride on 1/12/16.
@@ -28,4 +29,10 @@ public class CaseFilterResponseBean {
     public String[] getCases() {
         return cases;
     }
+
+    @Override
+    public String toString(){
+        return "CaseFitlerResponse: " + Arrays.toString(cases);
+    }
+
 }

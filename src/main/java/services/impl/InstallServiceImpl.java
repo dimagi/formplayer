@@ -1,6 +1,8 @@
 package services.impl;
 
 import install.FormplayerConfigEngine;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.resources.model.InstallCancelledException;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -13,6 +15,7 @@ import java.io.IOException;
  */
 public class InstallServiceImpl implements InstallService {
 
+    private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     private final String host;
 
@@ -22,6 +25,7 @@ public class InstallServiceImpl implements InstallService {
 
     @Override
     public FormplayerConfigEngine configureApplication(String reference, String username, String dbPath) throws IOException, InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
+        log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         FormplayerConfigEngine engine = new FormplayerConfigEngine(username, dbPath);
         reference = host + reference;
         if(reference.endsWith(".ccz")){

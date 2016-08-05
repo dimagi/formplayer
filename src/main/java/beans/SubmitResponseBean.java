@@ -1,33 +1,25 @@
 package beans;
 
+import beans.menus.ErrorBean;
 import session.FormSession;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * Created by willpride on 1/20/16.
  */
 public class SubmitResponseBean extends SessionBean{
-    private String output;
     private String status;
-    private String postUrl;
+    private String message;
+    private HashMap<String, ErrorBean> errors;
+    private Object nextScreen;
 
     // default constructor for Jackson
     public SubmitResponseBean(){}
 
-    public SubmitResponseBean(FormSession session) throws IOException {
-        status = "success";
-        output = session.getInstanceXml();
-        sessionId = session.getSessionId();
-        postUrl = session.getPostUrl();
-    }
-
-    public String getOutput() {
-        return output;
-    }
-
-    public void setOutput(String output) {
-        this.output = output;
+    public SubmitResponseBean(String status) {
+        this.status = status;
     }
 
     public String getStatus() {
@@ -38,16 +30,25 @@ public class SubmitResponseBean extends SessionBean{
         this.status = status;
     }
 
+    public HashMap<String, ErrorBean> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(HashMap<String, ErrorBean> errors) {
+        this.errors = errors;
+    }
+
     @Override
     public String toString(){
-        return "SubmitResponseBean: [sessionId=" + sessionId + ",output= " + output + "]";
+        return "SubmitResponseBean, [status=" +  status + ", errors: " + errors +
+                ", next screen= " + nextScreen + "]";
     }
 
-    public String getPostUrl() {
-        return postUrl;
+    public Object getNextScreen() {
+        return nextScreen;
     }
 
-    public void setPostUrl(String postUrl) {
-        this.postUrl = postUrl;
+    public void setNextScreen(Object nextScreen) {
+        this.nextScreen = nextScreen;
     }
 }

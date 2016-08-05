@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class Entity {
     private int index;
     private Object[] data;
-    private EntityDetailResponse detail;
+    private EntityDetailResponse[] details;
 
     public int getIndex() {
         return index;
@@ -26,12 +26,12 @@ public class Entity {
         this.data = data;
     }
 
-    public EntityDetailResponse getDetail() {
-        return detail;
+    public EntityDetailResponse[] getDetails() {
+        return details;
     }
 
-    public void setDetail(EntityDetailResponse detail) {
-        this.detail = detail;
+    public void setDetails(EntityDetailResponse[] detail) {
+        this.details = detail;
     }
 
     @Override

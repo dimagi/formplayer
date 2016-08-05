@@ -13,7 +13,6 @@ import java.io.IOException;
  *
  * See http://stackoverflow.com/questions/13457772/cors-ajax-session-cookies-access-control-allow-credentials-withcredentials
  */
-@PropertySource(value="file:config/application.properties")
 @Component
 public class CORSFilter implements Filter {
 

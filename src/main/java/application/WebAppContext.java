@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -15,9 +17,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
-import repo.SessionRepo;
+import repo.FormSessionRepo;
+import repo.MenuSessionRepo;
 import repo.TokenRepo;
-import repo.impl.PostgresSessionRepo;
+import repo.impl.PostgresFormSessionRepo;
+import repo.impl.PostgresMenuSessionRepo;
 import repo.impl.PostgresTokenRepo;
 import services.InstallService;
 import services.RestoreService;
@@ -41,7 +45,6 @@ import java.util.Properties;
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = {"application.*", "repo.*", "objects.*"})
-@PropertySource(value="file:config/application.properties")
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${commcarehq.host}")
@@ -70,6 +73,24 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${datasource.formplayer.driverClassName}")
     private String formplayerPostgresDriverName;
+
+    @Value("${smtp.host}")
+    private String smtpHost;
+
+    @Value("${smtp.port}")
+    private int smtpPort;
+
+    @Value("${smtp.username")
+    private String smtpUsername;
+
+    @Value("${smtp.password")
+    private String smtpPassword;
+
+    @Value("${smtp.from.address}")
+    private String smtpFromAddress;
+
+    @Value("${smtp.to.address}")
+    private String smtpToAddress;
 
 
     private final Log log = LogFactory.getLog(WebAppContext.class);
@@ -154,6 +175,23 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         return ds;
     }
 
+    @Bean
+    public JavaMailSenderImpl exceptionSender(){
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setHost(smtpHost);
+        sender.setPort(smtpPort);
+        sender.setUsername(smtpUsername);
+        sender.setPassword(smtpPassword);
+        return sender;
+    }
+
+    @Bean
+    public SimpleMailMessage exceptionMessage(){
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(smtpFromAddress);
+        message.setTo(smtpToAddress);
+        return message;
+    }
 
     @Bean
     public TokenRepo tokenRepo(){
@@ -161,8 +199,13 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public SessionRepo sessionRepo(){
-        return new PostgresSessionRepo();
+    public FormSessionRepo formSessionRepo(){
+        return new PostgresFormSessionRepo();
+    }
+
+    @Bean
+    public MenuSessionRepo menuSessionRepo(){
+        return new PostgresMenuSessionRepo();
     }
 
     @Bean

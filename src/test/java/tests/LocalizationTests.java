@@ -11,7 +11,6 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import tests.BaseMenuTestClass;
 import utils.FileUtils;
 import utils.TestContext;
 
@@ -19,7 +18,7 @@ import utils.TestContext;
 @ContextConfiguration(
         classes = {TestContext.class}
 )
-public class LocalizationTests extends BaseMenuTestClass {
+public class LocalizationTests extends BaseTestClass {
     public LocalizationTests() {
     }
 
