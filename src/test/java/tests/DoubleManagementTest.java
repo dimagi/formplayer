@@ -136,8 +136,9 @@ public class DoubleManagementTest  extends BaseTestClass{
         JSONObject parentResponseObject2 = sessionNavigate(new String[] {"2"}, "doublemgmt");
         EntityListResponse entityListResponse =
                 mapper.readValue(parentResponseObject2.toString(), EntityListResponse.class);
+        System.out.println("Entity List Response: " + entityListResponse);
         assert entityListResponse.getTitle().equals("Parent (2)");
-        assert entityListResponse.getEntities().length == 2;
+        assert entityListResponse.getEntities().length == 3;
         assert entityListResponse.getAction() != null;
         DisplayElement action = entityListResponse.getAction();
         assert action.getText().equals("New Parent");
