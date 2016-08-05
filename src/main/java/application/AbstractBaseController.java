@@ -92,7 +92,7 @@ public abstract class AbstractBaseController {
                 menuResponseBean = generateMenuScreen((MenuScreen) nextScreen, menuSession.getSessionWrapper(),
                         menuSession.getId());
             }
-            // We're looking at a case list or detail screen (probably)
+            // We're looking at a case list or detail screen
             else if (nextScreen instanceof EntityScreen) {
                 menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset, searchText,
                         menuSession.getId());
@@ -115,8 +115,8 @@ public abstract class AbstractBaseController {
 
     private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession();
-        formSessionRepo.save(formEntrySession.serialize());
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
+        formSessionRepo.save(formEntrySession.serialize());
         return new NewFormSessionResponse(formEntrySession);
     }
 
