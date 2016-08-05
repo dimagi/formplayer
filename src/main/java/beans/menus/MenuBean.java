@@ -2,6 +2,8 @@ package beans.menus;
 
 import org.javarosa.core.services.locale.Localization;
 
+import java.util.Arrays;
+
 /**
  * Created by willpride on 4/13/16.
  */
@@ -22,7 +24,7 @@ public class MenuBean {
 
     @Override
     public String toString(){
-        return "MenuBean [title=" + title + "]";
+        return "MenuBean [title=" + title + ", breadcrumbs: " + Arrays.toString(breadcrumbs) + "]";
     }
 
     public String[] getLocales() {
