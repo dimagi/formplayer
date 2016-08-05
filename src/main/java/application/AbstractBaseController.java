@@ -4,11 +4,13 @@ import beans.NewFormSessionResponse;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
 import beans.menus.MenuBean;
+import beans.menus.QueryResponseBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.QueryScreen;
 import org.commcare.util.cli.Screen;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,11 +98,17 @@ public abstract class AbstractBaseController {
             else if (nextScreen instanceof EntityScreen) {
                 menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset, searchText,
                         menuSession.getId());
+            } else if(nextScreen instanceof QueryScreen){
+                menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
             } else {
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
             return menuResponseBean;
         }
+    }
+
+    private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
+        return new QueryResponseBean(nextScreen, sessionWrapper);
     }
 
     private CommandListResponseBean generateMenuScreen(MenuScreen nextScreen, SessionWrapper session,
