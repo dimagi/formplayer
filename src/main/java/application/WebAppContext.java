@@ -2,6 +2,8 @@ package application;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.HtmlEmail;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
@@ -31,15 +33,11 @@ import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
 
 import javax.annotation.PreDestroy;
-import javax.print.attribute.DateTimeSyntax;
+import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -179,20 +177,13 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public JavaMailSenderImpl exceptionSender(){
-        JavaMailSenderImpl sender = new JavaMailSenderImpl();
-        sender.setHost(smtpHost);
-        sender.setPort(smtpPort);
-        sender.setUsername(smtpUsername);
-        sender.setPassword(smtpPassword);
-        return sender;
-    }
-
-    @Bean
-    public SimpleMailMessage exceptionMessage(){
-        SimpleMailMessage message = new SimpleMailMessage();
+    public HtmlEmail exceptionMessage() throws EmailException {
+        HtmlEmail message = new HtmlEmail();
         message.setFrom(smtpFromAddress);
-        message.setTo(smtpToAddress);
+        message.addTo(smtpToAddress);
+        message.setAuthentication(smtpUsername, smtpPassword);
+        message.setHostName(smtpHost);
+        message.setSmtpPort(smtpPort);
         return message;
     }
 
