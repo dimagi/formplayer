@@ -5,6 +5,9 @@ import auth.HqAuth;
 import beans.NewSessionRequestBean;
 import beans.NewFormSessionResponse;
 import objects.SerializableFormSession;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import repo.SessionRepo;
 import services.RestoreService;
@@ -19,7 +22,8 @@ import java.util.Map;
  * restoring the user, opening the new form, and returning the question list response.
  * TODO WSP this should probably just be a static helper class, or merged with FormSession
  */
-@Service
+@Component
+@EnableAutoConfiguration
 public class NewFormRequest {
 
     private String formUrl;
@@ -30,7 +34,7 @@ public class NewFormRequest {
     private String domain;
 
     private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
-                           Map<String, String> sessionData, String instanceContent,
+                           Map<String, String> sessionData, String instanceContent, String postUrl,
                            SessionRepo sessionRepo, XFormService xFormService,
                            RestoreService restoreService, String authToken) throws Exception {
         this.xFormService = xFormService;
@@ -40,7 +44,7 @@ public class NewFormRequest {
         this.domain = domain;
         try {
             formEntrySession = new FormSession(getFormXml(), getRestoreXml(),
-                    lang, username, domain, sessionData, instanceContent);
+                    lang, username, domain, sessionData, postUrl, instanceContent);
             sessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();
@@ -68,7 +72,7 @@ public class NewFormRequest {
         return auth;
     }
 
-    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
+    public NewFormRequest(NewSessionRequestBean bean, String postUrl, SessionRepo sessionRepo,
                           XFormService xFormService, RestoreService restoreService, String authToken) throws Exception {
         this(bean.getFormUrl(),
                 bean.getHqAuth(),
@@ -77,6 +81,7 @@ public class NewFormRequest {
                 bean.getLang(),
                 bean.getSessionData().getData(),
                 bean.getInstanceContent(),
+                postUrl,
                 sessionRepo, xFormService, restoreService, authToken);
     }
 
