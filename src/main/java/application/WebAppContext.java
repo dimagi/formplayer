@@ -2,13 +2,16 @@ package application;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.HtmlEmail;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -80,10 +83,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${smtp.port}")
     private int smtpPort;
 
-    @Value("${smtp.username")
+    @Value("${smtp.username}")
     private String smtpUsername;
 
-    @Value("${smtp.password")
+    @Value("${smtp.password}")
     private String smtpPassword;
 
     @Value("${smtp.from.address}")
@@ -176,20 +179,13 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public JavaMailSenderImpl exceptionSender(){
-        JavaMailSenderImpl sender = new JavaMailSenderImpl();
-        sender.setHost(smtpHost);
-        sender.setPort(smtpPort);
-        sender.setUsername(smtpUsername);
-        sender.setPassword(smtpPassword);
-        return sender;
-    }
-
-    @Bean
-    public SimpleMailMessage exceptionMessage(){
-        SimpleMailMessage message = new SimpleMailMessage();
+    public HtmlEmail exceptionMessage() throws EmailException {
+        HtmlEmail message = new HtmlEmail();
         message.setFrom(smtpFromAddress);
-        message.setTo(smtpToAddress);
+        message.addTo(smtpToAddress);
+        message.setAuthentication(smtpUsername, smtpPassword);
+        message.setHostName(smtpHost);
+        message.setSmtpPort(smtpPort);
         return message;
     }
 
