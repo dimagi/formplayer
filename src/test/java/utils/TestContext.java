@@ -10,10 +10,10 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
-import repo.SessionRepo;
+import repo.FormSessionRepo;
+import repo.MenuSessionRepo;
+import repo.SerializableMenuSession;
 import services.InstallService;
 import services.RestoreService;
 import services.SubmitService;
@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 public class TestContext {
 
     private static SerializableFormSession serializableFormSession;
+    private static SerializableMenuSession serializableMenuSession;
  
     @Bean
     public MessageSource messageSource() {
@@ -50,9 +51,9 @@ public class TestContext {
     }
 
     @Bean
-    public SessionRepo sessionRepo() {
-        SessionRepo sessionRepo = Mockito.mock(SessionRepo.class);
-        when(sessionRepo.findOne(anyString())).thenReturn(serializableFormSession);
+    public FormSessionRepo formSessionRepo() {
+        FormSessionRepo formSessionRepo = Mockito.mock(FormSessionRepo.class);
+        when(formSessionRepo.findOne(anyString())).thenReturn(serializableFormSession);
         ArgumentCaptor<SerializableFormSession> argumentCaptor = ArgumentCaptor.forClass(SerializableFormSession.class);
         doAnswer(new Answer<Object>() {
             @Override
@@ -64,8 +65,26 @@ public class TestContext {
                 serializableFormSession.setRestoreXml(toBeSaved.getRestoreXml());
                 return null;
             }
-        }).when(sessionRepo).save(any(SerializableFormSession.class));
-        return sessionRepo;
+        }).when(formSessionRepo).save(any(SerializableFormSession.class));
+        return formSessionRepo;
+    }
+
+
+    @Bean
+    public MenuSessionRepo menuSessionRepo() {
+        MenuSessionRepo menuSessionRepo = Mockito.mock(MenuSessionRepo.class);
+        when(menuSessionRepo.findOne(anyString())).thenReturn(serializableMenuSession);
+        ArgumentCaptor<SerializableFormSession> argumentCaptor = ArgumentCaptor.forClass(SerializableFormSession.class);
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Object[] args = invocationOnMock.getArguments();
+                SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
+                serializableMenuSession.setCommcareSession(toBeSaved.getCommcareSession());
+                return null;
+            }
+        }).when(menuSessionRepo).save(any(SerializableMenuSession.class));
+        return menuSessionRepo;
     }
 
     @Bean

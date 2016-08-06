@@ -6,11 +6,12 @@ import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -19,9 +20,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
-import repo.SessionRepo;
+import repo.FormSessionRepo;
+import repo.MenuSessionRepo;
 import repo.TokenRepo;
-import repo.impl.PostgresSessionRepo;
+import repo.impl.PostgresFormSessionRepo;
+import repo.impl.PostgresMenuSessionRepo;
 import repo.impl.PostgresTokenRepo;
 import services.InstallService;
 import services.RestoreService;
@@ -33,7 +36,6 @@ import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
 
 import javax.annotation.PreDestroy;
-import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -193,8 +195,13 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public SessionRepo sessionRepo(){
-        return new PostgresSessionRepo();
+    public FormSessionRepo formSessionRepo(){
+        return new PostgresFormSessionRepo();
+    }
+
+    @Bean
+    public MenuSessionRepo menuSessionRepo(){
+        return new PostgresMenuSessionRepo();
     }
 
     @Bean

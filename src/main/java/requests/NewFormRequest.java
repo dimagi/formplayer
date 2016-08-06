@@ -6,7 +6,7 @@ import beans.NewSessionRequestBean;
 import beans.NewFormSessionResponse;
 import objects.SerializableFormSession;
 import org.springframework.stereotype.Service;
-import repo.SessionRepo;
+import repo.FormSessionRepo;
 import services.RestoreService;
 import services.XFormService;
 import session.FormSession;
@@ -31,7 +31,7 @@ public class NewFormRequest {
 
     private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
                            Map<String, String> sessionData, String instanceContent,
-                           SessionRepo sessionRepo, XFormService xFormService,
+                           FormSessionRepo formSessionRepo, XFormService xFormService,
                            RestoreService restoreService, String authToken) throws Exception {
         this.xFormService = xFormService;
         this.restoreService = restoreService;
@@ -41,7 +41,7 @@ public class NewFormRequest {
         try {
             formEntrySession = new FormSession(getFormXml(), getRestoreXml(),
                     lang, username, domain, sessionData, instanceContent);
-            sessionRepo.save(formEntrySession.serialize());
+            formSessionRepo.save(formEntrySession.serialize());
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -68,7 +68,7 @@ public class NewFormRequest {
         return auth;
     }
 
-    public NewFormRequest(NewSessionRequestBean bean, SessionRepo sessionRepo,
+    public NewFormRequest(NewSessionRequestBean bean, FormSessionRepo formSessionRepo,
                           XFormService xFormService, RestoreService restoreService, String authToken) throws Exception {
         this(bean.getFormUrl(),
                 bean.getHqAuth(),
@@ -77,7 +77,7 @@ public class NewFormRequest {
                 bean.getLang(),
                 bean.getSessionData().getData(),
                 bean.getInstanceContent(),
-                sessionRepo, xFormService, restoreService, authToken);
+                formSessionRepo, xFormService, restoreService, authToken);
     }
 
     public NewFormSessionResponse getResponse() throws IOException {

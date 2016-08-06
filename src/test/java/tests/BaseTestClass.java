@@ -25,7 +25,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import repo.SessionRepo;
+import repo.FormSessionRepo;
+import repo.MenuSessionRepo;
+import repo.SerializableMenuSession;
 import services.InstallService;
 import services.RestoreService;
 import services.SubmitService;
@@ -58,7 +60,10 @@ public class BaseTestClass {
     private MockMvc mockMenuController;
 
     @Autowired
-    private SessionRepo sessionRepoMock;
+    private FormSessionRepo formSessionRepoMock;
+
+    @Autowired
+    private MenuSessionRepo menuSessionRepoMock;
 
     @Autowired
     private XFormService xFormServiceMock;
@@ -84,10 +89,12 @@ public class BaseTestClass {
     protected ObjectMapper mapper;
 
     final SerializableFormSession serializableFormSession = new SerializableFormSession();
+    final SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
 
     @Before
     public void setUp() throws IOException {
-        Mockito.reset(sessionRepoMock);
+        Mockito.reset(formSessionRepoMock);
+        Mockito.reset(menuSessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreServiceMock);
         Mockito.reset(submitServiceMock);
@@ -101,7 +108,8 @@ public class BaseTestClass {
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
                 .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
         mapper = new ObjectMapper();
-        setUpSessionRepoMock();
+        setupFormSessionRepoMock();
+        setupMenuSessionRepoMock();
         setupInstallServiceMock();
     }
 
@@ -129,6 +137,9 @@ public class BaseTestClass {
                 break;
             case "langsappid":
                 ref = "archives/langs.ccz";
+                break;
+            case "casetilesappid":
+                ref = "archives/casetiles.ccz";
                 break;
             default:
                 throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
@@ -184,14 +195,14 @@ public class BaseTestClass {
         }
     }
 
-    private void setUpSessionRepoMock() {
+    private void setupFormSessionRepoMock() {
 
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 return serializableFormSession;
             }
-        }).when(sessionRepoMock).findOne(anyString());
+        }).when(formSessionRepoMock).findOne(anyString());
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -204,9 +215,35 @@ public class BaseTestClass {
                 serializableFormSession.setUsername(toBeSaved.getUsername());
                 serializableFormSession.setSessionData(toBeSaved.getSessionData());
                 serializableFormSession.setDomain(toBeSaved.getDomain());
+                serializableFormSession.setMenuSessionId(toBeSaved.getMenuSessionId());
                 return null;
             }
-        }).when(sessionRepoMock).save(Matchers.any(SerializableFormSession.class));
+        }).when(formSessionRepoMock).save(Matchers.any(SerializableFormSession.class));
+    }
+
+    private void setupMenuSessionRepoMock() {
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return serializableMenuSession;
+            }
+        }).when(menuSessionRepoMock).findOne(anyString());
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Object[] args = invocationOnMock.getArguments();
+                SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
+                serializableMenuSession.setCommcareSession(toBeSaved.getCommcareSession());
+                serializableMenuSession.setUsername(toBeSaved.getUsername());
+                serializableMenuSession.setDomain(toBeSaved.getDomain());
+                serializableMenuSession.setAppId(toBeSaved.getAppId());
+                serializableMenuSession.setInstallReference(toBeSaved.getInstallReference());
+                serializableMenuSession.setLocale(toBeSaved.getLocale());
+                return null;
+            }
+        }).when(menuSessionRepoMock).save(Matchers.any(SerializableMenuSession.class));
     }
 
     private String urlPrepend(String string) {
@@ -378,6 +415,21 @@ public class BaseTestClass {
         if(locale != null && !"".equals(locale.trim())){
             sessionNavigationBean.setLocale(locale);
         }
+        String result = generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean);
+        return new JSONObject(result);
+    }
+
+    JSONObject sessionNavigateWithId(String[] selections, String sessionId) throws Exception {
+        SerializableMenuSession menuSession = menuSessionRepoMock.findOne(sessionId);
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(menuSession.getDomain());
+        sessionNavigationBean.setAppId(menuSession.getAppId());
+        sessionNavigationBean.setUsername(menuSession.getUsername());
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setMenuSessionId(sessionId);
         String result = generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
