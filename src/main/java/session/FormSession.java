@@ -58,6 +58,7 @@ public class FormSession {
     private String uuid;
     private final String username;
     private String domain;
+    private String menuSessionId;
 
     public FormSession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
@@ -81,10 +82,10 @@ public class FormSession {
         langs = formEntryModel.getLanguages();
         uuid = session.getId();
         setLocale(session.getInitLang(), langs);
-        System.out.println("Restore session with sequence ID: " + session.getSequenceId());
         this.sequenceId = session.getSequenceId();
         initialize(false, session.getSessionData());
         getFormTree();
+        this.menuSessionId = session.getMenuSessionId();
     }
 
     public FormSession(String formXml, String restoreXml, String locale, String username, String domain,
@@ -115,15 +116,10 @@ public class FormSession {
         getFormTree();
     }
 
-    private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
-        StringReader stringReader = new StringReader(instanceContent);
-        XFormParser xFormParser = new XFormParser(stringReader);
-        xFormParser.loadXmlInstance(formDef, stringReader);
-    }
-
     // Entry from menu selection. Assumes user has already been restored.
     public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
-                       Map<String, String> sessionData, String postUrl, String locale) throws Exception {
+                       Map<String, String> sessionData, String postUrl,
+                       String locale, String menuSessionId) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         this.sandbox = sandbox;
@@ -139,6 +135,13 @@ public class FormSession {
         this.sequenceId = 0;
         initialize(true, sessionData);
         getFormTree();
+        this.menuSessionId = menuSessionId;
+    }
+
+    private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
+        StringReader stringReader = new StringReader(instanceContent);
+        XFormParser xFormParser = new XFormParser(stringReader);
+        xFormParser.loadXmlInstance(formDef, stringReader);
     }
 
     private void setLocale(String locale, String[] langs){
@@ -273,10 +276,11 @@ public class FormSession {
         serializableFormSession.setDomain(getDomain());
         serializableFormSession.setRestoreXml(getRestoreXml());
         serializableFormSession.setPostUrl(getPostUrl());
+        serializableFormSession.setMenuSessionId(menuSessionId);
         return serializableFormSession;
     }
 
-    private String getDomain() {
+    public String getDomain() {
         return domain;
     }
 
@@ -286,5 +290,17 @@ public class FormSession {
 
     public void setPostUrl(String postUrl) {
         this.postUrl = postUrl;
+    }
+
+    public String getUsername(){
+        return username;
+    }
+
+    public String getMenuSessionId() {
+        return menuSessionId;
+    }
+
+    public void setMenuSessionId(String menuSessionId) {
+        this.menuSessionId = menuSessionId;
     }
 }

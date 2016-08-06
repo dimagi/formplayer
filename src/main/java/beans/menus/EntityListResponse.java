@@ -33,6 +33,7 @@ public class EntityListResponse extends MenuBean {
 
     private int pageCount;
     private int currentPage;
+    private final String type = "entities";
 
     public static final int CASE_LENGTH_LIMIT = 10;
 
@@ -40,15 +41,7 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse(){}
 
-    public EntityListResponse(EntityScreen nextScreen){
-        this(nextScreen, 0);
-    }
-
-    public EntityListResponse(EntityScreen nextScreen, int offset){
-        this(nextScreen, offset, "");
-    }
-
-    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText) {
+    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
         nextScreen.getLongDetailList();
@@ -61,6 +54,7 @@ public class EntityListResponse extends MenuBean {
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
+        setMenuSessionId(id);
         processCaseTiles(shortDetail);
     }
 
@@ -287,6 +281,9 @@ public class EntityListResponse extends MenuBean {
         this.currentPage = currentPage;
     }
 
+    public String getType() {
+        return type;
+    }
     public boolean getUsesCaseTiles() {
         return usesCaseTiles;
     }

@@ -62,7 +62,7 @@ public class UtilController extends AbstractBaseController {
     public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
         log.info("Get Session Request: " + getSessionRequest);
         String username = getSessionRequest.getUsername();
-        List<SerializableFormSession> sessions = sessionRepo.findUserSessions(username);
+        List<SerializableFormSession> sessions = formSessionRepo.findUserSessions(username);
         return new GetSessionsResponse(sessions);
     }
 
