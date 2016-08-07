@@ -3,27 +3,18 @@ package application;
 import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
-import beans.*;
-import beans.menus.CommandListResponseBean;
-import beans.menus.EntityListResponse;
-import beans.menus.MenuBean;
+import beans.InstallRequestBean;
+import beans.SessionNavigationBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.modern.session.SessionWrapper;
-import org.commcare.util.cli.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
-import services.InstallService;
-import session.FormSession;
 import session.MenuSession;
 import util.Constants;
-
-import java.util.Arrays;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.

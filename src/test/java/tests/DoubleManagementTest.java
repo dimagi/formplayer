@@ -137,7 +137,7 @@ public class DoubleManagementTest  extends BaseTestClass{
         EntityListResponse entityListResponse =
                 mapper.readValue(parentResponseObject2.toString(), EntityListResponse.class);
         assert entityListResponse.getTitle().equals("Parent (2)");
-        assert entityListResponse.getEntities().length == 2;
+        assert entityListResponse.getEntities().length == 3;
         assert entityListResponse.getAction() != null;
         DisplayElement action = entityListResponse.getAction();
         assert action.getText().equals("New Parent");
@@ -176,7 +176,6 @@ public class DoubleManagementTest  extends BaseTestClass{
         JSONObject parentResponseObject = sessionNavigate(new String[] {"0"}, "endform");
         CommandListResponseBean response0 =
                 mapper.readValue(parentResponseObject.toString(), CommandListResponseBean.class);
-        System.out.println("response 0: " + response0);
         assert response0.getCommands().length == 2;
         assert response0.getCommands()[0].getDisplayText().equals("Link to Module 1");
         assert response0.getCommands()[1].getDisplayText().equals("Link to Module Menu");
