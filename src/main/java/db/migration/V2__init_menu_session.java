@@ -13,14 +13,18 @@ public class V2__init_menu_session implements SpringJdbcMigration {
     public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
         jdbcTemplate.execute("CREATE TABLE menu_sessions (\n" +
                 "    id text NOT NULL,\n" +
-                "    username text,\n" +
-                "    domain text,\n" +
-                "    appid text,\n" +
-                "    installreference text,\n" +
+                "    username text NOT NULL,\n" +
+                "    domain text NOT NULL,\n" +
+                "    appid text NOT NULL,\n" +
+                "    installreference text NOT NULL,\n" +
                 "    locale text,\n" +
-                "    commcaresession bytea,\n" +
+                "    commcaresession bytea NOT NULL,\n" +
                 "    CONSTRAINT menu_sessions_pkey PRIMARY KEY (id)\n" +
                 ")");
-        jdbcTemplate.execute("ALTER TABLE formplayer_sessions ADD menu_session_id text");
+        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
+                "ADD menu_session_id text NOT NULL");
+        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
+                "ADD FOREIGN KEY (menu_session_id) " +
+                "REFERENCES menu_sessions(id)");
     }
 }

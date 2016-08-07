@@ -107,7 +107,7 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Submit the current form")
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
-    public Object submitForm(@RequestBody SubmitRequestBean submitRequestBean,
+    public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Submit form with bean: " + submitRequestBean);
 
