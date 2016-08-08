@@ -30,8 +30,6 @@ public class SessionUtils {
             return null;
         }
 
-        System.out.println("Got Step titles: " + Arrays.toString(stepTitles));
-
         Vector<StackFrameStep> v = session.getFrame().getSteps();
 
         //So we need to work our way backwards through each "step" we've taken, since our RelativeLayout

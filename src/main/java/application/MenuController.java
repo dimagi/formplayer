@@ -5,13 +5,8 @@ import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.SessionNavigationBean;
-import beans.menus.MenuBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.MenuScreen;
-import org.commcare.util.cli.Screen;
-import util.SessionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
 import session.MenuSession;
 import util.Constants;
-
-import java.util.Arrays;
+import util.SessionUtils;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -82,9 +76,6 @@ public class MenuController extends AbstractBaseController{
             String selection = selections[i - 1];
             menuSession.handleInput(selection);
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
-            if(menuSession.getNextScreen() != null){
-                System.out.println("Menu Session Options: " + Arrays.toString(menuSession.getNextScreen().getOptions()));
-            }
         }
         nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(), titles);
