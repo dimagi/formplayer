@@ -1,4 +1,4 @@
-# set to the URL of your CCHQ instance
+# set to the URL of your CCHQ instance 
 commcarehq.host=http://localhost:8000
 user.suffix=commcarehq.org
 logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=DEBUG
