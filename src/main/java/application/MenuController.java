@@ -87,16 +87,25 @@ public class MenuController extends AbstractBaseController{
             Screen nextScreen = menuSession.getNextScreen();
             System.out.println("Handled, got next screen: " + nextScreen);
             if(nextScreen instanceof FormplayerQueryScreen && sessionNavigationBean.getQueryDictionary() != null){
+                log.info("Formplayer doing query with dictionary " + sessionNavigationBean.getQueryDictionary());
                 doQuery((FormplayerQueryScreen) nextScreen,
                         sessionNavigationBean.getQueryDictionary(),
                         new DjangoAuth(authToken));
                 menuSession.updateScreen();
+                nextScreen = menuSession.getNextScreen();
+                log.info("Next screen after query: " + nextScreen);
             }
             if(nextScreen instanceof FormplayerSyncScreen){
                 System.out.println("Next Screen Sync Screen!");
-                return doSync(menuSession,
+                Object postSyncScreen = doSync(menuSession,
                         (FormplayerSyncScreen)nextScreen,
                         new DjangoAuth(authToken));
+                if(postSyncScreen != null){
+                    return postSyncScreen;
+                } else{
+                    menuSession = performInstall(sessionNavigationBean, authToken);
+                    return getNextMenu(menuSession);
+                }
             }
         }
         nextMenu = getNextMenu(menuSession,
@@ -111,11 +120,12 @@ public class MenuController extends AbstractBaseController{
     private Object doSync(MenuSession menuSession, FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {
         ResponseEntity<String> responseEntity = screen.launchRemoteSync(djangoAuth);
         if(responseEntity.getStatusCode().is2xxSuccessful()){
+            log.info("Case claim sync successful");
             Object nextScreen = resolveFormGetNext(menuSession);
             if(nextScreen != null){
                 return nextScreen;
             }
-            return new SyncDbResponseBean();
+            return null;
         } else{
             return new ErrorResponseBean(responseEntity.getBody());
         }

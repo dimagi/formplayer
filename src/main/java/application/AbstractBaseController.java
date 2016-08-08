@@ -116,7 +116,7 @@ public abstract class AbstractBaseController {
         System.out.println("Doing query with dictionary: " + queryDictionary);
         nextScreen.answerPrompts(queryDictionary);
         InputStream responseStream = nextScreen.makeQueryRequestReturnStream(auth);
-        nextScreen.processSuccess(responseStream);
+        boolean success = nextScreen.processSuccess(responseStream);
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
