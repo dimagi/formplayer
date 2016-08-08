@@ -16,7 +16,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private int offset;
     private String searchText;
     private String menuSessionId;
-    private Hashtable<Integer, String> queryDictionary;
+    private Hashtable<String, String> queryDictionary;
 
     public String[] getSelections() {
         return selections;
@@ -57,11 +57,11 @@ public class SessionNavigationBean extends InstallRequestBean {
         this.menuSessionId = menuSessionId;
     }
     @JsonGetter(value = "query_dictionary")
-    public Hashtable<Integer, String> getQueryDictionary() {
+    public Hashtable<String, String> getQueryDictionary() {
         return queryDictionary;
     }
     @JsonSetter(value = "query_dictionary")
-    public void setQueryDictionary(Hashtable<Integer, String> queryDictionary) {
+    public void setQueryDictionary(Hashtable<String, String> queryDictionary) {
         this.queryDictionary = queryDictionary;
     }
 }

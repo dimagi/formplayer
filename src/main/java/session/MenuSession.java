@@ -30,6 +30,7 @@ import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.stereotype.Component;
 import repo.SerializableMenuSession;
+import screens.FormplayerQueryScreen;
 import services.InstallService;
 import services.RestoreService;
 import util.SessionUtils;
@@ -138,7 +139,7 @@ public class MenuSession {
             computeDatum();
             return getNextScreen();
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
-            QueryScreen queryScreen = new QueryScreen();
+            QueryScreen queryScreen = new FormplayerQueryScreen();
             queryScreen.init(sessionWrapper);
             return queryScreen;
         }

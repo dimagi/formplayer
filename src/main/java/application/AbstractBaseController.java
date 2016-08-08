@@ -1,5 +1,6 @@
 package application;
 
+import auth.HqAuth;
 import beans.NewFormSessionResponse;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
@@ -8,10 +9,7 @@ import beans.menus.QueryResponseBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.MenuScreen;
-import org.commcare.util.cli.QueryScreen;
-import org.commcare.util.cli.Screen;
+import org.commcare.util.cli.*;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -22,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
+import screens.FormplayerQueryScreen;
 import services.InstallService;
 import services.RestoreService;
 import session.FormSession;
@@ -31,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Hashtable;
 
 /**
  * Base Controller class containing exception handling logic and
@@ -75,7 +75,13 @@ public abstract class AbstractBaseController {
     }
 
     protected Object getNextMenu(MenuSession menuSession, int offset, String searchText) throws Exception {
+        return getNextMenu(menuSession, offset, searchText, null, null);
+    }
 
+    protected Object getNextMenu(MenuSession menuSession, int offset,
+                                 String searchText,
+                                 Hashtable<String, String> queryDictionary,
+                                 HqAuth auth) throws Exception {
         Screen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
@@ -95,13 +101,30 @@ public abstract class AbstractBaseController {
             else if (nextScreen instanceof EntityScreen) {
                 menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset, searchText,
                         menuSession.getId());
-            } else if(nextScreen instanceof QueryScreen){
-                menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
+            } else if(nextScreen instanceof FormplayerQueryScreen){
+                System.out.println("Getting query screen with dictionary: " + queryDictionary);
+                if(queryDictionary != null){
+                    menuResponseBean = doQueryGetNextScreen((FormplayerQueryScreen) nextScreen,
+                            queryDictionary,
+                            auth);
+                } else {
+                    menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
+                }
             } else {
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
             return menuResponseBean;
         }
+    }
+
+    private MenuBean doQueryGetNextScreen(FormplayerQueryScreen nextScreen,
+                                          Hashtable<String, String> queryDictionary,
+                                          HqAuth auth) {
+        System.out.println("Doing query with dictionary: " + queryDictionary);
+        nextScreen.answerPrompts(queryDictionary);
+        String response = nextScreen.makeQueryRequest(auth);
+        System.out.println("Query Response: " + response);
+        return null;
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {

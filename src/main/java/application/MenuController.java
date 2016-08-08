@@ -16,6 +16,8 @@ import repo.SerializableMenuSession;
 import session.MenuSession;
 import util.Constants;
 
+import java.util.Hashtable;
+
 /**
  * Controller (API endpoint) containing all session navigation functionality.
  * This includes module, form, case, and session (incomplete form) selection.
@@ -71,7 +73,11 @@ public class MenuController extends AbstractBaseController{
         for (String selection : selections) {
             menuSession.handleInput(selection);
         }
-        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(), sessionNavigationBean.getSearchText());
+        nextMenu = getNextMenu(menuSession,
+                sessionNavigationBean.getOffset(),
+                sessionNavigationBean.getSearchText(),
+                sessionNavigationBean.getQueryDictionary(),
+                new DjangoAuth(authToken));
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
