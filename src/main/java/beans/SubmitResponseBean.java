@@ -13,6 +13,7 @@ public class SubmitResponseBean extends SessionBean{
     private String status;
     private String message;
     private HashMap<String, ErrorBean> errors;
+    private Object nextScreen;
 
     // default constructor for Jackson
     public SubmitResponseBean(){}
@@ -39,6 +40,15 @@ public class SubmitResponseBean extends SessionBean{
 
     @Override
     public String toString(){
-        return "SubmitResponseBean, [status=" +  status + ", errors: " + errors +"]";
+        return "SubmitResponseBean, [status=" +  status + ", errors: " + errors +
+                ", next screen= " + nextScreen + "]";
+    }
+
+    public Object getNextScreen() {
+        return nextScreen;
+    }
+
+    public void setNextScreen(Object nextScreen) {
+        this.nextScreen = nextScreen;
     }
 }

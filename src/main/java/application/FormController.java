@@ -1,6 +1,7 @@
 package application;
 
 import auth.DjangoAuth;
+import auth.HqAuth;
 import beans.*;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,9 +22,11 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import services.NewFormRequest;
+import repo.SerializableMenuSession;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
+import session.MenuSession;
 import util.Constants;
 
 import java.io.IOException;
@@ -58,7 +61,7 @@ public class FormController extends AbstractBaseController{
         log.info("New form requests with bean: " + newSessionBean + " sessionId :" + authToken);
         String postUrl = hqHost + newSessionBean.getPostUrl();
         NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
-                sessionRepo, xFormService, restoreService, authToken);
+                formSessionRepo, xFormService, restoreService, authToken);
         NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
         log.info("Return new session response: " + newSessionResponse);
         return newSessionResponse;
@@ -69,7 +72,7 @@ public class FormController extends AbstractBaseController{
     public NewFormSessionResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
-        SerializableFormSession session = sessionRepo.findOne(incompleteSessionRequestBean.getSessionId());
+        SerializableFormSession session = formSessionRepo.findOne(incompleteSessionRequestBean.getSessionId());
         NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, authToken);
         NewFormSessionResponse response = newFormRequest.getResponse();
         log.info("Return incomplete session response: " + response);
@@ -80,7 +83,7 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
-        SerializableFormSession session = sessionRepo.findOne(answerQuestionBean.getSessionId());
+        SerializableFormSession session = formSessionRepo.findOne(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(session);
         JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -99,7 +102,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     public FormEntryResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
         log.info("Current request: " + currentRequestBean);
-        SerializableFormSession serializableFormSession = sessionRepo.findOne(currentRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = formSessionRepo.findOne(currentRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         JSONObject resp = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(), formEntrySession.getFormEntryModel());
         FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
@@ -114,8 +117,10 @@ public class FormController extends AbstractBaseController{
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Submit form with bean: " + submitRequestBean);
 
-        SerializableFormSession serializableFormSession = sessionRepo.findOne(submitRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = formSessionRepo.findOne(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
+
+        log.info("Submitting form entry session has menuId: " + formEntrySession.getMenuSessionId());
 
         SubmitResponseBean submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -125,7 +130,6 @@ public class FormController extends AbstractBaseController{
                 || !submitRequestBean.isPrevalidated()) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
-
             FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
 
             ResponseEntity<String> submitResponse =
@@ -133,15 +137,30 @@ public class FormController extends AbstractBaseController{
                             formEntrySession.getPostUrl(),
                             new DjangoAuth(authToken));
 
-            if (submitResponse.getStatusCode().is2xxSuccessful()) {
-                sessionRepo.delete(submitRequestBean.getSessionId());
-            } else {
+            if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                 submitResponseBean.setStatus("error");
-                //TODO: need new way to communicate erros with submitting (vs. validation)
+                log.info("Submit response bean: " + submitResponseBean);
+                return submitResponseBean;
+                //TODO: need new way to communicate errors with submitting (vs. validation)
             }
+            if(formEntrySession.getMenuSessionId() != null &&
+                    !("").equals(formEntrySession.getMenuSessionId().trim())) {
+                Object nav = doEndOfFormNav(menuSessionRepo.findOne(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
+                if(nav != null){
+                    submitResponseBean.setNextScreen(nav);
+                }
+            }
+            formSessionRepo.delete(submitRequestBean.getSessionId());
+
         }
         log.info("Submit response bean: " + submitResponseBean);
         return submitResponseBean;
+    }
+
+    private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
+        log.info("End of form navigation with serialized menu session: " + serializedSession);
+        MenuSession menuSession = new MenuSession(serializedSession, installService, restoreService, auth);
+        return resolveFormGetNext(menuSession);
     }
 
     /**
@@ -181,7 +200,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
-        SerializableFormSession serializableFormSession = sessionRepo.findOne(getInstanceRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = formSessionRepo.findOne(getInstanceRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         GetInstanceResponseBean getInstanceResponseBean = new GetInstanceResponseBean(formEntrySession);
         log.info("Get instance response: " + getInstanceResponseBean);
@@ -193,7 +212,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         log.info("Evaluate XPath Request: " + evaluateXPathRequestBean);
-        SerializableFormSession serializableFormSession = sessionRepo.findOne(evaluateXPathRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = formSessionRepo.findOne(evaluateXPathRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         EvaluateXPathResponseBean evaluateXPathResponseBean =
                 new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
@@ -206,7 +225,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         log.info("New repeat: " + newRepeatRequestBean);
-        SerializableFormSession serializableFormSession = sessionRepo.findOne(newRepeatRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = formSessionRepo.findOne(newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -221,7 +240,7 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = sessionRepo.findOne(deleteRepeatRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = formSessionRepo.findOne(deleteRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
         JSONObject resp = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -235,6 +254,6 @@ public class FormController extends AbstractBaseController{
         serialSession.setFormXml(formEntrySession.getFormXml());
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
         serialSession.setSequenceId(formEntrySession.getSequenceId());
-        sessionRepo.save(serialSession);
+        formSessionRepo.save(serialSession);
     }
 }
