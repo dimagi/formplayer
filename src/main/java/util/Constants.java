@@ -23,6 +23,7 @@ public class Constants {
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
     public static final String URL_GET_SESSIONS = "get_sessions";
     public static final String URL_SERVER_UP = "serverup";
+    public static final String URL_GIT_STATUS = "git_status";
     //Menus
     public static final String MENU_MODULE = "modules";
     public static final String MENU_ENTITY = "entity";

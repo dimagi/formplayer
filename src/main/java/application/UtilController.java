@@ -2,12 +2,14 @@ package application;
 
 import auth.DjangoAuth;
 import beans.*;
+import edu.nyu.cs.javagit.api.DotGit;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import util.Constants;
@@ -29,6 +31,9 @@ public class UtilController extends AbstractBaseController {
 
     private final Log log = LogFactory.getLog(UtilController.class);
 
+    @Autowired
+    DotGit gitRespositroy;
+
     @ApiOperation(value = "Filter the user's casedb given a predicate expression")
     @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
     public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
@@ -49,7 +54,7 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("SyncDb Request: " + syncRequest);
+        log.info("SyncDb Reques t: " + syncRequest);
         syncRequest.setRestoreService(restoreService);
         syncRequest.setHqAuth(new DjangoAuth(authToken));
         String restoreXml = syncRequest.getRestoreXml();
@@ -70,5 +75,11 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_SERVER_UP, method = RequestMethod.GET)
     public ServerUpBean serverUp() throws Exception {
         return new ServerUpBean();
+    }
+
+    @ApiOperation(value = "Gets the status of the Formplayer service")
+    @RequestMapping(value = Constants.URL_GIT_STATUS, method = RequestMethod.GET)
+    public GitStatusBean getGitStatus() throws Exception {
+        return new GitStatusBean(gitRespositroy);
     }
 }
