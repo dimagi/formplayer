@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
 import session.MenuSession;
 import util.Constants;
+import util.SessionUtils;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -68,14 +69,22 @@ public class MenuController extends AbstractBaseController{
         if (selections == null) {
             return nextMenu;
         }
-        for (String selection : selections) {
+
+        String[] titles = new String[selections.length + 1];
+        titles[0] = menuSession.getNextScreen().getScreenTitle();
+        for(int i=1; i <= selections.length; i++) {
+            String selection = selections[i - 1];
             menuSession.handleInput(selection);
+            titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
         }
-        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(), sessionNavigationBean.getSearchText());
+        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(),
+                sessionNavigationBean.getSearchText(), titles);
+
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
     }
+
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
