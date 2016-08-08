@@ -27,6 +27,7 @@ import session.FormSession;
 import session.MenuSession;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -104,9 +105,11 @@ public abstract class AbstractBaseController {
             } else if(nextScreen instanceof FormplayerQueryScreen){
                 System.out.println("Getting query screen with dictionary: " + queryDictionary);
                 if(queryDictionary != null){
-                    menuResponseBean = doQueryGetNextScreen((FormplayerQueryScreen) nextScreen,
+                    doQuery((FormplayerQueryScreen) nextScreen,
                             queryDictionary,
                             auth);
+                    menuSessionRepo.save(new SerializableMenuSession(menuSession));
+                    return getNextMenu(menuSession, offset, searchText, null, null);
                 } else {
                     menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
                 }
@@ -117,14 +120,13 @@ public abstract class AbstractBaseController {
         }
     }
 
-    private MenuBean doQueryGetNextScreen(FormplayerQueryScreen nextScreen,
+    private void doQuery(FormplayerQueryScreen nextScreen,
                                           Hashtable<String, String> queryDictionary,
                                           HqAuth auth) {
         System.out.println("Doing query with dictionary: " + queryDictionary);
         nextScreen.answerPrompts(queryDictionary);
-        String response = nextScreen.makeQueryRequest(auth);
-        System.out.println("Query Response: " + response);
-        return null;
+        InputStream responseStream = nextScreen.makeQueryRequestReturnStream(auth);
+        nextScreen.processSuccess(responseStream);
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {

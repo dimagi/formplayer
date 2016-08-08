@@ -9,7 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 
 /**
@@ -30,6 +33,11 @@ public class FormplayerQueryScreen extends QueryScreen {
                         HttpMethod.GET,
                         new HttpEntity<String>(auth.getAuthHeaders()), String.class);
         return response.getBody();
+    }
+
+    public InputStream makeQueryRequestReturnStream(HqAuth auth) {
+        String responseString = makeQueryRequest(auth);
+        return new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8));
     }
 
 }
