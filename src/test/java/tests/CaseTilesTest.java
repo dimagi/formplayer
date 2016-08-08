@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class CaseTilesTest extends BaseMenuTestClass{
+public class CaseTilesTest extends BaseTestClass{
 
     @Override
     public void setUp() throws IOException {

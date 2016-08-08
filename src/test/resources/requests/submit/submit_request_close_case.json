@@ -1,8 +1,7 @@
 {
   "action": "submit-all",
   "answers": {
-    "0": "Tom Brady",
-    "1": "1"
+    "0": "1"
   },
   "prevalidated": true,
   "form_context": {

@@ -9,6 +9,7 @@ public class MenuBean {
 
     private String title;
     private String[] locales;
+    private String menuSessionId;
 
     public String getTitle() {
         return title;
@@ -29,5 +30,13 @@ public class MenuBean {
 
     public void setLocales(String[] locales) {
         this.locales = locales;
+    }
+
+    public String getMenuSessionId() {
+        return menuSessionId;
+    }
+
+    public void setMenuSessionId(String menuSessionId) {
+        this.menuSessionId = menuSessionId;
     }
 }

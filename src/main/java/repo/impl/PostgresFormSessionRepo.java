@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import repo.SessionRepo;
+import repo.FormSessionRepo;
 import util.Constants;
 
 import javax.persistence.LockModeType;
@@ -24,7 +24,7 @@ import java.util.Map;
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
-public class PostgresSessionRepo implements SessionRepo{
+public class PostgresFormSessionRepo implements FormSessionRepo {
 
     @Autowired
     @Qualifier("formplayerTemplate")
@@ -48,19 +48,23 @@ public class PostgresSessionRepo implements SessionRepo{
         return entities;
     }
 
-    @Override
-    @Lock(LockModeType.OPTIMISTIC)
-    public <S extends SerializableFormSession> S save(S session) {
-
+    private byte[] writeToBytes(Object object){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos;
         try {
             oos = new ObjectOutputStream(baos);
-            oos.writeObject(session.getSessionData());
+            oos.writeObject(object);
         } catch(IOException e){
             throw new RuntimeException(e);
         }
-        byte[] sessionDataBytes = baos.toByteArray();
+        return baos.toByteArray();
+    }
+
+    @Override
+    @Lock(LockModeType.OPTIMISTIC)
+    public <S extends SerializableFormSession> S save(S session) {
+
+        byte[] sessionDataBytes = writeToBytes(session.getSessionData());
 
         int sessionCount = this.jdbcTemplate.queryForObject(
                 replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
@@ -76,12 +80,12 @@ public class PostgresSessionRepo implements SessionRepo{
         String query = replaceTableName("INSERT into %s " +
                 "(id, instanceXml, formXml, " +
                 "restoreXml, username, initLang, sequenceId, " +
-                "domain, postUrl, sessionData) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "domain, postUrl, sessionData, menu_session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
                 session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
-                session.getDomain(), session.getPostUrl(), sessionDataBytes}, new int[] {
+                session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId()}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY});
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY, Types.VARCHAR});
         return session;
     }
 
@@ -161,9 +165,9 @@ public class PostgresSessionRepo implements SessionRepo{
             session.setSequenceId(Integer.parseInt(rs.getString("sequenceId")));
             session.setDomain(rs.getString("domain"));
             session.setPostUrl(rs.getString("postUrl"));
+            session.setMenuSessionId(rs.getString("menu_session_id"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
-
             if(st != null) {
                 ByteArrayInputStream byteInputStream = new ByteArrayInputStream(st);
                 ObjectInputStream objectInputStream;
@@ -177,7 +181,6 @@ public class PostgresSessionRepo implements SessionRepo{
                     throw new SQLException(e);
                 }
             }
-
             return session;
         }
     }

@@ -83,7 +83,7 @@ public class CaseTests extends BaseTestClass {
         assert submitResponseBean.getErrors().keySet().size() == 1;
         assert submitResponseBean.getErrors().get("0").getType().equals("illegal-argument");
 
-        submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
+        submitResponseBean = submitForm("requests/submit/submit_request_close_case.json", sessionId);
         assert submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
 
         // test that we have successfully removed this case
