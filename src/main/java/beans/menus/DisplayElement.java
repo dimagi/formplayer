@@ -13,6 +13,7 @@ public class DisplayElement {
     private String text;
     private String audioUri;
     private String imageUri;
+    private String id;
 
     public DisplayElement(){}
 
@@ -26,7 +27,8 @@ public class DisplayElement {
         }
     }
 
-    public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec) {
+    public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id) {
+        this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if(displayUnit.getImageURI() !=  null){
             this.imageUri = displayUnit.getImageURI().evaluate(ec);
@@ -63,6 +65,14 @@ public class DisplayElement {
 
     @Override
     public String toString(){
-        return "DisplayElement text=" + text + ", imageUri=" + imageUri + ", audioUri=" + audioUri;
+        return "DisplayElement id=" + id + ", text=" + text + ", imageUri=" + imageUri + ", audioUri=" + audioUri;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

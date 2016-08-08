@@ -31,7 +31,9 @@ public class QueryResponseBean extends MenuBean {
         displays = new DisplayElement[displayMap.size()];
         int count = 0 ;
         for (Map.Entry<String, DisplayUnit> displayEntry : displayMap.entrySet()) {
-            displays[count] = new DisplayElement(displayEntry.getValue(), session.getEvaluationContext());
+            displays[count] = new DisplayElement(displayEntry.getValue(),
+                    session.getEvaluationContext(),
+                    displayEntry.getKey());
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
