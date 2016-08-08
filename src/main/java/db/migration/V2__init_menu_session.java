@@ -22,7 +22,7 @@ public class V2__init_menu_session implements SpringJdbcMigration {
                 "    CONSTRAINT menu_sessions_pkey PRIMARY KEY (id)\n" +
                 ")");
         jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
-                "ADD menu_session_id text NOT NULL");
+                "ADD menu_session_id text");
         jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
                 "ADD FOREIGN KEY (menu_session_id) " +
                 "REFERENCES menu_sessions(id)");
