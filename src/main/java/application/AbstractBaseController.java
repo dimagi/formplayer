@@ -76,13 +76,11 @@ public abstract class AbstractBaseController {
     }
 
     protected Object getNextMenu(MenuSession menuSession, int offset, String searchText) throws Exception {
-        return getNextMenu(menuSession, offset, searchText, null, null);
+        return getNextMenu(menuSession, offset, searchText, null);
     }
 
-    protected Object getNextMenu(MenuSession menuSession, int offset,
-                                 String searchText,
-                                 Hashtable<String, String> queryDictionary,
-                                 HqAuth auth) throws Exception {
+    protected Object getNextMenu(MenuSession menuSession, int offset, String searchText,
+                                 String[] breadcrumbs) throws Exception {
         Screen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
@@ -103,24 +101,16 @@ public abstract class AbstractBaseController {
                 menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset, searchText,
                         menuSession.getId());
             } else if(nextScreen instanceof FormplayerQueryScreen){
-                System.out.println("Getting query screen with dictionary: " + queryDictionary);
-                if(queryDictionary != null){
-                    doQuery((FormplayerQueryScreen) nextScreen,
-                            queryDictionary,
-                            auth);
-                    menuSessionRepo.save(new SerializableMenuSession(menuSession));
-                    return getNextMenu(menuSession, offset, searchText, null, null);
-                } else {
                     menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
-                }
             } else {
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
+            menuResponseBean.setBreadcrumbs(breadcrumbs);
             return menuResponseBean;
         }
     }
 
-    private void doQuery(FormplayerQueryScreen nextScreen,
+    protected void doQuery(FormplayerQueryScreen nextScreen,
                                           Hashtable<String, String> queryDictionary,
                                           HqAuth auth) {
         System.out.println("Doing query with dictionary: " + queryDictionary);

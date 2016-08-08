@@ -2,6 +2,8 @@ package beans.menus;
 
 import org.javarosa.core.services.locale.Localization;
 
+import java.util.Arrays;
+
 /**
  * Created by willpride on 4/13/16.
  */
@@ -9,6 +11,7 @@ public class MenuBean {
 
     private String title;
     private String[] locales;
+    private String[] breadcrumbs;
     private String menuSessionId;
 
     public String getTitle() {
@@ -21,7 +24,7 @@ public class MenuBean {
 
     @Override
     public String toString(){
-        return "MenuBean [title=" + title + "]";
+        return "MenuBean [title=" + title + ", breadcrumbs: " + Arrays.toString(breadcrumbs) + "]";
     }
 
     public String[] getLocales() {
@@ -32,6 +35,13 @@ public class MenuBean {
         this.locales = locales;
     }
 
+    public String[] getBreadcrumbs() {
+        return breadcrumbs;
+    }
+
+    public void setBreadcrumbs(String[] breadcrumbs) {
+        this.breadcrumbs = breadcrumbs;
+    }
     public String getMenuSessionId() {
         return menuSessionId;
     }

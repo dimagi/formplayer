@@ -10,8 +10,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.FormIdDatum;
-import org.commcare.suite.model.SessionDatum;
+import org.commcare.suite.model.*;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.EntityScreen;
@@ -28,9 +27,15 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
+import screens.FormplayerSyncScreen;
 import services.InstallService;
 import services.RestoreService;
 import util.SessionUtils;
@@ -39,7 +44,9 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.UUID;
 
 /**
@@ -122,7 +129,7 @@ public class MenuSession {
     }
 
     public Screen getNextScreen() throws CommCareSessionException {
-        String next = sessionWrapper.getNeededData();
+        String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
 
         if (next == null) {
             //XFORM TIME!
@@ -142,6 +149,10 @@ public class MenuSession {
             QueryScreen queryScreen = new FormplayerQueryScreen();
             queryScreen.init(sessionWrapper);
             return queryScreen;
+        } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
+            FormplayerSyncScreen syncScreen = new FormplayerSyncScreen();
+            syncScreen.init(sessionWrapper);
+            return syncScreen;
         }
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
     }
@@ -237,5 +248,9 @@ public class MenuSession {
 
     public String getLocale() {
         return locale;
+    }
+
+    public void updateScreen() throws CommCareSessionException {
+        this.screen = getNextScreen();
     }
 }

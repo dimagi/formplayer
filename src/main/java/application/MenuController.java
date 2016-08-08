@@ -3,20 +3,26 @@ package application;
 import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
+import beans.ErrorResponseBean;
 import beans.InstallRequestBean;
 import beans.SessionNavigationBean;
+import beans.SyncDbResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.modern.session.SessionWrapper;
+import org.commcare.util.cli.Screen;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
+import screens.FormplayerQueryScreen;
+import screens.FormplayerSyncScreen;
 import session.MenuSession;
 import util.Constants;
-
-import java.util.Hashtable;
+import util.SessionUtils;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -70,18 +76,51 @@ public class MenuController extends AbstractBaseController{
         if (selections == null) {
             return nextMenu;
         }
-        for (String selection : selections) {
+
+        String[] titles = new String[selections.length + 1];
+        titles[0] = menuSession.getNextScreen().getScreenTitle();
+        for(int i=1; i <= selections.length; i++) {
+            String selection = selections[i - 1];
+            System.out.println("Screen " + menuSession.getNextScreen() + " handling selection " + selection);
             menuSession.handleInput(selection);
+            titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
+            Screen nextScreen = menuSession.getNextScreen();
+            System.out.println("Handled, got next screen: " + nextScreen);
+            if(nextScreen instanceof FormplayerQueryScreen && sessionNavigationBean.getQueryDictionary() != null){
+                doQuery((FormplayerQueryScreen) nextScreen,
+                        sessionNavigationBean.getQueryDictionary(),
+                        new DjangoAuth(authToken));
+                menuSession.updateScreen();
+            }
+            if(nextScreen instanceof FormplayerSyncScreen){
+                System.out.println("Next Screen Sync Screen!");
+                return doSync(menuSession,
+                        (FormplayerSyncScreen)nextScreen,
+                        new DjangoAuth(authToken));
+            }
         }
         nextMenu = getNextMenu(menuSession,
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
-                sessionNavigationBean.getQueryDictionary(),
-                new DjangoAuth(authToken));
+                titles);
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         log.info("Returning menu: " + nextMenu);
         return nextMenu;
     }
+
+    private Object doSync(MenuSession menuSession, FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {
+        ResponseEntity<String> responseEntity = screen.launchRemoteSync(djangoAuth);
+        if(responseEntity.getStatusCode().is2xxSuccessful()){
+            Object nextScreen = resolveFormGetNext(menuSession);
+            if(nextScreen != null){
+                return nextScreen;
+            }
+            return new SyncDbResponseBean();
+        } else{
+            return new ErrorResponseBean(responseEntity.getBody());
+        }
+    }
+
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
