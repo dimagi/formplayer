@@ -69,10 +69,10 @@ public abstract class AbstractBaseController {
     }
 
     private Object getNextMenu(MenuSession menuSession, int offset) throws Exception {
-        return getNextMenu(menuSession, offset, "");
+        return getNextMenu(menuSession, offset, "", null);
     }
 
-    protected Object getNextMenu(MenuSession menuSession, int offset, String searchText) throws Exception {
+    protected Object getNextMenu(MenuSession menuSession, int offset, String searchText, String[] breadcrumbs) throws Exception {
 
         Screen nextScreen;
 
@@ -96,6 +96,7 @@ public abstract class AbstractBaseController {
             } else {
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
+            menuResponseBean.setBreadcrumbs(breadcrumbs);
             return menuResponseBean;
         }
     }
