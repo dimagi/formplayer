@@ -1,5 +1,6 @@
 package application;
 
+import edu.nyu.cs.javagit.api.DotGit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
@@ -37,6 +38,7 @@ import services.impl.XFormServiceImpl;
 
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
+import java.io.File;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -238,6 +240,14 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
             }
 
         }
+    }
+
+    @Bean
+    public DotGit gitRespository(){
+        File repositoryDirectory = new File("/Users/willpride/Dimagi/formplayer");
+        DotGit dotGit = DotGit.getInstance(repositoryDirectory);
+        dotGit.init();
+        return dotGit;
     }
 
 }
