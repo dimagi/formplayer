@@ -48,7 +48,7 @@ import java.util.Properties;
 @EnableAutoConfiguration
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*"})
+@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*"})
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${commcarehq.host}")
