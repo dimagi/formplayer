@@ -100,7 +100,7 @@ public class MenuController extends AbstractBaseController{
             if (password == null || "".equals(password.trim())) {
                 throw new RuntimeException("Either authToken or password must be non-null");
             }
-            auth = new BasicAuth(bean.getUsername(), bean.getDomain(), "commcarehq.org", password);
+            auth = new BasicAuth(bean.getUsername(), bean.getDomain(), host, password);
         }
 
         return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
