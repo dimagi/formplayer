@@ -14,6 +14,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.form.api.FormEntryController;
@@ -89,7 +90,7 @@ public class FormSession {
     }
 
     public FormSession(String formXml, String restoreXml, String locale, String username, String domain,
-                       Map<String, String> sessionData, String instanceContent) throws Exception {
+                       Map<String, String> sessionData, String postUrl, String instanceContent) throws Exception {
         this.formXml = formXml;
         this.restoreXml = restoreXml;
         this.username = TableBuilder.scrubName(username);
@@ -113,6 +114,7 @@ public class FormSession {
         setLocale(locale, langs);
         uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
+        this.postUrl = postUrl;
         getFormTree();
     }
 
@@ -135,6 +137,7 @@ public class FormSession {
         this.sequenceId = 0;
         initialize(true, sessionData);
         getFormTree();
+        this.postUrl = postUrl;
         this.menuSessionId = menuSessionId;
     }
 

@@ -17,11 +17,12 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import services.NewFormRequest;
 import repo.SerializableMenuSession;
-import requests.NewFormRequest;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -47,6 +48,9 @@ public class FormController extends AbstractBaseController{
     @Autowired
     private SubmitService submitService;
 
+    @Value("${commcarehq.host}")
+    private String hqHost;
+
     private final Log log = LogFactory.getLog(FormController.class);
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -55,7 +59,9 @@ public class FormController extends AbstractBaseController{
     public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("New form requests with bean: " + newSessionBean + " sessionId :" + authToken);
-        NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, formSessionRepo, xFormService, restoreService, authToken);
+        String postUrl = hqHost + newSessionBean.getPostUrl();
+        NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
+                formSessionRepo, xFormService, restoreService, authToken);
         NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
         log.info("Return new session response: " + newSessionResponse);
         return newSessionResponse;
