@@ -68,15 +68,7 @@ public abstract class AbstractBaseController {
     }
 
     public Object getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, 0);
-    }
-
-    private Object getNextMenu(MenuSession menuSession, int offset) throws Exception {
-        return getNextMenu(menuSession, offset, "");
-    }
-
-    protected Object getNextMenu(MenuSession menuSession, int offset, String searchText) throws Exception {
-        return getNextMenu(menuSession, offset, searchText, null);
+        return getNextMenu(menuSession, 0, "", null);
     }
 
     protected Object getNextMenu(MenuSession menuSession, int offset, String searchText,
@@ -113,7 +105,6 @@ public abstract class AbstractBaseController {
     protected void doQuery(FormplayerQueryScreen nextScreen,
                                           Hashtable<String, String> queryDictionary,
                                           HqAuth auth) {
-        System.out.println("Doing query with dictionary: " + queryDictionary);
         nextScreen.answerPrompts(queryDictionary);
         InputStream responseStream = nextScreen.makeQueryRequestReturnStream(auth);
         boolean success = nextScreen.processSuccess(responseStream);
