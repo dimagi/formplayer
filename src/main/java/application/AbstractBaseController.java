@@ -16,6 +16,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
@@ -50,6 +51,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     private HtmlEmail exceptionMessage;
+
+    @Value("${commcarehq.host}")
+    private String hqHost;
 
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
 
@@ -123,7 +127,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         exception.printStackTrace();
         try {
-            sendExceptionEmail(exception);
+            sendExceptionEmail(req, exception);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("Unable to send email");
@@ -135,10 +139,10 @@ public abstract class AbstractBaseController {
         return errorReturn.toString();
     }
 
-    private void sendExceptionEmail(Exception exception) {
+    private void sendExceptionEmail(HttpServletRequest req, Exception exception) {
         try {
-            exceptionMessage.setHtmlMsg(getExceptionEmailBody(exception));
-            exceptionMessage.setSubject("Formplayer Menu Exception: " + exception.getMessage());
+            exceptionMessage.setHtmlMsg(getExceptionEmailBody(req, exception));
+            exceptionMessage.setSubject("Formplayer Exception: " + exception.getMessage());
             exceptionMessage.send();
         } catch(EmailException e){
             // I think we should fail quietly on this
@@ -147,7 +151,7 @@ public abstract class AbstractBaseController {
     }
 
 
-    private String getExceptionEmailBody(Exception exception){
+    private String getExceptionEmailBody(HttpServletRequest req, Exception exception){
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         String formattedTime = dateFormat.format(new Date());
         String[] stackTrace = ExceptionUtils.getStackTrace(exception).split("\n");
@@ -157,6 +161,10 @@ public abstract class AbstractBaseController {
         return "<html>" +
                 "<h3>Message</h3>" +
                 "<p>" + exception.getMessage() + "</p>" +
+                "<h3>Request URI</h3>" +
+                "<p>" + req.getRequestURI() + "<p>" +
+                "<h3>Host</h3>" +
+                "<p>" + hqHost + "<p>" +
                 "<h3>Time</h3>" +
                 "<p>" + formattedTime + "<p>" +
                 "<h3>Trace</h3>" +
