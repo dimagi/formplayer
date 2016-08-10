@@ -79,11 +79,9 @@ public class MenuController extends AbstractBaseController{
         titles[0] = menuSession.getNextScreen().getScreenTitle();
         for(int i=1; i <= selections.length; i++) {
             String selection = selections[i - 1];
-            System.out.println("Screen " + menuSession.getNextScreen() + " handling selection " + selection);
             menuSession.handleInput(selection);
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             Screen nextScreen = menuSession.getNextScreen();
-            System.out.println("Handled, got next screen: " + nextScreen);
             if(nextScreen instanceof FormplayerQueryScreen && sessionNavigationBean.getQueryDictionary() != null){
                 log.info("Formplayer doing query with dictionary " + sessionNavigationBean.getQueryDictionary());
                 doQuery((FormplayerQueryScreen) nextScreen,
@@ -94,7 +92,6 @@ public class MenuController extends AbstractBaseController{
                 log.info("Next screen after query: " + nextScreen);
             }
             if(nextScreen instanceof FormplayerSyncScreen){
-                System.out.println("Next Screen Sync Screen!");
                 Object postSyncScreen = doSync(menuSession,
                         (FormplayerSyncScreen)nextScreen,
                         new DjangoAuth(authToken));

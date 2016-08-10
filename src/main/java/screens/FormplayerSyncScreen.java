@@ -43,14 +43,13 @@ public class FormplayerSyncScreen extends Screen{
     }
 
     public ResponseEntity<String> launchRemoteSync(HqAuth auth){
-        System.out.println("Launching remote sync");
         String command = sessionWrapper.getCommand();
         Entry commandEntry = sessionWrapper.getPlatform().getEntry(command);
         if (commandEntry instanceof SyncEntry) {
             SyncPost syncPost = ((SyncEntry)commandEntry).getSyncPost();
             Hashtable<String, String> params = syncPost.getEvaluatedParams(sessionWrapper.getEvaluationContext());
             UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
-            builder.queryParam("derp", "herp");
+            builder.queryParam("buffer", "buffer");
             HttpHeaders headers = auth.getAuthHeaders();
             for(String key: params.keySet()){
                 builder.queryParam(key, params.get(key));
