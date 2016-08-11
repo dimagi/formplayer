@@ -23,6 +23,8 @@ import session.MenuSession;
 import util.Constants;
 import util.SessionUtils;
 
+import java.util.Hashtable;
+
 /**
  * Controller (API endpoint) containing all session navigation functionality.
  * This includes module, form, case, and session (incomplete form) selection.
@@ -62,45 +64,56 @@ public class MenuController extends AbstractBaseController{
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
         MenuSession menuSession;
+        DjangoAuth auth = new DjangoAuth(authToken);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if(menuSessionId != null && !"".equals(menuSessionId)) {
             menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
-                    installService, restoreService, new DjangoAuth(authToken));
+                    installService, restoreService, auth);
             menuSession.getSessionWrapper().syncState();
         } else{
             menuSession = performInstall(sessionNavigationBean, authToken);
         }
         String[] selections = sessionNavigationBean.getSelections();
-        Object nextMenu = getNextMenu(menuSession);
+        BaseResponseBean nextMenu = getNextMenu(menuSession);
         if (selections == null) {
             return nextMenu;
         }
 
         String[] titles = new String[selections.length + 1];
         titles[0] = menuSession.getNextScreen().getScreenTitle();
+        NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
         for(int i=1; i <= selections.length; i++) {
             String selection = selections[i - 1];
             menuSession.handleInput(selection);
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             Screen nextScreen = menuSession.getNextScreen();
+            // If we've encountered a QueryScreen and have a QueryDictionary, do the query
             if(nextScreen instanceof FormplayerQueryScreen && sessionNavigationBean.getQueryDictionary() != null){
                 log.info("Formplayer doing query with dictionary " + sessionNavigationBean.getQueryDictionary());
-                doQuery((FormplayerQueryScreen) nextScreen,
+                notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
                         sessionNavigationBean.getQueryDictionary(),
                         new DjangoAuth(authToken));
                 menuSession.updateScreen();
                 nextScreen = menuSession.getNextScreen();
                 log.info("Next screen after query: " + nextScreen);
             }
+            // If we've encountered a SyncScreen, perform the sync
             if(nextScreen instanceof FormplayerSyncScreen){
-                Object postSyncScreen = doSync(menuSession,
+                notificationMessageBean = doSync(
                         (FormplayerSyncScreen)nextScreen,
                         new DjangoAuth(authToken));
-                if(postSyncScreen != null){
-                    return postSyncScreen;
+
+                BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+                if(postSyncResponse != null){
+                    // If not null, we have a form or menu to redirect to
+                    postSyncResponse.setNotification(notificationMessageBean);
+                    return postSyncResponse;
                 } else{
+                    // Otherwise, return use to the app root
                     menuSession = performInstall(sessionNavigationBean, authToken);
-                    return getNextMenu(menuSession);
+                    postSyncResponse = getNextMenu(menuSession);
+                    postSyncResponse.setNotification(notificationMessageBean);
+                    return postSyncResponse;
                 }
             }
         }
@@ -108,22 +121,22 @@ public class MenuController extends AbstractBaseController{
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 titles);
-        menuSessionRepo.save(new SerializableMenuSession(menuSession));
-        log.info("Returning menu: " + nextMenu);
-        return nextMenu;
+        if(nextMenu != null){
+            nextMenu.setNotification(notificationMessageBean);
+            menuSessionRepo.save(new SerializableMenuSession(menuSession));
+            log.info("Returning menu: " + nextMenu);
+            return nextMenu;
+        } else{
+            return new BaseResponseBean(null, "Redirecting after case claim", false, true);
+        }
     }
 
-    private BaseResponseBean doSync(MenuSession menuSession, FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {
+    private NotificationMessageBean doSync(FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {
         ResponseEntity<String> responseEntity = screen.launchRemoteSync(djangoAuth);
         if(responseEntity.getStatusCode().is2xxSuccessful()){
-            log.info("Case claim sync successful");
-            BaseResponseBean nextScreen = resolveFormGetNext(menuSession);
-            if(nextScreen != null){
-                return nextScreen;
-            }
-            return null;
+            return new NotificationMessageBean("Case claim successful", false);
         } else{
-            return new BaseResponseBean("Case Claim Response", responseEntity.getBody(), true);
+            return new NotificationMessageBean("Case claim failed with message: " + responseEntity.getBody(), true);
         }
     }
 
