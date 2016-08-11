@@ -15,7 +15,8 @@ public class MenuBean extends BaseResponseBean{
 
     @Override
     public String toString(){
-        return "MenuBean [title=" + title + ", breadcrumbs: " + Arrays.toString(breadcrumbs) + "]";
+        return "MenuBean [title=" + title + ", breadcrumbs: " + Arrays.toString(breadcrumbs) +
+                "super=" + super.toString() + "]";
     }
 
     public String[] getLocales() {
