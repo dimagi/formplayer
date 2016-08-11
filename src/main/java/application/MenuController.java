@@ -6,6 +6,7 @@ import auth.HqAuth;
 import beans.NotificationMessageBean;
 import beans.InstallRequestBean;
 import beans.SessionNavigationBean;
+import beans.menus.BaseResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
@@ -38,10 +39,10 @@ public class MenuController extends AbstractBaseController{
 
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
-    public Object installRequest(@RequestBody InstallRequestBean installRequestBean,
-                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Received install request: " + installRequestBean);
-        Object response = getNextMenu(performInstall(installRequestBean, authToken));
+        BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
         log.info("Returning install response: " + response);
         return response;
     }
@@ -112,17 +113,17 @@ public class MenuController extends AbstractBaseController{
         return nextMenu;
     }
 
-    private Object doSync(MenuSession menuSession, FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {
+    private BaseResponseBean doSync(MenuSession menuSession, FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {
         ResponseEntity<String> responseEntity = screen.launchRemoteSync(djangoAuth);
         if(responseEntity.getStatusCode().is2xxSuccessful()){
             log.info("Case claim sync successful");
-            Object nextScreen = resolveFormGetNext(menuSession);
+            BaseResponseBean nextScreen = resolveFormGetNext(menuSession);
             if(nextScreen != null){
                 return nextScreen;
             }
             return null;
         } else{
-            return new NotificationMessageBean(responseEntity.getBody(), true);
+            return new BaseResponseBean("Case Claim Response", responseEntity.getBody(), true);
         }
     }
 

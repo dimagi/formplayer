@@ -11,7 +11,6 @@ import java.util.Arrays;
  */
 public class NewFormSessionResponse extends SessionBean{
     private QuestionBean[] tree;
-    private String title;
     private String[] langs;
 
     public NewFormSessionResponse(){}
@@ -30,10 +29,6 @@ public class NewFormSessionResponse extends SessionBean{
 
     public String[] getLangs(){
         return langs;
-    }
-
-    public String getTitle(){
-        return title;
     }
 
     public String getSession_id(){return sessionId;}

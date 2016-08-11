@@ -7,23 +7,11 @@ import java.util.Arrays;
 /**
  * Created by willpride on 4/13/16.
  */
-public class MenuBean {
+public class MenuBean extends BaseResponseBean{
 
-    private String title;
     private String[] locales;
     private String[] breadcrumbs;
     private String menuSessionId;
-
-    private String message;
-    private boolean isError;
-
-    public String getTitle() {
-        return title;
-    }
-
-    void setTitle(String title) {
-        this.title = title;
-    }
 
     @Override
     public String toString(){
@@ -51,21 +39,5 @@ public class MenuBean {
 
     public void setMenuSessionId(String menuSessionId) {
         this.menuSessionId = menuSessionId;
-    }
-
-    public boolean isError() {
-        return isError;
-    }
-
-    public void setError(boolean error) {
-        isError = error;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 }
