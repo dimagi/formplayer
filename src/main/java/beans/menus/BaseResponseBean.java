@@ -3,7 +3,11 @@ package beans.menus;
 import beans.NotificationMessageBean;
 
 /**
- * Created by willpride on 8/11/16.
+ * Base class for responses being sent to the front end. Params are:
+ * title - self explanatory
+ * notification - A message String and error boolean to be displayed by frontend
+ * clearSession - True if the front end should redirect to the app home
+ *  NOTE: clearSession causes all other displayables to be disregarded
  */
 public class BaseResponseBean {
     protected NotificationMessageBean notification;
