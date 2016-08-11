@@ -71,6 +71,7 @@ public class MenuSession {
 
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
+    private HqAuth auth;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreService restoreService, HqAuth auth) throws Exception {
@@ -89,6 +90,7 @@ public class MenuSession {
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
         this.screen = getNextScreen();
+        this.auth = auth;
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -104,6 +106,7 @@ public class MenuSession {
         this.screen = getNextScreen();
         this.appId = appId;
         this.uuid = UUID.randomUUID().toString();
+        this.auth = auth;
     }
 
     private void resolveInstallReference(String installReference, String appId){
@@ -146,7 +149,7 @@ public class MenuSession {
             computeDatum();
             return getNextScreen();
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
-            QueryScreen queryScreen = new FormplayerQueryScreen();
+            QueryScreen queryScreen = new FormplayerQueryScreen(auth);
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
