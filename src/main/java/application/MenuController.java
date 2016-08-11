@@ -145,7 +145,7 @@ public class MenuController extends AbstractBaseController{
                                               Hashtable<String, String> queryDictionary,
                                               HqAuth auth) {
         nextScreen.answerPrompts(queryDictionary);
-        InputStream responseStream = nextScreen.makeQueryRequestReturnStream(auth);
+        InputStream responseStream = nextScreen.makeQueryRequestReturnStream();
         boolean success = nextScreen.processSuccess(responseStream);
         if(success){
             return new NotificationMessageBean("Successfully queried server", false);

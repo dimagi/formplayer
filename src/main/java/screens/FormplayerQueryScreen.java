@@ -1,6 +1,5 @@
 package screens;
 
-import auth.BasicAuth;
 import auth.HqAuth;
 import org.commcare.util.cli.QueryScreen;
 import org.springframework.http.HttpEntity;
@@ -20,7 +19,14 @@ import java.util.Hashtable;
  */
 public class FormplayerQueryScreen extends QueryScreen {
 
-    public String makeQueryRequest(HqAuth auth) {
+    HqAuth auth;
+
+    public FormplayerQueryScreen(HqAuth auth){
+        super();
+        this.auth = auth;
+    }
+
+    public String makeQueryRequest() {
         URL url = getBaseUrl();
         Hashtable<String, String> params = getQueryParams();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url.toString());
@@ -35,8 +41,9 @@ public class FormplayerQueryScreen extends QueryScreen {
         return response.getBody();
     }
 
-    public InputStream makeQueryRequestReturnStream(HqAuth auth) {
-        String responseString = makeQueryRequest(auth);
+    @Override
+    public InputStream makeQueryRequestReturnStream() {
+        String responseString = makeQueryRequest();
         return new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8));
     }
 
