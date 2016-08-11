@@ -7,6 +7,10 @@ public class NotificationMessageBean {
     private boolean isError;
     private String message;
 
+    public NotificationMessageBean(){
+        this(null, false);
+    }
+
     public NotificationMessageBean(String message, boolean isError) {
         this.message = message;
         this.isError = isError;
