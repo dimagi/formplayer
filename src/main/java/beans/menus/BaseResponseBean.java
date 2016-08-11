@@ -8,12 +8,14 @@ import beans.NotificationMessageBean;
 public class BaseResponseBean {
     protected NotificationMessageBean notification;
     protected String title;
+    protected boolean clearSession;
 
     public BaseResponseBean() {}
 
-    public BaseResponseBean(String title, String message, boolean isError){
+    public BaseResponseBean(String title, String message, boolean isError, boolean clearSession){
         this.title = title;
         this.notification = new NotificationMessageBean(message, isError);
+        this.clearSession = clearSession;
     }
 
     public String getTitle() {
@@ -30,5 +32,19 @@ public class BaseResponseBean {
 
     public void setNotification(NotificationMessageBean notification) {
         this.notification = notification;
+    }
+
+    public boolean isClearSession() {
+        return clearSession;
+    }
+
+    public void setClearSession(boolean clearSession) {
+        this.clearSession = clearSession;
+    }
+
+    @Override
+    public String toString(){
+        return "BaseResponseBean title=" + title + ", notificaiton=" + notification + ", " +
+                "clearSession=" + clearSession;
     }
 }
