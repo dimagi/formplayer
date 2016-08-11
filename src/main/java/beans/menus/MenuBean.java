@@ -14,6 +14,9 @@ public class MenuBean {
     private String[] breadcrumbs;
     private String menuSessionId;
 
+    private String message;
+    private boolean isError;
+
     public String getTitle() {
         return title;
     }
@@ -48,5 +51,21 @@ public class MenuBean {
 
     public void setMenuSessionId(String menuSessionId) {
         this.menuSessionId = menuSessionId;
+    }
+
+    public boolean isError() {
+        return isError;
+    }
+
+    public void setError(boolean error) {
+        isError = error;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

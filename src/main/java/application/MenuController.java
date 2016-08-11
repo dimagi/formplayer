@@ -3,7 +3,7 @@ package application;
 import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
-import beans.ErrorResponseBean;
+import beans.NotificationMessageBean;
 import beans.InstallRequestBean;
 import beans.SessionNavigationBean;
 import io.swagger.annotations.Api;
@@ -122,7 +122,7 @@ public class MenuController extends AbstractBaseController{
             }
             return null;
         } else{
-            return new ErrorResponseBean(responseEntity.getBody());
+            return new NotificationMessageBean(responseEntity.getBody(), true);
         }
     }
 
