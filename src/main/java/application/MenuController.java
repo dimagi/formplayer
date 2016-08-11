@@ -11,6 +11,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.aspectj.weaver.ast.Not;
+import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.Screen;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -23,6 +25,7 @@ import session.MenuSession;
 import util.Constants;
 import util.SessionUtils;
 
+import java.io.InputStream;
 import java.util.Hashtable;
 
 /**
@@ -87,34 +90,19 @@ public class MenuController extends AbstractBaseController{
             menuSession.handleInput(selection);
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             Screen nextScreen = menuSession.getNextScreen();
-            // If we've encountered a QueryScreen and have a QueryDictionary, do the query
-            if(nextScreen instanceof FormplayerQueryScreen && sessionNavigationBean.getQueryDictionary() != null){
-                log.info("Formplayer doing query with dictionary " + sessionNavigationBean.getQueryDictionary());
-                notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
-                        sessionNavigationBean.getQueryDictionary(),
-                        new DjangoAuth(authToken));
-                menuSession.updateScreen();
-                nextScreen = menuSession.getNextScreen();
-                log.info("Next screen after query: " + nextScreen);
-            }
-            // If we've encountered a SyncScreen, perform the sync
-            if(nextScreen instanceof FormplayerSyncScreen){
-                notificationMessageBean = doSync(
-                        (FormplayerSyncScreen)nextScreen,
-                        new DjangoAuth(authToken));
 
-                BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
-                if(postSyncResponse != null){
-                    // If not null, we have a form or menu to redirect to
-                    postSyncResponse.setNotification(notificationMessageBean);
-                    return postSyncResponse;
-                } else{
-                    // Otherwise, return use to the app root
-                    menuSession = performInstall(sessionNavigationBean, authToken);
-                    postSyncResponse = getNextMenu(menuSession);
-                    postSyncResponse.setNotification(notificationMessageBean);
-                    return postSyncResponse;
-                }
+            checkDoQuery(nextScreen,
+                    menuSession,
+                    notificationMessageBean,
+                    sessionNavigationBean.getQueryDictionary(),
+                    auth);
+
+            BaseResponseBean syncResponse = checkDoSync(nextScreen,
+                    menuSession,
+                    notificationMessageBean,
+                    auth);
+            if(syncResponse != null){
+                return syncResponse;
             }
         }
         nextMenu = getNextMenu(menuSession,
@@ -129,6 +117,73 @@ public class MenuController extends AbstractBaseController{
         } else{
             return new BaseResponseBean(null, "Redirecting after case claim", false, true);
         }
+    }
+
+    /**
+     * If we've encountered a QueryScreen and have a QueryDictionary, do the query
+     * and update the session, screen, and notification message accordingly.
+     *
+     * Will do nothing if this wasn't a query screen.
+     */
+    private void checkDoQuery(Screen nextScreen,
+                              MenuSession menuSession,
+                              NotificationMessageBean notificationMessageBean,
+                              Hashtable<String, String> quertDictionary,
+                              DjangoAuth auth) throws CommCareSessionException {
+        if(nextScreen instanceof FormplayerQueryScreen && quertDictionary != null){
+            log.info("Formplayer doing query with dictionary " + quertDictionary);
+            notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
+                    quertDictionary,
+                    auth);
+            menuSession.updateScreen();
+            nextScreen = menuSession.getNextScreen();
+            log.info("Next screen after query: " + nextScreen);
+        }
+    }
+
+    protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
+                                              Hashtable<String, String> queryDictionary,
+                                              HqAuth auth) {
+        nextScreen.answerPrompts(queryDictionary);
+        InputStream responseStream = nextScreen.makeQueryRequestReturnStream(auth);
+        boolean success = nextScreen.processSuccess(responseStream);
+        if(success){
+            return new NotificationMessageBean("Successfully queried server", false);
+        } else{
+            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), false);
+        }
+    }
+
+    /**
+     * If we've encountered a sync screen, performing the sync and update the notification
+     * and screen accordingly. After a sync, we can either pop another menu/form to begin
+     * or just return to the app menu.
+     *
+     * Return null if this wasn't a sync screen.
+     */
+    private BaseResponseBean checkDoSync(Screen nextScreen,
+                             MenuSession menuSession,
+                             NotificationMessageBean notificationMessageBean,
+                             DjangoAuth auth) throws Exception {
+        // If we've encountered a SyncScreen, perform the sync
+        if(nextScreen instanceof FormplayerSyncScreen){
+            notificationMessageBean = doSync(
+                    (FormplayerSyncScreen)nextScreen,
+                    auth);
+
+            BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+            if(postSyncResponse != null){
+                // If not null, we have a form or menu to redirect to
+                postSyncResponse.setNotification(notificationMessageBean);
+                return postSyncResponse;
+            } else{
+                // Otherwise, return use to the app root
+                postSyncResponse = new BaseResponseBean(null, "Redirecting after sync", false, true);
+                postSyncResponse.setNotification(notificationMessageBean);
+                return postSyncResponse;
+            }
+        }
+        return null;
     }
 
     private NotificationMessageBean doSync(FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {

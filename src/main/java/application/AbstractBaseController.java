@@ -106,19 +106,6 @@ public abstract class AbstractBaseController {
         }
     }
 
-    protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
-                                          Hashtable<String, String> queryDictionary,
-                                          HqAuth auth) {
-        nextScreen.answerPrompts(queryDictionary);
-        InputStream responseStream = nextScreen.makeQueryRequestReturnStream(auth);
-        boolean success = nextScreen.processSuccess(responseStream);
-        if(success){
-            return new NotificationMessageBean("Successfully queried server", false);
-        } else{
-            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), false);
-        }
-    }
-
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
         return new QueryResponseBean(nextScreen, sessionWrapper);
     }
