@@ -2,10 +2,7 @@ package application;
 
 import auth.HqAuth;
 import beans.NewFormSessionResponse;
-import beans.menus.CommandListResponseBean;
-import beans.menus.EntityListResponse;
-import beans.menus.MenuBean;
-import beans.menus.QueryResponseBean;
+import beans.menus.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
@@ -57,21 +54,21 @@ public abstract class AbstractBaseController {
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
 
 
-    public Object resolveFormGetNext(MenuSession menuSession) throws Exception {
+    public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         menuSession.getSessionWrapper().syncState();
         if(menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
-            Object nextMenu = getNextMenu(menuSession);
+            BaseResponseBean nextMenu = getNextMenu(menuSession);
             menuSessionRepo.save(new SerializableMenuSession(menuSession));
             return nextMenu;
         }
         return null;
     }
 
-    public Object getNextMenu(MenuSession menuSession) throws Exception {
+    public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
         return getNextMenu(menuSession, 0, "", null);
     }
 
-    protected Object getNextMenu(MenuSession menuSession, int offset, String searchText,
+    protected BaseResponseBean getNextMenu(MenuSession menuSession, int offset, String searchText,
                                  String[] breadcrumbs) throws Exception {
         Screen nextScreen;
 
