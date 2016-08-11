@@ -2,6 +2,7 @@ package application;
 
 import auth.HqAuth;
 import beans.NewFormSessionResponse;
+import beans.NotificationMessageBean;
 import beans.menus.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,15 +69,21 @@ public abstract class AbstractBaseController {
         return getNextMenu(menuSession, 0, "", null);
     }
 
-    protected BaseResponseBean getNextMenu(MenuSession menuSession, int offset, String searchText,
-                                 String[] breadcrumbs) throws Exception {
+    protected BaseResponseBean getNextMenu(MenuSession menuSession,
+                                           int offset,
+                                           String searchText,
+                                           String[] breadcrumbs) throws Exception {
         Screen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
         nextScreen = menuSession.getNextScreen();
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
-            return generateFormEntryScreen(menuSession);
+            if(menuSession.getSessionWrapper().getForm() != null) {
+                return generateFormEntryScreen(menuSession);
+            } else{
+                return null;
+            }
         } else {
             MenuBean menuResponseBean;
 
@@ -99,12 +106,17 @@ public abstract class AbstractBaseController {
         }
     }
 
-    protected void doQuery(FormplayerQueryScreen nextScreen,
+    protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
                                           Hashtable<String, String> queryDictionary,
                                           HqAuth auth) {
         nextScreen.answerPrompts(queryDictionary);
         InputStream responseStream = nextScreen.makeQueryRequestReturnStream(auth);
         boolean success = nextScreen.processSuccess(responseStream);
+        if(success){
+            return new NotificationMessageBean("Successfully queried server", false);
+        } else{
+            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), false);
+        }
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
