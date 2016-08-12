@@ -1,5 +1,6 @@
 package beans;
 
+import beans.menus.BaseResponseBean;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -12,7 +13,7 @@ import java.util.Arrays;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FormEntryResponseBean {
+public class FormEntryResponseBean extends BaseResponseBean{
     private QuestionBean[] tree;
     private String status;
     private int sequenceId;
