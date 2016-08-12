@@ -3,15 +3,14 @@ package application;
 import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
-import beans.NotificationMessageBean;
 import beans.InstallRequestBean;
+import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.aspectj.weaver.ast.Not;
 import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.Screen;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +25,7 @@ import util.Constants;
 import util.SessionUtils;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -87,7 +87,14 @@ public class MenuController extends AbstractBaseController{
         NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
         for(int i=1; i <= selections.length; i++) {
             String selection = selections[i - 1];
-            menuSession.handleInput(selection);
+            boolean gotNextScreen = menuSession.handleInput(selection);
+            if(!gotNextScreen) {
+                // If we overflowed selections, just return the last real screen.
+                // TODO: Once case claim is merge, set notification here.
+                log.info("Couldn't get next screen with selection " + selection +
+                        " of selections " + Arrays.toString(selections));
+                break;
+            }
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             Screen nextScreen = menuSession.getNextScreen();
 
