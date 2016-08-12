@@ -17,6 +17,8 @@ import session.MenuSession;
 import util.Constants;
 import util.SessionUtils;
 
+import java.util.Arrays;
+
 /**
  * Controller (API endpoint) containing all session navigation functionality.
  * This includes module, form, case, and session (incomplete form) selection.
@@ -74,7 +76,14 @@ public class MenuController extends AbstractBaseController{
         titles[0] = menuSession.getNextScreen().getScreenTitle();
         for(int i=1; i <= selections.length; i++) {
             String selection = selections[i - 1];
-            menuSession.handleInput(selection);
+            boolean gotNextScreen = menuSession.handleInput(selection);
+            if(!gotNextScreen) {
+                // If we overflowed selections, just return the last real screen.
+                // TODO: Once case claim is merge, set notification here.
+                log.info("Couldn't get next screen with selection " + selection +
+                        " of selections " + Arrays.toString(selections));
+                break;
+            }
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
         }
         nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(),
