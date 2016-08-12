@@ -30,6 +30,7 @@ public class FormplayerSyncScreen extends SyncScreen {
             SyncPost syncPost = ((SyncEntry)commandEntry).getSyncPost();
             Hashtable<String, String> params = syncPost.getEvaluatedParams(sessionWrapper.getEvaluationContext());
             UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
+            // hack because HQ isn't accepting the first query param key properly
             builder.queryParam("buffer", "buffer");
             HttpHeaders headers = auth.getAuthHeaders();
             for(String key: params.keySet()){
