@@ -7,24 +7,16 @@ import java.util.Arrays;
 /**
  * Created by willpride on 4/13/16.
  */
-public class MenuBean {
+public class MenuBean extends BaseResponseBean{
 
-    private String title;
     private String[] locales;
     private String[] breadcrumbs;
     private String menuSessionId;
 
-    public String getTitle() {
-        return title;
-    }
-
-    void setTitle(String title) {
-        this.title = title;
-    }
-
     @Override
     public String toString(){
-        return "MenuBean [title=" + title + ", breadcrumbs: " + Arrays.toString(breadcrumbs) + "]";
+        return "MenuBean [title=" + title + ", breadcrumbs: " + Arrays.toString(breadcrumbs) +
+                "super=" + super.toString() + "]";
     }
 
     public String[] getLocales() {
