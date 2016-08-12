@@ -124,11 +124,19 @@ public class MenuSession {
         return  "/a/" + this.domain + "/apps/api/download_ccz/?app_id=" + appId + "#hack=commcare.ccz";
     }
 
-    public void handleInput(String input) throws CommCareSessionException {
+    /**
+     * @param input the user step input
+     * @return Whether or not we were able to evaluate to a new screen.
+     */
+    public boolean handleInput(String input) throws CommCareSessionException {
         log.info("Screen " + screen + " handling input " + input);
+        if(screen == null) {
+            return false;
+        }
         boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
         screen = getNextScreen();
         log.info("Screen " + screen + " set to " + ret);
+        return true;
     }
 
     public Screen getNextScreen() throws CommCareSessionException {
