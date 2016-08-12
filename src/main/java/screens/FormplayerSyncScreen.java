@@ -8,6 +8,7 @@ import org.commcare.suite.model.SyncEntry;
 import org.commcare.suite.model.SyncPost;
 import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.Screen;
+import org.commcare.util.cli.SyncScreen;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -19,28 +20,8 @@ import java.util.Hashtable;
 /**
  * Created by willpride on 8/8/16.
  */
-public class FormplayerSyncScreen extends Screen{
+public class FormplayerSyncScreen extends SyncScreen {
     SessionWrapper sessionWrapper;
-
-    @Override
-    public void init(SessionWrapper sessionWrapper) throws CommCareSessionException {
-        this.sessionWrapper = sessionWrapper;
-    }
-
-    @Override
-    public void prompt(PrintStream printStream) throws CommCareSessionException {
-
-    }
-
-    @Override
-    public boolean handleInputAndUpdateSession(CommCareSession commCareSession, String s) throws CommCareSessionException {
-        return false;
-    }
-
-    @Override
-    public String[] getOptions() {
-        return new String[0];
-    }
 
     public ResponseEntity<String> launchRemoteSync(HqAuth auth){
         String command = sessionWrapper.getCommand();
