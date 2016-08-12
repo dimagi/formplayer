@@ -195,6 +195,9 @@ public class MenuController extends AbstractBaseController{
 
     private NotificationMessageBean doSync(FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {
         ResponseEntity<String> responseEntity = screen.launchRemoteSync(djangoAuth);
+        if(responseEntity == null){
+            return new NotificationMessageBean("Session error, expected sync block but didn't get one.", true);
+        }
         if(responseEntity.getStatusCode().is2xxSuccessful()){
             return new NotificationMessageBean("Case claim successful", false);
         } else{
