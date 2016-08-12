@@ -1,8 +1,11 @@
 package session;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.session.SessionInstanceBuilder;
+import org.commcare.suite.model.FormEntry;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.AbstractTreeElement;
@@ -17,6 +20,7 @@ import java.util.Map;
 class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
     private final Map<String, String> injectedSessionData;
+    private final Log log = LogFactory.getLog(FormplayerInstanceInitializer.class);
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
                                          UserSandbox mSandbox, CommCarePlatform mPlatform,
@@ -31,6 +35,9 @@ class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
             throw new RuntimeException("Cannot generate session instance with undeclared platform!");
         }
         User u = mSandbox.getLoggedInUser();
+        if(u == null){
+            log.error("Got null logged in user for username, this is bad.");
+        }
         if(injectedSessionData != null) {
             for (String key : injectedSessionData.keySet()) {
                 session.setDatum(key, injectedSessionData.get(key));

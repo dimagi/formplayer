@@ -28,6 +28,7 @@ public class RestoreUtils {
         UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
+        mSandbox.setLoggedInUser(mSandbox.getUserStorage().read(0));
         return mSandbox;
     }
 
