@@ -10,12 +10,12 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.FormIdDatum;
-import org.commcare.suite.model.SessionDatum;
+import org.commcare.suite.model.*;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.QueryScreen;
 import org.commcare.util.cli.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -27,8 +27,15 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import repo.SerializableMenuSession;
+import screens.FormplayerQueryScreen;
+import screens.FormplayerSyncScreen;
 import services.InstallService;
 import services.RestoreService;
 import util.SessionUtils;
@@ -37,7 +44,9 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.UUID;
 
 /**
@@ -62,6 +71,7 @@ public class MenuSession {
 
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
+    private HqAuth auth;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreService restoreService, HqAuth auth) throws Exception {
@@ -80,6 +90,7 @@ public class MenuSession {
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
         this.screen = getNextScreen();
+        this.auth = auth;
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -95,6 +106,7 @@ public class MenuSession {
         this.screen = getNextScreen();
         this.appId = appId;
         this.uuid = UUID.randomUUID().toString();
+        this.auth = auth;
     }
 
     private void resolveInstallReference(String installReference, String appId){
@@ -128,7 +140,7 @@ public class MenuSession {
     }
 
     public Screen getNextScreen() throws CommCareSessionException {
-        String next = sessionWrapper.getNeededData();
+        String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
 
         if (next == null) {
             //XFORM TIME!
@@ -144,6 +156,14 @@ public class MenuSession {
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
             return getNextScreen();
+        } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
+            QueryScreen queryScreen = new FormplayerQueryScreen(auth);
+            queryScreen.init(sessionWrapper);
+            return queryScreen;
+        } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
+            FormplayerSyncScreen syncScreen = new FormplayerSyncScreen();
+            syncScreen.init(sessionWrapper);
+            return syncScreen;
         }
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
     }
@@ -239,5 +259,9 @@ public class MenuSession {
 
     public String getLocale() {
         return locale;
+    }
+
+    public void updateScreen() throws CommCareSessionException {
+        this.screen = getNextScreen();
     }
 }

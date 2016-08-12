@@ -4,20 +4,29 @@ import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.InstallRequestBean;
+import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
+import beans.menus.BaseResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.util.cli.CommCareSessionException;
+import org.commcare.util.cli.Screen;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
+import screens.FormplayerQueryScreen;
+import screens.FormplayerSyncScreen;
 import session.MenuSession;
 import util.Constants;
 import util.SessionUtils;
 
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Hashtable;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -35,10 +44,10 @@ public class MenuController extends AbstractBaseController{
 
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
-    public Object installRequest(@RequestBody InstallRequestBean installRequestBean,
-                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Received install request: " + installRequestBean);
-        Object response = getNextMenu(performInstall(installRequestBean, authToken));
+        BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
         log.info("Returning install response: " + response);
         return response;
     }
@@ -58,22 +67,24 @@ public class MenuController extends AbstractBaseController{
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
         MenuSession menuSession;
+        DjangoAuth auth = new DjangoAuth(authToken);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if(menuSessionId != null && !"".equals(menuSessionId)) {
             menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
-                    installService, restoreService, new DjangoAuth(authToken));
+                    installService, restoreService, auth);
             menuSession.getSessionWrapper().syncState();
         } else{
             menuSession = performInstall(sessionNavigationBean, authToken);
         }
         String[] selections = sessionNavigationBean.getSelections();
-        Object nextMenu = getNextMenu(menuSession);
+        BaseResponseBean nextMenu = getNextMenu(menuSession);
         if (selections == null) {
             return nextMenu;
         }
 
         String[] titles = new String[selections.length + 1];
         titles[0] = menuSession.getNextScreen().getScreenTitle();
+        NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
         for(int i=1; i <= selections.length; i++) {
             String selection = selections[i - 1];
             boolean gotNextScreen = menuSession.handleInput(selection);
@@ -85,13 +96,113 @@ public class MenuController extends AbstractBaseController{
                 break;
             }
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
-        }
-        nextMenu = getNextMenu(menuSession, sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText(), titles);
+            Screen nextScreen = menuSession.getNextScreen();
 
-        menuSessionRepo.save(new SerializableMenuSession(menuSession));
-        log.info("Returning menu: " + nextMenu);
-        return nextMenu;
+            checkDoQuery(nextScreen,
+                    menuSession,
+                    notificationMessageBean,
+                    sessionNavigationBean.getQueryDictionary(),
+                    auth);
+
+            BaseResponseBean syncResponse = checkDoSync(nextScreen,
+                    menuSession,
+                    notificationMessageBean,
+                    auth);
+            if(syncResponse != null){
+                return syncResponse;
+            }
+        }
+        nextMenu = getNextMenu(menuSession,
+                sessionNavigationBean.getOffset(),
+                sessionNavigationBean.getSearchText(),
+                titles);
+        if(nextMenu != null){
+            nextMenu.setNotification(notificationMessageBean);
+            menuSessionRepo.save(new SerializableMenuSession(menuSession));
+            log.info("Returning menu: " + nextMenu);
+            return nextMenu;
+        } else{
+            return new BaseResponseBean(null, "Redirecting after case claim", false, true);
+        }
+    }
+
+    /**
+     * If we've encountered a QueryScreen and have a QueryDictionary, do the query
+     * and update the session, screen, and notification message accordingly.
+     *
+     * Will do nothing if this wasn't a query screen.
+     */
+    private void checkDoQuery(Screen nextScreen,
+                              MenuSession menuSession,
+                              NotificationMessageBean notificationMessageBean,
+                              Hashtable<String, String> quertDictionary,
+                              DjangoAuth auth) throws CommCareSessionException {
+        if(nextScreen instanceof FormplayerQueryScreen && quertDictionary != null){
+            log.info("Formplayer doing query with dictionary " + quertDictionary);
+            notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
+                    quertDictionary,
+                    auth);
+            menuSession.updateScreen();
+            nextScreen = menuSession.getNextScreen();
+            log.info("Next screen after query: " + nextScreen);
+        }
+    }
+
+    protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
+                                              Hashtable<String, String> queryDictionary,
+                                              HqAuth auth) {
+        nextScreen.answerPrompts(queryDictionary);
+        InputStream responseStream = nextScreen.makeQueryRequestReturnStream();
+        boolean success = nextScreen.processSuccess(responseStream);
+        if(success){
+            return new NotificationMessageBean("Successfully queried server", false);
+        } else{
+            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), false);
+        }
+    }
+
+    /**
+     * If we've encountered a sync screen, performing the sync and update the notification
+     * and screen accordingly. After a sync, we can either pop another menu/form to begin
+     * or just return to the app menu.
+     *
+     * Return null if this wasn't a sync screen.
+     */
+    private BaseResponseBean checkDoSync(Screen nextScreen,
+                             MenuSession menuSession,
+                             NotificationMessageBean notificationMessageBean,
+                             DjangoAuth auth) throws Exception {
+        // If we've encountered a SyncScreen, perform the sync
+        if(nextScreen instanceof FormplayerSyncScreen){
+            notificationMessageBean = doSync(
+                    (FormplayerSyncScreen)nextScreen,
+                    auth);
+
+            BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+            if(postSyncResponse != null){
+                // If not null, we have a form or menu to redirect to
+                postSyncResponse.setNotification(notificationMessageBean);
+                return postSyncResponse;
+            } else{
+                // Otherwise, return use to the app root
+                postSyncResponse = new BaseResponseBean(null, "Redirecting after sync", false, true);
+                postSyncResponse.setNotification(notificationMessageBean);
+                return postSyncResponse;
+            }
+        }
+        return null;
+    }
+
+    private NotificationMessageBean doSync(FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {
+        ResponseEntity<String> responseEntity = screen.launchRemoteSync(djangoAuth);
+        if(responseEntity == null){
+            return new NotificationMessageBean("Session error, expected sync block but didn't get one.", true);
+        }
+        if(responseEntity.getStatusCode().is2xxSuccessful()){
+            return new NotificationMessageBean("Case claim successful", false);
+        } else{
+            return new NotificationMessageBean("Case claim failed with message: " + responseEntity.getBody(), true);
+        }
     }
 
 
