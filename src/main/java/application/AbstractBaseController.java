@@ -1,15 +1,13 @@
 package application;
 
+import auth.HqAuth;
 import beans.NewFormSessionResponse;
-import beans.menus.CommandListResponseBean;
-import beans.menus.EntityListResponse;
-import beans.menus.MenuBean;
+import beans.NotificationMessageBean;
+import beans.menus.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.MenuScreen;
-import org.commcare.util.cli.Screen;
+import org.commcare.util.cli.*;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -21,15 +19,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
+import screens.FormplayerQueryScreen;
 import services.InstallService;
 import services.RestoreService;
 import session.FormSession;
 import session.MenuSession;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Hashtable;
 
 /**
  * Base Controller class containing exception handling logic and
@@ -58,33 +59,35 @@ public abstract class AbstractBaseController {
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
 
 
-    public Object resolveFormGetNext(MenuSession menuSession) throws Exception {
+    public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         menuSession.getSessionWrapper().syncState();
         if(menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
-            Object nextMenu = getNextMenu(menuSession);
+            BaseResponseBean nextMenu = getNextMenu(menuSession);
             menuSessionRepo.save(new SerializableMenuSession(menuSession));
             return nextMenu;
         }
         return null;
     }
 
-    public Object getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, 0);
+    public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
+        return getNextMenu(menuSession, 0, "", null);
     }
 
-    private Object getNextMenu(MenuSession menuSession, int offset) throws Exception {
-        return getNextMenu(menuSession, offset, "", null);
-    }
-
-    protected Object getNextMenu(MenuSession menuSession, int offset, String searchText, String[] breadcrumbs) throws Exception {
-
+    protected BaseResponseBean getNextMenu(MenuSession menuSession,
+                                           int offset,
+                                           String searchText,
+                                           String[] breadcrumbs) throws Exception {
         Screen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
         nextScreen = menuSession.getNextScreen();
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
-            return generateFormEntryScreen(menuSession);
+            if(menuSession.getSessionWrapper().getForm() != null) {
+                return generateFormEntryScreen(menuSession);
+            } else{
+                return null;
+            }
         } else {
             MenuBean menuResponseBean;
 
@@ -97,12 +100,18 @@ public abstract class AbstractBaseController {
             else if (nextScreen instanceof EntityScreen) {
                 menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset, searchText,
                         menuSession.getId());
+            } else if(nextScreen instanceof FormplayerQueryScreen){
+                    menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
             } else {
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
             menuResponseBean.setBreadcrumbs(breadcrumbs);
             return menuResponseBean;
         }
+    }
+
+    private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
+        return new QueryResponseBean(nextScreen, sessionWrapper);
     }
 
     private CommandListResponseBean generateMenuScreen(MenuScreen nextScreen, SessionWrapper session,

@@ -81,9 +81,9 @@ public class FormplayerConfigEngine {
             }
 
         });
-        // Need to do this to register the propertymanager with the new storage (ugh)
+        // Need to do this to register the PropertyManager with the new storage (ugh)
         PropertyManager.initDefaultPropertyManager();
-
+        System.out.println("Registered Property Manager for username: " + username);
         StorageManager.registerStorage(Profile.STORAGE_KEY, Profile.class);
         StorageManager.registerStorage(Suite.STORAGE_KEY, Suite.class);
         StorageManager.registerStorage(FormDef.STORAGE_KEY, FormDef.class);
