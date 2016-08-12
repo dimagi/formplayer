@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
- * Created by willpride on 8/8/16.
+ * Screen to make a sync request to HQ after a case claim
  */
 public class FormplayerSyncScreen extends SyncScreen {
     SessionWrapper sessionWrapper;
@@ -49,8 +49,7 @@ public class FormplayerSyncScreen extends SyncScreen {
             return response;
         } else {
             // expected a sync entry; clear session and show vague 'session error' message to user
-            //clearSessionAndExit(asw, true);
+            return null;
         }
-        return null;
     }
 }
