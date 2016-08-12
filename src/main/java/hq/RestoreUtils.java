@@ -5,9 +5,11 @@ import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.parse.ParseUtilsHelper;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xform.parse.XFormParser;
@@ -28,7 +30,13 @@ public class RestoreUtils {
         UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
-        mSandbox.setLoggedInUser(mSandbox.getUserStorage().read(0));
+        // initialize our sandbox's logged in user
+        for (IStorageIterator<User> iterator = mSandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
+            User u = iterator.nextRecord();
+            if (username.equalsIgnoreCase(u.getUsername())) {
+                mSandbox.setLoggedInUser(u);
+            }
+        }
         return mSandbox;
     }
 
