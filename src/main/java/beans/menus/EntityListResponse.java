@@ -39,7 +39,8 @@ public class EntityListResponse extends MenuBean {
 
     private boolean usesCaseTiles;
 
-    public EntityListResponse(){}
+    public EntityListResponse() {
+    }
 
     public EntityListResponse(EntityScreen nextScreen, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
@@ -48,7 +49,7 @@ public class EntityListResponse extends MenuBean {
 
         EvaluationContext ec = session.getEvaluationContext();
 
-        Vector<TreeReference> references = ec.expandReference(((EntityDatum)session.getNeededDatum()).getNodeset());
+        Vector<TreeReference> references = ec.expandReference(((EntityDatum) session.getNeededDatum()).getNodeset());
         processTitle(session);
         processEntities(nextScreen, references, ec, offset, searchText);
         processStyles(shortDetail);
@@ -60,16 +61,15 @@ public class EntityListResponse extends MenuBean {
 
     private void processCaseTiles(Detail shortDetail) {
         DetailField[] fields = shortDetail.getFields();
-        if(!shortDetail.usesGridView()){
+        if (!shortDetail.usesGridView()) {
             return;
         }
         tiles = new Tile[fields.length];
         setUsesCaseTiles(true);
-        for(int i = 0; i < fields.length; i++){
-            if(fields[i].isCaseTileField()){
+        for (int i = 0; i < fields.length; i++) {
+            if (fields[i].isCaseTileField()) {
                 tiles[i] = new Tile(fields[i]);
-            }
-            else{
+            } else {
                 tiles[i] = null;
             }
         }
@@ -89,36 +89,36 @@ public class EntityListResponse extends MenuBean {
                                  EvaluationContext ec, int offset,
                                  String searchText) {
         Entity[] allEntities = generateEntities(screen, references, ec);
-        if(searchText != null && !searchText.trim().equals("")) {
+        if (searchText != null && !searchText.trim().equals("")) {
             allEntities = filterEntities(allEntities, searchText);
         }
-        if(allEntities.length > CASE_LENGTH_LIMIT){
+        if (allEntities.length > CASE_LENGTH_LIMIT) {
             // we're doing pagination
             int end = offset + CASE_LENGTH_LIMIT;
             int length = CASE_LENGTH_LIMIT;
-            if(end > allEntities.length){
+            if (end > allEntities.length) {
                 end = allEntities.length;
                 length = end - offset;
             }
             entities = new Entity[length];
             System.arraycopy(allEntities, offset, entities, offset - offset, end - offset);
 
-            setPageCount((int)Math.ceil((double)allEntities.length/CASE_LENGTH_LIMIT));
-            setCurrentPage(offset/CASE_LENGTH_LIMIT);
-        } else{
+            setPageCount((int) Math.ceil((double) allEntities.length / CASE_LENGTH_LIMIT));
+            setCurrentPage(offset / CASE_LENGTH_LIMIT);
+        } else {
             entities = allEntities.clone();
         }
     }
 
     /**
      * @param allEntities the set of Entity objects to filter
-     * @param searchText the raw (space separated) searchText entry to split and filter with
+     * @param searchText  the raw (space separated) searchText entry to split and filter with
      * @return all Entitys containing one of the searchText strings
      */
     private Entity[] filterEntities(Entity[] allEntities, String searchText) {
 
         ArrayList<Entity> compiler = new ArrayList<Entity>();
-        for(Entity entity: allEntities){
+        for (Entity entity : allEntities) {
             if (matchEntity(entity, searchText)) {
                 compiler.add(entity);
             }
@@ -129,14 +129,14 @@ public class EntityListResponse extends MenuBean {
     }
 
     /**
-     * @param entity The Entity being matched against
+     * @param entity     The Entity being matched against
      * @param searchText The String being searched for
      * @return whether the Entity's data[] contains this string, ignoring case
      */
     private boolean matchEntity(Entity entity, String searchText) {
         String[] searchStrings = searchText.split(" ");
-        for(Object data: entity.getData()){
-            for(String searchString: searchStrings) {
+        for (Object data : entity.getData()) {
+            for (String searchString : searchStrings) {
                 if (data != null && data.toString().toLowerCase().contains(searchString.toLowerCase())) {
                     return true;
                 }
@@ -145,18 +145,20 @@ public class EntityListResponse extends MenuBean {
         return false;
     }
 
-    private Entity[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec){
+    private Entity[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec) {
         Entity[] entities = new Entity[references.size()];
         int i = 0;
         for (TreeReference entity : references) {
             Entity newEntity = processEntity(entity, screen, ec);
             EntityDetailSubscreen[] subscreens = processDetails(screen, ec, entity);
-            EntityDetailResponse[] responses = new EntityDetailResponse[subscreens.length];
-            for(int j = 0; j < subscreens.length; j++){
-                responses[j] = new EntityDetailResponse(subscreens[j]);
-                responses[j].setTitle(subscreens[j].getTitles()[j]);
+            if (subscreens != null) {
+                EntityDetailResponse[] responses = new EntityDetailResponse[subscreens.length];
+                for (int j = 0; j < subscreens.length; j++) {
+                    responses[j] = new EntityDetailResponse(subscreens[j]);
+                    responses[j].setTitle(subscreens[j].getTitles()[j]);
+                }
+                newEntity.setDetails(responses);
             }
-            newEntity.setDetails(responses);
             entities[i] = newEntity;
             i++;
         }
@@ -178,21 +180,25 @@ public class EntityListResponse extends MenuBean {
             Object o;
             try {
                 o = field.getTemplate().evaluate(context);
-            } catch(XPathException e) {
+            } catch (XPathException e) {
                 throw new RuntimeException(e);
             }
             data[i] = o;
-            i ++;
+            i++;
         }
         ret.setData(data);
         return ret;
     }
 
-    private EntityDetailSubscreen[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref){
-        EvaluationContext subContext = new EvaluationContext(ec, ref);
+    private EntityDetailSubscreen[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref) {
         Detail[] detailList = screen.getLongDetailList();
+        if (detailList == null || !(detailList.length > 0)) {
+            // No details, just return null
+            return null;
+        }
+        EvaluationContext subContext = new EvaluationContext(ec, ref);
         EntityDetailSubscreen[] ret = new EntityDetailSubscreen[detailList.length];
-        for(int i = 0; i < detailList.length; i++){
+        for (int i = 0; i < detailList.length; i++) {
             ret[i] = new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext));
         }
         return ret;
@@ -209,10 +215,10 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
-    private void processActions(SessionWrapper session){
-        Vector<Action> actions = session.getDetail(((EntityDatum)session.getNeededDatum()).getShortDetail()).getCustomActions();
+    private void processActions(SessionWrapper session) {
+        Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions();
         // Assume we only have one TODO WSP: is that correct?
-        if(actions != null && !actions.isEmpty()) {
+        if (actions != null && !actions.isEmpty()) {
             Action action = actions.firstElement();
             setAction(new DisplayElement(action, session.getEvaluationContext()));
         }
@@ -243,7 +249,7 @@ public class EntityListResponse extends MenuBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
                 ", action=" + action + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) +
                 ", locales=" + Arrays.toString(getLocales()) + "]";
@@ -284,6 +290,7 @@ public class EntityListResponse extends MenuBean {
     public String getType() {
         return type;
     }
+
     public boolean getUsesCaseTiles() {
         return usesCaseTiles;
     }
@@ -292,7 +299,7 @@ public class EntityListResponse extends MenuBean {
         this.usesCaseTiles = usesCaseTiles;
     }
 
-    public Tile[] getTiles(){
+    public Tile[] getTiles() {
         return tiles;
     }
 }
