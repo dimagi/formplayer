@@ -90,8 +90,8 @@ public class FormController extends AbstractBaseController{
                 answerQuestionBean.getAnswer() != null? answerQuestionBean.getAnswer().toString() : null,
                 answerQuestionBean.getFormIndex());
         updateSession(formEntrySession, session);
-
         FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+        responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setSequenceId(formEntrySession.getSequenceId());
         log.info("Answer response: " + responseBean);
         return responseBean;
@@ -232,6 +232,7 @@ public class FormController extends AbstractBaseController{
                 newRepeatRequestBean.getRepeatIndex());
         updateSession(formEntrySession, serializableFormSession);
         FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
+        repeatResponseBean.setTitle(formEntrySession.getTitle());
         log.info("New response: " + repeatResponseBean);
         return repeatResponseBean;
     }
@@ -242,11 +243,14 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(deleteRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
-        JSONObject resp = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
+        JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
         updateSession(formEntrySession, serializableFormSession);
-        return mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+        FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
+        repeatResponseBean.setTitle(formEntrySession.getTitle());
+        log.info("Delete repeat response: " + repeatResponseBean);
+        return repeatResponseBean;
     }
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
