@@ -80,12 +80,15 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         String query = replaceTableName("INSERT into %s " +
                 "(id, instanceXml, formXml, " +
                 "restoreXml, username, initLang, sequenceId, " +
-                "domain, postUrl, sessionData, menu_session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "domain, postUrl, sessionData, menu_session_id," +
+                "title, dateOpened) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
                 session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
-                session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId()}, new int[] {
+                session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId(),
+                session.getTitle(), session.getDateOpened()}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY, Types.VARCHAR});
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR});
         return session;
     }
 
@@ -166,6 +169,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setDomain(rs.getString("domain"));
             session.setPostUrl(rs.getString("postUrl"));
             session.setMenuSessionId(rs.getString("menu_session_id"));
+            session.setTitle(rs.getString("title"));
+            session.setDateOpened(rs.getString("dateOpened"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if(st != null) {

@@ -14,7 +14,6 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.FormInstance;
-import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.form.api.FormEntryController;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Component;
 import util.PrototypeUtils;
 
 import java.io.*;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
@@ -280,6 +280,8 @@ public class FormSession {
         serializableFormSession.setRestoreXml(getRestoreXml());
         serializableFormSession.setPostUrl(getPostUrl());
         serializableFormSession.setMenuSessionId(menuSessionId);
+        serializableFormSession.setTitle(getTitle());
+        serializableFormSession.setDateOpened(new Date().toString());
         return serializableFormSession;
     }
 
