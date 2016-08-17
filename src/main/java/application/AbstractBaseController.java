@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.redis.util.RedisLockRegistry;
+import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
@@ -57,7 +58,7 @@ public abstract class AbstractBaseController {
     private HtmlEmail exceptionMessage;
 
     @Autowired
-    protected RedisLockRegistry userLockRegistry;
+    protected LockRegistry userLockRegistry;
 
     @Value("${commcarehq.host}")
     private String hqHost;
