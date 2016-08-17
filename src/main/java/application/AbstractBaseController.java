@@ -187,13 +187,7 @@ public abstract class AbstractBaseController {
 
     protected Lock getLockAndBlock(String username){
         Lock lock = userLockRegistry.obtain(username);
-        while(!obtainLock(lock)){
-            try {
-                wait(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        obtainLock(lock);
         return lock;
     }
 
