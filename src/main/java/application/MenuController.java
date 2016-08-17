@@ -27,6 +27,7 @@ import util.SessionUtils;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -66,6 +67,7 @@ public class MenuController extends AbstractBaseController{
     public Object navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
+        Lock lock = getLockAndBlock(sessionNavigationBean.getUsername());
         MenuSession menuSession;
         DjangoAuth auth = new DjangoAuth(authToken);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
@@ -79,6 +81,7 @@ public class MenuController extends AbstractBaseController{
         String[] selections = sessionNavigationBean.getSelections();
         BaseResponseBean nextMenu = getNextMenu(menuSession);
         if (selections == null) {
+            lock.unlock();
             return nextMenu;
         }
 
@@ -109,6 +112,7 @@ public class MenuController extends AbstractBaseController{
                     notificationMessageBean,
                     auth);
             if(syncResponse != null){
+                lock.unlock();
                 return syncResponse;
             }
         }
@@ -120,8 +124,10 @@ public class MenuController extends AbstractBaseController{
             nextMenu.setNotification(notificationMessageBean);
             menuSessionRepo.save(new SerializableMenuSession(menuSession));
             log.info("Returning menu: " + nextMenu);
+            lock.unlock();
             return nextMenu;
         } else{
+            lock.unlock();
             return new BaseResponseBean(null, "Redirecting after case claim", false, true);
         }
     }
