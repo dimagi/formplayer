@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -39,6 +40,9 @@ import javax.servlet.http.Cookie;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -77,6 +81,9 @@ public class BaseTestClass {
     @Autowired
     private InstallService installService;
 
+    @Autowired
+    protected LockRegistry userLockRegistry;
+
     @InjectMocks
     protected FormController formController;
 
@@ -99,6 +106,7 @@ public class BaseTestClass {
         Mockito.reset(restoreServiceMock);
         Mockito.reset(submitServiceMock);
         Mockito.reset(installService);
+        Mockito.reset(userLockRegistry);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
@@ -111,6 +119,46 @@ public class BaseTestClass {
         setupFormSessionRepoMock();
         setupMenuSessionRepoMock();
         setupInstallServiceMock();
+        setupLockMock();
+    }
+
+    private void setupLockMock() {
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return new Lock() {
+                    @Override
+                    public void lock() {
+
+                    }
+
+                    @Override
+                    public void lockInterruptibly() throws InterruptedException {
+
+                    }
+
+                    @Override
+                    public boolean tryLock() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
+                        return true;
+                    }
+
+                    @Override
+                    public void unlock() {
+
+                    }
+
+                    @Override
+                    public Condition newCondition() {
+                        return null;
+                    }
+                };
+            }
+        }).when(userLockRegistry).obtain(any());
     }
 
     private String resolveAppId(String ref){
