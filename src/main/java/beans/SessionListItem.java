@@ -7,17 +7,27 @@ import objects.SerializableFormSession;
  */
 public class SessionListItem {
 
-    private String sessionId;
+    private String title;
+    private String dateOpened;
 
     public SessionListItem(SerializableFormSession session){
-        this.sessionId = session.getId();
+        this.title = session.getTitle();
+        this.dateOpened = session.getDateOpened();
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public String getTitle() {
+        return title;
     }
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDateOpened() {
+        return dateOpened;
+    }
+
+    public void setDateOpened(String dateOpened) {
+        this.dateOpened = dateOpened;
     }
 }
