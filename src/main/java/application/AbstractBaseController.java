@@ -167,17 +167,15 @@ public abstract class AbstractBaseController {
         String stackTraceHTML = StringUtils.replace(
             StringUtils.join(stackTrace, "<br />"), "\t", "&nbsp;&nbsp;&nbsp;"
         );
-        return "<html>" +
-                "<h3>Message</h3>" +
+        return "<h3>Message</h3>" +
                 "<p>" + exception.getMessage() + "</p>" +
                 "<h3>Request URI</h3>" +
-                "<p>" + req.getRequestURI() + "<p>" +
+                "<p>" + req.getRequestURI() + "</p>" +
                 "<h3>Host</h3>" +
-                "<p>" + hqHost + "<p>" +
+                "<p>" + hqHost + "</p>" +
                 "<h3>Time</h3>" +
-                "<p>" + formattedTime + "<p>" +
+                "<p>" + formattedTime + "</p>" +
                 "<h3>Trace</h3>" +
-                "<p>" + stackTraceHTML + "</p>" +
-                "</html>";
+                "<p>" + stackTraceHTML + "</p>";
     }
 }
