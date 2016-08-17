@@ -86,7 +86,8 @@ public class EntityListResponse extends MenuBean {
     }
 
     private void processEntities(EntityScreen screen, Vector<TreeReference> references,
-                                 EvaluationContext ec, int offset,
+                                 EvaluationContext ec,
+                                 int offset,
                                  String searchText) {
         Entity[] allEntities = generateEntities(screen, references, ec);
         if (searchText != null && !searchText.trim().equals("")) {
@@ -94,6 +95,12 @@ public class EntityListResponse extends MenuBean {
         }
         if (allEntities.length > CASE_LENGTH_LIMIT) {
             // we're doing pagination
+
+            if(offset > allEntities.length){
+                throw new RuntimeException("Pagination offset " + offset +
+                        " exceeded case list length: " + allEntities.length);
+            }
+
             int end = offset + CASE_LENGTH_LIMIT;
             int length = CASE_LENGTH_LIMIT;
             if (end > allEntities.length) {
