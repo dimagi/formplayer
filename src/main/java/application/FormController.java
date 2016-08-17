@@ -32,6 +32,7 @@ import util.Constants;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -84,6 +85,7 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = formSessionRepo.findOne(answerQuestionBean.getSessionId());
+        Lock lock = getLockAndBlock(session.getUsername());
         FormSession formEntrySession = new FormSession(session);
         JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -94,6 +96,7 @@ public class FormController extends AbstractBaseController{
         responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setSequenceId(formEntrySession.getSequenceId());
         log.info("Answer response: " + responseBean);
+        lock.unlock();
         return responseBean;
     }
 

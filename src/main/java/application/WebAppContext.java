@@ -11,7 +11,11 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.integration.redis.util.RedisLockRegistry;
+import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -177,6 +181,18 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         ds.setUsername(hqPostgresUsername);
         ds.setPassword(hqPostgresPassword);
         return ds;
+    }
+
+    @Bean
+    public JedisConnectionFactory jedisConnFactory(){
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
+        return jedisConnectionFactory;
+    }
+
+    @Bean
+    public RedisLockRegistry userLockRegistry() {
+        JedisConnectionFactory jedisConnectionFactory = jedisConnFactory();
+        return new RedisLockRegistry(jedisConnectionFactory, "formplayer-user");
     }
 
     @Bean
