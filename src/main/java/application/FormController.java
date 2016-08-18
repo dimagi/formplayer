@@ -32,6 +32,7 @@ import util.Constants;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -59,12 +60,17 @@ public class FormController extends AbstractBaseController{
     public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("New form requests with bean: " + newSessionBean + " sessionId :" + authToken);
-        String postUrl = hqHost + newSessionBean.getPostUrl();
-        NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
-                formSessionRepo, xFormService, restoreService, authToken);
-        NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
-        log.info("Return new session response: " + newSessionResponse);
-        return newSessionResponse;
+        Lock lock = userLockRegistry.obtain(newSessionBean.getSessionData().getUsername());
+        try {
+            String postUrl = hqHost + newSessionBean.getPostUrl();
+            NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
+                    formSessionRepo, xFormService, restoreService, authToken);
+            NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
+            log.info("Return new session response: " + newSessionResponse);
+            return newSessionResponse;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @ApiOperation(value = "Open an incomplete form session")
@@ -73,10 +79,15 @@ public class FormController extends AbstractBaseController{
                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
         SerializableFormSession session = formSessionRepo.findOne(incompleteSessionRequestBean.getSessionId());
-        NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, authToken);
-        NewFormSessionResponse response = newFormRequest.getResponse();
-        log.info("Return incomplete session response: " + response);
-        return response;
+        Lock lock = userLockRegistry.obtain(session.getUsername());
+        try {
+            NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, authToken);
+            NewFormSessionResponse response = newFormRequest.getResponse();
+            log.info("Return incomplete session response: " + response);
+            return response;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @ApiOperation(value = "Answer the question at the given index")
@@ -84,17 +95,22 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = formSessionRepo.findOne(answerQuestionBean.getSessionId());
-        FormSession formEntrySession = new FormSession(session);
-        JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
-                formEntrySession.getFormEntryModel(),
-                answerQuestionBean.getAnswer() != null? answerQuestionBean.getAnswer().toString() : null,
-                answerQuestionBean.getFormIndex());
-        updateSession(formEntrySession, session);
-        FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
-        responseBean.setTitle(formEntrySession.getTitle());
-        responseBean.setSequenceId(formEntrySession.getSequenceId());
-        log.info("Answer response: " + responseBean);
-        return responseBean;
+        Lock lock = getLockAndBlock(session.getUsername());
+        try {
+            FormSession formEntrySession = new FormSession(session);
+            JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel(),
+                    answerQuestionBean.getAnswer() != null ? answerQuestionBean.getAnswer().toString() : null,
+                    answerQuestionBean.getFormIndex());
+            updateSession(formEntrySession, session);
+            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+            responseBean.setTitle(formEntrySession.getTitle());
+            responseBean.setSequenceId(formEntrySession.getSequenceId());
+            log.info("Answer response: " + responseBean);
+            return responseBean;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @ApiOperation(value = "Get the current question (deprecated)")
@@ -103,11 +119,16 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
         log.info("Current request: " + currentRequestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(currentRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
-        JSONObject resp = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(), formEntrySession.getFormEntryModel());
-        FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
-        log.info("Current response: " + responseBean);
-        return responseBean;
+        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        try {
+            FormSession formEntrySession = new FormSession(serializableFormSession);
+            JSONObject resp = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(), formEntrySession.getFormEntryModel());
+            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+            log.info("Current response: " + responseBean);
+            return responseBean;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @ApiOperation(value = "Submit the current form")
@@ -118,43 +139,48 @@ public class FormController extends AbstractBaseController{
         log.info("Submit form with bean: " + submitRequestBean);
 
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(submitRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
+        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        try {
+            FormSession formEntrySession = new FormSession(serializableFormSession);
 
-        log.info("Submitting form entry session has menuId: " + formEntrySession.getMenuSessionId());
+            log.info("Submitting form entry session has menuId: " + formEntrySession.getMenuSessionId());
 
-        SubmitResponseBean submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
-                formEntrySession.getFormEntryModel(),
-                submitRequestBean.getAnswers());
+            SubmitResponseBean submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel(),
+                    submitRequestBean.getAnswers());
 
-        if(!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
-                || !submitRequestBean.isPrevalidated()) {
-            submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
-        } else {
-            FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
+            if (!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
+                    || !submitRequestBean.isPrevalidated()) {
+                submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+            } else {
+                FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
 
-            ResponseEntity<String> submitResponse =
-                    submitService.submitForm(formEntrySession.getInstanceXml(),
-                            formEntrySession.getPostUrl(),
-                            new DjangoAuth(authToken));
+                ResponseEntity<String> submitResponse =
+                        submitService.submitForm(formEntrySession.getInstanceXml(),
+                                formEntrySession.getPostUrl(),
+                                new DjangoAuth(authToken));
 
-            if (!submitResponse.getStatusCode().is2xxSuccessful()) {
-                submitResponseBean.setStatus("error");
-                log.info("Submit response bean: " + submitResponseBean);
-                return submitResponseBean;
-                //TODO: need new way to communicate errors with submitting (vs. validation)
-            }
-            if(formEntrySession.getMenuSessionId() != null &&
-                    !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                Object nav = doEndOfFormNav(menuSessionRepo.findOne(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
-                if(nav != null){
-                    submitResponseBean.setNextScreen(nav);
+                if (!submitResponse.getStatusCode().is2xxSuccessful()) {
+                    submitResponseBean.setStatus("error");
+                    log.info("Submit response bean: " + submitResponseBean);
+                    return submitResponseBean;
+                    //TODO: need new way to communicate errors with submitting (vs. validation)
                 }
-            }
-            formSessionRepo.delete(submitRequestBean.getSessionId());
+                if (formEntrySession.getMenuSessionId() != null &&
+                        !("").equals(formEntrySession.getMenuSessionId().trim())) {
+                    Object nav = doEndOfFormNav(menuSessionRepo.findOne(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
+                    if (nav != null) {
+                        submitResponseBean.setNextScreen(nav);
+                    }
+                }
+                formSessionRepo.delete(submitRequestBean.getSessionId());
 
+            }
+            log.info("Submit response bean: " + submitResponseBean);
+            return submitResponseBean;
+        } finally {
+            lock.unlock();
         }
-        log.info("Submit response bean: " + submitResponseBean);
-        return submitResponseBean;
     }
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
@@ -201,10 +227,15 @@ public class FormController extends AbstractBaseController{
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(getInstanceRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
-        GetInstanceResponseBean getInstanceResponseBean = new GetInstanceResponseBean(formEntrySession);
-        log.info("Get instance response: " + getInstanceResponseBean);
-        return getInstanceResponseBean;
+        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        try {
+            FormSession formEntrySession = new FormSession(serializableFormSession);
+            GetInstanceResponseBean getInstanceResponseBean = new GetInstanceResponseBean(formEntrySession);
+            log.info("Get instance response: " + getInstanceResponseBean);
+            return getInstanceResponseBean;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @ApiOperation(value = "Evaluate the given XPath under the current context")
@@ -213,11 +244,16 @@ public class FormController extends AbstractBaseController{
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         log.info("Evaluate XPath Request: " + evaluateXPathRequestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(evaluateXPathRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
-        EvaluateXPathResponseBean evaluateXPathResponseBean =
-                new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
-        log.info("Evaluate XPath Response: " + evaluateXPathResponseBean);
-        return evaluateXPathResponseBean;
+        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        try {
+            FormSession formEntrySession = new FormSession(serializableFormSession);
+            EvaluateXPathResponseBean evaluateXPathResponseBean =
+                    new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
+            log.info("Evaluate XPath Response: " + evaluateXPathResponseBean);
+            return evaluateXPathResponseBean;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @ApiOperation(value = "Expand the repeat at the given index")
@@ -226,15 +262,20 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         log.info("New repeat: " + newRepeatRequestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(newRepeatRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
-        JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
-                formEntrySession.getFormEntryModel(),
-                newRepeatRequestBean.getRepeatIndex());
-        updateSession(formEntrySession, serializableFormSession);
-        FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
-        repeatResponseBean.setTitle(formEntrySession.getTitle());
-        log.info("New response: " + repeatResponseBean);
-        return repeatResponseBean;
+        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        try {
+            FormSession formEntrySession = new FormSession(serializableFormSession);
+            JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel(),
+                    newRepeatRequestBean.getRepeatIndex());
+            updateSession(formEntrySession, serializableFormSession);
+            FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
+            repeatResponseBean.setTitle(formEntrySession.getTitle());
+            log.info("New response: " + repeatResponseBean);
+            return repeatResponseBean;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @ApiOperation(value = "Delete the repeat at the given index")
@@ -242,15 +283,20 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(deleteRepeatRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
-        JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
-                formEntrySession.getFormEntryModel(),
-                deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
-        updateSession(formEntrySession, serializableFormSession);
-        FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
-        repeatResponseBean.setTitle(formEntrySession.getTitle());
-        log.info("Delete repeat response: " + repeatResponseBean);
-        return repeatResponseBean;
+        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        try {
+            FormSession formEntrySession = new FormSession(serializableFormSession);
+            JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
+                    formEntrySession.getFormEntryModel(),
+                    deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
+            updateSession(formEntrySession, serializableFormSession);
+            FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
+            repeatResponseBean.setTitle(formEntrySession.getTitle());
+            log.info("Delete repeat response: " + repeatResponseBean);
+            return repeatResponseBean;
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
