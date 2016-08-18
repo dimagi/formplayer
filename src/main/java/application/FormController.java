@@ -60,7 +60,7 @@ public class FormController extends AbstractBaseController{
     public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("New form requests with bean: " + newSessionBean + " sessionId :" + authToken);
-        Lock lock = userLockRegistry.obtain(newSessionBean.getSessionData().getUsername());
+        Lock lock = getLockAndBlock(newSessionBean.getSessionData().getUsername());
         try {
             String postUrl = hqHost + newSessionBean.getPostUrl();
             NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
@@ -79,7 +79,7 @@ public class FormController extends AbstractBaseController{
                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
         SerializableFormSession session = formSessionRepo.findOne(incompleteSessionRequestBean.getSessionId());
-        Lock lock = userLockRegistry.obtain(session.getUsername());
+        Lock lock = getLockAndBlock(session.getUsername());
         try {
             NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, authToken);
             NewFormSessionResponse response = newFormRequest.getResponse();
@@ -119,7 +119,7 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
         log.info("Current request: " + currentRequestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(currentRequestBean.getSessionId());
-        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formEntrySession = new FormSession(serializableFormSession);
             JSONObject resp = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(), formEntrySession.getFormEntryModel());
@@ -139,7 +139,7 @@ public class FormController extends AbstractBaseController{
         log.info("Submit form with bean: " + submitRequestBean);
 
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(submitRequestBean.getSessionId());
-        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formEntrySession = new FormSession(serializableFormSession);
 
@@ -227,7 +227,7 @@ public class FormController extends AbstractBaseController{
     public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(getInstanceRequestBean.getSessionId());
-        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formEntrySession = new FormSession(serializableFormSession);
             GetInstanceResponseBean getInstanceResponseBean = new GetInstanceResponseBean(formEntrySession);
@@ -244,7 +244,7 @@ public class FormController extends AbstractBaseController{
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         log.info("Evaluate XPath Request: " + evaluateXPathRequestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(evaluateXPathRequestBean.getSessionId());
-        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formEntrySession = new FormSession(serializableFormSession);
             EvaluateXPathResponseBean evaluateXPathResponseBean =
@@ -262,7 +262,7 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         log.info("New repeat: " + newRepeatRequestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(newRepeatRequestBean.getSessionId());
-        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formEntrySession = new FormSession(serializableFormSession);
             JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
@@ -283,7 +283,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOne(deleteRepeatRequestBean.getSessionId());
-        Lock lock = userLockRegistry.obtain(serializableFormSession.getUsername());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formEntrySession = new FormSession(serializableFormSession);
             JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
