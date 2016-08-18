@@ -5,6 +5,7 @@ import application.MenuController;
 import application.UtilController;
 import auth.HqAuth;
 import beans.*;
+import beans.menus.BaseResponseBean;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import install.FormplayerConfigEngine;
