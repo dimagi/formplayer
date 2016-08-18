@@ -100,6 +100,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${smtp.to.address}")
     private String smtpToAddress;
 
+    @Value("${redis.hostname}")
+    private String redisHostName;
+
 
     private final Log log = LogFactory.getLog(WebAppContext.class);
 
@@ -186,6 +189,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public JedisConnectionFactory jedisConnFactory(){
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
+        jedisConnectionFactory.setUsePool(true);
+        jedisConnectionFactory.setHostName(redisHostName);
         return jedisConnectionFactory;
     }
 
