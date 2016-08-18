@@ -3,6 +3,7 @@ commcarehq.host=http://localhost:8000
 user.suffix=commcarehq.org
 logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=DEBUG
 server.port=8080
+redis.hostname=localhost
 
 // Properties for HQ db
 datasource.hq.driverClassName=org.postgresql.Driver
@@ -28,5 +29,5 @@ smtp.host=127.0.0.1
 smtp.port=8888
 smtp.username=test
 smtp.password=123
-smtp.from.address=mail.formplayer.commcarehq.org
+smtp.from.address=mail@formplayer.commcarehq.org
 smtp.to.address=exceptions@commcarehq.org
