@@ -17,6 +17,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private String searchText;
     private String menuSessionId;
     private Hashtable<String, String> queryDictionary;
+    private String previewCommand;
 
     public String[] getSelections() {
         return selections;
@@ -63,5 +64,13 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "query_dictionary")
     public void setQueryDictionary(Hashtable<String, String> queryDictionary) {
         this.queryDictionary = queryDictionary;
+    }
+
+    public String getPreviewCommand() {
+        return previewCommand;
+    }
+
+    public void setPreviewCommand(String previewCommand) {
+        this.previewCommand = previewCommand;
     }
 }
