@@ -27,6 +27,7 @@ import util.SessionUtils;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -46,10 +47,15 @@ public class MenuController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("Received install request: " + installRequestBean);
-        BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-        log.info("Returning install response: " + response);
-        return response;
+        Lock lock = getLockAndBlock(installRequestBean.getUsername());
+        try {
+            log.info("Received install request: " + installRequestBean);
+            BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
+            log.info("Returning install response: " + response);
+            return response;
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -66,63 +72,68 @@ public class MenuController extends AbstractBaseController{
     public Object navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
-        MenuSession menuSession;
-        DjangoAuth auth = new DjangoAuth(authToken);
-        String menuSessionId = sessionNavigationBean.getMenuSessionId();
-        if(menuSessionId != null && !"".equals(menuSessionId)) {
-            menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
-                    installService, restoreService, auth);
-            menuSession.getSessionWrapper().syncState();
-        } else{
-            menuSession = performInstall(sessionNavigationBean, authToken);
-        }
-        String[] selections = sessionNavigationBean.getSelections();
-        BaseResponseBean nextMenu = getNextMenu(menuSession);
-        if (selections == null) {
-            return nextMenu;
-        }
-
-        String[] titles = new String[selections.length + 1];
-        titles[0] = menuSession.getNextScreen().getScreenTitle();
-        NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
-        for(int i=1; i <= selections.length; i++) {
-            String selection = selections[i - 1];
-            boolean gotNextScreen = menuSession.handleInput(selection);
-            if(!gotNextScreen) {
-                // If we overflowed selections, just return the last real screen.
-                // TODO: Once case claim is merge, set notification here.
-                log.info("Couldn't get next screen with selection " + selection +
-                        " of selections " + Arrays.toString(selections));
-                break;
+        Lock lock = getLockAndBlock(sessionNavigationBean.getUsername());
+        try {
+            MenuSession menuSession;
+            DjangoAuth auth = new DjangoAuth(authToken);
+            String menuSessionId = sessionNavigationBean.getMenuSessionId();
+            if (menuSessionId != null && !"".equals(menuSessionId)) {
+                menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
+                        installService, restoreService, auth);
+                menuSession.getSessionWrapper().syncState();
+            } else {
+                menuSession = performInstall(sessionNavigationBean, authToken);
             }
-            titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
-            Screen nextScreen = menuSession.getNextScreen();
-
-            checkDoQuery(nextScreen,
-                    menuSession,
-                    notificationMessageBean,
-                    sessionNavigationBean.getQueryDictionary(),
-                    auth);
-
-            BaseResponseBean syncResponse = checkDoSync(nextScreen,
-                    menuSession,
-                    notificationMessageBean,
-                    auth);
-            if(syncResponse != null){
-                return syncResponse;
+            String[] selections = sessionNavigationBean.getSelections();
+            BaseResponseBean nextMenu = getNextMenu(menuSession);
+            if (selections == null) {
+                return nextMenu;
             }
-        }
-        nextMenu = getNextMenu(menuSession,
-                sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText(),
-                titles);
-        if(nextMenu != null){
-            nextMenu.setNotification(notificationMessageBean);
-            menuSessionRepo.save(new SerializableMenuSession(menuSession));
-            log.info("Returning menu: " + nextMenu);
-            return nextMenu;
-        } else{
-            return new BaseResponseBean(null, "Redirecting after case claim", false, true);
+
+            String[] titles = new String[selections.length + 1];
+            titles[0] = menuSession.getNextScreen().getScreenTitle();
+            NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
+            for (int i = 1; i <= selections.length; i++) {
+                String selection = selections[i - 1];
+                boolean gotNextScreen = menuSession.handleInput(selection);
+                if (!gotNextScreen) {
+                    // If we overflowed selections, just return the last real screen.
+                    // TODO: Once case claim is merge, set notification here.
+                    log.info("Couldn't get next screen with selection " + selection +
+                            " of selections " + Arrays.toString(selections));
+                    break;
+                }
+                titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
+                Screen nextScreen = menuSession.getNextScreen();
+
+                checkDoQuery(nextScreen,
+                        menuSession,
+                        notificationMessageBean,
+                        sessionNavigationBean.getQueryDictionary(),
+                        auth);
+
+                BaseResponseBean syncResponse = checkDoSync(nextScreen,
+                        menuSession,
+                        notificationMessageBean,
+                        auth);
+                if (syncResponse != null) {
+                    return syncResponse;
+                }
+            }
+            nextMenu = getNextMenu(menuSession,
+                    sessionNavigationBean.getOffset(),
+                    sessionNavigationBean.getSearchText(),
+                    titles);
+            if (nextMenu != null) {
+                nextMenu.setNotification(notificationMessageBean);
+                menuSessionRepo.save(new SerializableMenuSession(menuSession));
+                log.info("Returning menu: " + nextMenu);
+                return nextMenu;
+            } else {
+                return new BaseResponseBean(null, "Redirecting after case claim", false, true);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 

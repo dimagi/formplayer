@@ -1,15 +1,12 @@
 package utils;
 
-import auth.HqAuth;
 import objects.SerializableFormSession;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
@@ -20,11 +17,6 @@ import services.SubmitService;
 import services.XFormService;
 import services.impl.InstallServiceImpl;
 import services.impl.SubmitServiceImpl;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
 
 @Configuration
 public class TestContext {
@@ -52,39 +44,13 @@ public class TestContext {
 
     @Bean
     public FormSessionRepo formSessionRepo() {
-        FormSessionRepo formSessionRepo = Mockito.mock(FormSessionRepo.class);
-        when(formSessionRepo.findOne(anyString())).thenReturn(serializableFormSession);
-        ArgumentCaptor<SerializableFormSession> argumentCaptor = ArgumentCaptor.forClass(SerializableFormSession.class);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableFormSession toBeSaved = (SerializableFormSession) args[0];
-                serializableFormSession.setInstanceXml(toBeSaved.getInstanceXml());
-                serializableFormSession.setFormXml(toBeSaved.getFormXml());
-                serializableFormSession.setRestoreXml(toBeSaved.getRestoreXml());
-                return null;
-            }
-        }).when(formSessionRepo).save(any(SerializableFormSession.class));
-        return formSessionRepo;
+        return Mockito.mock(FormSessionRepo.class);
     }
 
 
     @Bean
     public MenuSessionRepo menuSessionRepo() {
-        MenuSessionRepo menuSessionRepo = Mockito.mock(MenuSessionRepo.class);
-        when(menuSessionRepo.findOne(anyString())).thenReturn(serializableMenuSession);
-        ArgumentCaptor<SerializableFormSession> argumentCaptor = ArgumentCaptor.forClass(SerializableFormSession.class);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
-                serializableMenuSession.setCommcareSession(toBeSaved.getCommcareSession());
-                return null;
-            }
-        }).when(menuSessionRepo).save(any(SerializableMenuSession.class));
-        return menuSessionRepo;
+        return Mockito.mock(MenuSessionRepo.class);
     }
 
     @Bean
@@ -94,14 +60,7 @@ public class TestContext {
 
     @Bean
     public RestoreService restoreService() {
-        RestoreService impl = Mockito.mock(RestoreService.class);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return FileUtils.getFile(this.getClass(), "test_restore.xml");
-            }
-        }).when(impl).getRestoreXml(anyString(), any(HqAuth.class));
-        return impl;
+        return Mockito.mock(RestoreService.class);
     }
 
     @Bean
@@ -112,5 +71,10 @@ public class TestContext {
     @Bean
     public SubmitService submitService() {
         return Mockito.mock(SubmitServiceImpl.class);
+    }
+
+    @Bean
+    public LockRegistry userLockRegistry() {
+        return Mockito.mock(LockRegistry.class);
     }
 }

@@ -15,6 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.integration.redis.util.RedisLockRegistry;
+import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
@@ -31,6 +33,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Base Controller class containing exception handling logic and
@@ -52,6 +56,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     private HtmlEmail exceptionMessage;
+
+    @Autowired
+    protected LockRegistry userLockRegistry;
 
     @Value("${commcarehq.host}")
     private String hqHost;
@@ -177,5 +184,19 @@ public abstract class AbstractBaseController {
                 "<p>" + formattedTime + "</p>" +
                 "<h3>Trace</h3>" +
                 "<p>" + stackTraceHTML + "</p>";
+    }
+
+    protected Lock getLockAndBlock(String username){
+        Lock lock = userLockRegistry.obtain(username);
+        obtainLock(lock);
+        return lock;
+    }
+
+    protected boolean obtainLock(Lock lock) {
+        try {
+            return lock.tryLock(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e){
+            return obtainLock(lock);
+        }
     }
 }
