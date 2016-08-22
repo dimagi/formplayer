@@ -5,6 +5,7 @@ import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.utils.URIBuilder;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
@@ -44,10 +45,13 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.UUID;
+
+import static util.Constants.CCZ_LATEST_SAVED;
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
@@ -120,8 +124,22 @@ public class MenuSession {
         }
     }
 
+    /**
+     * Given an app id this returns a URI that will return a CCZ from HQ
+     * @param appId An id of the application of the CCZ needed
+     * @return      An HQ URI to download the CCZ
+     */
     private String getReferenceToLatest(String appId) {
-        return  "/a/" + this.domain + "/apps/api/download_ccz/?app_id=" + appId + "#hack=commcare.ccz";
+        URIBuilder builder;
+        try {
+            builder = new URIBuilder("/a/" + this.domain + "/apps/api/download_ccz/");
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Unable to instantiate URIBuilder");
+        }
+        builder.addParameter("app_id", appId);
+        builder.addParameter("latest", CCZ_LATEST_SAVED);
+        return builder.toString();
     }
 
     /**

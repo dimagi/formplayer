@@ -34,6 +34,9 @@ public class Constants {
     //JSON
     public static final String QUESTION_TREE_KEY = "tree";
 
+    // CCZ Parameters
+    public static final String CCZ_LATEST_SAVED = "save";
+
     // Postgres sesions
     public static final String POSTGRES_SESSION_TABLE_NAME = "formplayer_sessions";
     public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
