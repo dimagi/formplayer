@@ -172,7 +172,7 @@ public class BaseTestClass {
                 ref = "archives/parent_child.ccz";
                 break;
             case "caseappid":
-                ref = "apps/basic2/profile.ccpr";
+                ref = "archives/case.ccz";
                 break;
             case "createappid":
                 ref = "archives/basic.ccz";
@@ -211,13 +211,7 @@ public class BaseTestClass {
                         FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
                         String absolutePath = getTestResourcePath(ref);
                         System.out.println("Init with path: " + absolutePath);
-                        if (absolutePath.endsWith(".ccpr")) {
-                            engine.initFromLocalFileResource(absolutePath);
-                        } else if (absolutePath.endsWith(".ccz")) {
-                            engine.initFromArchive(absolutePath);
-                        } else {
-                            throw new RuntimeException("Can't install with reference: " + absolutePath);
-                        }
+                        engine.initFromArchive(absolutePath);
                         engine.initEnvironment();
                         return engine;
                     } catch (Exception e) {
