@@ -12,6 +12,6 @@ public class V5__incomplete_forms_set implements SpringJdbcMigration {
         jdbcTemplate.execute("UPDATE formplayer_sessions " +
                 "SET title='CommCare Form' WHERE title IS NULL");
         jdbcTemplate.execute("UPDATE formplayer_sessions " +
-                "SET dateOpened='Tue Jul 3 14:19:24 EDT 1990' WHERE dateOpened IS NULL");
+                "SET dateOpened='Thu Jan 1 00:00:00 UTC 1970' WHERE dateOpened IS NULL");
     }
 }
