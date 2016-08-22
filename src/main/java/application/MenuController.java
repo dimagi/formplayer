@@ -85,8 +85,9 @@ public class MenuController extends AbstractBaseController{
                 menuSession = performInstall(sessionNavigationBean, authToken);
             }
             String[] selections = sessionNavigationBean.getSelections();
-            BaseResponseBean nextMenu = getNextMenu(menuSession);
+            BaseResponseBean nextMenu;
             if (selections == null) {
+                nextMenu = getNextMenu(menuSession);
                 return nextMenu;
             }
 
