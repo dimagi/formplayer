@@ -126,7 +126,6 @@ public class MenuController extends AbstractBaseController{
                     titles);
             if (nextMenu != null) {
                 nextMenu.setNotification(notificationMessageBean);
-                menuSessionRepo.save(new SerializableMenuSession(menuSession));
                 log.info("Returning menu: " + nextMenu);
                 return nextMenu;
             } else {
