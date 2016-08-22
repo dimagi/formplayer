@@ -9,6 +9,9 @@ import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import install.FormplayerConfigEngine;
 import objects.SerializableFormSession;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.mockito.InjectMocks;
@@ -39,6 +42,8 @@ import utils.FileUtils;
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -162,8 +167,24 @@ public class BaseTestClass {
     }
 
     private String resolveAppId(String ref){
-        String appId = ref.substring(ref.indexOf("app_id=") + "app_id=".length(),
-                ref.indexOf("#hack"));
+        String appId = "";
+        URIBuilder uri;
+
+        // Parses the URI and extracts the app_id from it
+        try {
+            uri = new URIBuilder(ref);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Unable to parse url" + ref);
+        }
+
+        for (NameValuePair pair: uri.getQueryParams()) {
+            if (pair.getName().equals("app_id")) {
+                appId = pair.getValue();
+                break;
+            }
+        }
+
         switch (appId) {
             case "doublemgmtappid":
                 ref = "archives/parent_child.ccz";
@@ -172,7 +193,7 @@ public class BaseTestClass {
                 ref = "archives/parent_child.ccz";
                 break;
             case "caseappid":
-                ref = "apps/basic2/profile.ccpr";
+                ref = "archives/case.ccz";
                 break;
             case "createappid":
                 ref = "archives/basic.ccz";
@@ -203,7 +224,9 @@ public class BaseTestClass {
                     try {
                         Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
-                        if(ref.contains("#hack=commcare.ccz")){
+                        // All references that start with `/` are a URL that needs to be parsed
+                        // in order to the app id. Should be refactored.
+                        if(ref.startsWith("/")){
                             ref = resolveAppId(ref);
                         }
                         String username = (String) args[1];
@@ -211,13 +234,7 @@ public class BaseTestClass {
                         FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
                         String absolutePath = getTestResourcePath(ref);
                         System.out.println("Init with path: " + absolutePath);
-                        if (absolutePath.endsWith(".ccpr")) {
-                            engine.initFromLocalFileResource(absolutePath);
-                        } else if (absolutePath.endsWith(".ccz")) {
-                            engine.initFromArchive(absolutePath);
-                        } else {
-                            throw new RuntimeException("Can't install with reference: " + absolutePath);
-                        }
+                        engine.initFromArchive(absolutePath);
                         engine.initEnvironment();
                         return engine;
                     } catch (Exception e) {

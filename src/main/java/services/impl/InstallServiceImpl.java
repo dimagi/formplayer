@@ -28,13 +28,7 @@ public class InstallServiceImpl implements InstallService {
         log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         FormplayerConfigEngine engine = new FormplayerConfigEngine(username, dbPath);
         reference = host + reference;
-        if(reference.endsWith(".ccz")){
-            engine.initFromArchive(reference);
-        } else if(reference.endsWith(".ccpr")) {
-            engine.initFromLocalFileResource(reference);
-        } else {
-            throw new RuntimeException("Can't instantiate with reference: " + reference);
-        }
+        engine.initFromArchive(reference);
         engine.initEnvironment();
         return engine;
     }
