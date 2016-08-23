@@ -1,7 +1,7 @@
 package db.migration;
 
-        import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-        import org.springframework.jdbc.core.JdbcTemplate;
+import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Add default values to new incomplete forms columns

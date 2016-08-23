@@ -2,11 +2,11 @@ package beans.menus;
 
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.DisplayUnit;
-import org.commcare.suite.model.MenuDisplayable;
-import org.commcare.util.cli.MenuScreen;
 import org.commcare.util.cli.QueryScreen;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * Created by willpride on 4/13/16.
