@@ -1,6 +1,8 @@
 package beans.menus;
 
 import beans.NotificationMessageBean;
+import org.commcare.modern.session.SessionWrapper;
+import util.SessionUtils;
 
 /**
  * Base class for responses being sent to the front end. Params are:
@@ -20,6 +22,10 @@ public class BaseResponseBean {
         this.title = title;
         this.notification = new NotificationMessageBean(message, isError);
         this.clearSession = clearSession;
+    }
+
+    protected void processTitle(SessionWrapper session) {
+        setTitle(SessionUtils.getBestTitle(session));
     }
 
     public String getTitle() {

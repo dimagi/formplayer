@@ -81,10 +81,6 @@ public class EntityListResponse extends MenuBean {
         widthHints = pair.second;
     }
 
-    private void processTitle(SessionWrapper session) {
-        setTitle(SessionUtils.getBestTitle(session));
-    }
-
     private void processEntities(EntityScreen screen, Vector<TreeReference> references,
                                  EvaluationContext ec,
                                  int offset,
