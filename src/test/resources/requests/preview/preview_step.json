@@ -1,0 +1,8 @@
+{
+  "username": "previewuser",
+  "password": "previewpass",
+  "domain": "previewdomain",
+  "app_id": "caseappid",
+  "previewCommand": "m2-f2",
+  "selections": [0]
+}
