@@ -57,6 +57,15 @@ public class UtilController extends AbstractBaseController {
         return new SyncDbResponseBean();
     }
 
+    @ApiOperation(value = "Wipe the applications databases")
+    @RequestMapping(value = Constants.URL_DELETE_APPLICATION_DBS, method = RequestMethod.POST)
+    public StatusResponseBean deleteApplicationDbs(
+            @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
+
+        Boolean success = deleteRequest.clear();
+        return new StatusResponseBean(success);
+    }
+
     @ApiOperation(value = "Get a list of the current user's sessions")
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
