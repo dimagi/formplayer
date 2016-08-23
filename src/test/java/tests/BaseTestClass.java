@@ -389,6 +389,22 @@ public class BaseTestClass {
         return mapper.readValue(syncResult, SyncDbResponseBean.class);
     }
 
+    StatusResponseBean deleteApplicationDbs() throws Exception {
+        String payload = FileUtils.getFile(this.getClass(), "requests/delete_db/delete_db.json");
+        DeleteApplicationDbsRequestBean request = mapper.readValue(
+                payload,
+                DeleteApplicationDbsRequestBean.class
+        );
+
+        String result = generateMockQuery(
+                ControllerType.UTIL,
+                RequestType.POST,
+                Constants.URL_DELETE_APPLICATION_DBS,
+                request
+        );
+        return mapper.readValue(result, StatusResponseBean.class);
+    }
+
     FormEntryResponseBean newRepeatRequest(String sessionId) throws Exception {
         String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
         RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
