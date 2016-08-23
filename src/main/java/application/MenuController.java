@@ -5,6 +5,7 @@ import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.NotificationMessageBean;
+import beans.PreviewRequestBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import io.swagger.annotations.Api;
@@ -66,10 +67,8 @@ public class MenuController extends AbstractBaseController{
      * @return A MenuBean or a NewFormSessionResponse
      * @throws Exception
      */
-
-
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
-    public Object navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
+    public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
         Lock lock = getLockAndBlock(sessionNavigationBean.getUsername());
@@ -83,6 +82,11 @@ public class MenuController extends AbstractBaseController{
                 menuSession.getSessionWrapper().syncState();
             } else {
                 menuSession = performInstall(sessionNavigationBean, authToken);
+                // If we have a preview command, load that up
+                if(sessionNavigationBean.getPreviewCommand() != null){
+                    menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
+                    menuSession.updateScreen();
+                }
             }
             String[] selections = sessionNavigationBean.getSelections();
             BaseResponseBean nextMenu;
