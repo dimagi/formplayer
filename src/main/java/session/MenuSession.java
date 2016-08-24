@@ -40,6 +40,8 @@ import screens.FormplayerSyncScreen;
 import services.InstallService;
 import services.RestoreService;
 import util.SessionUtils;
+import util.ApplicationUtils;
+import util.Constants;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -51,8 +53,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.UUID;
 
-import static util.ApplicationUtils.getApplicationDBPath;
-import static util.Constants.CCZ_LATEST_SAVED;
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
@@ -91,7 +91,7 @@ public class MenuSession {
         this.engine = installService.configureApplication(
                 this.installReference,
                 this.username,
-                getApplicationDBPath(this.domain, this.username, this.appId)
+                ApplicationUtils.getApplicationDBPath(this.domain, this.username, this.appId)
         );
         this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
         this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
@@ -110,7 +110,7 @@ public class MenuSession {
         this.engine = installService.configureApplication(
                 this.installReference,
                 this.username,
-                getApplicationDBPath(domain, username, appId)
+                ApplicationUtils.getApplicationDBPath(domain, username, appId)
         );
         this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
@@ -147,7 +147,7 @@ public class MenuSession {
             throw new RuntimeException("Unable to instantiate URIBuilder");
         }
         builder.addParameter("app_id", appId);
-        builder.addParameter("latest", CCZ_LATEST_SAVED);
+        builder.addParameter("latest", Constants.CCZ_LATEST_SAVED);
         return builder.toString();
     }
 

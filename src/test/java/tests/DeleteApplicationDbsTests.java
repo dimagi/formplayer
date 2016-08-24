@@ -5,11 +5,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import util.ApplicationUtils;
 import utils.TestContext;
 
 import java.io.File;
-
-import static util.ApplicationUtils.getApplicationDBPath;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -24,7 +23,7 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
     @Test
     public void testDeleteApplicationDbsView() throws Exception {
         // Create application db by making an install request
-        String dbPath = getApplicationDBPath("casetestdomain", "casetestuser", "casetestappid");
+        String dbPath = ApplicationUtils.getApplicationDBPath("casetestdomain", "casetestuser", "casetestappid");
         CommandListResponseBean menuResponseBean = doInstall("requests/install/install.json");
 
         File file = new File(dbPath);
@@ -44,7 +43,7 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
      */
     @Test
     public void testDeleteApplicationDbsWithNoDbView() throws Exception {
-        String dbPath = getApplicationDBPath("casetestdomain", "casetestuser", "casetestappid");
+        String dbPath = ApplicationUtils.getApplicationDBPath("casetestdomain", "casetestuser", "casetestappid");
         File file = new File(dbPath);
         assert !file.exists();
 

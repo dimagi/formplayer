@@ -10,8 +10,6 @@ import utils.TestContext;
 
 import java.io.File;
 
-import static util.ApplicationUtils.getApplicationDBPath;
-
 
 /**
  * Tests ApplicationUtils
@@ -22,7 +20,7 @@ public class ApplicationUtilsTests extends BaseTestClass {
 
     @Test
     public void testDeleteApplicationDbs() throws Exception {
-        String dbPath = getApplicationDBPath("dummy-domain", "dummy-username", "dummy-app-id");
+        String dbPath = ApplicationUtils.getApplicationDBPath("dummy-domain", "dummy-username", "dummy-app-id");
         File file = new File(dbPath);
         file.mkdirs();
 
