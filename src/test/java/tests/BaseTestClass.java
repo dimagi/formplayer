@@ -389,7 +389,7 @@ public class BaseTestClass {
         return mapper.readValue(syncResult, SyncDbResponseBean.class);
     }
 
-    StatusResponseBean deleteApplicationDbs() throws Exception {
+    NotificationMessageBean deleteApplicationDbs() throws Exception {
         String payload = FileUtils.getFile(this.getClass(), "requests/delete_db/delete_db.json");
         DeleteApplicationDbsRequestBean request = mapper.readValue(
                 payload,
@@ -402,7 +402,7 @@ public class BaseTestClass {
                 Constants.URL_DELETE_APPLICATION_DBS,
                 request
         );
-        return mapper.readValue(result, StatusResponseBean.class);
+        return mapper.readValue(result, NotificationMessageBean.class);
     }
 
     FormEntryResponseBean newRepeatRequest(String sessionId) throws Exception {

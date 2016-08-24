@@ -59,10 +59,15 @@ public class UtilController extends AbstractBaseController {
 
     @ApiOperation(value = "Wipe the applications databases")
     @RequestMapping(value = Constants.URL_DELETE_APPLICATION_DBS, method = RequestMethod.POST)
-    public StatusResponseBean deleteApplicationDbs(
+    public NotificationMessageBean deleteApplicationDbs(
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
-        return new StatusResponseBean(deleteRequest.clear());
+        String message = "Successfully cleared application database for " + deleteRequest.getAppId();
+        boolean success = deleteRequest.clear();
+        if (success) {
+            message = "Failed to clear application database for " + deleteRequest.getAppId();
+        }
+        return new NotificationMessageBean(message, !success);
     }
 
     @ApiOperation(value = "Get a list of the current user's sessions")
