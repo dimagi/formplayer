@@ -15,6 +15,7 @@ public class BaseResponseBean {
     protected NotificationMessageBean notification;
     protected String title;
     protected boolean clearSession;
+    private String appId;
 
     public BaseResponseBean() {}
 
@@ -56,5 +57,13 @@ public class BaseResponseBean {
     public String toString(){
         return "BaseResponseBean title=" + title + ", notificaiton=" + notification + ", " +
                 "clearSession=" + clearSession;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }

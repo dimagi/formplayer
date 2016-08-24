@@ -188,8 +188,6 @@ public class BaseTestClass {
 
         switch (appId) {
             case "doublemgmtappid":
-                ref = "archives/parent_child.ccz";
-                break;
             case "navigatorappid":
                 ref = "archives/parent_child.ccz";
                 break;
@@ -197,6 +195,8 @@ public class BaseTestClass {
                 ref = "archives/case.ccz";
                 break;
             case "createappid":
+            case "loadappid":
+            case "casetestappid":
                 ref = "archives/basic.ccz";
                 break;
             case "casemediaappid":

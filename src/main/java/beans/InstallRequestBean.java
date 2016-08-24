@@ -16,12 +16,10 @@ public class InstallRequestBean {
     private String appId;
     private String locale;
 
-    @JsonGetter(value = "install_reference")
     public String getInstallReference() {
         return installReference;
     }
 
-    @JsonSetter(value = "install_reference")
     public void setInstallReference(String installReference) {
         this.installReference = installReference;
     }

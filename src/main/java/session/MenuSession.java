@@ -28,6 +28,7 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -77,12 +78,14 @@ public class MenuSession {
     private String appId;
     private HqAuth auth;
 
+
+    private String host;
+
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreService restoreService, HqAuth auth) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
         this.domain = session.getDomain();
         this.locale = session.getLocale();
-        this.appId = session.getAppId();
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
 
@@ -95,6 +98,7 @@ public class MenuSession {
         sessionWrapper.syncState();
         this.screen = getNextScreen();
         this.auth = auth;
+        this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -108,17 +112,17 @@ public class MenuSession {
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
-        this.appId = appId;
         this.uuid = UUID.randomUUID().toString();
         this.auth = auth;
+        this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
     }
 
     private void resolveInstallReference(String installReference, String appId){
         if (installReference == null || installReference.equals("")) {
             if(appId == null || "".equals(appId)){
-                throw new RuntimeException("Can't install - either install_reference or app_id must be non-null");
+                throw new RuntimeException("Can't install - either installReference or app_id must be non-null");
             }
-            this.installReference = getReferenceToLatest(appId);
+            this.installReference = host + getReferenceToLatest(appId);
         } else {
             this.installReference = installReference;
         }
@@ -281,5 +285,10 @@ public class MenuSession {
 
     public void updateScreen() throws CommCareSessionException {
         this.screen = getNextScreen();
+    }
+
+    @Value("${commcarehq.host}")
+    public void setHost(String host) {
+        this.host = host;
     }
 }
