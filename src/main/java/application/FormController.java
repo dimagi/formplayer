@@ -239,7 +239,7 @@ public class FormController extends AbstractBaseController{
     }
 
     @ApiOperation(value = "Evaluate the given XPath under the current context")
-    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.POST)
     @ResponseBody
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         log.info("Evaluate XPath Request: " + evaluateXPathRequestBean);
