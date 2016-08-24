@@ -1,9 +1,7 @@
 package beans;
 
 import beans.menus.ErrorBean;
-import session.FormSession;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 /**

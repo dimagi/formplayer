@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.session.SessionInstanceBuilder;
-import org.commcare.suite.model.FormEntry;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.AbstractTreeElement;
