@@ -13,7 +13,7 @@ public class DeleteApplicationDbsRequestBean {
 
     public DeleteApplicationDbsRequestBean(){}
 
-    public Boolean clear() {
+    public boolean clear() {
         return deleteApplicationDbs(appId);
     }
 

@@ -14,7 +14,7 @@ public class StatusResponseBean {
 
     public StatusResponseBean() {}
 
-    public StatusResponseBean(Boolean success) {
+    public StatusResponseBean(boolean success) {
         if (success) {
             status = OK;
         } else {
