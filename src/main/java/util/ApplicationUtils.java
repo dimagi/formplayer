@@ -7,16 +7,19 @@ import org.commcare.api.persistence.SqlSandboxUtils;
  */
 public class ApplicationUtils {
 
-    public static Boolean deleteApplicationDbs(String appId) {
-        String dbPath = "dbs/" + appId;
+    public static boolean deleteApplicationDbs(String domain, String username, String appId) {
         Boolean success = true;
 
         try {
-            SqlSandboxUtils.deleteDatabaseFolder(dbPath);
+            SqlSandboxUtils.deleteDatabaseFolder(getApplicationDBPath(domain, username, appId));
         } catch (Exception e) {
             e.printStackTrace();
             success = false;
         }
         return success;
+    }
+
+    public static String getApplicationDBPath(String domain, String username, String appId) {
+        return "dbs/" + domain + "/" + username + "/" + appId;
     }
 }

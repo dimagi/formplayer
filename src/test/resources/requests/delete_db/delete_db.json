@@ -1,3 +1,5 @@
 {
-  "app_id": "casetestappid"
+  "app_id": "casetestappid",
+  "username": "casetestuser",
+  "domain": "casetestdomain"
 }
