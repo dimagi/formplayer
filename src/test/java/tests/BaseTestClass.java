@@ -451,7 +451,7 @@ public class BaseTestClass {
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
         String evaluateXpathResultString = generateMockQuery(ControllerType.FORM,
-                RequestType.GET,
+                RequestType.POST,
                 Constants.URL_EVALUATE_XPATH,
                 evaluateXPathRequestBean);
         return mapper.readValue(evaluateXpathResultString,
