@@ -9,7 +9,6 @@ import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.reference.JavaFileRoot;
 import org.commcare.modern.reference.JavaHttpRoot;
-import org.commcare.modern.reference.JavaResourceRoot;
 import org.commcare.resources.ResourceManager;
 import org.commcare.resources.model.*;
 import org.commcare.suite.model.Profile;
@@ -22,7 +21,10 @@ import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.reference.ReferenceManager;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.locale.Localization;
-import org.javarosa.core.services.storage.*;
+import org.javarosa.core.services.storage.IStorageFactory;
+import org.javarosa.core.services.storage.IStorageUtility;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import util.PrototypeUtils;
 
@@ -96,8 +98,6 @@ public class FormplayerConfigEngine {
         this.mArchiveRoot = new ArchiveFileRoot();
 
         ReferenceManager._().addReferenceFactory(mArchiveRoot);
-
-        ReferenceManager._().addReferenceFactory(new JavaResourceRoot(this.getClass()));
     }
 
     public void initFromArchive(String archiveURL) throws IOException, InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
@@ -181,7 +181,7 @@ public class FormplayerConfigEngine {
     public void initEnvironment() {
         try {
             Localization.init(true);
-            table.initializeResources(platform);
+            table.initializeResources(platform, false);
             //Make sure there's a default locale, since the app doesn't necessarily use the
             //localization engine
             Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");

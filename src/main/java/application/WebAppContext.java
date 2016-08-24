@@ -238,7 +238,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public InstallService installService(){
-        return new InstallServiceImpl(hqHost);
+        return new InstallServiceImpl();
     }
 
     @Bean

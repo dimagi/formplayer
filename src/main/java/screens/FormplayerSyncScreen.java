@@ -2,18 +2,14 @@ package screens;
 
 import auth.HqAuth;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.session.CommCareSession;
 import org.commcare.suite.model.Entry;
-import org.commcare.suite.model.SyncEntry;
-import org.commcare.suite.model.SyncPost;
-import org.commcare.util.cli.CommCareSessionException;
-import org.commcare.util.cli.Screen;
+import org.commcare.suite.model.PostRequest;
+import org.commcare.suite.model.RemoteRequestEntry;
 import org.commcare.util.cli.SyncScreen;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -26,8 +22,8 @@ public class FormplayerSyncScreen extends SyncScreen {
     public ResponseEntity<String> launchRemoteSync(HqAuth auth){
         String command = sessionWrapper.getCommand();
         Entry commandEntry = sessionWrapper.getPlatform().getEntry(command);
-        if (commandEntry instanceof SyncEntry) {
-            SyncPost syncPost = ((SyncEntry)commandEntry).getSyncPost();
+        if (commandEntry instanceof RemoteRequestEntry) {
+            PostRequest syncPost = ((RemoteRequestEntry)commandEntry).getPostRequest();
             Hashtable<String, String> params = syncPost.getEvaluatedParams(sessionWrapper.getEvaluationContext());
             UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
             // hack because HQ isn't accepting the first query param key properly
