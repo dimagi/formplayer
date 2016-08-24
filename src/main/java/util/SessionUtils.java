@@ -9,7 +9,6 @@ import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
 
-import java.util.Arrays;
 import java.util.Vector;
 
 /**

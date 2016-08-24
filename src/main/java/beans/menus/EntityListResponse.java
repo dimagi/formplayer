@@ -13,7 +13,6 @@ import org.commcare.util.cli.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
-import util.SessionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,14 +1,11 @@
 package beans;
 
-import auth.DjangoAuth;
 import auth.HqAuth;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import services.RestoreService;
-
-import java.util.Map;
 
 /**
  * Created by willpride on 1/12/16.
