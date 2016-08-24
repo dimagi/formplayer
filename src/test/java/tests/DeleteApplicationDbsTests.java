@@ -1,5 +1,5 @@
 package tests;
-import beans.StatusResponseBean;
+import beans.NotificationMessageBean;
 import beans.menus.CommandListResponseBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,8 +28,8 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
         File file = new File("dbs/" + appId);
         assert file.exists();
 
-        StatusResponseBean response = deleteApplicationDbs();
-        assert response.getStatus().equals(StatusResponseBean.OK);
+        NotificationMessageBean response = deleteApplicationDbs();
+        assert !response.isError();
 
         file = new File("dbs/" + appId);
         assert !file.exists();
@@ -46,8 +46,8 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
         File file = new File("dbs/" + appId);
         assert !file.exists();
 
-        StatusResponseBean response = deleteApplicationDbs();
-        assert response.getStatus().equals(StatusResponseBean.OK);
+        NotificationMessageBean response = deleteApplicationDbs();
+        assert !response.isError();
 
         file = new File("dbs/" + appId);
         assert !file.exists();
