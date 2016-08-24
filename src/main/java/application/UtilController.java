@@ -62,8 +62,7 @@ public class UtilController extends AbstractBaseController {
     public StatusResponseBean deleteApplicationDbs(
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
-        Boolean success = deleteRequest.clear();
-        return new StatusResponseBean(success);
+        return new StatusResponseBean(deleteRequest.clear());
     }
 
     @ApiOperation(value = "Get a list of the current user's sessions")
