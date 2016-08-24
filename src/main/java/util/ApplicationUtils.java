@@ -1,6 +1,7 @@
 package util;
 
 import org.commcare.api.persistence.SqlSandboxUtils;
+import org.commcare.api.persistence.UserSqlSandbox;
 
 /**
  * Utility methods for dealing with Applications
@@ -20,6 +21,6 @@ public class ApplicationUtils {
     }
 
     public static String getApplicationDBPath(String domain, String username, String appId) {
-        return "dbs/" + domain + "/" + username + "/" + appId;
+        return UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain + "/" + username + "/" + appId;
     }
 }
