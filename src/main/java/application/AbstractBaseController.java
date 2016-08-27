@@ -75,7 +75,11 @@ public abstract class AbstractBaseController {
     }
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, 0, "", new String[] {menuSession.getNextScreen().getScreenTitle()});
+        Screen nextScreen = menuSession.getNextScreen();
+        if (nextScreen == null) {
+            return getNextMenu(menuSession, 0, "", null);
+        }
+        return getNextMenu(menuSession, 0, "", new String[] {nextScreen.getScreenTitle()});
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
