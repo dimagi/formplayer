@@ -201,8 +201,7 @@ public class FormplayerConfigEngine {
 
             Localization.setLocale(newLocale);
         } catch (ResourceInitializationException e) {
-            log.error("Error while initializing one of the resolved resources");
-            System.exit(-1);
+            log.error("Error while initializing one of the resolved resources", e);
         }
     }
 
