@@ -15,6 +15,7 @@ import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
 import org.commcare.util.cli.QueryScreen;
 import org.commcare.util.cli.Screen;
+import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathMissingInstanceException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,7 +147,7 @@ public abstract class AbstractBaseController {
         return new NewFormSessionResponse(formEntrySession);
     }
 
-    @ExceptionHandler({ApplicationConfigException.class, XPathMissingInstanceException.class})
+    @ExceptionHandler({ApplicationConfigException.class, XPathException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
