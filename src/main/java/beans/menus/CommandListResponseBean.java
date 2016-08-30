@@ -3,6 +3,7 @@ package beans.menus;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.util.cli.MenuScreen;
+import util.SessionUtils;
 
 import java.util.Arrays;
 
@@ -25,7 +26,7 @@ public class CommandListResponseBean extends MenuBean {
     }
 
     public CommandListResponseBean(MenuScreen menuScreen, SessionWrapper session, String menuSessionId){
-        this.title = menuScreen.getScreenTitle();
+        this.title = SessionUtils.getBestTitle(session);
         MenuDisplayable[] options = menuScreen.getMenuDisplayables();
         Command[] commands = new Command[options.length];
         for(int i = 0; i < options.length; i++){
