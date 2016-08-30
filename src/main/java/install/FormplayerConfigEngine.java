@@ -159,7 +159,7 @@ public class FormplayerConfigEngine {
         try {
             IOUtils.copy(errorStream, writer, "utf-8");
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Unable to read error stream", e);
         }
         String errorMessage = writer.toString();
         JSONObject errorJson = new JSONObject(errorMessage);
