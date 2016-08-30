@@ -3,7 +3,7 @@ package beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 /**
- * Created by benrudolph on 8/29/16.
+ * This class is a generic response for an exception raised in Formplayer
  */
 public class ExceptionResponseBean {
     private String exception;
