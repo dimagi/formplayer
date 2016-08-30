@@ -36,7 +36,7 @@ public class EntityListResponse extends MenuBean {
     private int currentPage;
     private final String type = "entities";
 
-    public static final int CASE_LENGTH_LIMIT = 30;
+    public static final int CASE_LENGTH_LIMIT = 100;
 
     private boolean usesCaseTiles;
 
