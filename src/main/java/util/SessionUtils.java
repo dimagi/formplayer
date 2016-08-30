@@ -18,7 +18,7 @@ public class SessionUtils {
 
     private static final Log log = LogFactory.getLog(SessionUtils.class);
 
-    public static String getBestTitle(SessionWrapper session){
+    public static String getBestTitle(SessionWrapper session) {
 
         String[] stepTitles;
         try {
@@ -47,8 +47,8 @@ public class SessionUtils {
         return bestTitle;
     }
 
-    public static void setLocale(String locale){
-        if(locale == null || "".equals(locale.trim())){
+    public static void setLocale(String locale) {
+        if (locale == null || "".equals(locale.trim())) {
             return;
         }
         Localizer localizer = Localization.getGlobalLocalizerAdvanced();
@@ -59,6 +59,14 @@ public class SessionUtils {
 
                 return;
             }
+        }
+    }
+
+    public static String getAppTitle() {
+        try {
+            return Localization.get("app.display.name");
+        } catch (NoLocalizedTextException nlte) {
+            return "CommCare";
         }
     }
 }

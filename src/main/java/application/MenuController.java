@@ -94,7 +94,7 @@ public class MenuController extends AbstractBaseController{
             }
 
             String[] titles = new String[selections.length + 1];
-            titles[0] = menuSession.getNextScreen().getScreenTitle();
+            titles[0] = SessionUtils.getAppTitle();
             NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
             for (int i = 1; i <= selections.length; i++) {
                 String selection = selections[i - 1];
