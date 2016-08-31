@@ -44,6 +44,9 @@ public class SessionUtils {
                 bestTitle = stepTitles[i];
             }
         }
+        if (bestTitle == null) {
+            return getAppTitle();
+        }
         return bestTitle;
     }
 
