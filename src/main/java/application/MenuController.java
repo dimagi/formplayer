@@ -82,8 +82,14 @@ public class MenuController extends AbstractBaseController{
                 menuSession = performInstall(sessionNavigationBean, authToken);
                 // If we have a preview command, load that up
                 if(sessionNavigationBean.getPreviewCommand() != null){
-                    menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
-                    menuSession.updateScreen();
+                    try {
+                        menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
+                        menuSession.updateScreen();
+                    } catch(ArrayIndexOutOfBoundsException e) {
+                        throw new RuntimeException("Couldn't get entries from preview command "
+                                + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
+                                " please report a bug to the CommCareHQ Team.");
+                    }
                 }
             }
             String[] selections = sessionNavigationBean.getSelections();
