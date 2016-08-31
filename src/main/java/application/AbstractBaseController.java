@@ -1,7 +1,9 @@
 package application;
 
+import beans.ExceptionResponseBean;
 import beans.NewFormSessionResponse;
 import beans.menus.*;
+import exceptions.ApplicationConfigException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -13,11 +15,14 @@ import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
 import org.commcare.util.cli.QueryScreen;
 import org.commcare.util.cli.Screen;
+import org.javarosa.xpath.XPathException;
+import org.javarosa.xpath.XPathMissingInstanceException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
@@ -142,8 +147,17 @@ public abstract class AbstractBaseController {
         return new NewFormSessionResponse(formEntrySession);
     }
 
+    @ExceptionHandler({ApplicationConfigException.class, XPathException.class})
+    @ResponseBody
+    public ExceptionResponseBean handleApplicationError(HttpServletRequest req, Exception exception) {
+        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+
+        return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+    }
+
     @ExceptionHandler(Exception.class)
-    public String handleError(HttpServletRequest req, Exception exception) {
+    @ResponseBody
+    public ExceptionResponseBean handleError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         exception.printStackTrace();
         try {
@@ -152,11 +166,7 @@ public abstract class AbstractBaseController {
             e.printStackTrace();
             log.error("Unable to send email");
         }
-        JSONObject errorReturn = new JSONObject();
-        errorReturn.put("exception", exception);
-        errorReturn.put("url", req.getRequestURL());
-        errorReturn.put("status", "error");
-        return errorReturn.toString();
+        return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
     private void sendExceptionEmail(HttpServletRequest req, Exception exception) {
