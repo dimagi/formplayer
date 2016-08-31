@@ -44,6 +44,10 @@ public class SessionUtils {
                 bestTitle = stepTitles[i];
             }
         }
+        // If we didn't get a menu title, return the app title
+        if (bestTitle == null) {
+            return getAppTitle();
+        }
         return bestTitle;
     }
 
