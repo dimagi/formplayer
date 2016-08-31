@@ -15,6 +15,7 @@ import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
+import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -75,9 +76,6 @@ public class FormSession {
         formDef = hq.RestoreUtils.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
-        if(session.getInitLang() != null) {
-            formEntryController.setLanguage(session.getInitLang());
-        }
         this.sequenceId = session.getSequenceId();
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
@@ -152,6 +150,12 @@ public class FormSession {
             this.locale = langs[0];
         } else{
             this.locale = locale;
+        }
+        try {
+            formEntryController.setLanguage(this.locale);
+        } catch (UnregisteredLocaleException e) {
+            log.error("Couldn't find locale " + this.locale
+                    + " for user " + username);
         }
     }
 
