@@ -10,10 +10,9 @@ import org.springframework.stereotype.Repository;
 import repo.TokenRepo;
 import util.Constants;
 
-import java.io.*;
-import java.sql.*;
 import java.sql.Date;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * DAO implementation for HQ's django_session key table.

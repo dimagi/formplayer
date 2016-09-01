@@ -5,7 +5,6 @@ import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.NotificationMessageBean;
-import beans.PreviewRequestBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import io.swagger.annotations.Api;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import session.MenuSession;
@@ -85,8 +83,14 @@ public class MenuController extends AbstractBaseController{
                 menuSession = performInstall(sessionNavigationBean, authToken);
                 // If we have a preview command, load that up
                 if(sessionNavigationBean.getPreviewCommand() != null){
-                    menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
-                    menuSession.updateScreen();
+                    try {
+                        menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
+                        menuSession.updateScreen();
+                    } catch(ArrayIndexOutOfBoundsException e) {
+                        throw new RuntimeException("Couldn't get entries from preview command "
+                                + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
+                                " please report a bug to the CommCareHQ Team.");
+                    }
                 }
             }
             String[] selections = sessionNavigationBean.getSelections();
@@ -97,7 +101,7 @@ public class MenuController extends AbstractBaseController{
             }
 
             String[] titles = new String[selections.length + 1];
-            titles[0] = menuSession.getNextScreen().getScreenTitle();
+            titles[0] = SessionUtils.getAppTitle();
             NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
             for (int i = 1; i <= selections.length; i++) {
                 String selection = selections[i - 1];

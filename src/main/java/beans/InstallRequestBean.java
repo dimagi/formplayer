@@ -3,8 +3,6 @@ package beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-import java.util.Map;
-
 /**
  * Created by willpride on 2/4/16.
  */

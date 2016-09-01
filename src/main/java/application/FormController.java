@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import services.NewFormRequest;
 import repo.SerializableMenuSession;
+import services.NewFormRequest;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -239,7 +239,7 @@ public class FormController extends AbstractBaseController{
     }
 
     @ApiOperation(value = "Evaluate the given XPath under the current context")
-    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.POST)
     @ResponseBody
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         log.info("Evaluate XPath Request: " + evaluateXPathRequestBean);
