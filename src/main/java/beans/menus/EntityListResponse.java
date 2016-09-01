@@ -60,7 +60,7 @@ public class EntityListResponse extends MenuBean {
 
     private void processCaseTiles(Detail shortDetail) {
         DetailField[] fields = shortDetail.getFields();
-        if (!shortDetail.shouldBeLaidOutInGrid()) {
+        if (!shortDetail.usesEntityTileView()) {
             return;
         }
         tiles = new Tile[fields.length];
