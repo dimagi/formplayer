@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
+import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.cli.EntityScreen;
 import org.commcare.util.cli.MenuScreen;
@@ -147,7 +148,12 @@ public abstract class AbstractBaseController {
         return new NewFormSessionResponse(formEntrySession);
     }
 
-    @ExceptionHandler({ApplicationConfigException.class, XPathException.class})
+    /**
+     * Catch all the exceptions that we *do not* want emailed here
+     */
+    @ExceptionHandler({ApplicationConfigException.class,
+            XPathException.class,
+            CommCareInstanceInitializer.FixtureInitializationException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
