@@ -227,7 +227,7 @@ public class BaseTestClass {
                         String ref = (String) args[0];
                         // All references that start with `/` are a URL that needs to be parsed
                         // in order to the app id. Should be refactored.
-                        if(ref.startsWith("/")){
+                        if(ref.startsWith("/") || ref.contains("app_id]")){
                             ref = resolveAppId(ref);
                         }
                         String username = (String) args[1];
