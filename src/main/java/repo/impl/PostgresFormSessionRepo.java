@@ -1,8 +1,10 @@
 package repo.impl;
 
+import exceptions.FormNotFoundException;
 import objects.SerializableFormSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -90,6 +92,14 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR});
         return session;
+    }
+
+    public SerializableFormSession findOneWrapped(String id) throws FormNotFoundException {
+        try {
+            return findOne(id);
+        } catch(EmptyResultDataAccessException e) {
+            throw new FormNotFoundException(id);
+        }
     }
 
     @Override

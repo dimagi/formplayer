@@ -60,7 +60,7 @@ public class EntityListResponse extends MenuBean {
 
     private void processCaseTiles(Detail shortDetail) {
         DetailField[] fields = shortDetail.getFields();
-        if (!shortDetail.usesGridView()) {
+        if (!shortDetail.shouldBeLaidOutInGrid()) {
             return;
         }
         tiles = new Tile[fields.length];
@@ -218,7 +218,7 @@ public class EntityListResponse extends MenuBean {
     }
 
     private void processActions(SessionWrapper session) {
-        Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions();
+        Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions(session.getEvaluationContext());
         // Assume we only have one TODO WSP: is that correct?
         if (actions != null && !actions.isEmpty()) {
             Action action = actions.firstElement();
