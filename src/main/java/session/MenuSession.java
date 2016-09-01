@@ -11,13 +11,10 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.*;
+import org.commcare.suite.model.FormIdDatum;
+import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
-import org.commcare.util.cli.CommCareSessionException;
-import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.MenuScreen;
-import org.commcare.util.cli.QueryScreen;
-import org.commcare.util.cli.Screen;
+import org.commcare.util.cli.*;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
@@ -29,30 +26,24 @@ import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
 import services.RestoreService;
 import util.SessionUtils;
+import util.ApplicationUtils;
+import util.Constants;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.UUID;
 
-import static util.Constants.CCZ_LATEST_SAVED;
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
@@ -90,7 +81,11 @@ public class MenuSession {
         this.installReference = session.getInstallReference();
 
         resolveInstallReference(installReference, appId);
-        this.engine = installService.configureApplication(this.installReference, this.username, "dbs/" + appId);
+        this.engine = installService.configureApplication(
+                this.installReference,
+                this.username,
+                ApplicationUtils.getApplicationDBPath(this.domain, this.username, this.appId)
+        );
         this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
         this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
@@ -106,7 +101,11 @@ public class MenuSession {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
         resolveInstallReference(installReference, appId);
-        this.engine = installService.configureApplication(this.installReference, this.username, "dbs/" + appId);
+        this.engine = installService.configureApplication(
+                this.installReference,
+                this.username,
+                ApplicationUtils.getApplicationDBPath(domain, username, appId)
+        );
         this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
@@ -142,7 +141,7 @@ public class MenuSession {
             throw new RuntimeException("Unable to instantiate URIBuilder");
         }
         builder.addParameter("app_id", appId);
-        builder.addParameter("latest", CCZ_LATEST_SAVED);
+        builder.addParameter("latest", Constants.CCZ_LATEST_SAVED);
         return builder.toString();
     }
 

@@ -1,23 +1,29 @@
 package application;
 
-import auth.HqAuth;
+import beans.ExceptionResponseBean;
 import beans.NewFormSessionResponse;
-import beans.NotificationMessageBean;
 import beans.menus.*;
+import exceptions.ApplicationConfigException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.modern.session.SessionWrapper;
-import org.commcare.util.cli.*;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.commcare.core.process.CommCareInstanceInitializer;
+import org.commcare.modern.session.SessionWrapper;
+import org.commcare.util.cli.EntityScreen;
+import org.commcare.util.cli.MenuScreen;
+import org.commcare.util.cli.QueryScreen;
+import org.commcare.util.cli.Screen;
+import org.javarosa.xpath.XPathException;
+import org.javarosa.xpath.XPathMissingInstanceException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
@@ -28,11 +34,9 @@ import session.FormSession;
 import session.MenuSession;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
@@ -77,7 +81,13 @@ public abstract class AbstractBaseController {
     }
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, 0, "", new String[] {menuSession.getNextScreen().getScreenTitle()});
+        Screen nextScreen = menuSession.getNextScreen();
+        // If the nextScreen is null, that means we are heading into 
+        // form entry and there isn't a screen title
+        if (nextScreen == null) {
+            return getNextMenu(menuSession, 0, "", null);
+        }
+        return getNextMenu(menuSession, 0, "", new String[] {nextScreen.getScreenTitle()});
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
@@ -139,8 +149,22 @@ public abstract class AbstractBaseController {
         return new NewFormSessionResponse(formEntrySession);
     }
 
+    /**
+     * Catch all the exceptions that we *do not* want emailed here
+     */
+    @ExceptionHandler({ApplicationConfigException.class,
+            XPathException.class,
+            CommCareInstanceInitializer.FixtureInitializationException.class})
+    @ResponseBody
+    public ExceptionResponseBean handleApplicationError(HttpServletRequest req, Exception exception) {
+        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+
+        return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+    }
+
     @ExceptionHandler(Exception.class)
-    public String handleError(HttpServletRequest req, Exception exception) {
+    @ResponseBody
+    public ExceptionResponseBean handleError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         exception.printStackTrace();
         try {
@@ -149,11 +173,7 @@ public abstract class AbstractBaseController {
             e.printStackTrace();
             log.error("Unable to send email");
         }
-        JSONObject errorReturn = new JSONObject();
-        errorReturn.put("exception", exception);
-        errorReturn.put("url", req.getRequestURL());
-        errorReturn.put("status", "error");
-        return errorReturn.toString();
+        return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
     private void sendExceptionEmail(HttpServletRequest req, Exception exception) {

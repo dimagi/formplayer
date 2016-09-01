@@ -3,8 +3,12 @@
  */
 package install;
 
+import exceptions.ApplicationConfigException;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.reference.JavaFileRoot;
@@ -26,11 +30,10 @@ import org.javarosa.core.services.storage.IStorageUtility;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.json.JSONObject;
 import util.PrototypeUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.zip.ZipFile;
@@ -126,16 +129,19 @@ public class FormplayerConfigEngine {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setInstanceFollowRedirects(true);  //you still need to handle redirect manully.
             HttpURLConnection.setFollowRedirects(true);
+            if (conn.getResponseCode() == 400) {
+                handleInstallError(conn.getErrorStream());
+            }
+            InputStream result = conn.getInputStream();
 
             File file = File.createTempFile("commcare_", ".ccz");
 
             FileOutputStream fos = new FileOutputStream(file);
-            StreamsUtil.writeFromInputToOutput(new BufferedInputStream(conn.getInputStream()), fos);
+            StreamsUtil.writeFromInputToOutput(new BufferedInputStream(result), fos);
             return file.getAbsolutePath();
         } catch (IOException e) {
             log.error("Issue downloading or create stream for " + resource);
             e.printStackTrace();
-            System.exit(-1);
             return null;
         }
     }
@@ -143,6 +149,18 @@ public class FormplayerConfigEngine {
     public void initFromLocalFileResource(String resource) throws InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
         String reference = setFileSystemRootFromResourceAndReturnRelativeRef(resource);
         init(reference);
+    }
+
+    private void handleInstallError(InputStream errorStream) {
+        StringWriter writer = new StringWriter();
+        try {
+            IOUtils.copy(errorStream, writer, "utf-8");
+        } catch (IOException e) {
+            log.error("Unable to read error stream", e);
+        }
+        String errorMessage = writer.toString();
+        JSONObject errorJson = new JSONObject(errorMessage);
+        throw new ApplicationConfigException(errorJson.getJSONArray("errors").join(" "));
     }
 
     private String setFileSystemRootFromResourceAndReturnRelativeRef(String resource) {
@@ -198,8 +216,7 @@ public class FormplayerConfigEngine {
 
             Localization.setLocale(newLocale);
         } catch (ResourceInitializationException e) {
-            log.error("Error while initializing one of the resolved resources");
-            System.exit(-1);
+            log.error("Error while initializing one of the resolved resources", e);
         }
     }
 
