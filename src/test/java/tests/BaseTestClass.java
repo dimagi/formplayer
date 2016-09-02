@@ -186,6 +186,7 @@ public class BaseTestClass {
             }
         }
 
+        // TODO: Get rid of this godawfulness, replace with installReference in tests
         switch (appId) {
             case "doublemgmtappid":
             case "navigatorappid":
