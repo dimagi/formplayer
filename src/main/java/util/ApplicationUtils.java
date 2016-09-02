@@ -1,5 +1,6 @@
 package util;
 
+import application.SQLiteProperties;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
 
@@ -21,6 +22,6 @@ public class ApplicationUtils {
     }
 
     public static String getApplicationDBPath(String domain, String username, String appId) {
-        return UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain + "/" + username + "/" + appId;
+        return SQLiteProperties.getDataDir() + domain + "/" + username + "/" + appId;
     }
 }
