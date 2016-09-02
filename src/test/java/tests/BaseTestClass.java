@@ -195,8 +195,6 @@ public class BaseTestClass {
                 ref = "archives/case.ccz";
                 break;
             case "createappid":
-            case "loadappid":
-            case "casetestappid":
                 ref = "archives/basic.ccz";
                 break;
             case "casemediaappid":
@@ -234,7 +232,6 @@ public class BaseTestClass {
                         String path = (String) args[2];
                         FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
                         String absolutePath = getTestResourcePath(ref);
-                        System.out.println("Init with path: " + absolutePath);
                         engine.initFromArchive(absolutePath);
                         engine.initEnvironment();
                         return engine;
