@@ -5,15 +5,12 @@ package install;
 
 import exceptions.ApplicationConfigException;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.reference.JavaFileRoot;
 import org.commcare.modern.reference.JavaHttpRoot;
-import org.commcare.modern.reference.JavaResourceRoot;
 import org.commcare.resources.ResourceManager;
 import org.commcare.resources.model.*;
 import org.commcare.suite.model.Profile;
@@ -102,8 +99,6 @@ public class FormplayerConfigEngine {
         this.mArchiveRoot = new ArchiveFileRoot();
 
         ReferenceManager._().addReferenceFactory(mArchiveRoot);
-
-        ReferenceManager._().addReferenceFactory(new JavaResourceRoot(this.getClass()));
     }
 
     public void initFromArchive(String archiveURL) throws IOException, InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
@@ -202,7 +197,7 @@ public class FormplayerConfigEngine {
     public void initEnvironment() {
         try {
             Localization.init(true);
-            table.initializeResources(platform);
+            table.initializeResources(platform, true);
             //Make sure there's a default locale, since the app doesn't necessarily use the
             //localization engine
             Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");
