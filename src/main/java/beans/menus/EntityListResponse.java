@@ -35,7 +35,7 @@ public class EntityListResponse extends MenuBean {
     private int currentPage;
     private final String type = "entities";
 
-    public static final int CASE_LENGTH_LIMIT = 100;
+    public static int CASE_LENGTH_LIMIT = 10;
 
     private boolean usesCaseTiles;
 
@@ -51,12 +51,12 @@ public class EntityListResponse extends MenuBean {
 
         Vector<TreeReference> references = ec.expandReference(((EntityDatum) session.getNeededDatum()).getNodeset());
         processTitle(session);
+        processCaseTiles(shortDetail);
         processEntities(nextScreen, references, ec, offset, searchText);
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
         setMenuSessionId(id);
-        processCaseTiles(shortDetail);
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -90,7 +90,7 @@ public class EntityListResponse extends MenuBean {
         if (searchText != null && !searchText.trim().equals("")) {
             allEntities = filterEntities(allEntities, searchText);
         }
-        if (allEntities.length > CASE_LENGTH_LIMIT) {
+        if (allEntities.length > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
             // we're doing pagination
 
             if(offset > allEntities.length){
