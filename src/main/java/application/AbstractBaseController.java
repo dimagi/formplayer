@@ -12,10 +12,7 @@ import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.util.cli.EntityScreen;
-import org.commcare.util.cli.MenuScreen;
-import org.commcare.util.cli.QueryScreen;
-import org.commcare.util.cli.Screen;
+import org.commcare.util.cli.*;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathMissingInstanceException;
 import org.json.JSONObject;
@@ -153,7 +150,8 @@ public abstract class AbstractBaseController {
      */
     @ExceptionHandler({ApplicationConfigException.class,
             XPathException.class,
-            CommCareInstanceInitializer.FixtureInitializationException.class})
+            CommCareInstanceInitializer.FixtureInitializationException.class,
+            CommCareSessionException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
