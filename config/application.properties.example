@@ -4,6 +4,7 @@ user.suffix=commcarehq.org
 logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=DEBUG
 server.port=8080
 redis.hostname=localhost
+sqlite.dataDir=dbs/  # Must end in /
 
 // Properties for HQ db
 datasource.hq.driverClassName=org.postgresql.Driver

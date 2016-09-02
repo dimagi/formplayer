@@ -1,5 +1,6 @@
 package tests;
 
+import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.*;
 import org.commcare.api.persistence.SqlSandboxUtils;
@@ -59,7 +60,7 @@ public class FilterTests extends BaseTestClass {
         assert(syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
         assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
 
-        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("synctestuser", "dbs/synctestdomain");
+        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("synctestuser", SQLiteProperties.getDataDir() + "synctestdomain");
 
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
