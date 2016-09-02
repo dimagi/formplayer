@@ -35,7 +35,7 @@ public class PrototypeUtils {
                 EntityDatum.class.getName(),
                 FormIdDatum.class.getName(),
                 ViewEntry.class.getName(),
-                SyncEntry.class.getName(),
+                RemoteRequestEntry.class.getName(),
                 RemoteQueryDatum.class.getName(),
                 "org.javarosa.xpath.XPathConditional",
                 "org.javarosa.core.model.SubmissionProfile",
