@@ -35,7 +35,7 @@ public class EntityListResponse extends MenuBean {
     private int currentPage;
     private final String type = "entities";
 
-    public static final int CASE_LENGTH_LIMIT = 10;
+    public static final int CASE_LENGTH_LIMIT = 100;
 
     private boolean usesCaseTiles;
 
@@ -220,7 +220,7 @@ public class EntityListResponse extends MenuBean {
     }
 
     private void processActions(SessionWrapper session) {
-        Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions();
+        Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions(session.getEvaluationContext());
         // Assume we only have one TODO WSP: is that correct?
         if (actions != null && !actions.isEmpty()) {
             Action action = actions.firstElement();
