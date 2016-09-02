@@ -26,6 +26,7 @@ import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
 import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
@@ -52,6 +53,7 @@ import java.util.UUID;
  *
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
  */
+@EnableAutoConfiguration
 @Component
 public class MenuSession {
     private FormplayerConfigEngine engine;
@@ -69,18 +71,15 @@ public class MenuSession {
     private String appId;
     private HqAuth auth;
 
-
-    private String host;
-
     public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreService restoreService, HqAuth auth) throws Exception {
+                       RestoreService restoreService, HqAuth auth, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
         this.domain = session.getDomain();
         this.locale = session.getLocale();
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
 
-        resolveInstallReference(installReference, appId);
+        resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(
                 this.installReference,
                 this.username,
@@ -97,10 +96,10 @@ public class MenuSession {
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
-                       InstallService installService, RestoreService restoreService, HqAuth auth) throws Exception {
+                       InstallService installService, RestoreService restoreService, HqAuth auth, String host) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
-        resolveInstallReference(installReference, appId);
+        resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(
                 this.installReference,
                 this.username,
@@ -116,7 +115,7 @@ public class MenuSession {
         this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
     }
 
-    private void resolveInstallReference(String installReference, String appId){
+    private void resolveInstallReference(String installReference, String appId, String host){
         if (installReference == null || installReference.equals("")) {
             if(appId == null || "".equals(appId)){
                 throw new RuntimeException("Can't install - either installReference or app_id must be non-null");
@@ -284,10 +283,5 @@ public class MenuSession {
 
     public void updateScreen() throws CommCareSessionException {
         this.screen = getNextScreen();
-    }
-
-    @Value("${commcarehq.host}")
-    public void setHost(String host) {
-        this.host = host;
     }
 }

@@ -77,7 +77,7 @@ public class MenuController extends AbstractBaseController{
             String menuSessionId = sessionNavigationBean.getMenuSessionId();
             if (menuSessionId != null && !"".equals(menuSessionId)) {
                 menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
-                        installService, restoreService, auth);
+                        installService, restoreService, auth, host);
                 menuSession.getSessionWrapper().syncState();
             } else {
                 menuSession = performInstall(sessionNavigationBean, authToken);
@@ -244,6 +244,6 @@ public class MenuController extends AbstractBaseController{
         }
 
         return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), bean.getLocale(), installService, restoreService, auth);
+                bean.getInstallReference(), bean.getLocale(), installService, restoreService, auth, host);
     }
 }
