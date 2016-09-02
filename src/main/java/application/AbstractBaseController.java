@@ -4,6 +4,7 @@ import beans.ExceptionResponseBean;
 import beans.NewFormSessionResponse;
 import beans.menus.*;
 import exceptions.ApplicationConfigException;
+import exceptions.FormNotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -151,7 +152,8 @@ public abstract class AbstractBaseController {
     @ExceptionHandler({ApplicationConfigException.class,
             XPathException.class,
             CommCareInstanceInitializer.FixtureInitializationException.class,
-            CommCareSessionException.class})
+            CommCareSessionException.class,
+            FormNotFoundException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
