@@ -13,10 +13,13 @@ public class SQLiteProperties {
     private static String dataDir;
 
     public static String getDataDir() {
+        if (dataDir == null) {
+            return "dbs/";
+        }
         return dataDir;
     }
 
-    @Value("${sqlite.dataDir}")
+    @Value("${sqlite.dataDir ?: dbs/}")
     public void setDataDir(String dataDir) {
         this.dataDir = dataDir;
     }
