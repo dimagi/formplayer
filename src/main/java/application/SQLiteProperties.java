@@ -19,7 +19,7 @@ public class SQLiteProperties {
         return dataDir;
     }
 
-    @Value("${sqlite.dataDir ?: dbs/}")
+    @Value("${sqlite.dataDir}")
     public void setDataDir(String dataDir) {
         this.dataDir = dataDir;
     }
