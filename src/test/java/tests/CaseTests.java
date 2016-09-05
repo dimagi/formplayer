@@ -1,5 +1,6 @@
 package tests;
 
+import application.SQLiteProperties;
 import beans.*;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
@@ -101,7 +102,7 @@ public class CaseTests extends BaseTestClass {
 
     @After
     public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
+        SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
     }
 
 }
