@@ -95,3 +95,9 @@ test {
 task wrapper(type: Wrapper) {
     gradleVersion = '2.3'
 }
+
+task copyTestResources(type: Copy) {
+    from "${projectDir}/src/test/resources"
+    into "${buildDir}/classes/test"
+}
+test.dependsOn copyTestResources
