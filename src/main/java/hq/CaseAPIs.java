@@ -1,5 +1,6 @@
 package hq;
 
+import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.CaseBean;
 import beans.CaseFilterRequestBean;
@@ -20,29 +21,29 @@ import java.io.File;
 public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(String username, String domain, String xml) throws Exception {
-        new File(UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain + "/" + username + ".db").delete();
+        new File(SQLiteProperties.getDataDir() + domain + "/" + username + ".db").delete();
         return restoreIfNotExists(username, domain, xml);
     }
 
     public static UserSqlSandbox restoreIfNotExists(String username, String domain, String xml) throws Exception{
-        File db = new File(UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain + "/" + username + ".db");
+        File db = new File(SQLiteProperties.getDataDir() + domain + "/" + username + ".db");
         if(db.exists()){
-            return new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain);
+            return new UserSqlSandbox(username, SQLiteProperties.getDataDir() + domain);
         } else{
             db.getParentFile().mkdirs();
-            return RestoreUtils.restoreUser(username,UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain,  xml);
+            return RestoreUtils.restoreUser(username, SQLiteProperties.getDataDir() + domain,  xml);
         }
     }
 
     public static UserSqlSandbox restoreIfNotExists(String username, RestoreService restoreService,
                                                     String domain, HqAuth auth) throws Exception{
-        File db = new File(UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain + "/" + username + ".db");
+        File db = new File(SQLiteProperties.getDataDir() + domain + "/" + username + ".db");
         if(db.exists()){
-            return new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain);
+            return new UserSqlSandbox(username, SQLiteProperties.getDataDir() + domain);
         } else{
             db.getParentFile().mkdirs();
             String xml = restoreService.getRestoreXml(domain, auth);
-            return RestoreUtils.restoreUser(username, UserSqlSandbox.DEFAULT_DATBASE_PATH + "/" + domain, xml);
+            return RestoreUtils.restoreUser(username, SQLiteProperties.getDataDir() + domain, xml);
         }
     }
 

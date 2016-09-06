@@ -142,7 +142,7 @@ public class DoubleManagementTest  extends BaseTestClass{
         DisplayElement action = entityListResponse.getAction();
         assert action.getText().equals("New Parent");
 
-        parentResponseObject2 = sessionNavigate(new String[] {"2", "0"}, "doublemgmt");
+        parentResponseObject2 = sessionNavigate(new String[] {"2", "4d1831ab-abfe-4086-bce7-16d325d9ca3a"}, "doublemgmt");
         CommandListResponseBean commandListResponse =
                 mapper.readValue(parentResponseObject2.toString(), CommandListResponseBean.class);
         assert commandListResponse.getTitle().equals("Parent (2)");
@@ -150,7 +150,7 @@ public class DoubleManagementTest  extends BaseTestClass{
         assert commandListResponse.getCommands()[0].getDisplayText().equals("Update Parent");
         assert commandListResponse.getCommands()[1].getDisplayText().equals("Parent Register Child");
 
-        childResponseObject = sessionNavigate(new String[] {"2", "0", "0"}, "doublemgmt");
+        childResponseObject = sessionNavigate(new String[] {"2", "4d1831ab-abfe-4086-bce7-16d325d9ca3a", "0"}, "doublemgmt");
         newFormSessionResponse =
                 mapper.readValue(childResponseObject.toString(), NewFormSessionResponse.class);
         assert newFormSessionResponse.getTitle().equals("Update Parent");

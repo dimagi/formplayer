@@ -1,5 +1,6 @@
 package session;
 
+import application.SQLiteProperties;
 import hq.CaseAPIs;
 import install.FormplayerConfigEngine;
 import objects.SerializableFormSession;
@@ -61,6 +62,7 @@ public class FormSession {
     private final String username;
     private String domain;
     private String menuSessionId;
+
 
     public FormSession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
@@ -162,7 +164,7 @@ public class FormSession {
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
         CommCarePlatform platform = new CommCarePlatform(2, 27);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        FormplayerConfigEngine.setupStorageManager("test", "dbs/" + domain + "/" + username);
+        FormplayerConfigEngine.setupStorageManager("test", SQLiteProperties.getDataDir() + domain + "/" + username);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
     }
 
