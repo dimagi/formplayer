@@ -169,7 +169,6 @@ public class EntityListResponse extends MenuBean {
 
     private Entity processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
         Detail detail = screen.getShortDetail();
-        Entity ret = new Entity();
         EvaluationContext context = new EvaluationContext(ec, entity);
 
         detail.populateEvaluationContextVariables(context);
@@ -177,6 +176,8 @@ public class EntityListResponse extends MenuBean {
         DetailField[] fields = detail.getFields();
         Object[] data = new Object[fields.length];
 
+        String id = screen.getReturnValueFromSelection(entity, (EntityDatum)screen.getSession().getNeededDatum(), ec);
+        Entity ret = new Entity(id);
         int i = 0;
         for (DetailField field : fields) {
             Object o;
