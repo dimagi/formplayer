@@ -197,6 +197,8 @@ public class BaseTestClass {
                 ref = "archives/case.ccz";
                 break;
             case "createappid":
+            case "loadappid":
+            case "casetestappid":
                 ref = "archives/basic.ccz";
                 break;
             case "casemediaappid":

@@ -3,19 +3,25 @@ package beans.menus;
 import java.util.Arrays;
 
 /**
- * Created by willpride on 4/13/16.
+ * Represents a single entity in a response list
  */
 public class Entity {
-    private int index;
+    private String id;
     private Object[] data;
     private EntityDetailResponse[] details;
 
-    public int getIndex() {
-        return index;
+    public Entity(){}
+
+    public Entity(String id) {
+        this.id = id;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Object[] getData() {
@@ -36,6 +42,6 @@ public class Entity {
 
     @Override
     public String toString(){
-        return "Entity at index=" + index + ", data=" + Arrays.toString(data);
+        return "Entity with id=" + id + ", data=" + Arrays.toString(data);
     }
 }
