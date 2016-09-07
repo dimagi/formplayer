@@ -28,6 +28,12 @@ public class FormplayerAuthFilter implements Filter {
     TokenRepo tokenRepo;
 
     @Autowired
+    PostgresUserRepo postgresUserRepo;
+
+    @Autowired
+    CouchUserRepo couchUserRepo;
+
+    @Autowired
     RedisLockRegistry userLockRegistry;
 
     @Override
@@ -49,11 +55,18 @@ public class FormplayerAuthFilter implements Filter {
         chain.doFilter(req, res);
     }
 
-    private boolean authorizeRequest(HttpServletRequest request){
+    private boolean authorizeRequest(ContentCachingRequestWrapper request){
+        JSONObject data = null;
+        try {
+            data = new JSONObject(RequestUtils.getBody(request));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         if(request.getCookies() !=  null) {
             for (Cookie cookie : request.getCookies()) {
                 if(Constants.POSTGRES_DJANGO_SESSION_ID.equals(cookie.getName())){
-                    return authorizeToken(cookie.getValue());
+                    return authorizeToken(data.getString("domain"), data.getString("username"), cookie.getValue());
                 }
             }
         }
@@ -74,10 +87,19 @@ public class FormplayerAuthFilter implements Filter {
         return (request.getMethod().equals("POST") || request.getMethod().equals("GET"));
     }
 
-    private boolean authorizeToken(String value) {
-        CouchUser user = new CouchUser();
-        return user.isAuthorized(tokenRepo.getSessionToken(value));
+    private boolean authorizeToken(String domain, String username, String value) {
         SessionToken token = tokenRepo.getSessionToken(value);
+        if (token == null) {
+            return false;
+        }
+        // Check session token is expired
+        if (token.getExpireDate().before(new java.util.Date())){
+            return false;
+        }
+
+        // Ensure domain and username match couch user
+        PostgresUser postgresUser = postgresUserRepo.getUserByDjangoId(token.getUserId());
+        return couchUserRepo.getUserByUsername(postgresUser.getUsername()).isAuthorized(domain, username);
     }
 
     @Override
@@ -89,4 +111,5 @@ public class FormplayerAuthFilter implements Filter {
         response.reset();
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
+
 }
