@@ -48,26 +48,7 @@ public class PostgresTokenRepo implements TokenRepo{
         }
     }
 
-    private static class SessionToken {
-        private String sessionId;
-        private Date expireDate;
 
-        public String getSessionid() {
-            return sessionId;
-        }
-
-        public void setSessionId(String sessionId) {
-            this.sessionId = sessionId;
-        }
-
-        public Date getExpireDate() {
-            return expireDate;
-        }
-
-        public void setExpireDate(Date expireDate) {
-            this.expireDate = expireDate;
-        }
-    }
 
 
 }
