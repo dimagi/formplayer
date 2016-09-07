@@ -1,11 +1,22 @@
 package application;
 
+import hq.interfaces.CouchUser;
+import hq.models.PostgresUser;
+import hq.models.SessionToken;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.ResourceProperties;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 import repo.TokenRepo;
+import repo.impl.CouchUserRepo;
+import repo.impl.PostgresUserRepo;
 import util.Constants;
+import util.FormplayerHttpRequest;
+import util.RequestUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
@@ -44,33 +55,62 @@ public class FormplayerAuthFilter implements Filter {
     @Override
     public void doFilter(ServletRequest req, ServletResponse res,
                          FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) req;
+        FormplayerHttpRequest request = new FormplayerHttpRequest((HttpServletRequest) req);
         if (isAuthorizationRequired(request)) {
-            if (!authorizeRequest(request)) {
+            setToken(request);
+            setUser(request);
+            setDomain(request);
+            JSONObject data = getPostData(request);
+            if (!authorizeRequest(request, data.getString("domain"), data.getString("username"))) {
                 setResponseUnauthorized((HttpServletResponse) res);
                 return;
             }
         }
 
-        chain.doFilter(req, res);
+        chain.doFilter(request, res);
     }
 
-    private boolean authorizeRequest(ContentCachingRequestWrapper request){
+    private JSONObject getPostData(FormplayerHttpRequest request) {
         JSONObject data = null;
         try {
             data = new JSONObject(RequestUtils.getBody(request));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Unreadable POST Body for the request: " + request.getRequestURI());
         }
+        return data;
+    }
 
+    private void setToken(FormplayerHttpRequest request) {
+        request.setToken(tokenRepo.getSessionToken(getSessionId(request)));
+    }
+
+    private void setUser(FormplayerHttpRequest request) {
+        JSONObject data = getPostData(request);
+
+        PostgresUser postgresUser = postgresUserRepo.getUserByDjangoId(request.getToken().getUserId());
+        CouchUser couchUser = couchUserRepo.getUserByUsername(postgresUser.getUsername());
+
+        request.setCouchUser(couchUser);
+        request.setPostgresUser(postgresUser);
+    }
+
+    private String getSessionId(FormplayerHttpRequest request) {
         if(request.getCookies() !=  null) {
             for (Cookie cookie : request.getCookies()) {
                 if(Constants.POSTGRES_DJANGO_SESSION_ID.equals(cookie.getName())){
-                    return authorizeToken(data.getString("domain"), data.getString("username"), cookie.getValue());
+                    return cookie.getValue();
                 }
             }
         }
-        return false;
+        return null;
+    }
+
+    private void setDomain(FormplayerHttpRequest request) {
+        JSONObject data = getPostData(request);
+        if (data.getString("domain") == null) {
+            throw new RuntimeException("No domain specified for the request: " + request.getRequestURI());
+        }
+        request.setDomain(data.getString("domain"));
     }
 
     /**
@@ -87,19 +127,17 @@ public class FormplayerAuthFilter implements Filter {
         return (request.getMethod().equals("POST") || request.getMethod().equals("GET"));
     }
 
-    private boolean authorizeToken(String domain, String username, String value) {
-        SessionToken token = tokenRepo.getSessionToken(value);
-        if (token == null) {
+    private boolean authorizeRequest(FormplayerHttpRequest request, String domain, String username) {
+        if (request.getToken() == null) {
             return false;
         }
         // Check session token is expired
-        if (token.getExpireDate().before(new java.util.Date())){
+        if (request.getToken().getExpireDate().before(new java.util.Date())){
             return false;
         }
 
         // Ensure domain and username match couch user
-        PostgresUser postgresUser = postgresUserRepo.getUserByDjangoId(token.getUserId());
-        return couchUserRepo.getUserByUsername(postgresUser.getUsername()).isAuthorized(domain, username);
+        return request.getCouchUser().isAuthorized(domain, username);
     }
 
     @Override
