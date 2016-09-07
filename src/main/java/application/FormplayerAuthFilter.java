@@ -77,6 +77,7 @@ public class FormplayerAuthFilter implements Filter {
     private boolean authorizeToken(String value) {
         CouchUser user = new CouchUser();
         return user.isAuthorized(tokenRepo.getSessionToken(value));
+        SessionToken token = tokenRepo.getSessionToken(value);
     }
 
     @Override
