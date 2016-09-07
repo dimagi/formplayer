@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- * Created by benrudolph on 9/7/16.
+ * Utility function to deal with request objects.
  */
 public class RequestUtils {
 

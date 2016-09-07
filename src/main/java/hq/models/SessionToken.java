@@ -7,13 +7,20 @@ import javax.xml.bind.DatatypeConverter;
 import java.util.Date;
 
 /**
- * Created by benrudolph on 9/7/16.
+ * Represents the user's session. This is set by HQ.
  */
 public class SessionToken {
     private String sessionId;
     private Date expireDate;
     private JSONObject sessionData;
 
+    /**
+     * Parses base64 sessionData into a JSONObject. The decoded session data is of the format:
+     *
+     *      "<unique_id>:{...session data...}"
+     *
+     * @param base64SessionData
+     */
     public void parseSessionData(String base64SessionData) {
         byte[] data = DatatypeConverter.parseBase64Binary(base64SessionData);
         String jsonData = StringUtils.substringAfter(new String(data), ":");

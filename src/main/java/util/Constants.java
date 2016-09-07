@@ -39,11 +39,14 @@ public class Constants {
     // CCZ Parameters
     public static final String CCZ_LATEST_SAVED = "save";
 
-    // Postgres sesions
+    // Postgres tables
     public static final String POSTGRES_SESSION_TABLE_NAME = "formplayer_sessions";
     public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
     public static final String POSTGRES_USER_TABLE_NAME = "auth_user";
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
+
+    // Couch databases
+    public static final String COUCH_USERS_DB = "commcarehq__users";
 
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
 }
