@@ -85,6 +85,9 @@ public class FormEntryTest extends BaseTestClass{
         assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 
+        evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/broken");
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+
         //Test Submission
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request.json", sessionId);
     }
