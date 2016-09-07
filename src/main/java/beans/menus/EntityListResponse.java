@@ -35,9 +35,11 @@ public class EntityListResponse extends MenuBean {
     private int currentPage;
     private final String type = "entities";
 
-    public static int CASE_LENGTH_LIMIT = 10;
+    public static int CASE_LENGTH_LIMIT = 100;
 
     private boolean usesCaseTiles;
+    private int maxWidth;
+    private int maxHeight;
 
     public EntityListResponse() {
     }
@@ -74,6 +76,9 @@ public class EntityListResponse extends MenuBean {
             }
         }
         numEntitiesPerRow = shortDetail.getNumEntitiesToDisplayPerRow();
+        Pair<Integer, Integer> maxWidthHeight = shortDetail.getMaxWidthHeight();
+        maxWidth = maxWidthHeight.first;
+        maxHeight = maxWidthHeight.second;
     }
 
     private void processHeader(Detail shortDetail, EvaluationContext ec) {
@@ -314,5 +319,21 @@ public class EntityListResponse extends MenuBean {
 
     public void setNumEntitiesPerRow(int numEntitiesPerRow) {
         this.numEntitiesPerRow = numEntitiesPerRow;
+    }
+
+    public int getMaxHeight() {
+        return maxHeight;
+    }
+
+    public void setMaxHeight(int maxHeight) {
+        this.maxHeight = maxHeight;
+    }
+
+    public int getMaxWidth() {
+        return maxWidth;
+    }
+
+    public void setMaxWidth(int maxWidth) {
+        this.maxWidth = maxWidth;
     }
 }
