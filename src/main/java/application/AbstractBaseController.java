@@ -121,6 +121,7 @@ public abstract class AbstractBaseController {
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
             menuResponseBean.setBreadcrumbs(breadcrumbs);
+            menuResponseBean.setAppId(menuSession.getAppId());
             return menuResponseBean;
         }
     }

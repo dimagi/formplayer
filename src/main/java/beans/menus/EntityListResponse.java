@@ -29,12 +29,13 @@ public class EntityListResponse extends MenuBean {
     private String[] headers;
     private Tile[] tiles;
     private int[] widthHints;
+    private int numEntitiesPerRow;
 
     private int pageCount;
     private int currentPage;
     private final String type = "entities";
 
-    public static final int CASE_LENGTH_LIMIT = 10;
+    public static int CASE_LENGTH_LIMIT = 10;
 
     private boolean usesCaseTiles;
 
@@ -50,12 +51,12 @@ public class EntityListResponse extends MenuBean {
 
         Vector<TreeReference> references = ec.expandReference(((EntityDatum) session.getNeededDatum()).getNodeset());
         processTitle(session);
+        processCaseTiles(shortDetail);
         processEntities(nextScreen, references, ec, offset, searchText);
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
         setMenuSessionId(id);
-        processCaseTiles(shortDetail);
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -72,6 +73,7 @@ public class EntityListResponse extends MenuBean {
                 tiles[i] = null;
             }
         }
+        numEntitiesPerRow = shortDetail.getNumEntitiesToDisplayPerRow();
     }
 
     private void processHeader(Detail shortDetail, EvaluationContext ec) {
@@ -88,7 +90,7 @@ public class EntityListResponse extends MenuBean {
         if (searchText != null && !searchText.trim().equals("")) {
             allEntities = filterEntities(allEntities, searchText);
         }
-        if (allEntities.length > CASE_LENGTH_LIMIT) {
+        if (allEntities.length > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
             // we're doing pagination
 
             if(offset > allEntities.length){
@@ -304,5 +306,13 @@ public class EntityListResponse extends MenuBean {
 
     public Tile[] getTiles() {
         return tiles;
+    }
+
+    public int getNumEntitiesPerRow() {
+        return numEntitiesPerRow;
+    }
+
+    public void setNumEntitiesPerRow(int numEntitiesPerRow) {
+        this.numEntitiesPerRow = numEntitiesPerRow;
     }
 }

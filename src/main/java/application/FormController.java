@@ -50,7 +50,7 @@ public class FormController extends AbstractBaseController{
     private SubmitService submitService;
 
     @Value("${commcarehq.host}")
-    private String hqHost;
+    private String host;
 
     private final Log log = LogFactory.getLog(FormController.class);
     private final ObjectMapper mapper = new ObjectMapper();
@@ -62,7 +62,7 @@ public class FormController extends AbstractBaseController{
         log.info("New form requests with bean: " + newSessionBean + " sessionId :" + authToken);
         Lock lock = getLockAndBlock(newSessionBean.getSessionData().getUsername());
         try {
-            String postUrl = hqHost + newSessionBean.getPostUrl();
+            String postUrl = host + newSessionBean.getPostUrl();
             NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
                     formSessionRepo, xFormService, restoreService, authToken);
             NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
@@ -185,7 +185,7 @@ public class FormController extends AbstractBaseController{
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
-        MenuSession menuSession = new MenuSession(serializedSession, installService, restoreService, auth);
+        MenuSession menuSession = new MenuSession(serializedSession, installService, restoreService, auth, host);
         return resolveFormGetNext(menuSession);
     }
 

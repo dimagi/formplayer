@@ -5,5 +5,5 @@
   "app_id": "loadappid",
   "selections": [2, 1],
   "offset": 70,
-  "install_reference": "archives/basic.ccz"
+  "installReference": "archives/basic.ccz"
 }

@@ -19,7 +19,6 @@ public class Style {
                 setFontSize(Integer.parseInt(detail.getFontSize()));
             } catch (NumberFormatException nfe) {
                 setFontSize(12);
-                nfe.printStackTrace();
             }
         }
         setDisplayFormatFromString(detail.getTemplateForm());
