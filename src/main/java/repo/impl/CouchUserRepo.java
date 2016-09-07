@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Created by benrudolph on 9/7/16.
+ * Data repository for accessing the Couch user db.
  */
 @Repository
 public class CouchUserRepo {

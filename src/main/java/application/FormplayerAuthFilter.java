@@ -57,6 +57,11 @@ public class FormplayerAuthFilter implements Filter {
                          FilterChain chain) throws IOException, ServletException {
         FormplayerHttpRequest request = new FormplayerHttpRequest((HttpServletRequest) req);
         if (isAuthorizationRequired(request)) {
+            // These are order dependent
+            if (getSessionId(request) == null) {
+                setResponseUnauthorized((HttpServletResponse) res);
+                return;
+            }
             setToken(request);
             setUser(request);
             setDomain(request);
@@ -84,6 +89,12 @@ public class FormplayerAuthFilter implements Filter {
         request.setToken(tokenRepo.getSessionToken(getSessionId(request)));
     }
 
+    /**
+     * Takes a request object and queries postgres and couch to get the corresponding
+     * session user's.
+     *
+     * @param request
+     */
     private void setUser(FormplayerHttpRequest request) {
         JSONObject data = getPostData(request);
 
@@ -94,6 +105,11 @@ public class FormplayerAuthFilter implements Filter {
         request.setPostgresUser(postgresUser);
     }
 
+    /**
+     * Searches through the request cookie's to get the session id of the request.
+     * @param request
+     * @return The sessionid or null if not found
+     */
     private String getSessionId(FormplayerHttpRequest request) {
         if(request.getCookies() !=  null) {
             for (Cookie cookie : request.getCookies()) {
@@ -127,6 +143,15 @@ public class FormplayerAuthFilter implements Filter {
         return (request.getMethod().equals("POST") || request.getMethod().equals("GET"));
     }
 
+    /**
+     * This function ensures that the request session's user and domain matches the user and domain
+     * sent in the body of the POST request. Note, superusers are able to authenticate
+     * as other users.
+     * @param request
+     * @param domain
+     * @param username
+     * @return true if authorized, false otherwise
+     */
     private boolean authorizeRequest(FormplayerHttpRequest request, String domain, String username) {
         if (request.getToken() == null) {
             return false;

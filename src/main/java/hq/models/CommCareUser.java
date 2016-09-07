@@ -5,7 +5,8 @@ import hq.interfaces.CouchUser;
 import java.util.Arrays;
 
 /**
- * Created by benrudolph on 9/7/16.
+ * A representation of HQ's CommCareUser. This is a mobile worker and can
+ * only belong to one domain.
  */
 public class CommCareUser implements CouchUser {
     private String domain;

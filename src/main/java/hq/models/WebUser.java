@@ -5,7 +5,8 @@ import hq.interfaces.CouchUser;
 import java.util.Arrays;
 
 /**
- * Created by benrudolph on 9/7/16.
+ * This is a representation of HQ's WebUser model. A web user can belong
+ * to multiple domains and can also be a super user.
  */
 public class WebUser implements CouchUser {
     private String[] domains;

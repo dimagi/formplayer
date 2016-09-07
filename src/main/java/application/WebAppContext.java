@@ -35,6 +35,7 @@ import services.impl.InstallServiceImpl;
 import services.impl.RestoreServiceImpl;
 import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
+import util.Constants;
 
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
@@ -207,7 +208,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public CouchDbClient userCouchDbClient() {
         return new CouchDbClient(
-                "commcarehq__users",
+                Constants.COUCH_USERS_DB,
                 false,
                 couchProtocol,
                 couchHost,
