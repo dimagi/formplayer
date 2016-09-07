@@ -49,7 +49,7 @@ import java.util.Properties;
 @EnableAutoConfiguration
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*"})
+@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*"})
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${commcarehq.host}")
@@ -235,7 +235,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public InstallService installService(){
-        return new InstallServiceImpl(hqHost);
+        return new InstallServiceImpl();
     }
 
     @Bean

@@ -197,7 +197,7 @@ public class FormplayerConfigEngine {
     public void initEnvironment() {
         try {
             Localization.init(true);
-            table.initializeResources(platform, true);
+            table.initializeResources(platform, false);
             //Make sure there's a default locale, since the app doesn't necessarily use the
             //localization engine
             Localization.getGlobalLocalizerAdvanced().addAvailableLocale("default");

@@ -46,6 +46,7 @@ public class MenuController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+
         Lock lock = getLockAndBlock(installRequestBean.getUsername());
         try {
             log.info("Received install request: " + installRequestBean);
@@ -76,7 +77,7 @@ public class MenuController extends AbstractBaseController{
             String menuSessionId = sessionNavigationBean.getMenuSessionId();
             if (menuSessionId != null && !"".equals(menuSessionId)) {
                 menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
-                        installService, restoreService, auth);
+                        installService, restoreService, auth, host);
                 menuSession.getSessionWrapper().syncState();
             } else {
                 menuSession = performInstall(sessionNavigationBean, authToken);
@@ -228,7 +229,7 @@ public class MenuController extends AbstractBaseController{
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
-            throw new RuntimeException("Either app_id or install_reference must be non-null.");
+            throw new RuntimeException("Either app_id or installReference must be non-null.");
         }
 
         HqAuth auth;
@@ -243,6 +244,6 @@ public class MenuController extends AbstractBaseController{
         }
 
         return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), bean.getLocale(), installService, restoreService, auth);
+                bean.getInstallReference(), bean.getLocale(), installService, restoreService, auth, host);
     }
 }
