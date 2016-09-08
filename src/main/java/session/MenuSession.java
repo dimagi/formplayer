@@ -103,7 +103,7 @@ public class MenuSession {
         this.engine = installService.configureApplication(
                 this.installReference,
                 this.username,
-                ApplicationUtils.getApplicationDBPath(domain, username, appId)
+                ApplicationUtils.getApplicationDBPath(domain, this.username, appId)
         );
         this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
