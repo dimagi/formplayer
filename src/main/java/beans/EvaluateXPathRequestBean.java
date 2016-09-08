@@ -11,7 +11,7 @@ import java.util.Map;
  * SessionResponseBean that evaluates the given XPath against the current session evaluation context
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EvaluateXPathRequestBean extends SessionResponseBean {
+public class EvaluateXPathRequestBean extends SessionRequestBean {
     private Map<String, Object> formContext;
     private String xpath;
 
