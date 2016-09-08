@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Created by willpride on 2/8/16.
  */
 @ApiModel("Answer Question Request")
-public class SessionBean extends BaseResponseBean{
+public class SessionResponseBean extends BaseResponseBean{
     @ApiModelProperty(value = "The id of the form entry session", required = true)
     String sessionId;
     @ApiModelProperty(value = "The sequence number of the current command", required = true)
@@ -36,7 +36,7 @@ public class SessionBean extends BaseResponseBean{
 
     @Override
     public String toString(){
-        return "SessionBean [sessionId=" + sessionId + ", seqId=" + sequenceId + "]";
+        return "SessionResponseBean [sessionId=" + sessionId + ", seqId=" + sequenceId + "]";
     }
 
 }

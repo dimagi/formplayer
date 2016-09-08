@@ -7,7 +7,7 @@ import java.util.HashMap;
 /**
  * Created by willpride on 1/20/16.
  */
-public class SubmitResponseBean extends SessionBean{
+public class SubmitResponseBean extends SessionResponseBean {
     private String status;
     private String message;
     private HashMap<String, ErrorBean> errors;
