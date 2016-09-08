@@ -15,6 +15,12 @@ public class CommCareUser implements CouchUser {
 
     public CommCareUser() {}
 
+    public CommCareUser(String domain, String username) {
+        this.domain = domain;
+        this.username = username;
+        is_superuser = false;
+    }
+
     public boolean isAuthorized(String domain, String username) {
         if (is_superuser) {
             return true;
