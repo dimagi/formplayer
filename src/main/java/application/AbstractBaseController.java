@@ -128,6 +128,8 @@ public abstract class AbstractBaseController {
             }
             menuResponseBean.setBreadcrumbs(breadcrumbs);
             menuResponseBean.setAppId(menuSession.getAppId());
+            menuResponseBean.setAppVersion("CommCare Version " + menuSession.getCommCareVersion() +
+                    ", App Version: " + menuSession.getAppVersion());
             return menuResponseBean;
         }
     }
