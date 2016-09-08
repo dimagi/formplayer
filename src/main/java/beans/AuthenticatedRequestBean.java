@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * Created by benrudolph on 9/8/16.
  */
 public class AuthenticatedRequestBean {
-    private String domain;
-    private String username;
+    protected String domain;
+    protected String username;
 
     @JsonGetter(value = "username")
     public String getUsername() {

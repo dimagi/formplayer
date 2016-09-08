@@ -11,12 +11,10 @@ import services.RestoreService;
  * Created by willpride on 1/12/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SyncDbRequestBean {
+public class SyncDbRequestBean extends AuthenticatedRequestBean {
 
     private HqAuth hqAuth;
-    private String username;
     private RestoreService restoreService;
-    private String domain;
 
     public SyncDbRequestBean(){}
 
@@ -36,21 +34,5 @@ public class SyncDbRequestBean {
 
     public void setRestoreService(RestoreService restoreService) {
         this.restoreService = restoreService;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getDomain(){
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
     }
 }
