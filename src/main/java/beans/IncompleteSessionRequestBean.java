@@ -3,7 +3,7 @@ package beans;
 /**
  * Request to open an incomplete form session (starts form entry)
  */
-public class IncompleteSessionRequestBean {
+public class IncompleteSessionRequestBean extends AuthenticatedRequestBean {
     private String sessionId;
 
     public IncompleteSessionRequestBean (){}
