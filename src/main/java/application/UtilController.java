@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.modern.database.TableBuilder;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import util.Constants;
@@ -74,7 +75,7 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
         log.info("Get Session Request: " + getSessionRequest);
-        String username = getSessionRequest.getUsername();
+        String username = TableBuilder.scrubName(getSessionRequest.getUsername());
         List<SerializableFormSession> sessions = formSessionRepo.findUserSessions(username);
         return new GetSessionsResponse(sessions);
     }
