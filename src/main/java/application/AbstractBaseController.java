@@ -15,8 +15,6 @@ import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.cli.*;
 import org.javarosa.xpath.XPathException;
-import org.javarosa.xpath.XPathMissingInstanceException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.support.locks.LockRegistry;
@@ -128,7 +126,7 @@ public abstract class AbstractBaseController {
             }
             menuResponseBean.setBreadcrumbs(breadcrumbs);
             menuResponseBean.setAppId(menuSession.getAppId());
-            menuResponseBean.setAppVersion("CommCare Version " + menuSession.getCommCareVersion() +
+            menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
                     ", App Version: " + menuSession.getAppVersion());
             return menuResponseBean;
         }

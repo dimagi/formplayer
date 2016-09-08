@@ -269,7 +269,7 @@ public class MenuSession {
         return appId;
     }
 
-    public String getCommCareVersion() {
+    public String getCommCareVersionString() {
         return sessionWrapper.getIIF().getVersionString();
     }
 
