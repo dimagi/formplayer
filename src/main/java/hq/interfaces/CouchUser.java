@@ -5,4 +5,5 @@ package hq.interfaces;
  */
 public interface CouchUser {
     boolean isAuthorized(String domain, String username);
+    String getUsername();
 }

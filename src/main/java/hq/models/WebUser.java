@@ -28,4 +28,8 @@ public class WebUser implements CouchUser {
         return Arrays.asList(domains).contains(domain) && this.username.equals(username);
     }
 
+    public String getUsername() {
+        return username;
+    }
+
 }

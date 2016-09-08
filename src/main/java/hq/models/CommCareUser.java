@@ -27,4 +27,8 @@ public class CommCareUser implements CouchUser {
         }
         return this.domain.equals(domain) && this.username.equals(username);
     }
+
+    public String getUsername() {
+        return username;
+    }
 }
