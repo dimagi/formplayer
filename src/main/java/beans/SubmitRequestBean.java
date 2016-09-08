@@ -13,7 +13,7 @@ import java.util.Map;
  * TODO: Error handling
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SubmitRequestBean extends SessionResponseBean {
+public class SubmitRequestBean extends SessionRequestBean {
     private Map<String, Object> formContext;
     private boolean prevalidated;
     private Map<String, Object> answers;
