@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Created by willpride on 1/20/16.
  */
 @ApiModel("Answer Question Request")
-public class AnswerQuestionRequestBean extends SessionBean {
+public class AnswerQuestionRequestBean extends SessionResponseBean {
     @ApiModelProperty(value = "The FormIndex of the question to be answered", required = true)
     private String formIndex;
     // This can be an array (multi select, geo point), integer, date, or String.
