@@ -96,7 +96,9 @@ public class MenuController extends AbstractBaseController{
             String[] selections = sessionNavigationBean.getSelections();
             BaseResponseBean nextMenu;
             if (selections == null) {
-                nextMenu = getNextMenu(menuSession);
+                nextMenu = getNextMenu(menuSession,
+                        sessionNavigationBean.getOffset(),
+                        sessionNavigationBean.getSearchText());
                 return nextMenu;
             }
 

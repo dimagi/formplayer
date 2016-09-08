@@ -79,13 +79,19 @@ public abstract class AbstractBaseController {
     }
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
+        return getNextMenu(menuSession, 0, "");
+    }
+
+    protected BaseResponseBean getNextMenu(MenuSession menuSession,
+                                           int offset,
+                                           String searchText) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
-        // If the nextScreen is null, that means we are heading into 
+        // If the nextScreen is null, that means we are heading into
         // form entry and there isn't a screen title
         if (nextScreen == null) {
-            return getNextMenu(menuSession, 0, "", null);
+            return getNextMenu(menuSession, offset, searchText, null);
         }
-        return getNextMenu(menuSession, 0, "", new String[] {nextScreen.getScreenTitle()});
+        return getNextMenu(menuSession, offset, searchText, new String[] {nextScreen.getScreenTitle()});
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
