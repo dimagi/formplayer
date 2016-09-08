@@ -65,7 +65,7 @@ public class FormplayerAuthFilter implements Filter {
             setToken(request);
             setUser(request);
             setDomain(request);
-            JSONObject data = getPostData(request);
+            JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), data.getString("username"))) {
                 setResponseUnauthorized((HttpServletResponse) res);
                 return;
@@ -73,16 +73,6 @@ public class FormplayerAuthFilter implements Filter {
         }
 
         chain.doFilter(request, res);
-    }
-
-    private JSONObject getPostData(FormplayerHttpRequest request) {
-        JSONObject data = null;
-        try {
-            data = new JSONObject(RequestUtils.getBody(request));
-        } catch (IOException e) {
-            throw new RuntimeException("Unreadable POST Body for the request: " + request.getRequestURI());
-        }
-        return data;
     }
 
     private void setToken(FormplayerHttpRequest request) {
@@ -120,7 +110,7 @@ public class FormplayerAuthFilter implements Filter {
     }
 
     private void setDomain(FormplayerHttpRequest request) {
-        JSONObject data = getPostData(request);
+        JSONObject data = RequestUtils.getPostData(request);
         if (data.getString("domain") == null) {
             throw new RuntimeException("No domain specified for the request: " + request.getRequestURI());
         }

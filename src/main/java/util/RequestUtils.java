@@ -1,5 +1,7 @@
 package util;
 
+import org.json.JSONObject;
+
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,4 +48,15 @@ public class RequestUtils {
         body = stringBuilder.toString();
         return body;
     }
+
+    public static JSONObject getPostData(FormplayerHttpRequest request) {
+        JSONObject data = null;
+        try {
+            data = new JSONObject(getBody(request));
+        } catch (IOException e) {
+            throw new RuntimeException("Unreadable POST Body for the request: " + request.getRequestURI());
+        }
+        return data;
+    }
+
 }
