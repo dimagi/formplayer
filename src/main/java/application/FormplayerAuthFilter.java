@@ -96,8 +96,6 @@ public class FormplayerAuthFilter implements Filter {
      * @param request
      */
     private void setUser(FormplayerHttpRequest request) {
-        JSONObject data = getPostData(request);
-
         PostgresUser postgresUser = postgresUserRepo.getUserByDjangoId(request.getToken().getUserId());
         CouchUser couchUser = couchUserRepo.getUserByUsername(postgresUser.getUsername());
 
