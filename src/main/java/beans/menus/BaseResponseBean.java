@@ -16,6 +16,7 @@ public class BaseResponseBean {
     protected String title;
     protected boolean clearSession;
     private String appId;
+    private String appVersion;
 
     public BaseResponseBean() {}
 
@@ -65,5 +66,13 @@ public class BaseResponseBean {
 
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    public void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
     }
 }

@@ -269,6 +269,14 @@ public class MenuSession {
         return appId;
     }
 
+    public String getCommCareVersion() {
+        return sessionWrapper.getIIF().getVersionString();
+    }
+
+    public String getAppVersion() {
+        return "" + this.engine.getPlatform().getCurrentProfile().getVersion();
+    }
+
     public String getInstallReference() {
         return installReference;
     }
