@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
- * Created by benrudolph on 9/8/16.
+ * The AuthenticatedRequestBean should be used for requests that
+ * need to be authenticated with HQ. This Bean will ensure the
+ * necessary json values are present in the request.
  */
 public class AuthenticatedRequestBean {
     protected String domain;
