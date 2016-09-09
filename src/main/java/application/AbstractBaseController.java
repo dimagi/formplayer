@@ -208,12 +208,10 @@ public abstract class AbstractBaseController {
         if (req.getCouchUser() != null) {
             username = req.getCouchUser().getUsername();
         }
-        String params = "";
+        String params = "No data found";
         try {
             params = RequestUtils.getBody(req);
-        } catch (IOException e) {
-            params = "";
-        }
+        } catch (IOException e) {}
         return "<h3>Message</h3>" +
                 "<p>" + exception.getMessage() + "</p>" +
                 "<h3>Domain</h3>" +
