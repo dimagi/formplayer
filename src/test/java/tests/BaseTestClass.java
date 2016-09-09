@@ -318,7 +318,6 @@ public class BaseTestClass {
 
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId, int sequenceId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-        answerQuestionBean.setSequenceId(sequenceId);
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
         MvcResult answerResult = this.mockFormController.perform(
