@@ -10,10 +10,11 @@ import java.util.Arrays;
 /**
  * Represents one detail tab in a case details page.
  */
-public class EntityDetailResponse extends MenuBean {
+public class EntityDetailResponse {
     private Object[] details;
     private Style[] styles;
     private String[] headers;
+    private String title;
 
     public EntityDetailResponse(){}
 
@@ -62,5 +63,13 @@ public class EntityDetailResponse extends MenuBean {
         return "EntityDetailResponse [details=" + Arrays.toString(details)
                 + ", styles=" + Arrays.toString(styles)
                 + ", headers=" + Arrays.toString(headers) + "]";
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }
