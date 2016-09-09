@@ -1,6 +1,8 @@
 package tests;
 
+import beans.NewFormSessionResponse;
 import beans.menus.CommandListResponseBean;
+import beans.menus.EntityListResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqlSandboxUtils;
@@ -60,10 +62,14 @@ public class InstallTests extends BaseTestClass {
     public void testCaseSelect() throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         // setup files
-        CommandListResponseBean menuResponseBean =
-                doInstall("requests/install/case_create_install.json");
 
-        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "6"}, "case");
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "1", "1a8ca44cb5dc4ce9995a71ea8929d4c3"}, "case");
+
+        NewFormSessionResponse formSessionResponse =
+                mapper.readValue(menuResponseObject.toString(), NewFormSessionResponse.class);
+
+        assert formSessionResponse.getTitle().equals("Update a Case");
+        assert formSessionResponse.getTree().length == 7;
 
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
         StorageManager.forceClear();
