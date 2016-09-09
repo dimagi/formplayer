@@ -49,4 +49,13 @@ class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         root.setParent(instance.getBase());
         return root;
     }
+
+    public String getVersionString(){
+        return "Formplayer Version: " + mPlatform.getMajorVersion() + "." + mPlatform.getMinorVersion();
+    }
+
+    @Override
+    protected String getDeviceId() {
+        return "Formplayer";
+    }
 }
