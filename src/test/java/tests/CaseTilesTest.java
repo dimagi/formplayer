@@ -56,5 +56,7 @@ public class CaseTilesTest extends BaseTestClass{
         CommandListResponseBean responseObject =
                 mapper.readValue(responseJson.toString(), CommandListResponseBean.class);
         assert responseObject.getCommands().length == 5;
+        assert responseObject.getPersistentCaseTile().isUsesCaseTiles();
+        assert responseObject.getPersistentCaseTile().getTiles().length == 14;
     }
 }
