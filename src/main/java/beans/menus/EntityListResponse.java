@@ -30,6 +30,7 @@ public class EntityListResponse extends MenuBean {
     private Tile[] tiles;
     private int[] widthHints;
     private int numEntitiesPerRow;
+    private boolean useUniformUnits;
 
     private int pageCount;
     private int currentPage;
@@ -76,6 +77,7 @@ public class EntityListResponse extends MenuBean {
             }
         }
         numEntitiesPerRow = shortDetail.getNumEntitiesToDisplayPerRow();
+        useUniformUnits = shortDetail.useUniformUnitsInCaseTile();
         Pair<Integer, Integer> maxWidthHeight = shortDetail.getMaxWidthHeight();
         maxWidth = maxWidthHeight.first;
         maxHeight = maxWidthHeight.second;
@@ -335,5 +337,13 @@ public class EntityListResponse extends MenuBean {
 
     public void setMaxWidth(int maxWidth) {
         this.maxWidth = maxWidth;
+    }
+
+    public boolean isUseUniformUnits() {
+        return useUniformUnits;
+    }
+
+    public void setUseUniformUnits(boolean useUniformUnits) {
+        this.useUniformUnits = useUniformUnits;
     }
 }

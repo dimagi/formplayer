@@ -33,7 +33,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter
     compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '1.3.5.RELEASE'
-    
+
     compile("org.springframework:spring-web")
     compile("org.apache.directory.studio:org.apache.commons.io:2.0.1")
     compile 'net.sf.kxml:kxml2:2.3.0'
