@@ -214,16 +214,16 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private void processStyles(Detail detail) {
-        DetailField[] fields = detail.getFields();
-        styles = new Style[fields.length];
-        int i = 0;
-        for (DetailField field : fields) {
-            Style style = new Style(field);
-            styles[i] = style;
-            i++;
+        private void processStyles(Detail detail) {
+            DetailField[] fields = detail.getFields();
+            styles = new Style[fields.length];
+            int i = 0;
+            for (DetailField field : fields) {
+                Style style = new Style(field);
+                styles[i] = style;
+                i++;
+            }
         }
-    }
 
     private void processActions(SessionWrapper session) {
         Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions(session.getEvaluationContext());

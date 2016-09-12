@@ -189,9 +189,7 @@ public abstract class AbstractBaseController {
 
         EvaluationContext subContext = new EvaluationContext(ec, ref);
 
-        EntityDetailSubscreen detailSubscreen =
-                new EntityDetailSubscreen(0, persistentDetail, subContext, new String[] {"title"});
-        menuResponseBean.setPersistentCaseTile(new EntityDetailResponse(detailSubscreen));
+        menuResponseBean.setPersistentCaseTile(new EntityDetailResponse(persistentDetail, subContext));
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
