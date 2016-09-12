@@ -12,6 +12,7 @@ public class MenuBean extends BaseResponseBean{
     private String[] locales;
     private String[] breadcrumbs;
     private String menuSessionId;
+    private EntityDetailResponse persistentCaseTile;
 
     @Override
     public String toString(){
@@ -40,5 +41,13 @@ public class MenuBean extends BaseResponseBean{
 
     public void setMenuSessionId(String menuSessionId) {
         this.menuSessionId = menuSessionId;
+    }
+
+    public EntityDetailResponse getPersistentCaseTile() {
+        return persistentCaseTile;
+    }
+
+    public void setPersistentCaseTile(EntityDetailResponse persistentCaseTile) {
+        this.persistentCaseTile = persistentCaseTile;
     }
 }
