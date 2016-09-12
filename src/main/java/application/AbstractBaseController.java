@@ -13,7 +13,16 @@ import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.session.CommCareSession;
+import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.Detail;
+import org.commcare.suite.model.EntityDatum;
+import org.commcare.suite.model.SessionDatum;
+import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.cli.*;
+import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.engine.models.Session;
 import org.javarosa.xpath.XPathException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
@@ -128,8 +138,57 @@ public abstract class AbstractBaseController {
             menuResponseBean.setAppId(menuSession.getAppId());
             menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
                     ", App Version: " + menuSession.getAppVersion());
+            setPersistentCaseTile(menuSession, menuResponseBean);
             return menuResponseBean;
         }
+    }
+
+    private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
+        SessionWrapper session = menuSession.getSessionWrapper();
+
+        StackFrameStep stepToFrame = null;
+        Vector<StackFrameStep> v = session.getFrame().getSteps();
+
+        //So we need to work our way backwards through each "step" we've taken, since our RelativeLayout
+        //displays the Z-Order b insertion (so items added later are always "on top" of items added earlier
+        for (int i = v.size() - 1; i >= 0; i--) {
+            StackFrameStep step = v.elementAt(i);
+
+            if (SessionFrame.STATE_DATUM_VAL.equals(step.getType())) {
+                //Only add steps which have a tile.
+                EntityDatum entityDatum = session.findDatumDefinition(step.getId());
+                if (entityDatum != null && entityDatum.getPersistentDetail() != null) {
+                    stepToFrame = step;
+                }
+            }
+        }
+
+        if (stepToFrame == null) {
+            return;
+        }
+
+        EntityDatum entityDatum = session.findDatumDefinition(stepToFrame.getId());
+
+        if (entityDatum == null || entityDatum.getPersistentDetail() == null) {
+            return;
+        }
+
+        Detail persistentDetail = session.getDetail(entityDatum.getPersistentDetail());
+        if (persistentDetail == null) {
+            return;
+        }
+        EvaluationContext ec = session.getEvaluationContext();
+
+        TreeReference ref = entityDatum.getEntityFromID(ec, stepToFrame.getValue());
+        if (ref == null) {
+            return;
+        }
+
+        EvaluationContext subContext = new EvaluationContext(ec, ref);
+
+        EntityDetailSubscreen detailSubscreen =
+                new EntityDetailSubscreen(0, persistentDetail, subContext, new String[] {"title"});
+        menuResponseBean.setPersistentCaseTile(new EntityDetailResponse(detailSubscreen));
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
@@ -157,7 +216,6 @@ public abstract class AbstractBaseController {
      * Catch all the exceptions that we *do not* want emailed here
      */
     @ExceptionHandler({ApplicationConfigException.class,
-            XPathException.class,
             CommCareInstanceInitializer.FixtureInitializationException.class,
             CommCareSessionException.class,
             FormNotFoundException.class})
