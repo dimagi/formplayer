@@ -46,7 +46,7 @@ public class Constants {
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
 
     // Couch databases
-    public static final String COUCH_USERS_DB = "commcarehq__users";
+    public static final String COUCH_USERS_DB = "__users";
 
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
 }

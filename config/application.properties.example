@@ -11,6 +11,7 @@ couch.password=commcarehq
 couch.protocol=http
 couch.host=localhost
 couch.port=5984
+couch.databaseName=commcarehq
 
 // Properties for HQ db
 datasource.hq.driverClassName=org.postgresql.Driver
