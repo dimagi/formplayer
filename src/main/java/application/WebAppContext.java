@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
+import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -25,9 +26,7 @@ import org.springframework.web.servlet.view.JstlView;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.TokenRepo;
-import repo.impl.PostgresFormSessionRepo;
-import repo.impl.PostgresMenuSessionRepo;
-import repo.impl.PostgresTokenRepo;
+import repo.impl.*;
 import services.InstallService;
 import services.RestoreService;
 import services.SubmitService;
@@ -36,6 +35,7 @@ import services.impl.InstallServiceImpl;
 import services.impl.RestoreServiceImpl;
 import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
+import util.Constants;
 
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
@@ -100,6 +100,23 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${redis.hostname}")
     private String redisHostName;
 
+    @Value("${couch.protocol}")
+    private String couchProtocol;
+
+    @Value("${couch.host}")
+    private String couchHost;
+
+    @Value("${couch.port}")
+    private int couchPort;
+
+    @Value("${couch.username}")
+    private String couchUsername;
+
+    @Value("${couch.password}")
+    private String couchPassword;
+
+    @Value("${couch.databaseName}")
+    private String couchDatabaseName;
 
     private final Log log = LogFactory.getLog(WebAppContext.class);
 
@@ -192,6 +209,19 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    public CouchDbClient userCouchDbClient() {
+        return new CouchDbClient(
+                couchDatabaseName + Constants.COUCH_USERS_DB,
+                false,
+                couchProtocol,
+                couchHost,
+                couchPort,
+                couchUsername,
+                couchPassword
+        );
+    }
+
+    @Bean
     public RedisLockRegistry userLockRegistry() {
         JedisConnectionFactory jedisConnectionFactory = jedisConnFactory();
         return new RedisLockRegistry(jedisConnectionFactory, "formplayer-user");
@@ -206,6 +236,16 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         message.setHostName(smtpHost);
         message.setSmtpPort(smtpPort);
         return message;
+    }
+
+    @Bean
+    public PostgresUserRepo postgresUserRepo(){
+        return new PostgresUserRepo();
+    }
+
+    @Bean
+    public CouchUserRepo couchUserRepo(){
+        return new CouchUserRepo();
     }
 
     @Bean

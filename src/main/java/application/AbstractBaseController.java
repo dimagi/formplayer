@@ -37,8 +37,11 @@ import services.InstallService;
 import services.RestoreService;
 import session.FormSession;
 import session.MenuSession;
+import util.FormplayerHttpRequest;
+import util.RequestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -220,7 +223,7 @@ public abstract class AbstractBaseController {
             CommCareSessionException.class,
             FormNotFoundException.class})
     @ResponseBody
-    public ExceptionResponseBean handleApplicationError(HttpServletRequest req, Exception exception) {
+    public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
 
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
@@ -228,7 +231,7 @@ public abstract class AbstractBaseController {
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public ExceptionResponseBean handleError(HttpServletRequest req, Exception exception) {
+    public ExceptionResponseBean handleError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         exception.printStackTrace();
         try {
@@ -240,7 +243,7 @@ public abstract class AbstractBaseController {
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
-    private void sendExceptionEmail(HttpServletRequest req, Exception exception) {
+    private void sendExceptionEmail(FormplayerHttpRequest req, Exception exception) {
         try {
             exceptionMessage.setHtmlMsg(getExceptionEmailBody(req, exception));
             exceptionMessage.setSubject("Formplayer Exception: " + exception.getMessage());
@@ -252,17 +255,31 @@ public abstract class AbstractBaseController {
     }
 
 
-    private String getExceptionEmailBody(HttpServletRequest req, Exception exception){
+    private String getExceptionEmailBody(FormplayerHttpRequest req, Exception exception){
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         String formattedTime = dateFormat.format(new Date());
         String[] stackTrace = ExceptionUtils.getStackTrace(exception).split("\n");
         String stackTraceHTML = StringUtils.replace(
             StringUtils.join(stackTrace, "<br />"), "\t", "&nbsp;&nbsp;&nbsp;"
         );
+        String username = "Unknown";
+        if (req.getCouchUser() != null) {
+            username = req.getCouchUser().getUsername();
+        }
+        String params = "No data found";
+        try {
+            params = RequestUtils.getBody(req);
+        } catch (IOException e) {}
         return "<h3>Message</h3>" +
                 "<p>" + exception.getMessage() + "</p>" +
+                "<h3>Domain</h3>" +
+                "<p>" + req.getDomain() + "</p>" +
+                "<h3>Username</h3>" +
+                "<p>" + username + "</p>" +
                 "<h3>Request URI</h3>" +
                 "<p>" + req.getRequestURI() + "</p>" +
+                "<h3>Post Data</h3>" +
+                "<p>" + params + "</p>" +
                 "<h3>Host</h3>" +
                 "<p>" + hqHost + "</p>" +
                 "<h3>Time</h3>" +

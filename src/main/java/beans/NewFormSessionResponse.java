@@ -9,7 +9,7 @@ import java.util.Arrays;
 /**
  * Created by willpride on 1/12/16.
  */
-public class NewFormSessionResponse extends SessionBean{
+public class NewFormSessionResponse extends SessionResponseBean {
     private QuestionBean[] tree;
     private String[] langs;
 
