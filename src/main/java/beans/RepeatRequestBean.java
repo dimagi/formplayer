@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RepeatRequestBean extends SessionBean {
+public class RepeatRequestBean extends SessionRequestBean {
     private String repeatIndex;
     private String formIndex;
 
