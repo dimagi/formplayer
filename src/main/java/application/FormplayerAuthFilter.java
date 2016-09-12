@@ -1,11 +1,22 @@
 package application;
 
+import hq.interfaces.CouchUser;
+import hq.models.PostgresUser;
+import hq.models.SessionToken;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.ResourceProperties;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 import repo.TokenRepo;
+import repo.impl.CouchUserRepo;
+import repo.impl.PostgresUserRepo;
 import util.Constants;
+import util.FormplayerHttpRequest;
+import util.RequestUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
@@ -28,6 +39,12 @@ public class FormplayerAuthFilter implements Filter {
     TokenRepo tokenRepo;
 
     @Autowired
+    PostgresUserRepo postgresUserRepo;
+
+    @Autowired
+    CouchUserRepo couchUserRepo;
+
+    @Autowired
     RedisLockRegistry userLockRegistry;
 
     @Override
@@ -38,26 +55,66 @@ public class FormplayerAuthFilter implements Filter {
     @Override
     public void doFilter(ServletRequest req, ServletResponse res,
                          FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) req;
+        FormplayerHttpRequest request = new FormplayerHttpRequest((HttpServletRequest) req);
         if (isAuthorizationRequired(request)) {
-            if (!authorizeRequest(request)) {
+            // These are order dependent
+            if (getSessionId(request) == null) {
+                setResponseUnauthorized((HttpServletResponse) res);
+                return;
+            }
+            setToken(request);
+            setUser(request);
+            setDomain(request);
+            JSONObject data = RequestUtils.getPostData(request);
+            if (!authorizeRequest(request, data.getString("domain"), data.getString("username"))) {
                 setResponseUnauthorized((HttpServletResponse) res);
                 return;
             }
         }
 
-        chain.doFilter(req, res);
+        chain.doFilter(request, res);
     }
 
-    private boolean authorizeRequest(HttpServletRequest request){
+    private void setToken(FormplayerHttpRequest request) {
+        request.setToken(tokenRepo.getSessionToken(getSessionId(request)));
+    }
+
+    /**
+     * Takes a request object and queries postgres and couch to get the corresponding
+     * session user's.
+     *
+     * @param request
+     */
+    private void setUser(FormplayerHttpRequest request) {
+        PostgresUser postgresUser = postgresUserRepo.getUserByDjangoId(request.getToken().getUserId());
+        CouchUser couchUser = couchUserRepo.getUserByUsername(postgresUser.getUsername());
+
+        request.setCouchUser(couchUser);
+        request.setPostgresUser(postgresUser);
+    }
+
+    /**
+     * Searches through the request cookie's to get the session id of the request.
+     * @param request
+     * @return The sessionid or null if not found
+     */
+    private String getSessionId(FormplayerHttpRequest request) {
         if(request.getCookies() !=  null) {
             for (Cookie cookie : request.getCookies()) {
                 if(Constants.POSTGRES_DJANGO_SESSION_ID.equals(cookie.getName())){
-                    return authorizeToken(cookie.getValue());
+                    return cookie.getValue();
                 }
             }
         }
-        return false;
+        return null;
+    }
+
+    private void setDomain(FormplayerHttpRequest request) {
+        JSONObject data = RequestUtils.getPostData(request);
+        if (data.getString("domain") == null) {
+            throw new RuntimeException("No domain specified for the request: " + request.getRequestURI());
+        }
+        request.setDomain(data.getString("domain"));
     }
 
     /**
@@ -74,8 +131,26 @@ public class FormplayerAuthFilter implements Filter {
         return (request.getMethod().equals("POST") || request.getMethod().equals("GET"));
     }
 
-    private boolean authorizeToken(String value) {
-        return tokenRepo.isAuthorized(value);
+    /**
+     * This function ensures that the request session's user and domain matches the user and domain
+     * sent in the body of the POST request. Note, superusers are able to authenticate
+     * as other users.
+     * @param request
+     * @param domain
+     * @param username
+     * @return true if authorized, false otherwise
+     */
+    private boolean authorizeRequest(FormplayerHttpRequest request, String domain, String username) {
+        if (request.getToken() == null) {
+            return false;
+        }
+        // Check session token is expired
+        if (request.getToken().getExpireDate().before(new java.util.Date())){
+            return false;
+        }
+
+        // Ensure domain and username match couch user
+        return request.getCouchUser().isAuthorized(domain, username);
     }
 
     @Override
@@ -87,4 +162,5 @@ public class FormplayerAuthFilter implements Filter {
         response.reset();
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
+
 }

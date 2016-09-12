@@ -8,10 +8,10 @@ import java.util.Map;
 
 /**
  * Created by willpride on 1/20/16.
- * SessionBean that evaluates the given XPath against the current session evaluation context
+ * SessionResponseBean that evaluates the given XPath against the current session evaluation context
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EvaluateXPathRequestBean extends SessionBean{
+public class EvaluateXPathRequestBean extends SessionRequestBean {
     private Map<String, Object> formContext;
     private String xpath;
 
