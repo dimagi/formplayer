@@ -12,7 +12,7 @@ import java.util.Map;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CurrentRequestBean extends SessionBean{
+public class CurrentRequestBean extends SessionRequestBean {
     private Map<String, String> formContext;
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public CurrentRequestBean(){}
