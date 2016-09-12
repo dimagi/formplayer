@@ -32,6 +32,7 @@ public class QuestionBean {
     private String exists;
     private String addChoice;
     private String header;
+    private int control;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private QuestionBean[] children;
@@ -212,5 +213,13 @@ public class QuestionBean {
 
     public void setHeader(String header) {
         this.header = header;
+    }
+
+    public int getControl() {
+        return control;
+    }
+
+    public void setControl(int control) {
+        this.control = control;
     }
 }
