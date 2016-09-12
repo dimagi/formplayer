@@ -115,6 +115,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${couch.password}")
     private String couchPassword;
 
+    @Value("${couch.databaseName}")
+    private String couchDatabaseName;
+
     private final Log log = LogFactory.getLog(WebAppContext.class);
 
     @Override
@@ -208,7 +211,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public CouchDbClient userCouchDbClient() {
         return new CouchDbClient(
-                Constants.COUCH_USERS_DB,
+                couchDatabaseName + Constants.COUCH_USERS_DB,
                 false,
                 couchProtocol,
                 couchHost,
