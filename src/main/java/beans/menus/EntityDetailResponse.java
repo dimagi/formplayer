@@ -23,6 +23,7 @@ public class EntityDetailResponse {
     private int maxHeight;
     private int numEntitiesPerRow;
     private Tile[] tiles;
+    private boolean useUniformUnits;
 
     public EntityDetailResponse(){}
 
@@ -57,6 +58,7 @@ public class EntityDetailResponse {
         Pair<Integer, Integer> maxWidthHeight = shortDetail.getMaxWidthHeight();
         maxWidth = maxWidthHeight.first;
         maxHeight = maxWidthHeight.second;
+        useUniformUnits = shortDetail.useUniformUnitsInCaseTile();
     }
 
     private void processStyles(Detail detail) {
@@ -147,5 +149,13 @@ public class EntityDetailResponse {
 
     public void setTiles(Tile[] tiles) {
         this.tiles = tiles;
+    }
+
+    public boolean isUseUniformUnits() {
+        return useUniformUnits;
+    }
+
+    public void setUseUniformUnits(boolean useUniformUnits) {
+        this.useUniformUnits = useUniformUnits;
     }
 }
