@@ -217,6 +217,7 @@ public abstract class AbstractBaseController {
      * Catch all the exceptions that we *do not* want emailed here
      */
     @ExceptionHandler({ApplicationConfigException.class,
+            XPathException.class,
             CommCareInstanceInitializer.FixtureInitializationException.class,
             CommCareSessionException.class,
             FormNotFoundException.class})
