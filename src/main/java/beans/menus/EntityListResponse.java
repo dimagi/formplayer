@@ -30,6 +30,7 @@ public class EntityListResponse extends MenuBean {
     private Tile[] tiles;
     private int[] widthHints;
     private int numEntitiesPerRow;
+    private boolean useUniformUnits;
 
     private int pageCount;
     private int currentPage;
@@ -76,6 +77,7 @@ public class EntityListResponse extends MenuBean {
             }
         }
         numEntitiesPerRow = shortDetail.getNumEntitiesToDisplayPerRow();
+        useUniformUnits = shortDetail.useUniformUnitsInCaseTile();
         Pair<Integer, Integer> maxWidthHeight = shortDetail.getMaxWidthHeight();
         maxWidth = maxWidthHeight.first;
         maxHeight = maxWidthHeight.second;
@@ -214,16 +216,16 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private void processStyles(Detail detail) {
-        DetailField[] fields = detail.getFields();
-        styles = new Style[fields.length];
-        int i = 0;
-        for (DetailField field : fields) {
-            Style style = new Style(field);
-            styles[i] = style;
-            i++;
+        private void processStyles(Detail detail) {
+            DetailField[] fields = detail.getFields();
+            styles = new Style[fields.length];
+            int i = 0;
+            for (DetailField field : fields) {
+                Style style = new Style(field);
+                styles[i] = style;
+                i++;
+            }
         }
-    }
 
     private void processActions(SessionWrapper session) {
         Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions(session.getEvaluationContext());
@@ -335,5 +337,13 @@ public class EntityListResponse extends MenuBean {
 
     public void setMaxWidth(int maxWidth) {
         this.maxWidth = maxWidth;
+    }
+
+    public boolean isUseUniformUnits() {
+        return useUniformUnits;
+    }
+
+    public void setUseUniformUnits(boolean useUniformUnits) {
+        this.useUniformUnits = useUniformUnits;
     }
 }
