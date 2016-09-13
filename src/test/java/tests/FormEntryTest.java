@@ -10,7 +10,6 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
@@ -26,15 +25,15 @@ public class FormEntryTest extends BaseTestClass{
 
         String sessionId = newSessionResponse.getSessionId();
 
-        FormEntryResponseBean response = answerQuestionGetResult("1","William Pride", sessionId, 1);
-        response = answerQuestionGetResult("2","345", sessionId, 2);
-        response = answerQuestionGetResult("3","2.54", sessionId, 3);
-        response = answerQuestionGetResult("4","1970-10-23", sessionId, 4);
-        response = answerQuestionGetResult("6", "12:30:30", sessionId, 5);
-        response = answerQuestionGetResult("7", "ben rudolph", sessionId, 6);
-        response = answerQuestionGetResult("8","123456789", sessionId, 7);
-        response = answerQuestionGetResult("10", "2",sessionId, 8);
-        response = answerQuestionGetResult("11", "1 2 3", sessionId, 9);
+        FormEntryResponseBean response = answerQuestionGetResult("1","William Pride", sessionId);
+        response = answerQuestionGetResult("2","345", sessionId);
+        response = answerQuestionGetResult("3","2.54", sessionId);
+        response = answerQuestionGetResult("4","1970-10-23", sessionId);
+        response = answerQuestionGetResult("6", "12:30:30", sessionId);
+        response = answerQuestionGetResult("7", "ben rudolph", sessionId);
+        response = answerQuestionGetResult("8","123456789", sessionId);
+        response = answerQuestionGetResult("10", "2",sessionId);
+        response = answerQuestionGetResult("11", "1 2 3", sessionId);
 
         QuestionBean[] tree = response.getTree();
 
@@ -56,7 +55,7 @@ public class FormEntryTest extends BaseTestClass{
         assert(answer.size() == 3);
         assert answer.get(0).equals(1);
 
-        response = answerQuestionGetResult("12", "1", sessionId, 10);
+        response = answerQuestionGetResult("12", "1", sessionId);
         tree = response.getTree();
         multiSelectQuestion = tree[11];
         assert(multiSelectQuestion.getAnswer() instanceof ArrayList);
@@ -64,7 +63,7 @@ public class FormEntryTest extends BaseTestClass{
         assert(answer.size() == 3);
         assert answer.get(0).equals(1);
 
-        response = answerQuestionGetResult("17", "[13.803252972154226, 7.723388671875]", sessionId, 11);
+        response = answerQuestionGetResult("17", "[13.803252972154226, 7.723388671875]", sessionId);
         QuestionBean geoBean = response.getTree()[17];
         assert geoBean.getAnswer() instanceof  ArrayList;
         ArrayList<Double> geoCoordinates = (ArrayList<Double>) geoBean.getAnswer();
@@ -103,10 +102,10 @@ public class FormEntryTest extends BaseTestClass{
 
         String sessionId = newSessionResponse.getSessionId();
 
-        answerQuestionGetResult("1","William Pride", sessionId, 1);
+        answerQuestionGetResult("1","William Pride", sessionId);
 
-        answerQuestionGetResult("8,1","1", sessionId, 2);
-        FormEntryResponseBean response = answerQuestionGetResult("8,2","2", sessionId, 3);
+        answerQuestionGetResult("8,1","1", sessionId);
+        FormEntryResponseBean response = answerQuestionGetResult("8,2","2", sessionId);
 
         QuestionBean questionBean = response.getTree()[8];
         QuestionBean[] children = questionBean.getChildren();
@@ -119,7 +118,7 @@ public class FormEntryTest extends BaseTestClass{
         assert red.getAnswer().equals(1);
         assert blue.getAnswer().equals(2);
 
-        response = answerQuestionGetResult("8,3","2", sessionId, 4);
+        response = answerQuestionGetResult("8,3","2", sessionId);
 
         questionBean = response.getTree()[8];
         children = questionBean.getChildren();
@@ -131,6 +130,26 @@ public class FormEntryTest extends BaseTestClass{
         assert red.getAnswer().equals(1);
         assert blue.getAnswer().equals(2);
         assert green.getAnswer().equals(2);
+
+    }
+
+    //Integration test of form entry functions
+    @Test
+    public void testOQPS() throws Exception {
+
+        serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
+
+        String sessionId = newSessionResponse.getSessionId();
+
+        assert newSessionResponse.getTree().length == 1;
+
+        FormEntryResponseBean response1 = jumpToIndex(1, sessionId);
+        assert response1.getTree().length == 1;
+
+        FormEntryResponseBean response2 = jumpToIndex(2, sessionId);
+        assert response2.getTree().length == 3;
 
     }
 }
