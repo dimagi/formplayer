@@ -32,7 +32,8 @@ public class NewFormRequest {
     private NewFormRequest(String formUrl, Map<String, String> authDict, String username, String domain, String lang,
                            Map<String, String> sessionData, String instanceContent, String postUrl,
                            FormSessionRepo formSessionRepo, XFormService xFormService,
-                           RestoreService restoreService, String authToken) throws Exception {
+                           RestoreService restoreService, String authToken,
+                           boolean isOneQuestionPerScreen) throws Exception {
         this.xFormService = xFormService;
         this.restoreService = restoreService;
         this.formUrl = formUrl;
@@ -40,7 +41,7 @@ public class NewFormRequest {
         this.domain = domain;
         try {
             formEntrySession = new FormSession(getFormXml(), getRestoreXml(),
-                    lang, username, domain, sessionData, postUrl, instanceContent);
+                    lang, username, domain, sessionData, postUrl, instanceContent, isOneQuestionPerScreen);
             formSessionRepo.save(formEntrySession.serialize());
 
         } catch(IOException e){
@@ -82,7 +83,8 @@ public class NewFormRequest {
                 formSessionRepo,
                 xFormService,
                 restoreService,
-                authToken);
+                authToken,
+                bean.getOneQuestionPerScreen());
     }
 
     public NewFormSessionResponse getResponse() throws IOException {
