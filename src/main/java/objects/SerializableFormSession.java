@@ -24,6 +24,8 @@ public class SerializableFormSession implements Serializable{
     private String menuSessionId;
     private String title;
     private String dateOpened;
+    private boolean oneQuestionPerScreen;
+    private int currentIndex;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -143,5 +145,21 @@ public class SerializableFormSession implements Serializable{
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public boolean getOneQuestionPerScreen() {
+        return oneQuestionPerScreen;
+    }
+
+    public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    public int getCurrentIndex() {
+        return currentIndex;
+    }
+
+    public void setCurrentIndex(int currentIndex) {
+        this.currentIndex = currentIndex;
     }
 }
