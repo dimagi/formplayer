@@ -133,7 +133,7 @@ public class FormEntryTest extends BaseTestClass{
 
     }
 
-    //Integration test of form entry functions
+    // Tests for OQPS mode
     @Test
     public void testOQPS() throws Exception {
 
@@ -150,6 +150,29 @@ public class FormEntryTest extends BaseTestClass{
 
         FormEntryResponseBean response2 = jumpToIndex(2, sessionId);
         assert response2.getTree().length == 3;
+
+    }
+
+    // Tests for OQPS next and previous methods
+    @Test
+    public void testOQPSPreviousNext() throws Exception {
+
+        serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+
+        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
+
+        String sessionId = newSessionResponse.getSessionId();
+
+        assert newSessionResponse.getTree().length == 1;
+
+        FormEntryResponseBean response1 = nextScreen(sessionId);
+        assert response1.getTree().length == 1;
+
+        FormEntryResponseBean response2 = nextScreen(sessionId);
+        assert response2.getTree().length == 3;
+
+        FormEntryResponseBean response3 = previousScreen(sessionId);
+        assert response3.getTree().length == 1;
 
     }
 }

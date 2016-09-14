@@ -328,6 +328,38 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
+    FormEntryResponseBean nextScreen(String sessionId) throws Exception {
+        SessionRequestBean questionsBean = new SessionRequestBean();
+        questionsBean.setSessionId(sessionId);
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(questionsBean);
+        MvcResult answerResult = this.mockFormController.perform(
+                post(urlPrepend(Constants.URL_NEXT_INDEX))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return mapper.readValue(answerResult.getResponse().getContentAsString(),
+                FormEntryResponseBean.class);
+    }
+
+    FormEntryResponseBean previousScreen(String sessionId) throws Exception {
+        SessionRequestBean questionsBean = new SessionRequestBean();
+        questionsBean.setSessionId(sessionId);
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(questionsBean);
+        MvcResult answerResult = this.mockFormController.perform(
+                post(urlPrepend(Constants.URL_PREV_INDEX))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return mapper.readValue(answerResult.getResponse().getContentAsString(),
+                FormEntryResponseBean.class);
+    }
+
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         ObjectMapper mapper = new ObjectMapper();
