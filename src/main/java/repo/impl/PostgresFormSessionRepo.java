@@ -83,14 +83,16 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 "(id, instanceXml, formXml, " +
                 "restoreXml, username, initLang, sequenceId, " +
                 "domain, postUrl, sessionData, menu_session_id," +
-                "title, dateOpened) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "title, dateOpened, oneQuestionPerScreen, currentIndex) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
                 session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
                 session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId(),
-                session.getTitle(), session.getDateOpened()}, new int[] {
+                session.getTitle(), session.getDateOpened(),
+                session.getOneQuestionPerScreen(), session.getCurrentIndex()}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR});
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN, Types.INTEGER});
         return session;
     }
 
@@ -181,6 +183,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setMenuSessionId(rs.getString("menu_session_id"));
             session.setTitle(rs.getString("title"));
             session.setDateOpened(rs.getString("dateOpened"));
+            session.setOneQuestionPerScreen(rs.getBoolean("oneQuestionPerScreen"));
+            session.setCurrentIndex(rs.getInt("currentIndex"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if(st != null) {

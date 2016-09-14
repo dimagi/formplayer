@@ -5,14 +5,12 @@ import application.MenuController;
 import application.UtilController;
 import auth.HqAuth;
 import beans.*;
-import beans.menus.BaseResponseBean;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import install.FormplayerConfigEngine;
 import objects.SerializableFormSession;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.mockito.InjectMocks;
@@ -43,7 +41,6 @@ import utils.FileUtils;
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -316,7 +313,22 @@ public class BaseTestClass {
         return "/" + string;
     }
 
-    FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId, int sequenceId) throws Exception {
+    FormEntryResponseBean jumpToIndex(int index, String sessionId) throws Exception {
+        JumpToIndexRequestBean questionsBean = new JumpToIndexRequestBean(index, sessionId);
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(questionsBean);
+        MvcResult answerResult = this.mockFormController.perform(
+                post(urlPrepend(Constants.URL_QUESTIONS_FOR_INDEX))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return mapper.readValue(answerResult.getResponse().getContentAsString(),
+                FormEntryResponseBean.class);
+    }
+
+    FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(answerQuestionBean);
