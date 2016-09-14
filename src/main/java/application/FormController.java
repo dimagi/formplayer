@@ -113,28 +113,6 @@ public class FormController extends AbstractBaseController{
         }
     }
 
-    @ApiOperation(value = "Get the question for the current index")
-    @RequestMapping(value = Constants.URL_QUESTIONS_FOR_INDEX, method = RequestMethod.POST)
-    @ResponseBody
-    public FormEntryResponseBean jumpToIndex(@RequestBody JumpToIndexRequestBean requestBean) throws Exception {
-        log.info("Jump to index request: " + requestBean);
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
-        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
-        try {
-            FormSession formSession = new FormSession(serializableFormSession);
-            formSession.setCurrentIndex(requestBean.getFormIndex());
-            JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
-                    formSession.getFormEntryModel(),
-                    formSession.getCurrentIndex());
-            updateSession(formSession, serializableFormSession);
-            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
-            log.info("Jump to index response: " + responseBean);
-            return responseBean;
-        } finally {
-            lock.unlock();
-        }
-    }
-
     @ApiOperation(value = "Get the current question (deprecated)")
     @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.GET)
     @ResponseBody
@@ -320,6 +298,75 @@ public class FormController extends AbstractBaseController{
             lock.unlock();
         }
     }
+
+    // Functions pertaining to One Question Per Screen (OQPS) mode
+
+    @ApiOperation(value = "Get the question for the current index")
+    @RequestMapping(value = Constants.URL_QUESTIONS_FOR_INDEX, method = RequestMethod.POST)
+    @ResponseBody
+    public FormEntryResponseBean jumpToIndex(@RequestBody JumpToIndexRequestBean requestBean) throws Exception {
+        log.info("Jump to index request: " + requestBean);
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
+        try {
+            FormSession formSession = new FormSession(serializableFormSession);
+            formSession.setCurrentIndex(requestBean.getFormIndex());
+            JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
+                    formSession.getFormEntryModel(),
+                    formSession.getCurrentIndex());
+            updateSession(formSession, serializableFormSession);
+            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+            log.info("Jump to index response: " + responseBean);
+            return responseBean;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @ApiOperation(value = "Get the questions for the next index in OQPS mode")
+    @RequestMapping(value = Constants.URL_NEXT_INDEX, method = RequestMethod.POST)
+    @ResponseBody
+    public FormEntryResponseBean getNext(@RequestBody SessionRequestBean requestBean) throws Exception {
+        log.info("Get next questions for: " + requestBean);
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
+        try {
+            FormSession formSession = new FormSession(serializableFormSession);
+            formSession.setCurrentIndex(formSession.getCurrentIndex() + 1);
+            JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
+                    formSession.getFormEntryModel(),
+                    formSession.getCurrentIndex());
+            updateSession(formSession, serializableFormSession);
+            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+            log.info("Next index response: " + responseBean);
+            return responseBean;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @ApiOperation(value = "Get the questios for the previous index in OQPS mode")
+    @RequestMapping(value = Constants.URL_PREV_INDEX, method = RequestMethod.POST)
+    @ResponseBody
+    public FormEntryResponseBean getPrevious(@RequestBody SessionRequestBean requestBean) throws Exception {
+        log.info("Get previous questions for: " + requestBean);
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
+        try {
+            FormSession formSession = new FormSession(serializableFormSession);
+            formSession.setCurrentIndex(formSession.getCurrentIndex() - 1);
+            JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
+                    formSession.getFormEntryModel(),
+                    formSession.getCurrentIndex());
+            updateSession(formSession, serializableFormSession);
+            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+            log.info("Previous index response " + responseBean);
+            return responseBean;
+        } finally {
+            lock.unlock();
+        }
+    }
+
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
         formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
