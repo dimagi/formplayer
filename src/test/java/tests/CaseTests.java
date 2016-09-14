@@ -35,8 +35,8 @@ public class CaseTests extends BaseTestClass {
 
         String sessionId = newSessionResponse.getSessionId();
 
-        answerQuestionGetResult("0", "Tom Brady", sessionId, 1);
-        answerQuestionGetResult("1", "1", sessionId, 2);
+        answerQuestionGetResult("0", "Tom Brady", sessionId);
+        answerQuestionGetResult("1", "1", sessionId);
 
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
 
@@ -53,18 +53,18 @@ public class CaseTests extends BaseTestClass {
         NewFormSessionResponse newSessionResponse1 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
         sessionId = newSessionResponse1.getSessionId();
 
-        FormEntryResponseBean responseBean = answerQuestionGetResult("0", "Test Response", sessionId, 1);
+        FormEntryResponseBean responseBean = answerQuestionGetResult("0", "Test Response", sessionId);
         QuestionBean firstResponseBean = responseBean.getTree()[0];
         assert firstResponseBean.getAnswer().equals("Test Response");
 
-        responseBean = answerQuestionGetResult("1", "1", sessionId, 2);
+        responseBean = answerQuestionGetResult("1", "1", sessionId);
         firstResponseBean = responseBean.getTree()[0];
         QuestionBean secondResponseBean = responseBean.getTree()[1];
         assert secondResponseBean.getAnswer().equals(1);
         assert firstResponseBean.getAnswer().equals("Test Response");
 
-        answerQuestionGetResult("2", "[1, 2, 3]", sessionId, 3);
-        FormEntryResponseBean caseResult = answerQuestionGetResult("5", "2016-02-09", sessionId, 4);
+        answerQuestionGetResult("2", "[1, 2, 3]", sessionId);
+        FormEntryResponseBean caseResult = answerQuestionGetResult("5", "2016-02-09", sessionId);
         QuestionBean[] tree = caseResult.getTree();
 
         // close this case
@@ -74,7 +74,7 @@ public class CaseTests extends BaseTestClass {
         assert(filterCases("requests/filter/filter_cases_5.json").getCases().length == 16);
 
         sessionId = newSessionResponse2.getSessionId();
-        answerQuestionGetResult("0", "1", sessionId, 1);
+        answerQuestionGetResult("0", "1", sessionId);
 
         submitResponseBean = submitForm("requests/submit/submit_request_not_prevalidated.json", sessionId);
         assert submitResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);

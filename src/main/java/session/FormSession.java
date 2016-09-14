@@ -1,8 +1,6 @@
 package session;
 
-import application.SQLiteProperties;
 import hq.CaseAPIs;
-import install.FormplayerConfigEngine;
 import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -62,6 +60,8 @@ public class FormSession {
     private final String username;
     private String domain;
     private String menuSessionId;
+    private boolean oneQuestionPerScreen;
+    private int currentIndex = -1;
 
 
     public FormSession(SerializableFormSession session) throws Exception{
@@ -72,6 +72,7 @@ public class FormSession {
         this.sandbox = CaseAPIs.restoreIfNotExists(username, this.domain, restoreXml);
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
+        this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
         formDef = new FormDef();
         PrototypeUtils.setupPrototypes();
         deserializeFormDef(session.getFormXml());
@@ -87,16 +88,22 @@ public class FormSession {
         initialize(false, session.getSessionData());
         getFormTree();
         this.menuSessionId = session.getMenuSessionId();
+        this.currentIndex = session.getCurrentIndex();
     }
 
     public FormSession(String formXml, String restoreXml, String locale, String username, String domain,
-                       Map<String, String> sessionData, String postUrl, String instanceContent) throws Exception {
+                       Map<String, String> sessionData, String postUrl,
+                       String instanceContent, boolean oneQuestionPerScreen) throws Exception {
         this.formXml = formXml;
         this.restoreXml = restoreXml;
         this.username = TableBuilder.scrubName(username);
         this.sandbox = CaseAPIs.restoreIfNotExists(this.username, domain, restoreXml);
         this.domain = domain;
         this.sessionData = sessionData;
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
+        if (this.oneQuestionPerScreen) {
+            this.currentIndex = 0;
+        }
         formDef = parseFormDef(formXml);
 
         if(instanceContent != null){
@@ -194,7 +201,12 @@ public class FormSession {
     }
 
     public JSONArray getFormTree() {
-        return JsonActionUtils.walkToJSON(getFormEntryModel(), getFormEntryController());
+        if (oneQuestionPerScreen) {
+            return JsonActionUtils.getOneQuestionPerScreenJSON(getFormEntryModel(),
+                    getFormEntryController(),
+                    JsonActionUtils.indexFromString("" + currentIndex, formDef));
+        }
+        return JsonActionUtils.getFullFormJSON(getFormEntryModel(), getFormEntryController());
     }
 
 
@@ -287,6 +299,8 @@ public class FormSession {
         serializableFormSession.setMenuSessionId(menuSessionId);
         serializableFormSession.setTitle(getTitle());
         serializableFormSession.setDateOpened(new Date().toString());
+        serializableFormSession.setOneQuestionPerScreen(oneQuestionPerScreen);
+        serializableFormSession.setCurrentIndex(currentIndex);
         return serializableFormSession;
     }
 
@@ -312,5 +326,13 @@ public class FormSession {
 
     public void setMenuSessionId(String menuSessionId) {
         this.menuSessionId = menuSessionId;
+    }
+
+    public void setCurrentIndex(int index) {
+        this.currentIndex = index;
+    }
+
+    public int getCurrentIndex() {
+        return currentIndex;
     }
 }

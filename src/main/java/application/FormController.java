@@ -113,6 +113,28 @@ public class FormController extends AbstractBaseController{
         }
     }
 
+    @ApiOperation(value = "Get the question for the current index")
+    @RequestMapping(value = Constants.URL_QUESTIONS_FOR_INDEX, method = RequestMethod.POST)
+    @ResponseBody
+    public FormEntryResponseBean jumpToIndex(@RequestBody JumpToIndexRequestBean requestBean) throws Exception {
+        log.info("Jump to index request: " + requestBean);
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        Lock lock = getLockAndBlock(serializableFormSession.getUsername());
+        try {
+            FormSession formSession = new FormSession(serializableFormSession);
+            formSession.setCurrentIndex(requestBean.getFormIndex());
+            JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
+                    formSession.getFormEntryModel(),
+                    formSession.getCurrentIndex());
+            updateSession(formSession, serializableFormSession);
+            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+            log.info("Jump to index response: " + responseBean);
+            return responseBean;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     @ApiOperation(value = "Get the current question (deprecated)")
     @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.GET)
     @ResponseBody
@@ -304,6 +326,7 @@ public class FormController extends AbstractBaseController{
         serialSession.setFormXml(formEntrySession.getFormXml());
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
         serialSession.setSequenceId(formEntrySession.getSequenceId());
+        serialSession.setCurrentIndex(formEntrySession.getCurrentIndex());
         formSessionRepo.save(serialSession);
     }
 }
