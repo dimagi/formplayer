@@ -11,7 +11,6 @@ import session.FormSession;
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
  * restoring the user, opening the new form, and returning the question list response.
- * TODO WSP this should probably just be a static helper class, or merged with FormSession
  */
 @Component
 public class NewFormResponseFactory {
