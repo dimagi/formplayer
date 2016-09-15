@@ -63,7 +63,7 @@ public class MenuController extends AbstractBaseController{
      *
      * @param sessionNavigationBean Give an installation code or path and a set of session selections
      * @param authToken             The Django session id auth token
-     * @return A MenuBean or a NewFormSessionResponse
+     * @return A MenuBean or a NewFormResponse
      * @throws Exception
      */
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)

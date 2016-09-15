@@ -33,7 +33,7 @@ public class RepeatTests extends BaseTestClass{
     @Test
     public void testRepeat() throws Exception {
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/repeat.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/repeat.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 

@@ -57,15 +57,15 @@ public class FormController extends AbstractBaseController{
 
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION , method = RequestMethod.POST)
-    public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
-                                                  @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("New form requests with bean: " + newSessionBean + " sessionId :" + authToken);
         Lock lock = getLockAndBlock(newSessionBean.getSessionData().getUsername());
         try {
             String postUrl = host + newSessionBean.getPostUrl();
             NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
                     formSessionRepo, xFormService, restoreService, new DjangoAuth(authToken));
-            NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
+            NewFormResponse newSessionResponse = newFormRequest.getResponse();
             log.info("Return new session response: " + newSessionResponse);
             return newSessionResponse;
         } finally {
@@ -75,14 +75,14 @@ public class FormController extends AbstractBaseController{
 
     @ApiOperation(value = "Open an incomplete form session")
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
-    public NewFormSessionResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
-                                                  @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
         SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         Lock lock = getLockAndBlock(session.getUsername());
         try {
             NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, new DjangoAuth(authToken));
-            NewFormSessionResponse response = newFormRequest.getResponse();
+            NewFormResponse response = newFormRequest.getResponse();
             log.info("Return incomplete session response: " + response);
             return response;
         } finally {

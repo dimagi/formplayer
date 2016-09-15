@@ -1,8 +1,7 @@
 package services;
 
-import auth.DjangoAuth;
 import auth.HqAuth;
-import beans.NewFormSessionResponse;
+import beans.NewFormResponse;
 import beans.NewSessionRequestBean;
 import objects.SerializableFormSession;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -11,7 +10,6 @@ import repo.FormSessionRepo;
 import session.FormSession;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -55,8 +53,8 @@ public class NewFormRequest {
         formEntrySession = new FormSession(session);
     }
 
-    public NewFormSessionResponse getResponse() throws IOException {
-        return new NewFormSessionResponse(formEntrySession);
+    public NewFormResponse getResponse() throws IOException {
+        return new NewFormResponse(formEntrySession);
     }
 
     private String getRestoreXml(){
