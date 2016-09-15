@@ -2,5 +2,6 @@
   "username": "doublemgmtuser",
   "password": "testpass",
   "domain": "doublemgmtdomain",
+  "app_id": "doublemgmtappid",
   "installReference": "archives/parent_child.ccz"
 }
