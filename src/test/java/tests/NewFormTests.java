@@ -1,7 +1,7 @@
 package tests;
 
 import auth.HqAuth;
-import beans.NewFormSessionResponse;
+import beans.NewFormResponse;
 import beans.QuestionBean;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +35,7 @@ public class NewFormTests extends BaseTestClass{
     @Test
     public void testNewForm() throws Exception {
         // setup files
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/basic.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/basic.xml");
 
         assert(newSessionResponse.getTitle().equals("Basic Form"));
         assert(newSessionResponse.getLangs().length == 2);
@@ -52,7 +52,7 @@ public class NewFormTests extends BaseTestClass{
 
     @Test
     public void testNewForm2() throws Exception {
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 
         assert(newSessionResponse.getTitle().equals("Question Types"));
         assert(newSessionResponse.getLangs().length == 2);

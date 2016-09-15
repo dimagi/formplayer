@@ -1,7 +1,7 @@
 package application;
 
 import beans.ExceptionResponseBean;
-import beans.NewFormSessionResponse;
+import beans.NewFormResponse;
 import beans.menus.*;
 import exceptions.ApplicationConfigException;
 import exceptions.FormNotFoundException;
@@ -202,11 +202,11 @@ public abstract class AbstractBaseController {
         return new EntityListResponse(nextScreen, offset, searchText, menuSessionId);
     }
 
-    private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
+    private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession();
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         formSessionRepo.save(formEntrySession.serialize());
-        return new NewFormSessionResponse(formEntrySession);
+        return new NewFormResponse(formEntrySession);
     }
 
     /**

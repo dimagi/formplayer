@@ -1,10 +1,7 @@
 package tests;
 
 import auth.HqAuth;
-import beans.NewFormSessionResponse;
-import beans.menus.BaseResponseBean;
-import beans.menus.Entity;
-import beans.menus.EntityDetailResponse;
+import beans.NewFormResponse;
 import beans.menus.EntityListResponse;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -15,7 +12,6 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -46,7 +42,7 @@ public class PreviewTests extends BaseTestClass {
     public void testPreviewStep() throws Exception {
         JSONObject previewForm =
                 sessionNavigate("requests/preview/preview_step.json");
-        NewFormSessionResponse newFormSessionResponse =
-                mapper.readValue(previewForm.toString(), NewFormSessionResponse.class);
+        NewFormResponse newFormResponse =
+                mapper.readValue(previewForm.toString(), NewFormResponse.class);
     }
 }

@@ -343,7 +343,7 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
-    NewFormSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
+    NewFormResponse startNewSession(String requestPath, String formPath) throws Exception {
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
@@ -357,7 +357,7 @@ public class BaseTestClass {
                         .content(new ObjectMapper().writeValueAsString(newSessionRequestBean))).andReturn();
         String responseBody = result.getResponse().getContentAsString();
         serializableFormSession.setSequenceId(0);
-        return mapper.readValue(responseBody, NewFormSessionResponse.class);
+        return mapper.readValue(responseBody, NewFormResponse.class);
     }
 
     CaseFilterResponseBean filterCases(String requestPath) throws Exception {
