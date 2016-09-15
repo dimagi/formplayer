@@ -251,34 +251,26 @@ public class BaseTestClass {
         }).when(menuSessionRepoMock).save(Matchers.any(SerializableMenuSession.class));
     }
 
-    private <T> T postRequestMapResult(Object requestBean,
-                                       Class<T> clazz,
-                                       String urlConstant) throws Exception {
-        String jsonBody = mapper.writeValueAsString(requestBean);
-        MvcResult answerResult = this.mockFormController.perform(
-                post(urlPrepend(urlConstant))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
-                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp")))
-
-                .andExpect(status().isOk())
-                .andReturn();
-        return mapper.readValue(answerResult.getResponse().getContentAsString(),
-                clazz);
-    };
-
     private String urlPrepend(String string) {
         return "/" + string;
     }
 
     FormEntryResponseBean jumpToIndex(int index, String sessionId) throws Exception {
         JumpToIndexRequestBean questionsBean = new JumpToIndexRequestBean(index, sessionId);
-        return postRequestMapResult(questionsBean, FormEntryResponseBean.class, Constants.URL_QUESTIONS_FOR_INDEX);
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_QUESTIONS_FOR_INDEX,
+                questionsBean,
+                FormEntryResponseBean.class);
     }
 
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-        return postRequestMapResult(answerQuestionBean, FormEntryResponseBean.class, Constants.URL_ANSWER_QUESTION);
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_ANSWER_QUESTION,
+                answerQuestionBean,
+                FormEntryResponseBean.class);
     }
 
     NewFormSessionResponse startNewSession(String requestPath, String formPath) throws Exception {
@@ -287,11 +279,11 @@ public class BaseTestClass {
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
-        NewFormSessionResponse response = postRequestMapResult(newSessionRequestBean,
-                NewFormSessionResponse.class,
-                Constants.URL_NEW_SESSION);
-        serializableFormSession.setSequenceId(0);
-        return response;
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_NEW_SESSION,
+                newSessionRequestBean,
+                NewFormSessionResponse.class);
     }
 
     CaseFilterResponseBean filterCases(String requestPath) throws Exception {
