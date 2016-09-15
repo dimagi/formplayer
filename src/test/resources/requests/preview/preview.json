@@ -2,6 +2,6 @@
   "username": "previewuser",
   "password": "previewpass",
   "domain": "previewdomain",
-  "app_id": "caseappid",
+  "installReference": "archives/case.ccz",
   "previewCommand": "m2-f2"
 }
