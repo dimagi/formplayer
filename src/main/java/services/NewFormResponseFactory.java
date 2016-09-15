@@ -4,12 +4,9 @@ import auth.HqAuth;
 import beans.NewFormResponse;
 import beans.NewSessionRequestBean;
 import objects.SerializableFormSession;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
 import session.FormSession;
-
-import java.io.IOException;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
