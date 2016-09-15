@@ -64,7 +64,7 @@ public class FormController extends AbstractBaseController{
         try {
             String postUrl = host + newSessionBean.getPostUrl();
             NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
-                    formSessionRepo, xFormService, restoreService, authToken);
+                    formSessionRepo, xFormService, restoreService, new DjangoAuth(authToken));
             NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
             log.info("Return new session response: " + newSessionResponse);
             return newSessionResponse;
@@ -81,7 +81,7 @@ public class FormController extends AbstractBaseController{
         SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         Lock lock = getLockAndBlock(session.getUsername());
         try {
-            NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, authToken);
+            NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, new DjangoAuth(authToken));
             NewFormSessionResponse response = newFormRequest.getResponse();
             log.info("Return incomplete session response: " + response);
             return response;
