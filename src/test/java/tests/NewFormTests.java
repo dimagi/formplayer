@@ -26,7 +26,7 @@ public class NewFormTests extends BaseTestClass{
 
     @Before
     @Override
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));

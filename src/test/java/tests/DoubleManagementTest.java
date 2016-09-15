@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 public class DoubleManagementTest  extends BaseTestClass{
 
     @Override
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/parent_child.xml"));

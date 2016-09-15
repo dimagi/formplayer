@@ -22,7 +22,7 @@ public class LocalizationTests extends BaseTestClass {
     public LocalizationTests() {
     }
 
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         super.setUp();
         Mockito.when(this.restoreServiceMock.getRestoreXml(Matchers.anyString(),
                 Matchers.any(HqAuth.class))).thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));

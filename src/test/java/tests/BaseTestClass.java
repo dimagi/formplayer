@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.integration.support.locks.LockRegistry;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -31,16 +32,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
-import services.InstallService;
-import services.RestoreService;
-import services.SubmitService;
-import services.XFormService;
+import services.*;
 import util.Constants;
 import utils.FileUtils;
+import utils.TestContext;
 
 import javax.servlet.http.Cookie;
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Created by willpride on 2/3/16.
  */
+@ContextConfiguration(classes = TestContext.class)
 public class BaseTestClass {
 
     private MockMvc mockFormController;
@@ -85,6 +84,9 @@ public class BaseTestClass {
     private InstallService installService;
 
     @Autowired
+    private NewFormResponseFactory newFormResponseFactoryMock;
+
+    @Autowired
     protected LockRegistry userLockRegistry;
 
     @InjectMocks
@@ -102,7 +104,7 @@ public class BaseTestClass {
     final SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         Mockito.reset(formSessionRepoMock);
         Mockito.reset(menuSessionRepoMock);
         Mockito.reset(xFormServiceMock);
@@ -110,6 +112,7 @@ public class BaseTestClass {
         Mockito.reset(submitServiceMock);
         Mockito.reset(installService);
         Mockito.reset(userLockRegistry);
+        Mockito.reset(newFormResponseFactoryMock);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
@@ -123,6 +126,20 @@ public class BaseTestClass {
         setupMenuSessionRepoMock();
         setupInstallServiceMock();
         setupLockMock();
+        setupNewFormMock();
+    }
+
+    private void setupNewFormMock() throws Exception {
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Object[] args = invocationOnMock.getArguments();
+                NewFormResponseFactory newFormResponseFactory = new NewFormResponseFactory(formSessionRepoMock,
+                        xFormServiceMock,
+                        restoreServiceMock);
+                return newFormResponseFactory.getResponse((NewSessionRequestBean)args[0], (String)args[1], (HqAuth)args[2]);
+            }
+        }).when(newFormResponseFactoryMock).getResponse(any(NewSessionRequestBean.class), anyString(), any(HqAuth.class));
     }
 
     private void setupLockMock() {
