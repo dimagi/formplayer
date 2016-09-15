@@ -186,9 +186,10 @@ public class FormController extends AbstractBaseController{
 
                 if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                     submitResponseBean.setStatus("error");
+                    submitResponseBean.setNotification(new NotificationMessageBean(
+                            "Form submission failed with error response" + submitResponse, true));
                     log.info("Submit response bean: " + submitResponseBean);
                     return submitResponseBean;
-                    //TODO: need new way to communicate errors with submitting (vs. validation)
                 }
                 if (formEntrySession.getMenuSessionId() != null &&
                         !("").equals(formEntrySession.getMenuSessionId().trim())) {
