@@ -190,6 +190,7 @@ public class BaseTestClass {
     }
 
     private String getTestResourcePath(String resourcePath){
+        System.out.println("Get test resource at path " + resourcePath);
         try {
             URL url = this.getClass().getClassLoader().getResource(resourcePath);
             File file = new File(url.getPath());

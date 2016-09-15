@@ -3,5 +3,5 @@
   "password": "testpass",
   "domain": "doublemgmtdomain",
   "app_id": "doublemgmtappid",
-  "installReference": "archives/parent_child.ccz"
+  "installReference": "archives/doublemgmt.ccz"
 }
