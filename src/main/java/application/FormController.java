@@ -22,7 +22,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
-import services.NewFormRequest;
+import services.NewFormResponseFactory;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -49,6 +49,9 @@ public class FormController extends AbstractBaseController{
     @Autowired
     private SubmitService submitService;
 
+    @Autowired
+    private NewFormResponseFactory newFormResponseFactory;
+
     @Value("${commcarehq.host}")
     private String host;
 
@@ -63,9 +66,9 @@ public class FormController extends AbstractBaseController{
         Lock lock = getLockAndBlock(newSessionBean.getSessionData().getUsername());
         try {
             String postUrl = host + newSessionBean.getPostUrl();
-            NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
-                    formSessionRepo, xFormService, restoreService, new DjangoAuth(authToken));
-            NewFormResponse newSessionResponse = newFormRequest.getResponse();
+            NewFormResponse newSessionResponse = newFormResponseFactory.getResponse(newSessionBean,
+                    postUrl,
+                    new DjangoAuth(authToken));
             log.info("Return new session response: " + newSessionResponse);
             return newSessionResponse;
         } finally {
@@ -81,8 +84,7 @@ public class FormController extends AbstractBaseController{
         SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         Lock lock = getLockAndBlock(session.getUsername());
         try {
-            NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, new DjangoAuth(authToken));
-            NewFormResponse response = newFormRequest.getResponse();
+            NewFormResponse response = newFormResponseFactory.getResponse(session);
             log.info("Return incomplete session response: " + response);
             return response;
         } finally {
