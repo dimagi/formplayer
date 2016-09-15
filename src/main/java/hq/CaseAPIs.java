@@ -106,7 +106,7 @@ public class CaseAPIs {
         for (IStorageIterator<User> iterator = mSandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
             if (username.equalsIgnoreCase(u.getUsername())) {
-                mSandbox.setLoggedInUser(u);
+                mSandbox    .setLoggedInUser(u);
             }
         }
         return mSandbox;
