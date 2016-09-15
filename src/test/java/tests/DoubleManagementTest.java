@@ -3,10 +3,7 @@ package tests;
 import auth.HqAuth;
 import beans.NewFormSessionResponse;
 import beans.SubmitResponseBean;
-import beans.menus.CommandListResponseBean;
-import beans.menus.DisplayElement;
-import beans.menus.EntityDetailResponse;
-import beans.menus.EntityListResponse;
+import beans.menus.*;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,20 +44,16 @@ public class DoubleManagementTest  extends BaseTestClass{
         assert menuResponseBean.getCommands()[1].getDisplayText().equals("Child");
         assert menuResponseBean.getCommands()[2].getDisplayText().equals("Parent (2)");
 
-        JSONObject menuResponseObject =
-                sessionNavigate(new String[] {"2"}, "doublemgmt");
-
         EntityListResponse entityListResponse =
-                mapper.readValue(menuResponseObject.toString(), EntityListResponse.class);
+                sessionNavigate(new String[] {"2"}, "doublemgmt", EntityListResponse.class);
 
         assert entityListResponse.getEntities().length == 2;
         assert entityListResponse.getTitle().equals("Parent (2)");
         assert entityListResponse.getAction() != null;
         assert entityListResponse.getAction().getText().equals("New Parent");
-        JSONObject actionResponseObject = sessionNavigate(new String[] {"2", "action 0"}, "doublemgmt");
 
         NewFormSessionResponse newFormSessionResponse =
-                mapper.readValue(actionResponseObject.toString(), NewFormSessionResponse.class);
+                sessionNavigate(new String[] {"2", "action 0"}, "doublemgmt", NewFormSessionResponse.class);
 
         assert newFormSessionResponse.getTitle().equals("Register Parent");
         assert newFormSessionResponse.getTree().length == 2;
@@ -73,9 +66,8 @@ public class DoubleManagementTest  extends BaseTestClass{
                 CommandListResponseBean.class);
         assert commandListResponseBean.getCommands().length == 2;
         assert commandListResponseBean.getCommands()[0].getDisplayText().equals("Update Parent");
-        JSONObject endOfFormNavResponse = sessionNavigateWithId(new String[] {"0"}, "derp");
         NewFormSessionResponse followupFormResponse =
-                mapper.readValue(endOfFormNavResponse.toString(), NewFormSessionResponse.class);
+                sessionNavigateWithId(new String[] {"0"}, "derp", NewFormSessionResponse.class);
         assert followupFormResponse.getTree().length == 2;
         assert followupFormResponse.getTree()[0].getAnswer().equals("David Ortiz");
         assert followupFormResponse.getTree()[1].getAnswer().equals(40);
@@ -92,11 +84,8 @@ public class DoubleManagementTest  extends BaseTestClass{
         assert menuResponseBean.getCommands()[1].getDisplayText().equals("Child");
         assert menuResponseBean.getCommands()[2].getDisplayText().equals("Parent (2)");
 
-        JSONObject menuResponseObject =
-                sessionNavigate(new String[] {"2"}, "doublemgmt");
-
         EntityListResponse entityListResponse =
-                mapper.readValue(menuResponseObject.toString(), EntityListResponse.class);
+                sessionNavigate(new String[] {"2"}, "doublemgmt", EntityListResponse.class);
 
         assert entityListResponse.getEntities().length == 2;
         assert entityListResponse.getTitle().equals("Parent (2)");
@@ -111,48 +100,43 @@ public class DoubleManagementTest  extends BaseTestClass{
 
     @Test
     public void testNavigator() throws Exception {
-        JSONObject sessionNavigateResponse =
-                sessionNavigate("requests/navigators/navigator_0.json");
         NewFormSessionResponse newFormSessionResponse =
-                mapper.readValue(sessionNavigateResponse.toString(), NewFormSessionResponse.class);
+                sessionNavigate("requests/navigators/navigator_0.json", NewFormSessionResponse.class);
         assert newFormSessionResponse.getTitle().equals("Update Parent");
         assert newFormSessionResponse.getTree().length == 2;
     }
 
     @Test
     public void testAllPermutations() throws Exception {
-        JSONObject parentResponseObject = sessionNavigate(new String[] {"0", "0"}, "doublemgmt");
         NewFormSessionResponse newFormSessionResponse =
-                mapper.readValue(parentResponseObject.toString(), NewFormSessionResponse.class);
+                sessionNavigate(new String[] {"0", "0"}, "doublemgmt", NewFormSessionResponse.class);
         assert newFormSessionResponse.getTitle().equals("Register Parent");
         assert newFormSessionResponse.getTree().length == 2;
 
-        JSONObject childResponseObject = sessionNavigate(new String[] {"1", "0"}, "doublemgmt");
         newFormSessionResponse =
-                mapper.readValue(childResponseObject.toString(), NewFormSessionResponse.class);
+                sessionNavigate(new String[] {"1", "0"}, "doublemgmt", NewFormSessionResponse.class);
         assert newFormSessionResponse.getTitle().equals("Child Registration");
         assert newFormSessionResponse.getTree().length == 2;
 
-        JSONObject parentResponseObject2 = sessionNavigate(new String[] {"2"}, "doublemgmt");
         EntityListResponse entityListResponse =
-                mapper.readValue(parentResponseObject2.toString(), EntityListResponse.class);
+                sessionNavigate(new String[] {"2"}, "doublemgmt", EntityListResponse.class);
         assert entityListResponse.getTitle().equals("Parent (2)");
         assert entityListResponse.getEntities().length == 3;
         assert entityListResponse.getAction() != null;
         DisplayElement action = entityListResponse.getAction();
         assert action.getText().equals("New Parent");
 
-        parentResponseObject2 = sessionNavigate(new String[] {"2", "4d1831ab-abfe-4086-bce7-16d325d9ca3a"}, "doublemgmt");
         CommandListResponseBean commandListResponse =
-                mapper.readValue(parentResponseObject2.toString(), CommandListResponseBean.class);
+                sessionNavigate(new String[] {"2", "4d1831ab-abfe-4086-bce7-16d325d9ca3a"},
+                        "doublemgmt", CommandListResponseBean.class);
         assert commandListResponse.getTitle().equals("Parent (2)");
         assert commandListResponse.getCommands().length == 2;
         assert commandListResponse.getCommands()[0].getDisplayText().equals("Update Parent");
         assert commandListResponse.getCommands()[1].getDisplayText().equals("Parent Register Child");
 
-        childResponseObject = sessionNavigate(new String[] {"2", "4d1831ab-abfe-4086-bce7-16d325d9ca3a", "0"}, "doublemgmt");
         newFormSessionResponse =
-                mapper.readValue(childResponseObject.toString(), NewFormSessionResponse.class);
+                sessionNavigate(new String[] {"2", "4d1831ab-abfe-4086-bce7-16d325d9ca3a", "0"},
+                        "doublemgmt", NewFormSessionResponse.class);
         assert newFormSessionResponse.getTitle().equals("Update Parent");
         assert newFormSessionResponse.getTree().length == 2;
 
@@ -173,16 +157,14 @@ public class DoubleManagementTest  extends BaseTestClass{
 
     @Test
     public void testEndOfFormNavigation() throws Exception {
-        JSONObject parentResponseObject = sessionNavigate(new String[] {"0"}, "formnav");
         CommandListResponseBean response0 =
-                mapper.readValue(parentResponseObject.toString(), CommandListResponseBean.class);
+                sessionNavigate(new String[] {"0"}, "formnav", CommandListResponseBean.class);
         assert response0.getCommands().length == 2;
         assert response0.getCommands()[0].getDisplayText().equals("Link to Module 1");
         assert response0.getCommands()[1].getDisplayText().equals("Link to Module Menu");
 
-        JSONObject formResponseObject = sessionNavigate(new String[] {"0", "0"}, "formnav");
         NewFormSessionResponse newFormSessionResponse =
-                mapper.readValue(formResponseObject.toString(), NewFormSessionResponse.class);
+                sessionNavigate(new String[] {"0", "0"}, "formnav", NewFormSessionResponse.class);
         assert newFormSessionResponse.getTitle().equals("Link to Module 1");
         assert newFormSessionResponse.getTree().length == 4;
     }
