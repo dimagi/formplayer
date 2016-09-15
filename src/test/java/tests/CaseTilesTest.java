@@ -1,6 +1,7 @@
 package tests;
 
 import auth.HqAuth;
+import beans.menus.BaseResponseBean;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
 import beans.menus.Tile;
@@ -36,11 +37,10 @@ public class CaseTilesTest extends BaseTestClass{
 
     @Test
     public void testCaseTiles() throws Exception {
-        JSONObject entityResponseObject = sessionNavigate(new String[] {"2"}, "casetiles");
-        EntityListResponse response0 =
-                mapper.readValue(entityResponseObject.toString(), EntityListResponse.class);
-        assert response0.getUsesCaseTiles();
-        Tile[] tiles = response0.getTiles();
+        EntityListResponse response =
+                sessionNavigate(new String[] {"2"}, "casetiles", EntityListResponse.class);
+        assert response.getUsesCaseTiles();
+        Tile[] tiles = response.getTiles();
         assert tiles.length == 14;
         assert tiles[13].getFontSize().equals("small");
         assert tiles[0].getGridX() == 0;
@@ -51,12 +51,10 @@ public class CaseTilesTest extends BaseTestClass{
 
     @Test
     public void testPersistentCaseTile() throws Exception {
-        JSONObject responseJson
-                = sessionNavigate(new String[] {"2", "bf1fc10c-ec65-4af7-b2a4-aa38dcb7af0c"}, "casetiles");
-        CommandListResponseBean responseObject =
-                mapper.readValue(responseJson.toString(), CommandListResponseBean.class);
-        assert responseObject.getCommands().length == 5;
-        assert responseObject.getPersistentCaseTile().isUsesCaseTiles();
-        assert responseObject.getPersistentCaseTile().getTiles().length == 14;
+        CommandListResponseBean response =
+                sessionNavigate(new String[] {"2", "bf1fc10c-ec65-4af7-b2a4-aa38dcb7af0c"}, "casetiles", CommandListResponseBean.class);
+        assert response.getCommands().length == 5;
+        assert response.getPersistentCaseTile().isUsesCaseTiles();
+        assert response.getPersistentCaseTile().getTiles().length == 14;
     }
 }
