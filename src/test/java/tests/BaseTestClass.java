@@ -164,53 +164,6 @@ public class BaseTestClass {
         }).when(userLockRegistry).obtain(any());
     }
 
-    private String resolveAppId(String ref){
-        String appId = "";
-        URIBuilder uri;
-
-        // Parses the URI and extracts the app_id from it
-        try {
-            uri = new URIBuilder(ref);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Unable to parse url" + ref);
-        }
-
-        for (NameValuePair pair: uri.getQueryParams()) {
-            if (pair.getName().equals("app_id")) {
-                appId = pair.getValue();
-                break;
-            }
-        }
-
-        // TODO: Get rid of this godawfulness, replace with installReference in tests
-        switch (appId) {
-            case "caseappid":
-                ref = "archives/case.ccz";
-                break;
-            case "createappid":
-            case "loadappid":
-            case "casetestappid":
-                ref = "archives/basic.ccz";
-                break;
-            case "casemediaappid":
-                ref = "archives/casemedia.ccz";
-                break;
-            case "endformappid":
-                ref = "archives/formnav.ccz";
-                break;
-            case "langsappid":
-                ref = "archives/langs.ccz";
-                break;
-            case "casetilesappid":
-                ref = "archives/casetiles.ccz";
-                break;
-            default:
-                throw new RuntimeException("Couldn't resolve appId for ref: " + ref);
-        }
-        return ref;
-    }
-
     private void setupInstallServiceMock() {
         try {
             doAnswer(new Answer<Object>() {
@@ -219,11 +172,6 @@ public class BaseTestClass {
                     try {
                         Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
-                        // All references that start with `/` are a URL that needs to be parsed
-                        // in order to the app id. Should be refactored.
-                        if(ref.startsWith("/") || ref.contains("app_id=")){
-                            ref = resolveAppId(ref);
-                        }
                         String username = (String) args[1];
                         String path = (String) args[2];
                         FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
