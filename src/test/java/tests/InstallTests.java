@@ -34,7 +34,7 @@ public class InstallTests extends BaseTestClass {
         CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/install.json");
 
-        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "0"}, "create");
+        JSONObject menuResponseObject = sessionNavigate(new String[] {"2", "0"}, "case");
 
         assert menuResponseObject.has("tree");
         assert menuResponseObject.has("title");

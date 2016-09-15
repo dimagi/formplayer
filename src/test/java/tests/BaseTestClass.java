@@ -185,10 +185,6 @@ public class BaseTestClass {
 
         // TODO: Get rid of this godawfulness, replace with installReference in tests
         switch (appId) {
-            case "doublemgmtappid":
-            case "navigatorappid":
-                ref = "archives/parent_child.ccz";
-                break;
             case "caseappid":
                 ref = "archives/case.ccz";
                 break;
@@ -504,6 +500,7 @@ public class BaseTestClass {
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
         sessionNavigationBean.setSelections(selections);
         if(locale != null && !"".equals(locale.trim())){
             sessionNavigationBean.setLocale(locale);
@@ -523,6 +520,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(menuSession.getUsername());
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setMenuSessionId(sessionId);
+        sessionNavigationBean.setInstallReference(menuSession.getInstallReference());
         String result = generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,

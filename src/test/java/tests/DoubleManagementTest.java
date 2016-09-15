@@ -173,14 +173,14 @@ public class DoubleManagementTest  extends BaseTestClass{
 
     @Test
     public void testEndOfFormNavigation() throws Exception {
-        JSONObject parentResponseObject = sessionNavigate(new String[] {"0"}, "endform");
+        JSONObject parentResponseObject = sessionNavigate(new String[] {"0"}, "formnav");
         CommandListResponseBean response0 =
                 mapper.readValue(parentResponseObject.toString(), CommandListResponseBean.class);
         assert response0.getCommands().length == 2;
         assert response0.getCommands()[0].getDisplayText().equals("Link to Module 1");
         assert response0.getCommands()[1].getDisplayText().equals("Link to Module Menu");
 
-        JSONObject formResponseObject = sessionNavigate(new String[] {"0", "0"}, "endform");
+        JSONObject formResponseObject = sessionNavigate(new String[] {"0", "0"}, "formnav");
         NewFormSessionResponse newFormSessionResponse =
                 mapper.readValue(formResponseObject.toString(), NewFormSessionResponse.class);
         assert newFormSessionResponse.getTitle().equals("Link to Module 1");
