@@ -4,16 +4,26 @@ import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.CaseBean;
 import beans.CaseFilterRequestBean;
+import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.sandbox.SandboxUtils;
+import org.commcare.modern.parse.ParseUtilsHelper;
+import org.javarosa.core.api.ClassNameHasher;
+import org.javarosa.core.model.User;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.services.storage.IStorageIterator;
+import org.javarosa.core.util.externalizable.PrototypeFactory;
+import org.javarosa.xml.util.InvalidStructureException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathFuncExpr;
+import org.xmlpull.v1.XmlPullParserException;
 import services.RestoreService;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by willpride on 1/7/16.
@@ -31,7 +41,7 @@ public class CaseAPIs {
             return new UserSqlSandbox(username, SQLiteProperties.getDataDir() + domain);
         } else{
             db.getParentFile().mkdirs();
-            return RestoreUtils.restoreUser(username, SQLiteProperties.getDataDir() + domain,  xml);
+            return restoreUser(username, SQLiteProperties.getDataDir() + domain,  xml);
         }
     }
 
@@ -43,7 +53,7 @@ public class CaseAPIs {
         } else{
             db.getParentFile().mkdirs();
             String xml = restoreService.getRestoreXml(domain, auth);
-            return RestoreUtils.restoreUser(username, SQLiteProperties.getDataDir() + domain, xml);
+            return restoreUser(username, SQLiteProperties.getDataDir() + domain, xml);
         }
     }
 
@@ -85,5 +95,20 @@ public class CaseAPIs {
             count++;
         }
         return ret;
+    }
+
+    private static UserSqlSandbox restoreUser(String username, String path, String restorePayload) throws
+            UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
+        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username, path);
+        PrototypeFactory.setStaticHasher(new ClassNameHasher());
+        ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
+        // initialize our sandbox's logged in user
+        for (IStorageIterator<User> iterator = mSandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
+            User u = iterator.nextRecord();
+            if (username.equalsIgnoreCase(u.getUsername())) {
+                mSandbox.setLoggedInUser(u);
+            }
+        }
+        return mSandbox;
     }
 }

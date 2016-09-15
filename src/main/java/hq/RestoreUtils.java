@@ -25,18 +25,4 @@ import java.io.InputStream;
  */
 public class RestoreUtils {
 
-    public static UserSqlSandbox restoreUser(String username, String path, String restorePayload) throws
-            UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
-        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username, path);
-        PrototypeFactory.setStaticHasher(new ClassNameHasher());
-        ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
-        // initialize our sandbox's logged in user
-        for (IStorageIterator<User> iterator = mSandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
-            User u = iterator.nextRecord();
-            if (username.equalsIgnoreCase(u.getUsername())) {
-                mSandbox.setLoggedInUser(u);
-            }
-        }
-        return mSandbox;
-    }
 }
