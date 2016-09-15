@@ -326,7 +326,6 @@ public class FormController extends AbstractBaseController{
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
         formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
-        serialSession.setFormXml(formEntrySession.getFormXml());
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
         serialSession.setSequenceId(formEntrySession.getSequenceId());
         serialSession.setCurrentIndex(formEntrySession.getCurrentIndex());

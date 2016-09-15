@@ -224,7 +224,7 @@ public class MenuSession {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale, uuid);
+        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale, uuid, null, false);
     }
 
     private byte[] serializeSession(CommCareSession session){
