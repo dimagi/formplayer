@@ -3,7 +3,6 @@ package beans.menus;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.util.cli.MenuScreen;
-import util.SessionUtils;
 
 import java.util.Arrays;
 

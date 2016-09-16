@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 public class RepeatTests extends BaseTestClass{
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
@@ -33,7 +33,7 @@ public class RepeatTests extends BaseTestClass{
     @Test
     public void testRepeat() throws Exception {
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/repeat.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/repeat.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 

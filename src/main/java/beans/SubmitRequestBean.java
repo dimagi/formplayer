@@ -7,10 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import java.util.Map;
 
 /**
- * Created by willpride on 1/20/16.
- *
- * TODO: Validate answers
- * TODO: Error handling
+ * Request to submit the form with the given answers
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SubmitRequestBean extends SessionRequestBean {

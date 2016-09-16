@@ -2,7 +2,7 @@ package tests;
 
 import auth.HqAuth;
 import beans.FormEntryResponseBean;
-import beans.NewFormSessionResponse;
+import beans.NewFormResponse;
 import beans.QuestionBean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 public class GroupTests extends BaseTestClass{
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
@@ -38,7 +38,7 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testConditionalItemsets() throws Exception {
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -83,7 +83,7 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testMultiSelectGroups() throws Exception {
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -117,6 +117,6 @@ public class GroupTests extends BaseTestClass{
 
     @Test
     public void testInnerOuterGroups() throws Exception {
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
     }
 }

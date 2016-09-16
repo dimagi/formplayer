@@ -6,7 +6,6 @@ import org.commcare.suite.model.DetailField;
 import org.commcare.util.cli.EntityDetailSubscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
