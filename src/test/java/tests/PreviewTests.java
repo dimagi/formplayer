@@ -32,17 +32,13 @@ public class PreviewTests extends BaseTestClass {
 
     @Test
     public void testPreview() throws Exception {
-        JSONObject previewForm =
-                sessionNavigate("requests/preview/preview.json");
         EntityListResponse entityListResponse =
-                mapper.readValue(previewForm.toString(), EntityListResponse.class);
+                sessionNavigate("requests/preview/preview.json", EntityListResponse.class);
     }
 
     @Test
     public void testPreviewStep() throws Exception {
-        JSONObject previewForm =
-                sessionNavigate("requests/preview/preview_step.json");
-        NewFormResponse newFormResponse =
-                mapper.readValue(previewForm.toString(), NewFormResponse.class);
+        NewFormResponse newFormSessionResponse =
+                sessionNavigate("requests/preview/preview_step.json", NewFormResponse.class);
     }
 }

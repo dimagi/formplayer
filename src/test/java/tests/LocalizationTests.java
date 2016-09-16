@@ -3,7 +3,6 @@ package tests;
 import auth.HqAuth;
 import beans.NewFormResponse;
 import beans.menus.CommandListResponseBean;
-import java.io.IOException;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,9 +29,8 @@ public class LocalizationTests extends BaseTestClass {
 
     @Test
     public void testMenuLocalization() throws Exception {
-        JSONObject sessionNavigateResponse = this.sessionNavigate(new String[]{"0"}, "langs");
         CommandListResponseBean commandListResponseBean =
-                this.mapper.readValue(sessionNavigateResponse.toString(), CommandListResponseBean.class);
+                this.sessionNavigate(new String[]{"0"}, "langs", CommandListResponseBean.class);
 
         assert commandListResponseBean.getCommands().length == 2;
 
@@ -40,9 +38,8 @@ public class LocalizationTests extends BaseTestClass {
 
         assert commandListResponseBean.getCommands()[1].getDisplayText().equals("English Form 2");
 
-        JSONObject sessionNavigateResponseSpanish = this.sessionNavigate(new String[]{"0"}, "langs", "es");
         CommandListResponseBean commandListResponseSpanish =
-                this.mapper.readValue(sessionNavigateResponseSpanish.toString(), CommandListResponseBean.class);
+                this.sessionNavigate(new String[]{"0"}, "langs", "es", CommandListResponseBean.class);
 
         assert commandListResponseSpanish.getCommands().length == 2;
 
@@ -56,9 +53,8 @@ public class LocalizationTests extends BaseTestClass {
 
     @Test
     public void testFormLocalization() throws Exception {
-        JSONObject sessionNavigateResponse = this.sessionNavigate(new String[]{"0", "0"}, "langs");
         NewFormResponse newFormResponse =
-                this.mapper.readValue(sessionNavigateResponse.toString(), NewFormResponse.class);
+                this.sessionNavigate(new String[]{"0", "0"}, "langs", NewFormResponse.class);
 
         assert newFormResponse.getTree().length == 2;
 
@@ -66,9 +62,8 @@ public class LocalizationTests extends BaseTestClass {
 
         assert newFormResponse.getTree()[1].getCaption().equals("English rules");
 
-        JSONObject sessionNavigateResponseSpanish = this.sessionNavigate(new String[]{"0", "0"}, "langs", "es");
         NewFormResponse newFormResponseSpanish =
-                this.mapper.readValue(sessionNavigateResponseSpanish.toString(), NewFormResponse.class);
+                this.sessionNavigate(new String[]{"0", "0"}, "langs", "es", NewFormResponse.class);
 
         assert newFormResponseSpanish.getTree().length == 2;
 
