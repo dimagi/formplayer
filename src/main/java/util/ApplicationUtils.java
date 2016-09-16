@@ -2,7 +2,6 @@ package util;
 
 import application.SQLiteProperties;
 import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.api.persistence.UserSqlSandbox;
 
 /**
  * Utility methods for dealing with Applications

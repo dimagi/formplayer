@@ -22,7 +22,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
-import services.NewFormRequest;
+import services.NewFormResponseFactory;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -49,6 +49,9 @@ public class FormController extends AbstractBaseController{
     @Autowired
     private SubmitService submitService;
 
+    @Autowired
+    private NewFormResponseFactory newFormResponseFactory;
+
     @Value("${commcarehq.host}")
     private String host;
 
@@ -57,15 +60,15 @@ public class FormController extends AbstractBaseController{
 
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION , method = RequestMethod.POST)
-    public NewFormSessionResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
-                                                  @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("New form requests with bean: " + newSessionBean + " sessionId :" + authToken);
         Lock lock = getLockAndBlock(newSessionBean.getSessionData().getUsername());
         try {
             String postUrl = host + newSessionBean.getPostUrl();
-            NewFormRequest newFormRequest = new NewFormRequest(newSessionBean, postUrl,
-                    formSessionRepo, xFormService, restoreService, authToken);
-            NewFormSessionResponse newSessionResponse = newFormRequest.getResponse();
+            NewFormResponse newSessionResponse = newFormResponseFactory.getResponse(newSessionBean,
+                    postUrl,
+                    new DjangoAuth(authToken));
             log.info("Return new session response: " + newSessionResponse);
             return newSessionResponse;
         } finally {
@@ -75,14 +78,13 @@ public class FormController extends AbstractBaseController{
 
     @ApiOperation(value = "Open an incomplete form session")
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
-    public NewFormSessionResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
-                                                  @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
         SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         Lock lock = getLockAndBlock(session.getUsername());
         try {
-            NewFormRequest newFormRequest = new NewFormRequest(session, restoreService, authToken);
-            NewFormSessionResponse response = newFormRequest.getResponse();
+            NewFormResponse response = newFormResponseFactory.getResponse(session);
             log.info("Return incomplete session response: " + response);
             return response;
         } finally {
@@ -184,9 +186,10 @@ public class FormController extends AbstractBaseController{
 
                 if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                     submitResponseBean.setStatus("error");
+                    submitResponseBean.setNotification(new NotificationMessageBean(
+                            "Form submission failed with error response" + submitResponse, true));
                     log.info("Submit response bean: " + submitResponseBean);
                     return submitResponseBean;
-                    //TODO: need new way to communicate errors with submitting (vs. validation)
                 }
                 if (formEntrySession.getMenuSessionId() != null &&
                         !("").equals(formEntrySession.getMenuSessionId().trim())) {
@@ -323,7 +326,6 @@ public class FormController extends AbstractBaseController{
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
         formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
-        serialSession.setFormXml(formEntrySession.getFormXml());
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
         serialSession.setSequenceId(formEntrySession.getSequenceId());
         serialSession.setCurrentIndex(formEntrySession.getCurrentIndex());

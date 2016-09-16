@@ -1,10 +1,8 @@
 package repo.impl;
 
 import hq.models.SessionToken;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,12 +11,8 @@ import org.springframework.stereotype.Repository;
 import repo.TokenRepo;
 import util.Constants;
 
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * DAO implementation for HQ's django_session key table.

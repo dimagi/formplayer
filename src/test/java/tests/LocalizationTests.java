@@ -1,10 +1,8 @@
 package tests;
 
 import auth.HqAuth;
-import beans.NewFormSessionResponse;
-import beans.menus.BaseResponseBean;
+import beans.NewFormResponse;
 import beans.menus.CommandListResponseBean;
-import java.io.IOException;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +21,7 @@ public class LocalizationTests extends BaseTestClass {
     public LocalizationTests() {
     }
 
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         super.setUp();
         Mockito.when(this.restoreServiceMock.getRestoreXml(Matchers.anyString(),
                 Matchers.any(HqAuth.class))).thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
@@ -55,23 +53,23 @@ public class LocalizationTests extends BaseTestClass {
 
     @Test
     public void testFormLocalization() throws Exception {
-        NewFormSessionResponse newFormSessionResponse =
-                this.sessionNavigate(new String[]{"0", "0"}, "langs", NewFormSessionResponse.class);
+        NewFormResponse newFormResponse =
+                this.sessionNavigate(new String[]{"0", "0"}, "langs", NewFormResponse.class);
 
-        assert newFormSessionResponse.getTree().length == 2;
+        assert newFormResponse.getTree().length == 2;
 
-        assert newFormSessionResponse.getTree()[0].getCaption().equals("I'm English");
+        assert newFormResponse.getTree()[0].getCaption().equals("I'm English");
 
-        assert newFormSessionResponse.getTree()[1].getCaption().equals("English rules");
+        assert newFormResponse.getTree()[1].getCaption().equals("English rules");
 
-        NewFormSessionResponse newFormSessionResponseSpanish =
-                this.sessionNavigate(new String[]{"0", "0"}, "langs", "es", NewFormSessionResponse.class);
+        NewFormResponse newFormResponseSpanish =
+                this.sessionNavigate(new String[]{"0", "0"}, "langs", "es", NewFormResponse.class);
 
-        assert newFormSessionResponseSpanish.getTree().length == 2;
+        assert newFormResponseSpanish.getTree().length == 2;
 
-        assert newFormSessionResponseSpanish.getTree()[0].getCaption().equals("I'm Spanish");
+        assert newFormResponseSpanish.getTree()[0].getCaption().equals("I'm Spanish");
 
-        assert newFormSessionResponseSpanish.getTree()[1].getCaption().equals("No Spanish rules");
+        assert newFormResponseSpanish.getTree()[1].getCaption().equals("No Spanish rules");
 
     }
 }

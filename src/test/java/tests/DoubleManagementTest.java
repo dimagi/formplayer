@@ -1,7 +1,7 @@
 package tests;
 
 import auth.HqAuth;
-import beans.NewFormSessionResponse;
+import beans.NewFormResponse;
 import beans.SubmitResponseBean;
 import beans.menus.*;
 import org.json.JSONObject;
@@ -13,7 +13,6 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -27,7 +26,7 @@ import static org.mockito.Mockito.when;
 public class DoubleManagementTest  extends BaseTestClass{
 
     @Override
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/parent_child.xml"));
@@ -52,22 +51,22 @@ public class DoubleManagementTest  extends BaseTestClass{
         assert entityListResponse.getAction() != null;
         assert entityListResponse.getAction().getText().equals("New Parent");
 
-        NewFormSessionResponse newFormSessionResponse =
-                sessionNavigate(new String[] {"2", "action 0"}, "doublemgmt", NewFormSessionResponse.class);
+        NewFormResponse newFormResponse =
+                sessionNavigate(new String[] {"2", "action 0"}, "doublemgmt", NewFormResponse.class);
 
-        assert newFormSessionResponse.getTitle().equals("Register Parent");
-        assert newFormSessionResponse.getTree().length == 2;
+        assert newFormResponse.getTitle().equals("Register Parent");
+        assert newFormResponse.getTree().length == 2;
 
         // ok, test end of form nav
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_double_mgmt.json",
-                newFormSessionResponse.getSessionId());
+                newFormResponse.getSessionId());
         assert submitResponseBean.getNextScreen() != null;
         CommandListResponseBean commandListResponseBean = mapper.readValue(mapper.writeValueAsString(submitResponseBean.getNextScreen()),
                 CommandListResponseBean.class);
         assert commandListResponseBean.getCommands().length == 2;
         assert commandListResponseBean.getCommands()[0].getDisplayText().equals("Update Parent");
-        NewFormSessionResponse followupFormResponse =
-                sessionNavigateWithId(new String[] {"0"}, "derp", NewFormSessionResponse.class);
+        NewFormResponse followupFormResponse =
+                sessionNavigateWithId(new String[] {"0"}, "derp", NewFormResponse.class);
         assert followupFormResponse.getTree().length == 2;
         assert followupFormResponse.getTree()[0].getAnswer().equals("David Ortiz");
         assert followupFormResponse.getTree()[1].getAnswer().equals(40);
@@ -100,23 +99,23 @@ public class DoubleManagementTest  extends BaseTestClass{
 
     @Test
     public void testNavigator() throws Exception {
-        NewFormSessionResponse newFormSessionResponse =
-                sessionNavigate("requests/navigators/navigator_0.json", NewFormSessionResponse.class);
+        NewFormResponse newFormSessionResponse =
+                sessionNavigate("requests/navigators/navigator_0.json", NewFormResponse.class);
         assert newFormSessionResponse.getTitle().equals("Update Parent");
         assert newFormSessionResponse.getTree().length == 2;
     }
 
     @Test
     public void testAllPermutations() throws Exception {
-        NewFormSessionResponse newFormSessionResponse =
-                sessionNavigate(new String[] {"0", "0"}, "doublemgmt", NewFormSessionResponse.class);
-        assert newFormSessionResponse.getTitle().equals("Register Parent");
-        assert newFormSessionResponse.getTree().length == 2;
+        NewFormResponse newFormResponse =
+                sessionNavigate(new String[] {"0", "0"}, "doublemgmt", NewFormResponse.class);
+        assert newFormResponse.getTitle().equals("Register Parent");
+        assert newFormResponse.getTree().length == 2;
 
-        newFormSessionResponse =
-                sessionNavigate(new String[] {"1", "0"}, "doublemgmt", NewFormSessionResponse.class);
-        assert newFormSessionResponse.getTitle().equals("Child Registration");
-        assert newFormSessionResponse.getTree().length == 2;
+        newFormResponse =
+                sessionNavigate(new String[] {"1", "0"}, "doublemgmt", NewFormResponse.class);
+        assert newFormResponse.getTitle().equals("Child Registration");
+        assert newFormResponse.getTree().length == 2;
 
         EntityListResponse entityListResponse =
                 sessionNavigate(new String[] {"2"}, "doublemgmt", EntityListResponse.class);
@@ -134,11 +133,11 @@ public class DoubleManagementTest  extends BaseTestClass{
         assert commandListResponse.getCommands()[0].getDisplayText().equals("Update Parent");
         assert commandListResponse.getCommands()[1].getDisplayText().equals("Parent Register Child");
 
-        newFormSessionResponse =
+        newFormResponse =
                 sessionNavigate(new String[] {"2", "4d1831ab-abfe-4086-bce7-16d325d9ca3a", "0"},
-                        "doublemgmt", NewFormSessionResponse.class);
-        assert newFormSessionResponse.getTitle().equals("Update Parent");
-        assert newFormSessionResponse.getTree().length == 2;
+                        "doublemgmt", NewFormResponse.class);
+        assert newFormResponse.getTitle().equals("Update Parent");
+        assert newFormResponse.getTree().length == 2;
 
     }
 
@@ -163,10 +162,9 @@ public class DoubleManagementTest  extends BaseTestClass{
         assert response0.getCommands()[0].getDisplayText().equals("Link to Module 1");
         assert response0.getCommands()[1].getDisplayText().equals("Link to Module Menu");
 
-        NewFormSessionResponse newFormSessionResponse =
-                sessionNavigate(new String[] {"0", "0"}, "formnav", NewFormSessionResponse.class);
-        assert newFormSessionResponse.getTitle().equals("Link to Module 1");
-        assert newFormSessionResponse.getTree().length == 4;
+        NewFormResponse newFormResponse =
+                sessionNavigate(new String[] {"0", "0"}, "formnav", NewFormResponse.class);
+        assert newFormResponse.getTitle().equals("Link to Module 1");
+        assert newFormResponse.getTree().length == 4;
     }
-
 }
