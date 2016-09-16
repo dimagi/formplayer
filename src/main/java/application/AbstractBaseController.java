@@ -1,7 +1,7 @@
 package application;
 
 import beans.ExceptionResponseBean;
-import beans.NewFormSessionResponse;
+import beans.NewFormResponse;
 import beans.menus.*;
 import exceptions.ApplicationConfigException;
 import exceptions.FormNotFoundException;
@@ -13,16 +13,13 @@ import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
-import org.commcare.suite.model.SessionDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.cli.*;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.engine.models.Session;
 import org.javarosa.xpath.XPathException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +37,6 @@ import session.MenuSession;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -206,11 +202,11 @@ public abstract class AbstractBaseController {
         return new EntityListResponse(nextScreen, offset, searchText, menuSessionId);
     }
 
-    private NewFormSessionResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
+    private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession();
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         formSessionRepo.save(formEntrySession.serialize());
-        return new NewFormSessionResponse(formEntrySession);
+        return new NewFormResponse(formEntrySession);
     }
 
     /**

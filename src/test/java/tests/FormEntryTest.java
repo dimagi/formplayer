@@ -21,7 +21,7 @@ public class FormEntryTest extends BaseTestClass{
 
         serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -98,7 +98,7 @@ public class FormEntryTest extends BaseTestClass{
 
         serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types_2.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types_2.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -139,7 +139,7 @@ public class FormEntryTest extends BaseTestClass{
 
         serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 

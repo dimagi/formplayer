@@ -2,8 +2,6 @@ package hq.models;
 
 import hq.interfaces.CouchUser;
 
-import java.util.Arrays;
-
 /**
  * A representation of HQ's CommCareUser. This is a mobile worker and can
  * only belong to one domain.
