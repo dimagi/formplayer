@@ -2,5 +2,5 @@
   "username": "casemediauser",
   "password": "casemediapass",
   "domain": "casemediadomain",
-  "app_id": "casemediaappid"
+  "installReference": "archives/casemedia.ccz"
 }

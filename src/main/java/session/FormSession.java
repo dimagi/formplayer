@@ -20,6 +20,7 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
+import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.springframework.stereotype.Component;
 import util.PrototypeUtils;
@@ -89,7 +90,7 @@ public class FormSession {
         PrototypeUtils.setupPrototypes();
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
-        this.formDef = hq.RestoreUtils.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
+        this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
         setupJavaRosaObjects();
         initialize(false, session.getSessionData());
     }
