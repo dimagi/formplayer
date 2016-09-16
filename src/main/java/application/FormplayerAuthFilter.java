@@ -2,15 +2,11 @@ package application;
 
 import hq.interfaces.CouchUser;
 import hq.models.PostgresUser;
-import hq.models.SessionToken;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ResourceProperties;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 import repo.TokenRepo;
 import repo.impl.CouchUserRepo;
 import repo.impl.PostgresUserRepo;
