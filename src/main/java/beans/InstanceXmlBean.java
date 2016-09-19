@@ -12,16 +12,14 @@ import java.io.StringWriter;
 /**
  * Created by willpride on 1/20/16.
  */
-public class GetInstanceResponseBean {
+public class InstanceXmlBean {
     private String output;
-    private String xmlns;
 
     // Jackson requires the default constructor be present
-    public GetInstanceResponseBean(){}
+    public InstanceXmlBean(){}
 
-    public GetInstanceResponseBean(FormSession session) throws IOException {
+    public InstanceXmlBean(FormSession session) throws IOException {
         output = indentXml(session.getInstanceXml());
-        xmlns = session.getXmlns();
     }
 
     /**
@@ -52,14 +50,6 @@ public class GetInstanceResponseBean {
         return result.getWriter().toString();
     }
 
-    public String getXmlns() {
-        return xmlns;
-    }
-
-    public void setXmlns(String xmlns) {
-        this.xmlns = xmlns;
-    }
-
     public String getOutput() {
         return output;
     }
@@ -70,6 +60,6 @@ public class GetInstanceResponseBean {
 
     @Override
     public String toString(){
-        return "GetInstanceResponseBean: [xmlns=" + xmlns + ", output=" + output + "]";
+        return "InstanceXmlBean: [output=" + output + "]";
     }
 }

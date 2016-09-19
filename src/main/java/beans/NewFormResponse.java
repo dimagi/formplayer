@@ -21,6 +21,7 @@ public class NewFormResponse extends SessionResponseBean {
         this.title = fes.getTitle();
         this.sessionId = fes.getSessionId();
         this.sequenceId = fes.getSequenceId();
+        this.instanceXml = new InstanceXmlBean(fes);
     }
 
     public QuestionBean[] getTree(){

@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class SessionRequestBean extends AuthenticatedRequestBean {
     @ApiModelProperty(value = "The id of the form entry session", required = true)
     protected String sessionId;
+    private boolean debuggerEnabled;
 
     @JsonGetter(value = "session_id")
     public String getSessionId() {
@@ -23,5 +24,13 @@ public class SessionRequestBean extends AuthenticatedRequestBean {
     @Override
     public String toString(){
         return "SessionRequestBean [sessionId=" + sessionId + "]";
+    }
+
+    public boolean isDebuggerEnabled() {
+        return debuggerEnabled;
+    }
+
+    public void setDebuggerEnabled(boolean debuggerEnabled) {
+        this.debuggerEnabled = debuggerEnabled;
     }
 }
