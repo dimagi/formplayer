@@ -108,6 +108,7 @@ public class FormController extends AbstractBaseController{
             FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
             responseBean.setTitle(formEntrySession.getTitle());
             responseBean.setSequenceId(formEntrySession.getSequenceId());
+            responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
             log.info("Answer response: " + responseBean);
             return responseBean;
         } finally {
@@ -294,10 +295,11 @@ public class FormController extends AbstractBaseController{
                     formEntrySession.getFormEntryModel(),
                     newRepeatRequestBean.getRepeatIndex());
             updateSession(formEntrySession, serializableFormSession);
-            FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
-            repeatResponseBean.setTitle(formEntrySession.getTitle());
-            log.info("New response: " + repeatResponseBean);
-            return repeatResponseBean;
+            FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
+            responseBean.setTitle(formEntrySession.getTitle());
+            responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+            log.info("New response: " + responseBean);
+            return responseBean;
         } finally {
             lock.unlock();
         }
@@ -315,10 +317,11 @@ public class FormController extends AbstractBaseController{
                     formEntrySession.getFormEntryModel(),
                     deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
             updateSession(formEntrySession, serializableFormSession);
-            FormEntryResponseBean repeatResponseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
-            repeatResponseBean.setTitle(formEntrySession.getTitle());
-            log.info("Delete repeat response: " + repeatResponseBean);
-            return repeatResponseBean;
+            FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
+            responseBean.setTitle(formEntrySession.getTitle());
+            responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+            log.info("Delete repeat response: " + responseBean);
+            return responseBean;
         } finally {
             lock.unlock();
         }
