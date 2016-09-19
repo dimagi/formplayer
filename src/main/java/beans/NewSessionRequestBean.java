@@ -21,6 +21,7 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     private String instanceContent;
     private String postUrl;
     private boolean oneQuestionPerScreen;
+    private boolean debuggerEnabled;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public NewSessionRequestBean(){}
@@ -97,5 +98,13 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     @JsonSetter(value = "oneQuestionPerScreen")
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    public boolean getDebuggerEnabled() {
+        return debuggerEnabled;
+    }
+
+    public void setDebuggerEnabled(boolean debuggerEnabled) {
+        this.debuggerEnabled = debuggerEnabled;
     }
 }

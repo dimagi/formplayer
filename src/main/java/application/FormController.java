@@ -249,15 +249,15 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Get the current instance XML")
     @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.POST)
     @ResponseBody
-    public GetInstanceResponseBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
+    public InstanceXmlBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
         log.info("Get instance request: " + getInstanceRequestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(getInstanceRequestBean.getSessionId());
         Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formEntrySession = new FormSession(serializableFormSession);
-            GetInstanceResponseBean getInstanceResponseBean = new GetInstanceResponseBean(formEntrySession);
-            log.info("Get instance response: " + getInstanceResponseBean);
-            return getInstanceResponseBean;
+            InstanceXmlBean instanceXmlBean = new InstanceXmlBean(formEntrySession);
+            log.info("Get instance response: " + instanceXmlBean);
+            return instanceXmlBean;
         } finally {
             lock.unlock();
         }

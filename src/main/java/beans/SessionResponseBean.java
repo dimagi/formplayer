@@ -16,6 +16,8 @@ public class SessionResponseBean extends BaseResponseBean{
     @ApiModelProperty(value = "The sequence number of the current command", required = true)
     int sequenceId;
 
+    protected InstanceXmlBean instanceXml;
+
     @JsonGetter(value = "session_id")
     public String getSessionId() {
         return sessionId;
@@ -39,4 +41,11 @@ public class SessionResponseBean extends BaseResponseBean{
         return "SessionResponseBean [sessionId=" + sessionId + ", seqId=" + sequenceId + "]";
     }
 
+    public InstanceXmlBean getInstanceXml() {
+        return instanceXml;
+    }
+
+    public void setInstanceXml(InstanceXmlBean instanceXml) {
+        this.instanceXml = instanceXml;
+    }
 }
