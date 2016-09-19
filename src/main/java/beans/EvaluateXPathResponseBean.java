@@ -22,10 +22,10 @@ public class EvaluateXPathResponseBean {
     public EvaluateXPathResponseBean(FormSession formEntrySession, String xpath) throws XPathSyntaxException {
         status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
         EvaluationContext evaluationContext = formEntrySession.getFormEntryModel().getForm().getEvaluationContext();
-        Text mText = Text.XPathText(xpath, new Hashtable<String, Text>());
         try {
+            Text mText = Text.XPathText(xpath, new Hashtable<String, Text>());
             output = mText.evaluate(evaluationContext);
-        } catch (XPathException e) {
+        } catch (XPathException | XPathSyntaxException e) {
             status = Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
             output = e.getMessage();
         }
