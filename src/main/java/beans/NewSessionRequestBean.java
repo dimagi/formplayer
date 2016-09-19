@@ -99,12 +99,4 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
-
-    public boolean getDebuggerEnabled() {
-        return debuggerEnabled;
-    }
-
-    public void setDebuggerEnabled(boolean debuggerEnabled) {
-        this.debuggerEnabled = debuggerEnabled;
-    }
 }
