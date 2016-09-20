@@ -2,7 +2,7 @@ package util;
 
 import application.SQLiteProperties;
 import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.api.persistence.UserSqlSandbox;
+import org.commcare.modern.database.TableBuilder;
 
 /**
  * Utility methods for dealing with Applications
@@ -22,6 +22,6 @@ public class ApplicationUtils {
     }
 
     public static String getApplicationDBPath(String domain, String username, String appId) {
-        return SQLiteProperties.getDataDir() + domain + "/" + username + "/" + appId;
+        return SQLiteProperties.getDataDir() + domain + "/" + TableBuilder.scrubName(username) + "/" + appId;
     }
 }

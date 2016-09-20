@@ -1,6 +1,7 @@
 package tests;
 
 import auth.HqAuth;
+import beans.menus.BaseResponseBean;
 import beans.menus.Entity;
 import beans.menus.EntityDetailResponse;
 import beans.menus.EntityListResponse;
@@ -26,7 +27,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = TestContext.class)
 public class CasePaginationTests extends BaseTestClass {
     @Override
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         super.setUp();
         when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
@@ -34,19 +35,15 @@ public class CasePaginationTests extends BaseTestClass {
 
     @Test
     public void testPagination() throws Exception {
-        JSONObject sessionNavigateResponse =
-                sessionNavigate("requests/navigators/pagination_navigator.json");
         EntityListResponse entityListResponse =
-                mapper.readValue(sessionNavigateResponse.toString(), EntityListResponse.class);
+                sessionNavigate("requests/navigators/pagination_navigator.json", EntityListResponse.class);
         assert entityListResponse.getEntities().length == EntityListResponse.CASE_LENGTH_LIMIT;
         assert entityListResponse.getCurrentPage() == 0;
         assert entityListResponse.getPageCount() == 8;
         assert entityListResponse.getEntities()[0].getDetails().length == 2;
 
-        JSONObject sessionNavigateResponse2 =
-                sessionNavigate("requests/navigators/pagination_navigator_1.json");
         EntityListResponse entityListResponse2 =
-                mapper.readValue(sessionNavigateResponse2.toString(), EntityListResponse.class);
+                sessionNavigate("requests/navigators/pagination_navigator_1.json", EntityListResponse.class);
         assert entityListResponse2.getEntities().length == 2;
         assert entityListResponse2.getCurrentPage() == 7;
         assert entityListResponse2.getPageCount() == 8;
@@ -65,10 +62,8 @@ public class CasePaginationTests extends BaseTestClass {
     // test that searching (filtering the case list) works
     @Test
     public void testSearch() throws Exception {
-        JSONObject sessionNavigateResponse =
-                sessionNavigate("requests/navigators/search_navigator.json");
         EntityListResponse entityListResponse =
-                mapper.readValue(sessionNavigateResponse.toString(), EntityListResponse.class);
+                sessionNavigate("requests/navigators/search_navigator.json", EntityListResponse.class);
         assert entityListResponse.getEntities().length == 9;
         assert entityListResponse.getCurrentPage() == 0;
         assert entityListResponse.getPageCount() == 0;
@@ -76,10 +71,8 @@ public class CasePaginationTests extends BaseTestClass {
     // test that searching and paginating simultaneously works
     @Test
     public void testSearchAndPagination() throws Exception {
-        JSONObject sessionNavigateResponse =
-                sessionNavigate("requests/navigators/search_paginate_navigator.json");
         EntityListResponse entityListResponse =
-                mapper.readValue(sessionNavigateResponse.toString(), EntityListResponse.class);
+                sessionNavigate("requests/navigators/search_paginate_navigator.json", EntityListResponse.class);
         assert entityListResponse.getEntities().length == 10;
         assert entityListResponse.getPageCount() == 2;
         assert entityListResponse.getCurrentPage() == 1;

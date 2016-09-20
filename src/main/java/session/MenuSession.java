@@ -25,7 +25,6 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
 import repo.SerializableMenuSession;
@@ -33,9 +32,9 @@ import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
 import services.RestoreService;
-import util.SessionUtils;
 import util.ApplicationUtils;
 import util.Constants;
+import util.SessionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -225,7 +224,7 @@ public class MenuSession {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale, uuid);
+        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale, uuid, null, false);
     }
 
     private byte[] serializeSession(CommCareSession session){
