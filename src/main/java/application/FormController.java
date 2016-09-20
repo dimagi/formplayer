@@ -335,7 +335,7 @@ public class FormController extends AbstractBaseController{
         Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formSession = new FormSession(serializableFormSession);
-            formSession.setCurrentIndex(formSession.getCurrentIndex() + 1);
+            formSession.stepToNextIndex();
             JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
                     formSession.getFormEntryModel(),
                     formSession.getCurrentIndex());
@@ -357,7 +357,7 @@ public class FormController extends AbstractBaseController{
         Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formSession = new FormSession(serializableFormSession);
-            formSession.setCurrentIndex(formSession.getCurrentIndex() - 1);
+            formSession.stepToPreviousIndex();
             JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
                     formSession.getFormEntryModel(),
                     formSession.getCurrentIndex());
