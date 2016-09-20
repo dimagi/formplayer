@@ -11,18 +11,12 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
-import services.InstallService;
-import services.RestoreService;
-import services.SubmitService;
-import services.XFormService;
+import services.*;
 import services.impl.InstallServiceImpl;
 import services.impl.SubmitServiceImpl;
 
 @Configuration
 public class TestContext {
-
-    private static SerializableFormSession serializableFormSession;
-    private static SerializableMenuSession serializableMenuSession;
  
     @Bean
     public MessageSource messageSource() {
@@ -76,5 +70,10 @@ public class TestContext {
     @Bean
     public LockRegistry userLockRegistry() {
         return Mockito.mock(LockRegistry.class);
+    }
+
+    @Bean
+    public NewFormResponseFactory newFormResponseFactory(){
+        return Mockito.mock(NewFormResponseFactory.class);
     }
 }

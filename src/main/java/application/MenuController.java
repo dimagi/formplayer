@@ -63,7 +63,7 @@ public class MenuController extends AbstractBaseController{
      *
      * @param sessionNavigationBean Give an installation code or path and a set of session selections
      * @param authToken             The Django session id auth token
-     * @return A MenuBean or a NewFormSessionResponse
+     * @return A MenuBean or a NewFormResponse
      * @throws Exception
      */
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
@@ -109,10 +109,8 @@ public class MenuController extends AbstractBaseController{
                 String selection = selections[i - 1];
                 boolean gotNextScreen = menuSession.handleInput(selection);
                 if (!gotNextScreen) {
-                    // If we overflowed selections, just return the last real screen.
-                    // TODO: Once case claim is merge, set notification here.
-                    log.info("Couldn't get next screen with selection " + selection +
-                            " of selections " + Arrays.toString(selections));
+                    notificationMessageBean = new NotificationMessageBean(
+                            "Overflowed selections with selection " + selection + " at index " + i, (true));
                     break;
                 }
                 titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
@@ -141,7 +139,7 @@ public class MenuController extends AbstractBaseController{
                 log.info("Returning menu: " + nextMenu);
                 return nextMenu;
             } else {
-                return new BaseResponseBean(null, "Redirecting after case claim", false, true);
+                return new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
             }
         } finally {
             lock.unlock();

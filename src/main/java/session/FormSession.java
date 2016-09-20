@@ -20,6 +20,7 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
+import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.springframework.stereotype.Component;
 import util.PrototypeUtils;
@@ -63,6 +64,14 @@ public class FormSession {
     private boolean oneQuestionPerScreen;
     private int currentIndex = -1;
 
+    private void setupJavaRosaObjects() {
+        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
+        formEntryController = new FormEntryController(formEntryModel);
+        title = formDef.getTitle();
+        langs = formEntryModel.getLanguages();
+        initLocale();
+    }
+
 
     public FormSession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
@@ -73,79 +82,44 @@ public class FormSession {
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
         this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
-        formDef = new FormDef();
-        PrototypeUtils.setupPrototypes();
-        deserializeFormDef(session.getFormXml());
-        formDef = hq.RestoreUtils.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
-        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
-        formEntryController = new FormEntryController(formEntryModel);
-        this.sequenceId = session.getSequenceId();
-        title = formDef.getTitle();
-        langs = formEntryModel.getLanguages();
-        uuid = session.getId();
-        setLocale(session.getInitLang(), langs);
-        this.sequenceId = session.getSequenceId();
-        initialize(false, session.getSessionData());
-        getFormTree();
-        this.menuSessionId = session.getMenuSessionId();
+        this.locale = session.getInitLang();
         this.currentIndex = session.getCurrentIndex();
+        this.uuid = session.getId();
+        this.sequenceId = session.getSequenceId();
+        this.menuSessionId = session.getMenuSessionId();
+        PrototypeUtils.setupPrototypes();
+        this.formDef = new FormDef();
+        deserializeFormDef(session.getFormXml());
+        this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
+        setupJavaRosaObjects();
+        initialize(false, session.getSessionData());
     }
 
-    public FormSession(String formXml, String restoreXml, String locale, String username, String domain,
-                       Map<String, String> sessionData, String postUrl,
-                       String instanceContent, boolean oneQuestionPerScreen) throws Exception {
-        this.formXml = formXml;
-        this.restoreXml = restoreXml;
-        this.username = TableBuilder.scrubName(username);
-        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, domain, restoreXml);
-        this.domain = domain;
-        this.sessionData = sessionData;
-        this.oneQuestionPerScreen = oneQuestionPerScreen;
-        if (this.oneQuestionPerScreen) {
-            this.currentIndex = 0;
-        }
-        formDef = parseFormDef(formXml);
-
-        if(instanceContent != null){
-            loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData);
-        } else {
-            initialize(true, sessionData);
-        }
-
-        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
-        formEntryController = new FormEntryController(formEntryModel);
-        formEntryController.setLanguage(locale);
-        title = formDef.getTitle();
-        langs = formEntryModel.getLanguages();
-        setLocale(locale, langs);
-        uuid = UUID.randomUUID().toString();
-        this.sequenceId = 0;
-        this.postUrl = postUrl;
-        getFormTree();
-    }
-
-    // Entry from menu selection. Assumes user has already been restored.
+    // New FormSession constructor
     public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
                        Map<String, String> sessionData, String postUrl,
-                       String locale, String menuSessionId) throws Exception {
+                       String locale, String menuSessionId,
+                       String instanceContent, boolean oneQuestionPerScreen) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         this.sandbox = sandbox;
         this.sessionData = sessionData;
         this.domain = domain;
         this.postUrl = postUrl;
-        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
-        formEntryController = new FormEntryController(formEntryModel);
-        langs = formEntryModel.getLanguages();
-        setLocale(locale, langs);
-        title = formDef.getTitle();
-        uuid = UUID.randomUUID().toString();
+        this.locale = locale;
+        this.uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
-        initialize(true, sessionData);
-        getFormTree();
         this.postUrl = postUrl;
         this.menuSessionId = menuSessionId;
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
+        this.currentIndex = 0;
+        setupJavaRosaObjects();
+        if(instanceContent != null){
+            loadInstanceXml(formDef, instanceContent);
+            initialize(false, sessionData);
+        } else {
+            initialize(true, sessionData);
+        }
     }
 
     private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
@@ -154,11 +128,9 @@ public class FormSession {
         xFormParser.loadXmlInstance(formDef, stringReader);
     }
 
-    private void setLocale(String locale, String[] langs){
+    private void initLocale(){
         if(locale == null){
-            this.locale = langs[0];
-        } else{
-            this.locale = locale;
+            this.locale = this.langs[0];
         }
         try {
             formEntryController.setLanguage(this.locale);
@@ -169,7 +141,7 @@ public class FormSession {
     }
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
-        CommCarePlatform platform = new CommCarePlatform(2, 27);
+        CommCarePlatform platform = new CommCarePlatform(2, 30);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
     }
@@ -214,14 +186,6 @@ public class FormSession {
         return uuid;
     }
 
-    public String getFormXml() {
-        return formXml;
-    }
-
-    public void setFormXml(String formXml) {
-        this.formXml = formXml;
-    }
-
     public String getXmlns(){
         Object metaData = getFormEntryModel().getForm().getMainInstance().getMetaData(FormInstance.META_XMLNS);
         if(metaData == null){
@@ -232,10 +196,6 @@ public class FormSession {
 
     private String getRestoreXml() {
         return restoreXml;
-    }
-
-    public void setRestoreXml(String restoreXml) {
-        this.restoreXml = restoreXml;
     }
 
     public int getSequenceId() {
@@ -312,20 +272,12 @@ public class FormSession {
         return postUrl;
     }
 
-    public void setPostUrl(String postUrl) {
-        this.postUrl = postUrl;
-    }
-
     public String getUsername(){
         return username;
     }
 
     public String getMenuSessionId() {
         return menuSessionId;
-    }
-
-    public void setMenuSessionId(String menuSessionId) {
-        this.menuSessionId = menuSessionId;
     }
 
     public void setCurrentIndex(int index) {
