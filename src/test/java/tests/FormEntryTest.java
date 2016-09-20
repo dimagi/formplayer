@@ -159,11 +159,11 @@ public class FormEntryTest extends BaseTestClass{
 
         serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
-        NewFormSessionResponse newSessionResponse = startNewSession("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
+        NewFormResponse newFormResponse = startNewSession("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
 
-        String sessionId = newSessionResponse.getSessionId();
+        String sessionId = newFormResponse.getSessionId();
 
-        assert newSessionResponse.getTree().length == 1;
+        assert newFormResponse.getTree().length == 1;
 
         FormEntryResponseBean response1 = nextScreen(sessionId);
         assert response1.getTree().length == 1;
