@@ -1,12 +1,9 @@
 package beans;
 
-import auth.DjangoAuth;
-import auth.HqAuth;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import objects.SessionData;
-import services.RestoreService;
 
 import java.util.Map;
 
@@ -19,8 +16,7 @@ public class CaseFilterRequestBean extends AuthenticatedRequestBean {
     private String filterExpression;
     private Map<String, String> hqAuth;
     private SessionData sessionData;
-
-    private RestoreService restoreService;
+    private String restoreXml;
 
     @JsonGetter(value = "filter_expr")
     public String getFilterExpression() {
@@ -47,13 +43,11 @@ public class CaseFilterRequestBean extends AuthenticatedRequestBean {
         this.sessionData = sessionData;
     }
 
-    public String getRestoreXml(){
-        HqAuth auth = new DjangoAuth(hqAuth.get("key"));
-        return restoreService.getRestoreXml(sessionData.getDomain(), auth);
+    public String getRestoreXml() {
+        return restoreXml;
     }
 
-    public void setRestoreService(RestoreService restoreService) {
-        this.restoreService = restoreService;
+    public void setRestoreXml(String restoreXml) {
+        this.restoreXml = restoreXml;
     }
-
 }
