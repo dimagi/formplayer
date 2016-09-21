@@ -11,7 +11,7 @@ import java.util.Map;
  * Created by willpride on 1/12/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CaseFilterRequestBean extends AuthenticatedRequestBean {
+public class CaseFilterRequestBean extends AuthenticatedRequestBean implements AsUserBean {
 
     private String filterExpression;
     private Map<String, String> hqAuth;
@@ -49,5 +49,10 @@ public class CaseFilterRequestBean extends AuthenticatedRequestBean {
 
     public void setRestoreXml(String restoreXml) {
         this.restoreXml = restoreXml;
+    }
+
+    @Override
+    public String getAsUser() {
+        return username;
     }
 }
