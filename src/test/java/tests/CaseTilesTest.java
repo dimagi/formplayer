@@ -33,6 +33,7 @@ public class CaseTilesTest extends BaseTestClass{
         super.setUp();
         when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/casetiles.xml"));
+        configureRestoreFactory("casetilesdomain", "casetilesuser");
     }
 
     @Test

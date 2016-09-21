@@ -28,6 +28,7 @@ public class PreviewTests extends BaseTestClass {
         super.setUp();
         when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
+        configureRestoreFactory("previewdomain", "previewuser");
     }
 
     @Test

@@ -1,10 +1,8 @@
 package services;
 
 import auth.HqAuth;
-import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.persistence.UserSqlSandbox;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -18,9 +16,9 @@ public class RestoreFactory {
     @Value("${commcarehq.host}")
     private String host;
 
-    private String username;
-    private String domain;
-    private HqAuth hqAuth;
+    private static String username;
+    private static String domain;
+    private static HqAuth hqAuth;
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 

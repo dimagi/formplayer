@@ -25,6 +25,7 @@ public class LocalizationTests extends BaseTestClass {
         super.setUp();
         Mockito.when(this.restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
+        configureRestoreFactory("langsdomain", "langsuser");
     }
 
     @Test
