@@ -1,5 +1,7 @@
 package application;
 
+import auth.HqAuth;
+import beans.AsUserBean;
 import beans.ExceptionResponseBean;
 import beans.NewFormResponse;
 import beans.menus.*;
@@ -73,6 +75,17 @@ public abstract class AbstractBaseController {
     private String hqHost;
 
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
+
+    protected void configureRestoreFactory(AsUserBean asUserBean, HqAuth auth) {
+        restoreFactory.setDomain(asUserBean.getDomain());
+        if (asUserBean.getAsUser() != null) {
+            restoreFactory.setUsername(asUserBean.getAsUser());
+        } {
+            restoreFactory.setUsername(asUserBean.getUsername());
+        }
+        restoreFactory.setHqAuth(auth);
+
+    }
 
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {

@@ -2,6 +2,7 @@ package hq;
 
 import application.SQLiteProperties;
 import auth.HqAuth;
+import beans.AsUserBean;
 import beans.CaseBean;
 import beans.CaseFilterRequestBean;
 import org.commcare.api.persistence.SqlSandboxUtils;
