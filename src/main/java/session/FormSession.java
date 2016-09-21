@@ -65,6 +65,7 @@ public class FormSession {
     private String menuSessionId;
     private boolean oneQuestionPerScreen;
     private int currentIndex = -1;
+    private String asUser;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -78,9 +79,13 @@ public class FormSession {
     public FormSession(SerializableFormSession session) throws Exception{
         this.formXml = session.getFormXml();
         this.username = session.getUsername();
+        this.asUser = session.getAsUser();
         this.restoreXml = session.getRestoreXml();
         this.domain = session.getDomain();
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, this.domain, restoreXml);
+        System.out.println();
+        this.sandbox = CaseAPIs.restoreIfNotExists(asUser != null ? asUser : username,
+                this.domain,
+                restoreXml);
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
         this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
@@ -101,7 +106,7 @@ public class FormSession {
     public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
                        Map<String, String> sessionData, String postUrl,
                        String locale, String menuSessionId,
-                       String instanceContent, boolean oneQuestionPerScreen) throws Exception {
+                       String instanceContent, boolean oneQuestionPerScreen, String asUser) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         this.sandbox = sandbox;
@@ -115,6 +120,7 @@ public class FormSession {
         this.menuSessionId = menuSessionId;
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.currentIndex = 0;
+        this.asUser = asUser;
         setupJavaRosaObjects();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
@@ -263,6 +269,7 @@ public class FormSession {
         serializableFormSession.setDateOpened(new Date().toString());
         serializableFormSession.setOneQuestionPerScreen(oneQuestionPerScreen);
         serializableFormSession.setCurrentIndex(currentIndex);
+        serializableFormSession.setAsUser(asUser);
         return serializableFormSession;
     }
 
@@ -304,5 +311,13 @@ public class FormSession {
         FormIndex newIndex = formEntryNavigator.getPreviousFormIndex();
         formEntryController.jumpToIndex(newIndex);
         setCurrentIndex(Integer.parseInt(newIndex.toString()));
+    }
+
+    public String getAsUser() {
+        return asUser;
+    }
+
+    public void setAsUser(String asUser) {
+        this.asUser = asUser;
     }
 }

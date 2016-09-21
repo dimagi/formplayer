@@ -271,6 +271,13 @@ public class BaseTestClass {
         return "/" + string;
     }
 
+    protected void configureRestoreFactory(String domain, String username) {
+        when(restoreFactoryMock.getUsername())
+                .thenReturn(username);
+        when(restoreFactoryMock.getDomain())
+                .thenReturn(domain);
+    }
+
     FormEntryResponseBean jumpToIndex(int index, String sessionId) throws Exception {
         JumpToIndexRequestBean questionsBean = new JumpToIndexRequestBean(index, sessionId);
         return generateMockQuery(ControllerType.FORM,
@@ -327,6 +334,10 @@ public class BaseTestClass {
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
+        when(restoreFactoryMock.getUsername())
+                .thenReturn(newSessionRequestBean.getSessionData().getUsername());
+        when(restoreFactoryMock.getDomain())
+                .thenReturn(newSessionRequestBean.getSessionData().getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_NEW_SESSION,

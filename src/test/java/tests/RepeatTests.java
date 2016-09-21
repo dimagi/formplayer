@@ -25,6 +25,7 @@ public class RepeatTests extends BaseTestClass{
         super.setUp();
         when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        configureRestoreFactory("test", "test");
     }
 
     @Test
