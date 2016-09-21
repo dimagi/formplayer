@@ -36,15 +36,22 @@ public class NewFormResponseFactory {
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl, HqAuth auth) throws Exception {
 
-        String restoreXml = getRestoreXml(bean.getSessionData().getDomain(), auth);
         String formXml = getFormXml(bean.getFormUrl(), auth);
 
         restoreFactory.setHqAuth(auth);
         restoreFactory.setDomain(bean.getSessionData().getDomain());
+        UserSqlSandbox sandbox;
 
-        UserSqlSandbox sandbox = CaseAPIs.restoreIfNotExists(bean.getSessionData().getUsername(),
-                bean.getSessionData().getDomain(),
-                restoreXml);
+        if(bean.getAsUser() != null) {
+            restoreFactory.setUsername(bean.getAsUser());
+            sandbox = CaseAPIs.restoreIfNotExists(bean.getAsUser(),
+                    restoreFactory,
+                    bean.getSessionData().getDomain());
+        } else {
+            sandbox = CaseAPIs.restoreIfNotExists(bean.getSessionData().getUsername(),
+                    restoreFactory,
+                    bean.getSessionData().getDomain());
+        }
 
         FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getSessionData().getUsername(),
                 bean.getSessionData().getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,
@@ -58,10 +65,6 @@ public class NewFormResponseFactory {
             throws Exception {
         FormSession formSession = new FormSession(session);
         return new NewFormResponse(formSession);
-    }
-
-    private String getRestoreXml(String domain, HqAuth auth) {
-        return restoreFactory.getRestoreXml();
     }
 
     private String getFormXml(String formUrl, HqAuth auth) {

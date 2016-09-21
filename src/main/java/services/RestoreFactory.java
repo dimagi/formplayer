@@ -48,8 +48,8 @@ public class RestoreFactory {
     }
 
     public String getRestoreUrl(String host, String domain, String username) {
-        return host + "/hq/admin/phone/restore/?as= + " + username + "@" +
-                domain + ".commcarehq.org&version=2.0";
+        return host + "/hq/admin/phone/restore/?as=" + username + "@" +
+                domain + ".commcarehq.org&version=2.0&raw=true";
     }
 
     public String getUsername() {
