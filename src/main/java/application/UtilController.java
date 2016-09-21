@@ -35,8 +35,7 @@ public class UtilController extends AbstractBaseController {
     public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest,
                                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         configureRestoreFactory(filterRequest, new DjangoAuth(authToken));
-        filterRequest.setRestoreXml(restoreFactory.getRestoreXml());
-        String caseResponse = CaseAPIs.filterCases(filterRequest);
+        String caseResponse = CaseAPIs.filterCases(restoreFactory, filterRequest.getFilterExpression());
         return new CaseFilterResponseBean(caseResponse);
     }
 
@@ -45,8 +44,7 @@ public class UtilController extends AbstractBaseController {
     public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest,
                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken)throws Exception {
         configureRestoreFactory(filterRequest, new DjangoAuth(authToken));
-        filterRequest.setRestoreXml(restoreFactory.getRestoreXml());
-        CaseBean[] caseResponse = CaseAPIs.filterCasesFull(filterRequest);
+        CaseBean[] caseResponse = CaseAPIs.filterCasesFull(restoreFactory, filterRequest.getFilterExpression());
         return new CaseFilterFullResponseBean(caseResponse);
     }
 
@@ -55,10 +53,8 @@ public class UtilController extends AbstractBaseController {
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("SyncDb Request: " + syncRequest);
-        restoreFactory.setDomain(syncRequest.getDomain());
-        restoreFactory.setHqAuth(new DjangoAuth(authToken));
-        String restoreXml = restoreFactory.getRestoreXml();
-        CaseAPIs.forceRestore(syncRequest.getUsername(), syncRequest.getDomain(), restoreXml);
+        configureRestoreFactory(syncRequest, new DjangoAuth(authToken));
+        CaseAPIs.forceRestore(restoreFactory);
         return new SyncDbResponseBean();
     }
 

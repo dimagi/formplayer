@@ -31,7 +31,10 @@ import java.io.IOException;
  */
 public class CaseAPIs {
 
-    public static UserSqlSandbox forceRestore(String username, String domain, String xml) throws Exception {
+    public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
+        String domain = restoreFactory.getDomain();
+        String username = restoreFactory.getUsername();
+        String xml = restoreFactory.getRestoreXml();
         new File(SQLiteProperties.getDataDir() + domain + "/" + username + ".db").delete();
         return restoreIfNotExists(username, domain, xml);
     }
@@ -59,13 +62,10 @@ public class CaseAPIs {
         }
     }
 
-    public static String filterCases(CaseFilterRequestBean request) {
+    public static String filterCases(RestoreFactory restoreFactory, String filterExpression) {
         try {
-            String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
-            UserSqlSandbox mSandbox = restoreIfNotExists(
-                    request.getSessionData().getUsername(),
-                    request.getSessionData().getDomain(),
-                    request.getRestoreXml());
+            String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
+            UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory);
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
             return XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         } catch (Exception e) {
@@ -79,12 +79,9 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    public static CaseBean[] filterCasesFull(CaseFilterRequestBean request) throws Exception{
-        String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
-        UserSqlSandbox mSandbox = restoreIfNotExists(
-                request.getSessionData().getUsername(),
-                request.getSessionData().getDomain(),
-                request.getRestoreXml());
+    public static CaseBean[] filterCasesFull(RestoreFactory restoreFactory, String filterExpression) throws Exception{
+        String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
+        UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory);
         EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
         String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         String[] splitCases = filteredCases.split(",");

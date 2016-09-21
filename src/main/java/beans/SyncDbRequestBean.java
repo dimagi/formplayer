@@ -10,6 +10,11 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * Created by willpride on 1/12/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SyncDbRequestBean extends AuthenticatedRequestBean {
+public class SyncDbRequestBean extends AuthenticatedRequestBean implements AsUserBean {
     public SyncDbRequestBean(){}
+
+    @Override
+    public String getAsUser() {
+        return username;
+    }
 }

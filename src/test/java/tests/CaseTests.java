@@ -93,6 +93,7 @@ public class CaseTests extends BaseTestClass {
 
     @Test
     public void testSqlEscape() throws Exception {
+        configureRestoreFactory("sql_test.user", "test");
         CaseFilterResponseBean caseFilterResponseBean = filterCases("requests/filter/filter_cases_sql_escape.json");
         assert(caseFilterResponseBean.getCases().length == 15);
     }
