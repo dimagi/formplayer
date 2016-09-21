@@ -34,8 +34,7 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
     public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest,
                                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        restoreFactory.setDomain(filterRequest.getDomain());
-        restoreFactory.setHqAuth(new DjangoAuth(authToken));
+        configureRestoreFactory(filterRequest, new DjangoAuth(authToken));
         filterRequest.setRestoreXml(restoreFactory.getRestoreXml());
         String caseResponse = CaseAPIs.filterCases(filterRequest);
         return new CaseFilterResponseBean(caseResponse);
@@ -45,8 +44,7 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_FILTER_CASES_FULL, method = RequestMethod.GET)
     public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest,
                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken)throws Exception {
-        restoreFactory.setDomain(filterRequest.getDomain());
-        restoreFactory.setHqAuth(new DjangoAuth(authToken));
+        configureRestoreFactory(filterRequest, new DjangoAuth(authToken));
         filterRequest.setRestoreXml(restoreFactory.getRestoreXml());
         CaseBean[] caseResponse = CaseAPIs.filterCasesFull(filterRequest);
         return new CaseFilterFullResponseBean(caseResponse);
