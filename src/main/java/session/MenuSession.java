@@ -88,15 +88,7 @@ public class MenuSession {
                 ApplicationUtils.getApplicationDBPath(this.domain, this.username, this.appId)
         );
 
-        restoreFactory.setHqAuth(this.auth);
-        restoreFactory.setDomain(this.domain);
-
-        if (this.asUser != null) {
-            restoreFactory.setUsername(this.asUser);
-            this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
-        } else {
-            this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
-        }
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
 
         this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
@@ -119,24 +111,13 @@ public class MenuSession {
                 this.username,
                 ApplicationUtils.getApplicationDBPath(domain, this.username, appId)
         );
-        this.sandbox = restoreGetSandbox(restoreFactory);
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
         this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
-    }
-
-    private UserSqlSandbox restoreGetSandbox(RestoreFactory restoreFactory) throws Exception {
-        restoreFactory.setHqAuth(this.auth);
-        restoreFactory.setDomain(this.domain);
-        if (this.asUser != null) {
-            restoreFactory.setUsername(this.asUser);
-            return CaseAPIs.restoreIfNotExists(restoreFactory);
-        } else {
-            return CaseAPIs.restoreIfNotExists(restoreFactory);
-        }
     }
 
     private void resolveInstallReference(String installReference, String appId, String host){
