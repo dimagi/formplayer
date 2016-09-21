@@ -54,12 +54,13 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
 
         String query = replaceTableName("INSERT into %s " +
                 "(id, username, domain, appid, " +
-                "installreference, locale, commcaresession) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)");
+                "installreference, locale, commcaresession, asUser) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getUsername(), session.getDomain(),
-                session.getAppId(), session.getInstallReference(), session.getLocale(), session.getCommcareSession()}, new int[] {
+                session.getAppId(), session.getInstallReference(), session.getLocale(), session.getCommcareSession(),
+        session.getAsUser()}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.BINARY});
+                Types.VARCHAR, Types.VARCHAR, Types.BINARY, Types.VARCHAR});
         return session;
     }
 
@@ -134,7 +135,8 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
                     rs.getString("appid"),
                     rs.getString("installreference"),
                     rs.getString("locale"),
-                    (byte[]) rs.getObject("commcaresession"));
+                    (byte[]) rs.getObject("commcaresession"),
+                    rs.getString("asUser"));
         }
     }
 

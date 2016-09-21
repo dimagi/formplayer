@@ -11,6 +11,7 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
     private String password;
     private String appId;
     private String locale;
+    private String asUser;
 
     public String getInstallReference() {
         return installReference;
@@ -49,5 +50,13 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
 
     public void setLocale(String locale) {
         this.locale = locale;
+    }
+
+    public String getAsUser() {
+        return asUser;
+    }
+
+    public void setAsUser(String asUser) {
+        this.asUser = asUser;
     }
 }

@@ -243,6 +243,7 @@ public class MenuController extends AbstractBaseController{
         }
 
         return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), bean.getLocale(), installService, restoreFactory, auth, host);
+                bean.getInstallReference(), bean.getLocale(), installService, restoreFactory, auth, host,
+                bean.getAsUser());
     }
 }
