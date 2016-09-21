@@ -33,6 +33,7 @@ public class GroupTests extends BaseTestClass{
         super.setUp();
         when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
+        configureRestoreFactory("grouptestdomain", "grouptestuser");
     }
 
     @Test
