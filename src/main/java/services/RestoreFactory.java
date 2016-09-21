@@ -16,19 +16,20 @@ public class RestoreFactory {
     @Value("${commcarehq.host}")
     private String host;
 
-    private static String username;
-    private static String domain;
-    private static HqAuth hqAuth;
+    private String asUsername;
+    private String username;
+    private String domain;
+    private HqAuth hqAuth;
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
 
     public String getRestoreXml() {
         String restoreUrl;
-        if (username == null) {
+        if (asUsername == null) {
             restoreUrl = getRestoreUrl(host, domain);
         } else {
-            restoreUrl = getRestoreUrl(host, domain, username);
+            restoreUrl = getRestoreUrl(host, domain, asUsername);
         }
 
         log.info("Restoring from URL " + restoreUrl);
@@ -49,7 +50,7 @@ public class RestoreFactory {
     }
 
     public String getRestoreUrl(String host, String domain, String username) {
-        return host + "/hq/admin/phone/rest/?as= + " + username + "@" +
+        return host + "/hq/admin/phone/restore/?as=" + username + "@" +
                 domain + ".commcarehq.org&version=2.0&raw=true";
     }
 
@@ -75,5 +76,13 @@ public class RestoreFactory {
 
     public void setHqAuth(HqAuth hqAuth) {
         this.hqAuth = hqAuth;
+    }
+
+    public String getAsUsername() {
+        return asUsername;
+    }
+
+    public void setAsUsername(String asUsername) {
+        this.asUsername = asUsername;
     }
 }

@@ -78,11 +78,8 @@ public abstract class AbstractBaseController {
 
     protected void configureRestoreFactory(AsUserBean asUserBean, HqAuth auth) {
         restoreFactory.setDomain(asUserBean.getDomain());
-        if (asUserBean.getAsUser() != null) {
-            restoreFactory.setUsername(asUserBean.getAsUser());
-        } {
-            restoreFactory.setUsername(asUserBean.getUsername());
-        }
+        restoreFactory.setAsUsername(asUserBean.getAsUser());
+        restoreFactory.setUsername(asUserBean.getUsername());
         restoreFactory.setHqAuth(auth);
 
     }
