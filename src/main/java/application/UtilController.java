@@ -32,16 +32,22 @@ public class UtilController extends AbstractBaseController {
 
     @ApiOperation(value = "Filter the user's casedb given a predicate expression")
     @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
-    public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
+    public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest,
+                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        restoreFactory.setDomain(filterRequest.getDomain());
+        restoreFactory.setHqAuth(new DjangoAuth(authToken));
+        filterRequest.setRestoreXml(restoreFactory.getRestoreXml());
         String caseResponse = CaseAPIs.filterCases(filterRequest);
         return new CaseFilterResponseBean(caseResponse);
     }
 
     @ApiOperation(value = "Fitler the user's casedb given a predicate expression returning all case data")
     @RequestMapping(value = Constants.URL_FILTER_CASES_FULL, method = RequestMethod.GET)
-    public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
+    public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest,
+                                                      @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken)throws Exception {
+        restoreFactory.setDomain(filterRequest.getDomain());
+        restoreFactory.setHqAuth(new DjangoAuth(authToken));
+        filterRequest.setRestoreXml(restoreFactory.getRestoreXml());
         CaseBean[] caseResponse = CaseAPIs.filterCasesFull(filterRequest);
         return new CaseFilterFullResponseBean(caseResponse);
     }
@@ -51,9 +57,9 @@ public class UtilController extends AbstractBaseController {
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("SyncDb Request: " + syncRequest);
-        syncRequest.setRestoreService(restoreService);
-        syncRequest.setHqAuth(new DjangoAuth(authToken));
-        String restoreXml = syncRequest.getRestoreXml();
+        restoreFactory.setDomain(syncRequest.getDomain());
+        restoreFactory.setHqAuth(new DjangoAuth(authToken));
+        String restoreXml = restoreFactory.getRestoreXml();
         CaseAPIs.forceRestore(syncRequest.getUsername(), syncRequest.getDomain(), restoreXml);
         return new SyncDbResponseBean();
     }

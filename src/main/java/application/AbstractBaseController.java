@@ -31,7 +31,7 @@ import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import services.InstallService;
-import services.RestoreService;
+import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
 import util.FormplayerHttpRequest;
@@ -52,9 +52,6 @@ import java.util.concurrent.locks.Lock;
 public abstract class AbstractBaseController {
 
     @Autowired
-    protected RestoreService restoreService;
-
-    @Autowired
     protected FormSessionRepo formSessionRepo;
 
     @Autowired
@@ -62,6 +59,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected InstallService installService;
+
+    @Autowired
+    protected RestoreFactory restoreFactory;
 
     @Autowired
     private HtmlEmail exceptionMessage;

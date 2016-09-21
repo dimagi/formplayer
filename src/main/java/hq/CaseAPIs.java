@@ -20,7 +20,7 @@ import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.xmlpull.v1.XmlPullParserException;
-import services.RestoreService;
+import services.RestoreFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,14 +45,14 @@ public class CaseAPIs {
         }
     }
 
-    public static UserSqlSandbox restoreIfNotExists(String username, RestoreService restoreService,
+    public static UserSqlSandbox restoreIfNotExists(String username, RestoreFactory restoreFactory,
                                                     String domain, HqAuth auth) throws Exception{
         File db = new File(SQLiteProperties.getDataDir() + domain + "/" + username + ".db");
         if(db.exists()){
             return new UserSqlSandbox(username, SQLiteProperties.getDataDir() + domain);
         } else{
             db.getParentFile().mkdirs();
-            String xml = restoreService.getRestoreXml(domain, auth);
+            String xml = restoreFactory.getRestoreXml();
             return restoreUser(username, SQLiteProperties.getDataDir() + domain, xml);
         }
     }

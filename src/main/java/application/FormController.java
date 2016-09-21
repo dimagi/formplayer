@@ -188,7 +188,7 @@ public class FormController extends AbstractBaseController{
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
-        MenuSession menuSession = new MenuSession(serializedSession, installService, restoreService, auth, host);
+        MenuSession menuSession = new MenuSession(serializedSession, installService, restoreFactory, auth, host);
         return resolveFormGetNext(menuSession);
     }
 

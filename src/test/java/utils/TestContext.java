@@ -53,8 +53,8 @@ public class TestContext {
     }
 
     @Bean
-    public RestoreService restoreService() {
-        return Mockito.mock(RestoreService.class);
+    public RestoreFactory restoreFactory() {
+        return Mockito.mock(RestoreFactory.class);
     }
 
     @Bean

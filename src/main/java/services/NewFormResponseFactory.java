@@ -23,14 +23,14 @@ import java.io.StringReader;
 public class NewFormResponseFactory {
 
     private final XFormService xFormService;
-    private final RestoreService restoreService;
+    private final RestoreFactory restoreFactory;
     private final FormSessionRepo formSessionRepo;
 
     public NewFormResponseFactory(FormSessionRepo formSessionRepo,
                                   XFormService xFormService,
-                                  RestoreService restoreService) {
+                                  RestoreFactory restoreFactory) {
         this.xFormService = xFormService;
-        this.restoreService = restoreService;
+        this.restoreFactory = restoreFactory;
         this.formSessionRepo = formSessionRepo;
     }
 
@@ -38,6 +38,10 @@ public class NewFormResponseFactory {
 
         String restoreXml = getRestoreXml(bean.getSessionData().getDomain(), auth);
         String formXml = getFormXml(bean.getFormUrl(), auth);
+
+        restoreFactory.setHqAuth(auth);
+        restoreFactory.setDomain(bean.getSessionData().getDomain());
+
         UserSqlSandbox sandbox = CaseAPIs.restoreIfNotExists(bean.getSessionData().getUsername(),
                 bean.getSessionData().getDomain(),
                 restoreXml);
@@ -57,7 +61,7 @@ public class NewFormResponseFactory {
     }
 
     private String getRestoreXml(String domain, HqAuth auth) {
-        return restoreService.getRestoreXml(domain, auth);
+        return restoreFactory.getRestoreXml();
     }
 
     private String getFormXml(String formUrl, HqAuth auth) {

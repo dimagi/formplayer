@@ -31,7 +31,7 @@ import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
-import services.RestoreService;
+import services.RestoreFactory;
 import util.ApplicationUtils;
 import util.Constants;
 import util.SessionUtils;
@@ -71,12 +71,13 @@ public class MenuSession {
     private HqAuth auth;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreService restoreService, HqAuth auth, String host) throws Exception {
+                       RestoreFactory restoreFactory, HqAuth auth, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
         this.domain = session.getDomain();
         this.locale = session.getLocale();
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
+        this.auth = auth;
 
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(
@@ -84,33 +85,38 @@ public class MenuSession {
                 this.username,
                 ApplicationUtils.getApplicationDBPath(this.domain, this.username, this.appId)
         );
-        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
+
+        restoreFactory.setHqAuth(this.auth);
+        restoreFactory.setDomain(this.domain);
+
+        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreFactory, domain, auth);
         this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
         this.screen = getNextScreen();
-        this.auth = auth;
         this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
-                       InstallService installService, RestoreService restoreService, HqAuth auth, String host) throws Exception {
+                       InstallService installService, RestoreFactory restoreFactory, HqAuth auth, String host) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
+        this.auth = auth;
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(
                 this.installReference,
                 this.username,
                 ApplicationUtils.getApplicationDBPath(domain, this.username, appId)
         );
-        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
+        restoreFactory.setHqAuth(this.auth);
+        restoreFactory.setDomain(this.domain);
+        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreFactory, domain, auth);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
-        this.auth = auth;
         this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
     }
 
