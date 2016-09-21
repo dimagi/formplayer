@@ -82,7 +82,6 @@ public class FormSession {
         this.asUser = session.getAsUser();
         this.restoreXml = session.getRestoreXml();
         this.domain = session.getDomain();
-        System.out.println();
         this.sandbox = CaseAPIs.restoreIfNotExists(asUser != null ? asUser : username,
                 this.domain,
                 restoreXml);

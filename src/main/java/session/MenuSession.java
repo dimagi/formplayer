@@ -93,9 +93,9 @@ public class MenuSession {
 
         if (this.asUser != null) {
             restoreFactory.setUsername(this.asUser);
-            this.sandbox = CaseAPIs.restoreIfNotExists(this.asUser, restoreFactory, domain);
+            this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
         } else {
-            this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreFactory, domain);
+            this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
         }
 
         this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
@@ -133,9 +133,9 @@ public class MenuSession {
         restoreFactory.setDomain(this.domain);
         if (this.asUser != null) {
             restoreFactory.setUsername(this.asUser);
-            return CaseAPIs.restoreIfNotExists(this.asUser, restoreFactory, domain);
+            return CaseAPIs.restoreIfNotExists(restoreFactory);
         } else {
-            return CaseAPIs.restoreIfNotExists(this.username, restoreFactory, domain);
+            return CaseAPIs.restoreIfNotExists(restoreFactory);
         }
     }
 

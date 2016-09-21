@@ -30,6 +30,7 @@ public class DoubleManagementTest  extends BaseTestClass{
         super.setUp();
         when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/parent_child.xml"));
+        configureRestoreFactory("doublemgmtdomain", "doublemgmtusername");
     }
 
     @Test
