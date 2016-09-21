@@ -89,7 +89,7 @@ public class MenuSession {
         restoreFactory.setHqAuth(this.auth);
         restoreFactory.setDomain(this.domain);
 
-        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreFactory, domain, auth);
+        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreFactory, domain);
         this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
@@ -111,7 +111,7 @@ public class MenuSession {
         );
         restoreFactory.setHqAuth(this.auth);
         restoreFactory.setDomain(this.domain);
-        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreFactory, domain, auth);
+        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreFactory, domain);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);

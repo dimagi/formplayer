@@ -46,7 +46,7 @@ public class CaseAPIs {
     }
 
     public static UserSqlSandbox restoreIfNotExists(String username, RestoreFactory restoreFactory,
-                                                    String domain, HqAuth auth) throws Exception{
+                                                    String domain) throws Exception{
         File db = new File(SQLiteProperties.getDataDir() + domain + "/" + username + ".db");
         if(db.exists()){
             return new UserSqlSandbox(username, SQLiteProperties.getDataDir() + domain);
