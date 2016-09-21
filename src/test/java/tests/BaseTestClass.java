@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.FormSessionRepo;
@@ -46,6 +47,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Created by willpride on 2/3/16.
@@ -275,6 +277,38 @@ public class BaseTestClass {
                 RequestType.POST,
                 Constants.URL_QUESTIONS_FOR_INDEX,
                 questionsBean,
+                FormEntryResponseBean.class);
+    }
+
+    FormEntryResponseBean nextScreen(String sessionId) throws Exception {
+        SessionRequestBean questionsBean = new SessionRequestBean();
+        questionsBean.setSessionId(sessionId);
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(questionsBean);
+        MvcResult answerResult = this.mockFormController.perform(
+                post(urlPrepend(Constants.URL_NEXT_INDEX))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return mapper.readValue(answerResult.getResponse().getContentAsString(),
+                FormEntryResponseBean.class);
+    }
+
+    FormEntryResponseBean previousScreen(String sessionId) throws Exception {
+        SessionRequestBean questionsBean = new SessionRequestBean();
+        questionsBean.setSessionId(sessionId);
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(questionsBean);
+        MvcResult answerResult = this.mockFormController.perform(
+                post(urlPrepend(Constants.URL_PREV_INDEX))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return mapper.readValue(answerResult.getResponse().getContentAsString(),
                 FormEntryResponseBean.class);
     }
 

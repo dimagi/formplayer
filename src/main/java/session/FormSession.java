@@ -12,12 +12,14 @@ import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.form.api.FormEntryNavigator;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.FormInstanceLoader;
@@ -286,5 +288,21 @@ public class FormSession {
 
     public int getCurrentIndex() {
         return currentIndex;
+    }
+
+    public void stepToNextIndex() {
+        this.formEntryController.jumpToIndex(JsonActionUtils.indexFromString("" + currentIndex, formDef));
+        FormEntryNavigator formEntryNavigator = new FormEntryNavigator(formEntryController);
+        FormIndex newIndex = formEntryNavigator.getNextFormIndex(formEntryModel.getFormIndex(), true, true);
+        formEntryController.jumpToIndex(newIndex);
+        setCurrentIndex(Integer.parseInt(newIndex.toString()));
+    }
+
+    public void stepToPreviousIndex() {
+        this.formEntryController.jumpToIndex(JsonActionUtils.indexFromString("" + currentIndex, formDef));
+        FormEntryNavigator formEntryNavigator = new FormEntryNavigator(formEntryController);
+        FormIndex newIndex = formEntryNavigator.getPreviousFormIndex();
+        formEntryController.jumpToIndex(newIndex);
+        setCurrentIndex(Integer.parseInt(newIndex.toString()));
     }
 }

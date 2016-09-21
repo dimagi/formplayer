@@ -26,6 +26,8 @@ public class Constants {
     public static final String URL_PREVIEW_FORM = "preview_form";
     public static final String URL_DELETE_APPLICATION_DBS = "delete_application_dbs";
     public static final String URL_QUESTIONS_FOR_INDEX = "questions_for_index";
+    public static final String URL_NEXT_INDEX = "next_index";
+    public static final String URL_PREV_INDEX = "prev_index";
     //Menus
     public static final String MENU_MODULE = "modules";
     public static final String MENU_ENTITY = "entity";
