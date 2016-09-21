@@ -12,7 +12,7 @@ import java.util.Map;
  * Optionally contains instanceContent for form editing or incomplete forms
  */
 @JsonIgnoreProperties
-public class NewSessionRequestBean extends AuthenticatedRequestBean {
+public class NewSessionRequestBean extends AuthenticatedRequestBean implements AsUserBean{
     private String formUrl;
     private String lang;
     private Map<String, String> hqAuth;

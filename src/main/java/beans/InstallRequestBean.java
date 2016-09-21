@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 /**
  * Created by willpride on 2/4/16.
  */
-public class InstallRequestBean extends AuthenticatedRequestBean {
+public class InstallRequestBean extends AuthenticatedRequestBean implements AsUserBean {
     private String installReference;
     private String password;
     private String appId;

@@ -87,7 +87,17 @@ public class MenuSession {
                 this.username,
                 ApplicationUtils.getApplicationDBPath(this.domain, this.username, this.appId)
         );
-        this.sandbox = restoreGetSandbox(restoreFactory);
+
+        restoreFactory.setHqAuth(this.auth);
+        restoreFactory.setDomain(this.domain);
+
+        if (this.asUser != null) {
+            restoreFactory.setUsername(this.asUser);
+            this.sandbox = CaseAPIs.restoreIfNotExists(this.asUser, restoreFactory, domain);
+        } else {
+            this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreFactory, domain);
+        }
+
         this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
