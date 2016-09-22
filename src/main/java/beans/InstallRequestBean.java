@@ -11,6 +11,7 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
     private String password;
     private String appId;
     private String locale;
+    private boolean oneQuestionPerScreen;
 
     public String getInstallReference() {
         return installReference;
@@ -49,5 +50,13 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
 
     public void setLocale(String locale) {
         this.locale = locale;
+    }
+
+    public boolean getOneQuestionPerScreen() {
+        return oneQuestionPerScreen;
+    }
+
+    public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 }

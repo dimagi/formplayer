@@ -123,7 +123,7 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
             delete(session.getId());
         }
     }
-
+    // TODO WSP Write migration for this to have OQPS boolean after asUser is merger
     // helper class for mapping a db row to a serialized session
     private static final class SessionMapper implements RowMapper<SerializableMenuSession> {
 
@@ -134,7 +134,8 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
                     rs.getString("appid"),
                     rs.getString("installreference"),
                     rs.getString("locale"),
-                    (byte[]) rs.getObject("commcaresession"));
+                    (byte[]) rs.getObject("commcaresession"),
+                    false);
         }
     }
 
