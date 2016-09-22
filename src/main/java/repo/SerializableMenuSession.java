@@ -14,6 +14,7 @@ public class SerializableMenuSession {
     private String installReference;
     private String locale;
     private byte[] commcareSession;
+    private boolean oneQuestionPerScreen;
 
     public SerializableMenuSession(){}
 
@@ -25,11 +26,13 @@ public class SerializableMenuSession {
         this.installReference = session.getInstallReference();
         this.locale = session.getLocale();
         this.commcareSession = session.getCommcareSession();
+        this.oneQuestionPerScreen = session.isOneQuestionPerScreen();
 
     }
 
     public SerializableMenuSession(String id, String username, String domain, String appId,
-                                   String installReference, String locale, byte[] commcareSession){
+                                   String installReference, String locale, byte[] commcareSession,
+                                   boolean oneQuestionPerScreen){
         this.uuid = id;
         this.username = username;
         this.domain = domain;
@@ -37,6 +40,7 @@ public class SerializableMenuSession {
         this.installReference = installReference;
         this.locale = locale;
         this.commcareSession = commcareSession;
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 
     public String getId() {
@@ -99,5 +103,13 @@ public class SerializableMenuSession {
     public String toString(){
         return "SerializedMenuSesison id=" + uuid + ", username=" + username +", domain=" + domain
                 + ", ref=" + installReference +", appId=" + appId;
+    }
+
+    public boolean getOneQuestionPerScreen() {
+        return oneQuestionPerScreen;
+    }
+
+    public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 }
