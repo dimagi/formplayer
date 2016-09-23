@@ -10,7 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Created by willpride on 9/21/16.
+ * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
+ * then retrieves and returns the restore XML.
  */
 public class RestoreFactory {
     @Value("${commcarehq.host}")
@@ -25,6 +26,12 @@ public class RestoreFactory {
 
 
     public String getRestoreXml() {
+        if (domain == null || (username == null && asUsername == null)) {
+            throw new RuntimeException("Domain and one of username or asUsername must be non-null. " +
+                    " Domain: " + domain +
+                    ", username: " + username +
+                    ", asUsername: " + asUsername);
+        }
         String restoreUrl;
         if (asUsername == null) {
             restoreUrl = getRestoreUrl(host, domain);
