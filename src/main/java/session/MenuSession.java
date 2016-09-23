@@ -69,6 +69,7 @@ public class MenuSession {
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
     private HqAuth auth;
+    private boolean oneQuestionPerScreen;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreService restoreService, HqAuth auth, String host) throws Exception {
@@ -95,7 +96,8 @@ public class MenuSession {
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
-                       InstallService installService, RestoreService restoreService, HqAuth auth, String host) throws Exception {
+                       InstallService installService, RestoreService restoreService, HqAuth auth, String host,
+                       boolean oneQuestionPerScreen) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
         resolveInstallReference(installReference, appId, host);
@@ -112,6 +114,7 @@ public class MenuSession {
         this.uuid = UUID.randomUUID().toString();
         this.auth = auth;
         this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 
     private void resolveInstallReference(String installReference, String appId, String host){
@@ -224,7 +227,7 @@ public class MenuSession {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale, uuid, null, false);
+        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale, uuid, null, oneQuestionPerScreen);
     }
 
     private byte[] serializeSession(CommCareSession session){
@@ -290,5 +293,13 @@ public class MenuSession {
 
     public void updateScreen() throws CommCareSessionException {
         this.screen = getNextScreen();
+    }
+
+    public boolean isOneQuestionPerScreen() {
+        return oneQuestionPerScreen;
+    }
+
+    public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 }
