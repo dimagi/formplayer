@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
+import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
@@ -216,7 +217,8 @@ public abstract class AbstractBaseController {
             XPathException.class,
             CommCareInstanceInitializer.FixtureInitializationException.class,
             CommCareSessionException.class,
-            FormNotFoundException.class})
+            FormNotFoundException.class,
+            RecordTooLargeException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
