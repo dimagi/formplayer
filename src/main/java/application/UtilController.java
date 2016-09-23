@@ -54,7 +54,7 @@ public class UtilController extends AbstractBaseController {
         syncRequest.setRestoreService(restoreService);
         syncRequest.setHqAuth(new DjangoAuth(authToken));
         String restoreXml = syncRequest.getRestoreXml();
-        CaseAPIs.forceRestore(syncRequest.getUsername(), syncRequest.getDomain(), restoreXml);
+        CaseAPIs.forceRestore(TableBuilder.scrubName(syncRequest.getUsername()), syncRequest.getDomain(), restoreXml);
         return new SyncDbResponseBean();
     }
 
