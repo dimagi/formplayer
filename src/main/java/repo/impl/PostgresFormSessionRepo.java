@@ -72,10 +72,11 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
 
         if(sessionCount > 0){
-            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, sequenceId = ? WHERE id = ?");
+            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, " +
+                    "sequenceId = ?, currentIndex = ? WHERE id = ?");
             this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
-                    sessionDataBytes, session.getSequenceId(), session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR});
+                    sessionDataBytes, session.getSequenceId(), session.getCurrentIndex(), session.getId()},
+                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.INTEGER, Types.VARCHAR});
             return session;
         }
 
