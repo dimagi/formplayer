@@ -50,7 +50,6 @@ public class FormSession {
     private FormDef formDef;
     private FormEntryModel formEntryModel;
     private FormEntryController formEntryController;
-    private String formXml;
     private String restoreXml;
     private UserSandbox sandbox;
     private int sequenceId;
@@ -76,7 +75,6 @@ public class FormSession {
 
 
     public FormSession(SerializableFormSession session) throws Exception{
-        this.formXml = session.getFormXml();
         this.username = session.getUsername();
         this.restoreXml = session.getRestoreXml();
         this.domain = session.getDomain();
