@@ -1,7 +1,11 @@
 package repo.impl;
 
+import exceptions.FormNotFoundException;
+import exceptions.MenuNotFoundException;
+import objects.SerializableFormSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -123,6 +127,16 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
             delete(session.getId());
         }
     }
+
+    @Override
+    public SerializableMenuSession findOneWrapped(String id) throws MenuNotFoundException {
+        try {
+            return findOne(id);
+        } catch(EmptyResultDataAccessException e) {
+            throw new MenuNotFoundException(id);
+        }
+    }
+
     // TODO WSP Write migration for this to have OQPS boolean after asUser is merger
     // helper class for mapping a db row to a serialized session
     private static final class SessionMapper implements RowMapper<SerializableMenuSession> {

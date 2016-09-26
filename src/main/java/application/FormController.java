@@ -171,7 +171,7 @@ public class FormController extends AbstractBaseController{
                 }
                 if (formEntrySession.getMenuSessionId() != null &&
                         !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                    Object nav = doEndOfFormNav(menuSessionRepo.findOne(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
+                    Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
                     if (nav != null) {
                         submitResponseBean.setNextScreen(nav);
                     }
