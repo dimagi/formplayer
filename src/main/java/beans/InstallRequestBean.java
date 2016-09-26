@@ -12,6 +12,7 @@ public class InstallRequestBean extends AuthenticatedRequestBean implements AsUs
     private String appId;
     private String locale;
     private String asUser;
+    private boolean oneQuestionPerScreen;
 
     public String getInstallReference() {
         return installReference;
@@ -41,7 +42,8 @@ public class InstallRequestBean extends AuthenticatedRequestBean implements AsUs
 
     public String toString() {
         return "InstallRequestBean: [installReference=" + installReference +
-                ", username=" + username + ", domain=" + domain + ", appId=" + appId + "]";
+                ", username=" + username + ", domain=" + domain + ", appId=" + appId +
+                ", oneQuestionPerScreen: " + oneQuestionPerScreen + "]";
     }
 
     public String getLocale() {
@@ -58,5 +60,13 @@ public class InstallRequestBean extends AuthenticatedRequestBean implements AsUs
 
     public void setAsUser(String asUser) {
         this.asUser = asUser;
+    }
+
+    public boolean getOneQuestionPerScreen() {
+        return oneQuestionPerScreen;
+    }
+
+    public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 }

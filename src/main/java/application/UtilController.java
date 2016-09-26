@@ -52,7 +52,6 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("SyncDb Request: " + syncRequest);
         configureRestoreFactory(syncRequest, new DjangoAuth(authToken));
         CaseAPIs.forceRestore(restoreFactory);
         return new SyncDbResponseBean();
