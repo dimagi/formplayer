@@ -70,6 +70,7 @@ public class MenuSession {
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
     private HqAuth auth;
+    private boolean oneQuestionPerScreen;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, HqAuth auth, String host) throws Exception {
@@ -100,7 +101,7 @@ public class MenuSession {
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
                        InstallService installService, RestoreFactory restoreFactory, HqAuth auth, String host,
-                       String asUser) throws Exception {
+                       boolean oneQuestionPerScreen, String asUser) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
         this.auth = auth;
@@ -118,6 +119,7 @@ public class MenuSession {
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
         this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 
     private void resolveInstallReference(String installReference, String appId, String host){
@@ -232,7 +234,7 @@ public class MenuSession {
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
-                null, false, asUser);
+                null, oneQuestionPerScreen, asUser);
     }
 
     private byte[] serializeSession(CommCareSession session){
@@ -306,5 +308,13 @@ public class MenuSession {
 
     public void setAsUser(String asUser) {
         this.asUser = asUser;
+    }
+
+    public boolean isOneQuestionPerScreen() {
+        return oneQuestionPerScreen;
+    }
+
+    public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 }

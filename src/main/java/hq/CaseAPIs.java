@@ -10,6 +10,7 @@ import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.sandbox.SandboxUtils;
+import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.parse.ParseUtilsHelper;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
@@ -33,7 +34,7 @@ public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
         String domain = restoreFactory.getDomain();
-        String username = restoreFactory.getUsername();
+        String username = TableBuilder.scrubName(restoreFactory.getUsername());
         String xml = restoreFactory.getRestoreXml();
         new File(SQLiteProperties.getDataDir() + domain + "/" + username + ".db").delete();
         return restoreIfNotExists(username, domain, xml);
