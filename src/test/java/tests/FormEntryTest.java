@@ -77,7 +77,7 @@ public class FormEntryTest extends BaseTestClass{
         FormEntryResponseBean formEntryResponseBean = getCurrent(sessionId);
 
         //Test Get Instance
-        GetInstanceResponseBean getInstanceResponseBean = getInstance(sessionId);
+        InstanceXmlBean instanceXmlBean = getInstance(sessionId);
 
         //Test Evaluate XPath
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/q_text");
