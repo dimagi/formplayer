@@ -288,6 +288,8 @@ public class FormSession {
         return currentIndex;
     }
 
+    public FormDef getFormDef() { return formDef; }
+
     public void stepToNextIndex() {
         this.formEntryController.jumpToIndex(JsonActionUtils.indexFromString("" + currentIndex, formDef));
         FormEntryNavigator formEntryNavigator = new FormEntryNavigator(formEntryController);
