@@ -3,7 +3,7 @@ package beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 /**
- * Created by benrudolph on 9/26/16.
+ * This is the base response for an exception that occurs in Formplayer.
  */
 public abstract class BaseExceptionResponseBean {
     protected String exception;
