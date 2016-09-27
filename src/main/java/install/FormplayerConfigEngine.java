@@ -3,7 +3,9 @@
  */
 package install;
 
+import application.Application;
 import exceptions.ApplicationConfigException;
+import exceptions.FormattedApplicationConfigException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -160,6 +162,9 @@ public class FormplayerConfigEngine {
         }
         String errorMessage = writer.toString();
         JSONObject errorJson = new JSONObject(errorMessage);
+        if (errorJson.has("error_html")) {
+            throw new FormattedApplicationConfigException(errorJson.getString("error_html"));
+        }
         throw new ApplicationConfigException(errorJson.getJSONArray("errors").join(" "));
     }
 

@@ -1,6 +1,7 @@
 package application;
 
 import beans.ExceptionResponseBean;
+import beans.HTMLExceptionResponseBean;
 import beans.NewFormResponse;
 import beans.menus.*;
 import exceptions.ApplicationConfigException;
@@ -230,10 +231,10 @@ public abstract class AbstractBaseController {
      */
     @ExceptionHandler({FormattedApplicationConfigException.class})
     @ResponseBody
-    public ExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
+    public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
 
-        return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+        return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
     @ExceptionHandler(Exception.class)
