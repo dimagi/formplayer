@@ -36,6 +36,11 @@ public class Constants {
     public static final String ANSWER_RESPONSE_STATUS_POSITIVE = "accepted";
     public static final String ANSWER_RESPONSE_STATUS_NEGATIVE = "validation-error";
     public static final String SYNC_RESPONSE_STATUS_POSITIVE = "success";
+
+    // Error return types
+    public static final String ERROR_TYPE_TEXT = "text";
+    public static final String ERROR_TYPE_HTML = "html";
+
     //JSON
     public static final String QUESTION_TREE_KEY = "tree";
 
