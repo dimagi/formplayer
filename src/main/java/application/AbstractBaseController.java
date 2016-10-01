@@ -1,10 +1,12 @@
 package application;
 
 import beans.ExceptionResponseBean;
+import beans.HTMLExceptionResponseBean;
 import beans.NewFormResponse;
 import beans.menus.*;
 import exceptions.ApplicationConfigException;
 import exceptions.FormNotFoundException;
+import exceptions.FormattedApplicationConfigException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -224,6 +226,17 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
 
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+    }
+
+    /**
+     * Catch exceptions that have formatted HTML errors
+     */
+    @ExceptionHandler({FormattedApplicationConfigException.class})
+    @ResponseBody
+    public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
+        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+
+        return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
     @ExceptionHandler(Exception.class)
