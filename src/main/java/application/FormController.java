@@ -102,6 +102,7 @@ public class FormController extends AbstractBaseController{
             FormSession formEntrySession = new FormSession(session);
             JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                     answerQuestionBean.getFormIndex());
+            updateSession(formEntrySession, session);
             FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
             responseBean.setTitle(formEntrySession.getTitle());
             responseBean.setSequenceId(formEntrySession.getSequenceId());
