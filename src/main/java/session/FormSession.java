@@ -24,6 +24,7 @@ import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import util.PrototypeUtils;
 
@@ -73,6 +74,14 @@ public class FormSession {
         initLocale();
     }
 
+    private void setupOneQuestionPerScreen() {
+        formEntryController.setOneQuestionPerScreen(oneQuestionPerScreen);
+        if (oneQuestionPerScreen) {
+            formEntryController.setCurrentIndex(JsonActionUtils.indexFromString(
+                    "" + currentIndex, formDef));
+        }
+    }
+
 
     public FormSession(SerializableFormSession session) throws Exception{
         this.username = session.getUsername();
@@ -93,6 +102,7 @@ public class FormSession {
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
         setupJavaRosaObjects();
         initialize(false, session.getSessionData());
+        setupOneQuestionPerScreen();
     }
 
     // New FormSession constructor
@@ -120,6 +130,7 @@ public class FormSession {
         } else {
             initialize(true, sessionData);
         }
+        setupOneQuestionPerScreen();
     }
 
     private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
@@ -304,5 +315,13 @@ public class FormSession {
         FormIndex newIndex = formEntryNavigator.getPreviousFormIndex();
         formEntryController.jumpToIndex(newIndex);
         setCurrentIndex(Integer.parseInt(newIndex.toString()));
+    }
+
+    public JSONObject answerQuestionToJSON(Object answer, String formIndex) {
+        JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntryController,
+                formEntryModel,
+                answer != null ? answer.toString() : null,
+                formIndex);
+        return resp;
     }
 }
