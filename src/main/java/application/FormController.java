@@ -100,9 +100,7 @@ public class FormController extends AbstractBaseController{
         Lock lock = getLockAndBlock(session.getUsername());
         try {
             FormSession formEntrySession = new FormSession(session);
-            JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntrySession.getFormEntryController(),
-                    formEntrySession.getFormEntryModel(),
-                    answerQuestionBean.getAnswer() != null ? answerQuestionBean.getAnswer().toString() : null,
+            JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                     answerQuestionBean.getFormIndex());
             updateSession(formEntrySession, session);
             FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
