@@ -146,9 +146,17 @@ public class FormController extends AbstractBaseController{
 
             log.info("Submitting form entry session has menuId: " + formEntrySession.getMenuSessionId());
 
-            SubmitResponseBean submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
+            SubmitResponseBean submitResponseBean;
+
+            if (serializableFormSession.getOneQuestionPerScreen()) {
+                // todo separate workflow for one question per screen
+                submitResponseBean = new SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
+            } else {
+                submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                     formEntrySession.getFormEntryModel(),
                     submitRequestBean.getAnswers());
+            }
+
 
             if (!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
                     || !submitRequestBean.isPrevalidated()) {
