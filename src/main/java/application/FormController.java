@@ -349,7 +349,9 @@ public class FormController extends AbstractBaseController{
                     formSession.getFormEntryModel(),
                     formSession.getCurrentIndex());
             updateSession(formSession, serializableFormSession);
-            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+            FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
+            responseBean.setIsAtLastIndex(formSession.getIsAtLastIndex());
+            responseBean.setCurrentIndex(formSession.getCurrentIndex());
             log.info("Next index response: " + responseBean);
             return responseBean;
         } finally {
@@ -371,8 +373,9 @@ public class FormController extends AbstractBaseController{
                     formSession.getFormEntryModel(),
                     formSession.getCurrentIndex());
             updateSession(formSession, serializableFormSession);
-            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+            FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
             log.info("Previous index response " + responseBean);
+            responseBean.setCurrentIndex(formSession.getCurrentIndex());
             return responseBean;
         } finally {
             lock.unlock();
