@@ -338,7 +338,7 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Get the questions for the next index in OQPS mode")
     @RequestMapping(value = Constants.URL_NEXT_INDEX, method = RequestMethod.POST)
     @ResponseBody
-    public FormEntryResponseBean getNext(@RequestBody SessionRequestBean requestBean) throws Exception {
+    public FormEntryNavigationResponseBean getNext(@RequestBody SessionRequestBean requestBean) throws Exception {
         log.info("Get next questions for: " + requestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
         Lock lock = getLockAndBlock(serializableFormSession.getUsername());
@@ -352,7 +352,6 @@ public class FormController extends AbstractBaseController{
             FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
             responseBean.setIsAtLastIndex(formSession.getIsAtLastIndex());
             responseBean.setCurrentIndex(formSession.getCurrentIndex());
-            log.info("Next index response: " + responseBean);
             return responseBean;
         } finally {
             lock.unlock();
@@ -362,7 +361,7 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Get the questios for the previous index in OQPS mode")
     @RequestMapping(value = Constants.URL_PREV_INDEX, method = RequestMethod.POST)
     @ResponseBody
-    public FormEntryResponseBean getPrevious(@RequestBody SessionRequestBean requestBean) throws Exception {
+    public FormEntryNavigationResponseBean getPrevious(@RequestBody SessionRequestBean requestBean) throws Exception {
         log.info("Get previous questions for: " + requestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
         Lock lock = getLockAndBlock(serializableFormSession.getUsername());
@@ -374,7 +373,6 @@ public class FormController extends AbstractBaseController{
                     formSession.getCurrentIndex());
             updateSession(formSession, serializableFormSession);
             FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
-            log.info("Previous index response " + responseBean);
             responseBean.setCurrentIndex(formSession.getCurrentIndex());
             return responseBean;
         } finally {
