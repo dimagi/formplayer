@@ -93,7 +93,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 session.getOneQuestionPerScreen(), session.getCurrentIndex()}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN, Types.INTEGER});
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN, Types.VARCHAR});
         return session;
     }
 
@@ -185,7 +185,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setTitle(rs.getString("title"));
             session.setDateOpened(rs.getString("dateOpened"));
             session.setOneQuestionPerScreen(rs.getBoolean("oneQuestionPerScreen"));
-            session.setCurrentIndex(rs.getInt("currentIndex"));
+            session.setCurrentIndex(rs.getString("currentIndex"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if(st != null) {
