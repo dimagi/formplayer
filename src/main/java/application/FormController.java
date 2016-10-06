@@ -345,13 +345,9 @@ public class FormController extends AbstractBaseController{
         try {
             FormSession formSession = new FormSession(serializableFormSession);
             formSession.stepToNextIndex();
-            JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
-                    formSession.getFormEntryModel(),
-                    formSession.getCurrentIndex());
+            JSONObject resp = formSession.getNextJson();
             updateSession(formSession, serializableFormSession);
             FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
-            responseBean.setIsAtLastIndex(formSession.getIsAtLastIndex());
-            responseBean.setCurrentIndex(formSession.getCurrentIndex());
             return responseBean;
         } finally {
             lock.unlock();
