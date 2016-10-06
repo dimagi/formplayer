@@ -337,4 +337,12 @@ public class FormSession {
                 formIndex);
         return resp;
     }
+
+    public JSONObject getNextJson() {
+        JSONObject resp = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel, currentIndex);
+        resp.put("isAtLastIndex", isAtLastIndex);
+        resp.put("currentIndex", currentIndex);
+        resp.put("title", title);
+        return resp;
+    }
 }
