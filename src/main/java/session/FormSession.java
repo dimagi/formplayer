@@ -65,6 +65,7 @@ public class FormSession {
     private String menuSessionId;
     private boolean oneQuestionPerScreen;
     private int currentIndex = -1;
+    private boolean isAtLastIndex = false;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -299,6 +300,14 @@ public class FormSession {
         return currentIndex;
     }
 
+    public void setIsAtLastIndex(boolean isAtLastIndex) {
+        this.isAtLastIndex = isAtLastIndex;
+    }
+
+    public boolean getIsAtLastIndex() {
+        return isAtLastIndex;
+    }
+
     public FormDef getFormDef() { return formDef; }
 
     public void stepToNextIndex() {
@@ -306,7 +315,11 @@ public class FormSession {
         FormEntryNavigator formEntryNavigator = new FormEntryNavigator(formEntryController);
         FormIndex newIndex = formEntryNavigator.getNextFormIndex(formEntryModel.getFormIndex(), true, true);
         formEntryController.jumpToIndex(newIndex);
-        setCurrentIndex(Integer.parseInt(newIndex.toString()));
+        boolean isEndOfForm = newIndex.isEndOfFormIndex();
+        setIsAtLastIndex(isEndOfForm);
+        if (!isEndOfForm) {
+            setCurrentIndex(Integer.parseInt(newIndex.toString()));
+        }
     }
 
     public void stepToPreviousIndex() {
@@ -322,6 +335,14 @@ public class FormSession {
                 formEntryModel,
                 answer != null ? answer.toString() : null,
                 formIndex);
+        return resp;
+    }
+
+    public JSONObject getNextJson() {
+        JSONObject resp = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel, currentIndex);
+        resp.put("isAtLastIndex", isAtLastIndex);
+        resp.put("currentIndex", currentIndex);
+        resp.put("title", title);
         return resp;
     }
 }

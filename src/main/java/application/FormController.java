@@ -146,9 +146,17 @@ public class FormController extends AbstractBaseController{
 
             log.info("Submitting form entry session has menuId: " + formEntrySession.getMenuSessionId());
 
-            SubmitResponseBean submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
+            SubmitResponseBean submitResponseBean;
+
+            if (serializableFormSession.getOneQuestionPerScreen()) {
+                // todo separate workflow for one question per screen
+                submitResponseBean = new SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
+            } else {
+                submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                     formEntrySession.getFormEntryModel(),
                     submitRequestBean.getAnswers());
+            }
+
 
             if (!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
                     || !submitRequestBean.isPrevalidated()) {
@@ -330,19 +338,16 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Get the questions for the next index in OQPS mode")
     @RequestMapping(value = Constants.URL_NEXT_INDEX, method = RequestMethod.POST)
     @ResponseBody
-    public FormEntryResponseBean getNext(@RequestBody SessionRequestBean requestBean) throws Exception {
+    public FormEntryNavigationResponseBean getNext(@RequestBody SessionRequestBean requestBean) throws Exception {
         log.info("Get next questions for: " + requestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
         Lock lock = getLockAndBlock(serializableFormSession.getUsername());
         try {
             FormSession formSession = new FormSession(serializableFormSession);
             formSession.stepToNextIndex();
-            JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
-                    formSession.getFormEntryModel(),
-                    formSession.getCurrentIndex());
+            JSONObject resp = formSession.getNextJson();
             updateSession(formSession, serializableFormSession);
-            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
-            log.info("Next index response: " + responseBean);
+            FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
             return responseBean;
         } finally {
             lock.unlock();
@@ -352,7 +357,7 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Get the questios for the previous index in OQPS mode")
     @RequestMapping(value = Constants.URL_PREV_INDEX, method = RequestMethod.POST)
     @ResponseBody
-    public FormEntryResponseBean getPrevious(@RequestBody SessionRequestBean requestBean) throws Exception {
+    public FormEntryNavigationResponseBean getPrevious(@RequestBody SessionRequestBean requestBean) throws Exception {
         log.info("Get previous questions for: " + requestBean);
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
         Lock lock = getLockAndBlock(serializableFormSession.getUsername());
@@ -363,8 +368,8 @@ public class FormController extends AbstractBaseController{
                     formSession.getFormEntryModel(),
                     formSession.getCurrentIndex());
             updateSession(formSession, serializableFormSession);
-            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
-            log.info("Previous index response " + responseBean);
+            FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
+            responseBean.setCurrentIndex(formSession.getCurrentIndex());
             return responseBean;
         } finally {
             lock.unlock();
