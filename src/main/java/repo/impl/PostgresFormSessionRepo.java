@@ -76,7 +76,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                     "sequenceId = ?, currentIndex = ? WHERE id = ?");
             this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
                     sessionDataBytes, session.getSequenceId(), session.getCurrentIndex(), session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.INTEGER, Types.VARCHAR});
+                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR});
             return session;
         }
 
