@@ -13,6 +13,8 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
+import org.javarosa.core.model.GroupDef;
+import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
@@ -312,18 +314,39 @@ public class FormSession {
         this.formEntryController.jumpToIndex(JsonActionUtils.indexFromString(currentIndex, formDef));
         FormEntryNavigator formEntryNavigator = new FormEntryNavigator(formEntryController);
         FormIndex newIndex = formEntryNavigator.getNextFormIndex(formEntryModel.getFormIndex(), true, true);
+
+        // check if this index is the beginning of a group that is not a question list.
+        IFormElement element = formEntryController.getModel().getForm().getChild(newIndex);
+        while (element instanceof GroupDef && !formEntryController.isFieldListHost(newIndex)) {
+            log.info("step thru group");
+            newIndex =  formEntryNavigator.getNextFormIndex(newIndex, false, true);
+            element = formEntryController.getModel().getForm().getChild(newIndex);
+        }
+
         formEntryController.jumpToIndex(newIndex);
+
         boolean isEndOfForm = newIndex.isEndOfFormIndex();
         setIsAtLastIndex(isEndOfForm);
+
         if (!isEndOfForm) {
             setCurrentIndex(newIndex.toString());
         }
+
     }
 
     public void stepToPreviousIndex() {
         this.formEntryController.jumpToIndex(JsonActionUtils.indexFromString(currentIndex, formDef));
         FormEntryNavigator formEntryNavigator = new FormEntryNavigator(formEntryController);
         FormIndex newIndex = formEntryNavigator.getPreviousFormIndex();
+
+        // check if this index is the beginning of a group that is not a question list.
+        IFormElement element = formEntryController.getModel().getForm().getChild(newIndex);
+        while (element instanceof GroupDef && !formEntryController.isFieldListHost(newIndex)) {
+            log.info("step back group");
+            newIndex =  formEntryNavigator.getPreviousFormIndex();
+            element = formEntryController.getModel().getForm().getChild(newIndex);
+        }
+
         formEntryController.jumpToIndex(newIndex);
         setCurrentIndex(newIndex.toString());
     }
