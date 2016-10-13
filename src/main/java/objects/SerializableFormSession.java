@@ -25,7 +25,7 @@ public class SerializableFormSession implements Serializable{
     private String title;
     private String dateOpened;
     private boolean oneQuestionPerScreen;
-    private String currentIndex = "0";
+    private String currentIndex = "-1";
 
     public String getInstanceXml() {
         return instanceXml;
