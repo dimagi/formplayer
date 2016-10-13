@@ -1,5 +1,6 @@
-package beans;
+package beans.exceptions;
 
+import beans.exceptions.BaseExceptionResponseBean;
 import util.Constants;
 
 /**

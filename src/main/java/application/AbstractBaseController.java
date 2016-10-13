@@ -1,7 +1,7 @@
 package application;
 
-import beans.ExceptionResponseBean;
-import beans.HTMLExceptionResponseBean;
+import beans.exceptions.ExceptionResponseBean;
+import beans.exceptions.HTMLExceptionResponseBean;
 import beans.NewFormResponse;
 import beans.menus.*;
 import exceptions.ApplicationConfigException;
