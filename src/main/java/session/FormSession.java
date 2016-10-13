@@ -342,7 +342,6 @@ public class FormSession {
         // check if this index is the beginning of a group that is not a question list.
         IFormElement element = formEntryController.getModel().getForm().getChild(newIndex);
         while (element instanceof GroupDef && !formEntryController.isFieldListHost(newIndex)) {
-            log.info("step back group");
             newIndex =  formEntryNavigator.getPreviousFormIndex();
             element = formEntryController.getModel().getForm().getChild(newIndex);
         }
