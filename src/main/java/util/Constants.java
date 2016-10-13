@@ -41,6 +41,10 @@ public class Constants {
     public static final String ERROR_TYPE_TEXT = "text";
     public static final String ERROR_TYPE_HTML = "html";
 
+    // Error status types
+    public static final String ERROR_STATUS = "error";
+    public static final String RETRY_STATUS = "retry";
+
     //JSON
     public static final String QUESTION_TREE_KEY = "tree";
 
