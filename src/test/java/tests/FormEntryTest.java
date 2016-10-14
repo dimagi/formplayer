@@ -145,10 +145,10 @@ public class FormEntryTest extends BaseTestClass{
 
         assert newSessionResponse.getTree().length == 1;
 
-        FormEntryResponseBean response1 = jumpToIndex(1, sessionId);
+        FormEntryResponseBean response1 = jumpToIndex("1", sessionId);
         assert response1.getTree().length == 1;
 
-        FormEntryResponseBean response2 = jumpToIndex(2, sessionId);
+        FormEntryResponseBean response2 = jumpToIndex("2", sessionId);
         assert response2.getTree().length == 3;
 
     }
@@ -165,13 +165,13 @@ public class FormEntryTest extends BaseTestClass{
 
         assert newFormResponse.getTree().length == 1;
 
-        FormEntryResponseBean response1 = nextScreen(sessionId);
+        FormEntryNavigationResponseBean response1 = nextScreen(sessionId);
         assert response1.getTree().length == 1;
 
-        FormEntryResponseBean response2 = nextScreen(sessionId);
+        FormEntryNavigationResponseBean response2 = nextScreen(sessionId);
         assert response2.getTree().length == 3;
 
-        FormEntryResponseBean response3 = previousScreen(sessionId);
+        FormEntryNavigationResponseBean response3 = previousScreen(sessionId);
         assert response3.getTree().length == 1;
 
     }
