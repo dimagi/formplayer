@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tomcat.util.modeler.NotificationInfo;
 import org.commcare.api.json.JsonActionUtils;
 import org.commcare.api.process.FormRecordProcessorHelper;
 import org.commcare.api.util.ApiConstants;
@@ -91,6 +92,21 @@ public class FormController extends AbstractBaseController{
             lock.unlock();
         }
     }
+
+    @ApiOperation(value = "Delete an incomplete form session")
+    @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
+    public NotificationMessageBean deleteIncompleteForm(
+            @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        Lock lock = getLockAndBlock(incompleteSessionRequestBean.getUsername());
+        try {
+            formSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
+            return new NotificationMessageBean("Successfully deleted incomplete form.", false);
+        } finally {
+            lock.unlock();
+        }
+    }
+
 
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
