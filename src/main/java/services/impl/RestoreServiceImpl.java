@@ -42,12 +42,14 @@ public class RestoreServiceImpl implements RestoreService {
         RestTemplate restTemplate = new RestTemplate();
         log.info("Restoring at domain: " + domain + " with auth: " + auth);
         HttpHeaders headers = auth.getAuthHeaders();
-        headers.add("X_OPENROSA_VERSION", "2.0");
+        headers.add("x-openrosa-version",  "2.0");
 
-        ResponseEntity<String> response =
-                restTemplate.exchange(getRestoreUrl(domain),
-                        HttpMethod.GET,
-                        new HttpEntity<String>(auth.getAuthHeaders()), String.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                getRestoreUrl(domain),
+                HttpMethod.GET,
+                new HttpEntity<String>(headers),
+                String.class
+        );
         if (response.getStatusCode().value() == 202) {
             handleAsyncRestoreResponse(response.getBody());
         }
