@@ -93,7 +93,7 @@ public class FormController extends AbstractBaseController{
         }
     }
 
-    @ApiOperation(value = "Open an incomplete form session")
+    @ApiOperation(value = "Delete an incomplete form session")
     @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
     public NotificationMessageBean deleteIncompleteForm(
             @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
