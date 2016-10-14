@@ -271,7 +271,7 @@ public class BaseTestClass {
         return "/" + string;
     }
 
-    FormEntryResponseBean jumpToIndex(int index, String sessionId) throws Exception {
+    FormEntryResponseBean jumpToIndex(String index, String sessionId) throws Exception {
         JumpToIndexRequestBean questionsBean = new JumpToIndexRequestBean(index, sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
@@ -280,7 +280,7 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
-    FormEntryResponseBean nextScreen(String sessionId) throws Exception {
+  FormEntryNavigationResponseBean nextScreen(String sessionId) throws Exception {
         SessionRequestBean questionsBean = new SessionRequestBean();
         questionsBean.setSessionId(sessionId);
         ObjectMapper mapper = new ObjectMapper();
@@ -293,10 +293,10 @@ public class BaseTestClass {
                 .andReturn();
 
         return mapper.readValue(answerResult.getResponse().getContentAsString(),
-                FormEntryResponseBean.class);
+            FormEntryNavigationResponseBean.class);
     }
 
-    FormEntryResponseBean previousScreen(String sessionId) throws Exception {
+  FormEntryNavigationResponseBean previousScreen(String sessionId) throws Exception {
         SessionRequestBean questionsBean = new SessionRequestBean();
         questionsBean.setSessionId(sessionId);
         ObjectMapper mapper = new ObjectMapper();
@@ -309,7 +309,7 @@ public class BaseTestClass {
                 .andReturn();
 
         return mapper.readValue(answerResult.getResponse().getContentAsString(),
-                FormEntryResponseBean.class);
+            FormEntryNavigationResponseBean.class);
     }
 
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
