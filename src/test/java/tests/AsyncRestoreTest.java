@@ -37,7 +37,7 @@ public class AsyncRestoreTest {
             Assert.assertEquals(23311, e.getTotal());
             Assert.assertEquals(30, e.getRetryAfter());
             Assert.assertEquals("Asynchronous restore under way for large_caseload", e.getMessage());
-            failure = false;
+            failure = true;
         }
         Assert.assertTrue(failure);
     }
