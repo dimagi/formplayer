@@ -21,7 +21,7 @@ public class FormplayerDateUtils {
             return null;
         }
         TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat dfTo = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        DateFormat dfTo = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         dfTo.setTimeZone(tz);
         return dfTo.format(result);
     }
