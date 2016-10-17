@@ -1,5 +1,6 @@
 package session;
 
+import beans.CaseBean;
 import hq.CaseAPIs;
 import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
@@ -8,6 +9,8 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.cases.model.Case;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
@@ -56,6 +59,7 @@ public class FormSession {
     private String restoreXml;
     private UserSandbox sandbox;
     private int sequenceId;
+    private String dateOpened;
     private String locale;
     private Map<String, String> sessionData;
     private String postUrl;
@@ -97,6 +101,7 @@ public class FormSession {
         this.uuid = session.getId();
         this.sequenceId = session.getSequenceId();
         this.menuSessionId = session.getMenuSessionId();
+        this.dateOpened = session.getDateOpened();
         PrototypeUtils.setupPrototypes();
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
@@ -364,5 +369,22 @@ public class FormSession {
         resp.put("currentIndex", currentIndex);
         resp.put("title", title);
         return resp;
+    }
+
+    public String getDateOpened() {
+        return dateOpened;
+    }
+
+    public void setDateOpened(String dateOpened) {
+        this.dateOpened = dateOpened;
+    }
+
+    public String getCaseName() {
+        String caseId = this.getSessionData().get("case_id");
+        if (caseId == null) {
+            return null;
+        }
+        CaseBean caseBean = CaseAPIs.getFullCase(caseId, (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
+        return (String) caseBean.getProperties().get("case_name");
     }
 }
