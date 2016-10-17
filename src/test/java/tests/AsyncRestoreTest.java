@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import services.impl.RestoreServiceImpl;
@@ -26,11 +27,13 @@ public class AsyncRestoreTest {
         boolean failure = false;
         RestoreServiceImpl restoreService = new RestoreServiceImpl();
         String asyncResponse = FileUtils.getFile(this.getClass(), "restores/async_restore_response.xml");
-        Method method = restoreService.getClass().getDeclaredMethod("handleAsyncRestoreResponse", String.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Retry-After", "30");
+        Method method = restoreService.getClass().getDeclaredMethod("handleAsyncRestoreResponse", String.class, HttpHeaders.class);
         method.setAccessible(true);
 
         try {
-            method.invoke(restoreService, asyncResponse);
+            method.invoke(restoreService, asyncResponse, headers);
         } catch (InvocationTargetException invocationException) {
             AsyncRetryException e = (AsyncRetryException) invocationException.getTargetException();
             Assert.assertEquals(143, e.getDone());

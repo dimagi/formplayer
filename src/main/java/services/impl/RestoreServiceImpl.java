@@ -51,7 +51,7 @@ public class RestoreServiceImpl implements RestoreService {
                 String.class
         );
         if (response.getStatusCode().value() == 202) {
-            handleAsyncRestoreResponse(response.getBody());
+            handleAsyncRestoreResponse(response.getBody(), response.getHeaders());
         }
         return response.getBody();
     }
@@ -61,8 +61,9 @@ public class RestoreServiceImpl implements RestoreService {
      * with meta data about the async restore.
      *
      * @param xml - Async restore response
+     * @param headers - HttpHeaders from the restore response
      */
-    private void handleAsyncRestoreResponse(String xml) {
+    private void handleAsyncRestoreResponse(String xml, HttpHeaders headers) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
         ByteArrayInputStream input;
@@ -105,7 +106,7 @@ public class RestoreServiceImpl implements RestoreService {
                 message,
                 Integer.parseInt(attributes.getNamedItem("done").getTextContent()),
                 Integer.parseInt(attributes.getNamedItem("total").getTextContent()),
-                Integer.parseInt(attributes.getNamedItem("retry-after").getTextContent())
+                Integer.parseInt(headers.get("retry-after").get(0))
         );
     }
 
