@@ -1,6 +1,14 @@
 package beans;
 
 import objects.SerializableFormSession;
+import org.javarosa.core.model.utils.DateUtils;
+import session.FormSession;
+import util.FormplayerDateUtils;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Individual display item in list of incomplete form sessions
@@ -10,11 +18,13 @@ public class SessionListItem {
     private String title;
     private String dateOpened;
     private String sessionId;
+    private String caseName;
 
-    public SessionListItem(SerializableFormSession session){
+    public SessionListItem(FormSession session){
         this.title = session.getTitle();
-        this.dateOpened = session.getDateOpened();
-        this.sessionId = session.getId();
+        this.dateOpened = FormplayerDateUtils.convertJavaDateStringToISO(session.getDateOpened());
+        this.sessionId = session.getSessionId();
+        this.caseName = session.getCaseName();
     }
 
     public String getTitle() {
@@ -39,5 +49,9 @@ public class SessionListItem {
 
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
+    }
+
+    public String getCaseName() {
+        return caseName;
     }
 }
