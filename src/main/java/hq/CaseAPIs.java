@@ -72,7 +72,7 @@ public class CaseAPIs {
         return "null";
     }
 
-    private static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
+    public static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
         Case cCase = caseStorage.getRecordForValue("case-id", caseId);
         return new CaseBean(cCase);
     }
