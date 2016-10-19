@@ -1,5 +1,6 @@
-package beans;
+package beans.exceptions;
 
+import beans.exceptions.BaseExceptionResponseBean;
 import util.Constants;
 
 /**
@@ -13,7 +14,7 @@ public class ExceptionResponseBean extends BaseExceptionResponseBean {
     public ExceptionResponseBean(String exception, String url) {
         this.exception = exception;
         this.url = url;
-        this.status = "error";
+        this.status = Constants.ERROR_STATUS;
         this.type = Constants.ERROR_TYPE_TEXT;
     }
 }
