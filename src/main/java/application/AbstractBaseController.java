@@ -1,10 +1,12 @@
 package application;
 
-import beans.ExceptionResponseBean;
-import beans.HTMLExceptionResponseBean;
+import beans.exceptions.ExceptionResponseBean;
+import beans.exceptions.HTMLExceptionResponseBean;
 import beans.NewFormResponse;
+import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
 import exceptions.ApplicationConfigException;
+import exceptions.AsyncRetryException;
 import exceptions.FormNotFoundException;
 import exceptions.FormattedApplicationConfigException;
 import org.apache.commons.lang3.StringUtils;
@@ -26,9 +28,11 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
@@ -228,6 +232,18 @@ public abstract class AbstractBaseController {
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
+    @ExceptionHandler({AsyncRetryException.class})
+    @ResponseStatus(value = HttpStatus.ACCEPTED)
+    @ResponseBody
+    public RetryExceptionResponseBean handleAsyncRetryException(FormplayerHttpRequest req, AsyncRetryException exception) {
+        return new RetryExceptionResponseBean(
+                exception.getMessage(),
+                req.getRequestURL().toString(),
+                exception.getDone(),
+                exception.getTotal(),
+                exception.getRetryAfter()
+        );
+    }
     /**
      * Catch exceptions that have formatted HTML errors
      */

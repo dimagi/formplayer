@@ -1,4 +1,4 @@
-package beans;
+package beans.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
