@@ -1,0 +1,12 @@
+<!DOCTYPE aspectj PUBLIC
+        "-//AspectJ//DTD//EN" "http://www.eclipse.org/aspectj/dtd/aspectj.dtd">
+<aspectj>
+    <weaver options="-verbose -showWeaveInfo -debug">
+        <!-- only weave classes in our application-specific packages -->
+        <include within="application.*"/>
+    </weaver>
+    <aspects>
+        <!-- weave in just this aspect -->
+        <aspect name="aspects.LockAndBlock"/>
+    </aspects>
+</aspectj>
