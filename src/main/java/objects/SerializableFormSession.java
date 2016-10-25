@@ -27,6 +27,7 @@ public class SerializableFormSession implements Serializable{
     private String title;
     private String dateOpened;
     private boolean oneQuestionPerScreen;
+    private String asUser;
     private String currentIndex = "0";
 
     public String getInstanceXml() {
@@ -163,5 +164,13 @@ public class SerializableFormSession implements Serializable{
 
     public void setCurrentIndex(String currentIndex) {
         this.currentIndex = currentIndex;
+    }
+
+    public String getAsUser() {
+        return asUser;
+    }
+
+    public void setAsUser(String asUser) {
+        this.asUser = asUser;
     }
 }

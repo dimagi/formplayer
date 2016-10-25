@@ -6,14 +6,25 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.ApplicationUtils;
+import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.File;
+
+import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
 public class DeleteApplicationDbsTests extends BaseTestClass{
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        when(restoreFactoryMock.getRestoreXml())
+                .thenReturn(FileUtils.getFile(this.getClass(), "restores/casetiles.xml"));
+        configureRestoreFactory("casetestdomain", "casetestuser");
+    }
 
     /**
      * Ensures that when an application db exists that a delete db request

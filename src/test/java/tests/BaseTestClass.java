@@ -71,7 +71,7 @@ public class BaseTestClass {
     private XFormService xFormServiceMock;
 
     @Autowired
-    RestoreService restoreServiceMock;
+    RestoreFactory restoreFactoryMock;
 
     @Autowired
     SubmitService submitServiceMock;
@@ -104,7 +104,7 @@ public class BaseTestClass {
         Mockito.reset(formSessionRepoMock);
         Mockito.reset(menuSessionRepoMock);
         Mockito.reset(xFormServiceMock);
-        Mockito.reset(restoreServiceMock);
+        Mockito.reset(restoreFactoryMock);
         Mockito.reset(submitServiceMock);
         Mockito.reset(installService);
         Mockito.reset(userLockRegistry);
@@ -113,7 +113,7 @@ public class BaseTestClass {
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
-        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+        when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
                 .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
@@ -132,7 +132,7 @@ public class BaseTestClass {
                 Object[] args = invocationOnMock.getArguments();
                 NewFormResponseFactory newFormResponseFactory = new NewFormResponseFactory(formSessionRepoMock,
                         xFormServiceMock,
-                        restoreServiceMock);
+                        restoreFactoryMock);
                 return newFormResponseFactory.getResponse((NewSessionRequestBean)args[0], (String)args[1], (HqAuth)args[2]);
             }
         }).when(newFormResponseFactoryMock).getResponse(any(NewSessionRequestBean.class), anyString(), any(HqAuth.class));
@@ -271,6 +271,13 @@ public class BaseTestClass {
         return "/" + string;
     }
 
+    protected void configureRestoreFactory(String domain, String username) {
+        when(restoreFactoryMock.getUsername())
+                .thenReturn(username);
+        when(restoreFactoryMock.getDomain())
+                .thenReturn(domain);
+    }
+
     FormEntryResponseBean jumpToIndex(String index, String sessionId) throws Exception {
         JumpToIndexRequestBean questionsBean = new JumpToIndexRequestBean(index, sessionId);
         return generateMockQuery(ControllerType.FORM,
@@ -327,6 +334,10 @@ public class BaseTestClass {
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
+        when(restoreFactoryMock.getUsername())
+                .thenReturn(newSessionRequestBean.getSessionData().getUsername());
+        when(restoreFactoryMock.getDomain())
+                .thenReturn(newSessionRequestBean.getSessionData().getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_NEW_SESSION,
