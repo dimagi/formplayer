@@ -1,5 +1,6 @@
 package beans.menus;
 
+import beans.InstanceXmlBean;
 import beans.NotificationMessageBean;
 import org.commcare.modern.session.SessionWrapper;
 import util.SessionUtils;

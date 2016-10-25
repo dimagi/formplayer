@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import session.MenuSession;
+import util.ApplicationUtils;
 import util.Constants;
 import util.SessionUtils;
 
@@ -80,9 +81,13 @@ public class MenuController extends AbstractBaseController{
                         installService, restoreFactory, auth, host);
                 menuSession.getSessionWrapper().syncState();
             } else {
-                menuSession = performInstall(sessionNavigationBean, authToken);
                 // If we have a preview command, load that up
                 if(sessionNavigationBean.getPreviewCommand() != null){
+                    // When previewing, clear and reinstall DBs to get newest version
+                    // Big TODO: app updates
+                    ApplicationUtils.deleteApplicationDbs(sessionNavigationBean.getDomain(), sessionNavigationBean.getUsername(),
+                            sessionNavigationBean.getAppId());
+                    menuSession = performInstall(sessionNavigationBean, authToken);
                     try {
                         menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
                         menuSession.updateScreen();
@@ -91,6 +96,8 @@ public class MenuController extends AbstractBaseController{
                                 + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
                                 " please report a bug to the CommCareHQ Team.");
                     }
+                } else {
+                    menuSession = performInstall(sessionNavigationBean, authToken);
                 }
             }
             String[] selections = sessionNavigationBean.getSelections();

@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
+import session.FormSession;
 import util.Constants;
 
 import java.util.List;
@@ -76,7 +77,11 @@ public class UtilController extends AbstractBaseController {
         log.info("Get Session Request: " + getSessionRequest);
         String username = TableBuilder.scrubName(getSessionRequest.getUsername());
         List<SerializableFormSession> sessions = formSessionRepo.findUserSessions(username);
-        return new GetSessionsResponse(sessions);
+        FormSession[] formSessions = new FormSession[sessions.size()];
+        for (int i = 0; i < sessions.size(); i++) {
+            formSessions[i] = new FormSession(sessions.get(i));
+        }
+        return new GetSessionsResponse(formSessions);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")
