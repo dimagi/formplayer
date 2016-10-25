@@ -25,7 +25,6 @@ import util.Constants;
 import util.SessionUtils;
 
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.concurrent.locks.Lock;
 
@@ -75,10 +74,11 @@ public class MenuController extends AbstractBaseController{
         try {
             MenuSession menuSession;
             DjangoAuth auth = new DjangoAuth(authToken);
+            configureRestoreFactory(sessionNavigationBean, auth);
             String menuSessionId = sessionNavigationBean.getMenuSessionId();
             if (menuSessionId != null && !"".equals(menuSessionId)) {
                 menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
-                        installService, restoreService, auth, host);
+                        installService, restoreFactory, auth, host);
                 menuSession.getSessionWrapper().syncState();
             } else {
                 // If we have a preview command, load that up
@@ -251,7 +251,7 @@ public class MenuController extends AbstractBaseController{
         }
 
         return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), bean.getLocale(), installService,
-                restoreService, auth, host, bean.getOneQuestionPerScreen());
+                bean.getInstallReference(), bean.getLocale(), installService, restoreFactory, auth, host,
+                        bean.getOneQuestionPerScreen(), bean.getAsUser());
     }
 }

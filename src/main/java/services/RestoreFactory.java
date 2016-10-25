@@ -1,4 +1,4 @@
-package services.impl;
+package services;
 
 import auth.HqAuth;
 import exceptions.AsyncRetryException;
@@ -9,14 +9,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import services.RestoreService;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,34 +24,37 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Created by willpride on 1/21/16.
+ * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
+ * then retrieves and returns the restore XML.
  */
-@Component
-public class RestoreServiceImpl implements RestoreService {
-
+public class RestoreFactory {
     @Value("${commcarehq.host}")
-    private
-    String host;
+    private String host;
 
-    private final Log log = LogFactory.getLog(RestoreServiceImpl.class);
+    private String asUsername;
+    private String username;
+    private String domain;
+    private HqAuth hqAuth;
 
-    @Override
-    public String getRestoreXml(String domain, HqAuth auth) {
-        RestTemplate restTemplate = new RestTemplate();
-        log.info("Restoring at domain: " + domain + " with auth: " + auth);
-        HttpHeaders headers = auth.getAuthHeaders();
-        headers.add("x-openrosa-version",  "2.0");
+    private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                getRestoreUrl(domain),
-                HttpMethod.GET,
-                new HttpEntity<String>(headers),
-                String.class
-        );
-        if (response.getStatusCode().value() == 202) {
-            handleAsyncRestoreResponse(response.getBody(), response.getHeaders());
+
+    public String getRestoreXml() {
+        if (domain == null || (username == null && asUsername == null)) {
+            throw new RuntimeException("Domain and one of username or asUsername must be non-null. " +
+                    " Domain: " + domain +
+                    ", username: " + username +
+                    ", asUsername: " + asUsername);
         }
-        return response.getBody();
+        String restoreUrl;
+        if (asUsername == null) {
+            restoreUrl = getRestoreUrl(host, domain);
+        } else {
+            restoreUrl = getRestoreUrl(host, domain, asUsername);
+        }
+
+        log.info("Restoring from URL " + restoreUrl);
+        return getRestoreXmlHelper(restoreUrl, hqAuth);
     }
 
     /**
@@ -110,8 +111,61 @@ public class RestoreServiceImpl implements RestoreService {
         );
     }
 
-    public String getRestoreUrl(String domain){
-        log.info("Restoring from URL " + host + "/a/" + domain + "/phone/restore/?version=2.0");
+    private String getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
+        RestTemplate restTemplate = new RestTemplate();
+        log.info("Restoring at domain: " + domain + " with auth: " + auth);
+        HttpHeaders headers = auth.getAuthHeaders();
+        headers.add("x-openrosa-version",  "2.0");
+        ResponseEntity<String> response = restTemplate.exchange(
+                restoreUrl,
+                HttpMethod.GET,
+                new HttpEntity<String>(headers),
+                String.class
+        );
+        if (response.getStatusCode().value() == 202) {
+            handleAsyncRestoreResponse(response.getBody(), response.getHeaders());
+        }
+        return response.getBody();
+    }
+
+    public static String getRestoreUrl(String host, String domain){
         return host + "/a/" + domain + "/phone/restore/?version=2.0";
+    }
+
+    public String getRestoreUrl(String host, String domain, String username) {
+        return host + "/hq/admin/phone/restore/?as=" + username + "@" +
+                domain + ".commcarehq.org&version=2.0&raw=true";
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public HqAuth getHqAuth() {
+        return hqAuth;
+    }
+
+    public void setHqAuth(HqAuth hqAuth) {
+        this.hqAuth = hqAuth;
+    }
+
+    public String getAsUsername() {
+        return asUsername;
+    }
+
+    public void setAsUsername(String asUsername) {
+        this.asUsername = asUsername;
     }
 }

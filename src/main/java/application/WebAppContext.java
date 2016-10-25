@@ -29,7 +29,6 @@ import repo.TokenRepo;
 import repo.impl.*;
 import services.*;
 import services.impl.InstallServiceImpl;
-import services.impl.RestoreServiceImpl;
 import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
 import util.Constants;
@@ -266,8 +265,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public RestoreService restoreService(){
-        return new RestoreServiceImpl();
+    public RestoreFactory restoreFactory(){
+        return new RestoreFactory();
     }
 
     @Bean
@@ -282,7 +281,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public NewFormResponseFactory newFormResponseFactory(){
-        return new NewFormResponseFactory(formSessionRepo(), xFormService(), restoreService());
+        return new NewFormResponseFactory(formSessionRepo(), xFormService(), restoreFactory());
     }
 
     // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak
