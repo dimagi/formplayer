@@ -88,7 +88,6 @@ public abstract class AbstractBaseController {
         restoreFactory.setAsUsername(asUserBean.getAsUser());
         restoreFactory.setUsername(asUserBean.getUsername());
         restoreFactory.setHqAuth(auth);
-
     }
 
 
