@@ -278,7 +278,7 @@ public class BaseTestClass {
                 .thenReturn(domain);
     }
 
-    FormEntryResponseBean jumpToIndex(int index, String sessionId) throws Exception {
+    FormEntryResponseBean jumpToIndex(String index, String sessionId) throws Exception {
         JumpToIndexRequestBean questionsBean = new JumpToIndexRequestBean(index, sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
@@ -287,7 +287,7 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
-    FormEntryResponseBean nextScreen(String sessionId) throws Exception {
+  FormEntryNavigationResponseBean nextScreen(String sessionId) throws Exception {
         SessionRequestBean questionsBean = new SessionRequestBean();
         questionsBean.setSessionId(sessionId);
         ObjectMapper mapper = new ObjectMapper();
@@ -300,10 +300,10 @@ public class BaseTestClass {
                 .andReturn();
 
         return mapper.readValue(answerResult.getResponse().getContentAsString(),
-                FormEntryResponseBean.class);
+            FormEntryNavigationResponseBean.class);
     }
 
-    FormEntryResponseBean previousScreen(String sessionId) throws Exception {
+  FormEntryNavigationResponseBean previousScreen(String sessionId) throws Exception {
         SessionRequestBean questionsBean = new SessionRequestBean();
         questionsBean.setSessionId(sessionId);
         ObjectMapper mapper = new ObjectMapper();
@@ -316,7 +316,7 @@ public class BaseTestClass {
                 .andReturn();
 
         return mapper.readValue(answerResult.getResponse().getContentAsString(),
-                FormEntryResponseBean.class);
+            FormEntryNavigationResponseBean.class);
     }
 
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
@@ -446,7 +446,7 @@ public class BaseTestClass {
         return mapper.readValue(currentResultString, FormEntryResponseBean.class);
     }
 
-    GetInstanceResponseBean getInstance(String sessionId) throws Exception {
+    InstanceXmlBean getInstance(String sessionId) throws Exception {
         GetInstanceRequestBean getInstanceRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), "requests/current/current_request.json"), GetInstanceRequestBean.class);
         getInstanceRequestBean.setSessionId(sessionId);
@@ -454,7 +454,7 @@ public class BaseTestClass {
                 RequestType.POST,
                 Constants.URL_GET_INSTANCE,
                 getInstanceRequestBean,
-                GetInstanceResponseBean.class);
+                InstanceXmlBean.class);
     }
 
     EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception {

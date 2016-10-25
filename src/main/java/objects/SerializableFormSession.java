@@ -1,5 +1,7 @@
 package objects;
 
+import hq.CaseAPIs;
+
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -25,8 +27,8 @@ public class SerializableFormSession implements Serializable{
     private String title;
     private String dateOpened;
     private boolean oneQuestionPerScreen;
-    private int currentIndex;
     private String asUser;
+    private String currentIndex = "0";
 
     public String getInstanceXml() {
         return instanceXml;
@@ -156,11 +158,11 @@ public class SerializableFormSession implements Serializable{
         this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 
-    public int getCurrentIndex() {
+    public String getCurrentIndex() {
         return currentIndex;
     }
 
-    public void setCurrentIndex(int currentIndex) {
+    public void setCurrentIndex(String currentIndex) {
         this.currentIndex = currentIndex;
     }
 

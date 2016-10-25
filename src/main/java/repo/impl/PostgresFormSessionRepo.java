@@ -76,7 +76,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                     "sequenceId = ?, currentIndex = ? WHERE id = ?");
             this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
                     sessionDataBytes, session.getSequenceId(), session.getCurrentIndex(), session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.INTEGER, Types.VARCHAR});
+                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR});
             return session;
         }
 
@@ -93,7 +93,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 session.getOneQuestionPerScreen(), session.getCurrentIndex(), session.getAsUser()}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN, Types.INTEGER,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN, Types.VARCHAR,
                 Types.VARCHAR});
         return session;
     }
@@ -186,11 +186,11 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setTitle(rs.getString("title"));
             session.setDateOpened(rs.getString("dateOpened"));
             session.setOneQuestionPerScreen(rs.getBoolean("oneQuestionPerScreen"));
-            session.setCurrentIndex(rs.getInt("currentIndex"));
+            session.setCurrentIndex(rs.getString("currentIndex"));
             session.setAsUser(rs.getString("asUser"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
-            if(st != null) {
+            if (st != null) {
                 ByteArrayInputStream byteInputStream = new ByteArrayInputStream(st);
                 ObjectInputStream objectInputStream;
                 try {

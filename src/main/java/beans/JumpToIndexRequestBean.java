@@ -11,22 +11,22 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel("Questions for index")
 public class JumpToIndexRequestBean extends SessionRequestBean {
     @ApiModelProperty(value = "The FormIndex to be displayed", required = true)
-    private int formIndex;
+    private String formIndex;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public JumpToIndexRequestBean(){}
 
-    public JumpToIndexRequestBean(int formIndex, String sessionId) {
+    public JumpToIndexRequestBean(String formIndex, String sessionId) {
         this.formIndex = formIndex;
         this.sessionId = sessionId;
     }
 
     @JsonGetter(value = "ix")
-    public int getFormIndex() {
+    public String getFormIndex() {
         return formIndex;
     }
     @JsonSetter(value = "ix")
-    public void setFormIndex(int formIndex) {
+    public void setFormIndex(String formIndex) {
         this.formIndex = formIndex;
     }
 
