@@ -22,11 +22,11 @@ import org.springframework.web.bind.annotation.*;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import session.MenuSession;
+import util.ApplicationUtils;
 import util.Constants;
 import util.SessionUtils;
 
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.concurrent.locks.Lock;
 
@@ -76,15 +76,20 @@ public class MenuController extends AbstractBaseController{
         try {
             MenuSession menuSession;
             DjangoAuth auth = new DjangoAuth(authToken);
+            configureRestoreFactory(sessionNavigationBean, auth);
             String menuSessionId = sessionNavigationBean.getMenuSessionId();
             if (menuSessionId != null && !"".equals(menuSessionId)) {
                 menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
-                        installService, restoreService, auth, host);
+                        installService, restoreFactory, auth, host);
                 menuSession.getSessionWrapper().syncState();
             } else {
-                menuSession = performInstall(sessionNavigationBean, authToken);
                 // If we have a preview command, load that up
                 if(sessionNavigationBean.getPreviewCommand() != null){
+                    // When previewing, clear and reinstall DBs to get newest version
+                    // Big TODO: app updates
+                    ApplicationUtils.deleteApplicationDbs(sessionNavigationBean.getDomain(), sessionNavigationBean.getUsername(),
+                            sessionNavigationBean.getAppId());
+                    menuSession = performInstall(sessionNavigationBean, authToken);
                     try {
                         menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
                         menuSession.updateScreen();
@@ -93,6 +98,8 @@ public class MenuController extends AbstractBaseController{
                                 + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
                                 " please report a bug to the CommCareHQ Team.");
                     }
+                } else {
+                    menuSession = performInstall(sessionNavigationBean, authToken);
                 }
             }
             String[] selections = sessionNavigationBean.getSelections();
@@ -249,7 +256,7 @@ public class MenuController extends AbstractBaseController{
         }
 
         return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), bean.getLocale(), installService,
-                restoreService, auth, host, bean.getOneQuestionPerScreen());
+                bean.getInstallReference(), bean.getLocale(), installService, restoreFactory, auth, host,
+                        bean.getOneQuestionPerScreen(), bean.getAsUser());
     }
 }

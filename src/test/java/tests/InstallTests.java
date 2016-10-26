@@ -10,7 +10,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import utils.FileUtils;
 import utils.TestContext;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Created by willpride on 1/14/16.
@@ -20,6 +23,12 @@ import utils.TestContext;
 public class InstallTests extends BaseTestClass {
 
     Log log = LogFactory.getLog(InstallTests.class);
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        configureRestoreFactory("casetestdomain", "casetestuser");
+    }
 
     @Test
     public void testCaseCreate() throws Exception {

@@ -2,6 +2,7 @@ package hq;
 
 import application.SQLiteProperties;
 import auth.HqAuth;
+import beans.AsUserBean;
 import beans.CaseBean;
 import beans.CaseFilterRequestBean;
 import org.commcare.api.persistence.SqlSandboxUtils;
@@ -9,6 +10,7 @@ import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.sandbox.SandboxUtils;
+import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.parse.ParseUtilsHelper;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
@@ -20,7 +22,7 @@ import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.xmlpull.v1.XmlPullParserException;
-import services.RestoreService;
+import services.RestoreFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +32,10 @@ import java.io.IOException;
  */
 public class CaseAPIs {
 
-    public static UserSqlSandbox forceRestore(String username, String domain, String xml) throws Exception {
+    public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
+        String domain = restoreFactory.getDomain();
+        String username = TableBuilder.scrubName(restoreFactory.getUsername());
+        String xml = restoreFactory.getRestoreXml();
         new File(SQLiteProperties.getDataDir() + domain + "/" + username + ".db").delete();
         return restoreIfNotExists(username, domain, xml);
     }
@@ -45,25 +50,23 @@ public class CaseAPIs {
         }
     }
 
-    public static UserSqlSandbox restoreIfNotExists(String username, RestoreService restoreService,
-                                                    String domain, HqAuth auth) throws Exception{
+    public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory) throws Exception{
+        String domain = restoreFactory.getDomain();
+        String username = restoreFactory.getUsername();
         File db = new File(SQLiteProperties.getDataDir() + domain + "/" + username + ".db");
         if(db.exists()){
             return new UserSqlSandbox(username, SQLiteProperties.getDataDir() + domain);
         } else{
             db.getParentFile().mkdirs();
-            String xml = restoreService.getRestoreXml(domain, auth);
+            String xml = restoreFactory.getRestoreXml();
             return restoreUser(username, SQLiteProperties.getDataDir() + domain, xml);
         }
     }
 
-    public static String filterCases(CaseFilterRequestBean request) {
+    public static String filterCases(RestoreFactory restoreFactory, String filterExpression) {
         try {
-            String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
-            UserSqlSandbox mSandbox = restoreIfNotExists(
-                    request.getSessionData().getUsername(),
-                    request.getSessionData().getDomain(),
-                    request.getRestoreXml());
+            String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
+            UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory);
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
             return XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         } catch (Exception e) {
@@ -72,17 +75,14 @@ public class CaseAPIs {
         return "null";
     }
 
-    private static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
+    public static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
         Case cCase = caseStorage.getRecordForValue("case-id", caseId);
         return new CaseBean(cCase);
     }
 
-    public static CaseBean[] filterCasesFull(CaseFilterRequestBean request) throws Exception{
-        String filterPath = "join(',', instance('casedb')/casedb/case" + request.getFilterExpression() + "/@case_id)";
-        UserSqlSandbox mSandbox = restoreIfNotExists(
-                request.getSessionData().getUsername(),
-                request.getSessionData().getDomain(),
-                request.getRestoreXml());
+    public static CaseBean[] filterCasesFull(RestoreFactory restoreFactory, String filterExpression) throws Exception{
+        String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
+        UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory);
         EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
         String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         String[] splitCases = filteredCases.split(",");

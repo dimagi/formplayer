@@ -23,28 +23,25 @@ import java.io.StringReader;
 public class NewFormResponseFactory {
 
     private final XFormService xFormService;
-    private final RestoreService restoreService;
+    private final RestoreFactory restoreFactory;
     private final FormSessionRepo formSessionRepo;
 
     public NewFormResponseFactory(FormSessionRepo formSessionRepo,
                                   XFormService xFormService,
-                                  RestoreService restoreService) {
+                                  RestoreFactory restoreFactory) {
         this.xFormService = xFormService;
-        this.restoreService = restoreService;
+        this.restoreFactory = restoreFactory;
         this.formSessionRepo = formSessionRepo;
     }
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl, HqAuth auth) throws Exception {
 
-        String restoreXml = getRestoreXml(bean.getSessionData().getDomain(), auth);
         String formXml = getFormXml(bean.getFormUrl(), auth);
-        UserSqlSandbox sandbox = CaseAPIs.restoreIfNotExists(bean.getSessionData().getUsername(),
-                bean.getSessionData().getDomain(),
-                restoreXml);
+        UserSqlSandbox sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
 
         FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getSessionData().getUsername(),
                 bean.getSessionData().getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,
-                bean.getInstanceContent(), bean.getOneQuestionPerScreen());
+                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getAsUser());
 
         formSessionRepo.save(formSession.serialize());
         return new NewFormResponse(formSession);
@@ -54,10 +51,6 @@ public class NewFormResponseFactory {
             throws Exception {
         FormSession formSession = new FormSession(session);
         return new NewFormResponse(formSession);
-    }
-
-    private String getRestoreXml(String domain, HqAuth auth) {
-        return restoreService.getRestoreXml(domain, auth);
     }
 
     private String getFormXml(String formUrl, HqAuth auth) {

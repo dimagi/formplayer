@@ -1,31 +1,31 @@
-package beans;
+package beans.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 /**
- * This class is a generic response for an exception raised in Formplayer
+ * This is the base response for an exception that occurs in Formplayer.
  */
-public class ExceptionResponseBean {
-    private String exception;
-    private String status;
-    private String url;
+public abstract class BaseExceptionResponseBean {
+    protected String exception;
+    protected String status;
+    protected String url;
+    protected String type;
 
-    public ExceptionResponseBean() {
-    }
-
-    public ExceptionResponseBean(String exception, String url) {
-        this.exception = exception;
-        this.url = url;
-        this.status = "error";
-    }
-
-    @JsonGetter(value = "exception")
     public String getException() {
         return exception;
     }
 
     public void setException(String exception) {
         this.exception = exception;
+    }
+
+    @JsonGetter(value = "type")
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @JsonGetter(value = "status")
