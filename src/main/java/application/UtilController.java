@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
+import session.FormSession;
 import util.Constants;
 
 import java.util.List;
@@ -32,17 +33,19 @@ public class UtilController extends AbstractBaseController {
 
     @ApiOperation(value = "Filter the user's casedb given a predicate expression")
     @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
-    public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
-        String caseResponse = CaseAPIs.filterCases(filterRequest);
+    public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest,
+                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        configureRestoreFactory(filterRequest, new DjangoAuth(authToken));
+        String caseResponse = CaseAPIs.filterCases(restoreFactory, filterRequest.getFilterExpression());
         return new CaseFilterResponseBean(caseResponse);
     }
 
     @ApiOperation(value = "Fitler the user's casedb given a predicate expression returning all case data")
     @RequestMapping(value = Constants.URL_FILTER_CASES_FULL, method = RequestMethod.GET)
-    public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest) throws Exception {
-        filterRequest.setRestoreService(restoreService);
-        CaseBean[] caseResponse = CaseAPIs.filterCasesFull(filterRequest);
+    public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest,
+                                                      @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken)throws Exception {
+        configureRestoreFactory(filterRequest, new DjangoAuth(authToken));
+        CaseBean[] caseResponse = CaseAPIs.filterCasesFull(restoreFactory, filterRequest.getFilterExpression());
         return new CaseFilterFullResponseBean(caseResponse);
     }
 
@@ -50,11 +53,8 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("SyncDb Request: " + syncRequest);
-        syncRequest.setRestoreService(restoreService);
-        syncRequest.setHqAuth(new DjangoAuth(authToken));
-        String restoreXml = syncRequest.getRestoreXml();
-        CaseAPIs.forceRestore(TableBuilder.scrubName(syncRequest.getUsername()), syncRequest.getDomain(), restoreXml);
+        configureRestoreFactory(syncRequest, new DjangoAuth(authToken));
+        CaseAPIs.forceRestore(restoreFactory);
         return new SyncDbResponseBean();
     }
 
@@ -77,7 +77,11 @@ public class UtilController extends AbstractBaseController {
         log.info("Get Session Request: " + getSessionRequest);
         String username = TableBuilder.scrubName(getSessionRequest.getUsername());
         List<SerializableFormSession> sessions = formSessionRepo.findUserSessions(username);
-        return new GetSessionsResponse(sessions);
+        FormSession[] formSessions = new FormSession[sessions.size()];
+        for (int i = 0; i < sessions.size(); i++) {
+            formSessions[i] = new FormSession(sessions.get(i));
+        }
+        return new GetSessionsResponse(formSessions);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")

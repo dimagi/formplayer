@@ -29,12 +29,14 @@ public class FilterTests extends BaseTestClass {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+        when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
     }
 
     @Test
     public void testRestoreFilter() throws Exception {
+
+        configureRestoreFactory("filtertesttestdomain", "filtertesttestuser");
 
         String[] caseArray;
 
@@ -55,6 +57,8 @@ public class FilterTests extends BaseTestClass {
     @Test
     public void testSyncDb() throws Exception {
 
+        configureRestoreFactory("synctestdomain", "synctestuser");
+
         SyncDbResponseBean syncDbResponseBean = syncDb();
 
         assert(syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
@@ -73,6 +77,7 @@ public class FilterTests extends BaseTestClass {
 
     @Test
     public void testGetFullCase() throws Exception {
+        configureRestoreFactory("filtertesttestdomain", "filtertesttestuser");
         CaseFilterFullResponseBean caseFilterResponseBean = filterCasesFull();
     }
 }

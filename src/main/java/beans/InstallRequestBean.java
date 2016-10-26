@@ -6,11 +6,12 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 /**
  * Created by willpride on 2/4/16.
  */
-public class InstallRequestBean extends AuthenticatedRequestBean {
+public class InstallRequestBean extends AuthenticatedRequestBean implements AsUserBean {
     private String installReference;
     private String password;
     private String appId;
     private String locale;
+    private String asUser;
     private boolean oneQuestionPerScreen;
 
     public String getInstallReference() {
@@ -51,6 +52,14 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
 
     public void setLocale(String locale) {
         this.locale = locale;
+    }
+
+    public String getAsUser() {
+        return asUser;
+    }
+
+    public void setAsUser(String asUser) {
+        this.asUser = asUser;
     }
 
     public boolean getOneQuestionPerScreen() {

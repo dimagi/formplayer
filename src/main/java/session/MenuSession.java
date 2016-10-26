@@ -31,7 +31,7 @@ import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
-import services.RestoreService;
+import services.RestoreFactory;
 import util.ApplicationUtils;
 import util.Constants;
 import util.SessionUtils;
@@ -65,6 +65,7 @@ public class MenuSession {
     private String locale;
     private Screen screen;
     private String uuid;
+    private String asUser;
 
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
@@ -72,12 +73,14 @@ public class MenuSession {
     private boolean oneQuestionPerScreen;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreService restoreService, HqAuth auth, String host) throws Exception {
+                       RestoreFactory restoreFactory, HqAuth auth, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
         this.domain = session.getDomain();
+        this.asUser = session.getAsUser();
         this.locale = session.getLocale();
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
+        this.auth = auth;
 
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(
@@ -85,34 +88,36 @@ public class MenuSession {
                 this.username,
                 ApplicationUtils.getApplicationDBPath(this.domain, this.username, this.appId)
         );
-        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
+
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
+
         this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
         this.screen = getNextScreen();
-        this.auth = auth;
         this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
-                       InstallService installService, RestoreService restoreService, HqAuth auth, String host,
-                       boolean oneQuestionPerScreen) throws Exception {
+                       InstallService installService, RestoreFactory restoreFactory, HqAuth auth, String host,
+                       boolean oneQuestionPerScreen, String asUser) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
+        this.auth = auth;
+        this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(
                 this.installReference,
                 this.username,
                 ApplicationUtils.getApplicationDBPath(domain, this.username, appId)
         );
-        this.sandbox = CaseAPIs.restoreIfNotExists(this.username, restoreService, domain, auth);
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
-        this.auth = auth;
         this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
@@ -227,7 +232,9 @@ public class MenuSession {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, username, domain, sessionData, postUrl, locale, uuid, null, oneQuestionPerScreen);
+        return new FormSession(sandbox, formDef, username, domain,
+                sessionData, postUrl, locale, uuid,
+                null, oneQuestionPerScreen, asUser);
     }
 
     private byte[] serializeSession(CommCareSession session){
@@ -293,6 +300,14 @@ public class MenuSession {
 
     public void updateScreen() throws CommCareSessionException {
         this.screen = getNextScreen();
+    }
+
+    public String getAsUser() {
+        return asUser;
+    }
+
+    public void setAsUser(String asUser) {
+        this.asUser = asUser;
     }
 
     public boolean isOneQuestionPerScreen() {

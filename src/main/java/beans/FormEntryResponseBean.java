@@ -11,10 +11,9 @@ import java.util.Arrays;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FormEntryResponseBean extends BaseResponseBean{
+public class FormEntryResponseBean extends SessionResponseBean{
     private QuestionBean[] tree;
     private String status;
-    private int sequenceId;
     private String reason;
     private String type;
 
@@ -35,14 +34,6 @@ public class FormEntryResponseBean extends BaseResponseBean{
 
     public void setStatus(String status) {
         this.status = status;
-    }
-    @JsonGetter(value = "seq_id")
-    public int getSequenceId() {
-        return sequenceId;
-    }
-    @JsonSetter(value = "seq_id")
-    public void setSequenceId(int sequenceId) {
-        this.sequenceId = sequenceId;
     }
 
     @Override

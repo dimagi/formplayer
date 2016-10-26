@@ -12,7 +12,7 @@ import java.util.Map;
  * Optionally contains instanceContent for form editing or incomplete forms
  */
 @JsonIgnoreProperties
-public class NewSessionRequestBean extends AuthenticatedRequestBean {
+public class NewSessionRequestBean extends AuthenticatedRequestBean implements AsUserBean{
     private String formUrl;
     private String lang;
     private Map<String, String> hqAuth;
@@ -21,6 +21,7 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     private String instanceContent;
     private String postUrl;
     private boolean oneQuestionPerScreen;
+    private String asUser;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public NewSessionRequestBean(){}
@@ -97,5 +98,13 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     @JsonSetter(value = "oneQuestionPerScreen")
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    public String getAsUser() {
+        return asUser;
+    }
+
+    public void setAsUser(String asUser) {
+        this.asUser = asUser;
     }
 }

@@ -1,10 +1,16 @@
 package application;
 
-import beans.ExceptionResponseBean;
+import auth.HqAuth;
+import beans.AsUserBean;
 import beans.NewFormResponse;
+import beans.exceptions.ExceptionResponseBean;
+import beans.exceptions.HTMLExceptionResponseBean;
+import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
 import exceptions.ApplicationConfigException;
+import exceptions.AsyncRetryException;
 import exceptions.FormNotFoundException;
+import exceptions.FormattedApplicationConfigException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -24,15 +30,17 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import services.InstallService;
-import services.RestoreService;
+import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
 import util.FormplayerHttpRequest;
@@ -53,9 +61,6 @@ import java.util.concurrent.locks.Lock;
 public abstract class AbstractBaseController {
 
     @Autowired
-    protected RestoreService restoreService;
-
-    @Autowired
     protected FormSessionRepo formSessionRepo;
 
     @Autowired
@@ -63,6 +68,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected InstallService installService;
+
+    @Autowired
+    protected RestoreFactory restoreFactory;
 
     @Autowired
     private HtmlEmail exceptionMessage;
@@ -74,6 +82,13 @@ public abstract class AbstractBaseController {
     private String hqHost;
 
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
+
+    protected void configureRestoreFactory(AsUserBean asUserBean, HqAuth auth) {
+        restoreFactory.setDomain(asUserBean.getDomain());
+        restoreFactory.setAsUsername(asUserBean.getAsUser());
+        restoreFactory.setUsername(asUserBean.getUsername());
+        restoreFactory.setHqAuth(auth);
+    }
 
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
@@ -224,6 +239,29 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
 
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+    }
+
+    @ExceptionHandler({AsyncRetryException.class})
+    @ResponseStatus(value = HttpStatus.ACCEPTED)
+    @ResponseBody
+    public RetryExceptionResponseBean handleAsyncRetryException(FormplayerHttpRequest req, AsyncRetryException exception) {
+        return new RetryExceptionResponseBean(
+                exception.getMessage(),
+                req.getRequestURL().toString(),
+                exception.getDone(),
+                exception.getTotal(),
+                exception.getRetryAfter()
+        );
+    }
+    /**
+     * Catch exceptions that have formatted HTML errors
+     */
+    @ExceptionHandler({FormattedApplicationConfigException.class})
+    @ResponseBody
+    public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
+        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+
+        return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,7 +1,8 @@
 package tests;
 
-import auth.HqAuth;
-import beans.*;
+import beans.FormEntryResponseBean;
+import beans.NewFormResponse;
+import beans.QuestionBean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,10 +11,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.FileUtils;
 import utils.TestContext;
 
-import java.io.IOException;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -26,8 +23,9 @@ public class RepeatTests extends BaseTestClass{
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+        when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        configureRestoreFactory("test", "test");
     }
 
     @Test

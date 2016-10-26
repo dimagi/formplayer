@@ -7,6 +7,7 @@ public class Constants {
     //URLS
     public final static String URL_NEW_SESSION = "new-form";
     public final static String URL_INCOMPLETE_SESSION = "incomplete-form";
+    public final static String URL_DELETE_INCOMPLETE_SESSION = "delete-incomplete-form";
     public final static String URL_ANSWER_QUESTION = "answer";
     public final static String URL_CURRENT = "current";
     public final static String URL_SUBMIT_FORM = "submit-all";
@@ -36,6 +37,15 @@ public class Constants {
     public static final String ANSWER_RESPONSE_STATUS_POSITIVE = "accepted";
     public static final String ANSWER_RESPONSE_STATUS_NEGATIVE = "validation-error";
     public static final String SYNC_RESPONSE_STATUS_POSITIVE = "success";
+
+    // Error return types
+    public static final String ERROR_TYPE_TEXT = "text";
+    public static final String ERROR_TYPE_HTML = "html";
+
+    // Error status types
+    public static final String ERROR_STATUS = "error";
+    public static final String RETRY_STATUS = "retry";
+
     //JSON
     public static final String QUESTION_TREE_KEY = "tree";
 

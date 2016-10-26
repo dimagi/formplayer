@@ -28,8 +28,9 @@ public class DoubleManagementTest  extends BaseTestClass{
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreServiceMock.getRestoreXml(anyString(), any(HqAuth.class)))
+        when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/parent_child.xml"));
+        configureRestoreFactory("doublemgmtdomain", "doublemgmtusername");
     }
 
     @Test
