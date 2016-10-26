@@ -4,6 +4,7 @@ import auth.HqAuth;
 import exceptions.AsyncRetryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -142,7 +143,7 @@ public class RestoreFactory {
     }
 
     public void setUsername(String username) {
-        this.username = username;
+        this.username = TableBuilder.scrubName(username);
     }
 
     public String getDomain() {
