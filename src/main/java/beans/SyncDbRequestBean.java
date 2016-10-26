@@ -11,10 +11,18 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncDbRequestBean extends AuthenticatedRequestBean implements AsUserBean {
+
+    String asUser;
+
     public SyncDbRequestBean(){}
 
     @Override
+    @JsonGetter(value = "restoreAs")
     public String getAsUser() {
-        return username;
+        return asUser;
+    }
+    @JsonSetter(value = "restoreAs")
+    public void setAsUser(String asUser) {
+        this.asUser = asUser;
     }
 }
