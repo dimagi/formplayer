@@ -1,6 +1,10 @@
 package beans.menus;
 
 import io.swagger.annotations.ApiModel;
+import org.commcare.cases.entity.Entity;
+import org.commcare.cases.entity.EntitySortNotificationInterface;
+import org.commcare.cases.entity.EntitySorter;
+import org.commcare.cases.entity.NodeEntityFactory;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
@@ -16,14 +20,15 @@ import org.javarosa.xpath.XPathException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
 /**
  * Created by willpride on 4/13/16.
  */
-@ApiModel("Entity List Response")
+@ApiModel("EntityBean List Response")
 public class EntityListResponse extends MenuBean {
-    private Entity[] entities;
+    private EntityBean[] entities;
     private DisplayElement action;
     private Style[] styles;
     private String[] headers;
@@ -93,7 +98,7 @@ public class EntityListResponse extends MenuBean {
                                  EvaluationContext ec,
                                  int offset,
                                  String searchText) {
-        Entity[] allEntities = generateEntities(screen, references, ec);
+        EntityBean[] allEntities = generateEntities(screen, references, ec);
         if (searchText != null && !searchText.trim().equals("")) {
             allEntities = filterEntities(allEntities, searchText);
         }
@@ -111,7 +116,7 @@ public class EntityListResponse extends MenuBean {
                 end = allEntities.length;
                 length = end - offset;
             }
-            entities = new Entity[length];
+            entities = new EntityBean[length];
             System.arraycopy(allEntities, offset, entities, offset - offset, end - offset);
 
             setPageCount((int) Math.ceil((double) allEntities.length / CASE_LENGTH_LIMIT));
@@ -122,31 +127,31 @@ public class EntityListResponse extends MenuBean {
     }
 
     /**
-     * @param allEntities the set of Entity objects to filter
+     * @param allEntities the set of EntityBean objects to filter
      * @param searchText  the raw (space separated) searchText entry to split and filter with
      * @return all Entitys containing one of the searchText strings
      */
-    private Entity[] filterEntities(Entity[] allEntities, String searchText) {
+    private EntityBean[] filterEntities(EntityBean[] allEntities, String searchText) {
 
-        ArrayList<Entity> compiler = new ArrayList<Entity>();
-        for (Entity entity : allEntities) {
-            if (matchEntity(entity, searchText)) {
-                compiler.add(entity);
+        ArrayList<EntityBean> compiler = new ArrayList<EntityBean>();
+        for (EntityBean entityBean : allEntities) {
+            if (matchEntity(entityBean, searchText)) {
+                compiler.add(entityBean);
             }
         }
-        Entity[] ret = new Entity[compiler.size()];
+        EntityBean[] ret = new EntityBean[compiler.size()];
         ret = compiler.toArray(ret);
         return ret;
     }
 
     /**
-     * @param entity     The Entity being matched against
+     * @param entityBean     The EntityBean being matched against
      * @param searchText The String being searched for
-     * @return whether the Entity's data[] contains this string, ignoring case
+     * @return whether the EntityBean's data[] contains this string, ignoring case
      */
-    private boolean matchEntity(Entity entity, String searchText) {
+    private boolean matchEntity(EntityBean entityBean, String searchText) {
         String[] searchStrings = searchText.split(" ");
-        for (Object data : entity.getData()) {
+        for (Object data : entityBean.getData()) {
             for (String searchString : searchStrings) {
                 if (data != null && data.toString().toLowerCase().contains(searchString.toLowerCase())) {
                     return true;
@@ -156,27 +161,59 @@ public class EntityListResponse extends MenuBean {
         return false;
     }
 
-    private Entity[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec) {
-        Entity[] entities = new Entity[references.size()];
+    private EntityBean[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec) {
+
+        List<Entity<TreeReference>> entityList = buildEntityList(screen.getShortDetail(), ec, references);
+        sort(entityList, screen.getShortDetail());
+
+        EntityBean[] entities = new EntityBean[entityList.size()];
         int i = 0;
-        for (TreeReference entity : references) {
-            Entity newEntity = processEntity(entity, screen, ec);
-            EntityDetailSubscreen[] subscreens = processDetails(screen, ec, entity);
+        for (Entity<TreeReference> entity : entityList) {
+            TreeReference treeReference = entity.getElement();
+            EntityBean newEntityBean = processEntity(treeReference, screen, ec);
+            EntityDetailSubscreen[] subscreens = processDetails(screen, ec, treeReference);
             if (subscreens != null) {
                 EntityDetailResponse[] responses = new EntityDetailResponse[subscreens.length];
                 for (int j = 0; j < subscreens.length; j++) {
                     responses[j] = new EntityDetailResponse(subscreens[j]);
                     responses[j].setTitle(subscreens[j].getTitles()[j]);
                 }
-                newEntity.setDetails(responses);
+                newEntityBean.setDetails(responses);
             }
-            entities[i] = newEntity;
+            entities[i] = newEntityBean;
             i++;
         }
         return entities;
     }
 
-    private Entity processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
+    private List<Entity<TreeReference>> buildEntityList(Detail shortDetail, EvaluationContext context, Vector<TreeReference> references) {
+        NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
+        List<org.commcare.cases.entity.Entity<TreeReference>> full = new ArrayList<>();
+        for (TreeReference reference: references) {
+            full.add(nodeEntityFactory.getEntity(reference));
+        }
+        return full;
+    }
+
+    private void sort (List<Entity<TreeReference>> entityList, Detail shortDetail) {
+        int[] order = shortDetail.getSortOrder();
+        for (int i = 0; i < shortDetail.getFields().length; ++i) {
+            String header = shortDetail.getFields()[i].getHeader().evaluate();
+            if (order.length == 0 && !"".equals(header)) {
+                order = new int[]{i};
+            }
+        }
+        java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), false, order, new LogNotifier()));
+    }
+
+    class LogNotifier implements EntitySortNotificationInterface {
+        @Override
+        public void notifyBadfilter(String[] args) {
+
+        }
+    }
+
+    private EntityBean processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
         Detail detail = screen.getShortDetail();
         EvaluationContext context = new EvaluationContext(ec, entity);
 
@@ -186,7 +223,7 @@ public class EntityListResponse extends MenuBean {
         Object[] data = new Object[fields.length];
 
         String id = screen.getReturnValueFromSelection(entity, (EntityDatum)screen.getSession().getNeededDatum(), ec);
-        Entity ret = new Entity(id);
+        EntityBean ret = new EntityBean(id);
         int i = 0;
         for (DetailField field : fields) {
             Object o;
@@ -236,11 +273,11 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
-    public Entity[] getEntities() {
+    public EntityBean[] getEntities() {
         return entities;
     }
 
-    public void setEntities(Entity[] entities) {
+    public void setEntities(EntityBean[] entities) {
         this.entities = entities;
     }
 
