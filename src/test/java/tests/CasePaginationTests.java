@@ -1,11 +1,9 @@
 package tests;
 
-import auth.HqAuth;
-import beans.menus.BaseResponseBean;
-import beans.menus.Entity;
+import beans.menus.EntityBean;
 import beans.menus.EntityDetailResponse;
 import beans.menus.EntityListResponse;
-import org.json.JSONObject;
+import org.commcare.cases.entity.Entity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -13,11 +11,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.FileUtils;
 import utils.TestContext;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -32,6 +26,19 @@ public class CasePaginationTests extends BaseTestClass {
         when(restoreFactoryMock.getRestoreXml())
                 .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
         configureRestoreFactory("loaddomain", "loaduser");
+    }
+
+    @Test
+    public void testSort() throws Exception {
+        EntityListResponse entityListResponse =
+                sessionNavigate("requests/navigators/pagination_navigator.json", EntityListResponse.class);
+        assert entityListResponse.getEntities().length == EntityListResponse.CASE_LENGTH_LIMIT;
+        String previousName = "";
+        for (EntityBean entity: entityListResponse.getEntities()) {
+            String currentName = (String) entity.getData()[0];
+            assert previousName.compareTo(currentName) < 0;
+            previousName = currentName;
+        }
     }
 
     @Test

@@ -5,14 +5,14 @@ import java.util.Arrays;
 /**
  * Represents a single entity in a response list
  */
-public class Entity {
+public class EntityBean {
     private String id;
     private Object[] data;
     private EntityDetailResponse[] details;
 
-    public Entity(){}
+    public EntityBean(){}
 
-    public Entity(String id) {
+    public EntityBean(String id) {
         this.id = id;
     }
 
@@ -42,6 +42,6 @@ public class Entity {
 
     @Override
     public String toString(){
-        return "Entity with id=" + id + ", data=" + Arrays.toString(data);
+        return "EntityBean with id=" + id + ", data=" + Arrays.toString(data);
     }
 }
