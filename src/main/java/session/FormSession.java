@@ -243,6 +243,7 @@ public class FormSession {
 
     public String submitGetXml() throws IOException {
         formDef.postProcessInstance();
+        getFormTree();
         return getInstanceXml();
     }
 
