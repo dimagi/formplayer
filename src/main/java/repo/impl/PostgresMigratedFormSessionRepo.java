@@ -2,6 +2,7 @@ package repo.impl;
 
 import exceptions.FormNotFoundException;
 import objects.SerializableFormSession;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -36,8 +37,6 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Qualifier("hqTemplate")
     private JdbcTemplate jdbcTemplate;
 
-    private String restoreXml;
-
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
 
@@ -66,8 +65,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
                 continue;
             }
             InstanceSession instanceSession = instanceSessions.get(0);
-            SerializableFormSession session = SessionUtils.loadSessionFromJson(instanceSession.getSessionJson());
-            session.setRestoreXml(getRestoreXml());
+            SerializableFormSession session = loadSessionFromJson(instanceSession.getSessionJson());
             session.setDateOpened(entrySession.getCreatedDate());
             session.setId(entrySession.getSessionId());
             sessions.add(session);
@@ -195,14 +193,6 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
 
     public String replaceTableName(String query){
         return String.format(query, Constants.POSTGRES_MIGRATED_SESSION_TABLE_NAME);
-    }
-
-    public String getRestoreXml() {
-        return restoreXml;
-    }
-
-    public void setRestoreXml(String restoreXml) {
-        this.restoreXml = restoreXml;
     }
 
     private class UserIdMapper implements RowMapper<Integer> {
@@ -343,5 +333,27 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         public void setUserId(String userId) {
             this.userId = userId;
         }
+    }
+
+
+    public static SerializableFormSession loadSessionFromJson(String sessionJSON) {
+        SerializableFormSession session = new SerializableFormSession();
+        JSONObject sessionObject = new JSONObject(sessionJSON);
+        JSONObject sessionData = sessionObject.getJSONObject("session_data");
+        session.setTitle(sessionData.getString("session_name"));
+        session.setUsername(sessionData.getString("username"));
+        session.setDomain(sessionData.getString("domain"));
+        session.setOneQuestionPerScreen(false);
+        session.setAsUser(null);
+        session.setInstanceXml(sessionObject.getString("instance"));
+        session.setFormXml(sessionObject.getString("xform"));
+        session.setInitLang(sessionObject.getString("init_lang"));
+        session.setSequenceId(sessionObject.getInt("seq_id"));
+        HashMap<String, String> sessionDataMap = new HashMap<>();
+        session.setSessionData(sessionDataMap);
+        if (sessionData.has("case_id")) {
+            sessionDataMap.put("case_id", (String) sessionData.get("case_id"));
+        }
+        return session;
     }
 }
