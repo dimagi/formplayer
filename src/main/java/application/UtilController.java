@@ -34,7 +34,7 @@ import java.util.List;
 public class UtilController extends AbstractBaseController {
 
     @Autowired
-    protected PostgresMigratedFormSessionRepo migratedFormSessionRepo;
+    protected FormSessionRepo migratedFormSessionRepo;
 
     private final Log log = LogFactory.getLog(UtilController.class);
 
@@ -84,11 +84,6 @@ public class UtilController extends AbstractBaseController {
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Get Session Request: " + getSessionRequest);
 
-        configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
-        String restoreXml = restoreFactory.getRestoreXml();
-
-        migratedFormSessionRepo.setRestoreXml(restoreXml);
-
         String username = TableBuilder.scrubName(getSessionRequest.getUsername());
 
         List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(
@@ -100,13 +95,26 @@ public class UtilController extends AbstractBaseController {
 
         ArrayList<FormSession> formSessions = new ArrayList<>();
 
-        for (int i = 0; i < migratedSessions.size(); i++) {
-            System.out.println("Loading Session: " + migratedSessions.get(i));
-            try {
-                formSessions.add(new FormSession(migratedSessions.get(i)));
-            } catch(Exception e) {
-                System.out.println("Couldn't add form : " + i);
-                int j = 0;
+        for (int i = 0; i < sessions.size(); i++) {
+            formSessions.add(new FormSession(sessions.get(i)));
+        }
+
+        if (migratedSessions.size() > 0) {
+            // Sweet man we have some old sessions to load up! Unfortunately those ones didn't come
+            // with the restoreXml included, so we have to get the current one.
+            configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
+            String restoreXml = restoreFactory.getRestoreXml();
+
+            for (int i = 0; i < migratedSessions.size(); i++) {
+                try {
+                    SerializableFormSession serialSession = migratedSessions.get(i);
+                    serialSession.setRestoreXml(restoreXml);
+                    formSessions.add(new FormSession(migratedSessions.get(i)));
+                } catch (Exception e) {
+                    // I think let's not crash on this.
+                    log.error("Couldn't add session " + migratedSessions.get(i) + " with exception " + e);
+                    e.printStackTrace();
+                }
             }
         }
 
