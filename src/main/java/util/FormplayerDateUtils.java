@@ -17,8 +17,7 @@ public class FormplayerDateUtils {
         try {
             result =  dfFrom.parse(date);
         } catch (ParseException e) {
-            // Could not parse date
-            return null;
+            return date;
         }
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat dfTo = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
