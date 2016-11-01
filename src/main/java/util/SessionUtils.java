@@ -1,5 +1,6 @@
 package util;
 
+import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
@@ -8,7 +9,10 @@ import org.commcare.suite.model.StackFrameStep;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 /**
@@ -17,6 +21,27 @@ import java.util.Vector;
 public class SessionUtils {
 
     private static final Log log = LogFactory.getLog(SessionUtils.class);
+
+    public static SerializableFormSession loadSessionFromJson(String sessionJSON) {
+        SerializableFormSession session = new SerializableFormSession();
+        JSONObject sessionObject = new JSONObject(sessionJSON);
+        JSONObject sessionData = sessionObject.getJSONObject("session_data");
+        session.setTitle(sessionData.getString("session_name"));
+        session.setUsername(sessionData.getString("username"));
+        session.setDomain(sessionData.getString("domain"));
+        session.setOneQuestionPerScreen(false);
+        session.setAsUser(null);
+        session.setInstanceXml(sessionObject.getString("instance"));
+        session.setFormXml(sessionObject.getString("xform"));
+        session.setInitLang(sessionObject.getString("init_lang"));
+        session.setSequenceId(sessionObject.getInt("seq_id"));
+        HashMap<String, String> sessionDataMap = new HashMap<>();
+        session.setSessionData(sessionDataMap);
+        if (sessionData.has("case_id")) {
+            sessionDataMap.put("case_id", (String) sessionData.get("case_id"));
+        }
+        return session;
+    }
 
     public static String getBestTitle(SessionWrapper session) {
 

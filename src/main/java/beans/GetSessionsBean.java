@@ -3,7 +3,7 @@ package beans;
 /**
  * POST request for getting a list of the user's incomplete form sessions
  */
-public class GetSessionsBean {
+public class GetSessionsBean implements AsUserBean {
     private String username;
     private String domain;
 
@@ -13,6 +13,11 @@ public class GetSessionsBean {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    @Override
+    public String getAsUser() {
+        return null;
     }
 
     public String getUsername() {
