@@ -57,7 +57,7 @@ public class NewFormResponseFactory {
         return xFormService.getFormXml(formUrl, auth);
     }
 
-    private FormDef parseFormDef(String formXml) throws IOException {
+    public static FormDef parseFormDef(String formXml) throws IOException {
         XFormParser mParser = new XFormParser(new StringReader(formXml));
         return mParser.parse();
     }

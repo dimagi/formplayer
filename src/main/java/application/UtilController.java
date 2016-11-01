@@ -9,11 +9,15 @@ import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
+import repo.FormSessionRepo;
+import repo.impl.PostgresMigratedFormSessionRepo;
 import session.FormSession;
 import util.Constants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,6 +32,9 @@ import java.util.List;
 @RestController
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
+
+    @Autowired
+    protected PostgresMigratedFormSessionRepo migratedFormSessionRepo;
 
     private final Log log = LogFactory.getLog(UtilController.class);
 
@@ -73,14 +80,36 @@ public class UtilController extends AbstractBaseController {
 
     @ApiOperation(value = "Get a list of the current user's sessions")
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
-    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
+    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Get Session Request: " + getSessionRequest);
+
+        configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
+        String restoreXml = restoreFactory.getRestoreXml();
+
+        migratedFormSessionRepo.setRestoreXml(restoreXml);
+
         String username = TableBuilder.scrubName(getSessionRequest.getUsername());
+
+        List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(
+                getSessionRequest.getUsername());
+
         List<SerializableFormSession> sessions = formSessionRepo.findUserSessions(username);
-        FormSession[] formSessions = new FormSession[sessions.size()];
-        for (int i = 0; i < sessions.size(); i++) {
-            formSessions[i] = new FormSession(sessions.get(i));
+
+        sessions.addAll(migratedSessions);
+
+        ArrayList<FormSession> formSessions = new ArrayList<>();
+
+        for (int i = 0; i < migratedSessions.size(); i++) {
+            System.out.println("Loading Session: " + migratedSessions.get(i));
+            try {
+                formSessions.add(new FormSession(migratedSessions.get(i)));
+            } catch(Exception e) {
+                System.out.println("Couldn't add form : " + i);
+                int j = 0;
+            }
         }
+
         return new GetSessionsResponse(formSessions);
     }
 

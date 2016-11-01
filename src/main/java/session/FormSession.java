@@ -31,11 +31,13 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import services.NewFormResponseFactory;
 import util.PrototypeUtils;
 
 import java.io.*;
 import java.util.Date;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 /**
@@ -108,10 +110,14 @@ public class FormSession {
         this.dateOpened = session.getDateOpened();
         PrototypeUtils.setupPrototypes();
         this.formDef = new FormDef();
-        deserializeFormDef(session.getFormXml());
+        try {
+            deserializeFormDef(session.getFormXml());
+        } catch (Exception e) {
+            this.formDef = NewFormResponseFactory.parseFormDef(session.getFormXml());
+        }
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
         setupJavaRosaObjects();
-        initialize(false, session.getSessionData());
+        initialize(true, session.getSessionData());
         setupOneQuestionPerScreen();
     }
 
@@ -391,8 +397,12 @@ public class FormSession {
         if (caseId == null) {
             return null;
         }
-        CaseBean caseBean = CaseAPIs.getFullCase(caseId, (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
-        return (String) caseBean.getProperties().get("case_name");
+        try {
+            CaseBean caseBean = CaseAPIs.getFullCase(caseId, (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
+            return (String) caseBean.getProperties().get("case_name");
+        } catch (NoSuchElementException e) {
+            return "Case";
+        }
     }
 
     public String getAsUser() {

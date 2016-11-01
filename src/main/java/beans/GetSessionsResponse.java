@@ -3,6 +3,7 @@ package beans;
 import objects.SerializableFormSession;
 import session.FormSession;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,10 +16,10 @@ public class GetSessionsResponse {
 
     public GetSessionsResponse(){}
 
-    public GetSessionsResponse(FormSession[] sessionList){
-        sessions = new SessionListItem[sessionList.length];
-        for(int i = 0; i < sessionList.length; i++){
-            sessions[i] = new SessionListItem(sessionList[i]);
+    public GetSessionsResponse(ArrayList<FormSession> sessionList){
+        sessions = new SessionListItem[sessionList.size()];
+        for(int i = 0; i < sessionList.size(); i++){
+            sessions[i] = new SessionListItem(sessionList.get(i));
         }
     }
 
