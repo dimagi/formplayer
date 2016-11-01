@@ -69,8 +69,8 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
             SerializableFormSession session = SessionUtils.loadSessionFromJson(instanceSession.getSessionJson());
             session.setRestoreXml(getRestoreXml());
             session.setDateOpened(entrySession.getCreatedDate());
-            sessions.add(session);
             session.setId(entrySession.getSessionId());
+            sessions.add(session);
         }
         return sessions;
     }
