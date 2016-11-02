@@ -37,11 +37,15 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Qualifier("hqTemplate")
     private JdbcTemplate jdbcTemplate;
 
+    public static final String POSTGRES_MIGRATED_SESSION_TABLE_NAME = "formplayer_session";
+    public static final String POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME = "formplayer_entrysession";
+    public static final String POSTGRES_AUTH_USER_TABLE_NAME = "auth_user";
+
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
 
         List<Integer> userIds = this.jdbcTemplate.query(
-                replaceTableName("SELECT * FROM auth_user WHERE username = ?"),
+                replaceTableName("SELECT * FROM %s WHERE username = ?", POSTGRES_AUTH_USER_TABLE_NAME),
                 new Object[] {username},
                 new UserIdMapper());
 
@@ -51,14 +55,14 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         List<SerializableFormSession> sessions = new ArrayList<>();
 
         List<EntrySession> entrySessions = this.jdbcTemplate.query(
-                replaceTableName("SELECT * FROM formplayer_entrysession WHERE user_id = ?"),
+                replaceTableName("SELECT * FROM %s WHERE user_id = ?", POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME),
                 new Object[] {userId},
                 new EntrySessionMapper());
 
         for (EntrySession entrySession: entrySessions) {
             String sessionId = entrySession.getSessionId();
             List<InstanceSession> instanceSessions = this.jdbcTemplate.query(
-                    replaceTableName("SELECT * FROM formplayer_session WHERE sess_id = ?"),
+                    replaceTableName("SELECT * FROM %s WHERE sess_id = ?", POSTGRES_MIGRATED_SESSION_TABLE_NAME),
                     new Object[] {sessionId},
                     new InstanceSessionMapper());
             if(instanceSessions.size() < 1) {
@@ -97,37 +101,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Override
     @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> S save(S session) {
-
-        byte[] sessionDataBytes = writeToBytes(session.getSessionData());
-
-        int sessionCount = this.jdbcTemplate.queryForObject(
-                replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
-
-        if(sessionCount > 0){
-            String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, " +
-                    "sequenceId = ?, currentIndex = ? WHERE id = ?");
-            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
-                            sessionDataBytes, session.getSequenceId(), session.getCurrentIndex(), session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR});
-            return session;
-        }
-
-        String query = replaceTableName("INSERT into %s " +
-                "(id, instanceXml, formXml, " +
-                "restoreXml, username, initLang, sequenceId, " +
-                "domain, postUrl, sessionData, menu_session_id," +
-                "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
-                session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
-                session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId(),
-                session.getTitle(), session.getDateOpened(),
-                session.getOneQuestionPerScreen(), session.getCurrentIndex(), session.getAsUser()}, new int[] {
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN, Types.VARCHAR,
-                Types.VARCHAR});
-        return session;
+        return null;
     }
 
     public SerializableFormSession findOneWrapped(String id) throws FormNotFoundException {
@@ -140,12 +114,28 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
 
     @Override
     public SerializableFormSession findOne(String id) {
-        return null;
+        List<EntrySession> entrySessions = this.jdbcTemplate.query(
+                replaceTableName("SELECT * FROM %s WHERE session_id = ?", POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME),
+                new Object[] {id},
+                new EntrySessionMapper());
+
+        List<InstanceSession> instanceSessions = this.jdbcTemplate.query(
+                replaceTableName("SELECT * FROM %s WHERE sess_id = ?", POSTGRES_MIGRATED_SESSION_TABLE_NAME),
+                new Object[] {id},
+                new InstanceSessionMapper());
+
+        InstanceSession instanceSession = instanceSessions.get(0);
+        EntrySession entrySession = entrySessions.get(0);
+        SerializableFormSession session = loadSessionFromJson(instanceSession.getSessionJson());
+        session.setDateOpened(entrySession.getCreatedDate());
+        session.setId(entrySession.getSessionId());
+        return session;
     }
 
     @Override
     public boolean exists(String s) {
-        String sql = replaceTableName("select exists(select 1 from %s where id = ?)");
+        String sql = replaceTableName("select exists(select 1 from %s where session_id = ?)",
+                POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME);
         return this.jdbcTemplate.queryForObject(sql, boolean.class, s);
     }
 
@@ -162,13 +152,14 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Override
     public long count() {
         return this.jdbcTemplate.queryForObject(
-                replaceTableName("select count(*) from %s"), Integer.class);
+                replaceTableName("select count(*) from %s", POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME), Integer.class);
     }
 
     @Override
     @Lock(LockModeType.OPTIMISTIC)
     public void delete(String id) {
-        this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
+        this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE session_id = ?",
+                POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME), id);
     }
 
     @Override
@@ -191,8 +182,8 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         }
     }
 
-    public String replaceTableName(String query){
-        return String.format(query, Constants.POSTGRES_MIGRATED_SESSION_TABLE_NAME);
+    public String replaceTableName(String query, String tableName){
+        return String.format(query, tableName);
     }
 
     private class UserIdMapper implements RowMapper<Integer> {
