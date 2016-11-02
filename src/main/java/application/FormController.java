@@ -50,9 +50,6 @@ public class FormController extends AbstractBaseController{
     @Autowired
     private SubmitService submitService;
 
-    @Autowired
-    private NewFormResponseFactory newFormResponseFactory;
-
     @Value("${commcarehq.host}")
     private String host;
 
@@ -72,22 +69,6 @@ public class FormController extends AbstractBaseController{
                     new DjangoAuth(authToken));
             log.info("Return new session response: " + newSessionResponse);
             return newSessionResponse;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    @ApiOperation(value = "Open an incomplete form session")
-    @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
-    public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
-                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
-        SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
-        Lock lock = getLockAndBlock(session.getUsername());
-        try {
-            NewFormResponse response = newFormResponseFactory.getResponse(session);
-            log.info("Return incomplete session response: " + response);
-            return response;
         } finally {
             lock.unlock();
         }

@@ -33,9 +33,6 @@ import java.util.List;
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
 
-    @Autowired
-    protected FormSessionRepo migratedFormSessionRepo;
-
     private final Log log = LogFactory.getLog(UtilController.class);
 
     @ApiOperation(value = "Filter the user's casedb given a predicate expression")
@@ -76,49 +73,6 @@ public class UtilController extends AbstractBaseController {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
         return new NotificationMessageBean(message, !success);
-    }
-
-    @ApiOperation(value = "Get a list of the current user's sessions")
-    @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
-    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
-                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("Get Session Request: " + getSessionRequest);
-
-        String username = TableBuilder.scrubName(getSessionRequest.getUsername());
-
-        List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(
-                getSessionRequest.getUsername());
-
-        List<SerializableFormSession> sessions = formSessionRepo.findUserSessions(username);
-
-        sessions.addAll(migratedSessions);
-
-        ArrayList<FormSession> formSessions = new ArrayList<>();
-
-        for (int i = 0; i < sessions.size(); i++) {
-            formSessions.add(new FormSession(sessions.get(i)));
-        }
-
-        if (migratedSessions.size() > 0) {
-            // Sweet man we have some old sessions to load up! Unfortunately those ones didn't come
-            // with the restoreXml included, so we have to get the current one.
-            configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
-            String restoreXml = restoreFactory.getRestoreXml();
-
-            for (int i = 0; i < migratedSessions.size(); i++) {
-                try {
-                    SerializableFormSession serialSession = migratedSessions.get(i);
-                    serialSession.setRestoreXml(restoreXml);
-                    formSessions.add(new FormSession(migratedSessions.get(i)));
-                } catch (Exception e) {
-                    // I think let's not crash on this.
-                    log.error("Couldn't add session " + migratedSessions.get(i) + " with exception " + e);
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return new GetSessionsResponse(formSessions);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")

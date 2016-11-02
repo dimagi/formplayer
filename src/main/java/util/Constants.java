@@ -57,7 +57,6 @@ public class Constants {
     public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
     public static final String POSTGRES_USER_TABLE_NAME = "auth_user";
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
-    public static final String POSTGRES_MIGRATED_SESSION_TABLE_NAME = "formplayer_session";
 
     // Couch databases
     public static final String COUCH_USERS_DB = "__users";
