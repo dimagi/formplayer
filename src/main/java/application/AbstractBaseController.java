@@ -81,6 +81,9 @@ public abstract class AbstractBaseController {
     @Value("${commcarehq.host}")
     private String hqHost;
 
+    @Value("${commcarehq.environment}")
+    private String hqEnvironment;
+
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
 
     protected void configureRestoreFactory(AsUserBean asUserBean, HqAuth auth) {
@@ -281,7 +284,7 @@ public abstract class AbstractBaseController {
     private void sendExceptionEmail(FormplayerHttpRequest req, Exception exception) {
         try {
             exceptionMessage.setHtmlMsg(getExceptionEmailBody(req, exception));
-            exceptionMessage.setSubject("Formplayer Exception: " + exception.getMessage());
+            exceptionMessage.setSubject("[" + hqEnvironment + "] Formplayer Exception: " + exception.getMessage());
             exceptionMessage.send();
         } catch(EmailException e){
             // I think we should fail quietly on this
