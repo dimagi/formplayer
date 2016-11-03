@@ -1,6 +1,7 @@
 package beans.debugger;
 
 import beans.SessionResponseBean;
+import util.XmlUtils;
 
 /**
  * Created by benrudolph on 11/3/16.
@@ -14,7 +15,7 @@ public class DebuggerFormattedQuestionsResponseBean {
     public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml, String formattedQuestions) {
         this.xmlns = xmlns;
         this.appId = appId;
-        this.instanceXml = instanceXml;
+        this.instanceXml = XmlUtils.indent(instanceXml);
         this.formattedQuestions = formattedQuestions;
     }
 
