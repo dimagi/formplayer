@@ -76,6 +76,7 @@ public class FormplayerAuthFilter implements Filter {
         try {
             return data.getString("username");
         } catch (JSONException e) {
+            // TODO: Delete when no longer using HQ to proxy requests for Edit Forms
             return data.getJSONObject("session-data").getString("username");
         }
     }
