@@ -76,6 +76,7 @@ public class FormSession {
     private String currentIndex = "-1";
     private boolean isAtLastIndex = false;
     private String asUser;
+    private String appId;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -94,6 +95,7 @@ public class FormSession {
 
     public FormSession(SerializableFormSession session) throws Exception{
         this.username = session.getUsername();
+        this.appId = session.getAppId();
         this.asUser = session.getAsUser();
         this.restoreXml = session.getRestoreXml();
         this.domain = session.getDomain();
@@ -120,9 +122,6 @@ public class FormSession {
         initialize(false, session.getSessionData());
         setupOneQuestionPerScreen();
         this.postUrl = session.getPostUrl();
-        if (this.postUrl == null) {
-            this.postUrl = new PropertyManager().getSingularProperty("PostURL");
-        }
     }
 
     // New FormSession constructor

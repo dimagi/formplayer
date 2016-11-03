@@ -90,13 +90,6 @@ public abstract class AbstractBaseController {
 
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
 
-    protected void configureRestoreFactory(AsUserBean asUserBean, HqAuth auth) {
-        restoreFactory.setDomain(asUserBean.getDomain());
-        restoreFactory.setAsUsername(asUserBean.getAsUser());
-        restoreFactory.setUsername(asUserBean.getUsername());
-        restoreFactory.setHqAuth(auth);
-    }
-
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         menuSession.getSessionWrapper().syncState();

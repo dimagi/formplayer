@@ -74,7 +74,7 @@ public class MenuController extends AbstractBaseController{
         try {
             MenuSession menuSession;
             DjangoAuth auth = new DjangoAuth(authToken);
-            configureRestoreFactory(sessionNavigationBean, auth);
+            restoreFactory.configureRestoreFactory(sessionNavigationBean, auth);
             String menuSessionId = sessionNavigationBean.getMenuSessionId();
             if (menuSessionId != null && !"".equals(menuSessionId)) {
                 menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),

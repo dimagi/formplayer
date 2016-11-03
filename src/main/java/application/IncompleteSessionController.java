@@ -13,9 +13,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.FormSessionRepo;
+import services.FormSessionFactory;
 import session.FormSession;
 import util.Constants;
 
@@ -32,8 +34,14 @@ import java.util.concurrent.locks.Lock;
 @EnableAutoConfiguration
 public class IncompleteSessionController extends AbstractBaseController{
 
+    @Value("${commcarehq.host}")
+    private String host;
+
     @Autowired
     protected FormSessionRepo migratedFormSessionRepo;
+
+    @Autowired
+    protected FormSessionFactory formSessionFactory;
 
     private final Log log = LogFactory.getLog(IncompleteSessionController.class);
 
@@ -49,7 +57,7 @@ public class IncompleteSessionController extends AbstractBaseController{
             session = migratedFormSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
             // Move over to formplayer db
             formSessionRepo.save(session);
-            configureRestoreFactory(incompleteSessionRequestBean, new DjangoAuth(authToken));
+            restoreFactory.configureRestoreFactory(incompleteSessionRequestBean, new DjangoAuth(authToken));
             String restoreXml = restoreFactory.getRestoreXml();
             session.setRestoreXml(restoreXml);
         }
@@ -76,9 +84,10 @@ public class IncompleteSessionController extends AbstractBaseController{
         List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(username);
 
         ArrayList<FormSession> formSessions = new ArrayList<>();
+        restoreFactory.configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
 
         for (int i = 0; i < formplayerSessions.size(); i++) {
-            formSessions.add(new FormSession(formplayerSessions.get(i)));
+            formSessions.add(formSessionFactory.getFormSession(formplayerSessions.get(i)));
         }
 
         if (migratedSessions.size() > 0) {
@@ -89,10 +98,6 @@ public class IncompleteSessionController extends AbstractBaseController{
                 formplayerSessionIds.add(session.getId());
             }
 
-            // Unfortunately migrated sessions don't have the restoreXml included, so we have to get the current one.
-            configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
-            String restoreXml = restoreFactory.getRestoreXml();
-
             for (int i = 0; i < migratedSessions.size(); i++) {
                 // If we already have this session in the formplayer repo, skip it
                 if (formplayerSessionIds.contains(migratedSessions.get(i).getId())) {
@@ -100,8 +105,7 @@ public class IncompleteSessionController extends AbstractBaseController{
                 }
                 try {
                     SerializableFormSession serialSession = migratedSessions.get(i);
-                    serialSession.setRestoreXml(restoreXml);
-                    formSessions.add(new FormSession(migratedSessions.get(i)));
+                    formSessions.add(formSessionFactory.getFormSession(serialSession));
                 } catch (Exception e) {
                     // I think let's not crash on this.
                     log.error("Couldn't add session " + migratedSessions.get(i) + " with exception " + e);
