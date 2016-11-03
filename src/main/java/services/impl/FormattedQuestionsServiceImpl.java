@@ -14,7 +14,8 @@ import services.FormattedQuestionsService;
 import java.net.URI;
 
 /**
- * Created by benrudolph on 11/3/16.
+ * Implementation of getting the formatted questions by requesting HQ to generate
+ * template
  */
 public class FormattedQuestionsServiceImpl implements FormattedQuestionsService {
     @Value("${commcarehq.host}")

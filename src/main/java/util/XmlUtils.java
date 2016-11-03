@@ -7,7 +7,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 /**
- * Created by benrudolph on 11/3/16.
+ * Utility methods for dealing with XML
  */
 public class XmlUtils {
     /**

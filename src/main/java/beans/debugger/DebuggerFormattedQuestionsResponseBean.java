@@ -4,7 +4,7 @@ import beans.SessionResponseBean;
 import util.XmlUtils;
 
 /**
- * Created by benrudolph on 11/3/16.
+ * Response for the debugger tab
  */
 public class DebuggerFormattedQuestionsResponseBean {
     private String xmlns;
