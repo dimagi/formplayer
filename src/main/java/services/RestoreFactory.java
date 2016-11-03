@@ -1,6 +1,7 @@
 package services;
 
 import auth.HqAuth;
+import beans.AsUserBean;
 import exceptions.AsyncRetryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,8 +40,20 @@ public class RestoreFactory {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
+    private String cachedRestore = null;
+
+    public void configureRestoreFactory(AsUserBean asUserBean, HqAuth auth) {
+        this.setDomain(asUserBean.getDomain());
+        this.setAsUsername(asUserBean.getAsUser());
+        this.setUsername(asUserBean.getUsername());
+        this.setHqAuth(auth);
+        cachedRestore = null;
+    }
 
     public String getRestoreXml() {
+        if (cachedRestore != null) {
+            return cachedRestore;
+        }
         if (domain == null || (username == null && asUsername == null)) {
             throw new RuntimeException("Domain and one of username or asUsername must be non-null. " +
                     " Domain: " + domain +
@@ -55,7 +68,8 @@ public class RestoreFactory {
         }
 
         log.info("Restoring from URL " + restoreUrl);
-        return getRestoreXmlHelper(restoreUrl, hqAuth);
+        cachedRestore = getRestoreXmlHelper(restoreUrl, hqAuth);
+        return cachedRestore;
     }
 
     /**

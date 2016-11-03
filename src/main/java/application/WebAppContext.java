@@ -285,6 +285,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    public FormSessionFactory formSessionFactory() {return new FormSessionFactory();}
+
+    @Bean
     public NewFormResponseFactory newFormResponseFactory(){
         return new NewFormResponseFactory(formSessionRepo(), xFormService(), restoreFactory());
     }
