@@ -39,9 +39,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Postgres implementation for storing form entry sessions
- * Corresponds to the new_formplayer_session table in the formplayer database
+ * Repository for reading Old CloudCare incomplete form sessions into the new format
  * Repo has read only access
+ * In addition to reading from the database, this repository handles the migration including:
+ *  - Parsing the old JSON blob into our POJO
+ *  - Adding restoreXml since the old one didn't contain it
+ *  - Adding the PostURL since the old one didn't contain it
+ *  - Converting the formXml into a serialized version
  */
 @Repository
 public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
@@ -382,8 +386,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         return session;
     }
 
-    // Copied from FormSessino
-
+    // Copied from FormSession
     private static String serializeFormDef(FormDef formDef) {
         try {
             org.apache.commons.io.output.ByteArrayOutputStream baos = new org.apache.commons.io.output.ByteArrayOutputStream();
@@ -395,7 +398,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
             return null;
         }
     }
-
+    // Copied from NewFormResponseFactory
     private static FormDef parseFormDef(String formXml) {
         try {
             XFormParser mParser = new XFormParser(new StringReader(formXml));
