@@ -5,6 +5,7 @@ package beans;
  */
 public class IncompleteSessionRequestBean extends AuthenticatedRequestBean implements AsUserBean{
     private String sessionId;
+    private String asUser;
 
     public IncompleteSessionRequestBean (){}
 
@@ -18,6 +19,10 @@ public class IncompleteSessionRequestBean extends AuthenticatedRequestBean imple
 
     @Override
     public String getAsUser() {
-        return null;
+        return asUser;
+    }
+
+    public void setAsUser(String asUser) {
+        this.asUser = asUser;
     }
 }

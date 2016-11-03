@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.FormSessionRepo;
-import services.FormSessionFactory;
 import session.FormSession;
 import util.Constants;
 
@@ -26,8 +25,8 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 
 /**
- * Controller class (API endpoint) containing all form entry logic. This includes
- * opening a new form, question answering, and form submission.
+ * Controller class (API endpoint) containing all incomplete session management commands
+ * Also handles migration of sessions from old cloudcare
  */
 @Api(value = "Incomplete Session Controller", description = "Operations for navigating managing incomplete sessions")
 @RestController
@@ -40,9 +39,6 @@ public class IncompleteSessionController extends AbstractBaseController{
     @Autowired
     protected FormSessionRepo migratedFormSessionRepo;
 
-    @Autowired
-    protected FormSessionFactory formSessionFactory;
-
     private final Log log = LogFactory.getLog(IncompleteSessionController.class);
 
     @ApiOperation(value = "Open an incomplete form session")
@@ -51,7 +47,7 @@ public class IncompleteSessionController extends AbstractBaseController{
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
         SerializableFormSession session;
-        restoreFactory.configureRestoreFactory(incompleteSessionRequestBean, new DjangoAuth(authToken));
+        restoreFactory.configure(incompleteSessionRequestBean, new DjangoAuth(authToken));
         try {
             session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         } catch(FormNotFoundException e) {
@@ -76,7 +72,7 @@ public class IncompleteSessionController extends AbstractBaseController{
 
         String username = TableBuilder.scrubName(getSessionRequest.getUsername());
 
-        restoreFactory.configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
+        restoreFactory.configure(getSessionRequest, new DjangoAuth(authToken));
 
         List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(
                 getSessionRequest.getUsername());
@@ -84,7 +80,7 @@ public class IncompleteSessionController extends AbstractBaseController{
         List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(username);
 
         ArrayList<FormSession> formSessions = new ArrayList<>();
-        restoreFactory.configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
+        restoreFactory.configure(getSessionRequest, new DjangoAuth(authToken));
 
         for (int i = 0; i < formplayerSessions.size(); i++) {
             formSessions.add(new FormSession(formplayerSessions.get(i)));

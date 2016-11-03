@@ -27,9 +27,6 @@ public class NewFormResponseFactory {
     private final RestoreFactory restoreFactory;
     private final FormSessionRepo formSessionRepo;
 
-    @Autowired
-    protected FormSessionFactory formSessionFactory;
-
     public NewFormResponseFactory(FormSessionRepo formSessionRepo,
                                   XFormService xFormService,
                                   RestoreFactory restoreFactory) {
@@ -61,7 +58,7 @@ public class NewFormResponseFactory {
         return xFormService.getFormXml(formUrl, auth);
     }
 
-    public static FormDef parseFormDef(String formXml) throws IOException {
+    private static FormDef parseFormDef(String formXml) throws IOException {
         XFormParser mParser = new XFormParser(new StringReader(formXml));
         return mParser.parse();
     }
