@@ -47,6 +47,8 @@ public class IncompleteSessionController extends AbstractBaseController{
             session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         } catch(FormNotFoundException e) {
             session = migratedFormSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
+            // Move over to formplayer db
+            formSessionRepo.save(session);
             configureRestoreFactory(incompleteSessionRequestBean, new DjangoAuth(authToken));
             String restoreXml = restoreFactory.getRestoreXml();
             session.setRestoreXml(restoreXml);
@@ -76,8 +78,6 @@ public class IncompleteSessionController extends AbstractBaseController{
         ArrayList<FormSession> formSessions = new ArrayList<>();
 
         for (int i = 0; i < formplayerSessions.size(); i++) {
-            System.out.println("Loading formplayer sessions: " + formplayerSessions.get(i));
-            System.out.println("Restore XML: " + formplayerSessions.get(i).getRestoreXml());
             formSessions.add(new FormSession(formplayerSessions.get(i)));
         }
 
@@ -105,7 +105,6 @@ public class IncompleteSessionController extends AbstractBaseController{
                 } catch (Exception e) {
                     // I think let's not crash on this.
                     log.error("Couldn't add session " + migratedSessions.get(i) + " with exception " + e);
-                    e.printStackTrace();
                 }
             }
         }

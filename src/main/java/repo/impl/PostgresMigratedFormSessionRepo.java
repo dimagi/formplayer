@@ -29,6 +29,7 @@ import java.util.Map;
 /**
  * Postgres implementation for storing form entry sessions
  * Corresponds to the new_formplayer_session table in the formplayer database
+ * Repo has read only access
  */
 @Repository
 public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
@@ -340,6 +341,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         session.setFormXml(sessionObject.getString("xform"));
         session.setInitLang(sessionObject.getString("init_lang"));
         session.setSequenceId(sessionObject.getInt("seq_id"));
+        session.setAp
         HashMap<String, String> sessionDataMap = new HashMap<>();
         session.setSessionData(sessionDataMap);
         if (sessionData.has("case_id")) {
