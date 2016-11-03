@@ -1,6 +1,5 @@
 package util;
 
-import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
@@ -9,10 +8,7 @@ import org.commcare.suite.model.StackFrameStep;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.Vector;
 
 /**
