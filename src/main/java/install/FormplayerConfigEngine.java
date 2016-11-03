@@ -135,7 +135,7 @@ public class FormplayerConfigEngine {
                 handleInstallError(conn.getErrorStream());
             } else if (conn.getResponseCode() == 500) {
                 throw new ApplicationConfigException(
-                    "Encountered an error while processing the application. Please submit an ticket if you continue to see this."
+                    "Encountered an error while processing the application. Please submit a ticket if you continue to see this."
                 );
             }
             InputStream result = conn.getInputStream();
