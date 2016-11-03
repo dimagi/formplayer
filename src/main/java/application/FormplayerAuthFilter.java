@@ -3,6 +3,7 @@ package application;
 import hq.interfaces.CouchUser;
 import hq.models.PostgresUser;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.redis.util.RedisLockRegistry;
@@ -62,13 +63,21 @@ public class FormplayerAuthFilter implements Filter {
             setUser(request);
             setDomain(request);
             JSONObject data = RequestUtils.getPostData(request);
-            if (!authorizeRequest(request, data.getString("domain"), data.getString("username"))) {
+            if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
                 setResponseUnauthorized((HttpServletResponse) res);
                 return;
             }
         }
 
         chain.doFilter(request, res);
+    }
+
+    private String getUsername(JSONObject data) {
+        try {
+            return data.getString("username");
+        } catch (JSONException e) {
+            return data.getJSONObject("session-data").getString("username");
+        }
     }
 
     private void setToken(FormplayerHttpRequest request) {
