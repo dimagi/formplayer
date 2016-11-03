@@ -51,15 +51,14 @@ public class IncompleteSessionController extends AbstractBaseController{
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
         SerializableFormSession session;
+        restoreFactory.configureRestoreFactory(incompleteSessionRequestBean, new DjangoAuth(authToken));
         try {
             session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         } catch(FormNotFoundException e) {
             session = migratedFormSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
+            FormSession formSession = formSessionFactory.getFormSession(session);
             // Move over to formplayer db
-            formSessionRepo.save(session);
-            restoreFactory.configureRestoreFactory(incompleteSessionRequestBean, new DjangoAuth(authToken));
-            String restoreXml = restoreFactory.getRestoreXml();
-            session.setRestoreXml(restoreXml);
+            formSessionRepo.save(formSession.serialize());
         }
         Lock lock = getLockAndBlock(session.getUsername());
         try {
