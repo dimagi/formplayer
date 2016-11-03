@@ -42,7 +42,7 @@ public class RestoreFactory {
 
     private String cachedRestore = null;
 
-    public void configureRestoreFactory(AsUserBean asUserBean, HqAuth auth) {
+    public void configure(AsUserBean asUserBean, HqAuth auth) {
         this.setDomain(asUserBean.getDomain());
         this.setAsUsername(asUserBean.getAsUser());
         this.setUsername(asUserBean.getUsername());

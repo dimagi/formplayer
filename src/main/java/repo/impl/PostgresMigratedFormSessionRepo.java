@@ -361,7 +361,6 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         session.setFormXml(sessionObject.getString("xform"));
         session.setInitLang(sessionObject.getString("init_lang"));
         session.setSequenceId(sessionObject.getInt("seq_id"));
-        session.setAppId(sessionData.getString("app_id"));
         HashMap<String, String> sessionDataMap = new HashMap<>();
         session.setSessionData(sessionDataMap);
         if (sessionData.has("case_id")) {

@@ -8,14 +8,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * need to be authenticated with HQ. This Bean will ensure the
  * necessary json values are present in the request.
  */
-public class AuthenticatedRequestBean implements AsUserBean{
+public class AuthenticatedRequestBean {
     protected String domain;
     protected String username;
-
-    @Override
-    public String getAsUser() {
-        return null;
-    }
 
     @JsonGetter(value = "username")
     public String getUsername() {
