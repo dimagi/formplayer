@@ -28,6 +28,7 @@ import repo.MenuSessionRepo;
 import repo.TokenRepo;
 import repo.impl.*;
 import services.*;
+import services.impl.FormattedQuestionsServiceImpl;
 import services.impl.InstallServiceImpl;
 import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
@@ -272,6 +273,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public InstallService installService(){
         return new InstallServiceImpl();
+    }
+
+    @Bean FormattedQuestionsService formattedQuestionsService() {
+        return new FormattedQuestionsServiceImpl();
     }
 
     @Bean
