@@ -2,6 +2,12 @@ package repo.impl;
 
 import exceptions.FormNotFoundException;
 import objects.SerializableFormSession;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.output.*;
+import org.javarosa.core.model.FormDef;
+import org.javarosa.core.services.PrototypeManager;
+import org.javarosa.core.util.externalizable.DeserializationException;
+import org.javarosa.xform.parse.XFormParser;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,13 +20,16 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
+import services.NewFormResponseFactory;
 import services.RestoreFactory;
 import util.Constants;
+import util.PrototypeUtils;
 import util.SessionUtils;
 import util.StringUtils;
 
 import javax.persistence.LockModeType;
 import java.io.*;
+import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -150,6 +159,10 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
                             session.getDomain(),
                             session.getAppId()));
         }
+        PrototypeUtils.setupPrototypes();
+        FormDef formDef = parseFormDef(session.getFormXml());
+        session.setFormXml(serializeFormDef(formDef));
+
         return session;
     }
 
@@ -367,5 +380,29 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
             sessionDataMap.put("case_id", (String) sessionData.get("case_id"));
         }
         return session;
+    }
+
+    // Copied from FormSessino
+
+    private static String serializeFormDef(FormDef formDef) {
+        try {
+            org.apache.commons.io.output.ByteArrayOutputStream baos = new org.apache.commons.io.output.ByteArrayOutputStream();
+            DataOutputStream serializedStream = new DataOutputStream(baos);
+            formDef.writeExternal(serializedStream);
+            return Base64.encodeBase64String(baos.toByteArray());
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static FormDef parseFormDef(String formXml) {
+        try {
+            XFormParser mParser = new XFormParser(new StringReader(formXml));
+            return mParser.parse();
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -112,11 +112,7 @@ public class FormSession {
         this.dateOpened = session.getDateOpened();
         PrototypeUtils.setupPrototypes();
         this.formDef = new FormDef();
-        try {
-            deserializeFormDef(session.getFormXml());
-        } catch (Exception e) {
-            this.formDef = NewFormResponseFactory.parseFormDef(session.getFormXml());
-        }
+        deserializeFormDef(session.getFormXml());
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
         setupJavaRosaObjects();
         initialize(false, session.getSessionData());
