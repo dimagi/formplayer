@@ -117,7 +117,7 @@ public class FormSession {
         }
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
         setupJavaRosaObjects();
-        initialize(true, session.getSessionData());
+        initialize(false, session.getSessionData());
         setupOneQuestionPerScreen();
     }
 
