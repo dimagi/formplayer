@@ -19,6 +19,7 @@ import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
@@ -99,7 +100,6 @@ public class FormSession {
         this.sandbox = CaseAPIs.restoreIfNotExists(asUser != null ? asUser : username,
                 this.domain,
                 restoreXml);
-        this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
         this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
         this.locale = session.getInitLang();
@@ -119,6 +119,10 @@ public class FormSession {
         setupJavaRosaObjects();
         initialize(false, session.getSessionData());
         setupOneQuestionPerScreen();
+        this.postUrl = session.getPostUrl();
+        if (this.postUrl == null) {
+            this.postUrl = new PropertyManager().getSingularProperty("PostURL");
+        }
     }
 
     // New FormSession constructor
