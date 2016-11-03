@@ -71,23 +71,33 @@ public class IncompleteSessionController extends AbstractBaseController{
         List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(
                 getSessionRequest.getUsername());
 
-        List<SerializableFormSession> sessions = formSessionRepo.findUserSessions(username);
-
-        sessions.addAll(migratedSessions);
+        List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(username);
 
         ArrayList<FormSession> formSessions = new ArrayList<>();
 
-        for (int i = 0; i < sessions.size(); i++) {
-            formSessions.add(new FormSession(sessions.get(i)));
+        for (int i = 0; i < formplayerSessions.size(); i++) {
+            System.out.println("Loading formplayer sessions: " + formplayerSessions.get(i));
+            System.out.println("Restore XML: " + formplayerSessions.get(i).getRestoreXml());
+            formSessions.add(new FormSession(formplayerSessions.get(i)));
         }
 
         if (migratedSessions.size() > 0) {
-            // Sweet man we have some old sessions to load up! Unfortunately those ones didn't come
-            // with the restoreXml included, so we have to get the current one.
+
+            // First, get the id of every session we  got from the Formplayer repo so we don't process duplicates
+            ArrayList<String> formplayerSessionIds = new ArrayList<>();
+            for (SerializableFormSession session: formplayerSessions) {
+                formplayerSessionIds.add(session.getId());
+            }
+
+            // Unfortunately migrated sessions don't have the restoreXml included, so we have to get the current one.
             configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
             String restoreXml = restoreFactory.getRestoreXml();
 
             for (int i = 0; i < migratedSessions.size(); i++) {
+                // If we already have this session in the formplayer repo, skip it
+                if (formplayerSessionIds.contains(migratedSessions.get(i).getId())) {
+                    continue;
+                }
                 try {
                     SerializableFormSession serialSession = migratedSessions.get(i);
                     serialSession.setRestoreXml(restoreXml);
