@@ -8,6 +8,7 @@ import objects.SerializableFormSession;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.xform.parse.XFormParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
 import session.FormSession;
@@ -25,6 +26,9 @@ public class NewFormResponseFactory {
     private final XFormService xFormService;
     private final RestoreFactory restoreFactory;
     private final FormSessionRepo formSessionRepo;
+
+    @Autowired
+    protected FormSessionFactory formSessionFactory;
 
     public NewFormResponseFactory(FormSessionRepo formSessionRepo,
                                   XFormService xFormService,
@@ -49,7 +53,7 @@ public class NewFormResponseFactory {
 
     public NewFormResponse getResponse(SerializableFormSession session)
             throws Exception {
-        FormSession formSession = new FormSession(session);
+        FormSession formSession = formSessionFactory.getFormSession(session);
         return new NewFormResponse(formSession);
     }
 

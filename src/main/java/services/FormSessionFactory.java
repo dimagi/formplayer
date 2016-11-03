@@ -35,6 +35,7 @@ public class FormSessionFactory {
         if (serializableFormSession.getRestoreXml() == null) {
             serializableFormSession.setRestoreXml(restoreFactory.getRestoreXml());
         }
+        System.out.println("getformSession with postUrl: " + serializableFormSession.getPostUrl());
         if(serializableFormSession.getPostUrl() == null) {
             serializableFormSession.setPostUrl(
                     StringUtils.getPostUrl(host,
