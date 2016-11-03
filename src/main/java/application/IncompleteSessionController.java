@@ -56,9 +56,8 @@ public class IncompleteSessionController extends AbstractBaseController{
             session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         } catch(FormNotFoundException e) {
             session = migratedFormSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
-            FormSession formSession = formSessionFactory.getFormSession(session);
             // Move over to formplayer db
-            formSessionRepo.save(formSession.serialize());
+            formSessionRepo.save(session);
         }
         Lock lock = getLockAndBlock(session.getUsername());
         try {
@@ -77,6 +76,8 @@ public class IncompleteSessionController extends AbstractBaseController{
 
         String username = TableBuilder.scrubName(getSessionRequest.getUsername());
 
+        restoreFactory.configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
+
         List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(
                 getSessionRequest.getUsername());
 
@@ -86,7 +87,7 @@ public class IncompleteSessionController extends AbstractBaseController{
         restoreFactory.configureRestoreFactory(getSessionRequest, new DjangoAuth(authToken));
 
         for (int i = 0; i < formplayerSessions.size(); i++) {
-            formSessions.add(formSessionFactory.getFormSession(formplayerSessions.get(i)));
+            formSessions.add(new FormSession(formplayerSessions.get(i)));
         }
 
         if (migratedSessions.size() > 0) {
@@ -104,7 +105,7 @@ public class IncompleteSessionController extends AbstractBaseController{
                 }
                 try {
                     SerializableFormSession serialSession = migratedSessions.get(i);
-                    formSessions.add(formSessionFactory.getFormSession(serialSession));
+                    formSessions.add(new FormSession(serialSession));
                 } catch (Exception e) {
                     // I think let's not crash on this.
                     log.error("Couldn't add session " + migratedSessions.get(i) + " with exception " + e);
