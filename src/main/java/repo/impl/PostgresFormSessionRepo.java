@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
+import services.RestoreFactory;
 import util.Constants;
 
 import javax.persistence.LockModeType;
@@ -31,6 +32,9 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private RestoreFactory restoreFactory;
 
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
@@ -170,7 +174,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     }
 
     // helper class for mapping a db row to a serialized session
-    private static final class SessionMapper implements RowMapper<SerializableFormSession> {
+    private final class SessionMapper implements RowMapper<SerializableFormSession> {
 
         public SerializableFormSession mapRow(ResultSet rs, int rowNum) throws SQLException {
 
@@ -190,6 +194,10 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setOneQuestionPerScreen(rs.getBoolean("oneQuestionPerScreen"));
             session.setCurrentIndex(rs.getString("currentIndex"));
             session.setAsUser(rs.getString("asUser"));
+
+            if(session.getRestoreXml() == null) {
+                session.setRestoreXml(restoreFactory.getRestoreXml());
+            }
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if (st != null) {

@@ -53,7 +53,7 @@ public class NewFormResponseFactory {
 
     public NewFormResponse getResponse(SerializableFormSession session)
             throws Exception {
-        FormSession formSession = formSessionFactory.getFormSession(session);
+        FormSession formSession = new FormSession(session);
         return new NewFormResponse(formSession);
     }
 

@@ -5,6 +5,7 @@ import objects.SerializableFormSession;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
@@ -13,8 +14,10 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
+import services.RestoreFactory;
 import util.Constants;
 import util.SessionUtils;
+import util.StringUtils;
 
 import javax.persistence.LockModeType;
 import java.io.*;
@@ -37,6 +40,12 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Autowired
     @Qualifier("hqTemplate")
     private JdbcTemplate jdbcTemplate;
+
+    @Value("${commcarehq.host}")
+    private String host;
+
+    @Autowired
+    private RestoreFactory restoreFactory;
 
     public static final String POSTGRES_MIGRATED_SESSION_TABLE_NAME = "formplayer_session";
     public static final String POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME = "formplayer_entrysession";
@@ -69,11 +78,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
             if(instanceSessions.size() < 1) {
                 continue;
             }
-            InstanceSession instanceSession = instanceSessions.get(0);
-            SerializableFormSession session = loadSessionFromJson(instanceSession.getSessionJson());
-            session.setDateOpened(entrySession.getCreatedDate());
-            session.setId(entrySession.getSessionId());
-            sessions.add(session);
+            sessions.add(buildSerializedSession(entrySession, instanceSessions.get(0)));
         }
         return sessions;
     }
@@ -127,9 +132,24 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
 
         InstanceSession instanceSession = instanceSessions.get(0);
         EntrySession entrySession = entrySessions.get(0);
+        return buildSerializedSession(entrySession, instanceSession);
+    }
+
+    public SerializableFormSession buildSerializedSession(EntrySession entrySession, InstanceSession instanceSession) {
         SerializableFormSession session = loadSessionFromJson(instanceSession.getSessionJson());
         session.setDateOpened(entrySession.getCreatedDate());
         session.setId(entrySession.getSessionId());
+
+        if (session.getRestoreXml() == null) {
+            session.setRestoreXml(restoreFactory.getRestoreXml());
+        }
+
+        if(session.getPostUrl() == null) {
+            session.setPostUrl(
+                    StringUtils.getPostUrl(host,
+                            session.getDomain(),
+                            session.getAppId()));
+        }
         return session;
     }
 
