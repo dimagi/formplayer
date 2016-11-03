@@ -26,7 +26,7 @@ import java.util.concurrent.locks.Lock;
 
 /**
  * Controller class (API endpoint) containing all incomplete session management commands
- * Also handles migration of sessions from old cloudcare
+ *
  */
 @Api(value = "Incomplete Session Controller", description = "Operations for navigating managing incomplete sessions")
 @RestController

@@ -396,12 +396,8 @@ public class FormSession {
         if (caseId == null) {
             return null;
         }
-        try {
-            CaseBean caseBean = CaseAPIs.getFullCase(caseId, (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
-            return (String) caseBean.getProperties().get("case_name");
-        } catch (NoSuchElementException e) {
-            return "Case";
-        }
+        CaseBean caseBean = CaseAPIs.getFullCase(caseId, (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
+        return (String) caseBean.getProperties().get("case_name");
     }
 
     public String getAsUser() {
