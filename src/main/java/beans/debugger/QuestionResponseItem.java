@@ -3,7 +3,8 @@ package beans.debugger;
 import org.json.JSONObject;
 
 /**
- * Created by benrudolph on 11/4/16.
+ * A class representing the question model returned from HQ. See HQ's
+ * FormQuestionResponse class.
  */
 public class QuestionResponseItem {
     private String value;
