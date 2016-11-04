@@ -33,10 +33,10 @@ import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Repository for reading Old CloudCare incomplete form sessions into the new format
@@ -150,7 +150,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
 
     public SerializableFormSession buildSerializedSession(EntrySession entrySession, InstanceSession instanceSession) {
         SerializableFormSession session = loadSessionFromJson(instanceSession.getSessionJson());
-        session.setDateOpened(entrySession.getCreatedDate());
+        session.setDateOpened(convertIsoToJavaDate(entrySession.getCreatedDate()));
         session.setId(entrySession.getSessionId());
 
         if (session.getRestoreXml() == null) {
@@ -407,5 +407,20 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static String convertIsoToJavaDate(String date) {
+        DateFormat dfFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSX", Locale.ENGLISH);
+        Date result;
+        try {
+            result =  dfFrom.parse(date);
+        } catch (ParseException e) {
+            // Could not parse date
+            return null;
+        }
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat dfTo = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy");
+        dfTo.setTimeZone(tz);
+        return dfTo.format(result);
     }
 }
