@@ -77,6 +77,9 @@ public abstract class AbstractBaseController {
     @Autowired
     protected LockRegistry userLockRegistry;
 
+    @Autowired
+    protected NewFormResponseFactory newFormResponseFactory;
+
     @Value("${commcarehq.host}")
     private String hqHost;
 
