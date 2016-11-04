@@ -220,7 +220,7 @@ public class FormplayerConfigEngine {
             }
 
             Localization.setLocale(newLocale);
-        } catch (ResourceInitializationException e) {
+        } catch (InvalidResourceException e) {
             log.error("Error while initializing one of the resolved resources", e);
         }
     }
