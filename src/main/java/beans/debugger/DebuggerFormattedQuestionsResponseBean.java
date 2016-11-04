@@ -1,6 +1,7 @@
 package beans.debugger;
 
 import beans.SessionResponseBean;
+import org.json.JSONArray;
 import util.XmlUtils;
 
 /**
@@ -11,12 +12,17 @@ public class DebuggerFormattedQuestionsResponseBean {
     private String appId;
     private String instanceXml;
     private String formattedQuestions;
+    private QuestionResponseItem[] questionList;
 
-    public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml, String formattedQuestions) {
+    public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml, String formattedQuestions, JSONArray questionList) {
         this.xmlns = xmlns;
         this.appId = appId;
         this.instanceXml = XmlUtils.indent(instanceXml);
         this.formattedQuestions = formattedQuestions;
+        this.questionList = new QuestionResponseItem[questionList.length()];
+        for (int i = 0; i < questionList.length(); i++) {
+            this.questionList[i] = new QuestionResponseItem(questionList.getJSONObject(i));
+        }
     }
 
     public String getFormattedQuestions() {
@@ -49,5 +55,13 @@ public class DebuggerFormattedQuestionsResponseBean {
 
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public QuestionResponseItem[] getQuestionList() {
+        return questionList;
+    }
+
+    public void setQuestionList(QuestionResponseItem[] questionList) {
+        this.questionList = questionList;
     }
 }
