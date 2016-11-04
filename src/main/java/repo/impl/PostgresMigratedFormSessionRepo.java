@@ -3,36 +3,26 @@ package repo.impl;
 import exceptions.FormNotFoundException;
 import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.output.*;
 import org.javarosa.core.model.FormDef;
-import org.javarosa.core.services.PrototypeManager;
-import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.xform.parse.XFormParser;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
-import services.NewFormResponseFactory;
 import services.RestoreFactory;
-import util.Constants;
 import util.PrototypeUtils;
-import util.SessionUtils;
 import util.StringUtils;
 
 import javax.persistence.LockModeType;
 import java.io.*;
-import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -161,7 +151,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
             session.setPostUrl(
                     StringUtils.getPostUrl(host,
                             session.getDomain(),
-                            session.getAppId()));
+                            entrySession.getAppId()));
         }
         PrototypeUtils.setupPrototypes();
         FormDef formDef = parseFormDef(session.getFormXml());

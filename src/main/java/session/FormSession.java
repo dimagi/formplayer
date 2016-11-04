@@ -19,7 +19,6 @@ import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.instance.FormInstance;
-import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
@@ -32,7 +31,6 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
-import services.NewFormResponseFactory;
 import util.PrototypeUtils;
 
 import java.io.*;
@@ -76,7 +74,6 @@ public class FormSession {
     private String currentIndex = "-1";
     private boolean isAtLastIndex = false;
     private String asUser;
-    private String appId;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -95,7 +92,6 @@ public class FormSession {
 
     public FormSession(SerializableFormSession session) throws Exception{
         this.username = session.getUsername();
-        this.appId = session.getAppId();
         this.asUser = session.getAsUser();
         this.restoreXml = session.getRestoreXml();
         this.domain = session.getDomain();
