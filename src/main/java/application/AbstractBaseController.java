@@ -1,7 +1,5 @@
 package application;
 
-import auth.HqAuth;
-import beans.AsUserBean;
 import beans.NewFormResponse;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
@@ -78,9 +76,6 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected LockRegistry userLockRegistry;
-
-    @Autowired
-    protected NewFormResponseFactory newFormResponseFactory;
 
     @Value("${commcarehq.host}")
     private String hqHost;

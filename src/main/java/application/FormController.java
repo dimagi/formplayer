@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
+import services.NewFormResponseFactory;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -50,6 +51,9 @@ public class FormController extends AbstractBaseController{
 
     @Value("${commcarehq.host}")
     private String host;
+
+    @Autowired
+    private NewFormResponseFactory newFormResponseFactory;
 
     private final Log log = LogFactory.getLog(FormController.class);
     private final ObjectMapper mapper = new ObjectMapper();
