@@ -80,7 +80,6 @@ public class IncompleteSessionController extends AbstractBaseController{
         List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(username);
 
         ArrayList<FormSession> formSessions = new ArrayList<>();
-        restoreFactory.configure(getSessionRequest, new DjangoAuth(authToken));
 
         for (int i = 0; i < formplayerSessions.size(); i++) {
             formSessions.add(new FormSession(formplayerSessions.get(i)));

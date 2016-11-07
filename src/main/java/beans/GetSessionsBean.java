@@ -6,6 +6,7 @@ package beans;
 public class GetSessionsBean implements AsUserBean {
     private String username;
     private String domain;
+    private String asUser;
 
     public String getDomain() {
         return domain;
@@ -14,10 +15,13 @@ public class GetSessionsBean implements AsUserBean {
     public void setDomain(String domain) {
         this.domain = domain;
     }
-
     @Override
     public String getAsUser() {
-        return null;
+        return asUser;
+    }
+
+    public void setAsUser(String asUser) {
+        this.asUser = asUser;
     }
 
     public String getUsername() {
