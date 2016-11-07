@@ -133,6 +133,10 @@ public class FormplayerConfigEngine {
             HttpURLConnection.setFollowRedirects(true);
             if (conn.getResponseCode() == 400) {
                 handleInstallError(conn.getErrorStream());
+            } else if (conn.getResponseCode() == 500) {
+                throw new ApplicationConfigException(
+                    "Encountered an error while processing the application. Please submit a ticket if you continue to see this."
+                );
             }
             InputStream result = conn.getInputStream();
 
