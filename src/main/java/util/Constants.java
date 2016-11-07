@@ -29,6 +29,9 @@ public class Constants {
     public static final String URL_QUESTIONS_FOR_INDEX = "questions_for_index";
     public static final String URL_NEXT_INDEX = "next_index";
     public static final String URL_PREV_INDEX = "prev_index";
+    // Debugger URLS
+    public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
+
     //Menus
     public static final String MENU_MODULE = "modules";
     public static final String MENU_ENTITY = "entity";
