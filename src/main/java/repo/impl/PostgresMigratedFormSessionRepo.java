@@ -188,6 +188,8 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     public void delete(String id) {
         this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE session_id = ?",
                 POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME), id);
+        this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE sess_id = ?",
+                POSTGRES_MIGRATED_SESSION_TABLE_NAME), id);
     }
 
     @Override
