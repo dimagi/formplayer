@@ -22,7 +22,7 @@ public class FormattedQuestionsServiceImpl implements FormattedQuestionsService 
     private String host;
 
     @Override
-    public String getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml, HqAuth auth) {
+    public QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
         MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
 
@@ -40,7 +40,10 @@ public class FormattedQuestionsServiceImpl implements FormattedQuestionsService 
         if (response.getStatusCode().value() == 200) {
             String responseBody = response.getBody();
             JSONObject responseJSON = new JSONObject(responseBody);
-            return responseJSON.getString("form_data");
+            return new QuestionResponse(
+                    responseJSON.getString("form_data"),
+                    responseJSON.getJSONArray("form_questions")
+            );
         } else {
             throw new RuntimeException("Error fetching debugging context");
         }
