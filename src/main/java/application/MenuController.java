@@ -6,6 +6,7 @@ import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
+import annotations.LockAndBlock;
 import beans.menus.BaseResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -67,6 +68,7 @@ public class MenuController extends AbstractBaseController{
      * @throws Exception
      */
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
+    @LockAndBlock
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);

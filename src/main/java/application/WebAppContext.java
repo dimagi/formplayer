@@ -1,17 +1,17 @@
 package application;
 
+import aspects.LockOnUsername;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
+import org.aspectj.lang.Aspects;
 import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -46,7 +46,8 @@ import java.util.Properties;
 @EnableAutoConfiguration
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*"})
+@EnableAspectJAutoProxy
+@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*", "annotations.*", "aspects.*"})
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${commcarehq.host}")
@@ -160,6 +161,12 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         viewResolver.setSuffix(".jsp");
 
         return viewResolver;
+    }
+
+    @Bean
+    public LockOnUsername lockAspect() {
+        LockOnUsername aspect = Aspects.aspectOf(LockOnUsername.class);
+        return aspect;
     }
 
     @Bean
