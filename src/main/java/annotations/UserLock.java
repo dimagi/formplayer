@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by willpride on 11/8/16.
+ * Annotation for methods that should be locked by username
  */
 @Component
 @Target(value = {ElementType.METHOD, ElementType.TYPE})
