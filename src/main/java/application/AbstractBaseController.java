@@ -27,6 +27,7 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xpath.XPathException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.integration.support.locks.LockRegistry;
@@ -79,6 +80,10 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected NewFormResponseFactory newFormResponseFactory;
+
+    @Autowired
+    @Qualifier(value = "migrated")
+    protected FormSessionRepo migratedFormSessionRepo;
 
     @Value("${commcarehq.host}")
     private String hqHost;
@@ -333,5 +338,10 @@ public abstract class AbstractBaseController {
         } catch (InterruptedException e){
             return obtainLock(lock);
         }
+    }
+
+    protected void deleteSession(String id) {
+        formSessionRepo.delete(id);
+        migratedFormSessionRepo.delete(id);
     }
 }

@@ -41,7 +41,6 @@ public class TestContext {
         return Mockito.mock(FormSessionRepo.class);
     }
 
-
     @Bean
     public MenuSessionRepo menuSessionRepo() {
         return Mockito.mock(MenuSessionRepo.class);

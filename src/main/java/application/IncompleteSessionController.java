@@ -1,10 +1,7 @@
 package application;
 
 import auth.DjangoAuth;
-import beans.GetSessionsBean;
-import beans.GetSessionsResponse;
-import beans.IncompleteSessionRequestBean;
-import beans.NewFormResponse;
+import beans.*;
 import exceptions.FormNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -35,9 +32,6 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @Value("${commcarehq.host}")
     private String host;
-
-    @Autowired
-    protected FormSessionRepo migratedFormSessionRepo;
 
     private final Log log = LogFactory.getLog(IncompleteSessionController.class);
 
@@ -109,6 +103,20 @@ public class IncompleteSessionController extends AbstractBaseController{
         }
 
         return new GetSessionsResponse(formSessions);
+    }
+
+    @ApiOperation(value = "Delete an incomplete form session")
+    @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
+    public NotificationMessageBean deleteIncompleteForm(
+            @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        Lock lock = getLockAndBlock(incompleteSessionRequestBean.getUsername());
+        try {
+            formSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
+            return new NotificationMessageBean("Successfully deleted incomplete form.", false);
+        } finally {
+            lock.unlock();
+        }
     }
 
 }

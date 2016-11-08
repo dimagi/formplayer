@@ -21,9 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
-import repo.impl.PostgresMigratedFormSessionRepo;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -50,9 +48,6 @@ public class FormController extends AbstractBaseController{
     @Autowired
     private SubmitService submitService;
 
-    @Autowired
-    protected PostgresMigratedFormSessionRepo migratedFormSessionRepo;
-
     @Value("${commcarehq.host}")
     private String host;
 
@@ -76,21 +71,6 @@ public class FormController extends AbstractBaseController{
             lock.unlock();
         }
     }
-
-    @ApiOperation(value = "Delete an incomplete form session")
-    @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
-    public NotificationMessageBean deleteIncompleteForm(
-            @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        Lock lock = getLockAndBlock(incompleteSessionRequestBean.getUsername());
-        try {
-            formSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
-            return new NotificationMessageBean("Successfully deleted incomplete form.", false);
-        } finally {
-            lock.unlock();
-        }
-    }
-
 
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
@@ -190,11 +170,6 @@ public class FormController extends AbstractBaseController{
         } finally {
             lock.unlock();
         }
-    }
-
-    private void deleteSession(String id) {
-        formSessionRepo.delete(id);
-        migratedFormSessionRepo.delete(id);
     }
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
