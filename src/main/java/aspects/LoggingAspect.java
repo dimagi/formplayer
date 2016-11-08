@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.lang.reflect.Method;
 
 /**
- * Created by willpride on 11/8/16.
+ * Aspect to log the inputs and return of each API method
  */
 @Aspect
 public class LoggingAspect {
