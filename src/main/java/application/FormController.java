@@ -1,5 +1,6 @@
 package application;
 
+import annotations.UserLock;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.*;
@@ -110,24 +111,20 @@ public class FormController extends AbstractBaseController{
 
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
+    @UserLock
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         log.info("Answer question with bean: " + answerQuestionBean);
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
-        Lock lock = getLockAndBlock(session.getUsername());
-        try {
-            FormSession formEntrySession = new FormSession(session);
-            JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
-                    answerQuestionBean.getFormIndex());
-            updateSession(formEntrySession, session);
-            FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
-            responseBean.setTitle(formEntrySession.getTitle());
-            responseBean.setSequenceId(formEntrySession.getSequenceId());
-            responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
-            log.info("Answer response: " + responseBean);
-            return responseBean;
-        } finally {
-            lock.unlock();
-        }
+        FormSession formEntrySession = new FormSession(session);
+        JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
+                answerQuestionBean.getFormIndex());
+        updateSession(formEntrySession, session);
+        FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
+        responseBean.setTitle(formEntrySession.getTitle());
+        responseBean.setSequenceId(formEntrySession.getSequenceId());
+        responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        log.info("Answer response: " + responseBean);
+        return responseBean;
     }
 
     @ApiOperation(value = "Get the current question (deprecated)")
