@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 /**
- * Created by willpride on 11/7/16.
+ * Aspect for weaving locking for classes that require it
  */
 @Aspect
 public class LockAspect {
