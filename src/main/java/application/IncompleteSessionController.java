@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,10 @@ public class IncompleteSessionController extends AbstractBaseController{
     private String host;
 
     private final Log log = LogFactory.getLog(IncompleteSessionController.class);
+
+    @Autowired
+    @Qualifier(value = "migrated")
+    protected FormSessionRepo migratedFormSessionRepo;
 
     @ApiOperation(value = "Open an incomplete form session")
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
@@ -112,11 +117,16 @@ public class IncompleteSessionController extends AbstractBaseController{
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         Lock lock = getLockAndBlock(incompleteSessionRequestBean.getUsername());
         try {
-            formSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
+            deleteSession(incompleteSessionRequestBean.getSessionId());
             return new NotificationMessageBean("Successfully deleted incomplete form.", false);
         } finally {
             lock.unlock();
         }
+    }
+
+    protected void deleteSession(String id) {
+        formSessionRepo.delete(id);
+        migratedFormSessionRepo.delete(id);
     }
 
 }

@@ -17,10 +17,12 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
 import services.SubmitService;
 import services.XFormService;
@@ -47,6 +49,10 @@ public class FormController extends AbstractBaseController{
 
     @Autowired
     private SubmitService submitService;
+
+    @Autowired
+    @Qualifier(value = "migrated")
+    protected FormSessionRepo migratedFormSessionRepo;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -170,6 +176,11 @@ public class FormController extends AbstractBaseController{
         } finally {
             lock.unlock();
         }
+    }
+
+    protected void deleteSession(String id) {
+        formSessionRepo.delete(id);
+        migratedFormSessionRepo.delete(id);
     }
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {

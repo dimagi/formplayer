@@ -81,10 +81,6 @@ public abstract class AbstractBaseController {
     @Autowired
     protected NewFormResponseFactory newFormResponseFactory;
 
-    @Autowired
-    @Qualifier(value = "migrated")
-    protected FormSessionRepo migratedFormSessionRepo;
-
     @Value("${commcarehq.host}")
     private String hqHost;
 
@@ -338,10 +334,5 @@ public abstract class AbstractBaseController {
         } catch (InterruptedException e){
             return obtainLock(lock);
         }
-    }
-
-    protected void deleteSession(String id) {
-        formSessionRepo.delete(id);
-        migratedFormSessionRepo.delete(id);
     }
 }
