@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.lightcouch.CouchDbClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -256,6 +257,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    @Qualifier(value = "migrated")
     public FormSessionRepo migratedFormSessionRepo(){
         return new PostgresMigratedFormSessionRepo();
     }
