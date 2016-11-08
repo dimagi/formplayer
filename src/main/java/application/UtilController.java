@@ -29,8 +29,6 @@ import java.util.List;
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
 
-    private final Log log = LogFactory.getLog(UtilController.class);
-
     @ApiOperation(value = "Filter the user's casedb given a predicate expression")
     @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
     public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest,
@@ -74,7 +72,6 @@ public class UtilController extends AbstractBaseController {
     @ApiOperation(value = "Get a list of the current user's sessions")
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
-        log.info("Get Session Request: " + getSessionRequest);
         String username = TableBuilder.scrubName(getSessionRequest.getUsername());
         List<SerializableFormSession> sessions = formSessionRepo.findUserSessions(username);
         FormSession[] formSessions = new FormSession[sessions.size()];
