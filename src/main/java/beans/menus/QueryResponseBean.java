@@ -2,7 +2,7 @@ package beans.menus;
 
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.DisplayUnit;
-import org.commcare.util.cli.QueryScreen;
+import org.commcare.util.screen.QueryScreen;
 
 import java.util.Arrays;
 import java.util.Hashtable;
