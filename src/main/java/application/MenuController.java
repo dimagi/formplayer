@@ -71,7 +71,7 @@ public class MenuController extends AbstractBaseController{
         configureRestoreFactory(sessionNavigationBean, auth);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
-            menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
+            menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
                     installService, restoreFactory, auth, host);
             menuSession.getSessionWrapper().syncState();
         } else {
