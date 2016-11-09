@@ -5,7 +5,7 @@ import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.Entry;
 import org.commcare.suite.model.PostRequest;
 import org.commcare.suite.model.RemoteRequestEntry;
-import org.commcare.util.cli.SyncScreen;
+import org.commcare.util.screen.SyncScreen;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;

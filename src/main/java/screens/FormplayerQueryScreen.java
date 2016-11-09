@@ -1,7 +1,7 @@
 package screens;
 
 import auth.HqAuth;
-import org.commcare.util.cli.QueryScreen;
+import org.commcare.util.screen.QueryScreen;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
