@@ -7,6 +7,7 @@ import beans.InstallRequestBean;
 import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
+import exceptions.MenuNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
@@ -15,6 +16,7 @@ import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.Screen;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import screens.FormplayerQueryScreen;
@@ -74,7 +76,7 @@ public class MenuController extends AbstractBaseController{
             configureRestoreFactory(sessionNavigationBean, auth);
             String menuSessionId = sessionNavigationBean.getMenuSessionId();
             if (menuSessionId != null && !"".equals(menuSessionId)) {
-                menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
+                menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
                         installService, restoreFactory, auth, host);
                 menuSession.getSessionWrapper().syncState();
             } else {
@@ -144,7 +146,10 @@ public class MenuController extends AbstractBaseController{
             } else {
                 return new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
             }
-        } finally {
+        } catch (MenuNotFoundException e) {
+            return new BaseResponseBean(null, e.getMessage(), true, true);
+        }
+        finally {
             lock.unlock();
         }
     }
