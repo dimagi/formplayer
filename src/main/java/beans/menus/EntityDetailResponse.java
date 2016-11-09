@@ -3,7 +3,7 @@ package beans.menus;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
-import org.commcare.util.cli.EntityDetailSubscreen;
+import org.commcare.util.screen.EntityDetailSubscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 
 import java.util.Arrays;
