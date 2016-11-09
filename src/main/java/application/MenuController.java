@@ -49,9 +49,7 @@ public class MenuController extends AbstractBaseController{
 
         Lock lock = getLockAndBlock(installRequestBean.getUsername());
         try {
-            log.info("Received install request: " + installRequestBean);
             BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-            log.info("Returning install response: " + response);
             return response;
         } finally {
             lock.unlock();
@@ -69,7 +67,6 @@ public class MenuController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
         Lock lock = getLockAndBlock(sessionNavigationBean.getUsername());
         try {
             MenuSession menuSession;
@@ -143,7 +140,6 @@ public class MenuController extends AbstractBaseController{
                     titles);
             if (nextMenu != null) {
                 nextMenu.setNotification(notificationMessageBean);
-                log.info("Returning menu: " + nextMenu);
                 return nextMenu;
             } else {
                 return new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
