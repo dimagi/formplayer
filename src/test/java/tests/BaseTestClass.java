@@ -249,7 +249,7 @@ public class BaseTestClass {
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 return serializableMenuSession;
             }
-        }).when(menuSessionRepoMock).findOne(anyString());
+        }).when(menuSessionRepoMock).findOneWrapped(anyString());
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -501,7 +501,7 @@ public class BaseTestClass {
     }
 
     <T> T sessionNavigateWithId(String[] selections, String sessionId, Class<T> clazz) throws Exception {
-        SerializableMenuSession menuSession = menuSessionRepoMock.findOne(sessionId);
+        SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(sessionId);
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(menuSession.getDomain());
         sessionNavigationBean.setAppId(menuSession.getAppId());

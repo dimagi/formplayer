@@ -8,6 +8,7 @@ import beans.InstallRequestBean;
 import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
+import exceptions.MenuNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
@@ -16,6 +17,7 @@ import org.commcare.util.cli.CommCareSessionException;
 import org.commcare.util.cli.Screen;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import screens.FormplayerQueryScreen;
@@ -48,9 +50,7 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("Received install request: " + installRequestBean);
         BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-        log.info("Returning install response: " + response);
         return response;
     }
 
@@ -66,7 +66,6 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
         MenuSession menuSession;
         DjangoAuth auth = new DjangoAuth(authToken);
         configureRestoreFactory(sessionNavigationBean, auth);
