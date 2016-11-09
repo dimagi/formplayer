@@ -19,7 +19,7 @@ public class LoggingAspect {
     private final Log log = LogFactory.getLog(LoggingAspect.class);
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
-    public void logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
+    public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature ms = (MethodSignature) joinPoint.getSignature();
         Method m = ms.getMethod();
         String requestPath = m.getAnnotation(RequestMapping.class).value()[0]; //Should be only one
@@ -32,5 +32,6 @@ public class LoggingAspect {
         }
         Object result = joinPoint.proceed();
         log.info("Request to " + requestPath + " returned result " + result);
+        return result;
     }
 }
