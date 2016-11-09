@@ -1,5 +1,6 @@
 package application;
 
+import aspects.LoggingAspect;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
@@ -7,10 +8,7 @@ import org.apache.commons.mail.HtmlEmail;
 import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.integration.redis.util.RedisLockRegistry;
@@ -47,6 +45,7 @@ import java.util.Properties;
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*"})
+@EnableAspectJAutoProxy
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${commcarehq.host}")
@@ -303,5 +302,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
             }
 
         }
+    }
+
+    @Bean
+    public LoggingAspect loggingAspect() {
+        return new LoggingAspect();
     }
 }
