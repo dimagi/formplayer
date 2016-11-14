@@ -106,7 +106,6 @@ public class FormSession {
         this.sequenceId = session.getSequenceId();
         this.menuSessionId = session.getMenuSessionId();
         this.dateOpened = session.getDateOpened();
-        PrototypeUtils.setupPrototypes();
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));

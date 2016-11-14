@@ -62,8 +62,6 @@ public class FormplayerConfigEngine {
             dbFolder.mkdirs();
         }
 
-        PrototypeUtils.setupPrototypes();
-
         setRoots();
 
         table = ResourceTable.RetrieveTable(new SqliteIndexedStorageUtility<>(Resource.class,

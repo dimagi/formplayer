@@ -156,7 +156,6 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
                             session.getDomain(),
                             entrySession.getAppId()));
         }
-        PrototypeUtils.setupPrototypes();
         FormDef formDef = parseFormDef(session.getFormXml());
         session.setFormXml(serializeFormDef(formDef));
 
