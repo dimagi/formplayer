@@ -1,7 +1,6 @@
 package application;
 
 import auth.HqAuth;
-import beans.AsUserBean;
 import beans.NewFormResponse;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
