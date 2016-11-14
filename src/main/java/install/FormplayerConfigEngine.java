@@ -50,7 +50,7 @@ public class FormplayerConfigEngine {
     private final Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
     public FormplayerConfigEngine(final String username, final String dbPath) {
-        this.platform = new CommCarePlatform(2, 27);
+        this.platform = new CommCarePlatform(2, 31);
         log.info("FormplayerConfigEngine for username: " + username + " with dbPath: " + dbPath);
         String trimmedUsername = StringUtils.substringBefore(username, "@");
 
@@ -133,6 +133,10 @@ public class FormplayerConfigEngine {
             HttpURLConnection.setFollowRedirects(true);
             if (conn.getResponseCode() == 400) {
                 handleInstallError(conn.getErrorStream());
+            } else if (conn.getResponseCode() == 500) {
+                throw new ApplicationConfigException(
+                    "Encountered an error while processing the application. Please submit a ticket if you continue to see this."
+                );
             }
             InputStream result = conn.getInputStream();
 
@@ -220,7 +224,7 @@ public class FormplayerConfigEngine {
             }
 
             Localization.setLocale(newLocale);
-        } catch (ResourceInitializationException e) {
+        } catch (InvalidResourceException e) {
             log.error("Error while initializing one of the resolved resources", e);
         }
     }
