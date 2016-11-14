@@ -24,8 +24,6 @@ import util.Constants;
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
 
-    private final Log log = LogFactory.getLog(UtilController.class);
-
     @ApiOperation(value = "Filter the user's casedb given a predicate expression")
     @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
     public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest,

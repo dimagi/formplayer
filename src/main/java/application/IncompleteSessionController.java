@@ -44,7 +44,6 @@ public class IncompleteSessionController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
     public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("Incomplete session request with bean: " + incompleteSessionRequestBean + " sessionId :" + authToken);
         SerializableFormSession session;
         restoreFactory.configure(incompleteSessionRequestBean, new DjangoAuth(authToken));
         try {
@@ -57,18 +56,16 @@ public class IncompleteSessionController extends AbstractBaseController{
         Lock lock = getLockAndBlock(session.getUsername());
         try {
             NewFormResponse response = newFormResponseFactory.getResponse(session);
-            log.info("Return incomplete session response: " + response);
             return response;
         } finally {
             lock.unlock();
         }
     }
+
     @ApiOperation(value = "Get a list of the current user's sessions")
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("Get Session Request: " + getSessionRequest);
-
         String username = TableBuilder.scrubName(getSessionRequest.getUsername());
 
         restoreFactory.configure(getSessionRequest, new DjangoAuth(authToken));

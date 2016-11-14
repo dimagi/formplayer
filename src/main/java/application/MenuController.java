@@ -7,14 +7,16 @@ import beans.InstallRequestBean;
 import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
+import exceptions.MenuNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.util.cli.CommCareSessionException;
-import org.commcare.util.cli.Screen;
+import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.Screen;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import screens.FormplayerQueryScreen;
@@ -49,9 +51,7 @@ public class MenuController extends AbstractBaseController{
 
         Lock lock = getLockAndBlock(installRequestBean.getUsername());
         try {
-            log.info("Received install request: " + installRequestBean);
             BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-            log.info("Returning install response: " + response);
             return response;
         } finally {
             lock.unlock();
@@ -69,7 +69,6 @@ public class MenuController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        log.info("Navigate session with bean: " + sessionNavigationBean + " and authtoken: " + authToken);
         Lock lock = getLockAndBlock(sessionNavigationBean.getUsername());
         try {
             MenuSession menuSession;
@@ -77,7 +76,7 @@ public class MenuController extends AbstractBaseController{
             restoreFactory.configure(sessionNavigationBean, auth);
             String menuSessionId = sessionNavigationBean.getMenuSessionId();
             if (menuSessionId != null && !"".equals(menuSessionId)) {
-                menuSession = new MenuSession(menuSessionRepo.findOne(menuSessionId),
+                menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
                         installService, restoreFactory, auth, host);
                 menuSession.getSessionWrapper().syncState();
             } else {
@@ -143,12 +142,14 @@ public class MenuController extends AbstractBaseController{
                     titles);
             if (nextMenu != null) {
                 nextMenu.setNotification(notificationMessageBean);
-                log.info("Returning menu: " + nextMenu);
                 return nextMenu;
             } else {
                 return new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
             }
-        } finally {
+        } catch (MenuNotFoundException e) {
+            return new BaseResponseBean(null, e.getMessage(), true, true);
+        }
+        finally {
             lock.unlock();
         }
     }
