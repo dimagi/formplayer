@@ -19,6 +19,7 @@ import session.FormSession;
 import util.Constants;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 
@@ -52,6 +53,7 @@ public class IncompleteSessionController extends AbstractBaseController{
             session = migratedFormSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
             // Move over to formplayer db
             formSessionRepo.save(session);
+            migratedFormSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
         }
         Lock lock = getLockAndBlock(session.getUsername());
         try {
@@ -66,32 +68,30 @@ public class IncompleteSessionController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        String username = TableBuilder.scrubName(getSessionRequest.getUsername());
+        String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
         restoreFactory.configure(getSessionRequest, new DjangoAuth(authToken));
 
+        // Old CloudCare doesn't use scrubbed usernames
         List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(
                 getSessionRequest.getUsername());
 
-        List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(username);
+        List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(scrubbedUsername);
 
         ArrayList<FormSession> formSessions = new ArrayList<>();
+        String[] formplayerSessionIds = new String[formplayerSessions.size()];
 
         for (int i = 0; i < formplayerSessions.size(); i++) {
-            formSessions.add(new FormSession(formplayerSessions.get(i)));
+            SerializableFormSession serializableFormSession = formplayerSessions.get(i);
+            formSessions.add(new FormSession(serializableFormSession));
+            formplayerSessionIds[i] = serializableFormSession.getId();
         }
 
         if (migratedSessions.size() > 0) {
 
-            // First, get the id of every session we  got from the Formplayer repo so we don't process duplicates
-            ArrayList<String> formplayerSessionIds = new ArrayList<>();
-            for (SerializableFormSession session: formplayerSessions) {
-                formplayerSessionIds.add(session.getId());
-            }
-
             for (int i = 0; i < migratedSessions.size(); i++) {
                 // If we already have this session in the formplayer repo, skip it
-                if (formplayerSessionIds.contains(migratedSessions.get(i).getId())) {
+                if (Arrays.asList(formplayerSessionIds).contains(migratedSessions.get(i).getId())) {
                     continue;
                 }
                 try {

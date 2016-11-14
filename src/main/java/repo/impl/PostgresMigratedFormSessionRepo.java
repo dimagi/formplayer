@@ -3,6 +3,8 @@ package repo.impl;
 import exceptions.FormNotFoundException;
 import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.xform.parse.XFormParser;
 import org.json.JSONObject;
@@ -16,6 +18,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
 import services.RestoreFactory;
+import util.FormplayerDateUtils;
 import util.PrototypeUtils;
 import util.StringUtils;
 
@@ -23,10 +26,9 @@ import javax.persistence.LockModeType;
 import java.io.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Repository for reading Old CloudCare incomplete form sessions into the new format
@@ -50,6 +52,8 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Autowired
     private RestoreFactory restoreFactory;
 
+    private static final Log log = LogFactory.getLog(PostgresMigratedFormSessionRepo.class);
+
     public static final String POSTGRES_MIGRATED_SESSION_TABLE_NAME = "formplayer_session";
     public static final String POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME = "formplayer_entrysession";
     public static final String POSTGRES_AUTH_USER_TABLE_NAME = "auth_user";
@@ -58,7 +62,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     public List<SerializableFormSession> findUserSessions(String username) {
 
         List<Integer> userIds = this.jdbcTemplate.query(
-                replaceTableName("SELECT * FROM %s WHERE username = ?", POSTGRES_AUTH_USER_TABLE_NAME),
+                String.format("SELECT * FROM %s WHERE username = ?", POSTGRES_AUTH_USER_TABLE_NAME),
                 new Object[] {username},
                 new UserIdMapper());
 
@@ -68,14 +72,14 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         List<SerializableFormSession> sessions = new ArrayList<>();
 
         List<EntrySession> entrySessions = this.jdbcTemplate.query(
-                replaceTableName("SELECT * FROM %s WHERE user_id = ?", POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME),
+                String.format("SELECT * FROM %s WHERE user_id = ?", POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME),
                 new Object[] {userId},
                 new EntrySessionMapper());
 
         for (EntrySession entrySession: entrySessions) {
             String sessionId = entrySession.getSessionId();
             List<InstanceSession> instanceSessions = this.jdbcTemplate.query(
-                    replaceTableName("SELECT * FROM %s WHERE sess_id = ?", POSTGRES_MIGRATED_SESSION_TABLE_NAME),
+                    String.format("SELECT * FROM %s WHERE sess_id = ?", POSTGRES_MIGRATED_SESSION_TABLE_NAME),
                     new Object[] {sessionId},
                     new InstanceSessionMapper());
             if(instanceSessions.size() < 1) {
@@ -89,10 +93,8 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Override
     @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> Iterable<S> save(Iterable<S> entities) {
-        for(SerializableFormSession session: entities){
-            save(session);
-        }
-        return entities;
+        throw new RuntimeException("Tried to save " + entities + " into the Old CloudCare session DB. " +
+                "We should not be updating these entries");
     }
 
     private byte[] writeToBytes(Object object){
@@ -110,7 +112,8 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Override
     @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> S save(S session) {
-        return null;
+        throw new RuntimeException("Tried to save " + session + " into the Old CloudCare session DB. " +
+                "We should not be updating these entries");
     }
 
     public SerializableFormSession findOneWrapped(String id) throws FormNotFoundException {
@@ -124,12 +127,12 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Override
     public SerializableFormSession findOne(String id) {
         List<EntrySession> entrySessions = this.jdbcTemplate.query(
-                replaceTableName("SELECT * FROM %s WHERE session_id = ?", POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME),
+                String.format("SELECT * FROM %s WHERE session_id = ?", POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME),
                 new Object[] {id},
                 new EntrySessionMapper());
 
         List<InstanceSession> instanceSessions = this.jdbcTemplate.query(
-                replaceTableName("SELECT * FROM %s WHERE sess_id = ?", POSTGRES_MIGRATED_SESSION_TABLE_NAME),
+                String.format("SELECT * FROM %s WHERE sess_id = ?", POSTGRES_MIGRATED_SESSION_TABLE_NAME),
                 new Object[] {id},
                 new InstanceSessionMapper());
 
@@ -140,7 +143,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
 
     public SerializableFormSession buildSerializedSession(EntrySession entrySession, InstanceSession instanceSession) {
         SerializableFormSession session = loadSessionFromJson(instanceSession.getSessionJson());
-        session.setDateOpened(convertIsoToJavaDate(entrySession.getCreatedDate()));
+        session.setDateOpened(FormplayerDateUtils.convertIsoToJavaDate(entrySession.getCreatedDate()));
         session.setId(entrySession.getSessionId());
 
         if (session.getRestoreXml() == null) {
@@ -162,7 +165,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
 
     @Override
     public boolean exists(String s) {
-        String sql = replaceTableName("select exists(select 1 from %s where session_id = ?)",
+        String sql = String.format("select exists(select 1 from %s where session_id = ?)",
                 POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME);
         return this.jdbcTemplate.queryForObject(sql, boolean.class, s);
     }
@@ -180,15 +183,15 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     @Override
     public long count() {
         return this.jdbcTemplate.queryForObject(
-                replaceTableName("select count(*) from %s", POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME), Integer.class);
+                String.format("select count(*) from %s", POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME), Integer.class);
     }
 
     @Override
     @Lock(LockModeType.OPTIMISTIC)
     public void delete(String id) {
-        this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE session_id = ?",
+        this.jdbcTemplate.update(String.format("DELETE FROM %s WHERE session_id = ?",
                 POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME), id);
-        this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE sess_id = ?",
+        this.jdbcTemplate.update(String.format("DELETE FROM %s WHERE sess_id = ?",
                 POSTGRES_MIGRATED_SESSION_TABLE_NAME), id);
     }
 
@@ -210,10 +213,6 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         for(SerializableFormSession session: allSessions){
             delete(session.getId());
         }
-    }
-
-    public String replaceTableName(String query, String tableName){
-        return String.format(query, tableName);
     }
 
     private class UserIdMapper implements RowMapper<Integer> {
@@ -386,7 +385,7 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
             formDef.writeExternal(serializedStream);
             return Base64.encodeBase64String(baos.toByteArray());
         } catch(Exception e) {
-            e.printStackTrace();
+            log.error("Got exception " + e + " parsing formDef " + formDef);
             return null;
         }
     }
@@ -396,23 +395,8 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
             XFormParser mParser = new XFormParser(new StringReader(formXml));
             return mParser.parse();
         } catch(Exception e) {
-            e.printStackTrace();
+            log.error("Got exception " + e + " parsing formXml " + formXml);
             return null;
         }
-    }
-
-    private static String convertIsoToJavaDate(String date) {
-        DateFormat dfFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSX", Locale.ENGLISH);
-        Date result;
-        try {
-            result =  dfFrom.parse(date);
-        } catch (ParseException e) {
-            // Could not parse date
-            return null;
-        }
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat dfTo = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy");
-        dfTo.setTimeZone(tz);
-        return dfTo.format(result);
     }
 }
