@@ -71,9 +71,13 @@ public class MenuController extends AbstractBaseController{
         configureRestoreFactory(sessionNavigationBean, auth);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
-            menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
-                    installService, restoreFactory, auth, host);
-            menuSession.getSessionWrapper().syncState();
+            try {
+                menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
+                        installService, restoreFactory, auth, host);
+                menuSession.getSessionWrapper().syncState();
+            } catch(MenuNotFoundException e) {
+                return new BaseResponseBean(null, e.getMessage(), true, true);
+            }
         } else {
             // If we have a preview command, load that up
             if(sessionNavigationBean.getPreviewCommand() != null){
