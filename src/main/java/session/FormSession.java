@@ -423,4 +423,15 @@ public class FormSession {
         s.serialize(dataInstance, null);
         return XmlUtil.getPrettyXml(bos.toByteArray());
     }
+
+    public CaseBean[] getCases() {
+        ArrayList<CaseBean> cases = new ArrayList<>();
+        for(String key: this.getSessionData().keySet()) {
+            if (key.contains("case_id")) {
+                CaseBean caseBean = CaseAPIs.getFullCase(sessionData.get(key), (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
+                cases.add(caseBean);
+            }
+        }
+        return cases.toArray(new CaseBean[cases.size()]);
+    }
 }

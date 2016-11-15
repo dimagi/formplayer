@@ -1,6 +1,7 @@
 package application;
 
 import auth.DjangoAuth;
+import beans.CaseBean;
 import beans.SessionRequestBean;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import io.swagger.annotations.Api;
@@ -47,6 +48,7 @@ public class DebuggerController extends AbstractBaseController {
         );
 
         Hashtable<String, String> externalDataInstances = formSession.getPrettyExternalInstances();
+        CaseBean[] cases = formSession.getCases();
 
         return new DebuggerFormattedQuestionsResponseBean(
                 serializableMenuSession.getAppId(),
@@ -54,7 +56,8 @@ public class DebuggerController extends AbstractBaseController {
                 formSession.getInstanceXml(),
                 response.getFormattedQuestions(),
                 response.getQuestionList(),
-                externalDataInstances
+                externalDataInstances,
+                cases
         );
     }
 }

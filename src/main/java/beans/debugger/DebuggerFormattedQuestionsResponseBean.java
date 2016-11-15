@@ -1,5 +1,6 @@
 package beans.debugger;
 
+import beans.CaseBean;
 import beans.SessionResponseBean;
 import org.json.JSONArray;
 import util.XmlUtils;
@@ -17,10 +18,12 @@ public class DebuggerFormattedQuestionsResponseBean {
     private String formattedQuestions;
     private QuestionResponseItem[] questionList;
     private ExternalDataInstanceItem[] instanceList;
+    private CaseBean[] cases;
 
     public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml,
                                                   String formattedQuestions, JSONArray questionList,
-                                                  Hashtable<String, String> dataInstances) {
+                                                  Hashtable<String, String> dataInstances,
+                                                  CaseBean[] cases) {
         this.xmlns = xmlns;
         this.appId = appId;
         this.instanceXml = XmlUtils.indent(instanceXml);
@@ -30,6 +33,7 @@ public class DebuggerFormattedQuestionsResponseBean {
             this.questionList[i] = new QuestionResponseItem(questionList.getJSONObject(i));
         }
         initializeInstances(dataInstances);
+        this.cases = cases;
     }
 
     private void initializeInstances(Hashtable<String, String> dataInstances) {
@@ -90,5 +94,13 @@ public class DebuggerFormattedQuestionsResponseBean {
 
     public void setInstanceList(ExternalDataInstanceItem[] instanceList) {
         this.instanceList = instanceList;
+    }
+
+    public CaseBean[] getCases() {
+        return cases;
+    }
+
+    public void setCases(CaseBean[] cases) {
+        this.cases = cases;
     }
 }
