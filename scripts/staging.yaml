@@ -44,8 +44,7 @@
 
 trunk: master
 name: autostaging
-branches:
-  - bmb/current-index
+branches: []
 submodules:
   libs/commcare:
     branches:
