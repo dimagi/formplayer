@@ -1,4 +1,6 @@
 {
+  "username": "test",
+  "domain": "test",
   "action": "touchcare-filter-cases",
   "hq_auth": {
     "type": "django-session",
