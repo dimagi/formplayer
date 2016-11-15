@@ -1,5 +1,6 @@
 package application;
 
+import annotations.UserLock;
 import auth.DjangoAuth;
 import beans.*;
 import exceptions.FormNotFoundException;
@@ -43,6 +44,7 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @ApiOperation(value = "Open an incomplete form session")
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
+    @UserLock
     public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session;
@@ -55,13 +57,7 @@ public class IncompleteSessionController extends AbstractBaseController{
             formSessionRepo.save(session);
             migratedFormSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
         }
-        Lock lock = getLockAndBlock(session.getUsername());
-        try {
-            NewFormResponse response = newFormResponseFactory.getResponse(session);
-            return response;
-        } finally {
-            lock.unlock();
-        }
+        return newFormResponseFactory.getResponse(session);
     }
 
     @ApiOperation(value = "Get a list of the current user's sessions")
@@ -112,13 +108,8 @@ public class IncompleteSessionController extends AbstractBaseController{
     public NotificationMessageBean deleteIncompleteForm(
             @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        Lock lock = getLockAndBlock(incompleteSessionRequestBean.getUsername());
-        try {
-            deleteSession(incompleteSessionRequestBean.getSessionId());
-            return new NotificationMessageBean("Successfully deleted incomplete form.", false);
-        } finally {
-            lock.unlock();
-        }
+        formSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
+        return new NotificationMessageBean("Successfully deleted incomplete form.", false);
     }
 
     protected void deleteSession(String id) {
