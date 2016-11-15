@@ -19,9 +19,7 @@ import repo.FormSessionRepo;
 import session.FormSession;
 import util.Constants;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -75,19 +73,19 @@ public class IncompleteSessionController extends AbstractBaseController{
         List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(scrubbedUsername);
 
         ArrayList<FormSession> formSessions = new ArrayList<>();
-        String[] formplayerSessionIds = new String[formplayerSessions.size()];
+        Set<String> formplayerSessionIds = new HashSet<>();
 
         for (int i = 0; i < formplayerSessions.size(); i++) {
             SerializableFormSession serializableFormSession = formplayerSessions.get(i);
             formSessions.add(new FormSession(serializableFormSession));
-            formplayerSessionIds[i] = serializableFormSession.getId();
+            formplayerSessionIds.add(serializableFormSession.getId());
         }
 
         if (migratedSessions.size() > 0) {
 
             for (int i = 0; i < migratedSessions.size(); i++) {
                 // If we already have this session in the formplayer repo, skip it
-                if (Arrays.asList(formplayerSessionIds).contains(migratedSessions.get(i).getId())) {
+                if (formplayerSessionIds.contains(migratedSessions.get(i).getId())) {
                     continue;
                 }
                 try {
