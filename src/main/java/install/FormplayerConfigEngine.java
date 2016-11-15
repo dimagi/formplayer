@@ -98,11 +98,11 @@ public class FormplayerConfigEngine {
     }
 
     private void setRoots() {
-        ReferenceManager._().addReferenceFactory(new JavaHttpRoot());
+        ReferenceManager.instance().addReferenceFactory(new JavaHttpRoot());
 
         this.mArchiveRoot = new ArchiveFileRoot();
 
-        ReferenceManager._().addReferenceFactory(mArchiveRoot);
+        ReferenceManager.instance().addReferenceFactory(mArchiveRoot);
     }
 
     public void initFromArchive(String archiveURL) throws IOException, InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
@@ -190,7 +190,7 @@ public class FormplayerConfigEngine {
         }
 
         //(That root now reads as jr://file/)
-        ReferenceManager._().addReferenceFactory(new JavaFileRoot(rootPath));
+        ReferenceManager.instance().addReferenceFactory(new JavaFileRoot(rootPath));
 
         //Now build the testing reference we'll use
         return "jr://file/" + filePart;
