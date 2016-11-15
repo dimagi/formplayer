@@ -63,6 +63,7 @@ public class FormController extends AbstractBaseController{
     public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         Lock lock = getLockAndBlock(newSessionBean.getSessionData().getUsername());
+        configureRestoreFactory(newSessionBean, new DjangoAuth(authToken));
         try {
             String postUrl = host + newSessionBean.getPostUrl();
             NewFormResponse newSessionResponse = newFormResponseFactory.getResponse(newSessionBean,

@@ -1,6 +1,7 @@
 package application;
 
 import auth.HqAuth;
+import beans.AuthenticatedRequestBean;
 import beans.NewFormResponse;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
@@ -85,10 +86,10 @@ public abstract class AbstractBaseController {
 
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
 
-    protected void configureRestoreFactory(AsUserBean asUserBean, HqAuth auth) {
-        restoreFactory.setDomain(asUserBean.getDomain());
-        restoreFactory.setAsUsername(asUserBean.getAsUser());
-        restoreFactory.setUsername(asUserBean.getUsername());
+    protected void configureRestoreFactory(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
+        restoreFactory.setDomain(authenticatedRequestBean.getDomain());
+        restoreFactory.setAsUsername(authenticatedRequestBean.getRestoreAs());
+        restoreFactory.setUsername(authenticatedRequestBean.getUsername());
         restoreFactory.setHqAuth(auth);
     }
 

@@ -94,9 +94,7 @@ public class FormSession {
         this.asUser = session.getAsUser();
         this.restoreXml = session.getRestoreXml();
         this.domain = session.getDomain();
-        this.sandbox = CaseAPIs.restoreIfNotExists(asUser != null ? asUser : username,
-                this.domain,
-                restoreXml);
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, asUser, this.domain, restoreXml);
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
         this.oneQuestionPerScreen = session.getOneQuestionPerScreen();

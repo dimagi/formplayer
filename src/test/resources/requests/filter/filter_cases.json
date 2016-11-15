@@ -1,9 +1,7 @@
 {
   "filter_expr": "[(singleselect = 'b')]",
-  "session_data": {
-    "domain": "filtertesttestdomain",
-    "username": "filtertestuser"
-  },
+  "domain": "filtertesttestdomain",
+  "username": "filtertestuser",
   "hq_auth": {
     "type": "django-session",
     "key": "3fu61g0hqz1743tjejdrr40j4e98wohk"
