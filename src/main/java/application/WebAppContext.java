@@ -1,6 +1,9 @@
 package application;
 
+import aspects.LockAspect;
 import aspects.LoggingAspect;
+import org.springframework.context.annotation.Bean;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
@@ -311,6 +314,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         }
     }
 
+    @Bean
+    public LockAspect lockAspect() {
+        return new LockAspect();
+    }
     @Bean
     public LoggingAspect loggingAspect() {
         return new LoggingAspect();

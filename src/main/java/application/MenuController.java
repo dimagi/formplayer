@@ -1,5 +1,6 @@
 package application;
 
+import annotations.UserLock;
 import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
@@ -46,16 +47,11 @@ public class MenuController extends AbstractBaseController{
 
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
+    @UserLock
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-
-        Lock lock = getLockAndBlock(installRequestBean.getUsername());
-        try {
-            BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-            return response;
-        } finally {
-            lock.unlock();
-        }
+        BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
+        return response;
     }
 
     /**
@@ -67,90 +63,88 @@ public class MenuController extends AbstractBaseController{
      * @throws Exception
      */
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
+    @UserLock
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        Lock lock = getLockAndBlock(sessionNavigationBean.getUsername());
-        try {
-            MenuSession menuSession;
-            DjangoAuth auth = new DjangoAuth(authToken);
-            restoreFactory.configure(sessionNavigationBean, auth);
-            String menuSessionId = sessionNavigationBean.getMenuSessionId();
-            if (menuSessionId != null && !"".equals(menuSessionId)) {
+        MenuSession menuSession;
+        DjangoAuth auth = new DjangoAuth(authToken);
+        restoreFactory.configure(sessionNavigationBean, auth);
+        String menuSessionId = sessionNavigationBean.getMenuSessionId();
+        if (menuSessionId != null && !"".equals(menuSessionId)) {
+            try {
                 menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
                         installService, restoreFactory, auth, host);
                 menuSession.getSessionWrapper().syncState();
+            } catch(MenuNotFoundException e) {
+                return new BaseResponseBean(null, e.getMessage(), true, true);
+            }
+        } else {
+            // If we have a preview command, load that up
+            if(sessionNavigationBean.getPreviewCommand() != null){
+                // When previewing, clear and reinstall DBs to get newest version
+                // Big TODO: app updates
+                ApplicationUtils.deleteApplicationDbs(sessionNavigationBean.getDomain(), sessionNavigationBean.getUsername(),
+                        sessionNavigationBean.getAppId());
+                menuSession = performInstall(sessionNavigationBean, authToken);
+                try {
+                    menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
+                    menuSession.updateScreen();
+                } catch(ArrayIndexOutOfBoundsException e) {
+                    throw new RuntimeException("Couldn't get entries from preview command "
+                            + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
+                            " please report a bug to the CommCareHQ Team.");
+                }
             } else {
-                // If we have a preview command, load that up
-                if(sessionNavigationBean.getPreviewCommand() != null){
-                    // When previewing, clear and reinstall DBs to get newest version
-                    // Big TODO: app updates
-                    ApplicationUtils.deleteApplicationDbs(sessionNavigationBean.getDomain(), sessionNavigationBean.getUsername(),
-                            sessionNavigationBean.getAppId());
-                    menuSession = performInstall(sessionNavigationBean, authToken);
-                    try {
-                        menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
-                        menuSession.updateScreen();
-                    } catch(ArrayIndexOutOfBoundsException e) {
-                        throw new RuntimeException("Couldn't get entries from preview command "
-                                + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
-                                " please report a bug to the CommCareHQ Team.");
-                    }
-                } else {
-                    menuSession = performInstall(sessionNavigationBean, authToken);
-                }
+                menuSession = performInstall(sessionNavigationBean, authToken);
             }
-            String[] selections = sessionNavigationBean.getSelections();
-            BaseResponseBean nextMenu;
-            if (selections == null) {
-                nextMenu = getNextMenu(menuSession,
-                        sessionNavigationBean.getOffset(),
-                        sessionNavigationBean.getSearchText());
-                return nextMenu;
-            }
-
-            String[] titles = new String[selections.length + 1];
-            titles[0] = SessionUtils.getAppTitle();
-            NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
-            for (int i = 1; i <= selections.length; i++) {
-                String selection = selections[i - 1];
-                boolean gotNextScreen = menuSession.handleInput(selection);
-                if (!gotNextScreen) {
-                    notificationMessageBean = new NotificationMessageBean(
-                            "Overflowed selections with selection " + selection + " at index " + i, (true));
-                    break;
-                }
-                titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
-                Screen nextScreen = menuSession.getNextScreen();
-
-                checkDoQuery(nextScreen,
-                        menuSession,
-                        notificationMessageBean,
-                        sessionNavigationBean.getQueryDictionary(),
-                        auth);
-
-                BaseResponseBean syncResponse = checkDoSync(nextScreen,
-                        menuSession,
-                        notificationMessageBean,
-                        auth);
-                if (syncResponse != null) {
-                    return syncResponse;
-                }
-            }
+        }
+        String[] selections = sessionNavigationBean.getSelections();
+        BaseResponseBean nextMenu;
+        if (selections == null) {
             nextMenu = getNextMenu(menuSession,
                     sessionNavigationBean.getOffset(),
-                    sessionNavigationBean.getSearchText(),
-                    titles);
-            if (nextMenu != null) {
-                nextMenu.setNotification(notificationMessageBean);
-                return nextMenu;
-            } else {
-                return new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
-            }
-        } catch (MenuNotFoundException e) {
-            return new BaseResponseBean(null, e.getMessage(), true, true);
+                    sessionNavigationBean.getSearchText());
+            return nextMenu;
         }
-        finally {
-            lock.unlock();
+
+        String[] titles = new String[selections.length + 1];
+        titles[0] = SessionUtils.getAppTitle();
+        NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
+        for (int i = 1; i <= selections.length; i++) {
+            String selection = selections[i - 1];
+            boolean gotNextScreen = menuSession.handleInput(selection);
+            if (!gotNextScreen) {
+                notificationMessageBean = new NotificationMessageBean(
+                        "Overflowed selections with selection " + selection + " at index " + i, (true));
+                break;
+            }
+            titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
+            Screen nextScreen = menuSession.getNextScreen();
+
+            checkDoQuery(nextScreen,
+                    menuSession,
+                    notificationMessageBean,
+                    sessionNavigationBean.getQueryDictionary(),
+                    auth);
+
+            BaseResponseBean syncResponse = checkDoSync(nextScreen,
+                    menuSession,
+                    notificationMessageBean,
+                    auth);
+            if (syncResponse != null) {
+                return syncResponse;
+            }
+        }
+        nextMenu = getNextMenu(menuSession,
+                sessionNavigationBean.getOffset(),
+                sessionNavigationBean.getSearchText(),
+                titles);
+        if (nextMenu != null) {
+            nextMenu.setNotification(notificationMessageBean);
+            log.info("Returning menu: " + nextMenu);
+            return nextMenu;
+        } else {
+            return new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
         }
     }
 
