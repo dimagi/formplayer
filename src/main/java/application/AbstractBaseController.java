@@ -51,8 +51,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Base Controller class containing exception handling logic and
@@ -74,9 +72,6 @@ public abstract class AbstractBaseController {
 
     @Autowired
     private HtmlEmail exceptionMessage;
-
-    @Autowired
-    protected LockRegistry userLockRegistry;
 
     @Value("${commcarehq.host}")
     private String hqHost;
@@ -324,19 +319,5 @@ public abstract class AbstractBaseController {
                 "<p>" + formattedTime + "</p>" +
                 "<h3>Trace</h3>" +
                 "<p>" + stackTraceHTML + "</p>";
-    }
-
-    protected Lock getLockAndBlock(String username){
-        Lock lock = userLockRegistry.obtain(username);
-        obtainLock(lock);
-        return lock;
-    }
-
-    protected boolean obtainLock(Lock lock) {
-        try {
-            return lock.tryLock(60, TimeUnit.SECONDS);
-        } catch (InterruptedException e){
-            return obtainLock(lock);
-        }
     }
 }
