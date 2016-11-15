@@ -13,18 +13,22 @@ import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.cases.model.Case;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
+import org.commcare.modern.session.SessionWrapper;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IFormElement;
+import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
+import org.javarosa.engine.xml.XmlUtil;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.form.api.FormEntryNavigator;
+import org.javarosa.model.xform.DataModelSerializer;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.FormInstanceLoader;
@@ -34,9 +38,7 @@ import org.springframework.stereotype.Component;
 import util.PrototypeUtils;
 
 import java.io.*;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  *
@@ -73,6 +75,7 @@ public class FormSession {
     private String currentIndex = "-1";
     private boolean isAtLastIndex = false;
     private String asUser;
+    private SessionWrapper sessionWrapper;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -150,8 +153,8 @@ public class FormSession {
         xFormParser.loadXmlInstance(formDef, stringReader);
     }
 
-    private void initLocale(){
-        if(locale == null){
+    private void initLocale() {
+        if(locale == null) {
             this.locale = this.langs[0];
         }
         try {
@@ -164,7 +167,7 @@ public class FormSession {
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
         CommCarePlatform platform = new CommCarePlatform(2, 30);
-        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+        sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
     }
 
@@ -401,5 +404,23 @@ public class FormSession {
 
     public void setAsUser(String asUser) {
         this.asUser = asUser;
+    }
+
+    public Hashtable<String, String> getPrettyExternalInstances() throws IOException {
+        Hashtable<String, DataInstance> formInstanceHashtable = formDef.getNonMainInstances();
+        Hashtable<String, String> instanceXml = new Hashtable();
+        for (String key: formInstanceHashtable.keySet()) {
+            DataInstance dataInstance = formInstanceHashtable.get(key);
+            String prettyXml = printExternalInstance(dataInstance);
+            instanceXml.put(key, prettyXml);
+        }
+        return instanceXml;
+    }
+
+    private String printExternalInstance(DataInstance dataInstance) throws IOException {
+        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+        DataModelSerializer s = new DataModelSerializer(bos, sessionWrapper.getIIF());
+        s.serialize(dataInstance, null);
+        return XmlUtil.getPrettyXml(bos.toByteArray());
     }
 }

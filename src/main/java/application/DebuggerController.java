@@ -15,6 +15,9 @@ import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 
+import java.util.Hashtable;
+import java.util.Set;
+
 /**
  * Controller class for all routes pertaining to the CloudCare Debugger
  */
@@ -42,12 +45,16 @@ public class DebuggerController extends AbstractBaseController {
                 formSession.getInstanceXml(),
                 new DjangoAuth(authToken)
         );
+
+        Hashtable<String, String> externalDataInstances = formSession.getPrettyExternalInstances();
+
         return new DebuggerFormattedQuestionsResponseBean(
                 serializableMenuSession.getAppId(),
                 formSession.getXmlns(),
                 formSession.getInstanceXml(),
                 response.getFormattedQuestions(),
-                response.getQuestionList()
+                response.getQuestionList(),
+                externalDataInstances
         );
     }
 }
