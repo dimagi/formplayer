@@ -3,9 +3,8 @@ package beans;
 /**
  * Request to open an incomplete form session (starts form entry)
  */
-public class IncompleteSessionRequestBean extends AuthenticatedRequestBean implements AsUserBean{
+public class IncompleteSessionRequestBean extends AuthenticatedRequestBean {
     private String sessionId;
-    private String asUser;
 
     public IncompleteSessionRequestBean (){}
 
@@ -15,14 +14,5 @@ public class IncompleteSessionRequestBean extends AuthenticatedRequestBean imple
 
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
-    }
-
-    @Override
-    public String getAsUser() {
-        return asUser;
-    }
-
-    public void setAsUser(String asUser) {
-        this.asUser = asUser;
     }
 }

@@ -1,10 +1,12 @@
 package services;
 
+import application.SQLiteProperties;
 import auth.HqAuth;
-import beans.AsUserBean;
+import beans.AuthenticatedRequestBean;
 import exceptions.AsyncRetryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -42,12 +44,34 @@ public class RestoreFactory {
 
     private String cachedRestore = null;
 
-    public void configure(AsUserBean asUserBean, HqAuth auth) {
-        this.setDomain(asUserBean.getDomain());
-        this.setAsUsername(asUserBean.getAsUser());
-        this.setUsername(asUserBean.getUsername());
+    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
+        this.setDomain(authenticatedRequestBean.getDomain());
+        this.setAsUsername(authenticatedRequestBean.getRestoreAs());
+        this.setUsername(authenticatedRequestBean.getUsername());
         this.setHqAuth(auth);
         cachedRestore = null;
+    }
+
+    public String getDbFile() {
+        if (getAsUsername() == null) {
+            return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db";
+        }
+        return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + "/" + getAsUsername() + ".db";
+    }
+
+    public String getDbPath() {
+        if (asUsername == null) {
+            return SQLiteProperties.getDataDir() + domain;
+        }
+        return SQLiteProperties.getDataDir() + domain + "/" + username;
+    }
+
+    public String getWrappedUsername() {
+        return asUsername == null ? username : asUsername;
+    }
+
+    public UserSqlSandbox getSqlSandbox() {
+        return new UserSqlSandbox(getWrappedUsername(), getDbPath());
     }
 
     public String getRestoreXml() {

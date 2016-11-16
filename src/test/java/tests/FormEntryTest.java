@@ -20,6 +20,7 @@ public class FormEntryTest extends BaseTestClass{
     public void testFormEntry() throws Exception {
 
         serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        configureRestoreFactory("test", "test");
 
         NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 

@@ -1,5 +1,7 @@
 {
   "lang": "en",
+  "domain": "test",
+  "username": "test",
   "session-data": {
     "username": "test",
     "additional_filters": {

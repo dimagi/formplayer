@@ -51,7 +51,7 @@ public class TestContext {
 
     @Bean
     public RestoreFactory restoreFactory() {
-        return Mockito.mock(RestoreFactory.class);
+        return Mockito.spy(RestoreFactory.class);
     }
 
     @Bean
