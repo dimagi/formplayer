@@ -1,6 +1,5 @@
 package utils;
 
-import objects.SerializableFormSession;
 import org.mockito.Mockito;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +9,6 @@ import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
-import repo.SerializableMenuSession;
 import services.*;
 import services.impl.InstallServiceImpl;
 import services.impl.SubmitServiceImpl;
@@ -40,7 +38,6 @@ public class TestContext {
     public FormSessionRepo formSessionRepo() {
         return Mockito.mock(FormSessionRepo.class);
     }
-
 
     @Bean
     public MenuSessionRepo menuSessionRepo() {

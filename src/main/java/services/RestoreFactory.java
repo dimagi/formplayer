@@ -2,6 +2,7 @@ package services;
 
 import application.SQLiteProperties;
 import auth.HqAuth;
+import beans.AuthenticatedRequestBean;
 import exceptions.AsyncRetryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,6 +42,16 @@ public class RestoreFactory {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
+    private String cachedRestore = null;
+
+    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
+        this.setDomain(authenticatedRequestBean.getDomain());
+        this.setAsUsername(authenticatedRequestBean.getRestoreAs());
+        this.setUsername(authenticatedRequestBean.getUsername());
+        this.setHqAuth(auth);
+        cachedRestore = null;
+    }
+
     public String getDbFile() {
         if (getAsUsername() == null) {
             return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db";
@@ -63,8 +74,10 @@ public class RestoreFactory {
         return new UserSqlSandbox(getWrappedUsername(), getDbPath());
     }
 
-
     public String getRestoreXml() {
+        if (cachedRestore != null) {
+            return cachedRestore;
+        }
         if (domain == null || (username == null && asUsername == null)) {
             throw new RuntimeException("Domain and one of username or asUsername must be non-null. " +
                     " Domain: " + domain +
@@ -79,7 +92,8 @@ public class RestoreFactory {
         }
 
         log.info("Restoring from URL " + restoreUrl);
-        return getRestoreXmlHelper(restoreUrl, hqAuth);
+        cachedRestore = getRestoreXmlHelper(restoreUrl, hqAuth);
+        return cachedRestore;
     }
 
     /**

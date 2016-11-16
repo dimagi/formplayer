@@ -25,4 +25,20 @@ public class FormplayerDateUtils {
         dfTo.setTimeZone(tz);
         return dfTo.format(result);
     }
+
+    // Remove once all Old CloudCare sessions are migrated
+    public static String convertIsoToJavaDate(String date) {
+        DateFormat dfFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSX", Locale.ENGLISH);
+        Date result;
+        try {
+            result =  dfFrom.parse(date);
+        } catch (ParseException e) {
+            // Could not parse date
+            return null;
+        }
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat dfTo = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy");
+        dfTo.setTimeZone(tz);
+        return dfTo.format(result);
+    }
 }

@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import util.PrototypeUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +42,7 @@ public class Application {
         migrate();
         // wipe out all user data for now. We need this until we can fix up some static mapping objects.
         SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
+        PrototypeUtils.setupPrototypes();
     }
 
     /**
