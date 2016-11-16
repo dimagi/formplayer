@@ -34,7 +34,10 @@ public class LockAspect {
 
     @After(value = "@annotation(annotations.UserLock)")
     public void afterLock(JoinPoint joinPoint) {
-        lock.unlock();
+        if (lock != null) {
+            lock.unlock();
+            lock = null;
+        }
     }
 
     protected Lock getLockAndBlock(String username){
