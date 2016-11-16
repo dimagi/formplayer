@@ -1,5 +1,7 @@
 {
   "filter_expr": "[@case_type = 'coverage_basic'][@status = 'open']",
+  "domain": "test",
+  "username": "test3",
   "session_data": {
     "domain": "test",
     "username": "test3"

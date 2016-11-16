@@ -113,8 +113,8 @@ public class BaseTestClass {
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        Mockito.doReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"))
+                .when(restoreFactoryMock).getRestoreXml();
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
                 .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
         mapper = new ObjectMapper();
@@ -272,10 +272,8 @@ public class BaseTestClass {
     }
 
     protected void configureRestoreFactory(String domain, String username) {
-        when(restoreFactoryMock.getUsername())
-                .thenReturn(username);
-        when(restoreFactoryMock.getDomain())
-                .thenReturn(domain);
+        restoreFactoryMock.setDomain(domain);
+        restoreFactoryMock.setUsername(username);
     }
 
     FormEntryResponseBean jumpToIndex(String index, String sessionId) throws Exception {
@@ -335,9 +333,9 @@ public class BaseTestClass {
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
         when(restoreFactoryMock.getUsername())
-                .thenReturn(newSessionRequestBean.getSessionData().getUsername());
+                .thenReturn(newSessionRequestBean.getUsername());
         when(restoreFactoryMock.getDomain())
-                .thenReturn(newSessionRequestBean.getSessionData().getDomain());
+                .thenReturn(newSessionRequestBean.getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_NEW_SESSION,
