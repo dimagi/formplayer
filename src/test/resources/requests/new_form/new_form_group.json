@@ -1,5 +1,7 @@
 {
   "lang": "en",
+  "domain": "grouptestdomain",
+  "username": "grouptestuser",
   "session-data": {
     "username": "grouptestuser",
     "additional_filters": {
