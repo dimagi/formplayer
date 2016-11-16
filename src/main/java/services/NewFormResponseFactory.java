@@ -8,6 +8,7 @@ import objects.SerializableFormSession;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.xform.parse.XFormParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
 import session.FormSession;
@@ -57,7 +58,7 @@ public class NewFormResponseFactory {
         return xFormService.getFormXml(formUrl, auth);
     }
 
-    private FormDef parseFormDef(String formXml) throws IOException {
+    private static FormDef parseFormDef(String formXml) throws IOException {
         XFormParser mParser = new XFormParser(new StringReader(formXml));
         return mParser.parse();
     }

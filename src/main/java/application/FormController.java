@@ -18,12 +18,13 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
-import services.NewFormResponseFactory;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -51,7 +52,8 @@ public class FormController extends AbstractBaseController{
     private SubmitService submitService;
 
     @Autowired
-    private NewFormResponseFactory newFormResponseFactory;
+    @Qualifier(value = "migrated")
+    protected FormSessionRepo migratedFormSessionRepo;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -64,34 +66,13 @@ public class FormController extends AbstractBaseController{
     @UserLock
     public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        configureRestoreFactory(newSessionBean, new DjangoAuth(authToken));
+        restoreFactory.configure(newSessionBean, new DjangoAuth(authToken));
         String postUrl = host + newSessionBean.getPostUrl();
         NewFormResponse newSessionResponse = newFormResponseFactory.getResponse(newSessionBean,
                 postUrl,
                 new DjangoAuth(authToken));
         return newSessionResponse;
     }
-
-    @ApiOperation(value = "Open an incomplete form session")
-    @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
-    @UserLock
-    public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
-                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
-        NewFormResponse response = newFormResponseFactory.getResponse(session);
-        return response;
-    }
-
-    @ApiOperation(value = "Delete an incomplete form session")
-    @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
-    @UserLock
-    public NotificationMessageBean deleteIncompleteForm(
-            @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        formSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
-        return new NotificationMessageBean("Successfully deleted incomplete form.", false);
-    }
-
 
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
@@ -166,9 +147,14 @@ public class FormController extends AbstractBaseController{
                     submitResponseBean.setNextScreen(nav);
                 }
             }
-            formSessionRepo.delete(submitRequestBean.getSessionId());
+            deleteSession(submitRequestBean.getSessionId());
         }
         return submitResponseBean;
+    }
+
+    protected void deleteSession(String id) {
+        formSessionRepo.delete(id);
+        migratedFormSessionRepo.delete(id);
     }
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {

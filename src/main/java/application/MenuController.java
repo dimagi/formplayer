@@ -68,7 +68,7 @@ public class MenuController extends AbstractBaseController{
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
         DjangoAuth auth = new DjangoAuth(authToken);
-        configureRestoreFactory(sessionNavigationBean, auth);
+        restoreFactory.configure(sessionNavigationBean, auth);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             try {

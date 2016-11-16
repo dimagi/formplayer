@@ -31,6 +31,7 @@ import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import services.*;
 import util.Constants;
+import util.PrototypeUtils;
 import utils.FileUtils;
 import utils.TestContext;
 
@@ -123,6 +124,7 @@ public class BaseTestClass {
         setupInstallServiceMock();
         setupLockMock();
         setupNewFormMock();
+        PrototypeUtils.setupPrototypes();
     }
 
     private void setupNewFormMock() throws Exception {

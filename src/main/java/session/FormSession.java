@@ -31,11 +31,11 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
-import util.PrototypeUtils;
 
 import java.io.*;
 import java.util.Date;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 /**
@@ -104,13 +104,13 @@ public class FormSession {
         this.sequenceId = session.getSequenceId();
         this.menuSessionId = session.getMenuSessionId();
         this.dateOpened = session.getDateOpened();
-        PrototypeUtils.setupPrototypes();
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
         setupJavaRosaObjects();
         initialize(false, session.getSessionData());
         setupOneQuestionPerScreen();
+        this.postUrl = session.getPostUrl();
     }
 
     // New FormSession constructor
@@ -389,8 +389,14 @@ public class FormSession {
         if (caseId == null) {
             return null;
         }
-        CaseBean caseBean = CaseAPIs.getFullCase(caseId, (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
-        return (String) caseBean.getProperties().get("case_name");
+        try {
+            CaseBean caseBean = CaseAPIs.getFullCase(caseId, (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
+            return (String) caseBean.getProperties().get("case_name");
+        } catch (NoSuchElementException e) {
+            // This handles the case where the case is no longer open in the database.
+            // The form will crash on open, but I don't know if there's a more elegant but not-opaque way to handle
+            return "Case with id " + caseId + "does not exist!";
+        }
     }
 
     public String getAsUser() {
