@@ -34,8 +34,8 @@ class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
             throw new RuntimeException("Cannot generate session instance with undeclared platform!");
         }
         User u = mSandbox.getLoggedInUser();
-        if(u == null){
-            log.error("Got null logged in user for username, this is bad.");
+        if (u == null) {
+            throw new RuntimeException("There was a problem loading the user data. Please Sync.");
         }
         if(injectedSessionData != null) {
             for (String key : injectedSessionData.keySet()) {
