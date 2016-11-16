@@ -40,9 +40,9 @@ public class NewFormResponseFactory {
         String formXml = getFormXml(bean.getFormUrl(), auth);
         UserSqlSandbox sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
 
-        FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getSessionData().getUsername(),
-                bean.getSessionData().getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,
-                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getAsUser());
+        FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getUsername(),
+                bean.getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,
+                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getRestoreAs());
 
         formSessionRepo.save(formSession.serialize());
         return new NewFormResponse(formSession);
