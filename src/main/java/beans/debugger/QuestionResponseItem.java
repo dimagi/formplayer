@@ -11,6 +11,12 @@ public class QuestionResponseItem {
     private String label;
     private String type;
 
+    public QuestionResponseItem(String value, String label, String type) {
+        this.value = value;
+        this.label = label;
+        this.type = type;
+    }
+
     public QuestionResponseItem(JSONObject questionJSON) {
         this.value = questionJSON.getString("value");
         this.label = questionJSON.getString("label");

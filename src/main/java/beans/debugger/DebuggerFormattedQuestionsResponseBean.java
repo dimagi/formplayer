@@ -1,8 +1,10 @@
 package beans.debugger;
 
-import beans.SessionResponseBean;
 import org.json.JSONArray;
 import util.XmlUtils;
+
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Response for the debugger tab
@@ -14,15 +16,20 @@ public class DebuggerFormattedQuestionsResponseBean {
     private String formattedQuestions;
     private QuestionResponseItem[] questionList;
 
-    public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml, String formattedQuestions, JSONArray questionList) {
+    public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml,
+                                                  String formattedQuestions, JSONArray questionList, List<String> functionList) {
         this.xmlns = xmlns;
         this.appId = appId;
         this.instanceXml = XmlUtils.indent(instanceXml);
         this.formattedQuestions = formattedQuestions;
-        this.questionList = new QuestionResponseItem[questionList.length()];
+        HashSet<QuestionResponseItem> autoCompletable = new HashSet<>();
         for (int i = 0; i < questionList.length(); i++) {
-            this.questionList[i] = new QuestionResponseItem(questionList.getJSONObject(i));
+            autoCompletable.add(new QuestionResponseItem(questionList.getJSONObject(i)));
         }
+        for (String function: functionList) {
+            autoCompletable.add(new FunctionAutocompletable(function));
+        }
+        this.questionList = autoCompletable.toArray(new QuestionResponseItem[autoCompletable.size()]);
     }
 
     public String getFormattedQuestions() {
