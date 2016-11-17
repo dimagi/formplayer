@@ -106,7 +106,7 @@ public class IncompleteSessionController extends AbstractBaseController{
     public NotificationMessageBean deleteIncompleteForm(
             @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        formSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
+        deleteSession(incompleteSessionRequestBean.getSessionId());
         return new NotificationMessageBean("Successfully deleted incomplete form.", false);
     }
 
