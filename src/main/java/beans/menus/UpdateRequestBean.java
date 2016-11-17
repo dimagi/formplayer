@@ -16,7 +16,7 @@ public class UpdateRequestBean extends InstallRequestBean {
     private final Log log = LogFactory.getLog(UpdateRequestBean.class);
 
     private static final String[] VALID_UPDATE_MODES_ARRAY = new String[]{"build", "save", "release"};
-    private static final Set<String> VALID_UPDATE_MODES = new HashSet<String>(Arrays.asList(VALID_UPDATE_MODES_ARRAY));
+    private static final Set<String> VALID_UPDATE_MODES = new HashSet<>(Arrays.asList(VALID_UPDATE_MODES_ARRAY));
 
     private String updateMode; // one of build, release, save
 
@@ -25,7 +25,7 @@ public class UpdateRequestBean extends InstallRequestBean {
     }
 
     public void setUpdateMode (String updateMode) {
-        if(VALID_UPDATE_MODES.contains(updateMode)) {
+        if(!VALID_UPDATE_MODES.contains(updateMode)) {
             log.error("Update mode " + updateMode + " was not valid, defaulting to release.");
             this.updateMode = "release";
         } else {
