@@ -5,11 +5,20 @@ import org.commcare.resources.model.installers.*;
 import org.commcare.suite.model.*;
 import org.commcare.xml.DummyGraphParser;
 import org.javarosa.core.api.ClassNameHasher;
+import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.QuestionDef;
+import org.javarosa.core.model.SubmissionProfile;
+import org.javarosa.core.model.actions.SetValueAction;
+import org.javarosa.core.model.data.*;
+import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.locale.TableLocaleSource;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.model.xform.XPathReference;
+import org.javarosa.xpath.XPathConditional;
+import org.javarosa.xpath.expr.*;
 
 /**
  * Created by willpride on 2/8/16.
@@ -37,38 +46,43 @@ public class PrototypeUtils {
                 ViewEntry.class.getName(),
                 RemoteRequestEntry.class.getName(),
                 RemoteQueryDatum.class.getName(),
-                "org.javarosa.xpath.XPathConditional",
-                "org.javarosa.core.model.SubmissionProfile",
-                "org.javarosa.core.model.QuestionDef",
-                "org.javarosa.core.model.GroupDef",
-                "org.javarosa.core.model.instance.FormInstance",
-                "org.javarosa.core.model.instance.ExternalDataInstance",
-                "org.javarosa.core.model.data.BooleanData",
-                "org.javarosa.core.model.data.DateData",
-                "org.javarosa.core.model.data.DateTimeData",
-                "org.javarosa.core.model.data.DecimalData",
-                "org.javarosa.core.model.data.GeoPointData",
-                "org.javarosa.core.model.data.IntegerData",
-                "org.javarosa.core.model.data.LongData",
-                "org.javarosa.core.model.data.PointerAnswerData",
-                "org.javarosa.core.model.data.SelectMultiData",
-                "org.javarosa.core.model.data.SelectOneData",
-                "org.javarosa.core.model.data.StringData",
-                "org.javarosa.core.model.data.TimeData",
-                "org.javarosa.core.model.data.UncastData",
-                "org.javarosa.core.model.actions.SetValueAction",
-                "org.javarosa.xpath.expr.XPathArithExpr",
-                "org.javarosa.xpath.expr.XPathBoolExpr",
-                "org.javarosa.xpath.expr.XPathCmpExpr",
-                "org.javarosa.xpath.expr.XPathEqExpr",
-                "org.javarosa.xpath.expr.XPathFilterExpr",
-                "org.javarosa.xpath.expr.XPathFuncExpr",
-                "org.javarosa.xpath.expr.XPathNumericLiteral",
-                "org.javarosa.xpath.expr.XPathNumNegExpr",
-                "org.javarosa.xpath.expr.XPathPathExpr",
-                "org.javarosa.xpath.expr.XPathStringLiteral",
-                "org.javarosa.xpath.expr.XPathUnionExpr",
-                "org.javarosa.xpath.expr.XPathVariableReference"};
+                XPathPathExpr.class.getName(),
+                XPathStringLiteral.class.getName(),
+                XPathConditional.class.getName(),
+                SubmissionProfile.class.getName(),
+                QuestionDef.class.getName(),
+                GroupDef.class.getName(),
+                FormDef.class.getName(),
+                FormInstance.class.getName(),
+                ExternalDataInstance.class.getName(),
+                XPathCustomRuntimeFunc.class.getName(),
+                BooleanData.class.getName(),
+                DateData.class.getName(),
+                DateTimeData.class.getName(),
+                XPathEqExpr.class.getName(),
+                XPathArithExpr.class.getName(),
+                DecimalData.class.getName(),
+                GeoPointData.class.getName(),
+                IntegerData.class.getName(),
+                LongData.class.getName(),
+                PointerAnswerData.class.getName(),
+                SelectMultiData.class.getName(),
+                SelectOneData.class.getName(),
+                StringData.class.getName(),
+                TimeData.class.getName(),
+                UncastData.class.getName(),
+                SetValueAction.class.getName(),
+                XPathBoolExpr.class.getName(),
+                XPathCmpExpr.class.getName(),
+                XPathFilterExpr.class.getName(),
+                XPathNumericLiteral.class.getName(),
+                XPathNumNegExpr.class.getName(),
+                XPathUnionExpr.class.getName(),
+                XPathVariableReference.class.getName()};
+
+        for(Class clazz: FunctionUtils.getXPathFuncListMap().values()){
+            PrototypeManager.registerPrototype(clazz.getName());
+        }
         PrototypeManager.registerPrototypes(prototypes);
     }
 }
