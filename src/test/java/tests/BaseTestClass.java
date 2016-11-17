@@ -526,16 +526,6 @@ public class BaseTestClass {
                 CommandListResponseBean.class);
     }
 
-    CommandListResponseBean doUpdate(String requestPath) throws Exception {
-        InstallRequestBean installRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
-        return generateMockQuery(ControllerType.MENU,
-                RequestType.POST,
-                Constants.URL_UPDATE,
-                installRequestBean,
-                CommandListResponseBean.class);
-    }
-
     public enum RequestType {
         POST, GET
     }
