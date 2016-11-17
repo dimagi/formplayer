@@ -1,9 +1,9 @@
 package beans.debugger;
 
 /**
- * Created by willpride on 11/16/16.
+ * Represents a function that can be used to autocomplete XPath entry.
  */
-public class FunctionAutocompletable extends QuestionResponseItem {
+public class FunctionAutocompletable extends AutoCompletableItem {
     public FunctionAutocompletable(String functionName) {
         super(functionName + "()", functionName, "Function");
     }
