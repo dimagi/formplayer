@@ -8,6 +8,7 @@ import beans.InstallRequestBean;
 import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
+import beans.menus.UpdateRequestBean;
 import exceptions.MenuNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,7 +58,7 @@ public class MenuController extends AbstractBaseController{
     @ApiOperation(value = "Update the application at the given reference")
     @RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
     @UserLock
-    public BaseResponseBean updateRequest(@RequestBody InstallRequestBean updateRequestBean,
+    public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         BaseResponseBean response = getNextMenu(performUpdate(updateRequestBean, authToken));
         return response;
@@ -260,9 +261,9 @@ public class MenuController extends AbstractBaseController{
                         bean.getOneQuestionPerScreen(), bean.getRestoreAs());
     }
 
-    private MenuSession performUpdate(InstallRequestBean updateRequestBean, String authToken) throws Exception {
+    private MenuSession performUpdate(UpdateRequestBean updateRequestBean, String authToken) throws Exception {
         MenuSession currentSession = performInstall(updateRequestBean, authToken);
-        currentSession.updateApp();
+        currentSession.updateApp(updateRequestBean.getUpdateMode());
         return currentSession;
     }
 }
