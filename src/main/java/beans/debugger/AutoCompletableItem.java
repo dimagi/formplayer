@@ -6,18 +6,18 @@ import org.json.JSONObject;
  * A class representing the question model returned from HQ. See HQ's
  * FormQuestionResponse class.
  */
-public class QuestionResponseItem {
+public class AutoCompletableItem {
     private String value;
     private String label;
     private String type;
 
-    public QuestionResponseItem(String value, String label, String type) {
+    public AutoCompletableItem(String value, String label, String type) {
         this.value = value;
         this.label = label;
         this.type = type;
     }
 
-    public QuestionResponseItem(JSONObject questionJSON) {
+    public AutoCompletableItem(JSONObject questionJSON) {
         this.value = questionJSON.getString("value");
         this.label = questionJSON.getString("label");
         this.type = questionJSON.getString("type");

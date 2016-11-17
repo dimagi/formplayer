@@ -14,7 +14,7 @@ public class DebuggerFormattedQuestionsResponseBean {
     private String appId;
     private String instanceXml;
     private String formattedQuestions;
-    private QuestionResponseItem[] questionList;
+    private AutoCompletableItem[] questionList;
 
     public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml,
                                                   String formattedQuestions, JSONArray questionList, List<String> functionList) {
@@ -22,14 +22,14 @@ public class DebuggerFormattedQuestionsResponseBean {
         this.appId = appId;
         this.instanceXml = XmlUtils.indent(instanceXml);
         this.formattedQuestions = formattedQuestions;
-        HashSet<QuestionResponseItem> autoCompletable = new HashSet<>();
+        HashSet<AutoCompletableItem> autoCompletable = new HashSet<>();
         for (int i = 0; i < questionList.length(); i++) {
-            autoCompletable.add(new QuestionResponseItem(questionList.getJSONObject(i)));
+            autoCompletable.add(new AutoCompletableItem(questionList.getJSONObject(i)));
         }
         for (String function: functionList) {
             autoCompletable.add(new FunctionAutocompletable(function));
         }
-        this.questionList = autoCompletable.toArray(new QuestionResponseItem[autoCompletable.size()]);
+        this.questionList = autoCompletable.toArray(new AutoCompletableItem[autoCompletable.size()]);
     }
 
     public String getFormattedQuestions() {
@@ -64,11 +64,11 @@ public class DebuggerFormattedQuestionsResponseBean {
         this.appId = appId;
     }
 
-    public QuestionResponseItem[] getQuestionList() {
+    public AutoCompletableItem[] getQuestionList() {
         return questionList;
     }
 
-    public void setQuestionList(QuestionResponseItem[] questionList) {
+    public void setQuestionList(AutoCompletableItem[] questionList) {
         this.questionList = questionList;
     }
 }
