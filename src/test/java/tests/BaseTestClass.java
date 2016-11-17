@@ -7,14 +7,11 @@ import auth.HqAuth;
 import beans.*;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import install.FormplayerConfigEngine;
 import objects.SerializableFormSession;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.util.engine.CommCareConfigEngine;
-import org.hibernate.tuple.PropertyFactory;
-import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
-import org.javarosa.core.services.storage.util.DummyIndexedStorageUtility;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
@@ -193,9 +190,15 @@ public class BaseTestClass {
                     try {
                         Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
-                        String username = (String) args[1];
-                        String path = (String) args[2];
-                        CommCareConfigEngine engine = new FormplayerConfigEngine(username, path);
+                        final String username = (String) args[1];
+                        final String path = (String) args[2];
+                        CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
+                            @Override
+                            public IStorageUtilityIndexed newStorage(String name, Class type) {
+                                return new SqliteIndexedStorageUtility(type, name, username, path);
+                            }
+                        });
+                        CommCareConfigEngine engine = new CommCareConfigEngine();
                         String absolutePath = getTestResourcePath(ref);
                         engine.initFromArchive(absolutePath);
                         engine.initEnvironment();
