@@ -32,12 +32,8 @@ public class InstallServiceImpl implements InstallService {
         final String trimmedUsername = StringUtils.substringBefore(username, "@");
 
         File dbFolder = new File(dbPath);
-        if (!dbFolder.exists()) {
-            dbFolder.mkdirs();
-        } else{
-            dbFolder.delete();
-            dbFolder.mkdirs();
-        }
+        dbFolder.delete();
+        dbFolder.mkdirs();
 
         CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
             @Override
