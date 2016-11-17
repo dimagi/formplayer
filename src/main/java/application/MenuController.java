@@ -54,6 +54,15 @@ public class MenuController extends AbstractBaseController{
         return response;
     }
 
+    @ApiOperation(value = "Update the application at the given reference")
+    @RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
+    @UserLock
+    public BaseResponseBean updateRequest(@RequestBody InstallRequestBean updateRequestBean,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        BaseResponseBean response = getNextMenu(performUpdate(updateRequestBean, authToken));
+        return response;
+    }
+
     /**
      * Make a a series of menu selections (as above, but can have multiple)
      *
@@ -248,5 +257,11 @@ public class MenuController extends AbstractBaseController{
         return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
                 bean.getInstallReference(), bean.getLocale(), installService, restoreFactory, auth, host,
                         bean.getOneQuestionPerScreen(), bean.getRestoreAs());
+    }
+
+    private MenuSession performUpdate(InstallRequestBean updateRequestBean, String authToken) throws Exception {
+        MenuSession currentSession = performInstall(updateRequestBean, authToken);
+        currentSession.updateApp();
+        return currentSession;
     }
 }
