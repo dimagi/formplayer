@@ -122,6 +122,10 @@ public class MenuSession {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 
+    public void updateApp() {
+        this.engine.attemptAppUpdate("latest");
+    }
+
     private void resolveInstallReference(String installReference, String appId, String host){
         if (installReference == null || installReference.equals("")) {
             if(appId == null || "".equals(appId)){
