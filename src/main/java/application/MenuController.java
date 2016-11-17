@@ -238,6 +238,7 @@ public class MenuController extends AbstractBaseController{
 
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
+        restoreFactory.configure(bean, new DjangoAuth(authToken));
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");
