@@ -16,9 +16,8 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.locale.Localization;
-import org.javarosa.core.services.storage.IStorageFactory;
-import org.javarosa.core.services.storage.IStorageUtility;
-import org.javarosa.core.services.storage.StorageManager;
+import org.javarosa.core.services.storage.*;
+import org.javarosa.core.services.storage.util.DummyIndexedStorageUtility;
 
 import java.io.*;
 
