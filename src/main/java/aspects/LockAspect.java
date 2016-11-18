@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.locks.LockRegistry;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -42,8 +43,12 @@ public class LockAspect {
 
     protected Lock getLockAndBlock(String username){
         Lock lock = userLockRegistry.obtain(username);
-        obtainLock(lock);
-        return lock;
+        if (obtainLock(lock)) {
+            return lock;
+        } else {
+            throw new RuntimeException("Timed out trying to obtain lock for username " + username  +
+                    ". Please try your request again in a moment.");
+        }
     }
 
     protected boolean obtainLock(Lock lock) {
