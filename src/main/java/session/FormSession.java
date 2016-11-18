@@ -22,9 +22,9 @@ import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
+import org.javarosa.form.api.FormController;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
-import org.javarosa.form.api.FormController;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.util.FormInstanceLoader;
@@ -56,6 +56,7 @@ public class FormSession {
     private FormDef formDef;
     private FormEntryModel formEntryModel;
     private FormEntryController formEntryController;
+    private FormController formController;
     private String restoreXml;
     private UserSandbox sandbox;
     private int sequenceId;
@@ -77,16 +78,10 @@ public class FormSession {
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
+        formController = new FormController(formEntryController, false);
         title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
         initLocale();
-    }
-
-    private void setupOneQuestionPerScreen() {
-        formEntryController.setOneQuestionPerScreen(oneQuestionPerScreen);
-        if (oneQuestionPerScreen) {
-            formEntryController.setCurrentIndex(JsonActionUtils.indexFromString(currentIndex, formDef));
-        }
     }
 
     public FormSession(SerializableFormSession session) throws Exception{
@@ -109,7 +104,6 @@ public class FormSession {
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
         setupJavaRosaObjects();
         initialize(false, session.getSessionData());
-        setupOneQuestionPerScreen();
         this.postUrl = session.getPostUrl();
     }
 
@@ -139,7 +133,6 @@ public class FormSession {
         } else {
             initialize(true, sessionData);
         }
-        setupOneQuestionPerScreen();
     }
 
     private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
@@ -364,7 +357,8 @@ public class FormSession {
         JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntryController,
                 formEntryModel,
                 answer != null ? answer.toString() : null,
-                formIndex);
+                formIndex,
+                oneQuestionPerScreen);
         return resp;
     }
 
