@@ -2,7 +2,6 @@ package session;
 
 import auth.HqAuth;
 import hq.CaseAPIs;
-import install.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;

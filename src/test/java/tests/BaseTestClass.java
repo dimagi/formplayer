@@ -8,8 +8,10 @@ import beans.*;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableFormSession;
+import org.apache.commons.lang3.StringUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.util.engine.CommCareConfigEngine;
+import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.junit.Before;
@@ -41,6 +43,7 @@ import utils.TestContext;
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -192,10 +195,14 @@ public class BaseTestClass {
                         String ref = (String) args[0];
                         final String username = (String) args[1];
                         final String path = (String) args[2];
+                        final String trimmedUsername = StringUtils.substringBefore(username, "@");
+                        File dbFolder = new File(path);
+                        dbFolder.delete();
+                        dbFolder.mkdirs();
                         CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
                             @Override
                             public IStorageUtilityIndexed newStorage(String name, Class type) {
-                                return new SqliteIndexedStorageUtility(type, name, username, path);
+                                return new SqliteIndexedStorageUtility(type, name, trimmedUsername, path);
                             }
                         });
                         CommCareConfigEngine engine = new CommCareConfigEngine();
