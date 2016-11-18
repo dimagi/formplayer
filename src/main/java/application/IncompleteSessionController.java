@@ -10,6 +10,7 @@ import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.util.externalizable.DeserializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,8 +78,12 @@ public class IncompleteSessionController extends AbstractBaseController{
 
         for (int i = 0; i < formplayerSessions.size(); i++) {
             SerializableFormSession serializableFormSession = formplayerSessions.get(i);
-            formSessions.add(new FormSession(serializableFormSession));
-            formplayerSessionIds.add(serializableFormSession.getId());
+            try {
+                formSessions.add(new FormSession(serializableFormSession));
+                formplayerSessionIds.add(serializableFormSession.getId());
+            } catch(DeserializationException e) {
+                log.error("Couldn't load form " + serializableFormSession + " with exception " + e);
+            }
         }
 
         if (migratedSessions.size() > 0) {
