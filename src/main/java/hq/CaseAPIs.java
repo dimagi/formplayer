@@ -15,6 +15,7 @@ import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathParseTool;
+import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.xmlpull.v1.XmlPullParserException;
 import services.RestoreFactory;
@@ -64,7 +65,7 @@ public class CaseAPIs {
             String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
             UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory);
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
-            return XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
+            return FunctionUtils.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -80,7 +81,7 @@ public class CaseAPIs {
         String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
         UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory);
         EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
-        String filteredCases = XPathFuncExpr.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
+        String filteredCases = FunctionUtils.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         String[] splitCases = filteredCases.split(",");
         CaseBean[] ret = new CaseBean[splitCases.length];
         SqliteIndexedStorageUtility<Case> caseStorage = mSandbox.getCaseStorage();

@@ -6,6 +6,7 @@ import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
+import org.javarosa.xpath.expr.FunctionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +48,8 @@ public class DebuggerController extends AbstractBaseController {
                 formSession.getXmlns(),
                 formSession.getInstanceXml(),
                 response.getFormattedQuestions(),
-                response.getQuestionList()
+                response.getQuestionList(),
+                FunctionUtils.xPathFuncList()
         );
     }
 }

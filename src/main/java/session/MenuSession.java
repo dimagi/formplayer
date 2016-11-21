@@ -2,7 +2,6 @@ package session;
 
 import auth.HqAuth;
 import hq.CaseAPIs;
-import install.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
@@ -14,6 +13,7 @@ import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
+import org.commcare.util.engine.CommCareConfigEngine;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -22,6 +22,7 @@ import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
+import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
@@ -55,7 +56,7 @@ import java.util.UUID;
 @EnableAutoConfiguration
 @Component
 public class MenuSession {
-    private FormplayerConfigEngine engine;
+    private CommCareConfigEngine engine;
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
     private String installReference;
@@ -120,6 +121,10 @@ public class MenuSession {
         this.uuid = UUID.randomUUID().toString();
         this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+    
+    public void updateApp(String updateMode) {
+        this.engine.attemptAppUpdate(updateMode);
     }
 
     private void resolveInstallReference(String installReference, String appId, String host){
@@ -207,11 +212,11 @@ public class MenuSession {
         }
         EvaluationContext ec = sessionWrapper.getEvaluationContext();
         if (datum instanceof FormIdDatum) {
-            sessionWrapper.setXmlns(XPathFuncExpr.toString(form.eval(ec)));
+            sessionWrapper.setXmlns(FunctionUtils.toString(form.eval(ec)));
             sessionWrapper.setDatum("", "awful");
         } else {
             try {
-                sessionWrapper.setDatum(datum.getDataId(), XPathFuncExpr.toString(form.eval(ec)));
+                sessionWrapper.setDatum(datum.getDataId(), FunctionUtils.toString(form.eval(ec)));
             } catch (XPathException e) {
                 throw new RuntimeException(e);
             }
