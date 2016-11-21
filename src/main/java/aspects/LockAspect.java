@@ -25,7 +25,7 @@ public class LockAspect {
     protected LockRegistry userLockRegistry;
 
     @Around(value = "@annotation(annotations.UserLock)")
-    public Object beforeLock(ProceedingJoinPoint joinPoint) {
+    public Object beforeLock(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
 
         if (!(args[0] instanceof AuthenticatedRequestBean)) {
@@ -41,8 +41,6 @@ public class LockAspect {
         Lock lock = getLockAndBlock(TableBuilder.scrubName(bean.getUsername()));
         try {
             return joinPoint.proceed();
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
         } finally {
             if (lock != null) {
                 lock.unlock();
