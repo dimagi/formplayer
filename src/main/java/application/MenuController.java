@@ -8,6 +8,7 @@ import beans.InstallRequestBean;
 import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
+import beans.menus.UpdateRequestBean;
 import exceptions.MenuNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -51,6 +52,15 @@ public class MenuController extends AbstractBaseController{
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
+        return response;
+    }
+
+    @ApiOperation(value = "Update the application at the given reference")
+    @RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
+    @UserLock
+    public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        BaseResponseBean response = getNextMenu(performUpdate(updateRequestBean, authToken));
         return response;
     }
 
@@ -229,6 +239,7 @@ public class MenuController extends AbstractBaseController{
 
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
+        restoreFactory.configure(bean, new DjangoAuth(authToken));
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");
@@ -248,5 +259,11 @@ public class MenuController extends AbstractBaseController{
         return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
                 bean.getInstallReference(), bean.getLocale(), installService, restoreFactory, auth, host,
                         bean.getOneQuestionPerScreen(), bean.getRestoreAs());
+    }
+
+    private MenuSession performUpdate(UpdateRequestBean updateRequestBean, String authToken) throws Exception {
+        MenuSession currentSession = performInstall(updateRequestBean, authToken);
+        currentSession.updateApp(updateRequestBean.getUpdateMode());
+        return currentSession;
     }
 }
