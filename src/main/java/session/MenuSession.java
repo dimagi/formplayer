@@ -22,6 +22,7 @@ import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
+import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
@@ -122,6 +123,10 @@ public class MenuSession {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 
+    public void updateApp() {
+        this.engine.attemptAppUpdate("latest");
+    }
+
     private void resolveInstallReference(String installReference, String appId, String host){
         if (installReference == null || installReference.equals("")) {
             if(appId == null || "".equals(appId)){
@@ -207,11 +212,11 @@ public class MenuSession {
         }
         EvaluationContext ec = sessionWrapper.getEvaluationContext();
         if (datum instanceof FormIdDatum) {
-            sessionWrapper.setXmlns(XPathFuncExpr.toString(form.eval(ec)));
+            sessionWrapper.setXmlns(FunctionUtils.toString(form.eval(ec)));
             sessionWrapper.setDatum("", "awful");
         } else {
             try {
-                sessionWrapper.setDatum(datum.getDataId(), XPathFuncExpr.toString(form.eval(ec)));
+                sessionWrapper.setDatum(datum.getDataId(), FunctionUtils.toString(form.eval(ec)));
             } catch (XPathException e) {
                 throw new RuntimeException(e);
             }
