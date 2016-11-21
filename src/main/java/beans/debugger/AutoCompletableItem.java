@@ -17,10 +17,10 @@ public class AutoCompletableItem {
         this.type = type;
     }
 
-    public AutoCompletableItem(JSONObject itemnJSON) {
-        this.value = itemnJSON.getString("value");
-        this.label = itemnJSON.getString("label");
-        this.type = itemnJSON.getString("type");
+    public AutoCompletableItem(JSONObject itemJSON) {
+        this.value = itemJSON.getString("value");
+        this.label = itemJSON.getString("label");
+        this.type = itemJSON.getString("type");
     }
 
     public String getValue() {
