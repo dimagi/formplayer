@@ -5,6 +5,7 @@ import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.InstallRequestBean;
+import beans.NewFormResponse;
 import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
+import session.FormSession;
 import session.MenuSession;
 import util.ApplicationUtils;
 import util.Constants;
@@ -60,8 +62,10 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        BaseResponseBean response = getNextMenu(performUpdate(updateRequestBean, authToken));
-        return response;
+        MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
+        FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()));
+        FormSession newSession = updatedSession.reloadSession(oldSession);
+        return new NewFormResponse(newSession);
     }
 
     /**
