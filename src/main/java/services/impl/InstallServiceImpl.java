@@ -1,5 +1,6 @@
 package services.impl;
 
+import engine.FormplayerConfigEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,7 +37,7 @@ public class InstallServiceImpl implements InstallService {
             }
         });
 
-        CommCareConfigEngine engine = new CommCareConfigEngine(PrototypeManager.getDefault());
+        CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
         engine.initFromArchive(reference);
         engine.initEnvironment();
         return engine;
