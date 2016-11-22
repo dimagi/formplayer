@@ -10,6 +10,7 @@ import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import beans.menus.UpdateRequestBean;
+import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -63,9 +64,20 @@ public class MenuController extends AbstractBaseController{
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
-        FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()));
-        FormSession newSession = updatedSession.reloadSession(oldSession);
-        return new NewFormResponse(newSession);
+        if (updateRequestBean.getSessionId() != null) {
+            // Try restoring the old session, fail gracefully.
+            try {
+                FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()));
+                FormSession newSession = updatedSession.reloadSession(oldSession);
+                return new NewFormResponse(newSession);
+            } catch(FormNotFoundException e) {
+                log.info("FormSession with id " + updateRequestBean.getSessionId() + " not found, returning root");
+            } catch(Exception e) {
+                log.info("FormSession with id " + updateRequestBean.getSessionId()
+                        + " failed to load with exception " + e);
+            }
+        }
+        return getNextMenu(updatedSession);
     }
 
     /**
