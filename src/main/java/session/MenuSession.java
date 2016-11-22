@@ -248,8 +248,9 @@ public class MenuSession {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, username, domain,
-                oldSession.getSessionData(), postUrl, locale, oldSession.getSessionId(),
-                oldSession.getInstanceXml(), oldSession.getOneQuestionPerScreen(), asUser, oldSession.getCurrentIndex());
+                oldSession.getSessionData(), postUrl, locale, oldSession.getMenuSessionId(),
+                oldSession.getInstanceXml(), oldSession.getOneQuestionPerScreen(), asUser,
+                oldSession.getSessionId(), oldSession.getCurrentIndex());
     }
 
     private byte[] serializeSession(CommCareSession session){
