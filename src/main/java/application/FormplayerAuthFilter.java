@@ -20,6 +20,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Filter that determines whether a request needs to be authorized,
@@ -131,9 +133,13 @@ public class FormplayerAuthFilter implements Filter {
      */
     private boolean isAuthorizationRequired(HttpServletRequest request){
         String uri = StringUtils.strip(request.getRequestURI(), "/");
-        if (uri.equals(Constants.URL_SERVER_UP)) {
-            return false;
+        for (Pattern pattern : Constants.AUTH_WHITELIST) {
+            Matcher matcher = pattern.matcher(uri);
+            if (matcher.matches()) {
+                return false;
+            }
         }
+
         return (request.getMethod().equals("POST") || request.getMethod().equals("GET"));
     }
 
