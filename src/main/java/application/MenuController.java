@@ -5,10 +5,12 @@ import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.InstallRequestBean;
+import beans.NewFormResponse;
 import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import beans.menus.UpdateRequestBean;
+import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
+import session.FormSession;
 import session.MenuSession;
 import util.ApplicationUtils;
 import util.Constants;
@@ -60,8 +63,21 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        BaseResponseBean response = getNextMenu(performUpdate(updateRequestBean, authToken));
-        return response;
+        MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
+        if (updateRequestBean.getSessionId() != null) {
+            // Try restoring the old session, fail gracefully.
+            try {
+                FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()));
+                FormSession newSession = updatedSession.reloadSession(oldSession);
+                return new NewFormResponse(newSession);
+            } catch(FormNotFoundException e) {
+                log.info("FormSession with id " + updateRequestBean.getSessionId() + " not found, returning root");
+            } catch(Exception e) {
+                log.info("FormSession with id " + updateRequestBean.getSessionId()
+                        + " failed to load with exception " + e);
+            }
+        }
+        return getNextMenu(updatedSession);
     }
 
     /**
