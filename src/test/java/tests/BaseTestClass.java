@@ -128,8 +128,8 @@ public class BaseTestClass {
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        Mockito.doReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"))
+                .when(restoreFactoryMock).getRestoreXml();
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
                 .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
         mapper = new ObjectMapper();
