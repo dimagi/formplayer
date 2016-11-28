@@ -9,8 +9,13 @@ import beans.*;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import install.FormplayerConfigEngine;
 import objects.SerializableFormSession;
+import org.apache.commons.lang3.StringUtils;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.util.engine.CommCareConfigEngine;
+import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.storage.IStorageIndexedFactory;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
@@ -33,12 +38,14 @@ import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import services.*;
 import util.Constants;
+import util.PrototypeUtils;
 import utils.FileUtils;
 import utils.TestContext;
 
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -131,6 +138,7 @@ public class BaseTestClass {
         setupInstallServiceMock();
         setupLockMock();
         setupNewFormMock();
+        PrototypeUtils.setupPrototypes();
     }
 
     private void setupNewFormMock() throws Exception {
@@ -193,9 +201,19 @@ public class BaseTestClass {
                     try {
                         Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
-                        String username = (String) args[1];
-                        String path = (String) args[2];
-                        FormplayerConfigEngine engine = new FormplayerConfigEngine(username, path);
+                        final String username = (String) args[1];
+                        final String path = (String) args[2];
+                        final String trimmedUsername = StringUtils.substringBefore(username, "@");
+                        File dbFolder = new File(path);
+                        dbFolder.delete();
+                        dbFolder.mkdirs();
+                        CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
+                            @Override
+                            public IStorageUtilityIndexed newStorage(String name, Class type) {
+                                return new SqliteIndexedStorageUtility(type, name, trimmedUsername, path);
+                            }
+                        });
+                        CommCareConfigEngine engine = new CommCareConfigEngine();
                         String absolutePath = getTestResourcePath(ref);
                         engine.initFromArchive(absolutePath);
                         engine.initEnvironment();
@@ -280,10 +298,8 @@ public class BaseTestClass {
     }
 
     protected void configureRestoreFactory(String domain, String username) {
-        when(restoreFactoryMock.getUsername())
-                .thenReturn(username);
-        when(restoreFactoryMock.getDomain())
-                .thenReturn(domain);
+        restoreFactoryMock.setDomain(domain);
+        restoreFactoryMock.setUsername(username);
     }
 
     FormEntryResponseBean jumpToIndex(String index, String sessionId) throws Exception {
@@ -343,9 +359,9 @@ public class BaseTestClass {
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
                 NewSessionRequestBean.class);
         when(restoreFactoryMock.getUsername())
-                .thenReturn(newSessionRequestBean.getSessionData().getUsername());
+                .thenReturn(newSessionRequestBean.getUsername());
         when(restoreFactoryMock.getDomain())
-                .thenReturn(newSessionRequestBean.getSessionData().getDomain());
+                .thenReturn(newSessionRequestBean.getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_NEW_SESSION,
@@ -530,6 +546,16 @@ public class BaseTestClass {
         return generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_INSTALL,
+                installRequestBean,
+                CommandListResponseBean.class);
+    }
+
+    CommandListResponseBean doUpdate(String requestPath) throws Exception {
+        InstallRequestBean installRequestBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
+        return generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_UPDATE,
                 installRequestBean,
                 CommandListResponseBean.class);
     }

@@ -1,7 +1,5 @@
 package application;
 
-import auth.HqAuth;
-import beans.AsUserBean;
 import beans.NewFormResponse;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
@@ -31,15 +29,16 @@ import org.javarosa.xpath.XPathException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import services.InstallService;
+import services.NewFormResponseFactory;
 import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
@@ -73,6 +72,9 @@ public abstract class AbstractBaseController {
     @Autowired
     private HtmlEmail exceptionMessage;
 
+    @Autowired
+    protected NewFormResponseFactory newFormResponseFactory;
+
     @Value("${commcarehq.host}")
     private String hqHost;
 
@@ -80,13 +82,6 @@ public abstract class AbstractBaseController {
     private String hqEnvironment;
 
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
-
-    protected void configureRestoreFactory(AsUserBean asUserBean, HqAuth auth) {
-        restoreFactory.setDomain(asUserBean.getDomain());
-        restoreFactory.setAsUsername(asUserBean.getAsUser());
-        restoreFactory.setUsername(asUserBean.getUsername());
-        restoreFactory.setHqAuth(auth);
-    }
 
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
@@ -237,6 +232,15 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
 
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+    }
+
+    /**
+     * Handles exceptions thrown when making external requests, usually to CommCareHQ.
+     */
+    @ExceptionHandler({HttpClientErrorException.class})
+    @ResponseBody
+    public ExceptionResponseBean handleHttpRequestError(FormplayerHttpRequest req, HttpClientErrorException exception) {
+        return new ExceptionResponseBean(exception.getResponseBodyAsString(), req.getRequestURL().toString());
     }
 
     @ExceptionHandler({AsyncRetryException.class})

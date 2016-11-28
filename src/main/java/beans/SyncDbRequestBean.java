@@ -1,28 +1,11 @@
 package beans;
 
-import auth.HqAuth;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
- * Created by willpride on 1/12/16.
+ * I think we can delete this now  that all information has been encapsulated in its super class
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SyncDbRequestBean extends AuthenticatedRequestBean implements AsUserBean {
-
-    String asUser;
-
+public class SyncDbRequestBean extends AuthenticatedRequestBean {
     public SyncDbRequestBean(){}
-
-    @Override
-    @JsonGetter(value = "restoreAs")
-    public String getAsUser() {
-        return asUser;
-    }
-    @JsonSetter(value = "restoreAs")
-    public void setAsUser(String asUser) {
-        this.asUser = asUser;
-    }
 }

@@ -8,6 +8,7 @@ import objects.SerializableFormSession;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.xform.parse.XFormParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
 import session.FormSession;
@@ -39,9 +40,9 @@ public class NewFormResponseFactory {
         String formXml = getFormXml(bean.getFormUrl(), auth);
         UserSqlSandbox sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
 
-        FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getSessionData().getUsername(),
-                bean.getSessionData().getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,
-                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getAsUser());
+        FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getUsername(),
+                bean.getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,
+                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getRestoreAs());
 
         formSessionRepo.save(formSession.serialize());
         return new NewFormResponse(formSession);
@@ -57,7 +58,7 @@ public class NewFormResponseFactory {
         return xFormService.getFormXml(formUrl, auth);
     }
 
-    private FormDef parseFormDef(String formXml) throws IOException {
+    private static FormDef parseFormDef(String formXml) throws IOException {
         XFormParser mParser = new XFormParser(new StringReader(formXml));
         return mParser.parse();
     }

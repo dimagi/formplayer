@@ -1,12 +1,13 @@
 package beans.debugger;
 
 import beans.CaseBean;
-import beans.SessionResponseBean;
 import org.json.JSONArray;
 import util.XmlUtils;
 
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 
 /**
  * Response for the debugger tab
@@ -16,24 +17,29 @@ public class DebuggerFormattedQuestionsResponseBean {
     private String appId;
     private String instanceXml;
     private String formattedQuestions;
-    private QuestionResponseItem[] questionList;
     private ExternalDataInstanceItem[] instanceList;
     private CaseBean[] cases;
+    private AutoCompletableItem[] questionList;
 
     public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml,
                                                   String formattedQuestions, JSONArray questionList,
+                                                  List<String> functionList,
                                                   Hashtable<String, String> dataInstances,
                                                   CaseBean[] cases) {
         this.xmlns = xmlns;
         this.appId = appId;
         this.instanceXml = XmlUtils.indent(instanceXml);
         this.formattedQuestions = formattedQuestions;
-        this.questionList = new QuestionResponseItem[questionList.length()];
+        HashSet<AutoCompletableItem> autoCompletable = new HashSet<>();
         for (int i = 0; i < questionList.length(); i++) {
-            this.questionList[i] = new QuestionResponseItem(questionList.getJSONObject(i));
+            autoCompletable.add(new AutoCompletableItem(questionList.getJSONObject(i)));
+        }
+        for (String function: functionList) {
+            autoCompletable.add(new FunctionAutocompletable(function));
         }
         initializeInstances(dataInstances);
         this.cases = cases;
+        this.questionList = autoCompletable.toArray(new AutoCompletableItem[autoCompletable.size()]);
     }
 
     private void initializeInstances(Hashtable<String, String> dataInstances) {
@@ -79,11 +85,11 @@ public class DebuggerFormattedQuestionsResponseBean {
         this.appId = appId;
     }
 
-    public QuestionResponseItem[] getQuestionList() {
+    public AutoCompletableItem[] getQuestionList() {
         return questionList;
     }
 
-    public void setQuestionList(QuestionResponseItem[] questionList) {
+    public void setQuestionList(AutoCompletableItem[] questionList) {
         this.questionList = questionList;
     }
 

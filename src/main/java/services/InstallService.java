@@ -1,15 +1,10 @@
 package services;
 
-import install.FormplayerConfigEngine;
-import org.commcare.resources.model.InstallCancelledException;
-import org.commcare.resources.model.UnresolvedResourceException;
-import org.javarosa.xml.util.UnfullfilledRequirementsException;
-
-import java.io.IOException;
+import org.commcare.util.engine.CommCareConfigEngine;
 
 /**
  * Created by willpride on 2/25/16.
  */
 public interface InstallService {
-    FormplayerConfigEngine configureApplication(String reference, String username, String dbPath) throws IOException, InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException;
+    CommCareConfigEngine configureApplication(String reference, String username, String dbPath);
 }
