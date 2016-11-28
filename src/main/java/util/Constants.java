@@ -1,5 +1,10 @@
 package util;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 /**
  * Created by willpride on 2/4/16.
  */
@@ -66,4 +71,13 @@ public class Constants {
     public static final String COUCH_USERS_DB = "__users";
 
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
+
+    public static final Set<Pattern> AUTH_WHITELIST = new HashSet<Pattern>(Arrays.asList(
+            Pattern.compile(Constants.URL_SERVER_UP),
+            Pattern.compile("swagger.*"),
+            Pattern.compile("webjars/.*"),
+            Pattern.compile("configuration/.*"),
+            Pattern.compile("v2/.*")
+    ));
+
 }
