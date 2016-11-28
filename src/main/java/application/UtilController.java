@@ -75,7 +75,12 @@ public class UtilController extends AbstractBaseController {
     }
 
     @ApiOperation(value = "Validates an XForm")
-    @RequestMapping(value = Constants.URL_VALIDATE_FORM, method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE })
+    @RequestMapping(
+        value = Constants.URL_VALIDATE_FORM,
+        method = RequestMethod.POST,
+        produces = { MediaType.APPLICATION_JSON_VALUE },
+        consumes = { MediaType.APPLICATION_XML_VALUE}
+    )
     public String validateForm(@RequestBody String formXML) throws Exception {
         JSONReporter reporter = new JSONReporter();
         try {
