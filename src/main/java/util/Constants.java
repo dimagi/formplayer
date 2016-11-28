@@ -35,6 +35,7 @@ public class Constants {
     public static final String URL_QUESTIONS_FOR_INDEX = "questions_for_index";
     public static final String URL_NEXT_INDEX = "next_index";
     public static final String URL_PREV_INDEX = "prev_index";
+    public static final String URL_VALIDATE_FORM = "validate_form";
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
 
@@ -74,6 +75,7 @@ public class Constants {
 
     public static final Set<Pattern> AUTH_WHITELIST = new HashSet<Pattern>(Arrays.asList(
             Pattern.compile(Constants.URL_SERVER_UP),
+            Pattern.compile(Constants.URL_VALIDATE_FORM),
             Pattern.compile("swagger.*"),
             Pattern.compile("webjars/.*"),
             Pattern.compile("configuration/.*"),
