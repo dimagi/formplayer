@@ -8,6 +8,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
 import org.javarosa.xpath.expr.FunctionUtils;
+import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,9 @@ import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -61,5 +64,30 @@ public class DebuggerController extends AbstractBaseController {
                 externalDataInstances,
                 cases
         );
+    }
+
+    private List<String> generateFunctionList() {
+        List<Class> functionList = FunctionUtils.xPathFuncList();
+        List<String> functionStrings = new ArrayList<>();
+        for(Class clazz: functionList) {
+            try {
+                XPathFuncExpr function = (XPathFuncExpr) clazz.newInstance();
+                int argCount = function.getExpectedArgCount();
+                String name = function.getName();
+                StringBuilder sb = new StringBuilder(name);
+                sb.append("(");
+                if(argCount > 2) {
+                    for(int i = 0; i < argCount - 1; i ++) {
+                        sb.append(" ,");
+                    }
+                    sb.append(" ");
+                }
+                sb.append(")");
+                functionStrings.add(sb.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return functionStrings;
     }
 }

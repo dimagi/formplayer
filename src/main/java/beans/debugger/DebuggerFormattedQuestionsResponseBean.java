@@ -23,7 +23,7 @@ public class DebuggerFormattedQuestionsResponseBean {
 
     public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml,
                                                   String formattedQuestions, JSONArray questionList,
-                                                  List<String> functionList,
+                                                  List<Class> classList,
                                                   Hashtable<String, String> dataInstances,
                                                   CaseBean[] cases) {
         this.xmlns = xmlns;
@@ -34,8 +34,8 @@ public class DebuggerFormattedQuestionsResponseBean {
         for (int i = 0; i < questionList.length(); i++) {
             autoCompletable.add(new AutoCompletableItem(questionList.getJSONObject(i)));
         }
-        for (String function: functionList) {
-            autoCompletable.add(new FunctionAutocompletable(function));
+        for (Class clazz: classList) {
+            autoCompletable.add(new FunctionAutocompletable(clazz));
         }
         initializeInstances(dataInstances);
         this.cases = cases;
