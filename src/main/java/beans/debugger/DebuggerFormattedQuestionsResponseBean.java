@@ -15,9 +15,16 @@ public class DebuggerFormattedQuestionsResponseBean {
     private String instanceXml;
     private String formattedQuestions;
     private AutoCompletableItem[] questionList;
+    private XPathQueryItem[] recentXPathQueries;
 
-    public DebuggerFormattedQuestionsResponseBean(String appId, String xmlns, String instanceXml,
-                                                  String formattedQuestions, JSONArray questionList, List<String> functionList) {
+    public DebuggerFormattedQuestionsResponseBean(
+            String appId,
+            String xmlns,
+            String instanceXml,
+            String formattedQuestions,
+            JSONArray questionList,
+            List<String> functionList,
+            List<XPathQueryItem> recentXPathQueries) {
         this.xmlns = xmlns;
         this.appId = appId;
         this.instanceXml = XmlUtils.indent(instanceXml);
@@ -30,6 +37,7 @@ public class DebuggerFormattedQuestionsResponseBean {
             autoCompletable.add(new FunctionAutocompletable(function));
         }
         this.questionList = autoCompletable.toArray(new AutoCompletableItem[autoCompletable.size()]);
+        this.recentXPathQueries = recentXPathQueries.toArray(new XPathQueryItem[recentXPathQueries.size()]);
     }
 
     public String getFormattedQuestions() {
@@ -70,5 +78,13 @@ public class DebuggerFormattedQuestionsResponseBean {
 
     public void setQuestionList(AutoCompletableItem[] questionList) {
         this.questionList = questionList;
+    }
+
+    public XPathQueryItem[] getRecentXPathQueries() {
+        return recentXPathQueries;
+    }
+
+    public void setRecentXPathQueries(XPathQueryItem[] recentXPathQueries) {
+        this.recentXPathQueries = recentXPathQueries;
     }
 }
