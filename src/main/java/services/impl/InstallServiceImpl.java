@@ -46,7 +46,7 @@ public class InstallServiceImpl implements InstallService {
         } catch (Exception e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPath);
             SqlSandboxUtils.deleteDatabaseFolder(dbPath);
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 }
