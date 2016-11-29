@@ -5,11 +5,15 @@ import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.javarosa.xform.parse.XFormParseException;
+import org.javarosa.xform.parse.XFormParser;
+import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import util.Constants;
+
+import java.io.StringReader;
 
 /**
  * Controller class (API endpoint) containing all all logic that isn't associated with
@@ -68,5 +72,28 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_SERVER_UP, method = RequestMethod.GET)
     public ServerUpBean serverUp() throws Exception {
         return new ServerUpBean();
+    }
+
+    @ApiOperation(value = "Validates an XForm")
+    @RequestMapping(
+        value = Constants.URL_VALIDATE_FORM,
+        method = RequestMethod.POST,
+        produces = { MediaType.APPLICATION_JSON_VALUE },
+        consumes = { MediaType.APPLICATION_XML_VALUE}
+    )
+    public String validateForm(@RequestBody String formXML) throws Exception {
+        JSONReporter reporter = new JSONReporter();
+        try {
+            XFormParser parser = new XFormParser(new StringReader(formXML));
+            parser.attachReporter(reporter);
+            parser.parse();
+            reporter.setPassed();
+        } catch (XFormParseException xfpe) {
+            reporter.setFailed(xfpe);
+        } catch (Exception e) {
+            reporter.setFailed(e);
+        }
+
+        return reporter.generateJSONReport();
     }
 }

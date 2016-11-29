@@ -40,3 +40,7 @@ smtp.username=test
 smtp.password=123
 smtp.from.address=mail@formplayer.commcarehq.org
 smtp.to.address=exceptions@commcarehq.org
+
+endpoints.enabled=true
+management.address: 127.0.0.1
+management.port: 8081
