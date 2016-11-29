@@ -54,8 +54,10 @@ public class RestoreFactory {
 
     public String getDbFile() {
         if (getAsUsername() == null) {
+            log.info("Restoring to database " + SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db");
             return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db";
         }
+        log.info("Restoring to database " + SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + "/" + getAsUsername() + ".db");
         return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + "/" + getAsUsername() + ".db";
     }
 
