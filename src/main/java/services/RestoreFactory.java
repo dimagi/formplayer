@@ -209,4 +209,8 @@ public class RestoreFactory {
     public void setAsUsername(String asUsername) {
         this.asUsername = asUsername;
     }
+
+    public void setCachedRestore(String cachedRestore) {
+        this.cachedRestore = cachedRestore;
+    }
 }
