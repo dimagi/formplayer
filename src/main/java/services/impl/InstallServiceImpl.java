@@ -30,27 +30,34 @@ public class InstallServiceImpl implements InstallService {
 
             File dbFolder = new File(dbPath);
 
-            if(!dbFolder.exists()) {
-                dbFolder.mkdirs();
-                CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
-                    @Override
-                    public IStorageUtilityIndexed newStorage(String name, Class type) {
-                        return new SqliteIndexedStorageUtility(type, name, trimmedUsername, dbPath);
-                    }
-                });
-
-                CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
-                engine.initFromArchive(reference);
-                engine.initEnvironment();
-                return engine;
-            } else {
-                CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
-                return engine;
+            if(dbFolder.exists()) {
+                // Try reusing old install, fail quietly
+                try {
+                    CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
+                    engine.initEnvironment();
+                    return engine;
+                } catch (Exception e) {
+                    log.error("Got exception " + e + " while reinitializing at path " + dbPath);
+                }
             }
+            // Wipe out folder and attempt install
+            SqlSandboxUtils.deleteDatabaseFolder(dbPath);
+            dbFolder.mkdirs();
+            CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
+                @Override
+                public IStorageUtilityIndexed newStorage(String name, Class type) {
+                    return new SqliteIndexedStorageUtility(type, name, trimmedUsername, dbPath);
+                }
+            });
+
+            CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
+            engine.initFromArchive(reference);
+            engine.initEnvironment();
+            return engine;
         } catch (Exception e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPath);
             SqlSandboxUtils.deleteDatabaseFolder(dbPath);
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 }
