@@ -29,7 +29,7 @@ import java.io.IOException;
 public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
-        new File(restoreFactory.getDbFile()).delete();
+        SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         return restoreIfNotExists(restoreFactory);
     }
 
@@ -51,13 +51,8 @@ public class CaseAPIs {
         restoreFactory.setDomain(domain);
         restoreFactory.setUsername(username);
         restoreFactory.setAsUsername(asUsername);
-        File db = new File(restoreFactory.getDbFile());
-        if(db.exists()){
-            return restoreFactory.getSqlSandbox();
-        } else{
-            db.getParentFile().mkdirs();
-            return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(),  xml);
-        }
+        restoreFactory.setCachedRestore(xml);
+        return restoreIfNotExists(restoreFactory);
     }
 
     public static String filterCases(RestoreFactory restoreFactory, String filterExpression) {
