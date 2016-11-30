@@ -29,20 +29,24 @@ public class InstallServiceImpl implements InstallService {
             final String trimmedUsername = StringUtils.substringBefore(username, "@");
 
             File dbFolder = new File(dbPath);
-            SqlSandboxUtils.deleteDatabaseFolder(dbPath);
-            dbFolder.mkdirs();
 
-            CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
-                @Override
-                public IStorageUtilityIndexed newStorage(String name, Class type) {
-                    return new SqliteIndexedStorageUtility(type, name, trimmedUsername, dbPath);
-                }
-            });
+            if(!dbFolder.exists()) {
+                dbFolder.mkdirs();
+                CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
+                    @Override
+                    public IStorageUtilityIndexed newStorage(String name, Class type) {
+                        return new SqliteIndexedStorageUtility(type, name, trimmedUsername, dbPath);
+                    }
+                });
 
-            CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
-            engine.initFromArchive(reference);
-            engine.initEnvironment();
-            return engine;
+                CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
+                engine.initFromArchive(reference);
+                engine.initEnvironment();
+                return engine;
+            } else {
+                CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
+                return engine;
+            }
         } catch (Exception e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPath);
             SqlSandboxUtils.deleteDatabaseFolder(dbPath);
