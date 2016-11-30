@@ -36,10 +36,8 @@ public class CaseAPIs {
     public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory) throws Exception{
         File db = new File(restoreFactory.getDbFile());
         if(db.exists()){
-            System.out.println("db exists for path " + db);
             return restoreFactory.getSqlSandbox();
         } else{
-            System.out.println("NOT db exists for path " + db);
             db.getParentFile().mkdirs();
             String xml = restoreFactory.getRestoreXml();
             return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(), xml);
