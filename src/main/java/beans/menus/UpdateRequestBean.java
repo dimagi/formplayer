@@ -20,6 +20,8 @@ public class UpdateRequestBean extends InstallRequestBean {
 
     private String updateMode; // one of build, release, save
 
+    private String sessionId;
+
     public String getUpdateMode() {
         return updateMode;
     }
@@ -31,5 +33,13 @@ public class UpdateRequestBean extends InstallRequestBean {
         } else {
             this.updateMode = updateMode;
         }
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }

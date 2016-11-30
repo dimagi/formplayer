@@ -114,6 +114,25 @@ public class FormSession {
                        Map<String, String> sessionData, String postUrl,
                        String locale, String menuSessionId,
                        String instanceContent, boolean oneQuestionPerScreen, String asUser) throws Exception {
+        this(sandbox, formDef, username, domain, sessionData, postUrl, locale, menuSessionId,
+                instanceContent, oneQuestionPerScreen, asUser, UUID.randomUUID().toString());
+    }
+
+    // New FormSession constructor
+    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
+            Map<String, String> sessionData, String postUrl,
+            String locale, String menuSessionId,
+            String instanceContent, boolean oneQuestionPerScreen, String asUser, String sessionId) throws Exception {
+        this(sandbox, formDef, username, domain, sessionData, postUrl, locale, menuSessionId,
+                instanceContent, oneQuestionPerScreen, asUser, sessionId, "0");
+    }
+
+    // New FormSession constructor
+    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
+            Map<String, String> sessionData, String postUrl,
+            String locale, String menuSessionId,
+               String instanceContent, boolean oneQuestionPerScreen, String asUser,
+                       String sessionId, String currentIndex) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         this.sandbox = sandbox;
@@ -121,13 +140,13 @@ public class FormSession {
         this.domain = domain;
         this.postUrl = postUrl;
         this.locale = locale;
-        this.uuid = UUID.randomUUID().toString();
+        this.uuid = sessionId;
         this.sequenceId = 0;
         this.postUrl = postUrl;
         this.menuSessionId = menuSessionId;
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.asUser = asUser;
-        this.currentIndex = "0";
+        this.currentIndex = currentIndex;
         setupJavaRosaObjects();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
@@ -240,7 +259,7 @@ public class FormSession {
         return getInstanceXml();
     }
 
-    private Map<String, String> getSessionData(){
+    public Map<String, String> getSessionData(){
         return sessionData;
     }
 
@@ -423,12 +442,15 @@ public class FormSession {
 
     public CaseBean[] getCases() {
         ArrayList<CaseBean> cases = new ArrayList<>();
-        for(String key: this.getSessionData().keySet()) {
+        for (String key : this.getSessionData().keySet()) {
             if (key.contains("case_id")) {
                 CaseBean caseBean = CaseAPIs.getFullCase(sessionData.get(key), (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
                 cases.add(caseBean);
             }
         }
         return cases.toArray(new CaseBean[cases.size()]);
+    }
+    public boolean getOneQuestionPerScreen() {
+        return oneQuestionPerScreen;
     }
 }

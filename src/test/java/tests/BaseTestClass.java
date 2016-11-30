@@ -16,6 +16,7 @@ import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.javarosa.core.util.externalizable.LivePrototypeFactory;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
@@ -207,13 +208,14 @@ public class BaseTestClass {
                         File dbFolder = new File(path);
                         dbFolder.delete();
                         dbFolder.mkdirs();
+                        final LivePrototypeFactory mPrototypeFactory = new LivePrototypeFactory();
                         CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
                             @Override
                             public IStorageUtilityIndexed newStorage(String name, Class type) {
                                 return new SqliteIndexedStorageUtility(type, name, trimmedUsername, path);
                             }
                         });
-                        CommCareConfigEngine engine = new CommCareConfigEngine();
+                        CommCareConfigEngine engine = new CommCareConfigEngine(mPrototypeFactory);
                         String absolutePath = getTestResourcePath(ref);
                         engine.initFromArchive(absolutePath);
                         engine.initEnvironment();

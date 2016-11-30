@@ -7,7 +7,7 @@ import java.util.Arrays;
 /**
  * Created by willpride on 4/13/16.
  */
-public class MenuBean extends BaseResponseBean{
+public class MenuBean extends BaseResponseBean {
 
     private String[] locales;
     private String[] breadcrumbs;

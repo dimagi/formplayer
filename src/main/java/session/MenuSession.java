@@ -43,6 +43,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -240,6 +241,16 @@ public class MenuSession {
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen, asUser);
+    }
+
+    public FormSession reloadSession(FormSession oldSession) throws Exception {
+        String formXmlns = oldSession.getXmlns();
+        FormDef formDef = engine.loadFormByXmlns(formXmlns);
+        String postUrl = new PropertyManager().getSingularProperty("PostURL");
+        return new FormSession(sandbox, formDef, username, domain,
+                oldSession.getSessionData(), postUrl, locale, oldSession.getMenuSessionId(),
+                oldSession.getInstanceXml(), oldSession.getOneQuestionPerScreen(), asUser,
+                oldSession.getSessionId(), oldSession.getCurrentIndex());
     }
 
     private byte[] serializeSession(CommCareSession session){
