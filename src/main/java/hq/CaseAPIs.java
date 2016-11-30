@@ -29,15 +29,17 @@ import java.io.IOException;
 public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
-        new File(restoreFactory.getDbFile()).delete();
+        SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         return restoreIfNotExists(restoreFactory);
     }
 
     public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory) throws Exception{
         File db = new File(restoreFactory.getDbFile());
         if(db.exists()){
+            System.out.println("db exists for path " + db);
             return restoreFactory.getSqlSandbox();
         } else{
+            System.out.println("NOT db exists for path " + db);
             db.getParentFile().mkdirs();
             String xml = restoreFactory.getRestoreXml();
             return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(), xml);
@@ -51,13 +53,8 @@ public class CaseAPIs {
         restoreFactory.setDomain(domain);
         restoreFactory.setUsername(username);
         restoreFactory.setAsUsername(asUsername);
-        File db = new File(restoreFactory.getDbFile());
-        if(db.exists()){
-            return restoreFactory.getSqlSandbox();
-        } else{
-            db.getParentFile().mkdirs();
-            return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(),  xml);
-        }
+        restoreFactory.setCachedRestore(xml);
+        return restoreIfNotExists(restoreFactory);
     }
 
     public static String filterCases(RestoreFactory restoreFactory, String filterExpression) {
