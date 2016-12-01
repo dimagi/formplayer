@@ -7,10 +7,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.resources.model.InstallCancelledException;
+import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import services.InstallService;
 
 import java.io.File;
@@ -27,11 +30,6 @@ public class InstallServiceImpl implements InstallService {
         log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         try {
             final String trimmedUsername = StringUtils.substringBefore(username, "@");
-
-            File dbFolder = new File(dbPath);
-            SqlSandboxUtils.deleteDatabaseFolder(dbPath);
-            dbFolder.mkdirs();
-
             CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
                 @Override
                 public IStorageUtilityIndexed newStorage(String name, Class type) {
@@ -39,14 +37,32 @@ public class InstallServiceImpl implements InstallService {
                 }
             });
 
+            File dbFolder = new File(dbPath);
+            if(dbFolder.exists()) {
+                // Try reusing old install, fail quietly
+                try {
+                    CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
+                    engine.initEnvironment();
+                    return engine;
+                } catch (Exception e) {
+                    log.error("Got exception " + e + " while reinitializing at path " + dbPath);
+                }
+            }
+            // Wipe out folder and attempt install
+            SqlSandboxUtils.deleteDatabaseFolder(dbPath);
+            dbFolder.mkdirs();
             CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
             engine.initFromArchive(reference);
             engine.initEnvironment();
             return engine;
-        } catch (Exception e) {
+        } catch (InstallCancelledException | UnresolvedResourceException | UnfullfilledRequirementsException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPath);
             SqlSandboxUtils.deleteDatabaseFolder(dbPath);
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPath);
+            SqlSandboxUtils.deleteDatabaseFolder(dbPath);
+            throw e;
         }
     }
 }
