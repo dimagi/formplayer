@@ -30,9 +30,14 @@ public class InstallServiceImpl implements InstallService {
         log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         try {
             final String trimmedUsername = StringUtils.substringBefore(username, "@");
+            CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
+                @Override
+                public IStorageUtilityIndexed newStorage(String name, Class type) {
+                    return new SqliteIndexedStorageUtility(type, name, trimmedUsername, dbPath);
+                }
+            });
 
             File dbFolder = new File(dbPath);
-
             if(dbFolder.exists()) {
                 // Try reusing old install, fail quietly
                 try {
@@ -46,13 +51,6 @@ public class InstallServiceImpl implements InstallService {
             // Wipe out folder and attempt install
             SqlSandboxUtils.deleteDatabaseFolder(dbPath);
             dbFolder.mkdirs();
-            CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
-                @Override
-                public IStorageUtilityIndexed newStorage(String name, Class type) {
-                    return new SqliteIndexedStorageUtility(type, name, trimmedUsername, dbPath);
-                }
-            });
-
             CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
             engine.initFromArchive(reference);
             engine.initEnvironment();
