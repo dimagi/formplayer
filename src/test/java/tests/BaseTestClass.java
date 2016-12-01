@@ -82,6 +82,9 @@ public class BaseTestClass {
     RestoreFactory restoreFactoryMock;
 
     @Autowired
+    FormplayerStorageFactory storageFactoryMock;
+
+    @Autowired
     SubmitService submitServiceMock;
 
     @Autowired
@@ -201,13 +204,12 @@ public class BaseTestClass {
                         dbFolder.delete();
                         dbFolder.mkdirs();
                         final LivePrototypeFactory mPrototypeFactory = new LivePrototypeFactory();
-                        CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
+                        CommCareConfigEngine engine = new CommCareConfigEngine(mPrototypeFactory, new IStorageIndexedFactory() {
                             @Override
                             public IStorageUtilityIndexed newStorage(String name, Class type) {
                                 return new SqliteIndexedStorageUtility(type, name, trimmedUsername, path);
                             }
                         });
-                        CommCareConfigEngine engine = new CommCareConfigEngine(mPrototypeFactory);
                         String absolutePath = getTestResourcePath(ref);
                         engine.initFromArchive(absolutePath);
                         engine.initEnvironment();

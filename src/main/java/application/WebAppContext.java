@@ -280,6 +280,12 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    public FormplayerStorageFactory storageFactory(){
+        return new FormplayerStorageFactory();
+    }
+
+
+    @Bean
     public InstallService installService(){
         return new InstallServiceImpl();
     }

@@ -20,7 +20,6 @@ import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.Screen;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import screens.FormplayerQueryScreen;
@@ -33,7 +32,6 @@ import util.SessionUtils;
 
 import java.io.InputStream;
 import java.util.Hashtable;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -256,6 +254,7 @@ public class MenuController extends AbstractBaseController{
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         restoreFactory.configure(bean, new DjangoAuth(authToken));
+        storageFactory.configure(bean);
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");

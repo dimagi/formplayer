@@ -14,6 +14,8 @@ import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.springframework.beans.factory.annotation.Autowired;
+import services.FormplayerStorageFactory;
 import services.InstallService;
 
 import java.io.File;
@@ -23,25 +25,20 @@ import java.io.File;
  */
 public class InstallServiceImpl implements InstallService {
 
+    @Autowired
+    FormplayerStorageFactory storageFactory;
+
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     @Override
     public CommCareConfigEngine configureApplication(String reference, final String username, final String dbPath) {
         log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         try {
-            final String trimmedUsername = StringUtils.substringBefore(username, "@");
-            CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
-                @Override
-                public IStorageUtilityIndexed newStorage(String name, Class type) {
-                    return new SqliteIndexedStorageUtility(type, name, trimmedUsername, dbPath);
-                }
-            });
-
             File dbFolder = new File(dbPath);
             if(dbFolder.exists()) {
                 // Try reusing old install, fail quietly
                 try {
-                    CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
+                    CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault(), storageFactory);
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
@@ -51,7 +48,7 @@ public class InstallServiceImpl implements InstallService {
             // Wipe out folder and attempt install
             SqlSandboxUtils.deleteDatabaseFolder(dbPath);
             dbFolder.mkdirs();
-            CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault());
+            CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault(), storageFactory);
             engine.initFromArchive(reference);
             engine.initEnvironment();
             return engine;
