@@ -55,6 +55,11 @@ public class TestContext {
     }
 
     @Bean
+    public FormplayerStorageFactory storageFactory() {
+        return new FormplayerStorageFactory();
+    }
+
+    @Bean
     public InstallService installService(){
         return Mockito.mock(InstallServiceImpl.class);
     }

@@ -20,6 +20,8 @@ import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.services.PrototypeManager;
+import org.javarosa.core.services.storage.IStorageIndexedFactory;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.form.api.FormController;
@@ -31,6 +33,8 @@ import org.javarosa.xform.util.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import services.FormplayerStorageFactory;
+import util.ApplicationUtils;
 
 import java.io.*;
 import java.util.Date;
@@ -173,7 +177,12 @@ public class FormSession {
     }
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
-        CommCarePlatform platform = new CommCarePlatform(2, 30);
+        CommCarePlatform platform = new CommCarePlatform(2, 30, new IStorageIndexedFactory() {
+            @Override
+            public IStorageUtilityIndexed newStorage(String name, Class type) {
+                return new SqliteIndexedStorageUtility(type, name, username, ApplicationUtils.getApplicationDBPath(domain, username, "123"));
+            }
+        });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
     }
