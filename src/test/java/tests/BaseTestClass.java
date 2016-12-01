@@ -120,6 +120,7 @@ public class BaseTestClass {
         Mockito.reset(installService);
         Mockito.reset(userLockRegistry);
         Mockito.reset(newFormResponseFactoryMock);
+        Mockito.reset(storageFactoryMock);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
@@ -195,7 +196,7 @@ public class BaseTestClass {
                 @Override
                 public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                     try {
-                        Object[] args = invocationOnMock.getArguments();
+                        final Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
                         final String username = (String) args[1];
                         final String path = (String) args[2];
@@ -203,13 +204,20 @@ public class BaseTestClass {
                         File dbFolder = new File(path);
                         dbFolder.delete();
                         dbFolder.mkdirs();
-                        final LivePrototypeFactory mPrototypeFactory = new LivePrototypeFactory();
-                        CommCareConfigEngine engine = new CommCareConfigEngine(mPrototypeFactory, new IStorageIndexedFactory() {
+                        CommCareConfigEngine engine = new CommCareConfigEngine(new IStorageIndexedFactory() {
                             @Override
                             public IStorageUtilityIndexed newStorage(String name, Class type) {
                                 return new SqliteIndexedStorageUtility(type, name, trimmedUsername, path);
                             }
                         });
+
+                        doAnswer(new Answer<Object>() {
+                            @Override
+                            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                                return new SqliteIndexedStorageUtility((Class)args[1], (String)args[0], trimmedUsername, path);
+                            }
+                        }).when(storageFactoryMock).newStorage(anyString(), any(Class.class));
+
                         String absolutePath = getTestResourcePath(ref);
                         engine.initFromArchive(absolutePath);
                         engine.initEnvironment();
