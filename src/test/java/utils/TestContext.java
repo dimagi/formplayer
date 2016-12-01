@@ -56,7 +56,7 @@ public class TestContext {
 
     @Bean
     public FormplayerStorageFactory storageFactory() {
-        return new FormplayerStorageFactory();
+        return Mockito.spy(FormplayerStorageFactory.class);
     }
 
     @Bean

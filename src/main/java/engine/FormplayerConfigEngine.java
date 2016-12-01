@@ -23,8 +23,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     private final Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
-    public FormplayerConfigEngine(PrototypeFactory prototypeFactory, IStorageIndexedFactory storageFactory) {
-        super(prototypeFactory, storageFactory);
+    public FormplayerConfigEngine(IStorageIndexedFactory storageFactory) {
+        super(storageFactory);
     }
 
     @Override

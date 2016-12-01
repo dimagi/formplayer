@@ -38,7 +38,7 @@ public class InstallServiceImpl implements InstallService {
             if(dbFolder.exists()) {
                 // Try reusing old install, fail quietly
                 try {
-                    CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault(), storageFactory);
+                    CommCareConfigEngine engine = new FormplayerConfigEngine(storageFactory);
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
@@ -48,7 +48,7 @@ public class InstallServiceImpl implements InstallService {
             // Wipe out folder and attempt install
             SqlSandboxUtils.deleteDatabaseFolder(dbPath);
             dbFolder.mkdirs();
-            CommCareConfigEngine engine = new FormplayerConfigEngine(PrototypeManager.getDefault(), storageFactory);
+            CommCareConfigEngine engine = new FormplayerConfigEngine(storageFactory);
             engine.initFromArchive(reference);
             engine.initEnvironment();
             return engine;
