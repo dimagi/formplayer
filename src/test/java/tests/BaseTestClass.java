@@ -194,7 +194,6 @@ public class BaseTestClass {
                 @Override
                 public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                     try {
-                        PrototypeUtils.setupPrototypes();
                         final Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
                         final String path = (String) args[2];
