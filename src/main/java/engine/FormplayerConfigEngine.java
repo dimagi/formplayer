@@ -10,7 +10,6 @@ import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.io.BufferedInputStream;
 import org.javarosa.core.io.StreamsUtil;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -24,8 +23,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     private final Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
-    public FormplayerConfigEngine(IStorageIndexedFactory storageFactory) {
-        super(storageFactory, new FormplayerInstallerFactory());
+    public FormplayerConfigEngine(IStorageIndexedFactory storageFactory, FormplayerInstallerFactory formplayerInstallerFactory) {
+        super(storageFactory, formplayerInstallerFactory);
     }
 
     @Override

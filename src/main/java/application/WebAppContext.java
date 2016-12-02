@@ -2,6 +2,7 @@ package application;
 
 import aspects.LockAspect;
 import aspects.LoggingAspect;
+import installers.FormplayerInstallerFactory;
 import org.springframework.context.annotation.Bean;
 
 import org.apache.commons.logging.Log;
@@ -48,7 +49,7 @@ import java.util.Properties;
 @EnableAutoConfiguration
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*"})
+@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*", "installers.*"})
 @EnableAspectJAutoProxy
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
@@ -284,7 +285,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         return new FormplayerStorageFactory();
     }
 
-
     @Bean
     public InstallService installService(){
         return new InstallServiceImpl();
@@ -302,6 +302,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public NewFormResponseFactory newFormResponseFactory(){
         return new NewFormResponseFactory(formSessionRepo(), xFormService(), restoreFactory());
+    }
+
+    @Bean
+    FormplayerInstallerFactory installerFactory() {
+        return new FormplayerInstallerFactory();
     }
 
     // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak
