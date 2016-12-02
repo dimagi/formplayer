@@ -16,7 +16,9 @@ import services.InstallService;
 import java.io.File;
 
 /**
- * Created by willpride on 2/25/16.
+ * The InstallService handles configuring the application,
+ * either from a .ccz or .ccpr reference or existing dbs.
+ * This can involve app download, install, and initialization of resources.
  */
 public class InstallServiceImpl implements InstallService {
 
