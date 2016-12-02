@@ -62,7 +62,7 @@ public class TestContext {
 
     @Bean
     public InstallService installService(){
-        return Mockito.mock(InstallServiceImpl.class);
+        return Mockito.spy(InstallServiceImpl.class);
     }
 
     @Bean
