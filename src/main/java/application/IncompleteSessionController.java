@@ -79,7 +79,7 @@ public class IncompleteSessionController extends AbstractBaseController{
         for (int i = 0; i < formplayerSessions.size(); i++) {
             SerializableFormSession serializableFormSession = formplayerSessions.get(i);
             try {
-                formSessions.add(new FormSession(serializableFormSession));
+                formSessions.add(newFormResponseFactory.getFormSession(serializableFormSession));
                 formplayerSessionIds.add(serializableFormSession.getId());
             } catch(DeserializationException e) {
                 log.error("Couldn't load form " + serializableFormSession + " with exception " + e);

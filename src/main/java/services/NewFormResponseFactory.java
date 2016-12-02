@@ -48,10 +48,16 @@ public class NewFormResponseFactory {
         return new NewFormResponse(formSession);
     }
 
-    public NewFormResponse getResponse(SerializableFormSession session)
-            throws Exception {
-        FormSession formSession = new FormSession(session);
+    public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
+        FormSession formSession = getFormSession(session);
         return new NewFormResponse(formSession);
+    }
+
+    public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
+        if (serializableFormSession.getRestoreXml() == null) {
+            serializableFormSession.setRestoreXml(restoreFactory.getRestoreXml());
+        }
+        return new FormSession(serializableFormSession);
     }
 
     private String getFormXml(String formUrl, HqAuth auth) {
