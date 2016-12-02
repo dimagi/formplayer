@@ -16,7 +16,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
     private String username;
     private String domain;
     private String appId;
-    private String dbPath;
+    private String databasePath;
     private String trimmedUsername;
     private ThreadLocal<IStorageIndexedFactory> wrappedFactory;
 
@@ -25,7 +25,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
         this.appId = authenticatedRequestBean.getAppId();
         this.domain = authenticatedRequestBean.getDomain();
         this.trimmedUsername = StringUtils.substringBefore(username, "@");
-        this.dbPath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
+        this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
 
         wrappedFactory = new ThreadLocal<IStorageIndexedFactory>() {
             @Override
@@ -33,19 +33,16 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
                 return new IStorageIndexedFactory() {
                     @Override
                     public IStorageUtilityIndexed newStorage(String name, Class type) {
-                        return new SqliteIndexedStorageUtility(type, name, trimmedUsername, dbPath);
+                        return new SqliteIndexedStorageUtility(type, name, trimmedUsername, databasePath);
                     }
                 };
             }
         };
     }
 
-    public void configure(SerializableMenuSession session) {
-        this.username = session.getUsername();
-        this.appId = session.getAppId();
-        this.domain = session.getDomain();
+    public void configure(String databasePath, String trimmedUsername) {
         this.trimmedUsername = StringUtils.substringBefore(username, "@");
-        this.dbPath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
+        this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
     }
 
     @Override
@@ -76,5 +73,13 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
 
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public String getDatabasePath() {
+        return databasePath;
+    }
+
+    public String getTrimmedUsername() {
+        return trimmedUsername;
     }
 }
