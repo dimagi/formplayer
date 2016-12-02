@@ -2,6 +2,7 @@ package engine;
 
 import exceptions.ApplicationConfigException;
 import exceptions.FormattedApplicationConfigException;
+import installers.FormplayerInstallerFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,7 +25,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
     private final Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
     public FormplayerConfigEngine(IStorageIndexedFactory storageFactory) {
-        super(storageFactory);
+        super(storageFactory, new FormplayerInstallerFactory());
     }
 
     @Override

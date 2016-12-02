@@ -7,10 +7,10 @@ import auth.HqAuth;
 import beans.*;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import engine.FormplayerConfigEngine;
 import objects.SerializableFormSession;
 import org.apache.commons.lang3.StringUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
-import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.junit.Before;
@@ -193,6 +193,7 @@ public class BaseTestClass {
                 @Override
                 public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                     try {
+                        PrototypeUtils.setupPrototypes();
                         final Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
                         final String username = (String) args[1];
@@ -201,7 +202,7 @@ public class BaseTestClass {
                         File dbFolder = new File(path);
                         dbFolder.delete();
                         dbFolder.mkdirs();
-                        CommCareConfigEngine engine = new CommCareConfigEngine(new IStorageIndexedFactory() {
+                        FormplayerConfigEngine engine = new FormplayerConfigEngine(new IStorageIndexedFactory() {
                             @Override
                             public IStorageUtilityIndexed newStorage(String name, Class type) {
                                 return new SqliteIndexedStorageUtility(type, name, trimmedUsername, path);
