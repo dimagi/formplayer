@@ -1,5 +1,6 @@
 package utils;
 
+import installers.FormplayerInstallerFactory;
 import org.mockito.Mockito;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -77,5 +78,10 @@ public class TestContext {
     @Bean
     public NewFormResponseFactory newFormResponseFactory(){
         return Mockito.mock(NewFormResponseFactory.class);
+    }
+
+    @Bean
+    public FormplayerInstallerFactory installerFactory() {
+        return Mockito.spy(FormplayerInstallerFactory.class);
     }
 }

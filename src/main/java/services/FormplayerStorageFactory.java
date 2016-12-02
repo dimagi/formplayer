@@ -18,7 +18,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
     private String appId;
     private String databasePath;
     private String trimmedUsername;
-    private ThreadLocal<IStorageIndexedFactory> wrappedFactory;
 
     public void configure(InstallRequestBean authenticatedRequestBean) {
         this.username = authenticatedRequestBean.getUsername();
@@ -26,28 +25,17 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
         this.domain = authenticatedRequestBean.getDomain();
         this.trimmedUsername = StringUtils.substringBefore(username, "@");
         this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
-
-        wrappedFactory = new ThreadLocal<IStorageIndexedFactory>() {
-            @Override
-            protected IStorageIndexedFactory initialValue() {
-                return new IStorageIndexedFactory() {
-                    @Override
-                    public IStorageUtilityIndexed newStorage(String name, Class type) {
-                        return new SqliteIndexedStorageUtility(type, name, trimmedUsername, databasePath);
-                    }
-                };
-            }
-        };
     }
 
     public void configure(String databasePath, String trimmedUsername) {
-        this.trimmedUsername = StringUtils.substringBefore(username, "@");
-        this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
+        this.trimmedUsername = trimmedUsername;
+        this.databasePath = databasePath;
     }
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return wrappedFactory.get().newStorage(name, type);
+        System.out.println("New storage at path " + databasePath + " username " + trimmedUsername + " type " + type + " name " + name);
+        return new SqliteIndexedStorageUtility(type, trimmedUsername, name, databasePath);
     }
 
 

@@ -1,15 +1,16 @@
 package installers;
 
-import org.commcare.resources.model.InstallerFactory;
 import org.commcare.resources.model.ResourceInstaller;
 import org.commcare.resources.model.installers.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import services.FormplayerStorageFactory;
 
 /**
  * Created by willpride on 12/1/16.
  */
-public class FormplayerInstallerFactory extends InstallerFactory {
+@Component
+public class FormplayerInstallerFactory extends org.commcare.resources.model.InstallerFactory {
 
     @Autowired
     FormplayerStorageFactory storageFactory;

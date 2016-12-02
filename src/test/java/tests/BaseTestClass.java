@@ -8,11 +8,8 @@ import beans.*;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import engine.FormplayerConfigEngine;
+import installers.FormplayerInstallerFactory;
 import objects.SerializableFormSession;
-import org.apache.commons.lang3.StringUtils;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
-import org.javarosa.core.services.storage.IStorageIndexedFactory;
-import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
@@ -93,6 +90,9 @@ public class BaseTestClass {
     @Autowired
     protected LockRegistry userLockRegistry;
 
+    @Autowired
+    protected FormplayerInstallerFactory formplayerInstallerFactory;
+
     @InjectMocks
     protected FormController formController;
 
@@ -118,6 +118,7 @@ public class BaseTestClass {
         Mockito.reset(userLockRegistry);
         Mockito.reset(newFormResponseFactoryMock);
         Mockito.reset(storageFactoryMock);
+        Mockito.reset(formplayerInstallerFactory);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
@@ -196,26 +197,12 @@ public class BaseTestClass {
                         PrototypeUtils.setupPrototypes();
                         final Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
-                        final String username = (String) args[1];
                         final String path = (String) args[2];
-                        final String trimmedUsername = StringUtils.substringBefore(username, "@");
                         File dbFolder = new File(path);
                         dbFolder.delete();
                         dbFolder.mkdirs();
-                        FormplayerConfigEngine engine = new FormplayerConfigEngine(new IStorageIndexedFactory() {
-                            @Override
-                            public IStorageUtilityIndexed newStorage(String name, Class type) {
-                                return new SqliteIndexedStorageUtility(type, name, trimmedUsername, path);
-                            }
-                        });
-
-                        doAnswer(new Answer<Object>() {
-                            @Override
-                            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                                return new SqliteIndexedStorageUtility((Class)args[1], (String)args[0], trimmedUsername, path);
-                            }
-                        }).when(storageFactoryMock).newStorage(anyString(), any(Class.class));
-
+                        FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactoryMock,
+                                formplayerInstallerFactory);
                         String absolutePath = getTestResourcePath(ref);
                         engine.initFromArchive(absolutePath);
                         engine.initEnvironment();
@@ -233,7 +220,6 @@ public class BaseTestClass {
     }
 
     private String getTestResourcePath(String resourcePath){
-        System.out.println("Get test resource at path " + resourcePath);
         try {
             URL url = this.getClass().getClassLoader().getResource(resourcePath);
             File file = new File(url.getPath());
