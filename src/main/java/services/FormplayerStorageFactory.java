@@ -5,12 +5,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.springframework.stereotype.Component;
 import repo.SerializableMenuSession;
 import util.ApplicationUtils;
 
 /**
- * Created by willpride on 12/1/16.
+ * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
  */
+@Component
 public class FormplayerStorageFactory implements IStorageIndexedFactory{
 
     private String username;
@@ -34,7 +36,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        System.out.println("New storage at path " + databasePath + " username " + trimmedUsername + " type " + type + " name " + name);
         return new SqliteIndexedStorageUtility(type, trimmedUsername, name, databasePath);
     }
 
