@@ -42,7 +42,7 @@ public class NewFormResponseFactory {
 
         FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getUsername(),
                 bean.getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,
-                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getRestoreAs());
+                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getRestoreAs(), bean.getSessionData().getAppId());
 
         formSessionRepo.save(formSession.serialize());
         return new NewFormResponse(formSession);

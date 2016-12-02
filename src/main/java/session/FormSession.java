@@ -78,6 +78,7 @@ public class FormSession {
     private String currentIndex = "-1";
     private boolean isAtLastIndex = false;
     private String asUser;
+    private String appId;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -92,6 +93,7 @@ public class FormSession {
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.restoreXml = session.getRestoreXml();
+        this.appId = session.getAppId();
         this.domain = session.getDomain();
         this.sandbox = CaseAPIs.restoreIfNotExists(username, asUser, this.domain, restoreXml);
         this.postUrl = session.getPostUrl();
@@ -115,18 +117,18 @@ public class FormSession {
     public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
                        Map<String, String> sessionData, String postUrl,
                        String locale, String menuSessionId,
-                       String instanceContent, boolean oneQuestionPerScreen, String asUser) throws Exception {
+                       String instanceContent, boolean oneQuestionPerScreen, String asUser, String appId) throws Exception {
         this(sandbox, formDef, username, domain, sessionData, postUrl, locale, menuSessionId,
-                instanceContent, oneQuestionPerScreen, asUser, UUID.randomUUID().toString());
+                instanceContent, oneQuestionPerScreen, asUser, UUID.randomUUID().toString(), appId);
     }
 
     // New FormSession constructor
     public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
             Map<String, String> sessionData, String postUrl,
             String locale, String menuSessionId,
-            String instanceContent, boolean oneQuestionPerScreen, String asUser, String sessionId) throws Exception {
+            String instanceContent, boolean oneQuestionPerScreen, String asUser, String sessionId, String appId) throws Exception {
         this(sandbox, formDef, username, domain, sessionData, postUrl, locale, menuSessionId,
-                instanceContent, oneQuestionPerScreen, asUser, sessionId, "0");
+                instanceContent, oneQuestionPerScreen, asUser, sessionId, "0", appId);
     }
 
     // New FormSession constructor
@@ -134,7 +136,7 @@ public class FormSession {
             Map<String, String> sessionData, String postUrl,
             String locale, String menuSessionId,
                String instanceContent, boolean oneQuestionPerScreen, String asUser,
-                       String sessionId, String currentIndex) throws Exception {
+                       String sessionId, String currentIndex, String appId) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         this.sandbox = sandbox;
@@ -149,6 +151,7 @@ public class FormSession {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.asUser = asUser;
         this.currentIndex = currentIndex;
+        this.appId = appId;
         setupJavaRosaObjects();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
@@ -180,7 +183,8 @@ public class FormSession {
         CommCarePlatform platform = new CommCarePlatform(2, 30, new IStorageIndexedFactory() {
             @Override
             public IStorageUtilityIndexed newStorage(String name, Class type) {
-                return new SqliteIndexedStorageUtility(type, username, name, ApplicationUtils.getApplicationDBPath(domain, username, "123"));
+                return new SqliteIndexedStorageUtility(type, username, name,
+                        ApplicationUtils.getApplicationDBPath(domain, username, appId));
             }
         });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
@@ -304,6 +308,7 @@ public class FormSession {
         serializableFormSession.setOneQuestionPerScreen(oneQuestionPerScreen);
         serializableFormSession.setCurrentIndex(currentIndex);
         serializableFormSession.setAsUser(asUser);
+        serializableFormSession.setAppId(appId);
         return serializableFormSession;
     }
 
