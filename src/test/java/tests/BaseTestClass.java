@@ -1,10 +1,12 @@
 package tests;
 
+import application.DebuggerController;
 import application.FormController;
 import application.MenuController;
 import application.UtilController;
 import auth.HqAuth;
 import beans.*;
+import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.SerializableFormSession;
@@ -69,6 +71,8 @@ public class BaseTestClass {
 
     private MockMvc mockMenuController;
 
+    private MockMvc mockDebuggerController;
+
     @Autowired
     private FormSessionRepo formSessionRepoMock;
 
@@ -102,6 +106,9 @@ public class BaseTestClass {
     @InjectMocks
     protected MenuController menuController;
 
+    @InjectMocks
+    protected DebuggerController debuggerController;
+
     protected ObjectMapper mapper;
 
     final SerializableFormSession serializableFormSession = new SerializableFormSession();
@@ -121,6 +128,7 @@ public class BaseTestClass {
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
+        mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         Mockito.doReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"))
                 .when(restoreFactoryMock).getRestoreXml();
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
@@ -559,7 +567,7 @@ public class BaseTestClass {
     }
 
     public enum ControllerType {
-        FORM, MENU, UTIL
+        FORM, MENU, UTIL, DEBUG
     }
 
     private <T> T generateMockQuery(ControllerType controllerType,
@@ -581,6 +589,9 @@ public class BaseTestClass {
                 break;
             case UTIL:
                 controller = mockUtilController;
+                break;
+            case DEBUG:
+                controller = mockDebuggerController;
                 break;
         }
         switch (requestType) {
