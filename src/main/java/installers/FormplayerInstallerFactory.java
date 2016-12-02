@@ -1,5 +1,6 @@
 package installers;
 
+import org.commcare.resources.model.InstallerFactory;
 import org.commcare.resources.model.ResourceInstaller;
 import org.commcare.resources.model.installers.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,10 +8,11 @@ import org.springframework.stereotype.Component;
 import services.FormplayerStorageFactory;
 
 /**
- * Created by willpride on 12/1/16.
+ * Overrides InstallerFactory to point to Formplayer's own installer classes.
+ * The primary difference is that Formplayer overrides the storage() call to point to its own storage factory class
  */
 @Component
-public class FormplayerInstallerFactory extends org.commcare.resources.model.InstallerFactory {
+public class FormplayerInstallerFactory extends InstallerFactory {
 
     @Autowired
     FormplayerStorageFactory storageFactory;
