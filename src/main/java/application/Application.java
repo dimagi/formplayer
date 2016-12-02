@@ -32,7 +32,6 @@ import java.io.IOException;
 @Component
 @EnableJpaRepositories(basePackages = {"repo.*", "objects.*"})
 @EntityScan("objects.*")
-@EnableAsync
 public class Application {
 
     private final Log log = LogFactory.getLog(Application.class);
