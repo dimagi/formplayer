@@ -207,18 +207,6 @@ public class FormController extends AbstractBaseController{
         return instanceXmlBean;
     }
 
-    @ApiOperation(value = "Evaluate the given XPath under the current context")
-    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.POST)
-    @ResponseBody
-    @UserLock
-    public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
-        EvaluateXPathResponseBean evaluateXPathResponseBean =
-                new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
-        return evaluateXPathResponseBean;
-    }
-
     @ApiOperation(value = "Expand the repeat at the given index")
     @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.POST)
     @ResponseBody
