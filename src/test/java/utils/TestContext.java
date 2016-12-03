@@ -1,6 +1,7 @@
 package utils;
 
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +16,10 @@ import services.impl.SubmitServiceImpl;
 
 @Configuration
 public class TestContext {
- 
+
+    @Value("${redis.hostname}")
+    private String redisHostName;
+
     @Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
