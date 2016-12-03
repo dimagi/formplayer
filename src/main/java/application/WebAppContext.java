@@ -3,8 +3,6 @@ package application;
 import aspects.LockAspect;
 import aspects.LoggingAspect;
 import installers.FormplayerInstallerFactory;
-import org.springframework.context.annotation.Bean;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
