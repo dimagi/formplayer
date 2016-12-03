@@ -82,4 +82,6 @@ public class Constants {
             Pattern.compile("v2/.*")
     ));
 
+    public static final int USER_LOCK_TIMEOUT = 120;
+
 }

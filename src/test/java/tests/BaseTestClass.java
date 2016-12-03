@@ -1,23 +1,24 @@
 package tests;
 
+import application.DebuggerController;
 import application.FormController;
 import application.MenuController;
 import application.UtilController;
 import auth.HqAuth;
 import beans.*;
+import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import engine.FormplayerConfigEngine;
 import installers.FormplayerInstallerFactory;
 import objects.SerializableFormSession;
 import org.junit.Before;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -63,6 +64,11 @@ public class BaseTestClass {
 
     private MockMvc mockMenuController;
 
+    private MockMvc mockDebuggerController;
+
+    @Spy
+    private StringRedisTemplate redisTemplate;
+
     @Autowired
     private FormSessionRepo formSessionRepoMock;
 
@@ -102,6 +108,12 @@ public class BaseTestClass {
     @InjectMocks
     protected MenuController menuController;
 
+    @InjectMocks
+    protected DebuggerController debuggerController;
+
+    @Mock
+    private ListOperations<String, XPathQueryItem> listOperations;
+
     protected ObjectMapper mapper;
 
     final SerializableFormSession serializableFormSession = new SerializableFormSession();
@@ -123,6 +135,7 @@ public class BaseTestClass {
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
+        mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         Mockito.doReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"))
                 .when(restoreFactoryMock).getRestoreXml();
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
@@ -469,15 +482,19 @@ public class BaseTestClass {
     }
 
     EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception {
-        EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
+        EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue(
+                FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"),
+                EvaluateXPathRequestBean.class
+        );
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
-        return generateMockQuery(ControllerType.FORM,
+        return generateMockQuery(
+                ControllerType.DEBUGGER,
                 RequestType.POST,
                 Constants.URL_EVALUATE_XPATH,
                 evaluateXPathRequestBean,
-                EvaluateXPathResponseBean.class);
+                EvaluateXPathResponseBean.class
+        );
     }
 
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
@@ -552,7 +569,7 @@ public class BaseTestClass {
     }
 
     public enum ControllerType {
-        FORM, MENU, UTIL
+        FORM, MENU, UTIL, DEBUGGER,
     }
 
     private <T> T generateMockQuery(ControllerType controllerType,
@@ -575,6 +592,9 @@ public class BaseTestClass {
             case UTIL:
                 controller = mockUtilController;
                 break;
+            case DEBUGGER:
+                controller = mockDebuggerController;
+                break;
         }
         switch (requestType) {
             case POST:
@@ -593,7 +613,9 @@ public class BaseTestClass {
                                 .content((String) bean));
                 break;
         }
-        return mapper.readValue(evaluateXpathResult.andReturn().getResponse().getContentAsString(),
-                clazz);
+        return mapper.readValue(
+                evaluateXpathResult.andReturn().getResponse().getContentAsString(),
+                clazz
+        );
     }
 }

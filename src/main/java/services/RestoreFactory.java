@@ -175,7 +175,7 @@ public class RestoreFactory {
 
     public String getRestoreUrl(String host, String domain, String username) {
         return host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
-                domain + "&version=2.0";
+                domain + ".commcarehq.org&version=2.0";
     }
 
     public String getUsername() {
