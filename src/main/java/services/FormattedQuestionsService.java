@@ -2,8 +2,6 @@ package services;
 
 import auth.HqAuth;
 import org.json.JSONArray;
-import org.json.JSONObject;
-import services.impl.FormattedQuestionsServiceImpl;
 
 /**
  * Service that gets HTML formatted questions to display to the user

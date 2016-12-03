@@ -6,7 +6,6 @@ import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.stereotype.Component;
-import repo.SerializableMenuSession;
 import util.ApplicationUtils;
 
 /**

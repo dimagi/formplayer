@@ -1,7 +1,5 @@
 package objects;
 
-import hq.CaseAPIs;
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.io.Serializable;

@@ -1,9 +1,7 @@
 package installers;
 
 import org.commcare.resources.model.installers.SuiteInstaller;
-import org.commcare.resources.model.installers.XFormInstaller;
 import org.commcare.suite.model.Suite;
-import org.javarosa.core.model.FormDef;
 import org.javarosa.core.services.storage.IStorageUtility;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
