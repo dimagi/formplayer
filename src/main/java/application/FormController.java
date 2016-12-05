@@ -34,7 +34,6 @@ import util.Constants;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes

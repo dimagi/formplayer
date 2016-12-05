@@ -8,7 +8,6 @@ import objects.SerializableFormSession;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.xform.parse.XFormParser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
 import session.FormSession;
@@ -42,7 +41,7 @@ public class NewFormResponseFactory {
 
         FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getUsername(),
                 bean.getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,
-                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getRestoreAs());
+                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getRestoreAs(), bean.getSessionData().getAppId());
 
         formSessionRepo.save(formSession.serialize());
         return new NewFormResponse(formSession);

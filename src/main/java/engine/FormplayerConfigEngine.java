@@ -2,13 +2,14 @@ package engine;
 
 import exceptions.ApplicationConfigException;
 import exceptions.FormattedApplicationConfigException;
+import installers.FormplayerInstallerFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.io.BufferedInputStream;
 import org.javarosa.core.io.StreamsUtil;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
+import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -22,8 +23,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     private final Log log = LogFactory.getLog(FormplayerConfigEngine.class);
 
-    public FormplayerConfigEngine(PrototypeFactory factory) {
-        super(factory);
+    public FormplayerConfigEngine(IStorageIndexedFactory storageFactory, FormplayerInstallerFactory formplayerInstallerFactory) {
+        super(storageFactory, formplayerInstallerFactory);
     }
 
     @Override

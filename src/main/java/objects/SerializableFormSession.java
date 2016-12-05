@@ -1,7 +1,5 @@
 package objects;
 
-import hq.CaseAPIs;
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -29,6 +27,7 @@ public class SerializableFormSession implements Serializable{
     private boolean oneQuestionPerScreen;
     private String asUser;
     private String currentIndex = "0";
+    private String appId;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -172,5 +171,13 @@ public class SerializableFormSession implements Serializable{
 
     public void setAsUser(String asUser) {
         this.asUser = asUser;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }

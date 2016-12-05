@@ -24,7 +24,6 @@ import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
-import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
@@ -43,7 +42,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 
@@ -240,7 +238,7 @@ public class MenuSession {
         String postUrl = new PropertyManager().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
-                null, oneQuestionPerScreen, asUser);
+                null, oneQuestionPerScreen, asUser, appId);
     }
 
     public FormSession reloadSession(FormSession oldSession) throws Exception {
