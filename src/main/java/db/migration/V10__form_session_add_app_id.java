@@ -10,6 +10,6 @@ public class V10__form_session_add_app_id implements SpringJdbcMigration {
     @Override
     public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
         jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
-                "ADD appid VARCHAR DEFAULT '1'");
+                "ADD appid VARCHAR DEFAULT NULL");
     }
 }
