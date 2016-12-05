@@ -11,8 +11,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import services.FormattedQuestionsService;
 
-import java.net.URI;
-
 /**
  * Implementation of getting the formatted questions by requesting HQ to generate
  * template

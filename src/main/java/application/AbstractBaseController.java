@@ -38,6 +38,7 @@ import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
+import services.FormplayerStorageFactory;
 import services.InstallService;
 import services.NewFormResponseFactory;
 import services.RestoreFactory;
@@ -75,6 +76,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected NewFormResponseFactory newFormResponseFactory;
+
+    @Autowired
+    protected FormplayerStorageFactory storageFactory;
 
     @Value("${commcarehq.host}")
     private String hqHost;

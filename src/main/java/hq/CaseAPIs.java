@@ -16,7 +16,6 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
-import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.xmlpull.v1.XmlPullParserException;
 import services.RestoreFactory;
 
