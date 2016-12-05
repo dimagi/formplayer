@@ -29,7 +29,7 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
-import org.javarosa.xform.util.FormInstanceLoader;
+import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
