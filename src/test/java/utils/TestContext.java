@@ -1,6 +1,8 @@
 package utils;
 
+import installers.FormplayerInstallerFactory;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +17,10 @@ import services.impl.SubmitServiceImpl;
 
 @Configuration
 public class TestContext {
- 
+
+    @Value("${redis.hostname}")
+    private String redisHostName;
+
     @Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
@@ -55,8 +60,13 @@ public class TestContext {
     }
 
     @Bean
+    public FormplayerStorageFactory storageFactory() {
+        return Mockito.spy(FormplayerStorageFactory.class);
+    }
+
+    @Bean
     public InstallService installService(){
-        return Mockito.mock(InstallServiceImpl.class);
+        return Mockito.spy(InstallServiceImpl.class);
     }
 
     @Bean
@@ -72,5 +82,10 @@ public class TestContext {
     @Bean
     public NewFormResponseFactory newFormResponseFactory(){
         return Mockito.mock(NewFormResponseFactory.class);
+    }
+
+    @Bean
+    public FormplayerInstallerFactory installerFactory() {
+        return Mockito.spy(FormplayerInstallerFactory.class);
     }
 }

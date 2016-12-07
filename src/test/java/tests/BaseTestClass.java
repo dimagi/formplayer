@@ -1,28 +1,24 @@
 package tests;
 
+import application.DebuggerController;
 import application.FormController;
 import application.MenuController;
 import application.UtilController;
 import auth.HqAuth;
 import beans.*;
+import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import engine.FormplayerConfigEngine;
+import installers.FormplayerInstallerFactory;
 import objects.SerializableFormSession;
-import org.apache.commons.lang3.StringUtils;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
-import org.commcare.util.engine.CommCareConfigEngine;
-import org.javarosa.core.services.PropertyManager;
-import org.javarosa.core.services.storage.IStorageIndexedFactory;
-import org.javarosa.core.services.storage.IStorageUtilityIndexed;
-import org.javarosa.core.util.externalizable.LivePrototypeFactory;
 import org.junit.Before;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +40,6 @@ import utils.TestContext;
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -69,6 +64,11 @@ public class BaseTestClass {
 
     private MockMvc mockMenuController;
 
+    private MockMvc mockDebuggerController;
+
+    @Spy
+    private StringRedisTemplate redisTemplate;
+
     @Autowired
     private FormSessionRepo formSessionRepoMock;
 
@@ -82,6 +82,9 @@ public class BaseTestClass {
     RestoreFactory restoreFactoryMock;
 
     @Autowired
+    FormplayerStorageFactory storageFactoryMock;
+
+    @Autowired
     SubmitService submitServiceMock;
 
     @Autowired
@@ -93,6 +96,9 @@ public class BaseTestClass {
     @Autowired
     protected LockRegistry userLockRegistry;
 
+    @Autowired
+    protected FormplayerInstallerFactory formplayerInstallerFactory;
+
     @InjectMocks
     protected FormController formController;
 
@@ -101,6 +107,12 @@ public class BaseTestClass {
 
     @InjectMocks
     protected MenuController menuController;
+
+    @InjectMocks
+    protected DebuggerController debuggerController;
+
+    @Mock
+    private ListOperations<String, XPathQueryItem> listOperations;
 
     protected ObjectMapper mapper;
 
@@ -117,10 +129,13 @@ public class BaseTestClass {
         Mockito.reset(installService);
         Mockito.reset(userLockRegistry);
         Mockito.reset(newFormResponseFactoryMock);
+        Mockito.reset(storageFactoryMock);
+        Mockito.reset(formplayerInstallerFactory);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
+        mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         Mockito.doReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"))
                 .when(restoreFactoryMock).getRestoreXml();
         when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
@@ -192,22 +207,14 @@ public class BaseTestClass {
                 @Override
                 public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                     try {
-                        Object[] args = invocationOnMock.getArguments();
+                        final Object[] args = invocationOnMock.getArguments();
                         String ref = (String) args[0];
-                        final String username = (String) args[1];
                         final String path = (String) args[2];
-                        final String trimmedUsername = StringUtils.substringBefore(username, "@");
                         File dbFolder = new File(path);
                         dbFolder.delete();
                         dbFolder.mkdirs();
-                        final LivePrototypeFactory mPrototypeFactory = new LivePrototypeFactory();
-                        CommCareConfigEngine.setStorageFactory(new IStorageIndexedFactory() {
-                            @Override
-                            public IStorageUtilityIndexed newStorage(String name, Class type) {
-                                return new SqliteIndexedStorageUtility(type, name, trimmedUsername, path);
-                            }
-                        });
-                        CommCareConfigEngine engine = new CommCareConfigEngine(mPrototypeFactory);
+                        FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactoryMock,
+                                formplayerInstallerFactory);
                         String absolutePath = getTestResourcePath(ref);
                         engine.initFromArchive(absolutePath);
                         engine.initEnvironment();
@@ -225,7 +232,6 @@ public class BaseTestClass {
     }
 
     private String getTestResourcePath(String resourcePath){
-        System.out.println("Get test resource at path " + resourcePath);
         try {
             URL url = this.getClass().getClassLoader().getResource(resourcePath);
             File file = new File(url.getPath());
@@ -476,15 +482,19 @@ public class BaseTestClass {
     }
 
     EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception {
-        EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"), EvaluateXPathRequestBean.class);
+        EvaluateXPathRequestBean evaluateXPathRequestBean = mapper.readValue(
+                FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"),
+                EvaluateXPathRequestBean.class
+        );
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
-        return generateMockQuery(ControllerType.FORM,
+        return generateMockQuery(
+                ControllerType.DEBUGGER,
                 RequestType.POST,
                 Constants.URL_EVALUATE_XPATH,
                 evaluateXPathRequestBean,
-                EvaluateXPathResponseBean.class);
+                EvaluateXPathResponseBean.class
+        );
     }
 
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
@@ -559,7 +569,7 @@ public class BaseTestClass {
     }
 
     public enum ControllerType {
-        FORM, MENU, UTIL
+        FORM, MENU, UTIL, DEBUGGER,
     }
 
     private <T> T generateMockQuery(ControllerType controllerType,
@@ -582,6 +592,9 @@ public class BaseTestClass {
             case UTIL:
                 controller = mockUtilController;
                 break;
+            case DEBUGGER:
+                controller = mockDebuggerController;
+                break;
         }
         switch (requestType) {
             case POST:
@@ -600,7 +613,9 @@ public class BaseTestClass {
                                 .content((String) bean));
                 break;
         }
-        return mapper.readValue(evaluateXpathResult.andReturn().getResponse().getContentAsString(),
-                clazz);
+        return mapper.readValue(
+                evaluateXpathResult.andReturn().getResponse().getContentAsString(),
+                clazz
+        );
     }
 }

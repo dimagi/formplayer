@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
-import services.RestoreFactory;
 import util.Constants;
 
 import javax.persistence.LockModeType;
@@ -32,9 +31,6 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private RestoreFactory restoreFactory;
 
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
@@ -90,17 +86,17 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 "(id, instanceXml, formXml, " +
                 "restoreXml, username, initLang, sequenceId, " +
                 "domain, postUrl, sessionData, menu_session_id," +
-                "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
                 session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
                 session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId(),
                 session.getTitle(), session.getDateOpened(),
-                session.getOneQuestionPerScreen(), session.getCurrentIndex(), session.getAsUser()}, new int[] {
+                session.getOneQuestionPerScreen(), session.getCurrentIndex(), session.getAsUser(), session.getAppId()}, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN, Types.VARCHAR,
-                Types.VARCHAR});
+                Types.VARCHAR, Types.VARCHAR});
         return session;
     }
 
@@ -194,10 +190,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setOneQuestionPerScreen(rs.getBoolean("oneQuestionPerScreen"));
             session.setCurrentIndex(rs.getString("currentIndex"));
             session.setAsUser(rs.getString("asUser"));
-
-            if(session.getRestoreXml() == null) {
-                session.setRestoreXml(restoreFactory.getRestoreXml());
-            }
+            session.setAppId(rs.getString("appid"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if (st != null) {

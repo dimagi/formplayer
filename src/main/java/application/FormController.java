@@ -34,7 +34,6 @@ import util.Constants;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -205,18 +204,6 @@ public class FormController extends AbstractBaseController{
         FormSession formEntrySession = new FormSession(serializableFormSession);
         InstanceXmlBean instanceXmlBean = new InstanceXmlBean(formEntrySession);
         return instanceXmlBean;
-    }
-
-    @ApiOperation(value = "Evaluate the given XPath under the current context")
-    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.POST)
-    @ResponseBody
-    @UserLock
-    public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
-        EvaluateXPathResponseBean evaluateXPathResponseBean =
-                new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
-        return evaluateXPathResponseBean;
     }
 
     @ApiOperation(value = "Expand the repeat at the given index")

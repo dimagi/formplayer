@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,6 +32,7 @@ import java.io.UnsupportedEncodingException;
  * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
  * then retrieves and returns the restore XML.
  */
+@Scope(value = "request")
 public class RestoreFactory {
     @Value("${commcarehq.host}")
     private String host;
@@ -175,7 +177,7 @@ public class RestoreFactory {
 
     public String getRestoreUrl(String host, String domain, String username) {
         return host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
-                domain + "&version=2.0";
+                domain + ".commcarehq.org&version=2.0";
     }
 
     public String getUsername() {
@@ -208,5 +210,9 @@ public class RestoreFactory {
 
     public void setAsUsername(String asUsername) {
         this.asUsername = asUsername;
+    }
+
+    public void setCachedRestore(String cachedRestore) {
+        this.cachedRestore = cachedRestore;
     }
 }

@@ -20,8 +20,10 @@ import repo.FormSessionRepo;
 import session.FormSession;
 import util.Constants;
 
-import java.util.*;
-import java.util.concurrent.locks.Lock;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Controller class (API endpoint) containing all incomplete session management commands
@@ -79,7 +81,7 @@ public class IncompleteSessionController extends AbstractBaseController{
         for (int i = 0; i < formplayerSessions.size(); i++) {
             SerializableFormSession serializableFormSession = formplayerSessions.get(i);
             try {
-                formSessions.add(new FormSession(serializableFormSession));
+                formSessions.add(newFormResponseFactory.getFormSession(serializableFormSession));
                 formplayerSessionIds.add(serializableFormSession.getId());
             } catch(DeserializationException e) {
                 log.error("Couldn't load form " + serializableFormSession + " with exception " + e);

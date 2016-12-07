@@ -2,8 +2,7 @@ package application;
 
 import aspects.LockAspect;
 import aspects.LoggingAspect;
-import org.springframework.context.annotation.Bean;
-
+import installers.FormplayerInstallerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
@@ -15,6 +14,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.ViewResolver;
@@ -48,7 +49,7 @@ import java.util.Properties;
 @EnableAutoConfiguration
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*"})
+@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*", "installers.*"})
 @EnableAspectJAutoProxy
 public class WebAppContext extends WebMvcConfigurerAdapter {
 
@@ -228,6 +229,13 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    public StringRedisTemplate redisTemplate() {
+        StringRedisTemplate template = new StringRedisTemplate(jedisConnFactory());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
+
+    @Bean
     public HtmlEmail exceptionMessage() throws EmailException {
         HtmlEmail message = new HtmlEmail();
         message.setFrom(smtpFromAddress);
@@ -280,6 +288,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    public FormplayerStorageFactory storageFactory(){
+        return new FormplayerStorageFactory();
+    }
+
+    @Bean
     public InstallService installService(){
         return new InstallServiceImpl();
     }
@@ -296,6 +309,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public NewFormResponseFactory newFormResponseFactory(){
         return new NewFormResponseFactory(formSessionRepo(), xFormService(), restoreFactory());
+    }
+
+    @Bean
+    FormplayerInstallerFactory installerFactory() {
+        return new FormplayerInstallerFactory();
     }
 
     // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak

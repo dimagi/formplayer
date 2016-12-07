@@ -1,11 +1,9 @@
 package beans;
 
-import objects.SerializableFormSession;
 import session.FormSession;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Response containing a list of the user's incomplete form sessions
