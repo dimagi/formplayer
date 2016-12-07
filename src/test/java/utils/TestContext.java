@@ -1,6 +1,8 @@
 package utils;
 
 import installers.FormplayerInstallerFactory;
+import mocks.MockLockRegistry;
+import mocks.TestInstallService;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,7 +73,7 @@ public class TestContext {
 
     @Bean
     public InstallService installService(){
-        return Mockito.spy(InstallServiceImpl.class);
+        return Mockito.spy(TestInstallService.class);
     }
 
     @Bean
@@ -81,7 +83,7 @@ public class TestContext {
 
     @Bean
     public LockRegistry userLockRegistry() {
-        return Mockito.mock(LockRegistry.class);
+        return Mockito.spy(MockLockRegistry.class);
     }
 
     @Bean
