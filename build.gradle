@@ -87,6 +87,7 @@ dependencies {
     testCompile("org.springframework:spring-mock:2.0.8")
     testCompile("com.jayway.jsonpath:json-path:0.8.1")
     testCompile("com.jayway.jsonpath:json-path-assert:0.8.1")
+    testRuntime("org.skyscreamer:jsonassert:1.4.0")
 }
 
 test {
