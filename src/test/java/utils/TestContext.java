@@ -1,7 +1,9 @@
 package utils;
 
 import installers.FormplayerInstallerFactory;
+import mocks.MockFormSessionRepo;
 import mocks.MockLockRegistry;
+import mocks.MockMenuSessionRepo;
 import mocks.TestInstallService;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -15,7 +17,6 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
-import services.impl.InstallServiceImpl;
 import services.impl.SubmitServiceImpl;
 
 @Configuration
@@ -48,12 +49,12 @@ public class TestContext {
 
     @Bean
     public FormSessionRepo formSessionRepo() {
-        return Mockito.mock(FormSessionRepo.class);
+        return Mockito.spy(MockFormSessionRepo.class);
     }
 
     @Bean
     public MenuSessionRepo menuSessionRepo() {
-        return Mockito.mock(MenuSessionRepo.class);
+        return Mockito.spy(MockMenuSessionRepo.class);
     }
 
     @Bean
