@@ -68,11 +68,29 @@ public class FormValidatorTests {
     @Test
     public void testValidateForm() throws Exception {
         String xml = FileUtils.getFile(this.getClass(), "form_validation/valid_form.xml");
+        this.testValidateForm(xml, "{'validated': true, 'problems': []}", true);
+    }
+
+    @Test
+    public void testValidateFormNotXML() throws Exception {
+        String xml = "this isn't XML";
+        this.testValidateForm(xml, "{'validated': false, 'problems': []}", false);
+    }
+
+    @Test
+    public void testValidateFormBadRef() throws Exception {
+        String xml = FileUtils.getFile(this.getClass(), "form_validation/bad_ref.xml");
+        this.testValidateForm(xml, "{'validated': false, 'problems': [" +
+                "{'type':'error','message':'Question bound to non-existent node: [/data/missing]','fatal': false}" +
+                "]}", false);
+    }
+
+    public void testValidateForm(String formXML, String expectedJson, Boolean strict) throws Exception {
         mockMvc.perform(post(String.format("/%s", Constants.URL_VALIDATE_FORM))
-                .content(this.xml(xml))
+                .content(this.xml(formXML))
                 .contentType(contentType))
                 .andExpect(status().isOk())
-                .andExpect(content().json("{'validated': true, 'problems': []}"));
+                .andExpect(content().json(expectedJson, strict));
     }
 
     protected String xml(Object o) throws IOException {

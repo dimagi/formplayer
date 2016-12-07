@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    <h:head>
+        <h:title>Cat sighting</h:title>
+        <model>
+            <instance>
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/3335FAB3-1936-4C6A-9373-37F9F88AFBD4" uiVersion="1" version="1" name="Cat sighting">
+                    <label />
+                    <time_of_sighting />
+                    <name />
+                </data>
+            </instance>
+            <instance src="jr://instance/casedb" id="casedb" />
+            <instance src="jr://instance/session" id="commcaresession" />
+            <bind nodeset="/data/label" />
+            <bind nodeset="/data/time_of_sighting" type="xsd:dateTime" />
+            <bind nodeset="/data/name" />
+            <setvalue event="xforms-ready" ref="/data/name" value="instance('casedb')/casedb/case[@case_id = instance('commcaresession')/session/data/case_id]/case_name" />
+            <itext>
+                <translation lang="en" default="">
+                    <text id="label-label">
+                        <value>Confirmed sighting of <output value="/data/name" /></value>
+                    </text>
+                    <text id="time_of_sighting-label">
+                        <value>When?</value>
+                    </text>
+                </translation>
+            </itext>
+        </model>
+    </h:head>
+    <h:body>
+        <trigger ref="/data/missing" appearance="minimal">
+            <label ref="jr:itext('label-label')" />
+        </trigger>
+        <input ref="/data/time_of_sighting">
+            <label ref="jr:itext('time_of_sighting-label')" />
+        </input>
+    </h:body>
+</h:html>
