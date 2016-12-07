@@ -143,78 +143,7 @@ public class BaseTestClass {
         mapper = new ObjectMapper();
         setupFormSessionRepoMock();
         setupMenuSessionRepoMock();
-        setupInstallServiceMock();
-        setupLockMock();
         PrototypeUtils.setupPrototypes();
-    }
-
-    private void setupLockMock() {
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return new Lock() {
-                    @Override
-                    public void lock() {
-
-                    }
-
-                    @Override
-                    public void lockInterruptibly() throws InterruptedException {
-
-                    }
-
-                    @Override
-                    public boolean tryLock() {
-                        return true;
-                    }
-
-                    @Override
-                    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-                        return true;
-                    }
-
-                    @Override
-                    public void unlock() {
-
-                    }
-
-                    @Override
-                    public Condition newCondition() {
-                        return null;
-                    }
-                };
-            }
-        }).when(userLockRegistry).obtain(any());
-    }
-
-    private void setupInstallServiceMock() {
-        try {
-            doAnswer(new Answer<Object>() {
-                @Override
-                public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                    try {
-                        final Object[] args = invocationOnMock.getArguments();
-                        String ref = (String) args[0];
-                        final String path = (String) args[2];
-                        File dbFolder = new File(path);
-                        dbFolder.delete();
-                        dbFolder.mkdirs();
-                        FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactoryMock,
-                                formplayerInstallerFactory);
-                        String absolutePath = getTestResourcePath(ref);
-                        engine.initFromArchive(absolutePath);
-                        engine.initEnvironment();
-                        return engine;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw e;
-                    }
-                }
-            }).when(installService).configureApplication(anyString(), anyString(), anyString());
-        } catch(Exception e){
-            // don't think we need error handling for mocking
-            e.printStackTrace();
-        }
     }
 
     private String getTestResourcePath(String resourcePath){

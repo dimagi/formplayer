@@ -14,6 +14,7 @@ import services.FormplayerStorageFactory;
 import services.InstallService;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * The InstallService handles configuring the application,
