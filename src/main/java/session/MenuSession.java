@@ -88,11 +88,7 @@ public class MenuSession {
         this.auth = auth;
 
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(
-                this.installReference,
-                this.username,
-                ApplicationUtils.getApplicationDBPath(this.domain, this.username, this.appId)
-        );
+        this.engine = installService.configureApplication(this.installReference);
 
         this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
 
@@ -112,11 +108,7 @@ public class MenuSession {
         this.auth = auth;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(
-                this.installReference,
-                this.username,
-                ApplicationUtils.getApplicationDBPath(domain, this.username, appId)
-        );
+        this.engine = installService.configureApplication(this.installReference);
         this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
