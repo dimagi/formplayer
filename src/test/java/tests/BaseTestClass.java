@@ -145,21 +145,7 @@ public class BaseTestClass {
         setupMenuSessionRepoMock();
         setupInstallServiceMock();
         setupLockMock();
-        setupNewFormMock();
         PrototypeUtils.setupPrototypes();
-    }
-
-    private void setupNewFormMock() throws Exception {
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                NewFormResponseFactory newFormResponseFactory = new NewFormResponseFactory(formSessionRepoMock,
-                        xFormServiceMock,
-                        restoreFactoryMock);
-                return newFormResponseFactory.getResponse((NewSessionRequestBean)args[0], (String)args[1], (HqAuth)args[2]);
-            }
-        }).when(newFormResponseFactoryMock).getResponse(any(NewSessionRequestBean.class), anyString(), any(HqAuth.class));
     }
 
     private void setupLockMock() {
