@@ -22,7 +22,7 @@ public class TestInstallService implements InstallService {
     FormplayerInstallerFactory formplayerInstallerFactory;
 
     @Override
-    public CommCareConfigEngine configureApplication(String reference, String username, String dbPath) {
+    public CommCareConfigEngine configureApplication(String reference) {
         try {
             File dbFolder = new File(storageFactory.getDatabasePath());
             dbFolder.delete();
