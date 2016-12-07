@@ -1,18 +1,15 @@
 package aspects;
 
 import beans.AuthenticatedRequestBean;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.locks.LockRegistry;
+import util.Constants;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -60,7 +57,7 @@ public class LockAspect {
 
     protected boolean obtainLock(Lock lock) {
         try {
-            return lock.tryLock(60, TimeUnit.SECONDS);
+            return lock.tryLock(Constants.USER_LOCK_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e){
             return obtainLock(lock);
         }

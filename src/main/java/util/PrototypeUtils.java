@@ -1,5 +1,9 @@
 package util;
 
+import installers.FormplayerOfflineUserRestoreInstaller;
+import installers.FormplayerProfileInstaller;
+import installers.FormplayerSuiteInstaller;
+import installers.FormplayerXFormInstaller;
 import org.commcare.cases.instance.CaseDataInstance;
 import org.commcare.resources.model.installers.*;
 import org.commcare.suite.model.*;
@@ -78,7 +82,11 @@ public class PrototypeUtils {
                 XPathNumericLiteral.class.getName(),
                 XPathNumNegExpr.class.getName(),
                 XPathUnionExpr.class.getName(),
-                XPathVariableReference.class.getName()};
+                XPathVariableReference.class.getName(),
+                FormplayerOfflineUserRestoreInstaller.class.getName(),
+                FormplayerProfileInstaller.class.getName(),
+                FormplayerSuiteInstaller.class.getName(),
+                FormplayerXFormInstaller.class.getName()};
 
         for(Class clazz: FunctionUtils.getXPathFuncListMap().values()){
             PrototypeManager.registerPrototype(clazz.getName());

@@ -1,9 +1,6 @@
 package beans;
 
-import beans.menus.BaseResponseBean;
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.util.Arrays;
 

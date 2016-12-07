@@ -25,6 +25,7 @@ import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xpath.XPathException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,7 @@ import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
+import services.FormplayerStorageFactory;
 import services.InstallService;
 import services.NewFormResponseFactory;
 import services.RestoreFactory;
@@ -74,6 +76,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected NewFormResponseFactory newFormResponseFactory;
+
+    @Autowired
+    protected FormplayerStorageFactory storageFactory;
 
     @Value("${commcarehq.host}")
     private String hqHost;
@@ -226,7 +231,8 @@ public abstract class AbstractBaseController {
             CommCareInstanceInitializer.FixtureInitializationException.class,
             CommCareSessionException.class,
             FormNotFoundException.class,
-            RecordTooLargeException.class})
+            RecordTooLargeException.class,
+            InvalidStructureException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
