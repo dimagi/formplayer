@@ -2,15 +2,17 @@ language: java
 # See: https://docs.travis-ci.com/user/languages/java#Caching
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-services:
-  - redis-server
 cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-
 before_script:
   - gradle wrapper
   - cp config/application.properties.example config/application.properties
+  - psql -c 'create database commcarehq;' -U postgres
+  - psql -c 'create database formplayer;' -U postgres
 script:
   - ./gradlew test --stacktrace --i
+services:
+  - postgresql
+  - redis-server

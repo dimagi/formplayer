@@ -7,8 +7,8 @@ server.port=8080
 redis.hostname=localhost
 sqlite.dataDir=dbs/  # Must end in /
 
-couch.username=commcarehq
-couch.password=commcarehq
+couch.username=postgres
+couch.password=
 couch.protocol=http
 couch.host=localhost
 couch.port=5984
@@ -17,18 +17,18 @@ couch.databaseName=commcarehq
 // Properties for HQ db
 datasource.hq.driverClassName=org.postgresql.Driver
 datasource.hq.url=jdbc:postgresql://localhost:5432/commcarehq?prepareThreshold=0
-datasource.hq.username=commcarehq
-datasource.hq.password=commcarehq
+datasource.hq.username=postgres
+datasource.hq.password=
 
 datasource.formplayer.driverClassName=org.postgresql.Driver
 datasource.formplayer.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
-datasource.formplayer.username=commcarehq
-datasource.formplayer.password=commcarehq
+datasource.formplayer.username=postgres
+datasource.formplayer.password=
 
 // set flyway URL to Formplayer's own DB
 flyway.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
-flyway.user=commcarehq
-flyway.password=commcarehq
+flyway.user=postgres
+flyway.password=
 flyway.driverClassName=org.postgresql.Driver
 flyway.location=classpath:db/migration
 
