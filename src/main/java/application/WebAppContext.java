@@ -86,10 +86,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${smtp.port}")
     private int smtpPort;
 
-    @Value("${smtp.username}")
+    @Value("${smtp.username:}")
     private String smtpUsername;
 
-    @Value("${smtp.password}")
+    @Value("${smtp.password:}")
     private String smtpPassword;
 
     @Value("${smtp.from.address}")
@@ -240,7 +240,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         HtmlEmail message = new HtmlEmail();
         message.setFrom(smtpFromAddress);
         message.addTo(smtpToAddress);
-        message.setAuthentication(smtpUsername, smtpPassword);
+        if (smtpUsername != null &&  smtpPassword != null) {
+            message.setAuthentication(smtpUsername, smtpPassword);
+        }
         message.setHostName(smtpHost);
         message.setSmtpPort(smtpPort);
         return message;
