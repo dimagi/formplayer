@@ -11,8 +11,10 @@ before_script:
   - cp config/application.properties.example config/application.properties
   - psql -c 'create database commcarehq;' -U postgres
   - psql -c 'create database formplayer;' -U postgres
+  - curl -X PUT localhost:5984/commcarehq
 script:
   - ./gradlew test --stacktrace --i
 services:
   - postgresql
   - redis-server
+  - couchdb

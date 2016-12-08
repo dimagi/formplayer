@@ -7,7 +7,7 @@ server.port=8080
 redis.hostname=localhost
 sqlite.dataDir=dbs/  # Must end in /
 
-couch.username=postgres
+couch.username=
 couch.password=
 couch.protocol=http
 couch.host=localhost
