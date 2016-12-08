@@ -7,8 +7,8 @@ server.port=8080
 redis.hostname=localhost
 sqlite.dataDir=dbs/  # Must end in /
 
-couch.username=
-couch.password=
+couch.username=commcarehq
+couch.password=commcarehq
 couch.protocol=http
 couch.host=localhost
 couch.port=5984
