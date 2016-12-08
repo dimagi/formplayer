@@ -12,6 +12,7 @@ before_script:
   - psql -c 'create database commcarehq;' -U postgres
   - psql -c 'create database formplayer;' -U postgres
   - curl -X PUT localhost:5984/commcarehq
+  - curl -X PUT localhost:5984/_config/admins/commcarehq -d '"commcarehq"'
 script:
   - ./gradlew test --stacktrace --i
 services:
