@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    <include resource="org/springframework/boot/logging/logback/base.xml" />
+    <logger name="ch.qos.logback" level="ERROR" />
+    <logger name="org.springframework.core " level="ERROR" />
+    <logger name="org.springframework.beans" level="ERROR" />
+    <logger name="org.springframework.context" level="ERROR" />
+    <logger name="org.springframework.transaction" level="ERROR" />
+    <logger name="org.springframework.web" level="ERROR" />
+    <logger name="org.springframework.test" level="ERROR" />
+    <logger name="org.hibernate" level="ERROR" />
+    <root level="ERROR" />
+</configuration>
