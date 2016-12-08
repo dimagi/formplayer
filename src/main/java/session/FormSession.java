@@ -158,6 +158,15 @@ public class FormSession {
         } else {
             initialize(true, sessionData);
         }
+        if (this.oneQuestionPerScreen) {
+            FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
+            IFormElement element = formEntryController.getModel().getForm().getChild(firstIndex);
+            while (element instanceof GroupDef && !formEntryController.isFieldListHost(firstIndex)) {
+                firstIndex =  formController.getNextFormIndex(firstIndex, false, true);
+                element = formEntryController.getModel().getForm().getChild(firstIndex);
+            }
+            this.currentIndex = firstIndex.toString();
+        }
     }
 
     private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
