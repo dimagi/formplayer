@@ -131,8 +131,8 @@ public class BaseTestClass {
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         Mockito.doReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"))
                 .when(restoreFactoryMock).getRestoreXml();
-        when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
-                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
+                .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
         mapper = new ObjectMapper();
         PrototypeUtils.setupPrototypes();
     }
