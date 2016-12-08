@@ -35,7 +35,13 @@ To run:
 To test:
 
     $ ./gradlew test
-    
+
+    # to run a single test
+    $ ./gradlew :test --tests tests.NewFormTests.testNewForm
+
+    # to run in continuous mode
+    $ ./gradlew test -t
+
 When building on Linux it is sometimes necessary to run:
 
     $ gradle wrapper
