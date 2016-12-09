@@ -14,6 +14,7 @@ import services.FormplayerStorageFactory;
 import services.InstallService;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * The InstallService handles configuring the application,
@@ -31,7 +32,8 @@ public class InstallServiceImpl implements InstallService {
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     @Override
-    public CommCareConfigEngine configureApplication(String reference, final String username, final String dbPath) {
+    public CommCareConfigEngine configureApplication(String reference) {
+        String dbPath = storageFactory.getDatabasePath();
         log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         try {
             File dbFolder = new File(dbPath);

@@ -1,7 +1,12 @@
 package utils;
 
 import installers.FormplayerInstallerFactory;
+import mocks.MockFormSessionRepo;
+import mocks.MockLockRegistry;
+import mocks.MockMenuSessionRepo;
+import mocks.TestInstallService;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -12,7 +17,6 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
-import services.impl.InstallServiceImpl;
 import services.impl.SubmitServiceImpl;
 
 @Configuration
@@ -20,6 +24,10 @@ public class TestContext {
 
     @Value("${redis.hostname}")
     private String redisHostName;
+
+    public TestContext() {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Bean
     public MessageSource messageSource() {
@@ -41,12 +49,12 @@ public class TestContext {
 
     @Bean
     public FormSessionRepo formSessionRepo() {
-        return Mockito.mock(FormSessionRepo.class);
+        return Mockito.spy(MockFormSessionRepo.class);
     }
 
     @Bean
     public MenuSessionRepo menuSessionRepo() {
-        return Mockito.mock(MenuSessionRepo.class);
+        return Mockito.spy(MockMenuSessionRepo.class);
     }
 
     @Bean
@@ -66,7 +74,7 @@ public class TestContext {
 
     @Bean
     public InstallService installService(){
-        return Mockito.spy(InstallServiceImpl.class);
+        return Mockito.spy(TestInstallService.class);
     }
 
     @Bean
@@ -76,12 +84,12 @@ public class TestContext {
 
     @Bean
     public LockRegistry userLockRegistry() {
-        return Mockito.mock(LockRegistry.class);
+        return Mockito.spy(MockLockRegistry.class);
     }
 
     @Bean
     public NewFormResponseFactory newFormResponseFactory(){
-        return Mockito.mock(NewFormResponseFactory.class);
+        return Mockito.spy(NewFormResponseFactory.class);
     }
 
     @Bean

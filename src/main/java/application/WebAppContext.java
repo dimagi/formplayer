@@ -310,7 +310,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public NewFormResponseFactory newFormResponseFactory(){
-        return new NewFormResponseFactory(formSessionRepo(), xFormService(), restoreFactory());
+        return new NewFormResponseFactory();
     }
 
     @Bean
