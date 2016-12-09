@@ -9,7 +9,6 @@ import beans.*;
 import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import engine.FormplayerConfigEngine;
 import installers.FormplayerInstallerFactory;
 import objects.SerializableFormSession;
 import org.junit.Before;
@@ -40,9 +39,6 @@ import utils.TestContext;
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -70,7 +66,7 @@ public class BaseTestClass {
     private StringRedisTemplate redisTemplate;
 
     @Autowired
-    private FormSessionRepo formSessionRepoMock;
+    protected FormSessionRepo formSessionRepoMock;
 
     @Autowired
     private MenuSessionRepo menuSessionRepoMock;
@@ -116,9 +112,6 @@ public class BaseTestClass {
 
     protected ObjectMapper mapper;
 
-    final SerializableFormSession serializableFormSession = new SerializableFormSession();
-    final SerializableMenuSession serializableMenuSession = new SerializableMenuSession();
-
     @Before
     public void setUp() throws Exception {
         Mockito.reset(formSessionRepoMock);
@@ -138,159 +131,10 @@ public class BaseTestClass {
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         Mockito.doReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"))
                 .when(restoreFactoryMock).getRestoreXml();
-        when(submitServiceMock.submitForm(anyString(), anyString(), any(HqAuth.class)))
-                .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+        Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
+                .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
         mapper = new ObjectMapper();
-        setupFormSessionRepoMock();
-        setupMenuSessionRepoMock();
-        setupInstallServiceMock();
-        setupLockMock();
-        setupNewFormMock();
         PrototypeUtils.setupPrototypes();
-    }
-
-    private void setupNewFormMock() throws Exception {
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                NewFormResponseFactory newFormResponseFactory = new NewFormResponseFactory(formSessionRepoMock,
-                        xFormServiceMock,
-                        restoreFactoryMock);
-                return newFormResponseFactory.getResponse((NewSessionRequestBean)args[0], (String)args[1], (HqAuth)args[2]);
-            }
-        }).when(newFormResponseFactoryMock).getResponse(any(NewSessionRequestBean.class), anyString(), any(HqAuth.class));
-    }
-
-    private void setupLockMock() {
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return new Lock() {
-                    @Override
-                    public void lock() {
-
-                    }
-
-                    @Override
-                    public void lockInterruptibly() throws InterruptedException {
-
-                    }
-
-                    @Override
-                    public boolean tryLock() {
-                        return true;
-                    }
-
-                    @Override
-                    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-                        return true;
-                    }
-
-                    @Override
-                    public void unlock() {
-
-                    }
-
-                    @Override
-                    public Condition newCondition() {
-                        return null;
-                    }
-                };
-            }
-        }).when(userLockRegistry).obtain(any());
-    }
-
-    private void setupInstallServiceMock() {
-        try {
-            doAnswer(new Answer<Object>() {
-                @Override
-                public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                    try {
-                        final Object[] args = invocationOnMock.getArguments();
-                        String ref = (String) args[0];
-                        final String path = (String) args[2];
-                        File dbFolder = new File(path);
-                        dbFolder.delete();
-                        dbFolder.mkdirs();
-                        FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactoryMock,
-                                formplayerInstallerFactory);
-                        String absolutePath = getTestResourcePath(ref);
-                        engine.initFromArchive(absolutePath);
-                        engine.initEnvironment();
-                        return engine;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw e;
-                    }
-                }
-            }).when(installService).configureApplication(anyString(), anyString(), anyString());
-        } catch(Exception e){
-            // don't think we need error handling for mocking
-            e.printStackTrace();
-        }
-    }
-
-    private String getTestResourcePath(String resourcePath){
-        try {
-            URL url = this.getClass().getClassLoader().getResource(resourcePath);
-            File file = new File(url.getPath());
-            return file.getAbsolutePath();
-        } catch(NullPointerException npe){
-            npe.printStackTrace();
-            throw npe;
-        }
-    }
-
-    private void setupFormSessionRepoMock() {
-
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return serializableFormSession;
-            }
-        }).when(formSessionRepoMock).findOneWrapped(anyString());
-
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableFormSession toBeSaved = (SerializableFormSession) args[0];
-                serializableFormSession.setInstanceXml(toBeSaved.getInstanceXml());
-                serializableFormSession.setFormXml(toBeSaved.getFormXml());
-                serializableFormSession.setRestoreXml(toBeSaved.getRestoreXml());
-                serializableFormSession.setUsername(toBeSaved.getUsername());
-                serializableFormSession.setSessionData(toBeSaved.getSessionData());
-                serializableFormSession.setDomain(toBeSaved.getDomain());
-                serializableFormSession.setMenuSessionId(toBeSaved.getMenuSessionId());
-                return null;
-            }
-        }).when(formSessionRepoMock).save(Matchers.any(SerializableFormSession.class));
-    }
-
-    private void setupMenuSessionRepoMock() {
-
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return serializableMenuSession;
-            }
-        }).when(menuSessionRepoMock).findOneWrapped(anyString());
-
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] args = invocationOnMock.getArguments();
-                SerializableMenuSession toBeSaved = (SerializableMenuSession) args[0];
-                serializableMenuSession.setCommcareSession(toBeSaved.getCommcareSession());
-                serializableMenuSession.setUsername(toBeSaved.getUsername());
-                serializableMenuSession.setDomain(toBeSaved.getDomain());
-                serializableMenuSession.setAppId(toBeSaved.getAppId());
-                serializableMenuSession.setInstallReference(toBeSaved.getInstallReference());
-                serializableMenuSession.setLocale(toBeSaved.getLocale());
-                return null;
-            }
-        }).when(menuSessionRepoMock).save(Matchers.any(SerializableMenuSession.class));
     }
 
     private String urlPrepend(String string) {

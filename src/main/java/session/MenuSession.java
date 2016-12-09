@@ -15,6 +15,11 @@ import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.commcare.util.screen.*;
+import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.EntityScreen;
+import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.QueryScreen;
+import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
@@ -83,11 +88,7 @@ public class MenuSession {
         this.auth = auth;
 
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(
-                this.installReference,
-                this.username,
-                ApplicationUtils.getApplicationDBPath(this.domain, this.username, this.appId)
-        );
+        this.engine = installService.configureApplication(this.installReference);
 
         this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
 
@@ -107,11 +108,7 @@ public class MenuSession {
         this.auth = auth;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(
-                this.installReference,
-                this.username,
-                ApplicationUtils.getApplicationDBPath(domain, this.username, appId)
-        );
+        this.engine = installService.configureApplication(this.installReference);
         this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
         this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;

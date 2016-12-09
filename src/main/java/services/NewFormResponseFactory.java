@@ -8,6 +8,7 @@ import objects.SerializableFormSession;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.xform.parse.XFormParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
 import session.FormSession;
@@ -22,17 +23,14 @@ import java.io.StringReader;
 @Component
 public class NewFormResponseFactory {
 
-    private final XFormService xFormService;
-    private final RestoreFactory restoreFactory;
-    private final FormSessionRepo formSessionRepo;
+    @Autowired
+    private XFormService xFormService;
 
-    public NewFormResponseFactory(FormSessionRepo formSessionRepo,
-                                  XFormService xFormService,
-                                  RestoreFactory restoreFactory) {
-        this.xFormService = xFormService;
-        this.restoreFactory = restoreFactory;
-        this.formSessionRepo = formSessionRepo;
-    }
+    @Autowired
+    private RestoreFactory restoreFactory;
+
+    @Autowired
+    private FormSessionRepo formSessionRepo;
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl, HqAuth auth) throws Exception {
 

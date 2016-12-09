@@ -19,7 +19,7 @@ public class FormEntryTest extends BaseTestClass{
     @Test
     public void testFormEntry() throws Exception {
 
-        serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        formSessionRepoMock.findOneWrapped("").setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
         configureRestoreFactory("test", "test");
 
         NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
@@ -97,7 +97,7 @@ public class FormEntryTest extends BaseTestClass{
     @Test
     public void testFormEntry2() throws Exception {
 
-        serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        formSessionRepoMock.findOneWrapped("").setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
         NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types_2.xml");
 
@@ -138,7 +138,7 @@ public class FormEntryTest extends BaseTestClass{
     @Test
     public void testOQPS() throws Exception {
 
-        serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        formSessionRepoMock.findOneWrapped("").setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
         NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
 
@@ -158,7 +158,7 @@ public class FormEntryTest extends BaseTestClass{
     @Test
     public void testOQPSPreviousNext() throws Exception {
 
-        serializableFormSession.setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
+        formSessionRepoMock.findOneWrapped("").setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
         NewFormResponse newFormResponse = startNewSession("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
 
