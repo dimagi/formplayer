@@ -47,9 +47,16 @@ public class RestoreFactory {
     private String cachedRestore = null;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
-        this.setDomain(authenticatedRequestBean.getDomain());
-        this.setAsUsername(authenticatedRequestBean.getRestoreAs());
-        this.setUsername(authenticatedRequestBean.getUsername());
+        configure(authenticatedRequestBean.getUsername(),
+                authenticatedRequestBean.getDomain(),
+                authenticatedRequestBean.getRestoreAs(),
+                auth);
+    }
+
+    public void configure(String username, String domain, String asUsername, HqAuth auth) {
+        this.setUsername(username);
+        this.setDomain(domain);
+        this.setAsUsername(asUsername);
         this.setHqAuth(auth);
         cachedRestore = null;
     }
