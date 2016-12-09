@@ -52,6 +52,9 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        DjangoAuth auth = new DjangoAuth(authToken);
+        restoreFactory.configure(installRequestBean, auth);
+        storageFactory.configure(installRequestBean);
         BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
         return response;
     }
@@ -61,6 +64,9 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        DjangoAuth auth = new DjangoAuth(authToken);
+        restoreFactory.configure(updateRequestBean, auth);
+        storageFactory.configure(updateRequestBean);
         MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
@@ -93,6 +99,7 @@ public class MenuController extends AbstractBaseController{
         MenuSession menuSession;
         DjangoAuth auth = new DjangoAuth(authToken);
         restoreFactory.configure(sessionNavigationBean, auth);
+        storageFactory.configure(sessionNavigationBean);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             try {
@@ -254,7 +261,6 @@ public class MenuController extends AbstractBaseController{
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         restoreFactory.configure(bean, new DjangoAuth(authToken));
-        storageFactory.configure(bean);
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");

@@ -109,6 +109,7 @@ public class FormController extends AbstractBaseController{
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession);
+        DjangoAuth auth = new DjangoAuth(authToken);
         SubmitResponseBean submitResponseBean;
 
         if (serializableFormSession.getOneQuestionPerScreen()) {
@@ -129,7 +130,7 @@ public class FormController extends AbstractBaseController{
             ResponseEntity<String> submitResponse =
                     submitService.submitForm(formEntrySession.getInstanceXml(),
                             formEntrySession.getPostUrl(),
-                            new DjangoAuth(authToken));
+                            auth);
 
             if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                 submitResponseBean.setStatus("error");
@@ -141,7 +142,7 @@ public class FormController extends AbstractBaseController{
 
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
+                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()), auth);
                 if (nav != null) {
                     submitResponseBean.setNextScreen(nav);
                 }
@@ -158,6 +159,13 @@ public class FormController extends AbstractBaseController{
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
+        restoreFactory.configure(serializedSession.getUsername(),
+                serializedSession.getDomain(),
+                serializedSession.getAsUser(),
+                auth);
+        storageFactory.configure(serializedSession.getUsername(),
+                serializedSession.getDomain(),
+                serializedSession.getAppId());
         MenuSession menuSession = new MenuSession(serializedSession, installService, restoreFactory, auth, host);
         return resolveFormGetNext(menuSession);
     }
