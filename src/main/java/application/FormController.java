@@ -76,8 +76,10 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     @UserLock
-    public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
+    public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
+                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
+        restoreFactory.configure(session.getUsername(), session.getDomain(), session.getAsUser(), new DjangoAuth(authToken));
         FormSession formEntrySession = new FormSession(session);
         JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
@@ -107,7 +109,17 @@ public class FormController extends AbstractBaseController{
     @UserLock
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        DjangoAuth auth = new DjangoAuth(authToken);
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
+
+        restoreFactory.configure(serializableFormSession.getUsername(),
+                serializableFormSession.getDomain(),
+                serializableFormSession.getAsUser(),
+                auth);
+        storageFactory.configure(serializableFormSession.getUsername(),
+                serializableFormSession.getDomain(),
+                serializableFormSession.getAppId());
+
         FormSession formEntrySession = new FormSession(serializableFormSession);
         SubmitResponseBean submitResponseBean;
 
@@ -129,7 +141,7 @@ public class FormController extends AbstractBaseController{
             ResponseEntity<String> submitResponse =
                     submitService.submitForm(formEntrySession.getInstanceXml(),
                             formEntrySession.getPostUrl(),
-                            new DjangoAuth(authToken));
+                            auth);
 
             if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                 submitResponseBean.setStatus("error");
@@ -141,7 +153,7 @@ public class FormController extends AbstractBaseController{
 
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()), new DjangoAuth(authToken));
+                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()), auth);
                 if (nav != null) {
                     submitResponseBean.setNextScreen(nav);
                 }
