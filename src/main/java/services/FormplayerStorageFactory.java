@@ -23,9 +23,15 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
     private String trimmedUsername;
 
     public void configure(InstallRequestBean authenticatedRequestBean) {
-        this.username = authenticatedRequestBean.getUsername();
-        this.appId = authenticatedRequestBean.getAppId();
-        this.domain = authenticatedRequestBean.getDomain();
+        configure(authenticatedRequestBean.getUsername(),
+                authenticatedRequestBean.getDomain(),
+                authenticatedRequestBean.getAppId());
+    }
+
+    public void configure(String username, String domain, String appId) {
+        this.username = username;
+        this.domain = domain;
+        this.appId = appId;
         this.trimmedUsername = StringUtils.substringBefore(username, "@");
         this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
     }
