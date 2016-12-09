@@ -76,8 +76,10 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     @UserLock
-    public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
+    public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
+                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
+        restoreFactory.configure(session.getUsername(), session.getDomain(), session.getAsUser(), new DjangoAuth(authToken));
         FormSession formEntrySession = new FormSession(session);
         JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
@@ -107,9 +109,18 @@ public class FormController extends AbstractBaseController{
     @UserLock
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
         DjangoAuth auth = new DjangoAuth(authToken);
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
+
+        restoreFactory.configure(serializableFormSession.getUsername(),
+                serializableFormSession.getDomain(),
+                serializableFormSession.getAsUser(),
+                auth);
+        storageFactory.configure(serializableFormSession.getUsername(),
+                serializableFormSession.getDomain(),
+                serializableFormSession.getAppId());
+
+        FormSession formEntrySession = new FormSession(serializableFormSession);
         SubmitResponseBean submitResponseBean;
 
         if (serializableFormSession.getOneQuestionPerScreen()) {
@@ -159,13 +170,6 @@ public class FormController extends AbstractBaseController{
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
-        restoreFactory.configure(serializedSession.getUsername(),
-                serializedSession.getDomain(),
-                serializedSession.getAsUser(),
-                auth);
-        storageFactory.configure(serializedSession.getUsername(),
-                serializedSession.getDomain(),
-                serializedSession.getAppId());
         MenuSession menuSession = new MenuSession(serializedSession, installService, restoreFactory, auth, host);
         return resolveFormGetNext(menuSession);
     }
