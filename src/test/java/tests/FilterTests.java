@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.Constants;
 import utils.FileUtils;
@@ -62,13 +63,11 @@ public class FilterTests extends BaseTestClass {
         SyncDbResponseBean syncDbResponseBean = syncDb();
 
         assert(syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
-        assert(SqlSandboxUtils.databaseFolderExists(UserSqlSandbox.DEFAULT_DATBASE_PATH));
+        assert(SqlSandboxUtils.databaseFolderExists(SQLiteProperties.getDataDir()));
 
         UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("synctestuser", SQLiteProperties.getDataDir() + "synctestdomain");
 
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
-
-        System.out.println("Case Storage records: " + caseStorage.getNumRecords());
 
         assert(15 == caseStorage.getNumRecords());
 
