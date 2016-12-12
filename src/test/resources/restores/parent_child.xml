@@ -1,2 +1,65 @@
-
-<OpenRosaResponse xmlns="http://openrosa.org/http/response"><message nature="ota_restore_success">Successfully restored account test!</message><Sync xmlns="http://commcarehq.org/sync"><restore_id>c44e895f6a926cd28c89fba5dba3db5e</restore_id></Sync><Registration xmlns="http://openrosa.org/user/registration"><username>test</username><password>sha1$avrRdkqgjooF$c548dff77e30ad1d5f71360ca9cdac7706abd65f</password><uuid>9355120324b8c4955970a4cb962919f1</uuid><date>2016-02-04</date><user_data><data key="commcare_first_name" /><data key="commcare_last_name">123</data><data key="commcare_phone_number" /></user_data></Registration><fixture id="user-groups" user_id="9355120324b8c4955970a4cb962919f1"><groups /></fixture><case case_id="4d1831ab-abfe-4086-bce7-16d325d9ca3a" date_modified="2016-04-04T13:06:30.512000Z" user_id="9355120324b8c4955970a4cb962919f1" xmlns="http://commcarehq.org/case/transaction/v2"><create><case_type>parent</case_type><case_name>will</case_name><owner_id>9355120324b8c4955970a4cb962919f1</owner_id></create><update><age>25</age></update></case><case case_id="6a4c61ec-7357-435f-90b0-6f7baf92f8e5" date_modified="2016-04-01T10:12:36.831000Z" user_id="9355120324b8c4955970a4cb962919f1" xmlns="http://commcarehq.org/case/transaction/v2"><create><case_type>individual_order</case_type><case_name>will</case_name><owner_id>9355120324b8c4955970a4cb962919f1</owner_id></create><update><does_will_rule>choice3</does_will_rule><food_you_want>dun dun noodles, suan la chow</food_you_want></update><index><parent case_type="team_order">7ad6624c-5f67-4d29-ab55-c88cc0fb64c6</parent></index></case><case case_id="7ad6624c-5f67-4d29-ab55-c88cc0fb64c6" date_modified="2016-04-01T10:12:36.831000Z" user_id="9355120324b8c4955970a4cb962919f1" xmlns="http://commcarehq.org/case/transaction/v2"><create><case_type>team_order</case_type><case_name>Mary Chungs</case_name><owner_id>9355120324b8c4955970a4cb962919f1</owner_id></create><update><order_date>2016-04-01</order_date></update></case><case case_id="a9fde9ae-24ee-4d70-9cb4-20f266a62ef8" date_modified="2016-03-30T14:38:33.265000Z" user_id="9355120324b8c4955970a4cb962919f1" xmlns="http://commcarehq.org/case/transaction/v2"><create><case_type>parent</case_type><case_name>Anne</case_name><owner_id>9355120324b8c4955970a4cb962919f1</owner_id></create><update><age>55</age></update></case></OpenRosaResponse>
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+    <message nature="ota_restore_success">Successfully restored account test!</message>
+    <Sync xmlns="http://commcarehq.org/sync">
+        <restore_id>c44e895f6a926cd28c89fba5dba3db5e</restore_id>
+    </Sync>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>test</username>
+        <password>sha1$avrRdkqgjooF$c548dff77e30ad1d5f71360ca9cdac7706abd65f</password>
+        <uuid>9355120324b8c4955970a4cb962919f1</uuid>
+        <date>2016-02-04</date>
+        <user_data>
+            <data key="commcare_first_name" />
+            <data key="commcare_last_name">123</data>
+            <data key="commcare_phone_number" />
+        </user_data>
+    </Registration>
+    <fixture id="user-groups" user_id="9355120324b8c4955970a4cb962919f1">
+        <groups />
+    </fixture>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="4d1831ab-abfe-4086-bce7-16d325d9ca3a" date_modified="2016-04-04T13:06:30.512000Z" user_id="9355120324b8c4955970a4cb962919f1">
+        <create>
+            <case_type>parent</case_type>
+            <case_name>will</case_name>
+            <owner_id>9355120324b8c4955970a4cb962919f1</owner_id>
+        </create>
+        <update>
+            <age>25</age>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="6a4c61ec-7357-435f-90b0-6f7baf92f8e5" date_modified="2016-04-01T10:12:36.831000Z" user_id="9355120324b8c4955970a4cb962919f1">
+        <create>
+            <case_type>individual_order</case_type>
+            <case_name>will</case_name>
+            <owner_id>9355120324b8c4955970a4cb962919f1</owner_id>
+        </create>
+        <update>
+            <does_will_rule>choice3</does_will_rule>
+            <food_you_want>dun dun noodles, suan la chow</food_you_want>
+        </update>
+        <index>
+            <parent case_type="team_order">7ad6624c-5f67-4d29-ab55-c88cc0fb64c6</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="7ad6624c-5f67-4d29-ab55-c88cc0fb64c6" date_modified="2016-04-01T10:12:36.831000Z" user_id="9355120324b8c4955970a4cb962919f1">
+        <create>
+            <case_type>team_order</case_type>
+            <case_name>Mary Chungs</case_name>
+            <owner_id>9355120324b8c4955970a4cb962919f1</owner_id>
+        </create>
+        <update>
+            <order_date>2016-04-01</order_date>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="a9fde9ae-24ee-4d70-9cb4-20f266a62ef8" date_modified="2016-03-30T14:38:33.265000Z" user_id="9355120324b8c4955970a4cb962919f1">
+        <create>
+            <case_type>parent</case_type>
+            <case_name>Anne</case_name>
+            <owner_id>9355120324b8c4955970a4cb962919f1</owner_id>
+        </create>
+        <update>
+            <age>55</age>
+        </update>
+    </case>
+</OpenRosaResponse>

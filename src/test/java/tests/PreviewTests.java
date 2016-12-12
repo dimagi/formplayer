@@ -1,20 +1,15 @@
 package tests;
 
-import auth.HqAuth;
 import beans.NewFormResponse;
 import beans.menus.EntityListResponse;
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.FileUtils;
 import utils.TestContext;
 
-import java.io.IOException;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
