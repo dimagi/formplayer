@@ -1,5 +1,6 @@
 package application;
 
+import annotations.UserLock;
 import auth.DjangoAuth;
 import beans.*;
 import hq.CaseAPIs;
@@ -57,6 +58,7 @@ public class UtilController extends AbstractBaseController {
 
     @ApiOperation(value = "Wipe the applications databases")
     @RequestMapping(value = Constants.URL_DELETE_APPLICATION_DBS, method = RequestMethod.POST)
+    @UserLock
     public NotificationMessageBean deleteApplicationDbs(
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
