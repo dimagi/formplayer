@@ -1,15 +1,14 @@
 package tests;
 
-import application.DebuggerController;
-import application.FormController;
-import application.MenuController;
-import application.UtilController;
+import application.*;
 import auth.HqAuth;
 import beans.*;
 import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import installers.FormplayerInstallerFactory;
+import org.commcare.api.persistence.SqlSandboxUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,6 +128,12 @@ public class BaseTestClass {
                 .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
         mapper = new ObjectMapper();
         PrototypeUtils.setupPrototypes();
+        new SQLiteProperties().setDataDir("testdbs/");
+    }
+
+    @After
+    public void tearDown() {
+        SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
     }
 
     private String urlPrepend(String string) {
