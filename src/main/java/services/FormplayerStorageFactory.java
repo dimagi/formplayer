@@ -36,11 +36,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
         this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
     }
 
-    public void configure(String databasePath, String trimmedUsername) {
-        this.trimmedUsername = trimmedUsername;
-        this.databasePath = databasePath;
-    }
-
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
         return new SqliteIndexedStorageUtility(type, trimmedUsername, name, databasePath);
