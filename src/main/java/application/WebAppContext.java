@@ -297,7 +297,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public InstallService installService(){
         return new InstallServiceImpl();
     }

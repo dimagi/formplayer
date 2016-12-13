@@ -25,7 +25,6 @@ import java.net.URL;
  * either from a .ccz or .ccpr reference or existing dbs.
  * This can involve app download, install, and initialization of resources.
  */
-@Scope(value = "request", proxyMode= ScopedProxyMode.INTERFACES)
 public class InstallServiceImpl implements InstallService {
 
     @Autowired
