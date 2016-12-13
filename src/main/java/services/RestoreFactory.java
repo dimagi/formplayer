@@ -10,6 +10,7 @@ import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,7 +33,7 @@ import java.io.UnsupportedEncodingException;
  * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
  * then retrieves and returns the restore XML.
  */
-@Scope(value = "request")
+@Scope(value = "request", proxyMode= ScopedProxyMode.INTERFACES)
 public class RestoreFactory {
     @Value("${commcarehq.host}")
     private String host;
