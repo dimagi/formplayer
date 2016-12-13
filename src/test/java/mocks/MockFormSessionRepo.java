@@ -23,6 +23,7 @@ public abstract class MockFormSessionRepo implements FormSessionRepo {
         serializableFormSession.setSessionData(toBeSaved.getSessionData());
         serializableFormSession.setDomain(toBeSaved.getDomain());
         serializableFormSession.setMenuSessionId(toBeSaved.getMenuSessionId());
+        serializableFormSession.setAppId(toBeSaved.getAppId());
         return serializableFormSession;
     }
 
