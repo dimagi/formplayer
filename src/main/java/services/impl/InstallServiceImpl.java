@@ -10,9 +10,13 @@ import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import services.FormplayerStorageFactory;
 import services.InstallService;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.File;
 import java.net.URL;
 
@@ -21,6 +25,7 @@ import java.net.URL;
  * either from a .ccz or .ccpr reference or existing dbs.
  * This can involve app download, install, and initialization of resources.
  */
+@Scope(value = "request", proxyMode= ScopedProxyMode.INTERFACES)
 public class InstallServiceImpl implements InstallService {
 
     @Autowired
@@ -30,6 +35,16 @@ public class InstallServiceImpl implements InstallService {
     FormplayerInstallerFactory formplayerInstallerFactory;
 
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
+
+    @PostConstruct
+    public void init() {
+        System.out.println("InstallService made");
+    }
+
+    @PreDestroy
+    public void onDestroy() {
+        System.out.println("InstallService destroyed");
+    }
 
     @Override
     public CommCareConfigEngine configureApplication(String reference) {
@@ -49,7 +64,9 @@ public class InstallServiceImpl implements InstallService {
             }
             // Wipe out folder and attempt install
             SqlSandboxUtils.deleteDatabaseFolder(dbPath);
-            dbFolder.mkdirs();
+            if (!dbFolder.mkdirs()) {
+                throw new RuntimeException("Error instantiationing folder " + dbFolder);
+            }
             CommCareConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
             engine.initFromArchive(reference);
             engine.initEnvironment();
