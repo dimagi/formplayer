@@ -35,16 +35,6 @@ public class InstallServiceImpl implements InstallService {
 
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
-    @PostConstruct
-    public void init() {
-        System.out.println("InstallService made");
-    }
-
-    @PreDestroy
-    public void onDestroy() {
-        System.out.println("InstallService destroyed");
-    }
-
     @Override
     public CommCareConfigEngine configureApplication(String reference) {
         String dbPath = storageFactory.getDatabasePath();
