@@ -29,6 +29,10 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
     }
 
     public void configure(String username, String domain, String appId) {
+        if(username == null || domain == null || appId == null) {
+            throw new RuntimeException(String.format("Cannot configure FormplayerStorageFactory with null arguments. " +
+                    "username = %s, domain = %s, appId = %s", username, domain, appId));
+        }
         this.username = username;
         this.domain = domain;
         this.appId = appId;
