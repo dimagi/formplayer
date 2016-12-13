@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import util.ApplicationUtils;
 
@@ -13,7 +12,6 @@ import util.ApplicationUtils;
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
  */
 @Component
-@Scope(value = "request")
 public class FormplayerStorageFactory implements IStorageIndexedFactory{
 
     private String username;
