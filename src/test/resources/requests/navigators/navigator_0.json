@@ -1,7 +1,8 @@
 {
   "username": "navigatoruser",
-  "password": "testpass",
+  "password": "navigatorpass",
   "domain": "navigatordomain",
+  "app_id": "navigatorappid",
   "installReference": "archives/doublemgmt.ccz",
   "selections": [2, "4d1831ab-abfe-4086-bce7-16d325d9ca3a", 0]
 }
