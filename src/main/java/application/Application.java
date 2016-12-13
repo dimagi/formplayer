@@ -38,9 +38,9 @@ public class Application {
     static DataSource dataSource;
 
     public static void main(String[] args) {
+        PrototypeUtils.setupPrototypes();
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         migrate();
-        PrototypeUtils.setupPrototypes();
     }
 
     /**
