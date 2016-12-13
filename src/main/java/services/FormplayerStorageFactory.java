@@ -2,6 +2,8 @@ package services;
 
 import beans.InstallRequestBean;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
@@ -22,6 +24,9 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
     private String databasePath;
     private String trimmedUsername;
 
+    private final Log log = LogFactory.getLog(FormplayerStorageFactory.class);
+
+
     public void configure(InstallRequestBean authenticatedRequestBean) {
         configure(authenticatedRequestBean.getUsername(),
                 authenticatedRequestBean.getDomain(),
@@ -29,6 +34,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
     }
 
     public void configure(String username, String domain, String appId) {
+        log.info(String.format("Configuring StorageFactory with username %s, domain %s, appId %s",
+                username, domain, appId));
         this.username = username;
         this.domain = domain;
         this.appId = appId;
