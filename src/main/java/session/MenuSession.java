@@ -238,7 +238,7 @@ public class MenuSession {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        String postUrl = new PropertyManager().getSingularProperty("PostURL");
+        String postUrl = PropertyManager.instance().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen, asUser, appId);
@@ -247,7 +247,7 @@ public class MenuSession {
     public FormSession reloadSession(FormSession oldSession) throws Exception {
         String formXmlns = oldSession.getXmlns();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
-        String postUrl = new PropertyManager().getSingularProperty("PostURL");
+        String postUrl = PropertyManager.instance().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, username, domain,
                 oldSession.getSessionData(), postUrl, locale, oldSession.getMenuSessionId(),
                 oldSession.getInstanceXml(), oldSession.getOneQuestionPerScreen(), asUser,
