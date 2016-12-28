@@ -1,6 +1,8 @@
 package aspects;
 
 import beans.AuthenticatedRequestBean;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,6 +19,8 @@ import java.util.concurrent.locks.Lock;
  */
 @Aspect
 public class LockAspect {
+
+    private final Log log = LogFactory.getLog(LockAspect.class);
 
     @Autowired
     protected LockRegistry userLockRegistry;
@@ -40,7 +44,12 @@ public class LockAspect {
             return joinPoint.proceed();
         } finally {
             if (lock != null) {
-                lock.unlock();
+                try {
+                    lock.unlock();
+                } catch (IllegalStateException e) {
+                    // Don't crash here, still return result
+                    log.error("Request " + bean + " lost the lock. This could have had negative consequences.");
+                }
             }
         }
     }
