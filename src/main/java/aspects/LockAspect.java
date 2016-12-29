@@ -43,14 +43,7 @@ public class LockAspect {
         try {
             return joinPoint.proceed();
         } finally {
-            if (lock != null) {
-                try {
-                    lock.unlock();
-                } catch (IllegalStateException e) {
-                    // Don't crash here, still return result
-                    log.error("Request " + bean + " lost the lock. This could have had negative consequences.");
-                }
-            }
+            lock.unlock();
         }
     }
 
