@@ -1,8 +1,6 @@
 package aspects;
 
 import beans.AuthenticatedRequestBean;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -19,8 +17,6 @@ import java.util.concurrent.locks.Lock;
  */
 @Aspect
 public class LockAspect {
-
-    private final Log log = LogFactory.getLog(LockAspect.class);
 
     @Autowired
     protected LockRegistry userLockRegistry;
@@ -43,7 +39,9 @@ public class LockAspect {
         try {
             return joinPoint.proceed();
         } finally {
-            lock.unlock();
+            if (lock != null) {
+                lock.unlock();
+            }
         }
     }
 
