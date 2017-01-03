@@ -49,7 +49,7 @@ public class InstallTests extends BaseTestClass {
         // setup files
         CommandListResponseBean menuResponseBean =
                 doInstall("requests/install/install.json");
-        assert menuResponseBean.getCommands().length == 12;
+        assert menuResponseBean.getCommands().length == 11;
         assert menuResponseBean.getTitle().equals("Basic Tests");
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Basic Form Tests");
 
