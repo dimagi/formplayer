@@ -127,7 +127,9 @@ public abstract class AbstractBaseController {
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
             if(menuSession.getSessionWrapper().getForm() != null) {
-                return generateFormEntryScreen(menuSession);
+                NewFormResponse formResponseBean = generateFormEntryScreen(menuSession);
+                formResponseBean.setBreadcrumbs(breadcrumbs);
+                return formResponseBean;
             } else{
                 return null;
             }

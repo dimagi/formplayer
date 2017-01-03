@@ -12,6 +12,7 @@ import java.util.Arrays;
 public class NewFormResponse extends SessionResponseBean {
     private QuestionBean[] tree;
     private String[] langs;
+    private String[] breadcrumbs;
 
     public NewFormResponse(){}
 
@@ -37,5 +38,13 @@ public class NewFormResponse extends SessionResponseBean {
     public String toString(){
         return "NewFormResponse [sessionId=" + sessionId + ", title=" + title + " tree=" + Arrays.toString(tree) +
                 " sequenceId=" + sequenceId + " ]";
+    }
+
+    public String[] getBreadcrumbs() {
+        return breadcrumbs;
+    }
+
+    public void setBreadcrumbs(String[] breadcrumbs) {
+        this.breadcrumbs = breadcrumbs;
     }
 }
