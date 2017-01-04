@@ -28,6 +28,7 @@ public class Constants {
     public static final String URL_INSTALL = "install";
     public static final String URL_UPDATE = "update";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
+    public static final String URL_GET_DETAILS = "get_details";
     public static final String URL_GET_SESSIONS = "get_sessions";
     public static final String URL_SERVER_UP = "serverup";
     public static final String URL_PREVIEW_FORM = "preview_form";

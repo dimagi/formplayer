@@ -171,15 +171,6 @@ public class EntityListResponse extends MenuBean {
         for (Entity<TreeReference> entity : entityList) {
             TreeReference treeReference = entity.getElement();
             EntityBean newEntityBean = processEntity(treeReference, screen, ec);
-            EntityDetailSubscreen[] subscreens = processDetails(screen, ec, treeReference);
-            if (subscreens != null) {
-                EntityDetailResponse[] responses = new EntityDetailResponse[subscreens.length];
-                for (int j = 0; j < subscreens.length; j++) {
-                    responses[j] = new EntityDetailResponse(subscreens[j]);
-                    responses[j].setTitle(subscreens[j].getTitles()[j]);
-                }
-                newEntityBean.setDetails(responses);
-            }
             entities[i] = newEntityBean;
             i++;
         }
@@ -239,30 +230,16 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private EntityDetailSubscreen[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref) {
-        Detail[] detailList = screen.getLongDetailList();
-        if (detailList == null || !(detailList.length > 0)) {
-            // No details, just return null
-            return null;
+    private void processStyles(Detail detail) {
+        DetailField[] fields = detail.getFields();
+        styles = new Style[fields.length];
+        int i = 0;
+        for (DetailField field : fields) {
+            Style style = new Style(field);
+            styles[i] = style;
+            i++;
         }
-        EvaluationContext subContext = new EvaluationContext(ec, ref);
-        EntityDetailSubscreen[] ret = new EntityDetailSubscreen[detailList.length];
-        for (int i = 0; i < detailList.length; i++) {
-            ret[i] = new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext));
-        }
-        return ret;
     }
-
-        private void processStyles(Detail detail) {
-            DetailField[] fields = detail.getFields();
-            styles = new Style[fields.length];
-            int i = 0;
-            for (DetailField field : fields) {
-                Style style = new Style(field);
-                styles[i] = style;
-                i++;
-            }
-        }
 
     private void processActions(SessionWrapper session) {
         Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions(session.getEvaluationContext());
