@@ -103,8 +103,13 @@ public class MenuController extends AbstractBaseController{
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             try {
-                menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
-                        installService, restoreFactory, auth, host);
+                menuSession = new MenuSession(
+                        menuSessionRepo.findOneWrapped(menuSessionId),
+                        installService,
+                        restoreFactory,
+                        auth,
+                        host
+                );
                 menuSession.getSessionWrapper().syncState();
             } catch(MenuNotFoundException e) {
                 return new BaseResponseBean(null, e.getMessage(), true, true);
@@ -112,29 +117,27 @@ public class MenuController extends AbstractBaseController{
         } else {
             // If we have a preview command, load that up
             if(sessionNavigationBean.getPreviewCommand() != null){
-                // When previewing, clear and reinstall DBs to get newest version
-                // Big TODO: app updates
-                ApplicationUtils.deleteApplicationDbs(sessionNavigationBean.getDomain(), sessionNavigationBean.getUsername(),
-                        sessionNavigationBean.getAppId());
-                menuSession = performInstall(sessionNavigationBean, authToken);
-                try {
-                    menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
-                    menuSession.updateScreen();
-                } catch(ArrayIndexOutOfBoundsException e) {
-                    throw new RuntimeException("Couldn't get entries from preview command "
-                            + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
-                            " please report a bug to the CommCareHQ Team.");
-                }
+                menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
             } else {
                 menuSession = performInstall(sessionNavigationBean, authToken);
             }
         }
+        // Selections are either an integer index into a list of modules
+        // or a case id indicating the case selected.
+        //
+        // An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+        //
+        // This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
         String[] selections = sessionNavigationBean.getSelections();
         BaseResponseBean nextMenu;
+
+        // If we have no selections, we're are the root screen.
         if (selections == null) {
-            nextMenu = getNextMenu(menuSession,
+            nextMenu = getNextMenu(
+                    menuSession,
                     sessionNavigationBean.getOffset(),
-                    sessionNavigationBean.getSearchText());
+                    sessionNavigationBean.getSearchText()
+            );
             return nextMenu;
         }
 
@@ -177,6 +180,27 @@ public class MenuController extends AbstractBaseController{
         } else {
             return new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
         }
+    }
+
+    private MenuSession handlePreviewCommand(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception{
+        MenuSession menuSession;
+        // When previewing, clear and reinstall DBs to get newest version
+        // Big TODO: app updates
+        ApplicationUtils.deleteApplicationDbs(
+                sessionNavigationBean.getDomain(),
+                sessionNavigationBean.getUsername(),
+                sessionNavigationBean.getAppId()
+        );
+        menuSession = performInstall(sessionNavigationBean, authToken);
+        try {
+            menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
+            menuSession.updateScreen();
+        } catch(ArrayIndexOutOfBoundsException e) {
+            throw new RuntimeException("Couldn't get entries from preview command "
+                    + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
+                    " please report a bug to the CommCareHQ Team.");
+        }
+        return menuSession;
     }
 
     /**
