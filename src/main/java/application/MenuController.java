@@ -112,19 +112,7 @@ public class MenuController extends AbstractBaseController{
         } else {
             // If we have a preview command, load that up
             if(sessionNavigationBean.getPreviewCommand() != null){
-                // When previewing, clear and reinstall DBs to get newest version
-                // Big TODO: app updates
-                ApplicationUtils.deleteApplicationDbs(sessionNavigationBean.getDomain(), sessionNavigationBean.getUsername(),
-                        sessionNavigationBean.getAppId());
-                menuSession = performInstall(sessionNavigationBean, authToken);
-                try {
-                    menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
-                    menuSession.updateScreen();
-                } catch(ArrayIndexOutOfBoundsException e) {
-                    throw new RuntimeException("Couldn't get entries from preview command "
-                            + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
-                            " please report a bug to the CommCareHQ Team.");
-                }
+                menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
             } else {
                 menuSession = performInstall(sessionNavigationBean, authToken);
             }
@@ -177,6 +165,27 @@ public class MenuController extends AbstractBaseController{
         } else {
             return new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
         }
+    }
+
+    private MenuSession handlePreviewCommand(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception{
+        MenuSession menuSession;
+        // When previewing, clear and reinstall DBs to get newest version
+        // Big TODO: app updates
+        ApplicationUtils.deleteApplicationDbs(
+                sessionNavigationBean.getDomain(),
+                sessionNavigationBean.getUsername(),
+                sessionNavigationBean.getAppId()
+        );
+        menuSession = performInstall(sessionNavigationBean, authToken);
+        try {
+            menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
+            menuSession.updateScreen();
+        } catch(ArrayIndexOutOfBoundsException e) {
+            throw new RuntimeException("Couldn't get entries from preview command "
+                    + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
+                    " please report a bug to the CommCareHQ Team.");
+        }
+        return menuSession;
     }
 
     /**
