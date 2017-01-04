@@ -340,6 +340,37 @@ public class BaseTestClass {
         );
     }
 
+    <T> T getDetails(String requestPath, Class<T> clazz) throws Exception {
+        SessionNavigationBean sessionNavigationBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
+        return generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_GET_DETAILS,
+                sessionNavigationBean,
+                clazz);
+    }
+
+    <T> T getDetails(String[] selections, String testName, Class <T> clazz) throws Exception {
+        return getDetails(selections, testName, null, clazz);
+    }
+
+    <T> T getDetails(String[] selections, String testName, String locale, Class<T> clazz) throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
+        sessionNavigationBean.setSelections(selections);
+        if(locale != null && !"".equals(locale.trim())){
+            sessionNavigationBean.setLocale(locale);
+        }
+        return generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_GET_DETAILS,
+                sessionNavigationBean,
+                clazz);
+    }
+
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
