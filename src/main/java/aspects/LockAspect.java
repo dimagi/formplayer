@@ -35,7 +35,7 @@ public class LockAspect {
         }
 
         AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
-        Lock lock = getLockAndBlock(TableBuilder.scrubName(bean.getUsername()));
+        Lock lock = getLockAndBlock(TableBuilder.scrubName(bean.getUsernameDetail()));
         try {
             return joinPoint.proceed();
         } finally {
