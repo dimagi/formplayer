@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
- * Created by willpride on 4/28/16.
+ * Request body for navigating CommCare menus, including form preview and case selections
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SessionNavigationBean extends InstallRequestBean {
@@ -29,8 +29,10 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     @Override
     public String toString() {
-        return "SessionNavigationBean [id= " + menuSessionId + ", selections="
-                + Arrays.toString(selections) +  " parent="  + super.toString() + "]";
+        return "SessionNavigationBean [id= " + menuSessionId +
+                ", preview=" + previewCommand +
+                ", selections=" + Arrays.toString(selections) +
+                ", parent="  + super.toString() + "]";
     }
 
     public int getOffset() {
