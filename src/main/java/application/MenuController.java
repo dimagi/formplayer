@@ -122,12 +122,22 @@ public class MenuController extends AbstractBaseController{
                 menuSession = performInstall(sessionNavigationBean, authToken);
             }
         }
+        // Selections are either an integer index into a list of modules
+        // or a case id indicating the case selected.
+        //
+        // An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+        //
+        // This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
         String[] selections = sessionNavigationBean.getSelections();
         BaseResponseBean nextMenu;
+
+        // If we have no selections, we're are the root screen.
         if (selections == null) {
-            nextMenu = getNextMenu(menuSession,
+            nextMenu = getNextMenu(
+                    menuSession,
                     sessionNavigationBean.getOffset(),
-                    sessionNavigationBean.getSearchText());
+                    sessionNavigationBean.getSearchText()
+            );
             return nextMenu;
         }
 
