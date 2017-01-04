@@ -103,8 +103,13 @@ public class MenuController extends AbstractBaseController{
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             try {
-                menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
-                        installService, restoreFactory, auth, host);
+                menuSession = new MenuSession(
+                        menuSessionRepo.findOneWrapped(menuSessionId),
+                        installService,
+                        restoreFactory,
+                        auth,
+                        host
+                );
                 menuSession.getSessionWrapper().syncState();
             } catch(MenuNotFoundException e) {
                 return new BaseResponseBean(null, e.getMessage(), true, true);
