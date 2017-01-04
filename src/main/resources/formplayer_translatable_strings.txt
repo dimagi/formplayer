@@ -1,0 +1,2 @@
+app.menu.display.cond.bad.xpath=Invalid form display condition (${0}): ${1}
+app.menu.display.cond.xpath.err=Error evaluating form display condition (${0}): ${1}
