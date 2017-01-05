@@ -2,6 +2,9 @@ package application;
 
 import aspects.LockAspect;
 import aspects.LoggingAspect;
+import aspects.MetricsAspect;
+import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.StatsDClient;
 import installers.FormplayerInstallerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -169,6 +172,16 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertiesResolver() {
         return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Bean
+    public StatsDClient datadogStatsDClient() {
+        return new NonBlockingStatsDClient(
+                "formplayer.metrics",
+                "localhost",
+                8125,
+                new String[] {"tag:formplayer"}
+        );
     }
 
     @Bean
@@ -343,5 +356,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public LoggingAspect loggingAspect() {
         return new LoggingAspect();
+    }
+
+    @Bean
+    public MetricsAspect metricsAspect() {
+        return new MetricsAspect();
     }
 }
