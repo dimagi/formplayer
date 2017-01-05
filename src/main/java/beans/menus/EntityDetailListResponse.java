@@ -1,5 +1,7 @@
 package beans.menus;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Detail;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityScreen;
@@ -43,10 +45,12 @@ public class EntityDetailListResponse {
         return ret;
     }
 
+    @JsonGetter(value = "details")
     public EntityDetailResponse[] getEntityDetailList() {
         return entityDetailList;
     }
 
+    @JsonSetter(value = "details")
     public void setEntityDetailList(EntityDetailResponse[] entityDetailList) {
         this.entityDetailList = entityDetailList;
     }
