@@ -39,4 +39,10 @@ public class RegressionTests extends BaseTestClass{
             throw e.getCause();
         }
     }
+
+    @Test
+    public void testReportModule() throws Exception{
+        configureRestoreFactory("modulerelevancydomain", "modulerelevancyusername");
+        doInstall("requests/install/modulerelevancy.json");
+    }
 }
