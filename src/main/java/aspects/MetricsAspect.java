@@ -27,7 +27,7 @@ public class MetricsAspect {
         String user = "<unknown>";
 
         String requestPath = getRequestPath(joinPoint);
-        if (args[0] instanceof AuthenticatedRequestBean) {
+        if (args!= null && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
             user = bean.getUsernameDetail();
