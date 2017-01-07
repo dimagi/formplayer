@@ -2,10 +2,7 @@ package tests;
 
 import beans.NewFormResponse;
 import beans.SubmitResponseBean;
-import beans.menus.CommandListResponseBean;
-import beans.menus.DisplayElement;
-import beans.menus.EntityDetailResponse;
-import beans.menus.EntityListResponse;
+import beans.menus.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -89,10 +86,11 @@ public class DoubleManagementTest  extends BaseTestClass{
         assert entityListResponse.getAction() != null;
         assert entityListResponse.getAction().getText().equals("New Parent");
 
-        EntityDetailResponse newFormSessionResponse = entityListResponse.getEntities()[0].getDetails()[0];
+        EntityDetailListResponse detailListResponse =
+                getDetails(new String[] {"2", "a9fde9ae-24ee-4d70-9cb4-20f266a62ef8"}, "doublemgmt", EntityDetailListResponse.class);
 
-        assert newFormSessionResponse.getTitle().equals("Cases");
-        assert newFormSessionResponse.getDetails().length == 1;
+        assert detailListResponse.getEntityDetailList()[0].getTitle().equals("Cases");
+        assert detailListResponse.getEntityDetailList().length == 1;
     }
 
     @Test
