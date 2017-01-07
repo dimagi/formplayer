@@ -11,7 +11,7 @@ import java.util.Arrays;
 /**
  * Represents one detail tab in a case details page.
  */
-public class EntityDetailResponse {
+    public class EntityDetailResponse {
     private Object[] details;
     private Style[] styles;
     private String[] headers;
