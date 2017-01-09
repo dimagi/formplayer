@@ -33,10 +33,21 @@ public class MetricsAspect {
             user = bean.getUsernameDetail();
         }
 
-        datadogStatsDClient.increment("requests", domain, user, requestPath);
+        datadogStatsDClient.increment(
+                "requests",
+                "domain:" + domain,
+                "user:" + user,
+                "request:" + requestPath
+        );
         long startTime = System.nanoTime();
         Object result = joinPoint.proceed();
-        datadogStatsDClient.gauge("timings", (System.nanoTime() - startTime) / 1000000, domain, user, requestPath);
+        datadogStatsDClient.recordExecutionTime(
+                "timings",
+                (System.nanoTime() - startTime) / 1000000,
+                "domain:" + domain,
+                "user:" + user,
+                "request:" + requestPath
+        );
         return result;
     }
 
