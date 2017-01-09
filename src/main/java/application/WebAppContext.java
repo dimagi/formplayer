@@ -179,8 +179,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         return new NonBlockingStatsDClient(
                 "formplayer.metrics",
                 "localhost",
-                8125,
-                new String[] {"tag:formplayer"}
+                8125
         );
     }
 
