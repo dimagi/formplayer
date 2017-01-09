@@ -86,7 +86,9 @@ public class Constants {
     public static final int USER_LOCK_TIMEOUT = 120;
 
     // Datadog metrics
-    //
+    public static final String DATADOG_REQUESTS = "requests";
+    public static final String DATADOG_TIMINGS = "timings";
+
     // Errors
     public static final String DATADOG_ERRORS_APP_CONFIG = "errors.app_config";
     public static final String DATADOG_ERRORS_EXTERNAL_REQUEST = "errors.external_request";

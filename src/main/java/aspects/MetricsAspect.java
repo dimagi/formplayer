@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import util.Constants;
 
 import java.lang.reflect.Method;
 
@@ -34,7 +35,7 @@ public class MetricsAspect {
         }
 
         datadogStatsDClient.increment(
-                "requests",
+                Constants.DATADOG_REQUESTS,
                 "domain:" + domain,
                 "user:" + user,
                 "request:" + requestPath
@@ -42,7 +43,7 @@ public class MetricsAspect {
         long startTime = System.nanoTime();
         Object result = joinPoint.proceed();
         datadogStatsDClient.recordExecutionTime(
-                "timings",
+                Constants.DATADOG_TIMINGS,
                 (System.nanoTime() - startTime) / 1000000,
                 "domain:" + domain,
                 "user:" + user,
