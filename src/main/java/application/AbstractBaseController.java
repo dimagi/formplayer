@@ -5,6 +5,7 @@ import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
+import com.timgroup.statsd.StatsDClient;
 import exceptions.ApplicationConfigException;
 import exceptions.AsyncRetryException;
 import exceptions.FormNotFoundException;
@@ -45,6 +46,7 @@ import services.NewFormResponseFactory;
 import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
+import util.Constants;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
 
@@ -80,6 +82,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected FormplayerStorageFactory storageFactory;
+
+    @Autowired
+    protected StatsDClient datadogStatsDClient;
 
     @Value("${commcarehq.host}")
     private String hqHost;
@@ -239,6 +244,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
 
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
@@ -249,6 +255,7 @@ public abstract class AbstractBaseController {
     @ExceptionHandler({HttpClientErrorException.class})
     @ResponseBody
     public ExceptionResponseBean handleHttpRequestError(FormplayerHttpRequest req, HttpClientErrorException exception) {
+        incrementDatadogCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
         return new ExceptionResponseBean(exception.getResponseBodyAsString(), req.getRequestURL().toString());
     }
 
@@ -271,6 +278,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
 
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
@@ -279,6 +287,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     public ExceptionResponseBean handleError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
         try {
             sendExceptionEmail(req, exception);
@@ -287,6 +296,15 @@ public abstract class AbstractBaseController {
             log.error("Unable to send email");
         }
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+    }
+
+    private void incrementDatadogCounter(String metric, FormplayerHttpRequest req) {
+        datadogStatsDClient.increment(
+                metric,
+                "domain:" + req.getDomain(),
+                "user:" + req.getCouchUser().getUsername(),
+                "request:" + req.getRequestURL()
+        );
     }
 
     private void sendExceptionEmail(FormplayerHttpRequest req, Exception exception) {
