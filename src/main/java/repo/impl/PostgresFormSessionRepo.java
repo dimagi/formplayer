@@ -35,7 +35,10 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
-                replaceTableName("SELECT * FROM %s WHERE username = ? ORDER BY dateOpened ASC"),
+                replaceTableName(
+                        "SELECT *, dateopened::timestamptz as dateopened_timestamp " +
+                        "FROM %s WHERE username = ? ORDER BY dateopened_timestamp DESC"
+                ),
                 new Object[] {username},
                 new SessionMapper());
         return sessions;
