@@ -31,9 +31,12 @@ public class CaseTilesTest extends BaseTestClass{
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "restores/casetiles.xml"));
         configureRestoreFactory("casetilesdomain", "casetilesuser");
+    }
+
+    @Override
+    protected String getMockRestoreFileName() {
+        return "restores/casetiles.xml";
     }
 
     @Test

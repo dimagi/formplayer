@@ -24,14 +24,6 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = TestContext.class)
 public class NewFormTests extends BaseTestClass{
 
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"));
-    }
-
     @Test
     public void testNewForm() throws Exception {
         // setup files

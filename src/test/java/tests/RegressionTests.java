@@ -26,9 +26,12 @@ public class RegressionTests extends BaseTestClass{
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "restores/parent_child.xml"));
         configureRestoreFactory("doublemgmtdomain", "doublemgmtusername");
+    }
+
+    @Override
+    protected String getMockRestoreFileName() {
+        return "restores/parent_child.xml";
     }
 
     @Test(expected=CommCareSessionException.class)

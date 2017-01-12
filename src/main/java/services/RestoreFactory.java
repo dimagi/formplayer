@@ -87,21 +87,30 @@ public class RestoreFactory {
         return new UserSqlSandbox(getWrappedUsername(), getDbPath());
     }
 
-    public String getRestoreXml() {
-        if (cachedRestore != null) {
-            return cachedRestore;
-        }
+    private void ensureValidParameters() {
         if (domain == null || (username == null && asUsername == null)) {
             throw new RuntimeException("Domain and one of username or asUsername must be non-null. " +
                     " Domain: " + domain +
                     ", username: " + username +
                     ", asUsername: " + asUsername);
         }
+    }
+
+    public String getRestoreXml() {
+        return getRestoreXml(false);
+    }
+
+    public String getRestoreXml(boolean overwriteCache) {
+        if (cachedRestore != null) {
+            return cachedRestore;
+        }
+        ensureValidParameters();
+
         String restoreUrl;
         if (asUsername == null) {
-            restoreUrl = getRestoreUrl(host, domain);
+            restoreUrl = getRestoreUrl(host, domain, overwriteCache);
         } else {
-            restoreUrl = getRestoreUrl(host, domain, asUsername);
+            restoreUrl = getRestoreUrl(host, domain, asUsername, overwriteCache);
         }
 
         log.info("Restoring from URL " + restoreUrl);
@@ -180,13 +189,22 @@ public class RestoreFactory {
         return response.getBody();
     }
 
-    public static String getRestoreUrl(String host, String domain){
-        return host + "/a/" + domain + "/phone/restore/?version=2.0";
+    public static String getRestoreUrl(String host, String domain, boolean overwriteCache){
+        String url = host + "/a/" + domain + "/phone/restore/?version=2.0";
+        if (overwriteCache) {
+            url += "&overwrite_cache=true";
+        }
+        return url;
     }
 
-    public String getRestoreUrl(String host, String domain, String username) {
-        return host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
+    public String getRestoreUrl(String host, String domain, String username, boolean overwriteCache) {
+        String url = host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
                 domain + ".commcarehq.org&version=2.0";
+
+        if (overwriteCache) {
+            url += "&overwrite_cache=true";
+        }
+        return url;
     }
 
     public String getUsername() {
