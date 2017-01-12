@@ -65,6 +65,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 return;
             }
         }
+        filterChain.doFilter(request, response);
     }
 
     private String getUsername(JSONObject data) {
