@@ -6,10 +6,9 @@ import aspects.MetricsAspect;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import installers.FormplayerInstallerFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
+import org.apache.tomcat.jdbc.pool.DataSource;
 import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,12 +39,6 @@ import services.impl.SubmitServiceImpl;
 import services.impl.XFormServiceImpl;
 import util.Constants;
 
-import javax.annotation.PreDestroy;
-import javax.sql.DataSource;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Enumeration;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -121,8 +114,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${couch.databaseName}")
     private String couchDatabaseName;
-
-    private final Log log = LogFactory.getLog(WebAppContext.class);
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -330,22 +321,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     FormplayerInstallerFactory installerFactory() {
         return new FormplayerInstallerFactory();
-    }
-
-    // Manually deregister drivers as prescribed here http://stackoverflow.com/questions/11872316/tomcat-guice-jdbc-memory-leak
-    @PreDestroy
-    public void deregisterDrivers(){
-        Enumeration<Driver> drivers = DriverManager.getDrivers();
-        while (drivers.hasMoreElements()) {
-            Driver driver = drivers.nextElement();
-            try {
-                DriverManager.deregisterDriver(driver);
-                log.info(String.format("deregistering jdbc driver: %s", driver));
-            } catch (SQLException e) {
-                log.warn(String.format("Error deregistering driver %s", driver), e);
-            }
-
-        }
     }
 
     @Bean
