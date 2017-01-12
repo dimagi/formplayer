@@ -35,6 +35,7 @@ import utils.TestContext;
 import javax.servlet.http.Cookie;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -122,8 +123,8 @@ public class BaseTestClass {
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
-        Mockito.doReturn(FileUtils.getFile(this.getClass(), "test_restore.xml"))
-                .when(restoreFactoryMock).getRestoreXml();
+        Mockito.doReturn(FileUtils.getFile(this.getClass(), this.getMockRestoreFileName()))
+                .when(restoreFactoryMock).getRestoreXml(anyBoolean());
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
                 .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
         mapper = new ObjectMapper();
@@ -138,6 +139,10 @@ public class BaseTestClass {
 
     private String urlPrepend(String string) {
         return "/" + string;
+    }
+
+    protected String getMockRestoreFileName() {
+        return "test_restore.xml";
     }
 
     protected void configureRestoreFactory(String domain, String username) {

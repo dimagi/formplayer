@@ -24,9 +24,12 @@ public class CasePaginationTests extends BaseTestClass {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
         configureRestoreFactory("loaddomain", "loaduser");
+    }
+
+    @Override
+    protected String getMockRestoreFileName() {
+        return "restores/ccqa.xml";
     }
 
     @Test
