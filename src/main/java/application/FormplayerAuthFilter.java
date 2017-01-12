@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 import repo.TokenRepo;
 import repo.impl.CouchUserRepo;
 import repo.impl.PostgresUserRepo;
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
  * @author wspride
  */
 @Component
-public class FormplayerAuthFilter implements Filter {
+public class FormplayerAuthFilter extends OncePerRequestFilter {
 
     @Autowired
     TokenRepo tokenRepo;
@@ -47,18 +48,12 @@ public class FormplayerAuthFilter implements Filter {
     RedisLockRegistry userLockRegistry;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-
-    }
-
-    @Override
-    public void doFilter(ServletRequest req, ServletResponse res,
-                         FilterChain chain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         FormplayerHttpRequest request = new FormplayerHttpRequest((HttpServletRequest) req);
         if (isAuthorizationRequired(request)) {
             // These are order dependent
             if (getSessionId(request) == null) {
-                setResponseUnauthorized((HttpServletResponse) res);
+                setResponseUnauthorized(response);
                 return;
             }
             setToken(request);
@@ -66,12 +61,11 @@ public class FormplayerAuthFilter implements Filter {
             setDomain(request);
             JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
-                setResponseUnauthorized((HttpServletResponse) res);
+                setResponseUnauthorized(response);
                 return;
             }
         }
-
-        chain.doFilter(request, res);
+        filterChain.doFilter(request, response);
     }
 
     private String getUsername(JSONObject data) {
