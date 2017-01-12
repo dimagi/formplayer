@@ -26,6 +26,11 @@ public class PreviewTests extends BaseTestClass {
         configureRestoreFactory("previewdomain", "previewuser");
     }
 
+    @Override
+    protected String getMockRestoreFileName() {
+        return "restores/ccqa.xml";
+    }
+
     @Test
     public void testPreview() throws Exception {
         EntityListResponse entityListResponse =

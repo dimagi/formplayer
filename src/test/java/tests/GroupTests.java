@@ -31,9 +31,12 @@ public class GroupTests extends BaseTestClass{
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
         configureRestoreFactory("grouptestdomain", "grouptestuser");
+    }
+
+    @Override
+    protected String getMockRestoreFileName() {
+        return "restores/ccqa.xml";
     }
 
     @Test

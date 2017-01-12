@@ -38,7 +38,7 @@ public class CaseAPIs {
             return restoreFactory.getSqlSandbox();
         } else{
             db.getParentFile().mkdirs();
-            String xml = restoreFactory.getRestoreXml();
+            String xml = restoreFactory.getRestoreXml(true);
             return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(), xml);
         }
     }
