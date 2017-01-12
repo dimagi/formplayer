@@ -218,11 +218,7 @@ public class EntityListResponse extends MenuBean {
         int i = 0;
         for (DetailField field : fields) {
             Object o;
-            try {
                 o = field.getTemplate().evaluate(context);
-            } catch (XPathException e) {
-                throw new RuntimeException(e);
-            }
             data[i] = o;
             i++;
         }
