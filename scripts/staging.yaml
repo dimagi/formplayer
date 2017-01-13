@@ -47,5 +47,4 @@ name: autostaging
 branches: []
 submodules:
   libs/commcare:
-    branches:
-      - bmb/update-currentindex
+    branches: []
