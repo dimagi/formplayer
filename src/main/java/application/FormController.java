@@ -121,17 +121,7 @@ public class FormController extends AbstractBaseController{
                 serializableFormSession.getAppId());
 
         FormSession formEntrySession = new FormSession(serializableFormSession);
-        SubmitResponseBean submitResponseBean;
-
-        if (serializableFormSession.getOneQuestionPerScreen()) {
-            // todo separate workflow for one question per screen
-            submitResponseBean = new SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
-        } else {
-            submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
-                formEntrySession.getFormEntryModel(),
-                submitRequestBean.getAnswers());
-        }
-
+        SubmitResponseBean submitResponseBean = new SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
         if (!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
                 || !submitRequestBean.isPrevalidated()) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
