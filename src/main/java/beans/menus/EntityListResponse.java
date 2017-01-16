@@ -55,7 +55,7 @@ public class EntityListResponse extends MenuBean {
         Detail shortDetail = nextScreen.getShortDetail();
         nextScreen.getLongDetailList();
 
-        EvaluationContext ec = session.getEvaluationContext();
+        EvaluationContext ec = nextScreen.getEvalContext();
 
         Vector<TreeReference> references = ec.expandReference(((EntityDatum) session.getNeededDatum()).getNodeset());
         processTitle(session);
