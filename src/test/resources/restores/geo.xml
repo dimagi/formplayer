@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+    <message nature="ota_restore_success">Successfully restored account test!</message>
+    <Sync xmlns="http://commcarehq.org/sync">
+        <restore_id>c44e895f6a926cd28c89fba5dba3db5e</restore_id>
+    </Sync>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>test</username>
+        <password>sha1$avrRdkqgjooF$c548dff77e30ad1d5f71360ca9cdac7706abd65f</password>
+        <uuid>9355120324b8c4955970a4cb962919f1</uuid>
+        <date>2016-02-04</date>
+        <user_data>
+            <data key="commcare_first_name" />
+            <data key="commcare_last_name">123</data>
+            <data key="commcare_phone_number" />
+        </user_data>
+    </Registration>
+    <fixture id="user-groups" user_id="b4d749f45c31cb0a4885db2baa3c508b">
+        <groups>
+            <group id="fb65b50c05aa5676ba68b5d5b8d581d2">
+                <name>Test Case Sharing</name>
+            </group>
+        </groups>
+    </fixture>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="4e0fc337-0c94-44a0-b585-70040535dbb3" date_modified="2015-05-12T17:01:48.539000Z" user_id="7afceb0259b2866be17b3632392f8a4b">
+        <create>
+            <case_type>geo_case</case_type>
+            <case_name>U</case_name>
+            <owner_id>fb65b50c05aa5676ba68b5d5b8d581d2</owner_id>
+        </create>
+        <update>
+            <date_opened>2015-05-12</date_opened>
+            <site_location>17.4471304 78.3724887 0.0 145.5</site_location>
+        </update>
+    </case>
+</OpenRosaResponse>
