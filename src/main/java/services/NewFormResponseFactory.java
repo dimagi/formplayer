@@ -35,7 +35,7 @@ public class NewFormResponseFactory {
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl, HqAuth auth) throws Exception {
 
         String formXml = getFormXml(bean.getFormUrl(), auth);
-        UserSqlSandbox sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
+        UserSqlSandbox sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
 
         FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getUsername(),
                 bean.getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,

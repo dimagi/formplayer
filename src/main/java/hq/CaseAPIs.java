@@ -29,16 +29,16 @@ public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
-        return restoreIfNotExists(restoreFactory);
+        return restoreIfNotExists(restoreFactory, true);
     }
 
-    public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory) throws Exception{
+    public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory, boolean overwriteCache) throws Exception{
         File db = new File(restoreFactory.getDbFile());
         if(db.exists()){
             return restoreFactory.getSqlSandbox();
         } else{
             db.getParentFile().mkdirs();
-            String xml = restoreFactory.getRestoreXml(true);
+            String xml = restoreFactory.getRestoreXml(overwriteCache);
             return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(), xml);
         }
     }
@@ -51,13 +51,13 @@ public class CaseAPIs {
         restoreFactory.setUsername(username);
         restoreFactory.setAsUsername(asUsername);
         restoreFactory.setCachedRestore(xml);
-        return restoreIfNotExists(restoreFactory);
+        return restoreIfNotExists(restoreFactory, false);
     }
 
     public static String filterCases(RestoreFactory restoreFactory, String filterExpression) {
         try {
             String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
-            UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory);
+            UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory, false);
             EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
             return FunctionUtils.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         } catch (Exception e) {
@@ -73,7 +73,7 @@ public class CaseAPIs {
 
     public static CaseBean[] filterCasesFull(RestoreFactory restoreFactory, String filterExpression) throws Exception{
         String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
-        UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory);
+        UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory, false);
         EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
         String filteredCases = FunctionUtils.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
         String[] splitCases = filteredCases.split(",");
