@@ -1,0 +1,50 @@
+# set to the URL of your CCHQ instance 
+commcarehq.host=http://localhost:8000
+commcarehq.environment=development
+user.suffix=commcarehq.org
+logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=INFO
+server.port=8080
+redis.hostname=localhost
+sqlite.dataDir=dbs/  # Must end in /
+
+couch.username=commcarehq
+couch.password=commcarehq
+couch.protocol=http
+couch.host=localhost
+couch.port=5984
+couch.databaseName=commcarehq
+
+// Properties for HQ db
+datasource.hq.driverClassName=org.postgresql.Driver
+datasource.hq.url=jdbc:postgresql://localhost:5432/commcarehq?prepareThreshold=0
+datasource.hq.username=postgres
+datasource.hq.password=
+
+datasource.formplayer.driverClassName=org.postgresql.Driver
+datasource.formplayer.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
+datasource.formplayer.username=postgres
+datasource.formplayer.password=
+
+// set flyway URL to Formplayer's own DB
+flyway.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
+flyway.user=postgres
+flyway.password=
+flyway.driverClassName=org.postgresql.Driver
+flyway.location=classpath:db/migration
+
+spring.jpa.hibernate.ddl-auto
+
+smtp.host=127.0.0.1
+smtp.port=8888
+smtp.username=test
+smtp.password=123
+smtp.from.address=mail@formplayer.commcarehq.org
+smtp.to.address=exceptions@commcarehq.org
+
+endpoints.enabled=true
+management.address: 127.0.0.1
+management.port: 8081
+
+logging.level.root=WARN
+logging.level.org.springframework.web=INFO
+logging.level.org.hibernate=ERROR

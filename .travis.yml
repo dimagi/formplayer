@@ -8,7 +8,7 @@ cache:
     - $HOME/.gradle/wrapper/
 before_script:
   - gradle wrapper
-  - cp config/application.properties.example config/application.properties
+  - cp .travis/application.properties.example config/application.properties
   - psql -c 'create database commcarehq;' -U postgres
   - psql -c 'create database formplayer;' -U postgres
   - curl -X PUT localhost:5984/commcarehq
