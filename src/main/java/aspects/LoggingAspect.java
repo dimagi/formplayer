@@ -18,7 +18,8 @@ public class LoggingAspect {
 
     private final Log log = LogFactory.getLog(LoggingAspect.class);
 
-    @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
+    @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping) " +
+            "&& !@annotation(annotations.NoLogging)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature ms = (MethodSignature) joinPoint.getSignature();
         Method m = ms.getMethod();

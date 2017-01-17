@@ -1,5 +1,6 @@
 package application;
 
+import annotations.NoLogging;
 import auth.DjangoAuth;
 import beans.*;
 import hq.CaseAPIs;
@@ -75,6 +76,7 @@ public class UtilController extends AbstractBaseController {
     }
 
     @ApiOperation(value = "Validates an XForm")
+    @NoLogging
     @RequestMapping(
         value = Constants.URL_VALIDATE_FORM,
         method = RequestMethod.POST,
