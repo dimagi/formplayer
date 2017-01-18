@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Add appId to form session
+ * Attempt to fix null appId in form session
  */
 public class V11__form_session_add_missing_appid implements SpringJdbcMigration {
     @Override
@@ -26,7 +26,8 @@ public class V11__form_session_add_missing_appid implements SpringJdbcMigration 
                 while(rs.next()) {
                     String id = rs.getString("id");
                     String postUrl = rs.getString("postUrl");
-                    FixObject obj = new FixObject(id, postUrl);
+                    String menuId = rs.getString("menu_session_id");
+                    FixObject obj = new FixObject(id, postUrl, menuId);
                     toBeFixed.add(obj);
                 }
                 return toBeFixed;
@@ -36,30 +37,52 @@ public class V11__form_session_add_missing_appid implements SpringJdbcMigration 
             @Override
             public void accept(Object o) {
                 FixObject fixObject = (FixObject) o;
-                String appId = fixObject.getAppId();
-                String id = fixObject.getId();
-                System.out.println("Adding appId " + appId + " to id " + id);
-                jdbcTemplate.execute(String.format("UPDATE formplayer_sessions SET appId = '%s' WHERE id = '%s'", appId, fixObject.getId()));
+                String sessionId = fixObject.getId();
+                String menuSessionId = fixObject.getMenuId();
+
+                if (menuSessionId != null && !"".equals(menuSessionId)) {
+                    String sql = String.format("SELECT appid FROM menu_sessions WHERE id = ?");
+                    String menuAppId = jdbcTemplate.queryForObject(sql, new Object[] { menuSessionId }, String.class);
+                    if (menuAppId != null && !"".equals(menuAppId)) {
+                        executeUpdate(jdbcTemplate, menuAppId, sessionId);
+                        return;
+                    }
+                }
+                String postAppId = fixObject.getPostUrlAppId();
+                if (postAppId != null && !"".equals(postAppId)) {
+                    executeUpdate(jdbcTemplate, postAppId, sessionId);
+                }
             }
         });
+    }
+
+    private void executeUpdate(JdbcTemplate jdbcTemplate, String appId, String sessionId) {
+        jdbcTemplate.execute(String.format("UPDATE formplayer_sessions SET appId = '%s' WHERE id = '%s'", appId, sessionId));
     }
 
     class FixObject {
         private String id;
         private String postUrl;
+        private String menuId;
 
-        public FixObject (String id, String postUrl) {
+        public FixObject (String id, String postUrl, String menuId) {
             this.id = id;
             this.postUrl = postUrl;
+            this.menuId = menuId;
         }
 
-        public String getAppId() {
+        public String getPostUrlAppId() {
+
             if (postUrl == null || postUrl.equals("")) {
-                return "";
+                return null;
             }
-            int startIndex = postUrl.indexOf("/receiver/") + "/receiver/".length();
-            int endIndex = postUrl.endsWith("/") ? postUrl.length() - 1 : postUrl.length();
-            return postUrl.substring(startIndex, endIndex);
+            String appId = postUrl;
+            if (appId.endsWith("/")) {
+                appId = appId.substring(0, appId.length() - 1);
+            }
+            int lastSlashIndex = appId.lastIndexOf('/');
+            appId = appId.substring(lastSlashIndex + 1);
+            return appId;
         }
 
 
@@ -77,6 +100,14 @@ public class V11__form_session_add_missing_appid implements SpringJdbcMigration 
 
         public void setPostUrl(String postUrl) {
             this.postUrl = postUrl;
+        }
+
+        public String getMenuId() {
+            return menuId;
+        }
+
+        public void setMenuId(String menuId) {
+            this.menuId = menuId;
         }
     }
 }
