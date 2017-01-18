@@ -57,10 +57,10 @@ public class InstallServiceImpl implements InstallService {
                 throw new RuntimeException("Error instantiationing folder " + dbFolder);
             }
             CommCareConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
-            if (reference.endsWith(".ccz")) {
-                engine.initFromArchive(reference);
-            } else {
+            if (reference.endsWith(".ccpr")) {
                 engine.initFromLocalFileResource(reference);
+            } else {
+                engine.initFromArchive(reference);
             }
             engine.initEnvironment();
             return engine;
