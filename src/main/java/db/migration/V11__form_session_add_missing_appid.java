@@ -8,8 +8,8 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Attempt to fix null appId in form session
@@ -27,45 +27,48 @@ public class V11__form_session_add_missing_appid implements SpringJdbcMigration 
                     String id = rs.getString("id");
                     String postUrl = rs.getString("postUrl");
                     String menuId = rs.getString("menu_session_id");
-                    FixObject obj = new FixObject(id, postUrl, menuId);
+                    ToBeFixed obj = new ToBeFixed(id, postUrl, menuId);
                     toBeFixed.add(obj);
                 }
                 return toBeFixed;
-            }});
-
-        toBeFixed.forEach(new Consumer() {
-            @Override
-            public void accept(Object o) {
-                FixObject fixObject = (FixObject) o;
-                String sessionId = fixObject.getId();
-                String menuSessionId = fixObject.getMenuId();
-
-                if (menuSessionId != null && !"".equals(menuSessionId)) {
-                    String sql = String.format("SELECT appid FROM menu_sessions WHERE id = ?");
-                    String menuAppId = jdbcTemplate.queryForObject(sql, new Object[] { menuSessionId }, String.class);
-                    if (menuAppId != null && !"".equals(menuAppId)) {
-                        executeUpdate(jdbcTemplate, menuAppId, sessionId);
-                        return;
-                    }
-                }
-                String postAppId = fixObject.getPostUrlAppId();
-                if (postAppId != null && !"".equals(postAppId)) {
-                    executeUpdate(jdbcTemplate, postAppId, sessionId);
-                }
             }
         });
+
+        for(Iterator<ToBeFixed> i = toBeFixed.iterator(); i.hasNext(); ) {
+            ToBeFixed fixObject = i.next();
+            updateObject(fixObject, jdbcTemplate);
+        }
+    }
+
+    private void updateObject(ToBeFixed fixObject, JdbcTemplate jdbcTemplate) {
+        String sessionId = fixObject.getId();
+        String menuSessionId = fixObject.getMenuId();
+
+        if (menuSessionId != null && !"".equals(menuSessionId)) {
+            String query = "SELECT appid FROM menu_sessions WHERE id = ?";
+            String menuAppId = jdbcTemplate.queryForObject(query, new Object[] { menuSessionId }, String.class);
+            if (menuAppId != null && !"".equals(menuAppId)) {
+                executeUpdate(jdbcTemplate, menuAppId, sessionId);
+                return;
+            }
+        }
+        String postAppId = fixObject.getPostUrlAppId();
+        if (postAppId != null && !"".equals(postAppId)) {
+            executeUpdate(jdbcTemplate, postAppId, sessionId);
+        }
     }
 
     private void executeUpdate(JdbcTemplate jdbcTemplate, String appId, String sessionId) {
         jdbcTemplate.execute(String.format("UPDATE formplayer_sessions SET appId = '%s' WHERE id = '%s'", appId, sessionId));
     }
 
-    class FixObject {
+    class ToBeFixed {
+
         private String id;
         private String postUrl;
         private String menuId;
 
-        public FixObject (String id, String postUrl, String menuId) {
+        public ToBeFixed(String id, String postUrl, String menuId) {
             this.id = id;
             this.postUrl = postUrl;
             this.menuId = menuId;
