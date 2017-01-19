@@ -54,7 +54,7 @@ public class UtilController extends AbstractBaseController {
         restoreFactory.configure(syncRequest, new DjangoAuth(authToken));
 
         if (syncRequest.isPreserveCache()) {
-            CaseAPIs.restoreIfNotExists(restoreFactory);
+            CaseAPIs.restoreIfNotExists(restoreFactory, false);
         } else {
             CaseAPIs.forceRestore(restoreFactory);
         }
