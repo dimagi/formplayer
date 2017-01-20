@@ -127,6 +127,8 @@ public class BaseTestClass {
                 .when(restoreFactoryMock).getRestoreXml(anyBoolean());
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
                 .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
+        Mockito.doReturn(false)
+                .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
         PrototypeUtils.setupPrototypes();
         new SQLiteProperties().setDataDir("testdbs/");
