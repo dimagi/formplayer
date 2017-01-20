@@ -62,7 +62,7 @@ public class RestoreFactoryTest {
 
         // Last sync time should be less than a day ago
         mockLastSyncTime(System.currentTimeMillis());
-        Assert.assertTrue(restoreFactorySpy.isRestoreXmlExpired());
+        Assert.assertFalse(restoreFactorySpy.isRestoreXmlExpired());
     }
 
     @Test
