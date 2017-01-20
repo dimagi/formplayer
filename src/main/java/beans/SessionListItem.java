@@ -47,4 +47,9 @@ public class SessionListItem {
     public String getCaseName() {
         return caseName;
     }
+
+    @Override
+    public String toString() {
+        return "SessionListItem [title = " + title + " id " + sessionId + " opened " + dateOpened + "]";
+    }
 }
