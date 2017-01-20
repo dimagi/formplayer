@@ -114,7 +114,13 @@ public class RestoreFactory {
     }
 
     public String getSyncFreqency() {
-        return (String) PropertyManager.instance().getProperty("cc-autosync-freq").get(0);
+        try {
+            return (String) PropertyManager.instance().getProperty("cc-autosync-freq").get(0);
+        } catch (RuntimeException e) {
+            // In cases where we don't have access to the PropertyManager, such sync-db, this call
+            // throws a RuntimeException
+            return RestoreFactory.FREQ_NEVER;
+        }
     }
 
     public boolean isRestoreXmlExpired() {
