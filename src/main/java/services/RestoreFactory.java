@@ -8,9 +8,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.services.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -23,12 +25,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Resource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
@@ -43,6 +47,19 @@ public class RestoreFactory {
     private String username;
     private String domain;
     private HqAuth hqAuth;
+
+    public static final String FREQ_DAILY = "freq-daily";
+    public static final String FREQ_WEEKLY = "freq-weekly";
+    public static final String FREQ_NEVER = "freq-never";
+
+    public static final Long ONE_DAY_IN_MILLISECONDS = 86400000l;
+    public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
+
+    @Autowired
+    private RedisTemplate redisTemplateLong;
+
+    @Resource(name="redisTemplateLong")
+    private ValueOperations<String, Long> valueOperations;
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
@@ -96,6 +113,30 @@ public class RestoreFactory {
         }
     }
 
+    public String getSyncFreqency() {
+        return (String) PropertyManager.instance().getProperty("cc-autosync-freq").get(0);
+    }
+
+    public boolean isRestoreXmlExpired() {
+        String freq = getSyncFreqency();
+        Long lastSyncTime = getLastSyncTime();
+        if (lastSyncTime == null) {
+            return false;
+        }
+        Long delta = System.currentTimeMillis() - lastSyncTime;
+
+        switch (freq) {
+            case FREQ_DAILY:
+                return delta > ONE_DAY_IN_MILLISECONDS;
+            case FREQ_WEEKLY:
+                return delta > ONE_WEEK_IN_MILLISECONDS;
+            case FREQ_NEVER:
+                return false;
+            default:
+                return false;
+        }
+    }
+
     public String getRestoreXml() {
         return getRestoreXml(false);
     }
@@ -115,7 +156,20 @@ public class RestoreFactory {
 
         log.info("Restoring from URL " + restoreUrl);
         cachedRestore = getRestoreXmlHelper(restoreUrl, hqAuth);
+        setLastSyncTime();
         return cachedRestore;
+    }
+
+    private void setLastSyncTime() {
+        valueOperations.set(lastSyncKey(), System.currentTimeMillis(), 10, TimeUnit.DAYS);
+    }
+
+    public Long getLastSyncTime() {
+        return valueOperations.get(lastSyncKey());
+    }
+
+    private String lastSyncKey() {
+        return "last-sync-time:" + domain + ":" + username + ":" + asUsername;
     }
 
     /**

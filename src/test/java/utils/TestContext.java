@@ -12,6 +12,9 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
@@ -22,7 +25,7 @@ import services.impl.SubmitServiceImpl;
 @Configuration
 public class TestContext {
 
-    @Value("${redis.hostname}")
+    @Value("${redis.hostname:localhost}")
     private String redisHostName;
 
     public TestContext() {
@@ -65,6 +68,22 @@ public class TestContext {
     @Bean
     public RestoreFactory restoreFactory() {
         return Mockito.spy(RestoreFactory.class);
+    }
+
+    @Bean
+    public JedisConnectionFactory jedisConnFactory(){
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
+        jedisConnectionFactory.setUsePool(true);
+        jedisConnectionFactory.setHostName(redisHostName);
+        return jedisConnectionFactory;
+    }
+
+    @Bean
+    public RedisTemplate<String, Long> redisTemplateLong() {
+        RedisTemplate template = new RedisTemplate<String, Long>();
+        template.setConnectionFactory(jedisConnFactory());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
     }
 
     @Bean
