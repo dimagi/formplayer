@@ -123,6 +123,12 @@ public class RestoreFactory {
         }
     }
 
+    /**
+     * Based on the frequency of restore set in the app, this method determines
+     * whether the user should sync
+     *
+     * @return boolean - true if restore has expired, false otherwise
+     */
     public boolean isRestoreXmlExpired() {
         String freq = getSyncFreqency();
         Long lastSyncTime = getLastSyncTime();
