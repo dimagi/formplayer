@@ -80,6 +80,7 @@ public class FormController extends AbstractBaseController{
                                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
         restoreFactory.configure(session.getUsername(), session.getDomain(), session.getAsUser(), new DjangoAuth(authToken));
+        storageFactory.configure(session.getUsername(), session.getDomain(), session.getAppId());
         FormSession formEntrySession = new FormSession(session);
         JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
@@ -223,12 +224,13 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(newRepeatRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
+        SerializableFormSession serializedSession = formSessionRepo.findOneWrapped(newRepeatRequestBean.getSessionId());
+        storageFactory.configure(serializedSession.getUsername(), serializedSession.getDomain(), serializedSession.getAppId());
+        FormSession formEntrySession = new FormSession(serializedSession);
         JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 newRepeatRequestBean.getRepeatIndex());
-        updateSession(formEntrySession, serializableFormSession);
+        updateSession(formEntrySession, serializedSession);
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
@@ -240,12 +242,13 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(deleteRepeatRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
+        SerializableFormSession serializedSession = formSessionRepo.findOneWrapped(deleteRepeatRequestBean.getSessionId());
+        storageFactory.configure(serializedSession.getUsername(), serializedSession.getDomain(), serializedSession.getAppId());
+        FormSession formEntrySession = new FormSession(serializedSession);
         JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
-        updateSession(formEntrySession, serializableFormSession);
+        updateSession(formEntrySession, serializedSession);
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
@@ -259,13 +262,14 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     public FormEntryResponseBean jumpToIndex(@RequestBody JumpToIndexRequestBean requestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
-        FormSession formSession = new FormSession(serializableFormSession);
+        SerializableFormSession serializedSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        storageFactory.configure(serializedSession.getUsername(), serializedSession.getDomain(), serializedSession.getAppId());
+        FormSession formSession = new FormSession(serializedSession);
         formSession.setCurrentIndex(requestBean.getFormIndex());
         JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
                 formSession.getFormEntryModel(),
                 formSession.getCurrentIndex());
-        updateSession(formSession, serializableFormSession);
+        updateSession(formSession, serializedSession);
         FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
         return responseBean;
     }
@@ -275,11 +279,12 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     public FormEntryNavigationResponseBean getNext(@RequestBody SessionRequestBean requestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
-        FormSession formSession = new FormSession(serializableFormSession);
+        SerializableFormSession serializedSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        storageFactory.configure(serializedSession.getUsername(), serializedSession.getDomain(), serializedSession.getAppId());
+        FormSession formSession = new FormSession(serializedSession);
         formSession.stepToNextIndex();
         JSONObject resp = formSession.getNextJson();
-        updateSession(formSession, serializableFormSession);
+        updateSession(formSession, serializedSession);
         FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
         return responseBean;
     }
@@ -289,13 +294,14 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     public FormEntryNavigationResponseBean getPrevious(@RequestBody SessionRequestBean requestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
-        FormSession formSession = new FormSession(serializableFormSession);
+        SerializableFormSession serializedSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        storageFactory.configure(serializedSession.getUsername(), serializedSession.getDomain(), serializedSession.getAppId());
+        FormSession formSession = new FormSession(serializedSession);
         formSession.stepToPreviousIndex();
         JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
                 formSession.getFormEntryModel(),
                 formSession.getCurrentIndex());
-        updateSession(formSession, serializableFormSession);
+        updateSession(formSession, serializedSession);
         FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
         responseBean.setCurrentIndex(formSession.getCurrentIndex());
         return responseBean;
