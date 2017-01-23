@@ -166,7 +166,7 @@ public class MenuSession {
             screen = getNextScreen();
             log.info("Screen " + screen + " set to " + ret);
             return true;
-        } catch(ArrayIndexOutOfBoundsException e) {
+        } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
                     " threw exception " + e.getMessage() + ". Please try reloading this application" +
                     " and if the problem persists please report a bug.", e);
