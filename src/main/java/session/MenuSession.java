@@ -97,7 +97,7 @@ public class MenuSession {
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
         this.screen = getNextScreen();
-        this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
+        this.appId = session.getAppId();
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -106,6 +106,7 @@ public class MenuSession {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
         this.auth = auth;
+        this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference);
@@ -115,7 +116,6 @@ public class MenuSession {
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
-        this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
     
