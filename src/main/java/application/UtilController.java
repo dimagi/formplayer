@@ -1,6 +1,7 @@
 package application;
 
 import annotations.NoLogging;
+import annotations.UserLock;
 import auth.DjangoAuth;
 import beans.*;
 import hq.CaseAPIs;
@@ -31,6 +32,7 @@ public class UtilController extends AbstractBaseController {
 
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
+    @UserLock
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         restoreFactory.configure(syncRequest, new DjangoAuth(authToken));
@@ -46,6 +48,7 @@ public class UtilController extends AbstractBaseController {
 
     @ApiOperation(value = "Wipe the applications databases")
     @RequestMapping(value = Constants.URL_DELETE_APPLICATION_DBS, method = RequestMethod.POST)
+    @UserLock
     public NotificationMessageBean deleteApplicationDbs(
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
