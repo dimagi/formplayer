@@ -24,11 +24,13 @@ import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.*;
+import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xpath.XPathException;
+import org.javarosa.xpath.XPathTypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -242,11 +244,20 @@ public abstract class AbstractBaseController {
             RecordTooLargeException.class,
             InvalidStructureException.class})
     @ResponseBody
-    public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest req, Exception exception) {
-        log.error("Request: " + req.getRequestURL() + " raised " + exception);
-        incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
+    public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
+        log.error("Request: " + request.getRequestURL() + " raised " + exception);
+        incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
+        return getPrettyExceptionResponse(exception, request);
+    }
 
-        return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+    private ExceptionResponseBean getPrettyExceptionResponse(Exception exception, FormplayerHttpRequest request) {
+        String message = exception.getMessage();
+        if (exception instanceof XPathTypeMismatchException && message.contains("instance(groups)")) {
+            message = "The case sharing settings for your user are incorrect. " +
+                    "This user must be in exactly one case sharing group. " +
+                    "Please contact your supervisor.";
+        }
+        return new ExceptionResponseBean(message, request.getRequestURL().toString());
     }
 
     /**
