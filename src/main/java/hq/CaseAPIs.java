@@ -92,7 +92,7 @@ public class CaseAPIs {
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
-        ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
+        ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox, true);
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = mSandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
