@@ -29,24 +29,6 @@ import java.io.StringReader;
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
 
-    @ApiOperation(value = "Filter the user's casedb given a predicate expression")
-    @RequestMapping(value = Constants.URL_FILTER_CASES, method = RequestMethod.GET)
-    public CaseFilterResponseBean filterCasesHQ(@RequestBody CaseFilterRequestBean filterRequest,
-                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        restoreFactory.configure(filterRequest, new DjangoAuth(authToken));
-        String caseResponse = CaseAPIs.filterCases(restoreFactory, filterRequest.getFilterExpression());
-        return new CaseFilterResponseBean(caseResponse);
-    }
-
-    @ApiOperation(value = "Fitler the user's casedb given a predicate expression returning all case data")
-    @RequestMapping(value = Constants.URL_FILTER_CASES_FULL, method = RequestMethod.GET)
-    public CaseFilterFullResponseBean filterCasesFull(@RequestBody CaseFilterRequestBean filterRequest,
-                                                      @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken)throws Exception {
-        restoreFactory.configure(filterRequest, new DjangoAuth(authToken));
-        CaseBean[] caseResponse = CaseAPIs.filterCasesFull(restoreFactory, filterRequest.getFilterExpression());
-        return new CaseFilterFullResponseBean(caseResponse);
-    }
-
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
