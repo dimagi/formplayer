@@ -177,6 +177,11 @@ public class RestoreFactory {
     }
 
     public Long getLastSyncTime() {
+        // valueOperations should only be null when we don't have access to Redis.
+        // This currently only happens in tests.
+        if (valueOperations == null) {
+            return null;
+        }
         return valueOperations.get(lastSyncKey());
     }
 

@@ -25,9 +25,6 @@ import services.impl.SubmitServiceImpl;
 @Configuration
 public class TestContext {
 
-    @Value("${redis.hostname:localhost}")
-    private String redisHostName;
-
     public TestContext() {
         MockitoAnnotations.initMocks(this);
     }
@@ -66,24 +63,13 @@ public class TestContext {
     }
 
     @Bean
+    public RedisTemplate<String, Long> redisTemplateLong() {
+        return Mockito.mock(RedisTemplate.class);
+    }
+
+    @Bean
     public RestoreFactory restoreFactory() {
         return Mockito.spy(RestoreFactory.class);
-    }
-
-    @Bean
-    public JedisConnectionFactory jedisConnFactory(){
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        jedisConnectionFactory.setUsePool(true);
-        jedisConnectionFactory.setHostName(redisHostName);
-        return jedisConnectionFactory;
-    }
-
-    @Bean
-    public RedisTemplate<String, Long> redisTemplateLong() {
-        RedisTemplate template = new RedisTemplate<String, Long>();
-        template.setConnectionFactory(jedisConnFactory());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        return template;
     }
 
     @Bean
