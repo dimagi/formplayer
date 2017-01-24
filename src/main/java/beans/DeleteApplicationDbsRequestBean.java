@@ -27,4 +27,10 @@ public class DeleteApplicationDbsRequestBean extends AuthenticatedRequestBean {
     public void setAppId(String appId) {
         this.appId = appId;
     }
+
+    @Override
+    public String toString() {
+        return "DeleteApplicationDbsRequestBean with appId=" + appId + ", parent " + super.toString();
+    }
+
 }

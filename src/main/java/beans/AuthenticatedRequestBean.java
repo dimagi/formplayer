@@ -40,4 +40,11 @@ public class AuthenticatedRequestBean {
         }
         return username;
     }
+
+    @Override
+    public String toString() {
+        return "Authenticated request bean wih username=" + username +
+                ", domain=" + domain +
+                ", restoreAs=" + restoreAs;
+    }
 }
