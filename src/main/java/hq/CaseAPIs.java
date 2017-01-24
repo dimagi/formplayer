@@ -58,38 +58,9 @@ public class CaseAPIs {
         return restoreIfNotExists(restoreFactory, false);
     }
 
-    public static String filterCases(RestoreFactory restoreFactory, String filterExpression) {
-        try {
-            String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
-            UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory, false);
-            EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
-            return FunctionUtils.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "null";
-    }
-
     public static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
         Case cCase = caseStorage.getRecordForValue("case-id", caseId);
         return new CaseBean(cCase);
-    }
-
-    public static CaseBean[] filterCasesFull(RestoreFactory restoreFactory, String filterExpression) throws Exception{
-        String filterPath = "join(',', instance('casedb')/casedb/case" + filterExpression + "/@case_id)";
-        UserSqlSandbox mSandbox = restoreIfNotExists(restoreFactory, false);
-        EvaluationContext mContext = SandboxUtils.getInstanceContexts(mSandbox, "casedb", "jr://instance/casedb");
-        String filteredCases = FunctionUtils.toString(XPathParseTool.parseXPath(filterPath).eval(mContext));
-        String[] splitCases = filteredCases.split(",");
-        CaseBean[] ret = new CaseBean[splitCases.length];
-        SqliteIndexedStorageUtility<Case> caseStorage = mSandbox.getCaseStorage();
-        int count = 0;
-        for(String cCase: splitCases){
-            CaseBean caseBean = CaseAPIs.getFullCase(cCase, caseStorage);
-            ret[count] = caseBean;
-            count++;
-        }
-        return ret;
     }
 
     private static UserSqlSandbox restoreUser(String username, String path, String restorePayload) throws
