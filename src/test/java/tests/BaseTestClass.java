@@ -14,6 +14,7 @@ import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +35,7 @@ import utils.TestContext;
 
 import javax.servlet.http.Cookie;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -104,6 +103,9 @@ public class BaseTestClass {
     @Mock
     private ListOperations<String, XPathQueryItem> listOperations;
 
+    @Mock
+    private ValueOperations<String, Long> valueOperations;
+
     protected ObjectMapper mapper;
 
     @Before
@@ -127,6 +129,8 @@ public class BaseTestClass {
                 .when(restoreFactoryMock).getRestoreXml(anyBoolean());
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
                 .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
+        Mockito.doReturn(false)
+                .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
         PrototypeUtils.setupPrototypes();
         new SQLiteProperties().setDataDir("testdbs/");

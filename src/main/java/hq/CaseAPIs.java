@@ -33,6 +33,10 @@ public class CaseAPIs {
     }
 
     public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory, boolean overwriteCache) throws Exception{
+        if (restoreFactory.isRestoreXmlExpired()) {
+            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
+        }
+
         File db = new File(restoreFactory.getDbFile());
         if(db.exists()){
             return restoreFactory.getSqlSandbox();
