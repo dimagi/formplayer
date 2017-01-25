@@ -1,10 +1,7 @@
 package beans.menus;
 
 import io.swagger.annotations.ApiModel;
-import org.commcare.cases.entity.Entity;
-import org.commcare.cases.entity.EntitySortNotificationInterface;
-import org.commcare.cases.entity.EntitySorter;
-import org.commcare.cases.entity.NodeEntityFactory;
+import org.commcare.cases.entity.*;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
@@ -97,7 +94,7 @@ public class EntityListResponse extends MenuBean {
                                  EvaluationContext ec,
                                  int offset,
                                  String searchText) {
-        EntityBean[] allEntities = generateEntities(screen, references, ec);
+        EntityBean[] allEntities = generateEntities(screen, references, ec, offset, searchText);
         if (searchText != null && !searchText.trim().equals("")) {
             allEntities = filterEntities(allEntities, searchText);
         }
@@ -160,11 +157,10 @@ public class EntityListResponse extends MenuBean {
         return false;
     }
 
-    private EntityBean[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec) {
-
-        List<Entity<TreeReference>> entityList = buildEntityList(screen.getShortDetail(), ec, references);
-        sort(entityList, screen.getShortDetail());
-
+    private EntityBean[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec,
+                                          int offset,
+                                          String searchText) {
+        List<Entity<TreeReference>> entityList = buildEntityList(screen.getShortDetail(), ec, references, offset, searchText);
         EntityBean[] entities = new EntityBean[entityList.size()];
         int i = 0;
         for (Entity<TreeReference> entity : entityList) {
@@ -176,13 +172,39 @@ public class EntityListResponse extends MenuBean {
         return entities;
     }
 
-    private List<Entity<TreeReference>> buildEntityList(Detail shortDetail, EvaluationContext context, Vector<TreeReference> references) {
+    private List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
+                                                        EvaluationContext context,
+                                                        Vector<TreeReference> references,
+                                                        int offset,
+                                                        String searchText) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
         List<org.commcare.cases.entity.Entity<TreeReference>> full = new ArrayList<>();
         for (TreeReference reference: references) {
             full.add(nodeEntityFactory.getEntity(reference));
         }
-        return full;
+        EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), false, false, nodeEntityFactory, full);
+        List<org.commcare.cases.entity.Entity<TreeReference>> matched = filterer.buildMatchList();
+        sort(matched, shortDetail);
+
+        if (matched.size() > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
+            // we're doing pagination
+
+            if(offset > matched.size()){
+                throw new RuntimeException("Pagination offset " + offset +
+                        " exceeded case list length: " + matched.size());
+            }
+
+            int end = offset + CASE_LENGTH_LIMIT;
+            int length = CASE_LENGTH_LIMIT;
+            if (end > matched.size()) {
+                end = matched.size();
+                length = end - offset;
+            }
+            matched = matched.subList(offset, end);
+            setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
+            setCurrentPage(offset / CASE_LENGTH_LIMIT);
+        }
+        return matched;
     }
 
     private void sort (List<Entity<TreeReference>> entityList, Detail shortDetail) {
