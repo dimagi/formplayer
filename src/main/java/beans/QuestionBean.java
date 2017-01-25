@@ -32,6 +32,7 @@ public class QuestionBean {
     private String exists;
     private String addChoice;
     private String header;
+    private String hint;
     private int control;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -221,5 +222,13 @@ public class QuestionBean {
 
     public void setControl(int control) {
         this.control = control;
+    }
+
+    public String getHint() {
+        return hint;
+    }
+
+    public void setHint(String hint) {
+        this.hint = hint;
     }
 }
