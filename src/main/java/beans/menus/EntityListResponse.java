@@ -47,8 +47,7 @@ public class EntityListResponse extends MenuBean {
     private int maxWidth;
     private int maxHeight;
 
-    public EntityListResponse() {
-    }
+    public EntityListResponse() {}
 
     public EntityListResponse(EntityScreen nextScreen, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
@@ -218,7 +217,7 @@ public class EntityListResponse extends MenuBean {
         int i = 0;
         for (DetailField field : fields) {
             Object o;
-                o = field.getTemplate().evaluate(context);
+            o = field.getTemplate().evaluate(context);
             data[i] = o;
             i++;
         }
