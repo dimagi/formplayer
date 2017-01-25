@@ -1,7 +1,5 @@
 package util;
 
-import org.commcare.modern.util.Pair;
-
 /**
  * Created by willpride on 2/4/16.
  */
