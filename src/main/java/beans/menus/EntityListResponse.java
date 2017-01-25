@@ -8,12 +8,10 @@ import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.suite.model.EntityDatum;
-import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.xpath.XPathException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,50 +92,8 @@ public class EntityListResponse extends MenuBean {
                                  EvaluationContext ec,
                                  int offset,
                                  String searchText) {
-        EntityBean[] allEntities = generateEntities(screen, references, ec, offset, searchText);
-        entities = allEntities.clone();
-    }
-
-    /**
-     * @param allEntities the set of EntityBean objects to filter
-     * @param searchText  the raw (space separated) searchText entry to split and filter with
-     * @return all Entitys containing one of the searchText strings
-     */
-    private EntityBean[] filterEntities(EntityBean[] allEntities, String searchText) {
-
-        ArrayList<EntityBean> compiler = new ArrayList<EntityBean>();
-        for (EntityBean entityBean : allEntities) {
-            if (matchEntity(entityBean, searchText)) {
-                compiler.add(entityBean);
-            }
-        }
-        EntityBean[] ret = new EntityBean[compiler.size()];
-        ret = compiler.toArray(ret);
-        return ret;
-    }
-
-    /**
-     * @param entityBean     The EntityBean being matched against
-     * @param searchText The String being searched for
-     * @return whether the EntityBean's data[] contains this string, ignoring case
-     */
-    private boolean matchEntity(EntityBean entityBean, String searchText) {
-        String[] searchStrings = searchText.split(" ");
-        for (Object data : entityBean.getData()) {
-            for (String searchString : searchStrings) {
-                if (data != null && data.toString().toLowerCase().contains(searchString.toLowerCase())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private EntityBean[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec,
-                                          int offset,
-                                          String searchText) {
         List<Entity<TreeReference>> entityList = buildEntityList(screen.getShortDetail(), ec, references, offset, searchText);
-        EntityBean[] entities = new EntityBean[entityList.size()];
+        entities = new EntityBean[entityList.size()];
         int i = 0;
         for (Entity<TreeReference> entity : entityList) {
             TreeReference treeReference = entity.getElement();
@@ -145,7 +101,6 @@ public class EntityListResponse extends MenuBean {
             entities[i] = newEntityBean;
             i++;
         }
-        return entities;
     }
 
     private List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
@@ -155,6 +110,24 @@ public class EntityListResponse extends MenuBean {
             full = filterer.buildMatchList();
         }
         return full;
+    }
+
+    private List<Entity<TreeReference>> paginateEntities(List<Entity<TreeReference>> matched,
+                                                         int offset) {
+        if(offset > matched.size()){
+            throw new RuntimeException("Pagination offset " + offset +
+                    " exceeded case list length: " + matched.size());
+        }
+
+        int end = offset + CASE_LENGTH_LIMIT;
+        int length = CASE_LENGTH_LIMIT;
+        if (end > matched.size()) {
+            end = matched.size();
+            length = end - offset;
+        }
+        setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
+        matched = matched.subList(offset, offset + length);
+        return matched;
     }
 
     private List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
@@ -174,21 +147,9 @@ public class EntityListResponse extends MenuBean {
 
         if (matched.size() > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
             // we're doing pagination
-
-            if(offset > matched.size()){
-                throw new RuntimeException("Pagination offset " + offset +
-                        " exceeded case list length: " + matched.size());
-            }
-
-            int end = offset + CASE_LENGTH_LIMIT;
-            int length = CASE_LENGTH_LIMIT;
-            if (end > matched.size()) {
-                end = matched.size();
-                length = end - offset;
-            }
-            setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
-            matched = matched.subList(offset, offset + length);
             setCurrentPage(offset / CASE_LENGTH_LIMIT);
+            setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
+            matched = paginateEntities(matched, offset);
         }
         return matched;
     }
