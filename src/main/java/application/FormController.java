@@ -60,6 +60,19 @@ public class FormController extends AbstractBaseController{
     private final Log log = LogFactory.getLog(FormController.class);
     private final ObjectMapper mapper = new ObjectMapper();
 
+    @ApiOperation(value = "Start a new form entry session")
+    @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
+    @UserLock
+    public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        restoreFactory.configure(newSessionBean, new DjangoAuth(authToken));
+        String postUrl = host + newSessionBean.getPostUrl();
+        NewFormResponse newSessionResponse = newFormResponseFactory.getResponse(newSessionBean,
+                postUrl,
+                new DjangoAuth(authToken));
+        return newSessionResponse;
+    }
+
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     @UserLock
