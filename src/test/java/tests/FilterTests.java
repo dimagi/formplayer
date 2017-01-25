@@ -28,27 +28,6 @@ import static org.mockito.Mockito.when;
 public class FilterTests extends BaseTestClass {
 
     @Test
-    public void testRestoreFilter() throws Exception {
-
-        configureRestoreFactory("filtertesttestdomain", "filtertesttestuser");
-
-        String[] caseArray;
-
-        CaseFilterResponseBean caseFilterResponseBean = filterCases("requests/filter/filter_cases.json");
-        caseArray = caseFilterResponseBean.getCases();
-        assert(caseArray.length == 3);
-        assert(caseArray[0].equals("2aa41fcf4d8a464b82b171a39959ccec"));
-
-        assert(filterCases("requests/filter/filter_cases_2.json").getCases().length == 9);
-
-        caseArray = filterCases("requests/filter/filter_cases_3.json").getCases();
-        assert(caseArray.length == 1);
-        assert(caseArray[0].equals("e7ed3658d7394415a4bba5edc7055f1d"));
-
-        assert(filterCases("requests/filter/filter_cases_4.json").getCases().length == 15);
-    }
-
-    @Test
     public void testSyncDb() throws Exception {
 
         configureRestoreFactory("synctestdomain", "synctestuser");
@@ -65,11 +44,5 @@ public class FilterTests extends BaseTestClass {
         assert(15 == caseStorage.getNumRecords());
 
         //TODO add ledgers, fixtures, etc.
-    }
-
-    @Test
-    public void testGetFullCase() throws Exception {
-        configureRestoreFactory("filtertesttestdomain", "filtertesttestuser");
-        CaseFilterFullResponseBean caseFilterResponseBean = filterCasesFull();
     }
 }
