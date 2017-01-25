@@ -95,31 +95,7 @@ public class EntityListResponse extends MenuBean {
                                  int offset,
                                  String searchText) {
         EntityBean[] allEntities = generateEntities(screen, references, ec, offset, searchText);
-        if (searchText != null && !searchText.trim().equals("")) {
-            allEntities = filterEntities(allEntities, searchText);
-        }
-        if (allEntities.length > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
-            // we're doing pagination
-
-            if(offset > allEntities.length){
-                throw new RuntimeException("Pagination offset " + offset +
-                        " exceeded case list length: " + allEntities.length);
-            }
-
-            int end = offset + CASE_LENGTH_LIMIT;
-            int length = CASE_LENGTH_LIMIT;
-            if (end > allEntities.length) {
-                end = allEntities.length;
-                length = end - offset;
-            }
-            entities = new EntityBean[length];
-            System.arraycopy(allEntities, offset, entities, offset - offset, end - offset);
-
-            setPageCount((int) Math.ceil((double) allEntities.length / CASE_LENGTH_LIMIT));
-            setCurrentPage(offset / CASE_LENGTH_LIMIT);
-        } else {
-            entities = allEntities.clone();
-        }
+        entities = allEntities.clone();
     }
 
     /**
@@ -172,18 +148,28 @@ public class EntityListResponse extends MenuBean {
         return entities;
     }
 
+    private List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
+                                                       List<Entity<TreeReference>> full) {
+        if (searchText != null && !"".equals(searchText)) {
+            EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), false, false, nodeEntityFactory, full);
+            full = filterer.buildMatchList();
+        }
+        return full;
+    }
+
     private List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
                                                         EvaluationContext context,
                                                         Vector<TreeReference> references,
                                                         int offset,
                                                         String searchText) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
-        List<org.commcare.cases.entity.Entity<TreeReference>> full = new ArrayList<>();
+        nodeEntityFactory.prepareEntities();
+        List<Entity<TreeReference>> full = new ArrayList<>();
         for (TreeReference reference: references) {
             full.add(nodeEntityFactory.getEntity(reference));
         }
-        EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), false, false, nodeEntityFactory, full);
-        List<org.commcare.cases.entity.Entity<TreeReference>> matched = filterer.buildMatchList();
+
+        List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
         sort(matched, shortDetail);
 
         if (matched.size() > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
@@ -200,8 +186,8 @@ public class EntityListResponse extends MenuBean {
                 end = matched.size();
                 length = end - offset;
             }
-            matched = matched.subList(offset, end);
             setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
+            matched = matched.subList(offset, offset + length);
             setCurrentPage(offset / CASE_LENGTH_LIMIT);
         }
         return matched;
