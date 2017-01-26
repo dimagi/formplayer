@@ -418,21 +418,6 @@ public class FormSession {
         this.dateOpened = dateOpened;
     }
 
-    public String getCaseName() {
-        String caseId = this.getSessionData().get("case_id");
-        if (caseId == null) {
-            return null;
-        }
-        try {
-            CaseBean caseBean = CaseAPIs.getFullCase(caseId, (SqliteIndexedStorageUtility<Case>) this.getSandbox().getCaseStorage());
-            return (String) caseBean.getProperties().get("case_name");
-        } catch (NoSuchElementException e) {
-            // This handles the case where the case is no longer open in the database.
-            // The form will crash on open, but I don't know if there's a more elegant but not-opaque way to handle
-            return "Case with id " + caseId + "does not exist!";
-        }
-    }
-
     public String getAsUser() {
         return asUser;
     }

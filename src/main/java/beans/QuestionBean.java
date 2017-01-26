@@ -14,18 +14,20 @@ import java.util.HashMap;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QuestionBean {
     private String caption_audio;
-    private String caption;
-    private String binding;
+    private String caption_video;
     private String caption_image;
+    private String caption_markdown;
+    private String caption;
+
+    private String binding;
     private int required;
     private int relevant;
-    private String help;
     private Object answer;
     private String datatype;
+
+    // Style defines appearance attributes for a question
     private HashMap<String, String> style = new HashMap<>();
-    private String caption_video;
     private String type;
-    private String caption_markdown;
     private String ix;
     private String[] choices;
     private String repeatable;
@@ -33,6 +35,11 @@ public class QuestionBean {
     private String addChoice;
     private String header;
     private int control;
+
+    // The is the help/hint text defined in the formbuilder advanced section.
+    // Read more about its purpose here: https://confluence.dimagi.com/display/commcarepublic/Advanced+CommCare+Android+Formatting#AdvancedCommCareAndroidFormatting-HintandHelpText
+    private String help;
+    private String hint;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private QuestionBean[] children;
@@ -221,5 +228,13 @@ public class QuestionBean {
 
     public void setControl(int control) {
         this.control = control;
+    }
+
+    public String getHint() {
+        return hint;
+    }
+
+    public void setHint(String hint) {
+        this.hint = hint;
     }
 }
