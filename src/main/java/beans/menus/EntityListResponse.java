@@ -1,10 +1,7 @@
 package beans.menus;
 
 import io.swagger.annotations.ApiModel;
-import org.commcare.cases.entity.Entity;
-import org.commcare.cases.entity.EntitySortNotificationInterface;
-import org.commcare.cases.entity.EntitySorter;
-import org.commcare.cases.entity.NodeEntityFactory;
+import org.commcare.cases.entity.*;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
@@ -47,8 +44,7 @@ public class EntityListResponse extends MenuBean {
     private int maxWidth;
     private int maxHeight;
 
-    public EntityListResponse() {
-    }
+    public EntityListResponse() {}
 
     public EntityListResponse(EntityScreen nextScreen, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
@@ -98,32 +94,8 @@ public class EntityListResponse extends MenuBean {
                                  EvaluationContext ec,
                                  int offset,
                                  String searchText) {
-        EntityBean[] allEntities = generateEntities(screen, references, ec);
-        if (searchText != null && !searchText.trim().equals("")) {
-            allEntities = filterEntities(allEntities, searchText);
-        }
-        if (allEntities.length > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
-            // we're doing pagination
-
-            if(offset > allEntities.length){
-                throw new RuntimeException("Pagination offset " + offset +
-                        " exceeded case list length: " + allEntities.length);
-            }
-
-            int end = offset + CASE_LENGTH_LIMIT;
-            int length = CASE_LENGTH_LIMIT;
-            if (end > allEntities.length) {
-                end = allEntities.length;
-                length = end - offset;
-            }
-            entities = new EntityBean[length];
-            System.arraycopy(allEntities, offset, entities, offset - offset, end - offset);
-
-            setPageCount((int) Math.ceil((double) allEntities.length / CASE_LENGTH_LIMIT));
-            setCurrentPage(offset / CASE_LENGTH_LIMIT);
-        } else {
-            entities = allEntities.clone();
-        }
+        EntityBean[] allEntities = generateEntities(screen, references, ec, offset, searchText);
+        entities = allEntities.clone();
     }
 
     /**
@@ -161,11 +133,10 @@ public class EntityListResponse extends MenuBean {
         return false;
     }
 
-    private EntityBean[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec) {
-
-        List<Entity<TreeReference>> entityList = buildEntityList(screen.getShortDetail(), ec, references);
-        sort(entityList, screen.getShortDetail());
-
+    private EntityBean[] generateEntities(EntityScreen screen, Vector<TreeReference> references, EvaluationContext ec,
+                                          int offset,
+                                          String searchText) {
+        List<Entity<TreeReference>> entityList = buildEntityList(screen.getShortDetail(), ec, references, offset, searchText);
         EntityBean[] entities = new EntityBean[entityList.size()];
         int i = 0;
         for (Entity<TreeReference> entity : entityList) {
@@ -177,13 +148,49 @@ public class EntityListResponse extends MenuBean {
         return entities;
     }
 
-    private List<Entity<TreeReference>> buildEntityList(Detail shortDetail, EvaluationContext context, Vector<TreeReference> references) {
+    private List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
+                                                       List<Entity<TreeReference>> full) {
+        if (searchText != null && !"".equals(searchText)) {
+            EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), false, false, nodeEntityFactory, full);
+            full = filterer.buildMatchList();
+        }
+        return full;
+    }
+
+    private List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
+                                                        EvaluationContext context,
+                                                        Vector<TreeReference> references,
+                                                        int offset,
+                                                        String searchText) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
-        List<org.commcare.cases.entity.Entity<TreeReference>> full = new ArrayList<>();
+        nodeEntityFactory.prepareEntities();
+        List<Entity<TreeReference>> full = new ArrayList<>();
         for (TreeReference reference: references) {
             full.add(nodeEntityFactory.getEntity(reference));
         }
-        return full;
+
+        List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
+        sort(matched, shortDetail);
+
+        if (matched.size() > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
+            // we're doing pagination
+
+            if(offset > matched.size()){
+                throw new RuntimeException("Pagination offset " + offset +
+                        " exceeded case list length: " + matched.size());
+            }
+
+            int end = offset + CASE_LENGTH_LIMIT;
+            int length = CASE_LENGTH_LIMIT;
+            if (end > matched.size()) {
+                end = matched.size();
+                length = end - offset;
+            }
+            setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
+            matched = matched.subList(offset, offset + length);
+            setCurrentPage(offset / CASE_LENGTH_LIMIT);
+        }
+        return matched;
     }
 
     private void sort (List<Entity<TreeReference>> entityList, Detail shortDetail) {
@@ -218,7 +225,7 @@ public class EntityListResponse extends MenuBean {
         int i = 0;
         for (DetailField field : fields) {
             Object o;
-                o = field.getTemplate().evaluate(context);
+            o = field.getTemplate().evaluate(context);
             data[i] = o;
             i++;
         }
