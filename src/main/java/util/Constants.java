@@ -16,12 +16,9 @@ public class Constants {
     public final static String URL_ANSWER_QUESTION = "answer";
     public final static String URL_CURRENT = "current";
     public final static String URL_SUBMIT_FORM = "submit-all";
-    public final static String URL_GET_INSTANCE = "get-instance";
     public final static String URL_EVALUATE_XPATH = "evaluate-xpath";
     public final static String URL_NEW_REPEAT = "new-repeat";
     public final static String URL_DELETE_REPEAT = "delete-repeat";
-    public final static String URL_FILTER_CASES = "filter_cases";
-    public final static String URL_FILTER_CASES_FULL = "filter_cases_full";
     public final static String URL_SYNC_DB = "sync-db";
     public final static String URL_LIST_SESSIONS = "sessions";
     public final static String URL_GET_SESSION = "get_session";
@@ -33,7 +30,6 @@ public class Constants {
     public static final String URL_SERVER_UP = "serverup";
     public static final String URL_PREVIEW_FORM = "preview_form";
     public static final String URL_DELETE_APPLICATION_DBS = "delete_application_dbs";
-    public static final String URL_QUESTIONS_FOR_INDEX = "questions_for_index";
     public static final String URL_NEXT_INDEX = "next_index";
     public static final String URL_PREV_INDEX = "prev_index";
     public static final String URL_VALIDATE_FORM = "validate_form";
