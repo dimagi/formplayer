@@ -1,7 +1,10 @@
 package session;
 
+import engine.FormplayerCaseInstanceTreeElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.cases.model.Case;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.session.SessionInstanceBuilder;
@@ -26,6 +29,19 @@ class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
                                          Map<String, String> injectedSessionData) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
         this.injectedSessionData = injectedSessionData;
+    }
+
+    @Override
+    protected AbstractTreeElement setupCaseData(ExternalDataInstance instance) {
+        if (casebase == null) {
+            SqliteIndexedStorageUtility<Case> storage = (SqliteIndexedStorageUtility<Case>) mSandbox.getCaseStorage();
+            casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage);
+        } else {
+            //re-use the existing model if it exists.
+            casebase.rebase(instance.getBase());
+        }
+        //instance.setCacheHost((AndroidCaseInstanceTreeElement)casebase);
+        return casebase;
     }
 
     @Override

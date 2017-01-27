@@ -36,7 +36,7 @@ public class InstallServiceImpl implements InstallService {
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     @Override
-    public CommCareConfigEngine configureApplication(String reference) {
+    public FormplayerConfigEngine configureApplication(String reference) {
         String dbPath = storageFactory.getDatabasePath();
         log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         try {
@@ -44,7 +44,7 @@ public class InstallServiceImpl implements InstallService {
             if(dbFolder.exists()) {
                 // Try reusing old install, fail quietly
                 try {
-                    CommCareConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
@@ -56,7 +56,7 @@ public class InstallServiceImpl implements InstallService {
             if (!dbFolder.mkdirs()) {
                 throw new RuntimeException("Error instantiationing folder " + dbFolder);
             }
-            CommCareConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+            FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
             if (reference.endsWith(".ccpr")) {
                 engine.initFromLocalFileResource(reference);
             } else {
