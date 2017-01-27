@@ -93,7 +93,7 @@ public class MenuSession {
 
         this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
 
-        this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
+        this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
@@ -112,7 +112,7 @@ public class MenuSession {
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference);
         this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
-        this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
