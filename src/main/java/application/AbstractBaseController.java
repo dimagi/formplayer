@@ -161,6 +161,7 @@ public abstract class AbstractBaseController {
             menuResponseBean.setAppId(menuSession.getAppId());
             menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
                     ", App Version: " + menuSession.getAppVersion());
+            menuResponseBean.setSessionSteps(menuSession.getSessionStack());
             setPersistentCaseTile(menuSession, menuResponseBean);
             return menuResponseBean;
         }

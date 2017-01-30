@@ -3,6 +3,7 @@ package beans.menus;
 import org.javarosa.core.services.locale.Localization;
 
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Created by willpride on 4/13/16.
@@ -13,6 +14,7 @@ public class MenuBean extends BaseResponseBean {
     private String[] breadcrumbs;
     private String menuSessionId;
     private EntityDetailResponse persistentCaseTile;
+    private String[] sessionSteps;
 
     @Override
     public String toString(){
@@ -49,5 +51,13 @@ public class MenuBean extends BaseResponseBean {
 
     public void setPersistentCaseTile(EntityDetailResponse persistentCaseTile) {
         this.persistentCaseTile = persistentCaseTile;
+    }
+
+    public String[] getSessionSteps() {
+        return sessionSteps;
+    }
+
+    public void setSessionSteps(String[] sessionSteps) {
+        this.sessionSteps = sessionSteps;
     }
 }
