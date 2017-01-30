@@ -78,7 +78,12 @@ public class FormEntryTest extends BaseTestClass{
         assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 
-        evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/broken");
+        // We shouldn't error when a path doesn't exist
+        evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/not_broken");
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+
+        // However, we should error when the path is invalid
+        evaluateXPathResponseBean = evaluateXPath(sessionId, "!data/broken");
         assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
 
         //Test Submission
