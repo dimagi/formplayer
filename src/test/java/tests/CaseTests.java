@@ -105,6 +105,17 @@ public class CaseTests extends BaseTestClass {
         assert openCount == 15;
     }
 
+    @Test
+    public void testEvaluateInstance() throws Exception{
+        NewFormResponse newSessionResponse2 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+
+        // Aside: test EvaluateXPath with instance() and multiple matching nodes works
+        EvaluateXPathResponseBean evaluateXPathResponseBean =
+                evaluateXPath(newSessionResponse2.getSessionId(), "instance('casedb')/casedb/case/@case_id");
+
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+    }
+
     @After
     public void tearDown(){
         SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
