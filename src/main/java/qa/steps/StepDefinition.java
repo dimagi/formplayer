@@ -10,7 +10,7 @@ import qa.TestState;
  */
 public interface StepDefinition {
     String getRegularExpression();
-    JSONObject getPostBody(JSONObject lastResponse, TestState currentState, String[] args) throws JsonProcessingException;
+    JSONObject getPostBody(JSONObject lastResponse, TestState currentState, String[] args) throws JsonProcessingException, TestFailException;
     String getUrl();
     void doWork(JSONObject lastResponse, TestState currentState, String[] args) throws TestFailException;
 }

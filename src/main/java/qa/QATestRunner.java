@@ -124,9 +124,13 @@ public class QATestRunner {
                 } catch(TestFailException e) {
                     currentState.addFailure(text + " failed with cause " + e);
                 }
-                JSONObject requestBody = stepDefinition.getPostBody(lastResponseJson, currentState, args);
-                if (requestBody != null) {
-                    makePostRequest(stepDefinition.getUrl(), requestBody);
+                try {
+                    JSONObject requestBody = stepDefinition.getPostBody(lastResponseJson, currentState, args);
+                    if (requestBody != null) {
+                        makePostRequest(stepDefinition.getUrl(), requestBody);
+                    }
+                } catch(TestFailException e) {
+                    currentState.addFailure(text + " failed with cause " + e);
                 }
             }
         }

@@ -16,10 +16,10 @@ public class MenuStep implements StepDefinition {
     }
 
     @Override
-    public JSONObject getPostBody(JSONObject lastResponse, TestState currentState, String[] args) throws JsonProcessingException {
+    public JSONObject getPostBody(JSONObject lastResponse, TestState currentState, String[] args) throws JsonProcessingException, TestFailException {
         String menuSelection = args[1];
         if(!lastResponse.has("commands")) {
-            throw new RuntimeException("Tried to make selection " + menuSelection + " but not on menu");
+            throw new TestFailException("Tried to make selection " + menuSelection + " but not on menu");
         }
         JSONObject requestBody = new JSONObject();
         JSONArray commands = (JSONArray) lastResponse.get("commands");
@@ -33,7 +33,7 @@ public class MenuStep implements StepDefinition {
             }
         }
         if (!matched) {
-            throw new RuntimeException("Argument "  + menuSelection + " didn't match commands " + commands);
+            throw new TestFailException("Argument "  + menuSelection + " didn't match any commands.");
         }
         return requestBody;
     }
