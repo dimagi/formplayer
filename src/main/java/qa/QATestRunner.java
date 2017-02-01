@@ -1,5 +1,6 @@
 package qa;
 
+import beans.AnswerQuestionRequestBean;
 import beans.FormEntryResponseBean;
 import beans.SessionRequestBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +34,6 @@ import java.util.regex.Pattern;
  */
 public class QATestRunner {
 
-    String lastResponse;
     String testPlan;
     JSONObject lastResponseJson;
     ArrayList<String> errors;
@@ -82,6 +82,17 @@ public class QATestRunner {
         checkInstall(text);
         checkModule(text);
         checkNext(text);
+        checkAnswer(text);
+    }
+
+    private void checkAnswer(String text) throws Exception {
+        String pattern = "^I enter text (.*)$";
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(text);
+        if (m.find()) {
+            String[] args = text.split("\"");
+            doAnswer(args[1]);
+        }
     }
 
     private void checkNext(String text) throws Exception {
@@ -135,6 +146,14 @@ public class QATestRunner {
         this.username = username;
         this.password = password;
         makePostRequest("navigate_menu", json);
+    }
+
+    private void doAnswer(String answer) throws Exception {
+        AnswerQuestionRequestBean request = new AnswerQuestionRequestBean();
+        request.setAnswer(answer);
+        request.setSessionId(formEntry.getSessionId());
+        JSONObject json = new JSONObject(objectMapper.writeValueAsString(request));
+        makePostRequest("answer", json);
     }
 
     private void selectModule(String arg) throws Exception {
