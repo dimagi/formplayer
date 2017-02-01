@@ -2,9 +2,7 @@ package application;
 
 import annotations.UserLock;
 import auth.DjangoAuth;
-import beans.EvaluateXPathRequestBean;
-import beans.EvaluateXPathResponseBean;
-import beans.SessionRequestBean;
+import beans.*;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import beans.debugger.XPathQueryItem;
 import io.swagger.annotations.Api;
@@ -16,6 +14,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
+import qa.QATestRunner;
 import repo.SerializableMenuSession;
 import services.FormattedQuestionsService;
 import session.FormSession;
@@ -89,6 +88,15 @@ public class DebuggerController extends AbstractBaseController {
         );
 
         return evaluateXPathResponseBean;
+    }
+
+    @ApiOperation(value = "Run the given QA plan")
+    @RequestMapping(value = Constants.URL_DEBUGGER_RUN_QA, method = RequestMethod.POST)
+    @ResponseBody
+    public RunQAResponseBean runQAPlan(@RequestBody RunQARequestBean qaRequestBean) throws Exception {
+        QATestRunner qaTestRunner = new QATestRunner(qaRequestBean.getQaPlan());
+        RunQAResponseBean response = new RunQAResponseBean(qaTestRunner);
+        return response;
     }
 
     private void cacheXPathQuery(String domain, String username, String xpath, String output, String status) {

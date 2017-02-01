@@ -35,6 +35,7 @@ public class Constants {
     public static final String URL_VALIDATE_FORM = "validate_form";
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
+    public static final String URL_DEBUGGER_RUN_QA = "run_qa";
 
     //Menus
     public static final String MENU_MODULE = "modules";
