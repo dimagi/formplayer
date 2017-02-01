@@ -1,8 +1,6 @@
 package qa;
 
-import beans.AnswerQuestionRequestBean;
-import beans.FormEntryResponseBean;
-import beans.SessionRequestBean;
+import beans.NewFormResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gherkin.AstBuilder;
 import gherkin.Parser;
@@ -16,13 +14,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import qa.steps.AnswerStep;
-import qa.steps.MenuStep;
-import qa.steps.NextStep;
-import qa.steps.StepDefinition;
+import qa.steps.*;
+import util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,10 +36,9 @@ public class QATestRunner {
     JSONObject lastResponseJson;
     ArrayList<String> errors;
     Exception cause;
-    boolean passed;
     ObjectMapper objectMapper;
 
-    FormEntryResponseBean formEntry;
+    NewFormResponse formEntry;
 
     String appId;
     String username;
@@ -53,16 +46,23 @@ public class QATestRunner {
     String password;
 
     StepDefinition[] stepDefinitions;
+    TestState currentState;
 
-    public QATestRunner(String testPlan) throws Exception {
+    public QATestRunner(String testPlan, String appId, String domain, String username, String password) throws Exception {
         this.testPlan = testPlan;
+        this.currentState = new TestState();
+        this.appId = appId;
+        this.domain = domain;
+        this.username = username;
+        this.password = password;
         this.errors = new ArrayList<>();
-        this.passed = true;
         this.objectMapper = new ObjectMapper();
-        stepDefinitions = new StepDefinition[3];
+        stepDefinitions = new StepDefinition[5];
         stepDefinitions[0] = new AnswerStep();
         stepDefinitions[1] = new NextStep();
         stepDefinitions[2] = new MenuStep();
+        stepDefinitions[3] = new InstallStep();
+        stepDefinitions[4] = new SeeStep();
         runTests();
     }
 
@@ -76,7 +76,7 @@ public class QATestRunner {
             } catch (Exception e) {
                 this.cause = e;
                 e.printStackTrace();
-                passed = false;
+                currentState.addFailure(e.getMessage());
             }
         }
     }
@@ -87,6 +87,26 @@ public class QATestRunner {
         return m.find();
     }
 
+    private String[] getArgs(String text, String regex) {
+        Pattern r = Pattern.compile(regex);
+        Matcher matcher = r.matcher(text);
+        ArrayList<String> argList = new ArrayList<>();
+        if (matcher.find() && matcher.groupCount() > 0) {
+                for (int i = 1; i <= matcher.groupCount(); i++) {
+                    try {
+                        argList.add(matcher.group(i));
+                    } catch(IllegalStateException e) {
+                        //
+                    }
+                }
+            String[] args = new String[matcher.groupCount()];
+            argList.toArray(args);
+            return args;
+        } else {
+            return null;
+        }
+    }
+
     private void processPickle(Pickle pickle) throws Exception {
         for (PickleStep step : pickle.getSteps()) {
             processStep(step);
@@ -95,42 +115,21 @@ public class QATestRunner {
 
     private void processStep(PickleStep step) throws Exception {
         String text = step.getText();
-
+        System.out.println("Running step " + text);
         for (StepDefinition stepDefinition: stepDefinitions) {
             if (matchRegex(text, stepDefinition.getRegularExpression())) {
-                String[] args = text.split("\"");
-                makePostRequest(stepDefinition.getUrl(), stepDefinition.getPostBody(lastResponseJson, args));
+                String[] args = getArgs(text, stepDefinition.getRegularExpression());
+                try {
+                    stepDefinition.doWork(lastResponseJson, currentState, args);
+                } catch(TestFailException e) {
+                    currentState.addFailure(text + " failed with cause " + e);
+                }
+                JSONObject requestBody = stepDefinition.getPostBody(lastResponseJson, currentState, args);
+                if (requestBody != null) {
+                    makePostRequest(stepDefinition.getUrl(), requestBody);
+                }
             }
         }
-
-        checkInstall(text);
-    }
-
-    private void checkInstall(String text) throws Exception {
-        String pattern = "^I install the app with id (.*)$";
-        Pattern r = Pattern.compile(pattern);
-        Matcher m = r.matcher(text);
-        if (m.find()) {
-            String[] args = text.split("\"");
-            doInstall(args[1], args[3], args[5], args[7]);
-        }
-    }
-
-    private JSONArray getSelections() throws JSONException {
-        if (lastResponseJson.has("selections")) {
-            return lastResponseJson.getJSONArray("selections");
-        } else {
-            return new JSONArray();
-        }
-    }
-
-    private void doInstall(String appId, String domain, String username, String password) throws Exception {
-        JSONObject json = new JSONObject();
-        this.appId = appId;
-        this.domain = domain;
-        this.username = username;
-        this.password = password;
-        makePostRequest("navigate_menu", json);
     }
 
     private void makePostRequest(String url, JSONObject body) throws Exception {
@@ -161,7 +160,7 @@ public class QATestRunner {
         if (entity != null) {
             InputStream instream = entity.getContent();
             try {
-                String responseString = getStringFromInputStream(instream);
+                String responseString = StringUtils.getStringFromInputStream(instream);
                 handleResponse(responseString);
             } finally {
                 instream.close();
@@ -171,47 +170,24 @@ public class QATestRunner {
 
     private void handleResponse(String lastResponse) {
         lastResponseJson = new JSONObject(lastResponse);
-        try {
-            formEntry = new ObjectMapper().readValue(lastResponse, FormEntryResponseBean.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // convert InputStream to String
-    private static String getStringFromInputStream(InputStream is) {
-
-        BufferedReader br = null;
-        StringBuilder sb = new StringBuilder();
-
-        String line;
-        try {
-
-            br = new BufferedReader(new InputStreamReader(is));
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        if (formEntry == null) {
+            try {
+                formEntry = new ObjectMapper().readValue(lastResponse, NewFormResponse.class);
+            } catch (IOException e) {
+                //e.printStackTrace();
             }
         }
-
-        return sb.toString();
     }
 
     public boolean didPass() {
-        return passed;
+        return currentState.isPassed();
     }
 
     public Exception getCause() {
         return cause;
+    }
+
+    public TestState getCurrentState() {
+        return currentState;
     }
 }

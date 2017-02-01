@@ -81,8 +81,11 @@ public class FormController extends AbstractBaseController{
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
         restoreFactory.configure(session.getUsername(), session.getDomain(), session.getAsUser(), new DjangoAuth(authToken));
         FormSession formEntrySession = new FormSession(session);
-        JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
-                answerQuestionBean.getFormIndex());
+        String formIndex = answerQuestionBean.getFormIndex();
+        if (formIndex == null) {
+            formIndex = formEntrySession.getCurrentIndex();
+        }
+        JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(), formIndex);
         updateSession(formEntrySession, session);
         FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(formEntrySession.getTitle());

@@ -94,7 +94,8 @@ public class DebuggerController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_DEBUGGER_RUN_QA, method = RequestMethod.POST)
     @ResponseBody
     public RunQAResponseBean runQAPlan(@RequestBody RunQARequestBean qaRequestBean) throws Exception {
-        QATestRunner qaTestRunner = new QATestRunner(qaRequestBean.getQaPlan());
+        QATestRunner qaTestRunner = new QATestRunner(qaRequestBean.getQaPlan(), qaRequestBean.getAppId(), qaRequestBean.getDomain(),
+                qaRequestBean.getUsername(), qaRequestBean.getPassword());
         RunQAResponseBean response = new RunQAResponseBean(qaTestRunner);
         return response;
     }
