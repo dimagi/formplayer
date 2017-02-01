@@ -5,6 +5,8 @@ import auth.HqAuth;
 import auth.TokenAuth;
 import hq.models.PostgresUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import repo.impl.PostgresUserRepo;
 import util.Constants;
 import util.UserUtils;
@@ -15,8 +17,6 @@ import util.UserUtils;
  * necessary json values are present in the request.
  */
 public class AuthenticatedRequestBean {
-    @Autowired
-    PostgresUserRepo postgresUserRepo;
 
     protected String domain;
     protected String username;
@@ -51,21 +51,6 @@ public class AuthenticatedRequestBean {
             return username + "_" + restoreAs;
         }
         return username;
-    }
-
-    private boolean isAnonymous() {
-        return UserUtils.isAnonymous(domain, username);
-    }
-
-    public HqAuth getAuthHeaders(String sessionToken) {
-        HqAuth auth;
-        if (isAnonymous()) {
-            PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
-            auth = new TokenAuth(postgresUser.getAuthToken());
-        } else {
-            auth = new DjangoAuth(sessionToken);
-        }
-        return auth;
     }
 
     @Override
