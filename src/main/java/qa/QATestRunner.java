@@ -19,6 +19,10 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import qa.steps.AnswerStep;
+import qa.steps.MenuStep;
+import qa.steps.NextStep;
+import qa.steps.StepDefinition;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -48,11 +52,17 @@ public class QATestRunner {
     String domain;
     String password;
 
+    StepDefinition[] stepDefinitions;
+
     public QATestRunner(String testPlan) throws Exception {
         this.testPlan = testPlan;
         this.errors = new ArrayList<>();
         this.passed = true;
         this.objectMapper = new ObjectMapper();
+        stepDefinitions = new StepDefinition[3];
+        stepDefinitions[0] = new AnswerStep();
+        stepDefinitions[1] = new NextStep();
+        stepDefinitions[2] = new MenuStep();
         runTests();
     }
 
@@ -71,6 +81,12 @@ public class QATestRunner {
         }
     }
 
+    private boolean matchRegex(String text, String regex) {
+        Pattern r = Pattern.compile(regex);
+        Matcher m = r.matcher(text);
+        return m.find();
+    }
+
     private void processPickle(Pickle pickle) throws Exception {
         for (PickleStep step : pickle.getSteps()) {
             processStep(step);
@@ -79,29 +95,15 @@ public class QATestRunner {
 
     private void processStep(PickleStep step) throws Exception {
         String text = step.getText();
+
+        for (StepDefinition stepDefinition: stepDefinitions) {
+            if (matchRegex(text, stepDefinition.getRegularExpression())) {
+                String[] args = text.split("\"");
+                makePostRequest(stepDefinition.getUrl(), stepDefinition.getPostBody(lastResponseJson, args));
+            }
+        }
+
         checkInstall(text);
-        checkModule(text);
-        checkNext(text);
-        checkAnswer(text);
-    }
-
-    private void checkAnswer(String text) throws Exception {
-        String pattern = "^I enter text (.*)$";
-        Pattern r = Pattern.compile(pattern);
-        Matcher m = r.matcher(text);
-        if (m.find()) {
-            String[] args = text.split("\"");
-            doAnswer(args[1]);
-        }
-    }
-
-    private void checkNext(String text) throws Exception {
-        String pattern = "^Next$";
-        Pattern r = Pattern.compile(pattern);
-        Matcher m = r.matcher(text);
-        if (m.find()) {
-            doNext();
-        }
     }
 
     private void checkInstall(String text) throws Exception {
@@ -114,29 +116,12 @@ public class QATestRunner {
         }
     }
 
-    private void checkModule(String text) throws Exception {
-        String pattern = "^I select (form|module) (.*)$";
-        Pattern r = Pattern.compile(pattern);
-        Matcher m = r.matcher(text);
-        if (m.find()) {
-            String[] args = text.split("\"");
-            selectModule(args[1]);
-        }
-    }
-
     private JSONArray getSelections() throws JSONException {
         if (lastResponseJson.has("selections")) {
             return lastResponseJson.getJSONArray("selections");
         } else {
             return new JSONArray();
         }
-    }
-
-    private void doNext() throws Exception {
-        SessionRequestBean request = new SessionRequestBean();
-        request.setSessionId(formEntry.getSessionId());
-        JSONObject nextJson = new JSONObject(objectMapper.writeValueAsString(request));
-        makePostRequest("next_index", nextJson);
     }
 
     private void doInstall(String appId, String domain, String username, String password) throws Exception {
@@ -148,36 +133,6 @@ public class QATestRunner {
         makePostRequest("navigate_menu", json);
     }
 
-    private void doAnswer(String answer) throws Exception {
-        AnswerQuestionRequestBean request = new AnswerQuestionRequestBean();
-        request.setAnswer(answer);
-        request.setSessionId(formEntry.getSessionId());
-        JSONObject json = new JSONObject(objectMapper.writeValueAsString(request));
-        makePostRequest("answer", json);
-    }
-
-    private void selectModule(String arg) throws Exception {
-        if(!lastResponseJson.has("commands")) {
-            return;
-        }
-        JSONObject requestBody = new JSONObject();
-        JSONArray commands = (JSONArray) lastResponseJson.get("commands");
-        boolean matched = false;
-        for (int i = 0; i < commands.length(); i++) {
-            if((commands.get(i).toString()).contains(arg)) {
-                JSONArray selections = getSelections();
-                selections.put(i);
-                requestBody.put("selections", selections);
-                matched = true;
-                break;
-            }
-        }
-        if (!matched) {
-            throw new RuntimeException("Argument "  + arg + " didn't match commands " + commands);
-        }
-        makePostRequest("navigate_menu", requestBody);
-    }
-
     private void makePostRequest(String url, JSONObject body) throws Exception {
         HttpClient httpclient = HttpClients.createDefault();
         HttpPost httppost = new HttpPost("http://localhost:8090/" + url + "/");
@@ -186,6 +141,11 @@ public class QATestRunner {
         body.put("domain", domain);
         body.put("username", username);
         body.put("password", password);
+
+        if (formEntry != null) {
+            body.put("session_id", formEntry.getSessionId());
+        }
+
         body.put("oneQuestionPerScreen", true);
 
         HttpEntity e = new StringEntity(body.toString());
