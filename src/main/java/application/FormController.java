@@ -101,7 +101,11 @@ public class FormController extends AbstractBaseController{
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
 
-        HqAuth auth = submitRequestBean.getAuthHeaders(authToken);
+        HqAuth auth = getAuthHeaders(
+                submitRequestBean.getDomain(),
+                submitRequestBean.getUsername(),
+                authToken
+        );
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
 
         restoreFactory.configure(serializableFormSession.getUsername(),
