@@ -27,7 +27,7 @@ public class PostgresUserRepo {
     public PostgresUser getUserByDjangoId(int userId) {
         String sql = String.format(
                 "SELECT * FROM %1$s " +
-                        "INNER JOIN %2$s ON %1$s.id = %2$s.user_id " +
+                        "LEFT OUTER JOIN %2$s ON %1$s.id = %2$s.user_id " +
                         "WHERE id = ?",
                 Constants.POSTGRES_USER_TABLE_NAME,
                 Constants.POSTGRES_AUTH_TOKEN_TABLE_NAME
@@ -38,7 +38,7 @@ public class PostgresUserRepo {
     public PostgresUser getUserByUsername(String username) {
         String sql = String.format(
                 "SELECT * FROM %1$s " +
-                        "INNER JOIN %2$s ON %1$s.id = %2$s.user_id " +
+                        "LEFT OUTER JOIN %2$s ON %1$s.id = %2$s.user_id " +
                         "WHERE username = ?",
                 Constants.POSTGRES_USER_TABLE_NAME,
                 Constants.POSTGRES_AUTH_TOKEN_TABLE_NAME
