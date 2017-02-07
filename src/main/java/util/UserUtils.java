@@ -1,10 +1,13 @@
 package util;
 
 /**
- * Created by benrudolph on 2/1/17.
+ * Utility methods for dealing with users
  */
 public class UserUtils {
     public static boolean isAnonymous(String domain, String username) {
+        if (domain == null || username == null) {
+            return false;
+        }
         return username.equals(anonymousUsername(domain));
     }
 
