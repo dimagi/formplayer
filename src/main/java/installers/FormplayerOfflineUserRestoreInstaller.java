@@ -2,7 +2,7 @@ package installers;
 
 import org.commcare.resources.model.installers.OfflineUserRestoreInstaller;
 import org.commcare.suite.model.OfflineUserRestore;
-import org.javarosa.core.services.storage.IStorageUtility;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
@@ -26,7 +26,7 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
     }
 
     @Override
-    protected IStorageUtility<OfflineUserRestore> storage() {
+    protected IStorageUtilityIndexed<OfflineUserRestore> storage() {
         if (cacheStorage == null) {
             cacheStorage = storageFactory.newStorage(OfflineUserRestore.STORAGE_KEY, OfflineUserRestore.class);
         }
