@@ -43,7 +43,7 @@ public class RegressionTests extends BaseTestClass{
     @Test
     public void testBadModuleFilter() throws Throwable {
         try {
-            BaseResponseBean response = sessionNavigate(new String[]{"0"}, "bad_module_filter", NewFormResponse.class);
+            BaseResponseBean response = sessionNavigate(new String[]{"0"}, "badmodulefilter", NewFormResponse.class);
             assert response.getNotification().isError();
             assert response.getNotification().getMessage().contains("Error evaluating form display condition");
             assert response.getNotification().getMessage().contains("next_supervision_visit");
