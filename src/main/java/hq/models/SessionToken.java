@@ -28,7 +28,11 @@ public class SessionToken {
     }
 
     public int getUserId() {
-        return this.sessionData.getInt("_auth_user_id");
+        if (this.sessionData.has("_auth_user_id")) {
+            return this.sessionData.getInt("_auth_user_id");
+        } else {
+            return -1;
+        }
     }
 
     public String getSessionid() {
