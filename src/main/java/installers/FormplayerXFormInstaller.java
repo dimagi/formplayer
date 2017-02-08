@@ -2,7 +2,7 @@ package installers;
 
 import org.commcare.resources.model.installers.XFormInstaller;
 import org.javarosa.core.model.FormDef;
-import org.javarosa.core.services.storage.IStorageUtility;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
@@ -26,7 +26,7 @@ public class FormplayerXFormInstaller extends XFormInstaller {
     }
 
     @Override
-    protected IStorageUtility<FormDef> storage() {
+    protected IStorageUtilityIndexed<FormDef> storage() {
         if (cacheStorage == null) {
             cacheStorage = storageFactory.newStorage(FormDef.STORAGE_KEY, FormDef.class);
         }
