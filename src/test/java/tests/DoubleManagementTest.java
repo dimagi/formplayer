@@ -46,8 +46,8 @@ public class DoubleManagementTest  extends BaseTestClass{
 
         assert entityListResponse.getEntities().length == 2;
         assert entityListResponse.getTitle().equals("Parent (2)");
-        assert entityListResponse.getAction() != null;
-        assert entityListResponse.getAction().getText().equals("New Parent");
+        assert entityListResponse.getActions() != null;
+        assert entityListResponse.getActions()[0].getText().equals("New Parent");
 
         NewFormResponse newFormResponse =
                 sessionNavigate(new String[] {"2", "action 0"}, "doublemgmt", NewFormResponse.class);
@@ -86,8 +86,8 @@ public class DoubleManagementTest  extends BaseTestClass{
 
         assert entityListResponse.getEntities().length == 2;
         assert entityListResponse.getTitle().equals("Parent (2)");
-        assert entityListResponse.getAction() != null;
-        assert entityListResponse.getAction().getText().equals("New Parent");
+        assert entityListResponse.getActions() != null;
+        assert entityListResponse.getActions()[0].getText().equals("New Parent");
 
         EntityDetailListResponse detailListResponse =
                 getDetails(new String[] {"2", "a9fde9ae-24ee-4d70-9cb4-20f266a62ef8"}, "doublemgmt", EntityDetailListResponse.class);
@@ -120,8 +120,8 @@ public class DoubleManagementTest  extends BaseTestClass{
                 sessionNavigate(new String[] {"2"}, "doublemgmt", EntityListResponse.class);
         assert entityListResponse.getTitle().equals("Parent (2)");
         assert entityListResponse.getEntities().length == 2;
-        assert entityListResponse.getAction() != null;
-        DisplayElement action = entityListResponse.getAction();
+        assert entityListResponse.getActions() != null;
+        DisplayElement action = entityListResponse.getActions()[0];
         assert action.getText().equals("New Parent");
 
         CommandListResponseBean commandListResponse =
