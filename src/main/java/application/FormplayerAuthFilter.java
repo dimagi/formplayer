@@ -15,6 +15,7 @@ import repo.impl.PostgresUserRepo;
 import util.Constants;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
+import util.UserUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
@@ -57,8 +58,8 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 return;
             }
             setToken(request);
-            setUser(request);
             setDomain(request);
+            setUser(request);
             JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
                 setResponseUnauthorized(response);
@@ -88,7 +89,15 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
      * @param request
      */
     private void setUser(FormplayerHttpRequest request) {
-        PostgresUser postgresUser = postgresUserRepo.getUserByDjangoId(request.getToken().getUserId());
+        PostgresUser postgresUser;
+        // Need to handle anonymous user workflow
+        if (request.getToken().getUserId() == Constants.ANONYMOUS_DJANGO_USERID) {
+            postgresUser = postgresUserRepo.getUserByUsername(
+                    UserUtils.anonymousUsername(request.getDomain())
+            );
+        } else {
+            postgresUser = postgresUserRepo.getUserByDjangoId(request.getToken().getUserId());
+        }
         CouchUser couchUser = couchUserRepo.getUserByUsername(postgresUser.getUsername());
 
         request.setCouchUser(couchUser);
@@ -152,6 +161,11 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
         }
         // Check session token is expired
         if (request.getToken().getExpireDate().before(new java.util.Date())){
+            return false;
+        }
+
+        // Ensure that we actually have a couch user
+        if (request.getCouchUser() == null) {
             return false;
         }
 
