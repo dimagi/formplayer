@@ -146,6 +146,8 @@ public class MenuController extends AbstractBaseController{
             menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         } catch (MenuNotFoundException e) {
             return new BaseResponseBean(null, e.getMessage(), true, true);
+        } catch (CommCareSessionException e) {
+            return new BaseResponseBean(null, e.getMessage(), true, true);
         }
         String[] selections = sessionNavigationBean.getSelections();
         return advanceSessionWithSelections(menuSession,
