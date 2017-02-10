@@ -2,7 +2,6 @@ package engine;
 
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
-import org.commcare.cases.util.IndexedValueLookup;
 import org.commcare.cases.util.PredicateProfile;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
@@ -21,12 +20,6 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement {
     @Override
     protected Vector<Integer> getNextIndexMatch(Vector<PredicateProfile> profiles,
                                                 IStorageUtilityIndexed<?> storage) throws IllegalArgumentException {
-        PredicateProfile profile = profiles.get(0);
-        String firstKey = profiles.elementAt(0).getKey();
-        if (firstKey.startsWith(Case.INDEX_CASE_INDEX_PRE)) {
-            profiles.remove(0);
-            return getNextIndexMatch(profiles, storage);
-        }
-        return super.getNextIndexMatch(profiles, storage);
+        throw new IllegalArgumentException();
     }
 }
