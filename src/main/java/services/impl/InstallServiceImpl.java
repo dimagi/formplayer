@@ -7,18 +7,12 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.resources.model.InstallCancelledException;
 import org.commcare.resources.model.UnresolvedResourceException;
-import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import services.FormplayerStorageFactory;
 import services.InstallService;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.File;
-import java.net.URL;
 
 /**
  * The InstallService handles configuring the application,
