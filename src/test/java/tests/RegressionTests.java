@@ -2,10 +2,7 @@ package tests;
 
 import beans.NewFormResponse;
 import beans.SubmitResponseBean;
-import beans.menus.CommandListResponseBean;
-import beans.menus.DisplayElement;
-import beans.menus.EntityDetailResponse;
-import beans.menus.EntityListResponse;
+import beans.menus.*;
 import org.commcare.util.screen.CommCareSessionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +35,18 @@ public class RegressionTests extends BaseTestClass{
     public void testBadCaseSelection() throws Throwable {
         try {
             sessionNavigate(new String[]{"2", "1"}, "doublemgmt", NewFormResponse.class);
+        } catch(Exception e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test
+    public void testBadModuleFilter() throws Throwable {
+        try {
+            BaseResponseBean response = sessionNavigate(new String[]{"0"}, "badmodulefilter", NewFormResponse.class);
+            assert response.getNotification().isError();
+            assert response.getNotification().getMessage().contains("Error evaluating form display condition");
+            assert response.getNotification().getMessage().contains("next_supervision_visit");
         } catch(Exception e) {
             throw e.getCause();
         }

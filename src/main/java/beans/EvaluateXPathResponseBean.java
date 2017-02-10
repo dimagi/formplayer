@@ -2,7 +2,10 @@ package beans;
 
 import org.commcare.suite.model.Text;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.engine.XFormPlayer;
 import org.javarosa.xpath.XPathException;
+import org.javarosa.xpath.XPathParseTool;
+import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import session.FormSession;
 import util.Constants;
@@ -23,8 +26,9 @@ public class EvaluateXPathResponseBean {
         status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
         EvaluationContext evaluationContext = formEntrySession.getFormEntryModel().getForm().getEvaluationContext();
         try {
-            Text mText = Text.XPathText(xpath, new Hashtable<String, Text>());
-            output = mText.evaluate(evaluationContext);
+            XPathExpression  expr = XPathParseTool.parseXPath(xpath);
+            Object val = expr.eval(evaluationContext);
+            output = XFormPlayer.getDisplayString(val);
         } catch (XPathException | XPathSyntaxException e) {
             status = Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
             output = e.getMessage();
