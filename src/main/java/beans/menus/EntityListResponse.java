@@ -192,9 +192,9 @@ public class EntityListResponse extends MenuBean {
             o = field.getTemplate().evaluate(context);
             if(o instanceof GraphData) {
                 try {
-                    data[i] = GraphUtil.getHTML((GraphData) o, "");
+                    data[i] = GraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
                 } catch (GraphException e) {
-                    data[i] = "Error loading graph " + e;
+                    data[i] = "<html><body>Error loading graph " + e + "</body></html>";
                 }
             } else {
                 data[i] = o;
