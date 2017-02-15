@@ -3,9 +3,11 @@ package application;
 import annotations.UserLock;
 import auth.DjangoAuth;
 import auth.HqAuth;
+import auth.TokenAuth;
 import beans.*;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hq.models.PostgresUser;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -25,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
+import repo.impl.PostgresUserRepo;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -79,7 +82,12 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
                                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
-        restoreFactory.configure(session.getUsername(), session.getDomain(), session.getAsUser(), new DjangoAuth(authToken));
+        restoreFactory.configure(
+                session.getUsername(),
+                session.getDomain(),
+                session.getAsUser(),
+                getAuthHeaders(answerQuestionBean.getDomain(), answerQuestionBean.getUsername(), authToken)
+        );
         FormSession formEntrySession = new FormSession(session);
         JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
@@ -97,16 +105,23 @@ public class FormController extends AbstractBaseController{
     @UserLock
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        DjangoAuth auth = new DjangoAuth(authToken);
+
+        HqAuth auth = getAuthHeaders(
+                submitRequestBean.getDomain(),
+                submitRequestBean.getUsername(),
+                authToken
+        );
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
 
         restoreFactory.configure(serializableFormSession.getUsername(),
                 serializableFormSession.getDomain(),
                 serializableFormSession.getAsUser(),
-                auth);
+                auth
+        );
         storageFactory.configure(serializableFormSession.getUsername(),
                 serializableFormSession.getDomain(),
-                serializableFormSession.getAppId());
+                serializableFormSession.getAppId()
+        );
 
         FormSession formEntrySession = new FormSession(serializableFormSession);
         SubmitResponseBean submitResponseBean;
@@ -126,10 +141,11 @@ public class FormController extends AbstractBaseController{
         } else {
             FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
 
-            ResponseEntity<String> submitResponse =
-                    submitService.submitForm(formEntrySession.getInstanceXml(),
-                            formEntrySession.getPostUrl(),
-                            auth);
+            ResponseEntity<String> submitResponse = submitService.submitForm(
+                    formEntrySession.getInstanceXml(),
+                    formEntrySession.getPostUrl(),
+                    auth
+            );
 
             if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                 submitResponseBean.setStatus("error");
