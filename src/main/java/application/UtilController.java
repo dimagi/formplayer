@@ -3,7 +3,6 @@ package application;
 import annotations.NoLogging;
 import annotations.UserLock;
 import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
@@ -36,13 +35,7 @@ public class UtilController extends AbstractBaseController {
     @UserLock
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        HqAuth auth = getAuthHeaders(
-                syncRequest.getDomain(),
-                syncRequest.getUsername(),
-                authToken
-        );
-
-        restoreFactory.configure(syncRequest, auth);
+        restoreFactory.configure(syncRequest, new DjangoAuth(authToken));
 
         if (syncRequest.isPreserveCache()) {
             CaseAPIs.restoreIfNotExists(restoreFactory, false);
