@@ -28,6 +28,9 @@ public class CouchUserRepo {
                 .includeDocs(true)
                 .reduce(false)
                 .query(mClass);
+        if (users.size() == 0) {
+            return null;
+        }
         return users.get(0);
     }
 }
