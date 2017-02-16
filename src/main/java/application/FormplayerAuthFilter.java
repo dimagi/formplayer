@@ -21,6 +21,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +54,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
         if (isAuthorizationRequired(request)) {
             // These are order dependent
             if (getSessionId(request) == null) {
-                setResponseUnauthorized(response);
+                setResponseUnauthorized(response, "Invalid session id");
                 return;
             }
             setToken(request);
@@ -61,7 +62,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
             setDomain(request);
             JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
-                setResponseUnauthorized(response);
+                setResponseUnauthorized(response, "Invalid user");
                 return;
             }
         }
@@ -164,9 +165,22 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
 
     }
 
-    public void setResponseUnauthorized(HttpServletResponse response) {
+    public void setResponseUnauthorized(HttpServletResponse response, String message) {
         response.reset();
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+
+        PrintWriter writer = null;
+        JSONObject responseJSON = new JSONObject();
+        responseJSON.put("error", message);
+        try {
+            writer = response.getWriter();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to write response", e);
+        }
+        writer.write(responseJSON.toString());
+        writer.flush();
+        writer.close();
     }
 
 }
