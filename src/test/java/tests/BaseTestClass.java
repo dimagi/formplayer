@@ -391,7 +391,7 @@ public class BaseTestClass {
                 (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
         return generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
-                Constants.URL_UPDATE,
+                Constants.URL_REPLAY,
                 installRequestBean,
                 CommandListResponseBean.class);
     }

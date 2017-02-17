@@ -1,6 +1,8 @@
 package screens;
 
 import auth.HqAuth;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.util.screen.QueryScreen;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -21,6 +23,8 @@ public class FormplayerQueryScreen extends QueryScreen {
 
     HqAuth auth;
 
+    private final Log log = LogFactory.getLog(FormplayerQueryScreen.class);
+
     public FormplayerQueryScreen(HqAuth auth){
         super();
         this.auth = auth;
@@ -33,6 +37,7 @@ public class FormplayerQueryScreen extends QueryScreen {
         for(String key: params.keySet()){
             builder.queryParam(key, params.get(key));
         }
+        log.info("FormplayerQueryScreen querying with URI " + builder.toUriString());
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
                 restTemplate.exchange(builder.toUriString(),

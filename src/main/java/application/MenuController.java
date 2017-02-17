@@ -22,7 +22,6 @@ import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.endpoint.SystemPublicMetrics;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,19 +58,22 @@ public class MenuController extends AbstractBaseController{
         DjangoAuth auth = new DjangoAuth(authToken);
         restoreFactory.configure(installRequestBean, auth);
         storageFactory.configure(installRequestBean);
-        BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-        return response;
+        return getNextMenu(performInstall(installRequestBean, authToken));
     }
 
-    @ApiOperation(value = "Update the application at the given reference")
-    @RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
+    // Note: This function currently wipes and re-installs the database until real updating can be implemented
+    @ApiOperation(value = "Update the application to latest, then replay the given session")
+    @RequestMapping(value = Constants.URL_REPLAY, method = RequestMethod.POST)
     @UserLock
-    public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
+    public BaseResponseBean replaySessionRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         DjangoAuth auth = new DjangoAuth(authToken);
         restoreFactory.configure(updateRequestBean, auth);
         storageFactory.configure(updateRequestBean);
-        MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
+        ApplicationUtils.deleteApplicationDbs(updateRequestBean.getDomain(),
+                updateRequestBean.getUsername(),
+                updateRequestBean.getAppId());
+        MenuSession updatedSession = performInstall(updateRequestBean, authToken);
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
             try {
@@ -372,6 +374,7 @@ public class MenuController extends AbstractBaseController{
                         bean.getOneQuestionPerScreen(), bean.getRestoreAs());
     }
 
+    // Leaving this here for hopes of the future
     private MenuSession performUpdate(UpdateRequestBean updateRequestBean, String authToken) throws Exception {
         MenuSession currentSession = performInstall(updateRequestBean, authToken);
         currentSession.updateApp(updateRequestBean.getUpdateMode());
