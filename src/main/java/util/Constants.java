@@ -80,6 +80,8 @@ public class Constants {
     ));
 
     public static final int USER_LOCK_TIMEOUT = 120;
+    // 15 minutes in milliseconds
+    public static final int LOCK_DURATION = 60 * 15 * 1000;
 
     // Datadog metrics
     public static final String DATADOG_REQUESTS = "requests";
