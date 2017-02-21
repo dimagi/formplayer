@@ -1,12 +1,15 @@
 package database.models;
 
 import org.commcare.api.persistence.SqlHelper;
+import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
 import org.commcare.cases.query.queryset.DualTableSingleMatchModelQuerySet;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
+import org.commcare.modern.database.TableBuilder;
+import org.commcare.modern.util.Pair;
 import org.sqlite.javax.SQLiteConnectionPoolDataSource;
 
 import java.sql.Connection;
@@ -142,14 +145,14 @@ public class CaseIndexTable {
             connection = dataSource.getConnection();
             PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connection,
                     TABLE_NAME,
-                    new String[] {COL_INDEX_NAME,COL_INDEX_TARGET},
+                    new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
                     args);
             ResultSet resultSet = selectStatement.executeQuery();
             LinkedHashSet<Integer> ret = new LinkedHashSet<>();
             SqliteIndexedStorageUtility.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
             return ret;
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (connection != null) {
                 try {
@@ -159,7 +162,6 @@ public class CaseIndexTable {
                 }
             }
         }
-        return null;
     }
 
     /**
@@ -191,7 +193,7 @@ public class CaseIndexTable {
             SqliteIndexedStorageUtility.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
             return ret;
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (connection != null) {
                 try {
@@ -206,92 +208,113 @@ public class CaseIndexTable {
     public int loadIntoIndexTable(HashMap<String, Vector<Integer>> indexCache, String indexName) {
         int resultsReturned = 0;
         String[] args = new String[]{indexName};
-        if (SqlStorage.STORAGE_OUTPUT_DEBUG) {
-            String query = String.format("SELECT %s,%s %s FROM %s where %s = '%s'", COL_CASE_RECORD_ID, COL_INDEX_NAME, COL_INDEX_TARGET, TABLE_NAME, COL_INDEX_NAME, indexName);
-            DbUtil.explainSql(db, query, null);
-        }
 
-        Cursor c = db.query(TABLE_NAME, new String[]{COL_CASE_RECORD_ID, COL_INDEX_NAME, COL_INDEX_TARGET},COL_INDEX_NAME + " = ?", args, null, null, null);
-
+        Connection connection = null;
         try {
-            if (c.moveToFirst()) {
-                while (!c.isAfterLast()) {
+            connection = dataSource.getConnection();
+            PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connection,
+                    TABLE_NAME,
+                    new String[]{COL_INDEX_NAME},
+                    args);
+            ResultSet resultSet = selectStatement.executeQuery();
+            try {
+                while (resultSet.next()) {
                     resultsReturned++;
-                    int id = c.getInt(c.getColumnIndexOrThrow(COL_CASE_RECORD_ID));
-                    String target = c.getString(c.getColumnIndexOrThrow(COL_INDEX_TARGET));
-
+                    int id = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
+                    String target = resultSet.getString(resultSet.findColumn(COL_INDEX_TARGET));
                     String cacheID = indexName + "|" + target;
                     Vector<Integer> cache;
-                    if(indexCache.containsKey(cacheID)){
+                    if (indexCache.containsKey(cacheID)) {
                         cache = indexCache.get(cacheID);
                     } else {
                         cache = new Vector<>();
                     }
                     cache.add(id);
                     indexCache.put(cacheID, cache);
-                    c.moveToNext();
+                }
+                return resultsReturned;
+            } finally {
+                if (resultSet != null) {
+                    resultSet.close();
                 }
             }
 
-            return resultsReturned;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         } finally {
-            if (c != null) {
-                c.close();
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
-
     }
 
     /**
      * Provided an index name and a list of case row ID's, provides a list of the row ID's of the
      * cases which point to that ID
+     *
      * @param cuedCases
      * @return
      */
     public DualTableSingleMatchModelQuerySet bulkReadIndexToCaseIdMatch(String indexName, Collection<Integer> cuedCases) {
         DualTableSingleMatchModelQuerySet set = new DualTableSingleMatchModelQuerySet();
-        String caseIdIndex = AndroidTableBuilder.scrubName(Case.INDEX_CASE_ID);
+        String caseIdIndex = TableBuilder.scrubName(Case.INDEX_CASE_ID);
 
-        List<Pair<String, String[]>> whereParamList = AndroidTableBuilder.sqlList(cuedCases, "CAST(? as INT)");
-        for(Pair<String, String[]> querySet : whereParamList) {
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases, "CAST(? as INT)");
+        Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
+            for (Pair<String, String[]> querySet : whereParamList) {
 
-            String query =String.format(
-                    "SELECT %s,%s " +
-                            "FROM %s " +
-                            "INNER JOIN %s " +
-                            "ON %s = %s " +
-                            "WHERE %s = '%s' " +
-                            "AND " +
-                            "%s IN %s",
+                String query = String.format(
+                        "SELECT %s,%s " +
+                                "FROM %s " +
+                                "INNER JOIN %s " +
+                                "ON %s = %s " +
+                                "WHERE %s = '%s' " +
+                                "AND " +
+                                "%s IN %s",
 
-                    COL_CASE_RECORD_ID, ACase.STORAGE_KEY + "." + DatabaseHelper.ID_COL,
-                    TABLE_NAME,
-                    ACase.STORAGE_KEY,
-                    COL_INDEX_TARGET, caseIdIndex,
-                    COL_INDEX_NAME, indexName,
-                    COL_CASE_RECORD_ID, querySet.first);
+                        COL_CASE_RECORD_ID, Case.STORAGE_KEY + "." + DatabaseHelper.ID_COL,
+                        TABLE_NAME,
+                        Case.STORAGE_KEY,
+                        COL_INDEX_TARGET, caseIdIndex,
+                        COL_INDEX_NAME, indexName,
+                        COL_CASE_RECORD_ID, querySet.first);
 
-            android.database.Cursor c = db.rawQuery(query, querySet.second);
-
-            try {
-                if (c.getCount() == 0) {
-                    return set;
-                } else {
-                    c.moveToFirst();
-                    while (!c.isAfterLast()) {
-                        int caseId = c.getInt(c.getColumnIndexOrThrow(COL_CASE_RECORD_ID));
-                        int targetCase = c.getInt(c.getColumnIndex(DatabaseHelper.ID_COL));
-                        set.loadResult(caseId, targetCase);
-                        c.moveToNext();
+                PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection, TABLE_NAME, query, querySet.second);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                try {
+                    if (resultSet.getFetchSize() == 0) {
+                        return set;
+                    } else {
+                        while (resultSet.next()) {
+                            int caseId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
+                            int targetCase = resultSet.getInt(resultSet.findColumn(DatabaseHelper.ID_COL));
+                            set.loadResult(caseId, targetCase);
+                        }
                     }
+                } finally {
+                    resultSet.close();
                 }
-            } finally {
-                c.close();
+            }
+            return set;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        return set;
     }
-
 
 
     public static String getArgumentBasedVariableSet(int number) {
