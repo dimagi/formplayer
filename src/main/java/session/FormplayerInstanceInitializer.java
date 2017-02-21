@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * Created by willpride on 1/29/16.
  */
-class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
+public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
     private final Map<String, String> injectedSessionData;
     private final Log log = LogFactory.getLog(FormplayerInstanceInitializer.class);
