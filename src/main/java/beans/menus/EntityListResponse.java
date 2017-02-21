@@ -2,6 +2,9 @@ package beans.menus;
 
 import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
+import org.commcare.core.graph.model.GraphData;
+import org.commcare.core.graph.util.GraphException;
+import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
@@ -187,7 +190,15 @@ public class EntityListResponse extends MenuBean {
         for (DetailField field : fields) {
             Object o;
             o = field.getTemplate().evaluate(context);
-            data[i] = o;
+            if(o instanceof GraphData) {
+                try {
+                    data[i] = GraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
+                } catch (GraphException e) {
+                    data[i] = "<html><body>Error loading graph " + e + "</body></html>";
+                }
+            } else {
+                data[i] = o;
+            }
             i++;
         }
         ret.setData(data);
