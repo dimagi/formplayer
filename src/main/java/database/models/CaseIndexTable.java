@@ -1,5 +1,6 @@
 package database.models;
 
+import org.commcare.api.engine.cases.IndexTable;
 import org.commcare.api.persistence.SqlHelper;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
@@ -21,7 +22,7 @@ import java.util.*;
 /**
  * @author ctsims
  */
-public class CaseIndexTable {
+public class CaseIndexTable implements IndexTable {
     private static final String TABLE_NAME = "case_index_storage";
 
     private static final String COL_CASE_RECORD_ID = "case_rec_id";

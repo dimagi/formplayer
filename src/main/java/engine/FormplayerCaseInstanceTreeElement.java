@@ -1,18 +1,23 @@
 package engine;
 
 import database.models.CaseIndexTable;
+import org.commcare.api.engine.cases.CaseGroupResultCache;
+import org.commcare.api.engine.cases.CaseIndexQuerySetTransform;
+import org.commcare.api.engine.cases.IndexTable;
+import org.commcare.api.engine.cases.query.CaseIndexPrefetchHandler;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
-import org.commcare.cases.query.IndexedSetMemberLookup;
-import org.commcare.cases.query.IndexedValueLookup;
-import org.commcare.cases.query.PredicateProfile;
-import org.commcare.cases.query.QueryContext;
+import org.commcare.cases.query.*;
+import org.commcare.cases.query.handlers.ModelQueryLookupHandler;
+import org.commcare.cases.query.queryset.CaseModelQuerySetMatcher;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.trace.EvaluationTrace;
 import org.javarosa.core.model.utils.CacheHost;
+import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.javarosa.core.util.DataUtil;
 
 import java.util.Collection;
 import java.util.Hashtable;
@@ -24,7 +29,7 @@ import java.util.Vector;
  */
 public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement implements CacheHost {
 
-    private final CaseIndexTable mCaseIndexTable;
+    private final IndexTable mCaseIndexTable;
 
     private final Hashtable<Integer, Integer> multiplicityIdMapping = new Hashtable<>();
 
@@ -42,9 +47,42 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
     }
 
     public FormplayerCaseInstanceTreeElement(AbstractTreeElement instanceRoot, SqliteIndexedStorageUtility<Case> storage,
-                                          CaseIndexTable caseIndexTable) {
+                                             IndexTable caseIndexTable) {
         super(instanceRoot, storage);
         mCaseIndexTable = caseIndexTable;
+    }
+
+    @Override
+    protected void initBasicQueryHandlers(QueryPlanner queryPlanner) {
+        super.initBasicQueryHandlers(queryPlanner);
+        queryPlanner.addQueryHandler(new CaseIndexPrefetchHandler(mCaseIndexTable));
+        CaseModelQuerySetMatcher matcher = new CaseModelQuerySetMatcher(multiplicityIdMapping);
+        matcher.addQuerySetTransform(new CaseIndexQuerySetTransform(mCaseIndexTable));
+        queryPlanner.addQueryHandler(new ModelQueryLookupHandler(matcher));
+    }
+
+
+
+    @Override
+    protected synchronized void loadElements() {
+        if (elements != null) {
+            return;
+        }
+        elements = new Vector<>();
+        //Log.d(TAG, "Getting Cases!");
+        long timeInMillis = System.currentTimeMillis();
+
+        int mult = 0;
+
+        for (IStorageIterator i = ((SqliteIndexedStorageUtility<Case>)storage).iterate(); i.hasMore(); ) {
+            int id = i.nextID();
+            elements.add(buildElement(this, id, null, mult));
+            objectIdMapping.put(DataUtil.integer(id), DataUtil.integer(mult));
+            multiplicityIdMapping.put(DataUtil.integer(mult), DataUtil.integer(id));
+            mult++;
+        }
+        long value = System.currentTimeMillis() - timeInMillis;
+        //Log.d(TAG, "Case iterate took: " + value + "ms");
     }
 
     @Override
@@ -180,16 +218,74 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
 
     @Override
     public String getCacheIndex(TreeReference ref) {
+        //NOTE: there's no evaluation here as to whether the ref is suitable
+        //we only follow one pattern for now and it's evaluated below.
+
+        loadElements();
+
+        //Testing - Don't bother actually seeing whether this fits
+        int i = ref.getMultiplicity(1);
+        if (i != -1) {
+            Integer val = this.multiplicityIdMapping.get(DataUtil.integer(i));
+            if (val == null) {
+                return null;
+            } else {
+                return val.toString();
+            }
+        }
         return null;
     }
 
     @Override
     public boolean isReferencePatternCachable(TreeReference ref) {
-        return false;
+        //we only support one pattern here, a raw, qualified
+        //reference to an element at the case level with no
+        //predicate support. The ref basically has to be a raw
+        //pointer to one of this instance's children
+        if (!ref.isAbsolute()) {
+            return false;
+        }
+
+        if (ref.hasPredicates()) {
+            return false;
+        }
+        if (ref.size() != 2) {
+            return false;
+        }
+
+        if (!"casedb".equalsIgnoreCase(ref.getName(0))) {
+            return false;
+        }
+        if (!"case".equalsIgnoreCase(ref.getName(1))) {
+            return false;
+        }
+        return ref.getMultiplicity(1) >= 0;
+
     }
 
     @Override
     public String[][] getCachePrimeGuess() {
-        return new String[0][];
+        return mMostRecentBatchFetch;
+    }
+
+
+    @Override
+    protected Case getElement(int recordId, QueryContext context) {
+        if(context == null) {
+            return super.getElement(recordId, context);
+        }
+        CaseGroupResultCache cue = context.getQueryCacheOrNull(CaseGroupResultCache.class);
+        if(cue != null && cue.hasMatchingCaseSet(recordId)) {
+            if(!cue.isLoaded(recordId)) {
+                EvaluationTrace loadTrace = new EvaluationTrace("Bulk Case Load");
+                SqliteIndexedStorageUtility<Case> sqlStorage = ((SqliteIndexedStorageUtility<Case>)storage);
+                LinkedHashSet<Integer>  body = cue.getTranche(recordId);
+                sqlStorage.bulkRead(body, cue.getLoadedCaseMap());
+                loadTrace.setOutcome("Loaded: " + body.size());
+                context.reportTrace(loadTrace);
+            }
+            return cue.getLoadedCase(recordId);
+        }
+        return super.getElement(recordId, context);
     }
 }
