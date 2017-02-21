@@ -221,11 +221,9 @@ public class MenuController extends AbstractBaseController{
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             Screen nextScreen = menuSession.getNextScreen();
 
-            checkDoQuery(nextScreen,
+            notificationMessageBean = checkDoQuery(nextScreen,
                     menuSession,
-                    notificationMessageBean,
-                    queryDictionary,
-                    auth);
+                    queryDictionary);
 
             BaseResponseBean syncResponse = checkDoSync(nextScreen,
                     menuSession,
@@ -275,32 +273,30 @@ public class MenuController extends AbstractBaseController{
      *
      * Will do nothing if this wasn't a query screen.
      */
-    private void checkDoQuery(Screen nextScreen,
+    private NotificationMessageBean checkDoQuery(Screen nextScreen,
                               MenuSession menuSession,
-                              NotificationMessageBean notificationMessageBean,
-                              Hashtable<String, String> quertDictionary,
-                              DjangoAuth auth) throws CommCareSessionException {
-        if(nextScreen instanceof FormplayerQueryScreen && quertDictionary != null){
-            log.info("Formplayer doing query with dictionary " + quertDictionary);
-            notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
-                    quertDictionary,
-                    auth);
+                              Hashtable<String, String> queryDictionary) throws CommCareSessionException {
+        if(nextScreen instanceof FormplayerQueryScreen && queryDictionary != null){
+            log.info("Formplayer doing query with dictionary " + queryDictionary);
+            NotificationMessageBean notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
+                    queryDictionary);
             menuSession.updateScreen();
             nextScreen = menuSession.getNextScreen();
             log.info("Next screen after query: " + nextScreen);
+            return notificationMessageBean;
         }
+        return null;
     }
 
     protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
-                                              Hashtable<String, String> queryDictionary,
-                                              HqAuth auth) {
+                                              Hashtable<String, String> queryDictionary) {
         nextScreen.answerPrompts(queryDictionary);
         InputStream responseStream = nextScreen.makeQueryRequestReturnStream();
         boolean success = nextScreen.processSuccess(responseStream);
         if(success){
             return new NotificationMessageBean("Successfully queried server", false);
         } else{
-            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), false);
+            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), true);
         }
     }
 
