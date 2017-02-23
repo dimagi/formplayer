@@ -37,7 +37,7 @@ public class FilterTests extends BaseTestClass {
         assert(syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
         assert(SqlSandboxUtils.databaseFolderExists(SQLiteProperties.getDataDir()));
 
-        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("synctestuser", SQLiteProperties.getDataDir() + "synctestdomain");
+        UserSqlSandbox sandbox = new UserSqlSandbox("synctestuser", SQLiteProperties.getDataDir() + "synctestdomain");
 
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
