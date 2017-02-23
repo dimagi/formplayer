@@ -6,6 +6,7 @@ import beans.AuthenticatedRequestBean;
 import exceptions.AsyncRetryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.services.PropertyManager;

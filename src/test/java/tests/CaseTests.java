@@ -34,7 +34,7 @@ public class CaseTests extends BaseTestClass {
         NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
 
-        UserSqlSandbox sandbox = SqlSandboxUtils.getStaticStorage("test3", SQLiteProperties.getDataDir() + "test");
+        UserSqlSandbox sandbox = new UserSqlSandbox("test3", SQLiteProperties.getDataDir() + "test");
 
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 

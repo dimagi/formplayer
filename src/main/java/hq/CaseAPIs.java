@@ -36,7 +36,6 @@ public class CaseAPIs {
         if (restoreFactory.isRestoreXmlExpired()) {
             SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         }
-
         File db = new File(restoreFactory.getDbFile());
         if(db.exists()){
             return restoreFactory.getSqlSandbox();
@@ -65,7 +64,7 @@ public class CaseAPIs {
 
     private static UserSqlSandbox restoreUser(String username, String path, String restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
-        UserSqlSandbox mSandbox = SqlSandboxUtils.getStaticStorage(username, path);
+        UserSqlSandbox mSandbox = new UserSqlSandbox(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
         // initialize our sandbox's logged in user
