@@ -19,6 +19,7 @@ import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
@@ -242,7 +243,8 @@ public abstract class AbstractBaseController {
             CommCareSessionException.class,
             FormNotFoundException.class,
             RecordTooLargeException.class,
-            InvalidStructureException.class})
+            InvalidStructureException.class,
+            UnresolvedResourceException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
