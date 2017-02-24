@@ -71,11 +71,10 @@ public class CasePaginationTests extends BaseTestClass {
         EntityDetailResponse firstDetail = details2.getEntityDetailList()[0];
         EntityDetailResponse secondDetail = details2.getEntityDetailList()[1];
 
-        assert firstDetail.getDetails().length == 4;
-        assert secondDetail.getDetails().length == 6;
+        assert firstDetail.getDetails().length == 3;
+        assert secondDetail.getDetails().length == 0;
 
         assert firstDetail.getHeaders()[0].equals("Name");
-        assert secondDetail.getHeaders()[2].equals("Intval");
     }
 
     // test that searching (filtering the case list) works

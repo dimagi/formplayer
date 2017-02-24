@@ -360,6 +360,24 @@ public class BaseTestClass {
                 clazz);
     }
 
+    <T> T sessionNavigate(String[] selections, String testName, String locale, Class<T> clazz, String restoreAs) throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setRestoreAs(restoreAs);
+        if (locale != null && !"".equals(locale.trim())) {
+            sessionNavigationBean.setLocale(locale);
+        }
+        return generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
     <T> T sessionNavigateWithId(String[] selections, String sessionId, Class<T> clazz) throws Exception {
         SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(sessionId);
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();

@@ -1,6 +1,7 @@
 package session;
 
 import auth.HqAuth;
+import engine.FormplayerConfigEngine;
 import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,7 +61,7 @@ import java.util.UUID;
 @EnableAutoConfiguration
 @Component
 public class MenuSession {
-    private CommCareConfigEngine engine;
+    private FormplayerConfigEngine engine;
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
     private String installReference;
@@ -92,7 +93,7 @@ public class MenuSession {
 
         this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
 
-        this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
+        this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
@@ -111,7 +112,7 @@ public class MenuSession {
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference);
         this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
-        this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
