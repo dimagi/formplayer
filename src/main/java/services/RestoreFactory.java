@@ -6,11 +6,14 @@ import beans.AuthenticatedRequestBean;
 import exceptions.AsyncRetryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.services.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -23,12 +26,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Resource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
@@ -43,6 +48,19 @@ public class RestoreFactory {
     private String username;
     private String domain;
     private HqAuth hqAuth;
+
+    public static final String FREQ_DAILY = "freq-daily";
+    public static final String FREQ_WEEKLY = "freq-weekly";
+    public static final String FREQ_NEVER = "freq-never";
+
+    public static final Long ONE_DAY_IN_MILLISECONDS = 86400000l;
+    public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
+
+    @Autowired
+    private RedisTemplate redisTemplateLong;
+
+    @Resource(name="redisTemplateLong")
+    private ValueOperations<String, Long> valueOperations;
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
@@ -87,26 +105,89 @@ public class RestoreFactory {
         return new UserSqlSandbox(getWrappedUsername(), getDbPath());
     }
 
-    public String getRestoreXml() {
-        if (cachedRestore != null) {
-            return cachedRestore;
-        }
+    private void ensureValidParameters() {
         if (domain == null || (username == null && asUsername == null)) {
             throw new RuntimeException("Domain and one of username or asUsername must be non-null. " +
                     " Domain: " + domain +
                     ", username: " + username +
                     ", asUsername: " + asUsername);
         }
+    }
+
+    public String getSyncFreqency() {
+        try {
+            return (String) PropertyManager.instance().getProperty("cc-autosync-freq").get(0);
+        } catch (RuntimeException e) {
+            // In cases where we don't have access to the PropertyManager, such sync-db, this call
+            // throws a RuntimeException
+            return RestoreFactory.FREQ_NEVER;
+        }
+    }
+
+    /**
+     * Based on the frequency of restore set in the app, this method determines
+     * whether the user should sync
+     *
+     * @return boolean - true if restore has expired, false otherwise
+     */
+    public boolean isRestoreXmlExpired() {
+        String freq = getSyncFreqency();
+        Long lastSyncTime = getLastSyncTime();
+        if (lastSyncTime == null) {
+            return false;
+        }
+        Long delta = System.currentTimeMillis() - lastSyncTime;
+
+        switch (freq) {
+            case FREQ_DAILY:
+                return delta > ONE_DAY_IN_MILLISECONDS;
+            case FREQ_WEEKLY:
+                return delta > ONE_WEEK_IN_MILLISECONDS;
+            case FREQ_NEVER:
+                return false;
+            default:
+                return false;
+        }
+    }
+
+    public String getRestoreXml() {
+        return getRestoreXml(false);
+    }
+
+    public String getRestoreXml(boolean overwriteCache) {
+        if (cachedRestore != null) {
+            return cachedRestore;
+        }
+        ensureValidParameters();
+
         String restoreUrl;
         if (asUsername == null) {
-            restoreUrl = getRestoreUrl(host, domain);
+            restoreUrl = getRestoreUrl(host, domain, overwriteCache);
         } else {
-            restoreUrl = getRestoreUrl(host, domain, asUsername);
+            restoreUrl = getRestoreUrl(host, domain, asUsername, overwriteCache);
         }
 
         log.info("Restoring from URL " + restoreUrl);
         cachedRestore = getRestoreXmlHelper(restoreUrl, hqAuth);
+        setLastSyncTime();
         return cachedRestore;
+    }
+
+    private void setLastSyncTime() {
+        valueOperations.set(lastSyncKey(), System.currentTimeMillis(), 10, TimeUnit.DAYS);
+    }
+
+    public Long getLastSyncTime() {
+        // valueOperations should only be null when we don't have access to Redis.
+        // This currently only happens in tests.
+        if (valueOperations == null) {
+            return null;
+        }
+        return valueOperations.get(lastSyncKey());
+    }
+
+    private String lastSyncKey() {
+        return "last-sync-time:" + domain + ":" + username + ":" + asUsername;
     }
 
     /**
@@ -180,13 +261,22 @@ public class RestoreFactory {
         return response.getBody();
     }
 
-    public static String getRestoreUrl(String host, String domain){
-        return host + "/a/" + domain + "/phone/restore/?version=2.0";
+    public static String getRestoreUrl(String host, String domain, boolean overwriteCache){
+        String url = host + "/a/" + domain + "/phone/restore/?version=2.0";
+        if (overwriteCache) {
+            url += "&overwrite_cache=true";
+        }
+        return url;
     }
 
-    public String getRestoreUrl(String host, String domain, String username) {
-        return host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
+    public String getRestoreUrl(String host, String domain, String username, boolean overwriteCache) {
+        String url = host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
                 domain + ".commcarehq.org&version=2.0";
+
+        if (overwriteCache) {
+            url += "&overwrite_cache=true";
+        }
+        return url;
     }
 
     public String getUsername() {

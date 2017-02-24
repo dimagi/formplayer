@@ -44,8 +44,9 @@
 
 trunk: master
 name: autostaging
-branches: []
+branches:
+  - wsp/fixture-storage
 submodules:
   libs/commcare:
     branches:
-      - bmb/update-currentindex
+      - wsp/fixture-storage

@@ -5,6 +5,7 @@ import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
+import com.timgroup.statsd.StatsDClient;
 import exceptions.ApplicationConfigException;
 import exceptions.AsyncRetryException;
 import exceptions.FormNotFoundException;
@@ -18,16 +19,19 @@ import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.*;
+import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xpath.XPathException;
+import org.javarosa.xpath.XPathTypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -45,6 +49,7 @@ import services.NewFormResponseFactory;
 import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
+import util.Constants;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
 
@@ -80,6 +85,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected FormplayerStorageFactory storageFactory;
+
+    @Autowired
+    protected StatsDClient datadogStatsDClient;
 
     @Value("${commcarehq.host}")
     private String hqHost;
@@ -127,7 +135,9 @@ public abstract class AbstractBaseController {
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
             if(menuSession.getSessionWrapper().getForm() != null) {
-                return generateFormEntryScreen(menuSession);
+                NewFormResponse formResponseBean = generateFormEntryScreen(menuSession);
+                formResponseBean.setBreadcrumbs(breadcrumbs);
+                return formResponseBean;
             } else{
                 return null;
             }
@@ -233,12 +243,23 @@ public abstract class AbstractBaseController {
             CommCareSessionException.class,
             FormNotFoundException.class,
             RecordTooLargeException.class,
-            InvalidStructureException.class})
+            InvalidStructureException.class,
+            UnresolvedResourceException.class})
     @ResponseBody
-    public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest req, Exception exception) {
-        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+    public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
+        log.error("Request: " + request.getRequestURL() + " raised " + exception);
+        incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
+        return getPrettyExceptionResponse(exception, request);
+    }
 
-        return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+    private ExceptionResponseBean getPrettyExceptionResponse(Exception exception, FormplayerHttpRequest request) {
+        String message = exception.getMessage();
+        if (exception instanceof XPathTypeMismatchException && message.contains("instance(groups)")) {
+            message = "The case sharing settings for your user are incorrect. " +
+                    "This user must be in exactly one case sharing group. " +
+                    "Please contact your supervisor.";
+        }
+        return new ExceptionResponseBean(message, request.getRequestURL().toString());
     }
 
     /**
@@ -247,6 +268,7 @@ public abstract class AbstractBaseController {
     @ExceptionHandler({HttpClientErrorException.class})
     @ResponseBody
     public ExceptionResponseBean handleHttpRequestError(FormplayerHttpRequest req, HttpClientErrorException exception) {
+        incrementDatadogCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
         return new ExceptionResponseBean(exception.getResponseBodyAsString(), req.getRequestURL().toString());
     }
 
@@ -269,6 +291,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
 
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
@@ -277,6 +300,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     public ExceptionResponseBean handleError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
         try {
             sendExceptionEmail(req, exception);
@@ -285,6 +309,23 @@ public abstract class AbstractBaseController {
             log.error("Unable to send email");
         }
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+    }
+
+    private void incrementDatadogCounter(String metric, FormplayerHttpRequest req) {
+        String user = "unknown";
+        String domain = "unknown";
+        if (req.getCouchUser() != null) {
+            user = req.getCouchUser().getUsername();
+        }
+        if (req.getDomain() != null) {
+            domain = req.getDomain();
+        }
+        datadogStatsDClient.increment(
+                metric,
+                "domain:" + domain,
+                "user:" + user,
+                "request:" + req.getRequestURL()
+        );
     }
 
     private void sendExceptionEmail(FormplayerHttpRequest req, Exception exception) {

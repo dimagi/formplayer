@@ -35,12 +35,17 @@ public class LockAspect {
         }
 
         AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
-        Lock lock = getLockAndBlock(TableBuilder.scrubName(bean.getUsername()));
+        Lock lock = getLockAndBlock(TableBuilder.scrubName(bean.getUsernameDetail()));
         try {
             return joinPoint.proceed();
         } finally {
             if (lock != null) {
-                lock.unlock();
+                try {
+                    lock.unlock();
+                } catch (IllegalStateException e) {
+                    // Lock was released after expiration
+                    throw new IllegalStateException("That request took too long to process, please try again.", e);
+                }
             }
         }
     }

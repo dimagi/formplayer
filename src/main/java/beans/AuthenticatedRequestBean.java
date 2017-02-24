@@ -33,4 +33,18 @@ public class AuthenticatedRequestBean {
     public void setRestoreAs(String restoreAs) {
         this.restoreAs = restoreAs;
     }
+
+    public String getUsernameDetail() {
+        if (restoreAs != null) {
+            return username + "_" + restoreAs;
+        }
+        return username;
+    }
+
+    @Override
+    public String toString() {
+        return "Authenticated request bean wih username=" + username +
+                ", domain=" + domain +
+                ", restoreAs=" + restoreAs;
+    }
 }

@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 import repo.TokenRepo;
 import repo.impl.CouchUserRepo;
 import repo.impl.PostgresUserRepo;
@@ -20,6 +21,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +34,7 @@ import java.util.regex.Pattern;
  * @author wspride
  */
 @Component
-public class FormplayerAuthFilter implements Filter {
+public class FormplayerAuthFilter extends OncePerRequestFilter {
 
     @Autowired
     TokenRepo tokenRepo;
@@ -47,18 +49,12 @@ public class FormplayerAuthFilter implements Filter {
     RedisLockRegistry userLockRegistry;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-
-    }
-
-    @Override
-    public void doFilter(ServletRequest req, ServletResponse res,
-                         FilterChain chain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         FormplayerHttpRequest request = new FormplayerHttpRequest((HttpServletRequest) req);
         if (isAuthorizationRequired(request)) {
             // These are order dependent
             if (getSessionId(request) == null) {
-                setResponseUnauthorized((HttpServletResponse) res);
+                setResponseUnauthorized(response, "Invalid session id");
                 return;
             }
             setToken(request);
@@ -66,12 +62,11 @@ public class FormplayerAuthFilter implements Filter {
             setDomain(request);
             JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
-                setResponseUnauthorized((HttpServletResponse) res);
+                setResponseUnauthorized(response, "Invalid user");
                 return;
             }
         }
-
-        chain.doFilter(request, res);
+        filterChain.doFilter(request, response);
     }
 
     private String getUsername(JSONObject data) {
@@ -170,9 +165,22 @@ public class FormplayerAuthFilter implements Filter {
 
     }
 
-    public void setResponseUnauthorized(HttpServletResponse response) {
+    public void setResponseUnauthorized(HttpServletResponse response, String message) {
         response.reset();
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+
+        PrintWriter writer = null;
+        JSONObject responseJSON = new JSONObject();
+        responseJSON.put("error", message);
+        try {
+            writer = response.getWriter();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to write response", e);
+        }
+        writer.write(responseJSON.toString());
+        writer.flush();
+        writer.close();
     }
 
 }

@@ -16,6 +16,7 @@ import org.commcare.api.process.FormRecordProcessorHelper;
 import org.commcare.api.util.ApiConstants;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.xml.util.InvalidStructureException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,7 +62,7 @@ public class FormController extends AbstractBaseController{
     private final ObjectMapper mapper = new ObjectMapper();
 
     @ApiOperation(value = "Start a new form entry session")
-    @RequestMapping(value = Constants.URL_NEW_SESSION , method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
     public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
@@ -88,18 +89,6 @@ public class FormController extends AbstractBaseController{
         responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setSequenceId(formEntrySession.getSequenceId());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
-        return responseBean;
-    }
-
-    @ApiOperation(value = "Get the current question (deprecated)")
-    @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.GET)
-    @ResponseBody
-    @UserLock
-    public FormEntryResponseBean getCurrent(@RequestBody CurrentRequestBean currentRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(currentRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
-        JSONObject resp = JsonActionUtils.getCurrentJson(formEntrySession.getFormEntryController(), formEntrySession.getFormEntryModel());
-        FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
         return responseBean;
     }
 
@@ -136,7 +125,14 @@ public class FormController extends AbstractBaseController{
                 || !submitRequestBean.isPrevalidated()) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
-            FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
+            try {
+                FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
+            } catch(InvalidStructureException e) {
+                submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+                submitResponseBean.setNotification(new NotificationMessageBean(e.getMessage(), true));
+                log.error("Submission failed with structure exception " + e);
+                return submitResponseBean;
+            }
 
             ResponseEntity<String> submitResponse =
                     submitService.submitForm(formEntrySession.getInstanceXml(),
@@ -207,17 +203,6 @@ public class FormController extends AbstractBaseController{
         return submitResponseBean;
     }
 
-    @ApiOperation(value = "Get the current instance XML")
-    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.POST)
-    @ResponseBody
-    @UserLock
-    public InstanceXmlBean getInstance(@RequestBody GetInstanceRequestBean getInstanceRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(getInstanceRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession);
-        InstanceXmlBean instanceXmlBean = new InstanceXmlBean(formEntrySession);
-        return instanceXmlBean;
-    }
-
     @ApiOperation(value = "Expand the repeat at the given index")
     @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.POST)
     @ResponseBody
@@ -249,24 +234,6 @@ public class FormController extends AbstractBaseController{
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
-        return responseBean;
-    }
-
-    // Functions pertaining to One Question Per Screen (OQPS) mode
-
-    @ApiOperation(value = "Get the question for the current index")
-    @RequestMapping(value = Constants.URL_QUESTIONS_FOR_INDEX, method = RequestMethod.POST)
-    @ResponseBody
-    @UserLock
-    public FormEntryResponseBean jumpToIndex(@RequestBody JumpToIndexRequestBean requestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
-        FormSession formSession = new FormSession(serializableFormSession);
-        formSession.setCurrentIndex(requestBean.getFormIndex());
-        JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
-                formSession.getFormEntryModel(),
-                formSession.getCurrentIndex());
-        updateSession(formSession, serializableFormSession);
-        FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
         return responseBean;
     }
 

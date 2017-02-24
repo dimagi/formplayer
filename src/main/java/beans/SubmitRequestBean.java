@@ -1,8 +1,6 @@
 package beans;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.util.Map;
 
@@ -11,21 +9,11 @@ import java.util.Map;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SubmitRequestBean extends SessionRequestBean {
-    private Map<String, Object> formContext;
     private boolean prevalidated;
     private Map<String, Object> answers;
 
     public SubmitRequestBean(){
 
-    }
-
-    @JsonGetter(value = "form_context")
-    public Map<String, Object> getFormContext() {
-        return formContext;
-    }
-    @JsonSetter(value = "form_context")
-    public void setFormContext(Map<String, Object> formContext) {
-        this.formContext = formContext;
     }
 
     public boolean isPrevalidated() {
@@ -46,7 +34,7 @@ public class SubmitRequestBean extends SessionRequestBean {
 
     @Override
     public String toString(){
-        return "Submit Request Bean [formContent: " + formContext + ", sessionId: " + sessionId +
+        return "Submit Request Bean [sessionId: " + sessionId +
                 ", prevalidated=" + prevalidated + ", answers=" + answers + "]";
     }
 }

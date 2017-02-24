@@ -1,6 +1,7 @@
 package session;
 
 import auth.HqAuth;
+import engine.FormplayerConfigEngine;
 import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,7 +61,7 @@ import java.util.UUID;
 @EnableAutoConfiguration
 @Component
 public class MenuSession {
-    private CommCareConfigEngine engine;
+    private FormplayerConfigEngine engine;
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
     private String installReference;
@@ -90,14 +91,14 @@ public class MenuSession {
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference);
 
-        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
 
-        this.sessionWrapper = new SessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
+        this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
         this.screen = getNextScreen();
-        this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
+        this.appId = session.getAppId();
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -106,16 +107,16 @@ public class MenuSession {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
         this.auth = auth;
+        this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference);
-        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory);
-        this.sessionWrapper = new SessionWrapper(engine.getPlatform(), sandbox);
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
-        this.appId = this.engine.getPlatform().getCurrentProfile().getUniqueId();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
     
@@ -166,7 +167,7 @@ public class MenuSession {
             screen = getNextScreen();
             log.info("Screen " + screen + " set to " + ret);
             return true;
-        } catch(ArrayIndexOutOfBoundsException e) {
+        } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
                     " threw exception " + e.getMessage() + ". Please try reloading this application" +
                     " and if the problem persists please report a bug.", e);

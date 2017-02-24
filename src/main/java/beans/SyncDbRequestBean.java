@@ -7,5 +7,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SyncDbRequestBean extends AuthenticatedRequestBean {
+    private boolean preserveCache;
+
     public SyncDbRequestBean(){}
+
+    public boolean isPreserveCache() {
+        return preserveCache;
+    }
+
+    public void setPreserveCache(boolean preserveCache) {
+        this.preserveCache = preserveCache;
+    }
 }

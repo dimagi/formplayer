@@ -6,9 +6,14 @@ import installers.FormplayerInstallerFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.modern.reference.ArchiveFileRoot;
+import org.commcare.modern.reference.JavaHttpRoot;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.io.BufferedInputStream;
 import org.javarosa.core.io.StreamsUtil;
+import org.javarosa.core.reference.ReferenceManager;
+import org.javarosa.core.reference.ResourceReferenceFactory;
+import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.json.JSONObject;
 
@@ -68,5 +73,18 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
             throw new FormattedApplicationConfigException(errorJson.getString("error_html"));
         }
         throw new ApplicationConfigException(errorJson.getJSONArray("errors").join(" "));
+    }
+
+    @Override
+    protected void setRoots() {
+        super.setRoots();
+        ReferenceManager.instance().addReferenceFactory(new ClasspathFileRoot());
+    }
+
+    @Override
+    public void initEnvironment() {
+        super.initEnvironment();
+        Localization.registerLanguageReference("default",
+                "jr://springfile/formplayer_translatable_strings.txt");
     }
 }
