@@ -16,6 +16,7 @@ import org.commcare.api.process.FormRecordProcessorHelper;
 import org.commcare.api.util.ApiConstants;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.xml.util.InvalidStructureException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -124,7 +125,14 @@ public class FormController extends AbstractBaseController{
                 || !submitRequestBean.isPrevalidated()) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
-            FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
+            try {
+                FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
+            } catch(InvalidStructureException e) {
+                submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+                submitResponseBean.setNotification(new NotificationMessageBean(e.getMessage(), true));
+                log.error("Submission failed with structure exception " + e);
+                return submitResponseBean;
+            }
 
             ResponseEntity<String> submitResponse =
                     submitService.submitForm(formEntrySession.getInstanceXml(),
