@@ -1,10 +1,8 @@
 package tests;
 
-import auth.HqAuth;
 import beans.NewFormResponse;
 import beans.SubmitResponseBean;
 import beans.menus.*;
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -12,10 +10,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.FileUtils;
 import utils.TestContext;
 
-import java.io.IOException;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -28,9 +22,12 @@ public class DoubleManagementTest  extends BaseTestClass{
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "restores/parent_child.xml"));
         configureRestoreFactory("doublemgmtdomain", "doublemgmtusername");
+    }
+
+    @Override
+    protected String getMockRestoreFileName() {
+        return "restores/parent_child.xml";
     }
 
     @Test
@@ -49,8 +46,8 @@ public class DoubleManagementTest  extends BaseTestClass{
 
         assert entityListResponse.getEntities().length == 2;
         assert entityListResponse.getTitle().equals("Parent (2)");
-        assert entityListResponse.getAction() != null;
-        assert entityListResponse.getAction().getText().equals("New Parent");
+        assert entityListResponse.getActions() != null;
+        assert entityListResponse.getActions()[0].getText().equals("New Parent");
 
         NewFormResponse newFormResponse =
                 sessionNavigate(new String[] {"2", "action 0"}, "doublemgmt", NewFormResponse.class);
@@ -89,13 +86,14 @@ public class DoubleManagementTest  extends BaseTestClass{
 
         assert entityListResponse.getEntities().length == 2;
         assert entityListResponse.getTitle().equals("Parent (2)");
-        assert entityListResponse.getAction() != null;
-        assert entityListResponse.getAction().getText().equals("New Parent");
+        assert entityListResponse.getActions() != null;
+        assert entityListResponse.getActions()[0].getText().equals("New Parent");
 
-        EntityDetailResponse newFormSessionResponse = entityListResponse.getEntities()[0].getDetails()[0];
+        EntityDetailListResponse detailListResponse =
+                getDetails(new String[] {"2", "a9fde9ae-24ee-4d70-9cb4-20f266a62ef8"}, "doublemgmt", EntityDetailListResponse.class);
 
-        assert newFormSessionResponse.getTitle().equals("Cases");
-        assert newFormSessionResponse.getDetails().length == 1;
+        assert detailListResponse.getEntityDetailList()[0].getTitle().equals("Cases");
+        assert detailListResponse.getEntityDetailList().length == 1;
     }
 
     @Test
@@ -121,9 +119,9 @@ public class DoubleManagementTest  extends BaseTestClass{
         EntityListResponse entityListResponse =
                 sessionNavigate(new String[] {"2"}, "doublemgmt", EntityListResponse.class);
         assert entityListResponse.getTitle().equals("Parent (2)");
-        assert entityListResponse.getEntities().length == 3;
-        assert entityListResponse.getAction() != null;
-        DisplayElement action = entityListResponse.getAction();
+        assert entityListResponse.getEntities().length == 2;
+        assert entityListResponse.getActions() != null;
+        DisplayElement action = entityListResponse.getActions()[0];
         assert action.getText().equals("New Parent");
 
         CommandListResponseBean commandListResponse =

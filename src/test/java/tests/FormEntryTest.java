@@ -73,19 +73,17 @@ public class FormEntryTest extends BaseTestClass{
         Double longitude = geoCoordinates.get(1);
         assert longitude.equals(7.723388671875);
 
-
-        //Test Current Session
-        FormEntryResponseBean formEntryResponseBean = getCurrent(sessionId);
-
-        //Test Get Instance
-        InstanceXmlBean instanceXmlBean = getInstance(sessionId);
-
         //Test Evaluate XPath
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/q_text");
         assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         assert evaluateXPathResponseBean.getOutput().equals("William Pride");
 
-        evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/broken");
+        // We shouldn't error when a path doesn't exist
+        evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/not_broken");
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+
+        // However, we should error when the path is invalid
+        evaluateXPathResponseBean = evaluateXPath(sessionId, "!data/broken");
         assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
 
         //Test Submission
@@ -145,13 +143,6 @@ public class FormEntryTest extends BaseTestClass{
         String sessionId = newSessionResponse.getSessionId();
 
         assert newSessionResponse.getTree().length == 1;
-
-        FormEntryResponseBean response1 = jumpToIndex("1", sessionId);
-        assert response1.getTree().length == 1;
-
-        FormEntryResponseBean response2 = jumpToIndex("2", sessionId);
-        assert response2.getTree().length == 3;
-
     }
 
     // Tests for OQPS next and previous methods

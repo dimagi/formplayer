@@ -16,23 +16,20 @@ public class Constants {
     public final static String URL_ANSWER_QUESTION = "answer";
     public final static String URL_CURRENT = "current";
     public final static String URL_SUBMIT_FORM = "submit-all";
-    public final static String URL_GET_INSTANCE = "get-instance";
     public final static String URL_EVALUATE_XPATH = "evaluate-xpath";
     public final static String URL_NEW_REPEAT = "new-repeat";
     public final static String URL_DELETE_REPEAT = "delete-repeat";
-    public final static String URL_FILTER_CASES = "filter_cases";
-    public final static String URL_FILTER_CASES_FULL = "filter_cases_full";
     public final static String URL_SYNC_DB = "sync-db";
     public final static String URL_LIST_SESSIONS = "sessions";
     public final static String URL_GET_SESSION = "get_session";
     public static final String URL_INSTALL = "install";
     public static final String URL_UPDATE = "update";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
+    public static final String URL_GET_DETAILS = "get_details";
     public static final String URL_GET_SESSIONS = "get_sessions";
     public static final String URL_SERVER_UP = "serverup";
     public static final String URL_PREVIEW_FORM = "preview_form";
     public static final String URL_DELETE_APPLICATION_DBS = "delete_application_dbs";
-    public static final String URL_QUESTIONS_FOR_INDEX = "questions_for_index";
     public static final String URL_NEXT_INDEX = "next_index";
     public static final String URL_PREV_INDEX = "prev_index";
     public static final String URL_VALIDATE_FORM = "validate_form";
@@ -83,5 +80,18 @@ public class Constants {
     ));
 
     public static final int USER_LOCK_TIMEOUT = 120;
+    // 15 minutes in milliseconds
+    public static final int LOCK_DURATION = 60 * 15 * 1000;
+
+    // Datadog metrics
+    public static final String DATADOG_REQUESTS = "requests";
+    public static final String DATADOG_TIMINGS = "timings";
+
+    // Errors
+    public static final String DATADOG_ERRORS_APP_CONFIG = "errors.app_config";
+    public static final String DATADOG_ERRORS_EXTERNAL_REQUEST = "errors.external_request";
+    public static final String DATADOG_ERRORS_CRASH = "errors.crash";
+    // End Datadog metrics
+
 
 }

@@ -2,7 +2,7 @@ package installers;
 
 import org.commcare.resources.model.installers.OfflineUserRestoreInstaller;
 import org.commcare.suite.model.OfflineUserRestore;
-import org.javarosa.core.services.storage.IStorageUtility;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
@@ -26,7 +26,7 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
     }
 
     @Override
-    protected IStorageUtility<OfflineUserRestore> storage() {
+    protected IStorageUtilityIndexed<OfflineUserRestore> storage() {
         if (cacheStorage == null) {
             cacheStorage = storageFactory.newStorage(OfflineUserRestore.STORAGE_KEY, OfflineUserRestore.class);
         }
@@ -36,17 +36,19 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
     @Override
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
         super.readExternal(in, pf);
-        String databasePath = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
-        String trimmedUsername = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
+        String username = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
+        String domain = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
+        String appId = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
         storageFactory = new FormplayerStorageFactory();
-        storageFactory.configure(databasePath, trimmedUsername);
+        storageFactory.configure(username, domain, appId);
 
     }
 
     @Override
     public void writeExternal(DataOutputStream out) throws IOException {
         super.writeExternal(out);
-        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getDatabasePath()));
-        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getTrimmedUsername()));
+        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getUsername()));
+        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getDomain()));
+        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getAppId()));
     }
 }

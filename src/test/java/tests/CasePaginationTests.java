@@ -1,6 +1,7 @@
 package tests;
 
 import beans.menus.EntityBean;
+import beans.menus.EntityDetailListResponse;
 import beans.menus.EntityDetailResponse;
 import beans.menus.EntityListResponse;
 import org.commcare.cases.entity.Entity;
@@ -23,9 +24,12 @@ public class CasePaginationTests extends BaseTestClass {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
         configureRestoreFactory("loaddomain", "loaduser");
+    }
+
+    @Override
+    protected String getMockRestoreFileName() {
+        return "restores/ccqa.xml";
     }
 
     @Test
@@ -48,7 +52,11 @@ public class CasePaginationTests extends BaseTestClass {
         assert entityListResponse.getEntities().length == EntityListResponse.CASE_LENGTH_LIMIT;
         assert entityListResponse.getCurrentPage() == 0;
         assert entityListResponse.getPageCount() == 8;
-        assert entityListResponse.getEntities()[0].getDetails().length == 2;
+
+        EntityDetailListResponse details =
+                getDetails("requests/get_details/pagination_navigator_details.json", EntityDetailListResponse.class);
+
+        assert details.getEntityDetailList().length == 2;
 
         EntityListResponse entityListResponse2 =
                 sessionNavigate("requests/navigators/pagination_navigator_1.json", EntityListResponse.class);
@@ -56,15 +64,17 @@ public class CasePaginationTests extends BaseTestClass {
         assert entityListResponse2.getCurrentPage() == 7;
         assert entityListResponse2.getPageCount() == 8;
 
-        assert entityListResponse2.getEntities()[0].getDetails().length == 2;
-        EntityDetailResponse firstDetail = entityListResponse2.getEntities()[0].getDetails()[0];
-        EntityDetailResponse secondDetail = entityListResponse2.getEntities()[0].getDetails()[1];
+        EntityDetailListResponse details2 =
+                getDetails("requests/get_details/pagination_navigator_details_1.json", EntityDetailListResponse.class);
 
-        assert firstDetail.getDetails().length == 4;
-        assert secondDetail.getDetails().length == 6;
+        assert details2.getEntityDetailList().length == 2;
+        EntityDetailResponse firstDetail = details2.getEntityDetailList()[0];
+        EntityDetailResponse secondDetail = details2.getEntityDetailList()[1];
+
+        assert firstDetail.getDetails().length == 3;
+        assert secondDetail.getDetails().length == 0;
 
         assert firstDetail.getHeaders()[0].equals("Name");
-        assert secondDetail.getHeaders()[2].equals("Intval");
     }
 
     // test that searching (filtering the case list) works

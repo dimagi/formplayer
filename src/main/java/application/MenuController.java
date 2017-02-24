@@ -9,6 +9,7 @@ import beans.NewFormResponse;
 import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
+import beans.menus.EntityDetailListResponse;
 import beans.menus.UpdateRequestBean;
 import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
@@ -17,8 +18,11 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
+import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.endpoint.SystemPublicMetrics;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +56,9 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        DjangoAuth auth = new DjangoAuth(authToken);
+        restoreFactory.configure(installRequestBean, auth);
+        storageFactory.configure(installRequestBean);
         BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
         return response;
     }
@@ -61,6 +68,9 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        DjangoAuth auth = new DjangoAuth(authToken);
+        restoreFactory.configure(updateRequestBean, auth);
+        storageFactory.configure(updateRequestBean);
         MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
@@ -78,6 +88,46 @@ public class MenuController extends AbstractBaseController{
         return getNextMenu(updatedSession);
     }
 
+    @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
+    @UserLock
+    public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
+                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        MenuSession menuSession;
+        DjangoAuth auth = new DjangoAuth(authToken);
+        try {
+            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
+        } catch (MenuNotFoundException e) {
+            return null;
+        }
+
+        String[] selections = sessionNavigationBean.getSelections();
+        String[] commitSelections = new String[selections.length - 1];
+        String detailSelection = selections[selections.length - 1];
+        System.arraycopy(selections, 0, commitSelections, 0, selections.length - 1);
+
+        advanceSessionWithSelections(menuSession,
+                commitSelections,
+                auth,
+                sessionNavigationBean.getQueryDictionary(),
+                sessionNavigationBean.getOffset(),
+                sessionNavigationBean.getSearchText());
+        Screen currentScreen = menuSession.getNextScreen();
+        if (!(currentScreen instanceof EntityScreen)) {
+            throw new RuntimeException("Tried to get details while not on a case list.");
+        }
+        EntityScreen entityScreen = (EntityScreen) currentScreen;
+        TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
+
+        if (reference == null) {
+            throw new RuntimeException("Could not find case with ID " + detailSelection);
+        }
+
+        EntityDetailListResponse response = new EntityDetailListResponse(entityScreen,
+                menuSession.getSessionWrapper().getEvaluationContext(),
+                reference);
+        return response;
+    }
+
     /**
      * Make a a series of menu selections (as above, but can have multiple)
      *
@@ -92,42 +142,68 @@ public class MenuController extends AbstractBaseController{
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
         DjangoAuth auth = new DjangoAuth(authToken);
+        try {
+            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
+        } catch (MenuNotFoundException e) {
+            return new BaseResponseBean(null, e.getMessage(), true, true);
+        } catch (CommCareSessionException e) {
+            return new BaseResponseBean(null, e.getMessage(), true, true);
+        }
+        String[] selections = sessionNavigationBean.getSelections();
+        return advanceSessionWithSelections(menuSession,
+                selections,
+                auth,
+                sessionNavigationBean.getQueryDictionary(),
+                sessionNavigationBean.getOffset(),
+                sessionNavigationBean.getSearchText());
+    }
+
+    private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
+        MenuSession menuSession = null;
+        DjangoAuth auth = new DjangoAuth(authToken);
         restoreFactory.configure(sessionNavigationBean, auth);
+        storageFactory.configure(sessionNavigationBean);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
-            try {
-                menuSession = new MenuSession(menuSessionRepo.findOneWrapped(menuSessionId),
-                        installService, restoreFactory, auth, host);
-                menuSession.getSessionWrapper().syncState();
-            } catch(MenuNotFoundException e) {
-                return new BaseResponseBean(null, e.getMessage(), true, true);
-            }
+            menuSession = new MenuSession(
+                    menuSessionRepo.findOneWrapped(menuSessionId),
+                    installService,
+                    restoreFactory,
+                    auth,
+                    host
+            );
+            menuSession.getSessionWrapper().syncState();
         } else {
             // If we have a preview command, load that up
             if(sessionNavigationBean.getPreviewCommand() != null){
-                // When previewing, clear and reinstall DBs to get newest version
-                // Big TODO: app updates
-                ApplicationUtils.deleteApplicationDbs(sessionNavigationBean.getDomain(), sessionNavigationBean.getUsername(),
-                        sessionNavigationBean.getAppId());
-                menuSession = performInstall(sessionNavigationBean, authToken);
-                try {
-                    menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
-                    menuSession.updateScreen();
-                } catch(ArrayIndexOutOfBoundsException e) {
-                    throw new RuntimeException("Couldn't get entries from preview command "
-                            + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
-                            " please report a bug to the CommCareHQ Team.");
-                }
+                menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
             } else {
                 menuSession = performInstall(sessionNavigationBean, authToken);
             }
         }
-        String[] selections = sessionNavigationBean.getSelections();
+        return menuSession;
+    }
+
+    // Selections are either an integer index into a list of modules
+    // or a case id indicating the case selected.
+    //
+    // An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+    //
+    // This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
+    private BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
+                                              String[] selections,
+                                              DjangoAuth auth,
+                                              Hashtable<String, String> queryDictionary,
+                                              int offset,
+                                              String searchText) throws Exception {
         BaseResponseBean nextMenu;
+        // If we have no selections, we're are the root screen.
         if (selections == null) {
-            nextMenu = getNextMenu(menuSession,
-                    sessionNavigationBean.getOffset(),
-                    sessionNavigationBean.getSearchText());
+            nextMenu = getNextMenu(
+                    menuSession,
+                    offset,
+                    searchText
+            );
             return nextMenu;
         }
 
@@ -145,11 +221,9 @@ public class MenuController extends AbstractBaseController{
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             Screen nextScreen = menuSession.getNextScreen();
 
-            checkDoQuery(nextScreen,
+            notificationMessageBean = checkDoQuery(nextScreen,
                     menuSession,
-                    notificationMessageBean,
-                    sessionNavigationBean.getQueryDictionary(),
-                    auth);
+                    queryDictionary);
 
             BaseResponseBean syncResponse = checkDoSync(nextScreen,
                     menuSession,
@@ -160,8 +234,8 @@ public class MenuController extends AbstractBaseController{
             }
         }
         nextMenu = getNextMenu(menuSession,
-                sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText(),
+                offset,
+                searchText,
                 titles);
         if (nextMenu != null) {
             nextMenu.setNotification(notificationMessageBean);
@@ -172,38 +246,57 @@ public class MenuController extends AbstractBaseController{
         }
     }
 
+    private MenuSession handlePreviewCommand(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception{
+        MenuSession menuSession;
+        // When previewing, clear and reinstall DBs to get newest version
+        // Big TODO: app updates
+        ApplicationUtils.deleteApplicationDbs(
+                sessionNavigationBean.getDomain(),
+                sessionNavigationBean.getUsername(),
+                sessionNavigationBean.getAppId()
+        );
+        menuSession = performInstall(sessionNavigationBean, authToken);
+        try {
+            menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
+            menuSession.updateScreen();
+        } catch(ArrayIndexOutOfBoundsException e) {
+            throw new RuntimeException("Couldn't get entries from preview command "
+                    + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
+                    " please report a bug to the CommCareHQ Team.");
+        }
+        return menuSession;
+    }
+
     /**
      * If we've encountered a QueryScreen and have a QueryDictionary, do the query
      * and update the session, screen, and notification message accordingly.
      *
      * Will do nothing if this wasn't a query screen.
      */
-    private void checkDoQuery(Screen nextScreen,
+    private NotificationMessageBean checkDoQuery(Screen nextScreen,
                               MenuSession menuSession,
-                              NotificationMessageBean notificationMessageBean,
-                              Hashtable<String, String> quertDictionary,
-                              DjangoAuth auth) throws CommCareSessionException {
-        if(nextScreen instanceof FormplayerQueryScreen && quertDictionary != null){
-            log.info("Formplayer doing query with dictionary " + quertDictionary);
-            notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
-                    quertDictionary,
-                    auth);
+                              Hashtable<String, String> queryDictionary) throws CommCareSessionException {
+        if(nextScreen instanceof FormplayerQueryScreen && queryDictionary != null){
+            log.info("Formplayer doing query with dictionary " + queryDictionary);
+            NotificationMessageBean notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
+                    queryDictionary);
             menuSession.updateScreen();
             nextScreen = menuSession.getNextScreen();
             log.info("Next screen after query: " + nextScreen);
+            return notificationMessageBean;
         }
+        return null;
     }
 
     protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
-                                              Hashtable<String, String> queryDictionary,
-                                              HqAuth auth) {
+                                              Hashtable<String, String> queryDictionary) {
         nextScreen.answerPrompts(queryDictionary);
         InputStream responseStream = nextScreen.makeQueryRequestReturnStream();
         boolean success = nextScreen.processSuccess(responseStream);
         if(success){
             return new NotificationMessageBean("Successfully queried server", false);
         } else{
-            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), false);
+            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), true);
         }
     }
 
@@ -254,7 +347,6 @@ public class MenuController extends AbstractBaseController{
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         restoreFactory.configure(bean, new DjangoAuth(authToken));
-        storageFactory.configure(bean);
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");

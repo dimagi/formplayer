@@ -68,7 +68,7 @@ public class InstallTests extends BaseTestClass {
         assert formSessionResponse.getTree().length == 7;
 
         SqlSandboxUtils.deleteDatabaseFolder("dbs");
-        StorageManager.forceClear();
+        StorageManager.instance().forceClear();
     }
 
 }

@@ -7,14 +7,12 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.resources.model.InstallCancelledException;
 import org.commcare.resources.model.UnresolvedResourceException;
-import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import services.FormplayerStorageFactory;
 import services.InstallService;
 
 import java.io.File;
-import java.net.URL;
 
 /**
  * The InstallService handles configuring the application,
@@ -32,7 +30,7 @@ public class InstallServiceImpl implements InstallService {
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     @Override
-    public CommCareConfigEngine configureApplication(String reference) {
+    public FormplayerConfigEngine configureApplication(String reference) {
         String dbPath = storageFactory.getDatabasePath();
         log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         try {
@@ -40,7 +38,7 @@ public class InstallServiceImpl implements InstallService {
             if(dbFolder.exists()) {
                 // Try reusing old install, fail quietly
                 try {
-                    CommCareConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
@@ -49,9 +47,15 @@ public class InstallServiceImpl implements InstallService {
             }
             // Wipe out folder and attempt install
             SqlSandboxUtils.deleteDatabaseFolder(dbPath);
-            dbFolder.mkdirs();
-            CommCareConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
-            engine.initFromArchive(reference);
+            if (!dbFolder.mkdirs()) {
+                throw new RuntimeException("Error instantiationing folder " + dbFolder);
+            }
+            FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+            if (reference.endsWith(".ccpr")) {
+                engine.initFromLocalFileResource(reference);
+            } else {
+                engine.initFromArchive(reference);
+            }
             engine.initEnvironment();
             return engine;
         } catch (InstallCancelledException | UnresolvedResourceException | UnfullfilledRequirementsException e) {

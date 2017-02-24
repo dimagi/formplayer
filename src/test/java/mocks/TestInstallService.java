@@ -2,7 +2,7 @@ package mocks;
 
 import engine.FormplayerConfigEngine;
 import installers.FormplayerInstallerFactory;
-import org.commcare.util.engine.CommCareConfigEngine;
+import org.commcare.api.persistence.SqlSandboxUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import services.FormplayerStorageFactory;
 import services.InstallService;
@@ -22,10 +22,10 @@ public class TestInstallService implements InstallService {
     FormplayerInstallerFactory formplayerInstallerFactory;
 
     @Override
-    public CommCareConfigEngine configureApplication(String reference) {
+    public FormplayerConfigEngine configureApplication(String reference) {
         try {
             File dbFolder = new File(storageFactory.getDatabasePath());
-            dbFolder.delete();
+            SqlSandboxUtils.deleteDatabaseFolder(storageFactory.getDatabasePath());
             dbFolder.mkdirs();
             FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory,
                     formplayerInstallerFactory);

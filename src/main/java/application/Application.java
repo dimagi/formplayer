@@ -38,11 +38,9 @@ public class Application {
     static DataSource dataSource;
 
     public static void main(String[] args) {
+        PrototypeUtils.setupPrototypes();
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         migrate();
-        // wipe out all user data for now. We need this until we can fix up some static mapping objects.
-        SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
-        PrototypeUtils.setupPrototypes();
     }
 
     /**

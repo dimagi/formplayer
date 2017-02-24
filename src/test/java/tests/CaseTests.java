@@ -3,6 +3,10 @@ package tests;
 import application.SQLiteProperties;
 import beans.*;
 import org.commcare.api.persistence.SqlSandboxUtils;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.api.persistence.UserSqlSandbox;
+import org.commcare.cases.model.Case;
+import org.commcare.cases.util.CasePurgeFilter;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +14,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.Constants;
 import utils.TestContext;
+
+import java.util.Iterator;
 
 /**
  * Created by willpride on 1/14/16.
@@ -28,9 +34,11 @@ public class CaseTests extends BaseTestClass {
         NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
 
-        CaseFilterResponseBean caseFilterResponseBean = filterCases("requests/filter/filter_cases_5.json");
+        UserSqlSandbox sandbox = new UserSqlSandbox("test3", SQLiteProperties.getDataDir() + "test");
 
-        assert(caseFilterResponseBean.getCases().length == 15);
+        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+
+        assert(caseStorage.getNumRecords()== 15);
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -43,9 +51,7 @@ public class CaseTests extends BaseTestClass {
 
         // Test that we now have an additional case
 
-        caseFilterResponseBean = filterCases("requests/filter/filter_cases_5.json");
-
-        assert(caseFilterResponseBean.getCases().length == 16);
+        assert(caseStorage.getNumRecords()== 16);
 
         // Try updating case
 
@@ -70,7 +76,7 @@ public class CaseTests extends BaseTestClass {
 
         NewFormResponse newSessionResponse2 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
-        assert(filterCases("requests/filter/filter_cases_5.json").getCases().length == 16);
+        assert(caseStorage.getNumRecords() == 16);
 
         sessionId = newSessionResponse2.getSessionId();
         answerQuestionGetResult("0", "1", sessionId);
@@ -86,19 +92,29 @@ public class CaseTests extends BaseTestClass {
         submitResponseBean = submitForm("requests/submit/submit_request_close_case.json", sessionId);
         assert submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
 
-        // test that we have successfully removed this case
-
-        assert(filterCases("requests/filter/filter_cases_5.json").getCases().length == 15);
+        // test that we have successfully closed this case (will still be in storage)
+        caseStorage.removeAll(new CasePurgeFilter(caseStorage, null));
+        Iterator caseIterator = caseStorage.iterator();
+        int openCount = 0;
+        while (caseIterator.hasNext()) {
+            Case cCase = (Case)caseIterator.next();
+            if (!cCase.isClosed()) {
+                openCount ++;
+            }
+        }
+        assert openCount == 15;
     }
 
     @Test
-    public void testSqlEscape() throws Exception {
-        configureRestoreFactory("sql_test.user", "test");
-        CaseFilterResponseBean caseFilterResponseBean = filterCases("requests/filter/filter_cases_sql_escape.json");
-        assert(caseFilterResponseBean.getCases().length == 15);
+    public void testEvaluateInstance() throws Exception{
+        NewFormResponse newSessionResponse2 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+
+        // Aside: test EvaluateXPath with instance() and multiple matching nodes works
+        EvaluateXPathResponseBean evaluateXPathResponseBean =
+                evaluateXPath(newSessionResponse2.getSessionId(), "instance('casedb')/casedb/case/@case_id");
+
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
     }
-
-
 
     @After
     public void tearDown(){
