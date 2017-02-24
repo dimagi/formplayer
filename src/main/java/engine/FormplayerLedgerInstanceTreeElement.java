@@ -8,9 +8,6 @@ import org.commcare.cases.query.PredicateProfile;
 import org.commcare.cases.query.QueryContext;
 import org.commcare.cases.util.QueryUtils;
 import org.commcare.cases.query.handlers.StaticLookupQueryHandler;
-import org.commcare.models.database.SqlStorage;
-import org.commcare.models.database.SqlStorageIterator;
-import org.commcare.android.database.user.models.ACase;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.services.storage.IStorageIterator;
@@ -65,7 +62,7 @@ public class FormplayerLedgerInstanceTreeElement extends LedgerInstanceTreeEleme
             int id = i.peekID();
             elements.addElement(buildElement(this, id, null, mult));
             objectIdMapping.put(DataUtil.integer(id), DataUtil.integer(mult));
-            primaryIdMapping.put(((JdbcSqlStorageIterator)i).id(), DataUtil.integer(id));
+            primaryIdMapping.put(String.valueOf(((JdbcSqlStorageIterator)i).peekID()), DataUtil.integer(id));
             mult++;
             i.nextID();
         }
