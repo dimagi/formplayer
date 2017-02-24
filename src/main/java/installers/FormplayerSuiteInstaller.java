@@ -2,7 +2,7 @@ package installers;
 
 import org.commcare.resources.model.installers.SuiteInstaller;
 import org.commcare.suite.model.Suite;
-import org.javarosa.core.services.storage.IStorageUtility;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
@@ -26,7 +26,7 @@ public class FormplayerSuiteInstaller extends SuiteInstaller {
     }
 
     @Override
-    protected IStorageUtility<Suite> storage() {
+    protected IStorageUtilityIndexed<Suite> storage() {
         if (cacheStorage == null) {
             cacheStorage = storageFactory.newStorage(Suite.STORAGE_KEY, Suite.class);
         }
