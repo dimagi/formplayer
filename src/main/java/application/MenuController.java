@@ -142,13 +142,7 @@ public class MenuController extends AbstractBaseController{
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
         DjangoAuth auth = new DjangoAuth(authToken);
-        try {
-            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
-        } catch (MenuNotFoundException e) {
-            return new BaseResponseBean(null, e.getMessage(), true, true);
-        } catch (CommCareSessionException e) {
-            return new BaseResponseBean(null, e.getMessage(), true, true);
-        }
+        menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
         return advanceSessionWithSelections(menuSession,
                 selections,
