@@ -60,7 +60,7 @@
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="4e36aa4a89624a32b2168eec17bfa65b" date_modified="2015-12-30T16:17:26.190000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="testclose" date_modified="2015-12-30T16:17:26.190000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>
