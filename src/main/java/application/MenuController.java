@@ -76,8 +76,8 @@ public class MenuController extends AbstractBaseController{
             // Try restoring the old session, fail gracefully.
             try {
                 FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()));
-                FormSession newSession = updatedSession.reloadSession(oldSession);
-                return new NewFormResponse(newSession);
+                updatedSession.reloadSession(oldSession);
+                return new NewFormResponse(oldSession);
             } catch(FormNotFoundException e) {
                 log.info("FormSession with id " + updateRequestBean.getSessionId() + " not found, returning root");
             } catch(Exception e) {

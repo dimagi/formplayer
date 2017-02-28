@@ -113,29 +113,18 @@ public class FormSession {
     }
 
     // New FormSession constructor
-    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
-                       Map<String, String> sessionData, String postUrl,
-                       String locale, String menuSessionId,
-                       String instanceContent, boolean oneQuestionPerScreen, String asUser, String appId) throws Exception {
-        this(sandbox, formDef, username, domain, sessionData, postUrl, locale, menuSessionId,
-                instanceContent, oneQuestionPerScreen, asUser, UUID.randomUUID().toString(), appId);
-    }
-
-    // New FormSession constructor
-    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
-            Map<String, String> sessionData, String postUrl,
-            String locale, String menuSessionId,
-            String instanceContent, boolean oneQuestionPerScreen, String asUser, String sessionId, String appId) throws Exception {
-        this(sandbox, formDef, username, domain, sessionData, postUrl, locale, menuSessionId,
-                instanceContent, oneQuestionPerScreen, asUser, sessionId, "0", appId);
-    }
-
-    // New FormSession constructor
-    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
-            Map<String, String> sessionData, String postUrl,
-            String locale, String menuSessionId,
-               String instanceContent, boolean oneQuestionPerScreen, String asUser,
-                       String sessionId, String currentIndex, String appId) throws Exception {
+    public FormSession(UserSandbox sandbox,
+                       FormDef formDef,
+                       String username,
+                       String domain,
+                       Map<String, String> sessionData,
+                       String postUrl,
+                       String locale,
+                       String menuSessionId,
+                       String instanceContent,
+                       boolean oneQuestionPerScreen,
+                       String asUser,
+                       String appId) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         this.sandbox = sandbox;
@@ -143,14 +132,14 @@ public class FormSession {
         this.domain = domain;
         this.postUrl = postUrl;
         this.locale = locale;
-        this.uuid = sessionId;
+        this.uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
         this.postUrl = postUrl;
         this.menuSessionId = menuSessionId;
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.asUser = asUser;
-        this.currentIndex = currentIndex;
         this.appId = appId;
+        this.currentIndex = "0";
         setupJavaRosaObjects();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
@@ -428,5 +417,24 @@ public class FormSession {
 
     public boolean getOneQuestionPerScreen() {
         return oneQuestionPerScreen;
+    }
+
+    public void reload(FormDef formDef, String postUrl) throws IOException {
+        if(getInstanceXml() != null){
+            loadInstanceXml(formDef, getInstanceXml());
+            initialize(false, sessionData);
+        } else {
+            initialize(true, sessionData);
+        }
+        if (this.oneQuestionPerScreen) {
+            FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
+            IFormElement element = formEntryController.getModel().getForm().getChild(firstIndex);
+            while (element instanceof GroupDef && !formEntryController.isFieldListHost(firstIndex)) {
+                firstIndex =  formController.getNextFormIndex(firstIndex, false, true);
+                element = formEntryController.getModel().getForm().getChild(firstIndex);
+            }
+            this.currentIndex = firstIndex.toString();
+        }
+        this.postUrl = postUrl;
     }
 }

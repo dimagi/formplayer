@@ -140,8 +140,6 @@ public class FormEntryTest extends BaseTestClass{
 
         NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
 
-        String sessionId = newSessionResponse.getSessionId();
-
         assert newSessionResponse.getTree().length == 1;
     }
 
