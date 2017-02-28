@@ -14,6 +14,7 @@ import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
 
+import java.util.Hashtable;
 import java.util.Map;
 
 /**
@@ -21,14 +22,17 @@ import java.util.Map;
  */
 class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
-    private final Map<String, String> injectedSessionData;
+    private final Map<String, String> sessionData;
+    private final Map<String, String> userData;
     private final Log log = LogFactory.getLog(FormplayerInstanceInitializer.class);
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
                                          UserSandbox mSandbox, CommCarePlatform mPlatform,
-                                         Map<String, String> injectedSessionData) {
+                                         Map<String, String> sessionData,
+                                         Map<String, String> userData) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
-        this.injectedSessionData = injectedSessionData;
+        this.sessionData = sessionData;
+        this.userData = userData;
     }
 
     @Override
@@ -53,15 +57,23 @@ class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         if (u == null) {
             throw new RuntimeException("There was a problem loading the user data. Please Sync.");
         }
-        if(injectedSessionData != null) {
-            for (String key : injectedSessionData.keySet()) {
-                session.setDatum(key, injectedSessionData.get(key));
+        if (sessionData != null) {
+            for (String key : sessionData.keySet()) {
+                session.setDatum(key, sessionData.get(key));
+            }
+        }
+        Hashtable<String, String> userProperties = u.getProperties();
+        if (userData != null) {
+            for (String key: userData.keySet()) {
+                if (userData.get(key) != null) {
+                    userProperties.put(key, userData.get(key));
+                }
             }
         }
         TreeElement root =
                 SessionInstanceBuilder.getSessionInstance(session.getFrame(), getDeviceId(),
                         getVersionString(), u.getUsername(), u.getUniqueId(),
-                        u.getProperties()).getRoot();
+                        userProperties).getRoot();
         root.setParent(instance.getBase());
         return root;
     }

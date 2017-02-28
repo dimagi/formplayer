@@ -60,4 +60,9 @@ public class NewFormTests extends BaseTestClass{
             }
         }
     }
+
+    @Test
+    public void editFormWithUserData() throws Exception {
+        NewFormResponse newSessionResponse = startNewSession("requests/new_form/edit_user_data.json", "xforms/edit_user_data.xml");
+    }
 }
