@@ -23,16 +23,13 @@ import java.util.Map;
 class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
     private final Map<String, String> sessionData;
-    private final Map<String, String> userData;
     private final Log log = LogFactory.getLog(FormplayerInstanceInitializer.class);
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
                                          UserSandbox mSandbox, CommCarePlatform mPlatform,
-                                         Map<String, String> sessionData,
-                                         Map<String, String> userData) {
+                                         Map<String, String> sessionData) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
         this.sessionData = sessionData;
-        this.userData = userData;
     }
 
     @Override
@@ -62,14 +59,9 @@ class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
                 session.setDatum(key, sessionData.get(key));
             }
         }
+
         Hashtable<String, String> userProperties = u.getProperties();
-        if (userData != null) {
-            for (String key: userData.keySet()) {
-                if (userData.get(key) != null) {
-                    userProperties.put(key, userData.get(key));
-                }
-            }
-        }
+
         TreeElement root =
                 SessionInstanceBuilder.getSessionInstance(session.getFrame(), getDeviceId(),
                         getVersionString(), u.getUsername(), u.getUniqueId(),
