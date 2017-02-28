@@ -24,8 +24,11 @@ import java.util.Map;
  */
 public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
-    private final Map<String, String> injectedSessionData;
-    private final Log log = LogFactory.getLog(FormplayerInstanceInitializer.class);
+    private Map<String, String> injectedSessionData;
+
+    public FormplayerInstanceInitializer(UserSqlSandbox sandbox) {
+        super(sandbox);
+    }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
                                          UserSandbox mSandbox, CommCarePlatform mPlatform,

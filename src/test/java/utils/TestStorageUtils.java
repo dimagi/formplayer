@@ -39,62 +39,10 @@ public class TestStorageUtils {
      * @return An evaluation context which is capable of evaluating against
      * the connected storage instances: casedb is the only one supported for now
      */
-    public static EvaluationContext getEvaluationContextWithoutSession()  {
+    public static EvaluationContext getEvaluationContextWithoutSession() {
         UserSqlSandbox sandbox = new UserSqlSandbox("testuser", SQLiteProperties.getDataDir() + "test");
-        FormplayerInstanceInitializer iif = new FormplayerInstanceInitializer() {
-            @Override
-            public AbstractTreeElement setupCaseData(ExternalDataInstance instance) {
-                SqliteIndexedStorageUtility<Case> storage = sandbox.getCaseStorage();
-                CaseIndexTable caseIndexTable = new CaseIndexTable(((UserSqlSandbox) mSandbox).getCaseIndexTableDataSource(CaseIndexTable.TABLE_NAME));
-                FormplayerCaseInstanceTreeElement casebase =
-                        new FormplayerCaseInstanceTreeElement(instance.getBase(), storage, caseIndexTable);
-                instance.setCacheHost(casebase);
-                return casebase;
-            }
-        };
-
+        FormplayerInstanceInitializer iif = new FormplayerInstanceInitializer(sandbox);
         return buildEvaluationContext(iif);
-    }
-
-    private static Connection getTestConnection(String folder, String name) throws ClassNotFoundException, SQLException {
-        Class.forName("org.sqlite.JDBC");
-        SQLiteConnectionPoolDataSource dataSource = new SQLiteConnectionPoolDataSource();
-        dataSource.setUrl("jdbc:sqlite:" + folder + "/" + name + ".db");
-        return dataSource.getConnection();
-    }
-
-
-    /**
-     * Get a form instance and case enabled parsing factory
-     */
-    private static TransactionParserFactory getFactory(final SQLiteDatabase db) {
-        final Hashtable<String, String> formInstanceNamespaces;
-        if (CommCareApplication.instance().getCurrentApp() != null) {
-            formInstanceNamespaces = FormSaveUtil.getNamespaceToFilePathMap(CommCareApplication.instance());
-        } else {
-            formInstanceNamespaces = null;
-        }
-        return new TransactionParserFactory() {
-            @Override
-            public TransactionParser getParser(KXmlParser parser) {
-                String namespace = parser.getNamespace();
-                if (namespace != null && formInstanceNamespaces != null && formInstanceNamespaces.containsKey(namespace)) {
-                    return new FormInstanceXmlParser(parser, CommCareApplication.instance(),
-                            Collections.unmodifiableMap(formInstanceNamespaces),
-                            CommCareApplication.instance().getCurrentApp().fsPath(GlobalConstants.FILE_CC_FORMS));
-                } else if(CaseXmlParser.CASE_XML_NAMESPACE.equals(parser.getNamespace()) && "case".equalsIgnoreCase(parser.getName())) {
-                    return new AndroidCaseXmlParser(parser, getCaseStorage(db), new EntityStorageCache("case", db), new CaseIndexTable(db)) {
-                        @Override
-                        protected SQLiteDatabase getDbHandle() {
-                            return db;
-                        }
-                    };
-                }  else if (LedgerXmlParsers.STOCK_XML_NAMESPACE.equals(namespace)) {
-                    return new LedgerXmlParsers(parser, getLedgerStorage(db));
-                }
-                return null;
-            }
-        };
     }
 
     private static EvaluationContext buildEvaluationContext(FormplayerInstanceInitializer iif) {
@@ -111,26 +59,24 @@ public class TestStorageUtils {
         return new EvaluationContext(new EvaluationContext(null), formInstances, TreeReference.rootRef());
     }
 
-    /**
-     * @return The hook for the test user-db
-     */
-    private static SQLiteDatabase getTestDb() {
-        DatabaseUserOpenHelper helper = new DatabaseUserOpenHelper(RuntimeEnvironment.application, "Test");
-        return helper.getWritableDatabase("Test");
+    public static RuntimeException wrapError(Exception e, String prefix) {
+        e.printStackTrace();
+        RuntimeException re = new RuntimeException(prefix + ": " + e.getMessage());
+        re.initCause(e);
+        throw re;
     }
 
     /**
      * Process an input XML file for transactions and update the relevant databases.
      */
-    public static void processResourceTransaction(String resourcePath) {
-        final SQLiteDatabase db = getTestDb();
+    public static void processResourceTransaction(UserSqlSandbox sandbox, String resourcePath) throws SQLException, ClassNotFoundException {
 
         DataModelPullParser parser;
 
         try{
             InputStream is = System.class.getResourceAsStream(resourcePath);
 
-            parser = new DataModelPullParser(is, getFactory(db), true, true);
+            parser = new DataModelPullParser(is, sandbox, true, true);
             parser.parse();
             is.close();
 
@@ -145,10 +91,37 @@ public class TestStorageUtils {
         }
     }
 
-    public static RuntimeException wrapError(Exception e, String prefix) {
-        e.printStackTrace();
-        RuntimeException re = new RuntimeException(prefix + ": " + e.getMessage());
-        re.initCause(e);
-        throw re;
+
+    /**
+     * Get a form instance and case enabled parsing factory
+     */
+    private static TransactionParserFactory getFactory(UserSqlSandbox sandbox) {
+        final Hashtable<String, String> formInstanceNamespaces;
+        if (CommCareApplication.instance().getCurrentApp() != null) {
+            formInstanceNamespaces = FormSaveUtil.getNamespaceToFilePathMap(CommCareApplication.instance());
+        } else {
+            formInstanceNamespaces = null;
+        }
+        return new TransactionParserFactory() {
+            @Override
+            public TransactionParser getParser(KXmlParser parser) {
+                String namespace = parser.getNamespace();
+                if (namespace != null && formInstanceNamespaces != null && formInstanceNamespaces.containsKey(namespace)) {
+                    return new FormInstanceXmlParser(parser, CommCareApplication.instance(),
+                            Collections.unmodifiableMap(formInstanceNamespaces),
+                            CommCareApplication.instance().getCurrentApp().fsPath(GlobalConstants.FILE_CC_FORMS));
+                } else if(CaseXmlParser.CASE_XML_NAMESPACE.equals(parser.getNamespace()) && "case".equalsIgnoreCase(parser.getName())) {
+                    return new CaseXmlParser(parser, sandbox.getCaseStorage(), new EntityStorageCache("case", db), new CaseIndexTable(db)) {
+                        @Override
+                        protected SQLiteDatabase getDbHandle() {
+                            return db;
+                        }
+                    };
+                }  else if (LedgerXmlParsers.STOCK_XML_NAMESPACE.equals(namespace)) {
+                    return new LedgerXmlParsers(parser, getLedgerStorage(db));
+                }
+                return null;
+            }
+        };
     }
 }

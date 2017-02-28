@@ -21,7 +21,7 @@ public class CaseDbQueryTest {
 
     @Before
     public void setupTests() {
-        TestStorageUtils.initializeStaticTestStorage();
+
     }
 
     /**
