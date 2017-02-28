@@ -66,7 +66,6 @@ public class FormSession {
     private String dateOpened;
     private String locale;
     private Map<String, String> sessionData;
-    private Map<String, String> userData;
     private String postUrl;
     private String title;
     private String[] langs;
@@ -125,8 +124,7 @@ public class FormSession {
                        String instanceContent,
                        boolean oneQuestionPerScreen,
                        String asUser,
-                       String appId,
-                       Map<String, String> userData) throws Exception {
+                       String appId) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         this.sandbox = sandbox;
@@ -142,7 +140,6 @@ public class FormSession {
         this.asUser = asUser;
         this.appId = appId;
         this.currentIndex = "0";
-        this.userData = userData;
         setupJavaRosaObjects();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
@@ -187,7 +184,7 @@ public class FormSession {
                         ApplicationUtils.getApplicationDBPath(domain, username, appId));
             }
         });
-        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, userData);
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
     }
 

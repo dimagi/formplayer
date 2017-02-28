@@ -15,30 +15,26 @@ import java.util.Map;
 class FormplayerSessionWrapper extends SessionWrapper {
 
     private final Map<String, String> sessionData;
-    private final Map<String, String> userData;
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox) {
-        this(platform, sandbox, null, null);
+        this(platform, sandbox, null);
     }
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox,
-                                    Map<String, String> sessionData,
-                                    Map<String, String> userData) {
+                                    Map<String, String> sessionData) {
         super(platform, sandbox);
         this.sessionData = sessionData;
-        this.userData = userData;
     }
 
     public FormplayerSessionWrapper(CommCareSession session, CommCarePlatform platform, UserSandbox sandbox) {
         super(session, platform, sandbox);
         this.sessionData = null;
-        this.userData = null;
     }
 
     @Override
     public CommCareInstanceInitializer getIIF() {
         if (initializer == null) {
-            initializer = new FormplayerInstanceInitializer(this, mSandbox, mPlatform, sessionData, userData);
+            initializer = new FormplayerInstanceInitializer(this, mSandbox, mPlatform, sessionData);
         }
         return initializer;
     }

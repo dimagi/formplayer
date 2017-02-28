@@ -61,8 +61,14 @@ public class NewFormTests extends BaseTestClass{
         }
     }
 
+    // Open a form that requires custom user data
+    @Override
+    protected String getMockRestoreFileName() {
+        return "restores/edit_user_data.xml";
+    }
+
     @Test
     public void editFormWithUserData() throws Exception {
-        NewFormResponse newSessionResponse = startNewSession("requests/new_form/edit_user_data.json", "xforms/edit_user_data.xml");
+        startNewSession("requests/new_form/edit_user_data.json", "xforms/edit_user_data.xml");
     }
 }
