@@ -1,0 +1,31 @@
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+    <message nature="ota_restore_success">Successfully restored account test!</message>
+    <Sync xmlns="http://commcarehq.org/sync">
+        <restore_id>f3e8565c757b1f6aef662616dca20d4f</restore_id>
+    </Sync>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>test</username>
+        <password>sha1$t9WahSz77DKY$033721656c01360d312f36a0e67720f97e0121e9</password>
+        <uuid>84c246edf58bfa69e03bdecc39692e1f</uuid>
+        <date>2015-10-08</date>
+        <user_data>
+            <data key="test">1</data>
+            <data key="commcare_project">test</data>
+            <data key="commcare_last_name"/>
+            <data key="commcare_phone_number"/>
+            <data key="commcare_first_name"/>
+        </user_data>
+    </Registration>
+    <case case_id="5ece8407-4d16-49fc-83d9-c044f08fc708" date_modified="2017-01-17T10:44:07.955000Z"
+          user_id="84c246edf58bfa69e03bdecc39692e1f" xmlns="http://commcarehq.org/case/transaction/v2">
+        <create>
+            <case_type>case</case_type>
+            <case_name>123</case_name>
+            <owner_id>84c246edf58bfa69e03bdecc39692e1f</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-01-17</date_opened>
+            <anc_number>1</anc_number>
+        </update>
+    </case>
+</OpenRosaResponse>

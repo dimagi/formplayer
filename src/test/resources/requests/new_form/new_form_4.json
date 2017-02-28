@@ -15,7 +15,7 @@
       "commcare_last_name": "",
       "commcare_phone_number": null
     },
-    "case_id": "test",
+    "case_id": "testclose",
     "host": "http://localhost:8000",
     "session_name": "ccqa > Basic Form",
     "app_version": "2.0",
