@@ -96,8 +96,7 @@ public class DebuggerController extends AbstractBaseController {
     public RunQAResponseBean runQAPlan(@RequestBody RunQARequestBean qaRequestBean) throws Exception {
         QATestRunner qaTestRunner = new QATestRunner(qaRequestBean.getQaPlan(), qaRequestBean.getAppId(), qaRequestBean.getDomain(),
                 qaRequestBean.getUsername(), qaRequestBean.getPassword());
-        RunQAResponseBean response = new RunQAResponseBean(qaTestRunner);
-        return response;
+        return new RunQAResponseBean(qaTestRunner);
     }
 
     private void cacheXPathQuery(String domain, String username, String xpath, String output, String status) {

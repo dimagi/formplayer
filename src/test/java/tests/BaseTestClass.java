@@ -396,6 +396,19 @@ public class BaseTestClass {
                 CommandListResponseBean.class);
     }
 
+    RunQAResponseBean runQaPlan(String requestPath, String resourcePath) throws Exception {
+        String testPlan = FileUtils.getFile(this.getClass(), resourcePath);
+        RunQARequestBean requestBean = mapper.readValue(
+                FileUtils.getFile(this.getClass(), requestPath),
+                RunQARequestBean.class);
+        requestBean.setQaPlan(testPlan);
+        return generateMockQuery(ControllerType.DEBUGGER,
+                RequestType.POST,
+                Constants.URL_DEBUGGER_RUN_QA,
+                requestBean,
+                RunQAResponseBean.class);
+    }
+
     public enum RequestType {
         POST, GET
     }
