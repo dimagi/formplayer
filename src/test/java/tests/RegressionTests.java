@@ -4,6 +4,7 @@ import beans.NewFormResponse;
 import beans.SubmitResponseBean;
 import beans.menus.*;
 import org.commcare.util.screen.CommCareSessionException;
+import org.javarosa.xpath.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,14 +41,13 @@ public class RegressionTests extends BaseTestClass{
         }
     }
 
-    @Test
+    @Test(expected=CommCareSessionException.class)
     public void testBadModuleFilter() throws Throwable {
         try {
-            BaseResponseBean response = sessionNavigate(new String[]{"0"}, "badmodulefilter", NewFormResponse.class);
-            assert response.getNotification().isError();
-            assert response.getNotification().getMessage().contains("Error evaluating form display condition");
-            assert response.getNotification().getMessage().contains("next_supervision_visit");
+            sessionNavigate(new String[]{"0"}, "badmodulefilter", NewFormResponse.class);
         } catch(Exception e) {
+            assert e.getMessage().contains("Cannot evaluate the reference");
+            assert e.getMessage().contains("/next_supervision_visit");
             throw e.getCause();
         }
     }

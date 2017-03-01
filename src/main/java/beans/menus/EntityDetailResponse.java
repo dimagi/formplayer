@@ -4,6 +4,7 @@ import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.util.screen.EntityDetailSubscreen;
+import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import java.util.Arrays;
         this.setTitle("Details");
         this.details = entityScreen.getData();
         this.headers = entityScreen.getHeaders();
+        processStyles(entityScreen.getDetail());
     }
 
     public EntityDetailResponse(Detail detail, EvaluationContext ec) {

@@ -5,6 +5,10 @@ import installers.FormplayerProfileInstaller;
 import installers.FormplayerSuiteInstaller;
 import installers.FormplayerXFormInstaller;
 import org.commcare.cases.instance.CaseDataInstance;
+import org.commcare.core.graph.model.*;
+import org.commcare.core.graph.suite.BubbleSeries;
+import org.commcare.core.graph.suite.Graph;
+import org.commcare.core.graph.suite.XYSeries;
 import org.commcare.resources.model.installers.*;
 import org.commcare.suite.model.*;
 import org.commcare.xml.DummyGraphParser;
@@ -86,7 +90,13 @@ public class PrototypeUtils {
                 FormplayerOfflineUserRestoreInstaller.class.getName(),
                 FormplayerProfileInstaller.class.getName(),
                 FormplayerSuiteInstaller.class.getName(),
-                FormplayerXFormInstaller.class.getName()};
+                FormplayerXFormInstaller.class.getName(),
+                GraphData.class.getName(),
+                SeriesData.class.getName(),
+                Graph.class.getName(),
+                XYSeries.class.getName(),
+                BubbleSeries.class.getName()
+        };
 
         for(Class clazz: FunctionUtils.getXPathFuncListMap().values()){
             PrototypeManager.registerPrototype(clazz.getName());
