@@ -1,7 +1,10 @@
 package session;
 
+import engine.FormplayerCaseInstanceTreeElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.cases.model.Case;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.session.SessionInstanceBuilder;
@@ -11,6 +14,7 @@ import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
 
+import java.util.Hashtable;
 import java.util.Map;
 
 /**
@@ -18,14 +22,27 @@ import java.util.Map;
  */
 class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
-    private final Map<String, String> injectedSessionData;
+    private final Map<String, String> sessionData;
     private final Log log = LogFactory.getLog(FormplayerInstanceInitializer.class);
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
                                          UserSandbox mSandbox, CommCarePlatform mPlatform,
-                                         Map<String, String> injectedSessionData) {
+                                         Map<String, String> sessionData) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
-        this.injectedSessionData = injectedSessionData;
+        this.sessionData = sessionData;
+    }
+
+    @Override
+    protected AbstractTreeElement setupCaseData(ExternalDataInstance instance) {
+        if (casebase == null) {
+            SqliteIndexedStorageUtility<Case> storage = (SqliteIndexedStorageUtility<Case>) mSandbox.getCaseStorage();
+            casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage);
+        } else {
+            //re-use the existing model if it exists.
+            casebase.rebase(instance.getBase());
+        }
+        //instance.setCacheHost((AndroidCaseInstanceTreeElement)casebase);
+        return casebase;
     }
 
     @Override
@@ -37,15 +54,18 @@ class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         if (u == null) {
             throw new RuntimeException("There was a problem loading the user data. Please Sync.");
         }
-        if(injectedSessionData != null) {
-            for (String key : injectedSessionData.keySet()) {
-                session.setDatum(key, injectedSessionData.get(key));
+        if (sessionData != null) {
+            for (String key : sessionData.keySet()) {
+                session.setDatum(key, sessionData.get(key));
             }
         }
+
+        Hashtable<String, String> userProperties = u.getProperties();
+
         TreeElement root =
                 SessionInstanceBuilder.getSessionInstance(session.getFrame(), getDeviceId(),
                         getVersionString(), u.getUsername(), u.getUniqueId(),
-                        u.getProperties()).getRoot();
+                        userProperties).getRoot();
         root.setParent(instance.getBase());
         return root;
     }

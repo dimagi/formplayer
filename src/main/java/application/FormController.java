@@ -71,10 +71,9 @@ public class FormController extends AbstractBaseController{
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         restoreFactory.configure(newSessionBean, new DjangoAuth(authToken));
         String postUrl = host + newSessionBean.getPostUrl();
-        NewFormResponse newSessionResponse = newFormResponseFactory.getResponse(newSessionBean,
+        return newFormResponseFactory.getResponse(newSessionBean,
                 postUrl,
                 new DjangoAuth(authToken));
-        return newSessionResponse;
     }
 
     @ApiOperation(value = "Answer the question at the given index")
