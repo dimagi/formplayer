@@ -230,8 +230,9 @@ public abstract class AbstractBaseController {
     private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession();
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
+        NewFormResponse response = new NewFormResponse(formEntrySession);
         formSessionRepo.save(formEntrySession.serialize());
-        return new NewFormResponse(formEntrySession);
+        return response;
     }
 
     /**
