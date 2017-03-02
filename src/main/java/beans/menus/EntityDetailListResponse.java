@@ -8,6 +8,8 @@ import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 
+import java.util.ArrayList;
+
 /**
  * Created by willpride on 1/4/17.
  */
@@ -38,10 +40,15 @@ public class EntityDetailListResponse {
             return null;
         }
         EvaluationContext subContext = new EvaluationContext(ec, ref);
-        EntityDetailSubscreen[] ret = new EntityDetailSubscreen[detailList.length];
+        ArrayList<EntityDetailSubscreen> accumulator = new ArrayList<EntityDetailSubscreen>();
         for (int i = 0; i < detailList.length; i++) {
-            ret[i] = new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext));
+            // For now, don't add sub-details
+            if (detailList[i].getNodeset() == null) {
+                accumulator.add(new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext)));
+            }
         }
+        EntityDetailSubscreen[] ret = new EntityDetailSubscreen[accumulator.size()];
+        accumulator.toArray(ret);
         return ret;
     }
 
