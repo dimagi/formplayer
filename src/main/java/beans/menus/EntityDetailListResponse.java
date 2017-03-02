@@ -43,7 +43,7 @@ public class EntityDetailListResponse {
         ArrayList<EntityDetailSubscreen> accumulator = new ArrayList<EntityDetailSubscreen>();
         for (int i = 0; i < detailList.length; i++) {
             // For now, don't add sub-details
-            if (detailList[i].getNodeset() != null) {
+            if (detailList[i].getNodeset() == null) {
                 accumulator.add(new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext)));
             }
         }
