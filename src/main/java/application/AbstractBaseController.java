@@ -1,5 +1,8 @@
 package application;
 
+import auth.DjangoAuth;
+import auth.HqAuth;
+import auth.TokenAuth;
 import beans.NewFormResponse;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
@@ -10,6 +13,7 @@ import exceptions.ApplicationConfigException;
 import exceptions.AsyncRetryException;
 import exceptions.FormNotFoundException;
 import exceptions.FormattedApplicationConfigException;
+import hq.models.PostgresUser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -42,6 +46,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
+import repo.impl.PostgresUserRepo;
 import screens.FormplayerQueryScreen;
 import services.FormplayerStorageFactory;
 import services.InstallService;
@@ -52,6 +57,7 @@ import session.MenuSession;
 import util.Constants;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
+import util.UserUtils;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -89,6 +95,9 @@ public abstract class AbstractBaseController {
     @Autowired
     protected StatsDClient datadogStatsDClient;
 
+    @Autowired
+    PostgresUserRepo postgresUserRepo;
+
     @Value("${commcarehq.host}")
     private String hqHost;
 
@@ -110,6 +119,17 @@ public abstract class AbstractBaseController {
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
         return getNextMenu(menuSession, 0, "");
+    }
+
+    protected HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
+        HqAuth auth;
+        if (UserUtils.isAnonymous(domain, username)) {
+            PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
+            auth = new TokenAuth(postgresUser.getAuthToken());
+        } else {
+            auth = new DjangoAuth(sessionToken);
+        }
+        return auth;
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
