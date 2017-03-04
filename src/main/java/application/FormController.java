@@ -3,11 +3,9 @@ package application;
 import annotations.UserLock;
 import auth.DjangoAuth;
 import auth.HqAuth;
-import auth.TokenAuth;
 import beans.*;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hq.models.PostgresUser;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -28,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
-import repo.impl.PostgresUserRepo;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -67,7 +64,7 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
-    public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
+        public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         restoreFactory.configure(newSessionBean, new DjangoAuth(authToken));
         String postUrl = host + newSessionBean.getPostUrl();
