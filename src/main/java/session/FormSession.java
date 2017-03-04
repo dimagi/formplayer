@@ -161,7 +161,14 @@ public class FormSession {
         }
     }
 
+    /**
+     * Setup static function handlers. At the moment we only expect/accept date functions
+     * (in particular, now() and today()) but could be extended in the future.
+     */
     private void setupFunctionContext(FormDef formDef, Map<String, FunctionHandler[]> functionContext) {
+        if (functionContext == null || functionContext.size() < 1) {
+            return;
+        }
         for (String outerKey: functionContext.keySet()) {
             FunctionHandler[] functionHandlers = functionContext.get(outerKey);
             if(outerKey.equals("static-date")) {
