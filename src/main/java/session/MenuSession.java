@@ -243,7 +243,7 @@ public class MenuSession {
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen,
-                asUser, appId);
+                asUser, appId, null);
     }
 
     public void reloadSession(FormSession formSession) throws Exception {
