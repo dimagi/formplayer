@@ -1,6 +1,8 @@
 package objects;
 
 import com.fasterxml.jackson.annotation.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +20,7 @@ public class SessionData {
     private String appId;
     private final Map<String, String> data = new HashMap<>();
     private Map<String, String> userData = new HashMap<>();
+    private Map<String, FunctionHandler[]> functionContext = new HashMap<>();
     private String host;
     private String sessionName;
     private String appVersion;
@@ -121,5 +124,14 @@ public class SessionData {
     @JsonSetter(value="user_data")
     public void setUserData(Map<String, String> userData) {
         this.userData = userData;
+    }
+
+    @JsonGetter(value="function_context")
+    public Map<String, FunctionHandler[]> getFunctionContext() {
+        return functionContext;
+    }
+    @JsonSetter(value="function_context")
+    public void setFunctionContext(Map<String, FunctionHandler[]> functionContext) {
+        this.functionContext = functionContext;
     }
 }
