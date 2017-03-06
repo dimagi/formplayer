@@ -52,7 +52,8 @@ public class NewFormResponseFactory {
                 bean.getInstanceContent(),
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs(),
-                bean.getSessionData().getAppId()
+                bean.getSessionData().getAppId(),
+                bean.getSessionData().getFunctionContext()
         );
 
         formSessionRepo.save(formSession.serialize());

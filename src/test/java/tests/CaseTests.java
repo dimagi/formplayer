@@ -29,7 +29,7 @@ public class CaseTests extends BaseTestClass {
     @Test
     public void testCaseCreate() throws Exception {
         // Start new session and submit create case form
-        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
 
         UserSqlSandbox sandbox = new UserSqlSandbox("test3", SQLiteProperties.getDataDir() + "test");
@@ -53,7 +53,7 @@ public class CaseTests extends BaseTestClass {
 
         // Try updating case
 
-        NewFormResponse newSessionResponse1 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+        NewFormResponse newSessionResponse1 = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
         sessionId = newSessionResponse1.getSessionId();
 
         FormEntryResponseBean responseBean = answerQuestionGetResult("0", "Test Response", sessionId);
@@ -72,7 +72,7 @@ public class CaseTests extends BaseTestClass {
 
     @Test
     public void testCaseClose() throws Exception {
-        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
         UserSqlSandbox sandbox = new UserSqlSandbox("test3", SQLiteProperties.getDataDir() + "test");
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
@@ -107,7 +107,7 @@ public class CaseTests extends BaseTestClass {
 
     @Test
     public void testEvaluateInstance() throws Exception {
-        NewFormResponse newSessionResponse2 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+        NewFormResponse newSessionResponse2 = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
 
         // Aside: test EvaluateXPath with instance() and multiple matching nodes works
         EvaluateXPathResponseBean evaluateXPathResponseBean =

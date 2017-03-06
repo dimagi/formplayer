@@ -1,21 +1,14 @@
 package tests;
 
-import auth.HqAuth;
 import beans.NewFormResponse;
 import beans.QuestionBean;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import utils.FileUtils;
 import utils.TestContext;
 
-import java.io.IOException;
-
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 /**
  * Created by willpride on 1/14/16.
@@ -27,7 +20,7 @@ public class NewFormTests extends BaseTestClass{
     @Test
     public void testNewForm() throws Exception {
         // setup files
-        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form.json", "xforms/basic.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json", "xforms/basic.xml");
 
         assert(newSessionResponse.getTitle().equals("Basic Form"));
         assert(newSessionResponse.getLangs().length == 2);
@@ -44,7 +37,7 @@ public class NewFormTests extends BaseTestClass{
 
     @Test
     public void testNewForm2() throws Exception {
-        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_2.json", "xforms/question_types.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/question_types.xml");
 
         assert(newSessionResponse.getTitle().equals("Question Types"));
         assert(newSessionResponse.getLangs().length == 2);
@@ -69,6 +62,6 @@ public class NewFormTests extends BaseTestClass{
 
     @Test
     public void editFormWithUserData() throws Exception {
-        startNewSession("requests/new_form/edit_user_data.json", "xforms/edit_user_data.xml");
+        startNewForm("requests/new_form/edit_user_data.json", "xforms/edit_user_data.xml");
     }
 }
