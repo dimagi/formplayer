@@ -1,9 +1,8 @@
 package engine;
 
-import database.models.CaseIndexTable;
+import database.models.FormplayerCaseIndexTable;
 import org.commcare.modern.engine.cases.CaseGroupResultCache;
 import org.commcare.modern.engine.cases.CaseIndexQuerySetTransform;
-import org.commcare.modern.engine.cases.IndexTable;
 import org.commcare.modern.engine.cases.query.CaseIndexPrefetchHandler;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
@@ -29,7 +28,7 @@ import java.util.Vector;
  */
 public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement implements CacheHost {
 
-    private final IndexTable caseIndexTable;
+    private final FormplayerCaseIndexTable formplayerCaseIndexTable;
 
     private final Hashtable<Integer, Integer> multiplicityIdMapping = new Hashtable<>();
 
@@ -44,17 +43,17 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
 
     public FormplayerCaseInstanceTreeElement(AbstractTreeElement instanceRoot,
                                              SqliteIndexedStorageUtility<Case> storage,
-                                             CaseIndexTable caseIndexTable) {
+                                             FormplayerCaseIndexTable formplayerCaseIndexTable) {
         super(instanceRoot, storage);
-        this.caseIndexTable = caseIndexTable;
+        this.formplayerCaseIndexTable = formplayerCaseIndexTable;
     }
 
     @Override
     protected void initBasicQueryHandlers(QueryPlanner queryPlanner) {
         super.initBasicQueryHandlers(queryPlanner);
-        queryPlanner.addQueryHandler(new CaseIndexPrefetchHandler(caseIndexTable));
+        queryPlanner.addQueryHandler(new CaseIndexPrefetchHandler(formplayerCaseIndexTable));
         CaseModelQuerySetMatcher matcher = new CaseModelQuerySetMatcher(multiplicityIdMapping);
-        matcher.addQuerySetTransform(new CaseIndexQuerySetTransform(caseIndexTable));
+        matcher.addQuerySetTransform(new CaseIndexQuerySetTransform(formplayerCaseIndexTable));
         queryPlanner.addQueryHandler(new ModelQueryLookupHandler(matcher));
     }
 
@@ -182,11 +181,11 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
                 return mIndexCache.get(indexCacheKey);
             }
 
-            matchingCases = caseIndexTable.getCasesMatchingIndex(indexName, value);
+            matchingCases = formplayerCaseIndexTable.getCasesMatchingIndex(indexName, value);
         }
         if (op instanceof IndexedSetMemberLookup) {
             IndexedSetMemberLookup sop = (IndexedSetMemberLookup)op;
-            matchingCases = caseIndexTable.getCasesMatchingValueSet(indexName, sop.valueSet);
+            matchingCases = formplayerCaseIndexTable.getCasesMatchingValueSet(indexName, sop.valueSet);
         }
 
         //Clear the most recent index and wipe it, because there is no way it is going to be useful

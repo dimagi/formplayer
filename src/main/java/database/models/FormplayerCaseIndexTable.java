@@ -1,6 +1,5 @@
 package database.models;
 
-import org.commcare.modern.engine.cases.IndexTable;
 import org.commcare.api.persistence.SqlHelper;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.cases.model.Case;
@@ -21,7 +20,7 @@ import java.util.*;
 /**
  * @author ctsims
  */
-public class CaseIndexTable implements IndexTable {
+public class FormplayerCaseIndexTable implements org.commcare.modern.engine.cases.CaseIndexTable {
     public static final String TABLE_NAME = "case_index_storage";
 
     private static final String COL_CASE_RECORD_ID = "case_rec_id";
@@ -34,7 +33,7 @@ public class CaseIndexTable implements IndexTable {
     //TODO: We should do some synchronization to make it the case that nothing can hold
     //an object for the same cache at once and let us manage the lifecycle
 
-    public CaseIndexTable(SQLiteConnectionPoolDataSource dataSource) {
+    public FormplayerCaseIndexTable(SQLiteConnectionPoolDataSource dataSource) {
         this.dataSource = dataSource;
     }
 

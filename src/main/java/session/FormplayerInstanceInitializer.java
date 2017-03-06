@@ -1,9 +1,7 @@
 package session;
 
-import database.models.CaseIndexTable;
+import database.models.FormplayerCaseIndexTable;
 import engine.FormplayerCaseInstanceTreeElement;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
@@ -16,7 +14,6 @@ import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
 
-import javax.sql.DataSource;
 import java.util.Map;
 
 /**
@@ -41,8 +38,9 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     protected AbstractTreeElement setupCaseData(ExternalDataInstance instance) {
         if (casebase == null) {
             SqliteIndexedStorageUtility<Case> storage = (SqliteIndexedStorageUtility<Case>) mSandbox.getCaseStorage();
-            CaseIndexTable caseIndexTable = new CaseIndexTable(((UserSqlSandbox) mSandbox).getCaseIndexTableDataSource(CaseIndexTable.TABLE_NAME));
-            casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage, caseIndexTable);
+            FormplayerCaseIndexTable formplayerCaseIndexTable;
+            formplayerCaseIndexTable = new FormplayerCaseIndexTable(((UserSqlSandbox) mSandbox).getCaseIndexTableDataSource(FormplayerCaseIndexTable.TABLE_NAME));
+            casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
         } else {
             //re-use the existing model if it exists.
             casebase.rebase(instance.getBase());
