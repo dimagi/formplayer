@@ -407,12 +407,13 @@ public class FormSession {
         setCurrentIndex(newIndex.toString());
     }
 
-    public JSONObject answerQuestionToJSON(Object answer, String formIndex) {
+    public JSONObject answerQuestionToJSON(Object answer, String answerIndex) {
         return JsonActionUtils.questionAnswerToJson(formEntryController,
                 formEntryModel,
                 answer != null ? answer.toString() : null,
-                formIndex,
-                oneQuestionPerScreen);
+                answerIndex,
+                oneQuestionPerScreen,
+                currentIndex);
     }
 
     public JSONObject getNextJson() {
