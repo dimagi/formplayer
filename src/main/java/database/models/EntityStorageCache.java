@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 /**
- * @author ctsims
+ * @author wspride
  */
 public class EntityStorageCache {
     private static final String TAG = EntityStorageCache.class.getSimpleName();
@@ -130,11 +130,15 @@ public class EntityStorageCache {
     /**
      * Removes cache records associated with the provided ID
      */
-    public void invalidateCache(String recordId) throws SQLException {
+    public void invalidateCache(String recordId) {
         Pair<String, String[]> wherePair =
                 DatabaseHelper.createWhere(new String[]{COL_CACHE_NAME, COL_ENTITY_KEY},
                         new String[]{this.mCacheName, recordId});
-        SqlHelper.deleteFromTableWhere(dataSource.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
+        try {
+            SqlHelper.deleteFromTableWhere(dataSource.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static int getSortFieldIdFromCacheKey(String detailId, String cacheKey) {
