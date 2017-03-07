@@ -31,6 +31,12 @@ public class EntityStorageCache {
     public EntityStorageCache(String cacheName, SQLiteConnectionPoolDataSource dataSource) {
         this.dataSource = dataSource;
         this.mCacheName = cacheName;
+        try {
+            execSQL(dataSource.getConnection(), getTableDefinition());
+            EntityStorageCache.createIndexes(dataSource);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void execSQL(Connection connection, String query) {

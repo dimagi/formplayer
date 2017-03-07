@@ -39,7 +39,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         if (casebase == null) {
             SqliteIndexedStorageUtility<Case> storage = (SqliteIndexedStorageUtility<Case>) mSandbox.getCaseStorage();
             FormplayerCaseIndexTable formplayerCaseIndexTable;
-            formplayerCaseIndexTable = new FormplayerCaseIndexTable(((UserSqlSandbox) mSandbox).getCaseIndexTableDataSource(FormplayerCaseIndexTable.TABLE_NAME));
+            formplayerCaseIndexTable = new FormplayerCaseIndexTable(((UserSqlSandbox) mSandbox).getDataSource());
             casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
         } else {
             //re-use the existing model if it exists.
