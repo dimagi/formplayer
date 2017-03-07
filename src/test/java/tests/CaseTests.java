@@ -27,11 +27,9 @@ import java.util.Iterator;
 public class CaseTests extends BaseTestClass {
 
     @Test
-    public void testCases() throws Exception {
-
+    public void testCaseCreate() throws Exception {
         // Start new session and submit create case form
-
-        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_3.json",
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
 
         UserSqlSandbox sandbox = new UserSqlSandbox("test3", SQLiteProperties.getDataDir() + "test");
@@ -55,7 +53,7 @@ public class CaseTests extends BaseTestClass {
 
         // Try updating case
 
-        NewFormResponse newSessionResponse1 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+        NewFormResponse newSessionResponse1 = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
         sessionId = newSessionResponse1.getSessionId();
 
         FormEntryResponseBean responseBean = answerQuestionGetResult("0", "Test Response", sessionId);
@@ -70,18 +68,20 @@ public class CaseTests extends BaseTestClass {
 
         answerQuestionGetResult("2", "[1, 2, 3]", sessionId);
         FormEntryResponseBean caseResult = answerQuestionGetResult("5", "2016-02-09", sessionId);
-        QuestionBean[] tree = caseResult.getTree();
+    }
 
-        // close this case
+    @Test
+    public void testCaseClose() throws Exception {
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
-        NewFormResponse newSessionResponse2 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
+        UserSqlSandbox sandbox = new UserSqlSandbox("test3", SQLiteProperties.getDataDir() + "test");
+        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        assert(caseStorage.getNumRecords() == 15);
 
-        assert(caseStorage.getNumRecords() == 16);
-
-        sessionId = newSessionResponse2.getSessionId();
+        String sessionId = newSessionResponse.getSessionId();
         answerQuestionGetResult("0", "1", sessionId);
 
-        submitResponseBean = submitForm("requests/submit/submit_request_not_prevalidated.json", sessionId);
+        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_not_prevalidated.json", sessionId);
         assert submitResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
 
         submitResponseBean = submitForm("requests/submit/submit_request_bad.json", sessionId);
@@ -102,12 +102,12 @@ public class CaseTests extends BaseTestClass {
                 openCount ++;
             }
         }
-        assert openCount == 15;
+        assert openCount == 14;
     }
 
     @Test
-    public void testEvaluateInstance() throws Exception{
-        NewFormResponse newSessionResponse2 = startNewSession("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+    public void testEvaluateInstance() throws Exception {
+        NewFormResponse newSessionResponse2 = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
 
         // Aside: test EvaluateXPath with instance() and multiple matching nodes works
         EvaluateXPathResponseBean evaluateXPathResponseBean =

@@ -1,0 +1,42 @@
+{
+  "instance-content": "<?xml version='1.0' ?><data uiVersion=\"1\" version=\"12\" name=\"Untitled Form\" xmlns:jrm=\"http://dev.commcarehq.org/jr/xforms\" xmlns=\"http://openrosa.org/formdesigner/AC2519C6-A3A1-425F-A37D-6250A4ED9FBA\"><question1>1</question1><question2>2</question2><question3 /><n0:meta xmlns:n0=\"http://openrosa.org/jr/xforms\"><n0:deviceID>Formplayer</n0:deviceID><n0:timeStart>2017-02-28T11:38:26.664+02</n0:timeStart><n0:timeEnd>2017-02-28T11:38:27.708+02</n0:timeEnd><n0:username>test</n0:username><n0:userID>84c246edf58bfa69e03bdecc39692e1f</n0:userID><n0:instanceID>7964ee93-28fa-4f98-b36f-fdd5abc385db</n0:instanceID><n1:appVersion xmlns:n1=\"http://commcarehq.org/xforms\">Formplayer Version: 2.30</n1:appVersion></n0:meta></data>",
+  "lang": "en",
+  "session-data": {
+    "username": "test",
+    "additional_filters": {
+      "footprint": true
+    },
+    "domain": "test",
+    "user_id": "84c246edf58bfa69e03bdecc39692e1f",
+    "session_name": "User Fields > Untitled Form",
+    "app_version": "2.0",
+    "app_id": "f3e8565c757b1f6aef662616dcc17565",
+    "user_data": {
+      "test": "1",
+      "commcare_project": "test",
+      "commcare_last_name": "",
+      "commcare_phone_number": null,
+      "commcare_first_name": ""
+    },
+    "device_id": "cloudcare",
+    "function_context": {
+      "static-date": [
+        {
+          "name": "now",
+          "value": "2017-02-28T09:38:27.708000Z"
+        },
+        {
+          "name": "today",
+          "value": "2017-02-28"
+        }
+      ]
+    },
+    "is_editing": true,
+    "host": "http://localhost:8000"
+  },
+  "domain": "test",
+  "post_url": "/a/test/receiver/secure/f3e8565c757b1f6aef662616dcc17565/",
+  "oneQuestionPerScreen": false,
+  "form-url": "http://localhost:8000/a/test/apps/download/f3e8565c757b1f6aef662616dcc17565/modules-0/forms-0.xml",
+  "username": "wpride@dimagi.com"
+}
