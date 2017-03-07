@@ -31,11 +31,21 @@ public class EntityStorageCache {
     public EntityStorageCache(String cacheName, SQLiteConnectionPoolDataSource dataSource) {
         this.dataSource = dataSource;
         this.mCacheName = cacheName;
+        Connection connection = null;
         try {
-            execSQL(dataSource.getConnection(), getTableDefinition());
-            EntityStorageCache.createIndexes(dataSource);
+            connection = dataSource.getConnection();
+            execSQL(connection, getTableDefinition());
+            EntityStorageCache.createIndexes(connection);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -68,10 +78,10 @@ public class EntityStorageCache {
                 ")";
     }
 
-    public static void createIndexes(SQLiteConnectionPoolDataSource dataSource) throws SQLException {
-        execSQL(dataSource.getConnection(),
+    public static void createIndexes(Connection connection) throws SQLException {
+        execSQL(connection,
                 DatabaseIndexingUtils.indexOnTableCommand("CACHE_TIMESTAMP", TABLE_NAME, COL_CACHE_NAME + ", " + COL_TIMESTAMP));
-        execSQL(dataSource.getConnection(),
+        execSQL(connection,
                 DatabaseIndexingUtils.indexOnTableCommand("NAME_ENTITY_KEY", TABLE_NAME, COL_CACHE_NAME + ", " + COL_ENTITY_KEY + ", " + COL_CACHE_KEY));
     }
 
@@ -140,10 +150,20 @@ public class EntityStorageCache {
         Pair<String, String[]> wherePair =
                 DatabaseHelper.createWhere(new String[]{COL_CACHE_NAME, COL_ENTITY_KEY},
                         new String[]{this.mCacheName, recordId});
+        Connection connection = null;
         try {
-            SqlHelper.deleteFromTableWhere(dataSource.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
+            connection = dataSource.getConnection();
+            SqlHelper.deleteFromTableWhere(connection, TABLE_NAME, wherePair.first, wherePair.second);
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

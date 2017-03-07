@@ -35,11 +35,21 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
 
     public FormplayerCaseIndexTable(SQLiteConnectionPoolDataSource dataSource) {
         this.dataSource = dataSource;
+        Connection connection = null;
         try {
-            execSQL(dataSource.getConnection(), getTableDefinition());
-            createIndexes(dataSource.getConnection());
+            connection = dataSource.getConnection();
+            execSQL(connection, getTableDefinition());
+            createIndexes(connection);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -61,7 +71,7 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
         }
     }
 
-    public static String getTableDefinition() {
+    private static String getTableDefinition() {
         return "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
                 DatabaseHelper.ID_COL + " INTEGER PRIMARY KEY, " +
                 COL_CASE_RECORD_ID + ", " +
@@ -71,7 +81,7 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                 ")";
     }
 
-    public static void createIndexes(Connection connection) {
+    private static void createIndexes(Connection connection) {
         String recordFirstIndexId = "RECORD_NAME_ID_TARGET";
         String recordFirstIndex = COL_CASE_RECORD_ID + ", " + COL_INDEX_NAME + ", " + COL_INDEX_TARGET;
         execSQL(connection, DatabaseIndexingUtils.indexOnTableCommand(recordFirstIndexId, TABLE_NAME, recordFirstIndex));
@@ -146,9 +156,10 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
     public LinkedHashSet<Integer> getCasesMatchingIndex(String indexName, String targetValue) {
         String[] args = new String[]{indexName, targetValue};
         Connection connection = null;
+        PreparedStatement selectStatement = null;
         try {
             connection = dataSource.getConnection();
-            PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connection,
+            selectStatement = SqlHelper.prepareTableSelectStatement(connection,
                     TABLE_NAME,
                     new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
                     args);
@@ -159,6 +170,13 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
+            if (selectStatement != null) {
+                try {
+                    selectStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
             if (connection != null) {
                 try {
                     connection.close();
@@ -179,7 +197,7 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
     public LinkedHashSet<Integer> getCasesMatchingValueSet(String indexName, String[] targetValueSet) {
         String[] args = new String[1 + targetValueSet.length];
         args[0] = indexName;
-        
+
         System.arraycopy(targetValueSet, 0, args, 1, targetValueSet.length);
         String inSet = getArgumentBasedVariableSet(targetValueSet.length);
 
@@ -200,16 +218,16 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            if (connection != null) {
+            if (selectStatement != null) {
                 try {
-                    connection.close();
+                    selectStatement.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
-            if (selectStatement != null) {
+            if (connection != null) {
                 try {
-                    selectStatement.close();
+                    connection.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -319,16 +337,16 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            if (connection != null) {
+            if (preparedStatement != null) {
                 try {
-                    connection.close();
+                    preparedStatement.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
-            if (preparedStatement != null) {
+            if (connection != null) {
                 try {
-                    preparedStatement.close();
+                    connection.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
