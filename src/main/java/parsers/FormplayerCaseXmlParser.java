@@ -15,8 +15,6 @@ import java.io.IOException;
  * Created by willpride on 3/6/17.
  */
 public class FormplayerCaseXmlParser extends CaseXmlParser {
-    private File folder;
-    private final boolean processAttachments = true;
     private final EntityStorageCache mEntityCache;
     private final FormplayerCaseIndexTable mCaseIndexTable;
 
