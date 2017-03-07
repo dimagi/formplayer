@@ -2,7 +2,6 @@ package utils;
 
 import application.SQLiteProperties;
 import org.commcare.api.persistence.UserSqlSandbox;
-import org.commcare.test.utilities.CaseTestUtils;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -15,6 +14,10 @@ import java.util.Hashtable;
  * Created by willpride on 2/21/17.
  */
 public class TestStorageUtils {
+
+    public static final String CASE_INSTANCE = "jr://instance/casedb";
+    public static final String LEDGER_INSTANCE = "jr://instance/ledgerdb";
+
     /**
      * @return An evaluation context which is capable of evaluating against
      * the connected storage instances: casedb is the only one supported for now
@@ -26,10 +29,10 @@ public class TestStorageUtils {
     }
 
     private static EvaluationContext buildEvaluationContext(FormplayerInstanceInitializer iif) {
-        ExternalDataInstance edi = new ExternalDataInstance(CaseTestUtils.CASE_INSTANCE, "casedb");
+        ExternalDataInstance edi = new ExternalDataInstance(CASE_INSTANCE, "casedb");
         DataInstance specializedDataInstance = edi.initialize(iif, "casedb");
 
-        ExternalDataInstance ledgerDataInstanceRaw = new ExternalDataInstance(CaseTestUtils.LEDGER_INSTANCE, "ledgerdb");
+        ExternalDataInstance ledgerDataInstanceRaw = new ExternalDataInstance(LEDGER_INSTANCE, "ledgerdb");
         DataInstance ledgerDataInstance = ledgerDataInstanceRaw.initialize(iif, "ledger");
 
         Hashtable<String, DataInstance> formInstances = new Hashtable<>();

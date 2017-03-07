@@ -179,17 +179,17 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
     public LinkedHashSet<Integer> getCasesMatchingValueSet(String indexName, String[] targetValueSet) {
         String[] args = new String[1 + targetValueSet.length];
         args[0] = indexName;
-        for (int i = 0; i < targetValueSet.length; ++i) {
-            args[i + 1] = targetValueSet[i];
-        }
+        
+        System.arraycopy(targetValueSet, 0, args, 1, targetValueSet.length);
         String inSet = getArgumentBasedVariableSet(targetValueSet.length);
 
         String whereExpr = String.format("%s = ? AND %s IN %s", COL_INDEX_NAME, COL_INDEX_TARGET, inSet);
 
         Connection connection = null;
+        PreparedStatement selectStatement = null;
         try {
             connection = dataSource.getConnection();
-            PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connection,
+            selectStatement = SqlHelper.prepareTableSelectStatement(connection,
                     TABLE_NAME,
                     whereExpr,
                     args);
@@ -203,6 +203,13 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
             if (connection != null) {
                 try {
                     connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (selectStatement != null) {
+                try {
+                    selectStatement.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -271,6 +278,7 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
 
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases, "CAST(? as INT)");
         Connection connection = null;
+        PreparedStatement preparedStatement = null;
         try {
             connection = dataSource.getConnection();
             for (Pair<String, String[]> querySet : whereParamList) {
@@ -291,7 +299,7 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                         COL_INDEX_NAME, indexName,
                         COL_CASE_RECORD_ID, querySet.first);
 
-                PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection, TABLE_NAME, query, querySet.second);
+                preparedStatement = SqlHelper.prepareTableSelectStatement(connection, TABLE_NAME, query, querySet.second);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 try {
                     if (resultSet.getFetchSize() == 0) {
@@ -314,6 +322,13 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
             if (connection != null) {
                 try {
                     connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
