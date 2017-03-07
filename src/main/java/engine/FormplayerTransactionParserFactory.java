@@ -51,7 +51,7 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
             @Override
             public TransactionParser<Case> getParser(KXmlParser parser) {
                 if (created == null) {
-                    created = new FormplayerCaseXmlParser(parser, true, sandbox.getCaseStorage()) {
+                    created = new FormplayerCaseXmlParser(parser, true, (UserSqlSandbox) sandbox) {
 
                         @Override
                         public void onIndexDisrupted(String caseId) {

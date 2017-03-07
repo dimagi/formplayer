@@ -35,6 +35,12 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
 
     public FormplayerCaseIndexTable(SQLiteConnectionPoolDataSource dataSource) {
         this.dataSource = dataSource;
+        try {
+            execSQL(dataSource.getConnection(), getTableDefinition());
+            createIndexes(dataSource.getConnection());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void execSQL(Connection connection, String query) {
@@ -56,7 +62,7 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
     }
 
     public static String getTableDefinition() {
-        return "CREATE TABLE " + TABLE_NAME + "(" +
+        return "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
                 DatabaseHelper.ID_COL + " INTEGER PRIMARY KEY, " +
                 COL_CASE_RECORD_ID + ", " +
                 COL_INDEX_NAME + ", " +

@@ -2,6 +2,7 @@ package parsers;
 
 import database.models.EntityStorageCache;
 import database.models.FormplayerCaseIndexTable;
+import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.xml.CaseXmlParser;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
@@ -19,22 +20,11 @@ public class FormplayerCaseXmlParser extends CaseXmlParser {
     private final EntityStorageCache mEntityCache;
     private final FormplayerCaseIndexTable mCaseIndexTable;
 
-    public FormplayerCaseXmlParser(KXmlParser parser, IStorageUtilityIndexed storage,
-                                EntityStorageCache entityCache, FormplayerCaseIndexTable indexTable) {
-        super(parser, storage);
-        mEntityCache = entityCache;
-        mCaseIndexTable = indexTable;
-    }
-
-    public FormplayerCaseXmlParser(KXmlParser parser, IStorageUtilityIndexed storage) {
-        this(parser, storage, new EntityStorageCache("case"), new FormplayerCaseIndexTable());
-    }
-
     public FormplayerCaseXmlParser(KXmlParser parser, boolean acceptCreateOverwrites,
-                                IStorageUtilityIndexed<Case> storage) {
-        super(parser, acceptCreateOverwrites, storage);
-        mEntityCache = new EntityStorageCache("case");
-        mCaseIndexTable = new FormplayerCaseIndexTable();
+                                   UserSqlSandbox sandbox) {
+        super(parser, acceptCreateOverwrites, sandbox.getCaseStorage());
+        mEntityCache = new EntityStorageCache("entitycase", sandbox.getDataSource());
+        mCaseIndexTable = new FormplayerCaseIndexTable(sandbox.getDataSource());
     }
 
 
