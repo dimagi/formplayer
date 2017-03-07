@@ -195,7 +195,7 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
-    NewFormResponse startNewSession(String requestPath, String formPath) throws Exception {
+    NewFormResponse startNewForm(String requestPath, String formPath) throws Exception {
         when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);

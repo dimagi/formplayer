@@ -1,7 +1,7 @@
 package session;
 
-import beans.CaseBean;
 import hq.CaseAPIs;
+import objects.FunctionHandler;
 import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -10,7 +10,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
-import org.commcare.cases.model.Case;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
@@ -19,11 +18,13 @@ import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
+import org.javarosa.engine.FunctionExtensions;
 import org.javarosa.form.api.FormController;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -38,7 +39,6 @@ import util.ApplicationUtils;
 import java.io.*;
 import java.util.Date;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 /**
@@ -113,29 +113,19 @@ public class FormSession {
     }
 
     // New FormSession constructor
-    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
-                       Map<String, String> sessionData, String postUrl,
-                       String locale, String menuSessionId,
-                       String instanceContent, boolean oneQuestionPerScreen, String asUser, String appId) throws Exception {
-        this(sandbox, formDef, username, domain, sessionData, postUrl, locale, menuSessionId,
-                instanceContent, oneQuestionPerScreen, asUser, UUID.randomUUID().toString(), appId);
-    }
-
-    // New FormSession constructor
-    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
-            Map<String, String> sessionData, String postUrl,
-            String locale, String menuSessionId,
-            String instanceContent, boolean oneQuestionPerScreen, String asUser, String sessionId, String appId) throws Exception {
-        this(sandbox, formDef, username, domain, sessionData, postUrl, locale, menuSessionId,
-                instanceContent, oneQuestionPerScreen, asUser, sessionId, "0", appId);
-    }
-
-    // New FormSession constructor
-    public FormSession(UserSandbox sandbox, FormDef formDef, String username, String domain,
-            Map<String, String> sessionData, String postUrl,
-            String locale, String menuSessionId,
-               String instanceContent, boolean oneQuestionPerScreen, String asUser,
-                       String sessionId, String currentIndex, String appId) throws Exception {
+    public FormSession(UserSandbox sandbox,
+                       FormDef formDef,
+                       String username,
+                       String domain,
+                       Map<String, String> sessionData,
+                       String postUrl,
+                       String locale,
+                       String menuSessionId,
+                       String instanceContent,
+                       boolean oneQuestionPerScreen,
+                       String asUser,
+                       String appId,
+                       Map<String, FunctionHandler[]> functionContext) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         this.sandbox = sandbox;
@@ -143,21 +133,23 @@ public class FormSession {
         this.domain = domain;
         this.postUrl = postUrl;
         this.locale = locale;
-        this.uuid = sessionId;
+        this.uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
         this.postUrl = postUrl;
         this.menuSessionId = menuSessionId;
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.asUser = asUser;
-        this.currentIndex = currentIndex;
         this.appId = appId;
+        this.currentIndex = "0";
         setupJavaRosaObjects();
+        setupFunctionContext(this.formDef, functionContext);
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
             initialize(false, sessionData);
         } else {
             initialize(true, sessionData);
         }
+
         if (this.oneQuestionPerScreen) {
             FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
             IFormElement element = formEntryController.getModel().getForm().getChild(firstIndex);
@@ -166,6 +158,28 @@ public class FormSession {
                 element = formEntryController.getModel().getForm().getChild(firstIndex);
             }
             this.currentIndex = firstIndex.toString();
+        }
+    }
+
+    /**
+     * Setup static function handlers. At the moment we only expect/accept date functions
+     * (in particular, now() and today()) but could be extended in the future.
+     */
+    private void setupFunctionContext(FormDef formDef, Map<String, FunctionHandler[]> functionContext) {
+        if (functionContext == null || functionContext.size() < 1) {
+            return;
+        }
+        for (String outerKey: functionContext.keySet()) {
+            FunctionHandler[] functionHandlers = functionContext.get(outerKey);
+            if(outerKey.equals("static-date")) {
+                for (FunctionHandler functionHandler: functionHandlers) {
+                    formDef.exprEvalContext.addFunctionHandler(
+                        new FunctionExtensions.TodayFunc(
+                                functionHandler.getName(),
+                                DateUtils.parseDate(functionHandler.getValue()))
+                    );
+                }
+            }
         }
     }
 
@@ -428,5 +442,24 @@ public class FormSession {
 
     public boolean getOneQuestionPerScreen() {
         return oneQuestionPerScreen;
+    }
+
+    public void reload(FormDef formDef, String postUrl) throws IOException {
+        if(getInstanceXml() != null){
+            loadInstanceXml(formDef, getInstanceXml());
+            initialize(false, sessionData);
+        } else {
+            initialize(true, sessionData);
+        }
+        if (this.oneQuestionPerScreen) {
+            FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
+            IFormElement element = formEntryController.getModel().getForm().getChild(firstIndex);
+            while (element instanceof GroupDef && !formEntryController.isFieldListHost(firstIndex)) {
+                firstIndex =  formController.getNextFormIndex(firstIndex, false, true);
+                element = formEntryController.getModel().getForm().getChild(firstIndex);
+            }
+            this.currentIndex = firstIndex.toString();
+        }
+        this.postUrl = postUrl;
     }
 }

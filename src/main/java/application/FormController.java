@@ -64,14 +64,13 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
-    public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
+        public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         restoreFactory.configure(newSessionBean, new DjangoAuth(authToken));
         String postUrl = host + newSessionBean.getPostUrl();
-        NewFormResponse newSessionResponse = newFormResponseFactory.getResponse(newSessionBean,
+        return newFormResponseFactory.getResponse(newSessionBean,
                 postUrl,
                 new DjangoAuth(authToken));
-        return newSessionResponse;
     }
 
     @ApiOperation(value = "Answer the question at the given index")
@@ -80,7 +79,12 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
                                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
-        restoreFactory.configure(session.getUsername(), session.getDomain(), session.getAsUser(), new DjangoAuth(authToken));
+        restoreFactory.configure(
+                session.getUsername(),
+                session.getDomain(),
+                session.getAsUser(),
+                getAuthHeaders(answerQuestionBean.getDomain(), answerQuestionBean.getUsername(), authToken)
+        );
         FormSession formEntrySession = new FormSession(session);
         JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
@@ -98,16 +102,23 @@ public class FormController extends AbstractBaseController{
     @UserLock
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        DjangoAuth auth = new DjangoAuth(authToken);
+
+        HqAuth auth = getAuthHeaders(
+                submitRequestBean.getDomain(),
+                submitRequestBean.getUsername(),
+                authToken
+        );
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
 
         restoreFactory.configure(serializableFormSession.getUsername(),
                 serializableFormSession.getDomain(),
                 serializableFormSession.getAsUser(),
-                auth);
+                auth
+        );
         storageFactory.configure(serializableFormSession.getUsername(),
                 serializableFormSession.getDomain(),
-                serializableFormSession.getAppId());
+                serializableFormSession.getAppId()
+        );
 
         FormSession formEntrySession = new FormSession(serializableFormSession);
         SubmitResponseBean submitResponseBean;
@@ -134,10 +145,11 @@ public class FormController extends AbstractBaseController{
                 return submitResponseBean;
             }
 
-            ResponseEntity<String> submitResponse =
-                    submitService.submitForm(formEntrySession.getInstanceXml(),
-                            formEntrySession.getPostUrl(),
-                            auth);
+            ResponseEntity<String> submitResponse = submitService.submitForm(
+                    formEntrySession.getInstanceXml(),
+                    formEntrySession.getPostUrl(),
+                    auth
+            );
 
             if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                 submitResponseBean.setStatus("error");
