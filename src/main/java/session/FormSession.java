@@ -408,6 +408,7 @@ public class FormSession {
     }
 
     public JSONObject answerQuestionToJSON(Object answer, String formIndex) {
+        System.out.println("Form index " + formIndex + " answer " + answer + " oqps " + oneQuestionPerScreen);
         JSONObject resp = JsonActionUtils.questionAnswerToJson(formEntryController,
                 formEntryModel,
                 answer != null ? answer.toString() : null,
