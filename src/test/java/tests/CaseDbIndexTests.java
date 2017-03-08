@@ -13,6 +13,7 @@ import utils.TestContext;
 import utils.TestStorageUtils;
 
 import static junit.framework.Assert.assertEquals;
+import static utils.DbTestUtils.evaluate;
 
 /**
  * @author wspride
@@ -44,17 +45,4 @@ public class CaseDbIndexTests extends BaseTestClass {
         evaluate("instance('casedb')/casedb/case[@case_type = 'unit_test_child'][index/parent = 'test_case_id_2']/@case_id",
                 "test_case_id_child_2", ec);
     }
-
-    public static void evaluate(String xpath, String expectedValue, EvaluationContext ec) {
-        XPathExpression expr;
-        try {
-            expr = XPathParseTool.parseXPath(xpath);
-            String result = FunctionUtils.toString(expr.eval(ec));
-            assertEquals("XPath: " + xpath, expectedValue, result);
-        } catch (XPathSyntaxException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 }

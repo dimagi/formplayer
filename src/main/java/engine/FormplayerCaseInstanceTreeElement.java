@@ -1,6 +1,8 @@
 package engine;
 
 import database.models.FormplayerCaseIndexTable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.engine.cases.CaseGroupResultCache;
 import org.commcare.modern.engine.cases.CaseIndexQuerySetTransform;
 import org.commcare.modern.engine.cases.query.CaseIndexPrefetchHandler;
@@ -41,6 +43,8 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
 
     private String[][] mMostRecentBatchFetch = null;
 
+    private static final Log log = LogFactory.getLog(FormplayerCaseInstanceTreeElement.class);
+
     public FormplayerCaseInstanceTreeElement(AbstractTreeElement instanceRoot,
                                              SqliteIndexedStorageUtility<Case> storage,
                                              FormplayerCaseIndexTable formplayerCaseIndexTable) {
@@ -65,7 +69,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
             return;
         }
         elements = new Vector<>();
-        //Log.d(TAG, "Getting Cases!");
+        log.debug("Getting Cases!");
         long timeInMillis = System.currentTimeMillis();
 
         int mult = 0;
@@ -78,7 +82,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
             mult++;
         }
         long value = System.currentTimeMillis() - timeInMillis;
-        //Log.d(TAG, "Case iterate took: " + value + "ms");
+        log.debug("Case iterate took: " + value + "ms");
     }
 
     @Override
@@ -177,7 +181,6 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
             if (mIndexCache.containsKey(indexCacheKey)) {
                 //remove the match from the inputs
                 optimizations.removeElementAt(0);
-                ;
                 return mIndexCache.get(indexCacheKey);
             }
 

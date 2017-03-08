@@ -1,5 +1,7 @@
 package database.models;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqlHelper;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
@@ -16,7 +18,7 @@ import java.util.HashMap;
  * @author wspride
  */
 public class EntityStorageCache {
-    private static final String TAG = EntityStorageCache.class.getSimpleName();
+
     private static final String TABLE_NAME = "entity_cache";
 
     private static final String COL_CACHE_NAME = "cache_name";
@@ -28,6 +30,8 @@ public class EntityStorageCache {
     private final SQLiteConnectionPoolDataSource dataSource;
     private final String mCacheName;
 
+    private static final Log log = LogFactory.getLog(EntityStorageCache.class);
+
     public EntityStorageCache(String cacheName, SQLiteConnectionPoolDataSource dataSource) {
         this.dataSource = dataSource;
         this.mCacheName = cacheName;
@@ -37,13 +41,13 @@ public class EntityStorageCache {
             execSQL(connection, getTableDefinition());
             EntityStorageCache.createIndexes(connection);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }
@@ -55,13 +59,13 @@ public class EntityStorageCache {
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }
@@ -85,9 +89,7 @@ public class EntityStorageCache {
                 DatabaseIndexingUtils.indexOnTableCommand("NAME_ENTITY_KEY", TABLE_NAME, COL_CACHE_NAME + ", " + COL_ENTITY_KEY + ", " + COL_CACHE_KEY));
     }
 
-    //TODO: We should do some synchronization to make it the case that nothing can hold
-    //an object for the same cache at once
-
+    // Currently unused
     public void cache(String entityKey, String cacheKey, String value) throws SQLException {
         long timestamp = System.currentTimeMillis();
         //TODO: this should probably just be an ON CONFLICT REPLACE call
@@ -105,6 +107,7 @@ public class EntityStorageCache {
         SqlHelper.basicInsert(dataSource.getConnection(), TABLE_NAME, contentValues);
     }
 
+    // Currently unused
     public String retrieveCacheValue(String entityKey, String cacheKey) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -123,24 +126,23 @@ public class EntityStorageCache {
                 return null;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing prepared statement ", e);
                 }
             }
         }
-        return null;
     }
 
     /**
@@ -161,7 +163,7 @@ public class EntityStorageCache {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }

@@ -13,6 +13,7 @@ import utils.TestContext;
 import utils.TestStorageUtils;
 
 import static junit.framework.Assert.assertEquals;
+import static utils.DbTestUtils.evaluate;
 
 /**
  * @author wspride
@@ -46,17 +47,4 @@ public class CaseDbModelQueryTests extends BaseTestClass {
                 "count(instance('casedb')/casedb/case[index/parent = instance('casedb')/casedb/case[@case_id=current()/@case_id]/index/parent][false = 'true']) > 0]/@case_id)", "", ec);
 
     }
-
-    public static void evaluate(String xpath, String expectedValue, EvaluationContext ec) {
-        XPathExpression expr;
-        try {
-            expr = XPathParseTool.parseXPath(xpath);
-            String result = FunctionUtils.toString(expr.eval(ec));
-            assertEquals("XPath: " + xpath, expectedValue, result);
-        } catch (XPathSyntaxException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 }
