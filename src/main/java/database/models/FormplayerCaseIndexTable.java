@@ -1,5 +1,7 @@
 package database.models;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqlHelper;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.cases.model.Case;
@@ -30,6 +32,8 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
 
     SQLiteConnectionPoolDataSource dataSource;
 
+    private static final Log log = LogFactory.getLog(FormplayerCaseIndexTable.class);
+
     //TODO: We should do some synchronization to make it the case that nothing can hold
     //an object for the same cache at once and let us manage the lifecycle
 
@@ -41,13 +45,13 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
             execSQL(connection, getTableDefinition());
             createIndexes(connection);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }
@@ -59,13 +63,13 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    log.debug("Exception closing prepared statement ", e);
                 }
             }
         }
@@ -108,13 +112,13 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                 SqlHelper.basicInsert(connection, TABLE_NAME, contentValues);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }
@@ -134,13 +138,13 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                     COL_CASE_RECORD_ID + "= CAST(? as INT)",
                     recordIdString);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }
@@ -174,14 +178,14 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                 try {
                     selectStatement.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }
@@ -222,14 +226,14 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                 try {
                     selectStatement.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception prepared statement connection ", e);
                 }
             }
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }
@@ -240,13 +244,14 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
         String[] args = new String[]{indexName};
 
         Connection connection = null;
+        PreparedStatement preparedStatement = null;
         try {
             connection = dataSource.getConnection();
-            PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connection,
+            preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
                     TABLE_NAME,
                     new String[]{COL_INDEX_NAME},
                     args);
-            ResultSet resultSet = selectStatement.executeQuery();
+            ResultSet resultSet = preparedStatement.executeQuery();
             try {
                 while (resultSet.next()) {
                     resultsReturned++;
@@ -268,16 +273,21 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                     resultSet.close();
                 }
             }
-
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    log.debug("Exception closing prepared statement ", e);
+                }
+            }
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }
@@ -341,14 +351,14 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                 try {
                     preparedStatement.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing prepared statement ", e);
                 }
             }
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.debug("Exception closing connection ", e);
                 }
             }
         }
