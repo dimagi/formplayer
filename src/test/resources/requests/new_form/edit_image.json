@@ -1,0 +1,42 @@
+{
+  "instance-content": "<?xml version='1.0' ?><data uiVersion=\"1\" version=\"5\" name=\"Question Types\" xmlns:jrm=\"http://dev.commcarehq.org/jr/xforms\" xmlns=\"http://openrosa.org/formdesigner/C2D2AE89-CF6F-4EB3-8D92-0805C479376D\"><intro /><q_text /><q_int /><q_numeric /><q_date>2017-03-08</q_date><q_date_time>2017-03-08T11:10:00.000+02</q_date_time><q_multiselect /><q_singleselect /><q_singleselect_minimal /><label_mc_minimal>OK</label_mc_minimal><q_singleselect_compact>b</q_singleselect_compact><list_view><list_label /><red /><Green /><Yellow /></list_view><q_time>11:10:00.000+02</q_time><q_pass /><q_pass_int /><numerictext /><no_confirmation>OK</no_confirmation><q_label /><sig_cap /><q_barcode /><qroutput /><q_gps /><q_image>1488964254571.jpg</q_image><q_audio /><q_video /><q_image_acquire /><q_audio_acquire /><q_video_acquire /><group_list><q_text_2 /><q_multiselect_2 /><q_singleselect_2 /></group_list><n0:meta xmlns:n0=\"http://openrosa.org/jr/xforms\"><n0:deviceID>359308055678886</n0:deviceID><n0:timeStart>2017-03-08T11:10:41.841+02</n0:timeStart><n0:timeEnd>2017-03-08T11:10:59.307+02</n0:timeEnd><n0:username>test</n0:username><n0:userID>1310994c09a239d0eef6f9744a54321a</n0:userID><n0:instanceID>4bfdf48c-4b0d-4bbc-bd03-f718e9e2c477</n0:instanceID><n1:appVersion xmlns:n1=\"http://commcarehq.org/xforms\">CommCare Android, version \"2.35\"(1). App v5. CommCare Version 2.35. Build 1, built on: 2017-03-03</n1:appVersion><n2:location xmlns:n2=\"http://commcarehq.org/xforms\" /></n0:meta></data>",
+  "lang": "en",
+  "session-data": {
+    "username": "test",
+    "additional_filters": {
+      "footprint": true
+    },
+    "domain": "ui-tests",
+    "user_id": "1310994c09a239d0eef6f9744a54321a",
+    "session_name": "Basic Tests > Question Types",
+    "app_version": "2.0",
+    "app_id": "e88c74ead9fc181ce22efa3a85f30278",
+    "user_data": {
+      "commcare_project": "ui-tests",
+      "commcare_last_name": "",
+      "commcare_phone_number": null,
+      "commcare_first_name": ""
+    },
+    "device_id": "cloudcare",
+    "function_context": {
+      "static-date": [
+        {
+          "name": "now",
+          "value": "2017-03-08T09:10:59.307000Z"
+        },
+        {
+          "name": "today",
+          "value": "2017-03-08"
+        }
+      ]
+    },
+    "is_editing": true,
+    "host": "https://www.commcarehq.org"
+  },
+  "domain": "ui-tests",
+  "post_url": "/a/ui-tests/receiver/secure/e88c74ead9fc181ce22efa3a85f30278/",
+  "oneQuestionPerScreen": false,
+  "form-url": "https://www.commcarehq.org/a/ui-tests/apps/download/e88c74ead9fc181ce22efa3a85f30278/modules-0/forms-1.xml",
+  "username": "wpride@dimagi.com",
+  "restoreAs": "test"
+}
