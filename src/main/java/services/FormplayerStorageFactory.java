@@ -2,6 +2,8 @@ package services;
 
 import beans.InstallRequestBean;
 import org.apache.commons.lang3.StringUtils;
+import org.sqlite.SQLiteConnection;
+import org.sqlite.javax.SQLiteConnectionPoolDataSource;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -17,14 +19,15 @@ import java.sql.SQLException;
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
  */
 @Component
-public class FormplayerStorageFactory implements IStorageIndexedFactory{
+public class FormplayerStorageFactory implements IStorageIndexedFactory, ConnectionHandler{
 
     private String username;
     private String domain;
     private String appId;
     private String databasePath;
     private String trimmedUsername;
-    private Connection connection;
+
+    private static Connection connection;
 
     public void configure(InstallRequestBean authenticatedRequestBean) {
         configure(authenticatedRequestBean.getUsername(),
@@ -44,27 +47,9 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
         this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
     }
 
-    public Connection getConnection() {
-        try {
-            if (connection == null || connection.isClosed()) {
-                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
-                connection = dataSource.getConnection();
-            }
-            return connection;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
-        try {
-            Connection connection = dataSource.getConnection();
-            return new SqliteIndexedStorageUtility(connection, type, databasePath, trimmedUsername, name);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return new SqliteIndexedStorageUtility(this, type, databasePath, trimmedUsername, name);
     }
 
 
@@ -98,5 +83,35 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
 
     public String getTrimmedUsername() {
         return trimmedUsername;
+    }
+
+    public static void closeConnection() {
+        try {
+            if(connection != null && !connection.isClosed()) {
+                connection.close();
+                connection = null;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
+                connection = dataSource.getConnection();
+            } else if (!((SQLiteConnection) connection).url().contains(username) ||
+                    !((SQLiteConnection) connection).url().contains(domain) ||
+                    !((SQLiteConnection) connection).url().contains(appId)) {
+                closeConnection();
+                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
+                connection = dataSource.getConnection();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return connection;
     }
 }

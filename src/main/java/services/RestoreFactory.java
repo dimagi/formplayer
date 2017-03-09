@@ -65,6 +65,8 @@ public class RestoreFactory {
 
     private String cachedRestore = null;
 
+    private UserSqlSandbox sandbox;
+
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
         configure(authenticatedRequestBean.getUsername(),
                 authenticatedRequestBean.getDomain(),
@@ -78,6 +80,7 @@ public class RestoreFactory {
         this.setAsUsername(asUsername);
         this.setHqAuth(auth);
         cachedRestore = null;
+        this.sandbox = new UserSqlSandbox(username, getDbPath());
     }
 
     public String getDbFile() {
@@ -101,7 +104,7 @@ public class RestoreFactory {
     }
 
     public UserSqlSandbox getSqlSandbox() {
-        return new UserSqlSandbox(getWrappedUsername(), getDbPath());
+        return new UserSqlSandbox(username, getDbPath());
     }
 
     private void ensureValidParameters() {

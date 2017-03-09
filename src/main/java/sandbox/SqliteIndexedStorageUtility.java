@@ -10,6 +10,7 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
 import org.javarosa.core.util.externalizable.DeserializationException;
+import services.ConnectionHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -32,26 +33,27 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     private Class<T> prototype;
     private final String tableName;
-    private Connection connection;
     private final String path;
     private final String username;
 
-    public SqliteIndexedStorageUtility(Connection connection, T prototype, String path, String username, String tableName) {
-        this(connection, (Class<T>) prototype.getClass(), path, username, tableName);
+    private ConnectionHandler connectionHandler;
+
+    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, T prototype, String path, String username, String tableName) {
+        this(connectionHandler, (Class<T>) prototype.getClass(), path, username, tableName);
     }
 
-    public SqliteIndexedStorageUtility(Connection connection, Class<T> prototype, String path, String username, String tableName) {
-        this(connection, prototype, path, username, tableName, true);
+    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, Class<T> prototype, String path, String username, String tableName) {
+        this(connectionHandler, prototype, path, username, tableName, true);
     }
 
-    public SqliteIndexedStorageUtility(Connection connection, Class<T> prototype,
+    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, Class<T> prototype,
                                        String path, String username,
                                        String tableName, boolean initialize) {
         this.tableName = tableName;
         this.path = path;
         this.username = username;
         this.prototype = prototype;
-        this.connection = connection;
+        this.connectionHandler = connectionHandler;
         if (initialize) {
             try {
                 buildTableFromInstance(prototype.newInstance());
@@ -105,10 +107,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
     }
 
     public Connection getConnection() throws SQLException, ClassNotFoundException {
-        if(connection == null || connection.isClosed()) {
-            connection = UserSqlSandbox.getDataSource(username, path).getConnection();
-        }
-        return connection;
+        return connectionHandler.getConnection();
     }
 
     @Override
@@ -118,12 +117,10 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             return;
         }
 
-        Connection c = null;
+        Connection c;
         try {
             c = getConnection();
             int id = SqlHelper.insertToTable(c, tableName, p);
-
-            c = getConnection();
             p.setID(id);
             SqlHelper.updateId(c, tableName, p);
             //c.close();
@@ -380,7 +377,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             connection = getConnection();
             SqlHelper.deleteAllFromTable(connection, tableName);
         } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            //throw new RuntimeException(e);
         }
     }
 

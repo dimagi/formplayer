@@ -26,6 +26,7 @@ public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
+        UserSqlSandbox.closeConnection();
         return restoreIfNotExists(restoreFactory, true);
     }
 
@@ -33,13 +34,12 @@ public class CaseAPIs {
         if (restoreFactory.isRestoreXmlExpired()) {
             SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         }
-        File db = new File(restoreFactory.getDbFile());
-        if(db.exists()){
+        if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             return restoreFactory.getSqlSandbox();
         } else{
-            db.getParentFile().mkdirs();
+            new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
             String xml = restoreFactory.getRestoreXml(overwriteCache);
-            return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(), xml);
+            return restoreUser(restoreFactory.getSqlSandbox(), restoreFactory.getWrappedUsername(), xml);
         }
     }
 
@@ -59,9 +59,8 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(String username, String path, String restorePayload) throws
+    private static UserSqlSandbox restoreUser(UserSqlSandbox sandbox, String username, String restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
-        UserSqlSandbox sandbox = new UserSqlSandbox(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
@@ -71,6 +70,7 @@ public class CaseAPIs {
         ParseUtils.parseXMLIntoSandbox(restorePayload, factory);
         sandbox.commit();
         System.out.println("I am committed");
+        sandbox.setAutoCommit(true);
 
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {

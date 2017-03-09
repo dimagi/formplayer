@@ -22,8 +22,7 @@ public class TestStorageUtils {
      * @return An evaluation context which is capable of evaluating against
      * the connected storage instances: casedb is the only one supported for now
      */
-    public static EvaluationContext getEvaluationContextWithoutSession() {
-        UserSqlSandbox sandbox = new UserSqlSandbox("synctestuser", SQLiteProperties.getDataDir() + "synctestdomain");
+    public static EvaluationContext getEvaluationContextWithoutSession(UserSqlSandbox sandbox) {
         FormplayerInstanceInitializer iif = new FormplayerInstanceInitializer(sandbox);
         sandbox.closeConnection();
         return buildEvaluationContext(iif);

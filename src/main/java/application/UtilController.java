@@ -14,6 +14,7 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import sandbox.UserSqlSandbox;
 import util.Constants;
 
 import java.io.StringReader;
@@ -49,7 +50,7 @@ public class UtilController extends AbstractBaseController {
         } else {
             CaseAPIs.forceRestore(restoreFactory);
         }
-
+        UserSqlSandbox.closeConnection();
         return new SyncDbResponseBean();
     }
 
