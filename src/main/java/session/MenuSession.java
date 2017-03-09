@@ -6,7 +6,7 @@ import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
-import org.commcare.api.persistence.UserSqlSandbox;
+import sandbox.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.CommCareSession;

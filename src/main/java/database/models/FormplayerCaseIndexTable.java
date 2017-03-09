@@ -2,8 +2,8 @@ package database.models;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.persistence.SqlHelper;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import sandbox.SqlHelper;
+import sandbox.SqliteIndexedStorageUtility;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
 import org.commcare.cases.query.queryset.DualTableSingleMatchModelQuerySet;

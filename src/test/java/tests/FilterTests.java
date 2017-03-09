@@ -1,27 +1,19 @@
 package tests;
 
 import application.SQLiteProperties;
-import auth.HqAuth;
 import beans.*;
-import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
-import org.commcare.api.persistence.UserSqlSandbox;
+import sandbox.SqlSandboxUtils;
+import sandbox.SqliteIndexedStorageUtility;
+import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.Constants;
-import utils.FileUtils;
 import utils.TestContext;
 
-import java.io.IOException;
-
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
