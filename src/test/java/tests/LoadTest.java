@@ -1,15 +1,10 @@
 package tests;
 
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import utils.TestContext;
-
 /**
  * Regression tests for fixed behaviors
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = TestContext.class)
+//@RunWith(SpringJUnit4ClassRunner.class)
+//@ContextConfiguration(classes = TestContext.class)
 public class LoadTest extends BaseTestClass{
 
     @Override

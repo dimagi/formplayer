@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
+import sandbox.UserSqlSandbox;
 import services.*;
 import util.Constants;
 import util.PrototypeUtils;
@@ -138,6 +139,8 @@ public class BaseTestClass {
 
     @After
     public void tearDown() {
+        UserSqlSandbox.closeConnection();
+        FormplayerStorageFactory.closeConnection();
         SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
     }
 

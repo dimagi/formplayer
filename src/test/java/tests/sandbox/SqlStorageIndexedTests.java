@@ -87,8 +87,8 @@ public class SqlStorageIndexedTests {
             String storageKey = "TFCase";
             String username = "sql-storage-test";
 
-            DataSource dataSource = UserSqlSandbox.getDataSource(username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
-            caseStorage = new SqliteIndexedStorageUtility<>(dataSource.getConnection(), Case.class,
+            UserSqlSandbox sandbox = new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
+            caseStorage = new SqliteIndexedStorageUtility<>(sandbox, Case.class,
                     UserSqlSandbox.DEFAULT_DATBASE_PATH, username, storageKey);
 
             caseStorage.write(a);
@@ -148,8 +148,8 @@ public class SqlStorageIndexedTests {
             String storageKey = "Ledger";
             String username = "wspride";
 
-            DataSource dataSource = UserSqlSandbox.getDataSource(username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
-            ledgerStorage = new SqliteIndexedStorageUtility<>(dataSource.getConnection(), Ledger.class,
+            UserSqlSandbox sandbox = new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
+            ledgerStorage = new SqliteIndexedStorageUtility<>(sandbox, Ledger.class,
                     UserSqlSandbox.DEFAULT_DATBASE_PATH, username, storageKey);
 
             ledgerStorage.write(l);
