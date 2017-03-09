@@ -2,8 +2,8 @@ package services;
 
 import beans.InstallRequestBean;
 import org.apache.commons.lang3.StringUtils;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
-import org.commcare.api.persistence.UserSqlSandbox;
+import sandbox.SqliteIndexedStorageUtility;
+import sandbox.UserSqlSandbox;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.stereotype.Component;
@@ -24,6 +24,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
     private String appId;
     private String databasePath;
     private String trimmedUsername;
+    private Connection connection;
 
     public void configure(InstallRequestBean authenticatedRequestBean) {
         configure(authenticatedRequestBean.getUsername(),
@@ -41,6 +42,18 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
         this.appId = appId;
         this.trimmedUsername = StringUtils.substringBefore(username, "@");
         this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
+    }
+
+    public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
+                connection = dataSource.getConnection();
+            }
+            return connection;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

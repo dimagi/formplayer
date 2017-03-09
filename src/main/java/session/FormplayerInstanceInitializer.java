@@ -2,8 +2,8 @@ package session;
 
 import database.models.FormplayerCaseIndexTable;
 import engine.FormplayerCaseInstanceTreeElement;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
-import org.commcare.api.persistence.UserSqlSandbox;
+import sandbox.SqliteIndexedStorageUtility;
+import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;

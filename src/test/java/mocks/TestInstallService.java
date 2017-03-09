@@ -2,7 +2,7 @@ package mocks;
 
 import engine.FormplayerConfigEngine;
 import installers.FormplayerInstallerFactory;
-import org.commcare.api.persistence.SqlSandboxUtils;
+import sandbox.SqlSandboxUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import services.FormplayerStorageFactory;
 import services.InstallService;

@@ -1,8 +1,6 @@
 package parsers;
 
-import database.models.EntityStorageCache;
-import database.models.FormplayerCaseIndexTable;
-import org.commcare.api.persistence.UserSqlSandbox;
+import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.xml.CaseXmlParser;
 import org.kxml2.io.KXmlParser;

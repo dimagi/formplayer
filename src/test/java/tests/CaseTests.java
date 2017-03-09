@@ -2,9 +2,9 @@ package tests;
 
 import application.SQLiteProperties;
 import beans.*;
-import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
-import org.commcare.api.persistence.UserSqlSandbox;
+import sandbox.SqlSandboxUtils;
+import sandbox.SqliteIndexedStorageUtility;
+import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.util.CasePurgeFilter;
 import org.junit.After;
