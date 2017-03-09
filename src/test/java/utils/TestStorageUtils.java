@@ -25,6 +25,7 @@ public class TestStorageUtils {
     public static EvaluationContext getEvaluationContextWithoutSession() {
         UserSqlSandbox sandbox = new UserSqlSandbox("synctestuser", SQLiteProperties.getDataDir() + "synctestdomain");
         FormplayerInstanceInitializer iif = new FormplayerInstanceInitializer(sandbox);
+        sandbox.closeConnection();
         return buildEvaluationContext(iif);
     }
 

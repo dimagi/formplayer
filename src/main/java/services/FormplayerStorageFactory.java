@@ -3,10 +3,15 @@ package services;
 import beans.InstallRequestBean;
 import org.apache.commons.lang3.StringUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.api.persistence.UserSqlSandbox;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.stereotype.Component;
 import util.ApplicationUtils;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
@@ -40,7 +45,13 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory{
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqliteIndexedStorageUtility(type, trimmedUsername, name, databasePath);
+        DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
+        try {
+            Connection connection = dataSource.getConnection();
+            return new SqliteIndexedStorageUtility(connection, type, databasePath, trimmedUsername, name);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

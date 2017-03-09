@@ -14,13 +14,7 @@ import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
-import org.commcare.util.engine.CommCareConfigEngine;
 import org.commcare.util.screen.*;
-import org.commcare.util.screen.CommCareSessionException;
-import org.commcare.util.screen.EntityScreen;
-import org.commcare.util.screen.MenuScreen;
-import org.commcare.util.screen.QueryScreen;
-import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
@@ -38,7 +32,6 @@ import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
 import services.RestoreFactory;
-import util.ApplicationUtils;
 import util.Constants;
 import util.SessionUtils;
 
@@ -99,6 +92,7 @@ public class MenuSession {
         sessionWrapper.syncState();
         this.screen = getNextScreen();
         this.appId = session.getAppId();
+        this.sandbox.closeConnection();
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -118,6 +112,7 @@ public class MenuSession {
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+        this.sandbox.closeConnection();
     }
     
     public void updateApp(String updateMode) {

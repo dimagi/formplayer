@@ -66,7 +66,12 @@ public class CaseAPIs {
 
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
 
+        System.out.println("Parsing...");
+        sandbox.setAutoCommit(false);
         ParseUtils.parseXMLIntoSandbox(restorePayload, factory);
+        sandbox.commit();
+        System.out.println("I am committed");
+
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
