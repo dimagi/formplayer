@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
@@ -36,7 +37,10 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import util.ApplicationUtils;
 
+import javax.sql.DataSource;
 import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -61,7 +65,7 @@ public class FormSession {
     private FormEntryController formEntryController;
     private FormController formController;
     private String restoreXml;
-    private UserSandbox sandbox;
+    private UserSqlSandbox sandbox;
     private int sequenceId;
     private String dateOpened;
     private String locale;
@@ -110,10 +114,11 @@ public class FormSession {
         setupJavaRosaObjects();
         initialize(false, session.getSessionData());
         this.postUrl = session.getPostUrl();
+        this.sandbox.closeConnection();
     }
 
     // New FormSession constructor
-    public FormSession(UserSandbox sandbox,
+    public FormSession(UserSqlSandbox sandbox,
                        FormDef formDef,
                        String username,
                        String domain,
@@ -159,6 +164,7 @@ public class FormSession {
             }
             this.currentIndex = firstIndex.toString();
         }
+        this.sandbox.closeConnection();
     }
 
     /**
@@ -202,15 +208,22 @@ public class FormSession {
     }
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
-        CommCarePlatform platform = new CommCarePlatform(2, 30, new IStorageIndexedFactory() {
-            @Override
-            public IStorageUtilityIndexed newStorage(String name, Class type) {
-                return new SqliteIndexedStorageUtility(type, username, name,
-                        ApplicationUtils.getApplicationDBPath(domain, username, appId));
-            }
-        });
-        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
+
+        String databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
+        DataSource dataSource = UserSqlSandbox.getDataSource(username, databasePath);
+        try {
+            final Connection connection = dataSource.getConnection();
+            CommCarePlatform platform = new CommCarePlatform(2, 30, new IStorageIndexedFactory() {
+                @Override
+                public IStorageUtilityIndexed newStorage(String name, Class type) {
+                    return new SqliteIndexedStorageUtility(connection, type, databasePath, username, name);
+                }
+            });
+            FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+            formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private FormDef parseFormDef(String formXml) throws IOException {

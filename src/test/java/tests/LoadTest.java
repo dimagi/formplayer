@@ -1,6 +1,5 @@
 package tests;
 
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -24,9 +23,12 @@ public class LoadTest extends BaseTestClass{
         return "restores/loadtestrestore.xml";
     }
 
-    @Test
     public void testBadSelection() throws Throwable {
+        long tStart = System.currentTimeMillis();
         syncDb();
-        System.out.println("Synced.");
+        long tEnd = System.currentTimeMillis();
+        long tDelta = tEnd - tStart;
+        double elapsedSeconds = tDelta / 1000.0;
+        System.out.println("Synced in " + elapsedSeconds + " seconds.");
     }
 }

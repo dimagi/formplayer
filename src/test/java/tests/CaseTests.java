@@ -37,6 +37,7 @@ public class CaseTests extends BaseTestClass {
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
         assert(caseStorage.getNumRecords()== 15);
+        sandbox.getConnection().close();
 
         String sessionId = newSessionResponse.getSessionId();
 
