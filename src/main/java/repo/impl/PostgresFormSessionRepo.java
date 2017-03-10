@@ -2,6 +2,7 @@ package repo.impl;
 
 import exceptions.FormNotFoundException;
 import objects.SerializableFormSession;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -76,8 +77,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         public void setValues(PreparedStatement ps) throws SQLException {
             byte[] sessionDataBytes = writeToBytes(mSession.getSessionData());
 
-            ps.setString(1, mSession.getInstanceXml());
-            ps.setString(2, mSession.getId());
+            ps.setString(1, mSession.getId());
+            ps.setString(2, mSession.getInstanceXml());
             ps.setString(3, mSession.getFormXml());
             try {
                 ps.setCharacterStream(4, new InputStreamReader(mSession.getRestoreXml(), "UTF-8"), mSession.getRestoreXml().available());
@@ -113,19 +114,19 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         public void setValues(PreparedStatement ps) throws SQLException {
             byte[] sessionDataBytes = writeToBytes(mSession.getSessionData());
 
-            ps.setString(0, mSession.getInstanceXml());
-            ps.setBytes(1, sessionDataBytes);
-            ps.setString(2, String.valueOf(mSession.getSequenceId()));
-            ps.setString(3, mSession.getCurrentIndex());
-            ps.setString(4, mSession.getPostUrl());
+            ps.setString(1, mSession.getInstanceXml());
+            ps.setBytes(2, sessionDataBytes);
+            ps.setString(3, String.valueOf(mSession.getSequenceId()));
+            ps.setString(4, mSession.getCurrentIndex());
+            ps.setString(5, mSession.getPostUrl());
             try {
-                ps.setCharacterStream(5, new InputStreamReader(mSession.getRestoreXml(), "UTF-8"), mSession.getRestoreXml().available());
+                ps.setCharacterStream(6, new InputStreamReader(mSession.getRestoreXml(), "UTF-8"), mSession.getRestoreXml().available());
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            ps.setString(6, mSession.getId());
+            ps.setString(7, mSession.getId());
         }
     }
 
