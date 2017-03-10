@@ -34,6 +34,7 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import services.RestoreFactory;
 import util.ApplicationUtils;
 
 import java.io.*;
@@ -113,7 +114,7 @@ public class FormSession {
     }
 
     // New FormSession constructor
-    public FormSession(UserSandbox sandbox,
+    public FormSession(RestoreFactory restoreFactory,
                        FormDef formDef,
                        String username,
                        String domain,
@@ -128,7 +129,7 @@ public class FormSession {
                        Map<String, FunctionHandler[]> functionContext) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
-        this.sandbox = sandbox;
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
         this.sessionData = sessionData;
         this.domain = domain;
         this.postUrl = postUrl;
@@ -141,6 +142,7 @@ public class FormSession {
         this.asUser = asUser;
         this.appId = appId;
         this.currentIndex = "0";
+        this.restoreXml = restoreFactory.getRestoreXml();
         setupJavaRosaObjects();
         setupFunctionContext(this.formDef, functionContext);
         if(instanceContent != null){

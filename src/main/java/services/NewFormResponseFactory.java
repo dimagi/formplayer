@@ -41,7 +41,7 @@ public class NewFormResponseFactory {
         UserSqlSandbox sandbox = CaseAPIs.forceRestore(restoreFactory);
 
         FormSession formSession = new FormSession(
-                sandbox,
+                restoreFactory,
                 parseFormDef(formXml),
                 bean.getUsername(),
                 bean.getDomain(),
