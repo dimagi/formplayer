@@ -235,15 +235,26 @@ public class MenuSession {
         return ret;
     }
 
-    public FormSession getFormEntrySession() throws Exception {
+    public FormSession getFormEntrySession(RestoreFactory restoreFactory) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = PropertyManager.instance().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, username, domain,
-                sessionData, postUrl, locale, uuid,
-                null, oneQuestionPerScreen,
-                asUser, appId, null);
+        return new FormSession(
+                restoreFactory,
+                formDef,
+                username,
+                domain,
+                sessionData,
+                postUrl,
+                locale,
+                uuid,
+                null,
+                oneQuestionPerScreen,
+                asUser,
+                appId,
+                null
+        );
     }
 
     public void reloadSession(FormSession formSession) throws Exception {
