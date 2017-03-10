@@ -18,6 +18,7 @@ import services.RestoreFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by willpride on 1/7/16.
@@ -27,10 +28,10 @@ public class CaseAPIs {
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         UserSqlSandbox.closeConnection();
-        return restoreIfNotExists(restoreFactory, true);
+        return restoreIfNotExists(restoreFactory);
     }
 
-    public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory, boolean overwriteCache) throws Exception{
+    public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory) throws Exception{
         if (restoreFactory.isRestoreXmlExpired()) {
             SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         }
@@ -38,8 +39,8 @@ public class CaseAPIs {
             return restoreFactory.getSqlSandbox();
         } else{
             new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
-            String xml = restoreFactory.getRestoreXml(overwriteCache);
-            return restoreUser(restoreFactory.getSqlSandbox(), restoreFactory.getWrappedUsername(), xml);
+            InputStream stream = restoreFactory.getRestoreStream();
+            return restoreUser(restoreFactory.getSqlSandbox(), restoreFactory.getWrappedUsername(), stream);
         }
     }
 
@@ -51,7 +52,7 @@ public class CaseAPIs {
         restoreFactory.setUsername(username);
         restoreFactory.setAsUsername(asUsername);
         restoreFactory.setCachedRestore(xml);
-        return restoreIfNotExists(restoreFactory, false);
+        return restoreIfNotExists(restoreFactory);
     }
 
     public static CaseBean getFullCase(String caseId, SqliteIndexedStorageUtility<Case> caseStorage){
@@ -59,7 +60,7 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(UserSqlSandbox sandbox, String username, String restorePayload) throws
+    private static UserSqlSandbox restoreUser(UserSqlSandbox sandbox, String username, InputStream stream) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
@@ -67,7 +68,7 @@ public class CaseAPIs {
 
         System.out.println("Parsing...");
         sandbox.setAutoCommit(false);
-        ParseUtils.parseXMLIntoSandbox(restorePayload, factory);
+        ParseUtils.parseIntoSandbox(stream, false, factory);
         sandbox.commit();
         System.out.println("I am committed");
         sandbox.setAutoCommit(true);
