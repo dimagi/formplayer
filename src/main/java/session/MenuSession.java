@@ -187,6 +187,9 @@ public class MenuSession {
         } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
             EntityScreen entityScreen = new EntityScreen();
             entityScreen.init(sessionWrapper);
+            if (entityScreen.shouldBeSkipped()) {
+                return getNextScreen();
+            }
             return entityScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
