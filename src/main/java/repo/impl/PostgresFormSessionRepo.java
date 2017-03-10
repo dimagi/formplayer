@@ -236,8 +236,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setId(rs.getString("id"));
             session.setInstanceXml(rs.getString("instanceXml"));
             session.setFormXml(rs.getString("formXml"));
-            Blob blobXml = rs.getBlob("restoreXml");
-            InputStream restoreStream = blobXml.getBinaryStream();
+            Reader restoreReader = rs.getCharacterStream("restoreXml");
+            InputStream restoreStream = new ReaderInputStream(restoreReader, "UTF-8");
             session.setRestoreXml(restoreStream);
             session.setUsername(rs.getString("username"));
             session.setInitLang(rs.getString("initLang"));
