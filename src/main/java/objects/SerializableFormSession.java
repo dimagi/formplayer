@@ -2,6 +2,7 @@ package objects;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ public class SerializableFormSession implements Serializable{
     private String id;
     private String instanceXml;
     private String formXml;
-    private String restoreXml;
+    private InputStream restoreXml;
     private String username;
     private String initLang;
     private int sequenceId;
@@ -77,11 +78,11 @@ public class SerializableFormSession implements Serializable{
         this.username = username;
     }
 
-    public String getRestoreXml() {
+    public InputStream getRestoreXml() {
         return restoreXml;
     }
 
-    public void setRestoreXml(String restoreXml){
+    public void setRestoreXml(InputStream restoreXml){
         this.restoreXml = restoreXml;
     }
 

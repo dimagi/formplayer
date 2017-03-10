@@ -7,16 +7,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
+import session.FormSession;
 import util.Constants;
 
 import javax.persistence.LockModeType;
 import java.io.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,11 +65,73 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         return baos.toByteArray();
     }
 
+    private class FormSessionStatementSetter implements PreparedStatementSetter {
+        private SerializableFormSession mSession;
+
+        public FormSessionStatementSetter(SerializableFormSession session) {
+            mSession = session;
+        }
+
+        @Override
+        public void setValues(PreparedStatement ps) throws SQLException {
+            byte[] sessionDataBytes = writeToBytes(mSession.getSessionData());
+
+            ps.setString(1, mSession.getInstanceXml());
+            ps.setString(2, mSession.getId());
+            ps.setString(3, mSession.getFormXml());
+            try {
+                ps.setCharacterStream(4, new InputStreamReader(mSession.getRestoreXml(), "UTF-8"), mSession.getRestoreXml().available());
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ps.setString(5, mSession.getUsername());
+            ps.setString(6, mSession.getInitLang());
+            ps.setString(7, String.valueOf(mSession.getSequenceId()));
+            ps.setString(8, mSession.getDomain());
+            ps.setString(9, mSession.getPostUrl());
+            ps.setBytes(10, sessionDataBytes);
+            ps.setString(11, mSession.getMenuSessionId());
+            ps.setString(12, mSession.getTitle());
+            ps.setString(13, mSession.getDateOpened());
+            ps.setBoolean(14, mSession.getOneQuestionPerScreen());
+            ps.setString(15, mSession.getCurrentIndex());
+            ps.setString(16, mSession.getAsUser());
+            ps.setString(17, mSession.getAppId());
+        }
+    }
+
+    private class FormSessionUpdateStatementSetter implements PreparedStatementSetter {
+        private SerializableFormSession mSession;
+
+        public FormSessionUpdateStatementSetter(SerializableFormSession session) {
+            mSession = session;
+        }
+
+        @Override
+        public void setValues(PreparedStatement ps) throws SQLException {
+            byte[] sessionDataBytes = writeToBytes(mSession.getSessionData());
+
+            ps.setString(0, mSession.getInstanceXml());
+            ps.setBytes(1, sessionDataBytes);
+            ps.setString(2, String.valueOf(mSession.getSequenceId()));
+            ps.setString(3, mSession.getCurrentIndex());
+            ps.setString(4, mSession.getPostUrl());
+            try {
+                ps.setCharacterStream(5, new InputStreamReader(mSession.getRestoreXml(), "UTF-8"), mSession.getRestoreXml().available());
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ps.setString(6, mSession.getId());
+        }
+    }
+
     @Override
     @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> S save(S session) {
-
-        byte[] sessionDataBytes = writeToBytes(session.getSessionData());
 
         int sessionCount = this.jdbcTemplate.queryForObject(
                 replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
@@ -77,11 +139,11 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         if(sessionCount > 0){
             String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, " +
                     "sequenceId = ?, currentIndex = ?, postUrl = ?, restoreXml = ? WHERE id = ?");
-            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
-                    sessionDataBytes, session.getSequenceId(), session.getCurrentIndex(),
-                    session.getPostUrl(), session.getRestoreXml(), session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR});
+
+            this.jdbcTemplate.update(
+                    query,
+                    new FormSessionUpdateStatementSetter(session)
+            );
             return session;
         }
 
@@ -91,15 +153,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 "domain, postUrl, sessionData, menu_session_id," +
                 "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
-                session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
-                session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId(),
-                session.getTitle(), session.getDateOpened(),
-                session.getOneQuestionPerScreen(), session.getCurrentIndex(), session.getAsUser(), session.getAppId()}, new int[] {
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR});
+        this.jdbcTemplate.update(query, new FormSessionStatementSetter(session));
         return session;
     }
 
@@ -181,7 +235,9 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setId(rs.getString("id"));
             session.setInstanceXml(rs.getString("instanceXml"));
             session.setFormXml(rs.getString("formXml"));
-            session.setRestoreXml(rs.getString("restoreXml"));
+            Blob blobXml = rs.getBlob("restoreXml");
+            InputStream restoreStream = blobXml.getBinaryStream();
+            session.setRestoreXml(restoreStream);
             session.setUsername(rs.getString("username"));
             session.setInitLang(rs.getString("initLang"));
             session.setSequenceId(Integer.parseInt(rs.getString("sequenceId")));

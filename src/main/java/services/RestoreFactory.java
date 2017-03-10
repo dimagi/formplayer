@@ -4,6 +4,7 @@ import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import exceptions.AsyncRetryException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqlSandboxUtils;
@@ -32,7 +33,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -64,7 +67,7 @@ public class RestoreFactory {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private String cachedRestore = null;
+    private InputStream cachedRestore = null;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
         configure(authenticatedRequestBean.getUsername(),
@@ -150,13 +153,13 @@ public class RestoreFactory {
         }
     }
 
-    public String getRestoreXml() {
+    public InputStream getRestoreXml() {
         return getRestoreXml(false);
     }
 
-    public String getRestoreXml(boolean overwriteCache) {
+    public InputStream getRestoreXml(boolean overwriteCache) {
         if (cachedRestore != null) {
-            return cachedRestore;
+            return getCachedRestore();
         }
         ensureValidParameters();
 
@@ -168,9 +171,9 @@ public class RestoreFactory {
         }
 
         log.info("Restoring from URL " + restoreUrl);
-        cachedRestore = getRestoreXmlHelper(restoreUrl, hqAuth);
+        InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
         setLastSyncTime();
-        return cachedRestore;
+        return restoreStream;
     }
 
     private void setLastSyncTime() {
@@ -244,21 +247,33 @@ public class RestoreFactory {
         );
     }
 
-    private String getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
+    private InputStream getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
         log.info("Restoring at domain: " + domain + " with auth: " + auth);
         HttpHeaders headers = auth.getAuthHeaders();
-        headers.add("x-openrosa-version",  "2.0");
-        ResponseEntity<String> response = restTemplate.exchange(
+        headers.add("x-openrosa-version", "2.0");
+        ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
-                String.class
+                org.springframework.core.io.Resource.class
         );
         if (response.getStatusCode().value() == 202) {
-            handleAsyncRestoreResponse(response.getBody(), response.getHeaders());
+            String responseBody = null;
+            try {
+                responseBody = IOUtils.toString(response.getBody().getInputStream(), "utf-8");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            handleAsyncRestoreResponse(responseBody, response.getHeaders());
         }
-        return response.getBody();
+        InputStream stream = null;
+        try {
+            stream = response.getBody().getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return stream;
     }
 
     public static String getRestoreUrl(String host, String domain, boolean overwriteCache){
@@ -311,7 +326,11 @@ public class RestoreFactory {
         this.asUsername = asUsername;
     }
 
-    public void setCachedRestore(String cachedRestore) {
+    public void setCachedRestore(InputStream cachedRestore) {
         this.cachedRestore = cachedRestore;
+    }
+
+    public InputStream getCachedRestore() {
+        return this.cachedRestore;
     }
 }
