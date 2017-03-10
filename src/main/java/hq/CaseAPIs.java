@@ -21,6 +21,7 @@ import services.RestoreFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by willpride on 1/7/16.
@@ -41,12 +42,12 @@ public class CaseAPIs {
             return restoreFactory.getSqlSandbox();
         } else{
             db.getParentFile().mkdirs();
-            String xml = restoreFactory.getRestoreXml(overwriteCache);
-            return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(), xml);
+            InputStream restoreStream = restoreFactory.getRestoreXml(overwriteCache);
+            return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(), restoreStream);
         }
     }
 
-    public static UserSqlSandbox restoreIfNotExists(String username, String asUsername, String domain, String xml) throws Exception {
+    public static UserSqlSandbox restoreIfNotExists(String username, String asUsername, String domain, InputStream xml) throws Exception {
         // This is a shitty hack to allow serialized sessions to use the RestoreFactory path methods.
         // We need a refactor of the entire infrastructure
         RestoreFactory restoreFactory = new RestoreFactory();
@@ -62,7 +63,7 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(String username, String path, String restorePayload) throws
+    private static UserSqlSandbox restoreUser(String username, String path, InputStream restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         UserSqlSandbox mSandbox = new UserSqlSandbox(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());

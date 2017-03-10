@@ -61,7 +61,7 @@ public class FormSession {
     private FormEntryModel formEntryModel;
     private FormEntryController formEntryController;
     private FormController formController;
-    private String restoreXml;
+    private InputStream restoreXml;
     private UserSandbox sandbox;
     private int sequenceId;
     private String dateOpened;
@@ -263,7 +263,7 @@ public class FormSession {
         return metaData.toString();
     }
 
-    private String getRestoreXml() {
+    private InputStream getRestoreXml() {
         return restoreXml;
     }
 
