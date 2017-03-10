@@ -46,7 +46,7 @@ public class UtilController extends AbstractBaseController {
         restoreFactory.configure(syncRequest, auth);
 
         if (syncRequest.isPreserveCache()) {
-            CaseAPIs.restoreIfNotExists(restoreFactory, false);
+            CaseAPIs.restoreIfNotExists(restoreFactory);
         } else {
             CaseAPIs.forceRestore(restoreFactory);
         }

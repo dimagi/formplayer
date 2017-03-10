@@ -209,7 +209,7 @@ public class FormSession {
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
 
-        String databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
+        final String databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
         DataSource dataSource = UserSqlSandbox.getDataSource(username, databasePath);
         try {
             final Connection connection = dataSource.getConnection();
