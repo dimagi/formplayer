@@ -19,7 +19,6 @@ public class FormEntryTest extends BaseTestClass{
     @Test
     public void testFormEntry() throws Exception {
 
-        formSessionRepoMock.findOneWrapped("").setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
         configureRestoreFactory("test", "test");
 
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/question_types.xml");
@@ -95,8 +94,6 @@ public class FormEntryTest extends BaseTestClass{
     @Test
     public void testFormEntry2() throws Exception {
 
-        formSessionRepoMock.findOneWrapped("").setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
-
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/question_types_2.xml");
 
         String sessionId = newSessionResponse.getSessionId();
@@ -136,8 +133,6 @@ public class FormEntryTest extends BaseTestClass{
     @Test
     public void testOQPS() throws Exception {
 
-        formSessionRepoMock.findOneWrapped("").setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
-
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
 
         assert newSessionResponse.getTree().length == 1;
@@ -146,8 +141,6 @@ public class FormEntryTest extends BaseTestClass{
     // Tests for OQPS next and previous methods
     @Test
     public void testOQPSPreviousNext() throws Exception {
-
-        formSessionRepoMock.findOneWrapped("").setRestoreXml(FileUtils.getFile(this.getClass(), "test_restore.xml"));
 
         NewFormResponse newFormResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
 
