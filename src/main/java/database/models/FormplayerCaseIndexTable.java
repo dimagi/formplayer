@@ -39,7 +39,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     //TODO: We should do some synchronization to make it the case that nothing can hold
     //an object for the same cache at once and let us manage the lifecycle
 
-    public FormplayerCaseIndexTable(UserSqlSandbox connectionHandler) {
+    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler) {
         this.connectionHandler = connectionHandler;
         execSQL(connectionHandler.getConnection(), getTableDefinition());
         createIndexes(connectionHandler.getConnection());

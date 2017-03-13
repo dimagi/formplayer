@@ -6,6 +6,8 @@ import beans.AuthenticatedRequestBean;
 import exceptions.AsyncRetryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sqlite.SQLiteConnection;
+import sandbox.SqlSandboxUtils;
 import sandbox.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.services.PropertyManager;
@@ -32,6 +34,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,7 +43,7 @@ import java.util.concurrent.TimeUnit;
  * then retrieves and returns the restore XML.
  */
 @Component
-public class RestoreFactory {
+public class RestoreFactory implements ConnectionHandler{
     @Value("${commcarehq.host}")
     private String host;
 
@@ -65,7 +69,7 @@ public class RestoreFactory {
 
     private String cachedRestore = null;
 
-    private UserSqlSandbox sandbox;
+    private Connection connection;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
         configure(authenticatedRequestBean.getUsername(),
@@ -80,8 +84,56 @@ public class RestoreFactory {
         this.setAsUsername(asUsername);
         this.setHqAuth(auth);
         cachedRestore = null;
-        this.sandbox = new UserSqlSandbox(username, getDbPath());
     }
+
+
+    public UserSqlSandbox getSqlSandbox() {
+        return new UserSqlSandbox(this, username, getDbPath());
+    }
+
+    @Override
+    public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = SqlSandboxUtils.getDataSource(username, getDbPath()).getConnection();
+            } else if (!((SQLiteConnection)connection).url().contains(username)
+                    || !((SQLiteConnection)connection).url().contains(getDbPath())) {
+                closeConnection();
+                connection = SqlSandboxUtils.getDataSource(username, getDbPath()).getConnection();
+            }
+            return connection;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void closeConnection() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            connection = null;
+        }
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        try {
+            connection.setAutoCommit(autoCommit);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void commit() {
+        try {
+            connection.commit();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public String getDbFile() {
         if (getAsUsername() == null) {
@@ -101,10 +153,6 @@ public class RestoreFactory {
 
     public String getWrappedUsername() {
         return asUsername == null ? username : asUsername;
-    }
-
-    public UserSqlSandbox getSqlSandbox() {
-        return new UserSqlSandbox(username, getDbPath());
     }
 
     private void ensureValidParameters() {

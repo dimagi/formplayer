@@ -26,7 +26,7 @@ public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
-        UserSqlSandbox.closeConnection();
+        restoreFactory.closeConnection();
         return restoreIfNotExists(restoreFactory, true);
     }
 
@@ -39,7 +39,7 @@ public class CaseAPIs {
         } else{
             new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
             String xml = restoreFactory.getRestoreXml(overwriteCache);
-            return restoreUser(restoreFactory.getSqlSandbox(), restoreFactory.getWrappedUsername(), xml);
+            return restoreUser(restoreFactory, restoreFactory.getWrappedUsername(), xml);
         }
     }
 
@@ -59,18 +59,19 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(UserSqlSandbox sandbox, String username, String restorePayload) throws
+    private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, String username, String restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
+        UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
 
         System.out.println("Parsing...");
-        sandbox.setAutoCommit(false);
+        restoreFactory.setAutoCommit(false);
         ParseUtils.parseXMLIntoSandbox(restorePayload, factory);
-        sandbox.commit();
+        restoreFactory.commit();
         System.out.println("I am committed");
-        sandbox.setAutoCommit(true);
+        restoreFactory.setAutoCommit(true);
 
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {

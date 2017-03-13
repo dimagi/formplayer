@@ -3,6 +3,7 @@ package tests.sandbox;
 import junit.framework.TestCase;
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
+import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.junit.After;
 import org.junit.Assert;
@@ -87,7 +88,10 @@ public class SqlStorageIndexedTests {
             String storageKey = "TFCase";
             String username = "sql-storage-test";
 
-            UserSqlSandbox sandbox = new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
+            UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(username,
+                    UserSqlSandbox.DEFAULT_DATBASE_PATH),
+                    username,
+                    UserSqlSandbox.DEFAULT_DATBASE_PATH);
             caseStorage = new SqliteIndexedStorageUtility<>(sandbox, Case.class,
                     UserSqlSandbox.DEFAULT_DATBASE_PATH, username, storageKey);
 
@@ -148,7 +152,10 @@ public class SqlStorageIndexedTests {
             String storageKey = "Ledger";
             String username = "wspride";
 
-            UserSqlSandbox sandbox = new UserSqlSandbox(username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
+            UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(username,
+                    UserSqlSandbox.DEFAULT_DATBASE_PATH),
+                    username,
+                    UserSqlSandbox.DEFAULT_DATBASE_PATH);
             ledgerStorage = new SqliteIndexedStorageUtility<>(sandbox, Ledger.class,
                     UserSqlSandbox.DEFAULT_DATBASE_PATH, username, storageKey);
 
@@ -172,7 +179,7 @@ public class SqlStorageIndexedTests {
             assertTrue(ledgerStorage.exists(1));
             TestCase.assertFalse(ledgerStorage.exists(-123));
 
-            JdbcSqlStorageIterator<Ledger> mIterator = ledgerStorage.iterate();
+            IStorageIterator<Ledger> mIterator = ledgerStorage.iterate();
 
             Assert.assertEquals(3, mIterator.numRecords());
 

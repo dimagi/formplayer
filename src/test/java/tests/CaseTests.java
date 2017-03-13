@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import tests.sandbox.TestConnectionHandler;
 import util.Constants;
 import utils.TestContext;
 
@@ -32,11 +33,14 @@ public class CaseTests extends BaseTestClass {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
 
-        UserSqlSandbox sandbox = new UserSqlSandbox("test3", SQLiteProperties.getDataDir() + "test");
+        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler("test3",
+                SQLiteProperties.getDataDir() + "test"),
+                "test3",
+                SQLiteProperties.getDataDir() + "test");
 
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
-        assert(caseStorage.getNumRecords()== 15);
+        assert(caseStorage.getNumRecords() == 15);
         sandbox.getConnection().close();
 
         String sessionId = newSessionResponse.getSessionId();
@@ -75,7 +79,9 @@ public class CaseTests extends BaseTestClass {
     public void testCaseClose() throws Exception {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
-        UserSqlSandbox sandbox = new UserSqlSandbox("test3", SQLiteProperties.getDataDir() + "test");
+        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler("test3", SQLiteProperties.getDataDir() + "test"),
+                "test3",
+                SQLiteProperties.getDataDir() + "test");
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
         assert(caseStorage.getNumRecords() == 15);
 

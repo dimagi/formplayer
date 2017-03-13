@@ -114,7 +114,6 @@ public class FormSession {
         setupJavaRosaObjects();
         initialize(false, session.getSessionData());
         this.postUrl = session.getPostUrl();
-        this.sandbox.closeConnection();
     }
 
     // New FormSession constructor
@@ -164,7 +163,6 @@ public class FormSession {
             }
             this.currentIndex = firstIndex.toString();
         }
-        this.sandbox.closeConnection();
     }
 
     /**
@@ -209,7 +207,7 @@ public class FormSession {
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
         final String databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
-        CommCarePlatform platform = new CommCarePlatform(2, 30, new IStorageIndexedFactory() {
+        CommCarePlatform platform = new CommCarePlatform(2, 33, new IStorageIndexedFactory() {
             @Override
             public IStorageUtilityIndexed newStorage(String name, Class type) {
                 return new SqliteIndexedStorageUtility(sandbox, type, databasePath, username, name);

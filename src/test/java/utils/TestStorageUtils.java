@@ -1,11 +1,10 @@
 package utils;
 
-import application.SQLiteProperties;
-import sandbox.UserSqlSandbox;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
+import sandbox.UserSqlSandbox;
 import session.FormplayerInstanceInitializer;
 
 import java.util.Hashtable;
@@ -24,7 +23,6 @@ public class TestStorageUtils {
      */
     public static EvaluationContext getEvaluationContextWithoutSession(UserSqlSandbox sandbox) {
         FormplayerInstanceInitializer iif = new FormplayerInstanceInitializer(sandbox);
-        sandbox.closeConnection();
         return buildEvaluationContext(iif);
     }
 

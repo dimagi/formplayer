@@ -92,7 +92,6 @@ public class MenuSession {
         sessionWrapper.syncState();
         this.screen = getNextScreen();
         this.appId = session.getAppId();
-        this.sandbox.closeConnection();
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -112,7 +111,6 @@ public class MenuSession {
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
-        this.sandbox.closeConnection();
     }
     
     public void updateApp(String updateMode) {

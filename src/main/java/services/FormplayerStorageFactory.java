@@ -4,6 +4,7 @@ import beans.InstallRequestBean;
 import org.apache.commons.lang3.StringUtils;
 import org.sqlite.SQLiteConnection;
 import org.sqlite.javax.SQLiteConnectionPoolDataSource;
+import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -51,13 +52,13 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
+                DataSource dataSource = SqlSandboxUtils.getDataSource(trimmedUsername, databasePath);
                 connection = dataSource.getConnection();
             } else if (!((SQLiteConnection) connection).url().contains(username) ||
                     !((SQLiteConnection) connection).url().contains(domain) ||
                     !((SQLiteConnection) connection).url().contains(appId)) {
                 closeConnection();
-                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
+                DataSource dataSource = SqlSandboxUtils.getDataSource(trimmedUsername, databasePath);
                 connection = dataSource.getConnection();
             }
         } catch (SQLException e) {
