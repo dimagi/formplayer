@@ -54,11 +54,11 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
         this.path = path;
         this.handler = handler;
         //we can't name this table "Case" becase that's reserved by sqlite
-        caseStorage = new SqliteIndexedStorageUtility<>(handler, Case.class, path, username, "CCCase");
-        ledgerStorage = new SqliteIndexedStorageUtility<>(handler, Ledger.class, path, username, Ledger.STORAGE_KEY);
-        userStorage = new SqliteIndexedStorageUtility<>(handler, User.class, path, username, User.STORAGE_KEY);
-        userFixtureStorage = new SqliteIndexedStorageUtility<>(handler, FormInstance.class, path, username, "UserFixture");
-        appFixtureStorage = new SqliteIndexedStorageUtility<>(handler, FormInstance.class, path, username, "AppFixture");
+        caseStorage = new SqliteIndexedStorageUtility<>(handler, Case.class, "CCCase");
+        ledgerStorage = new SqliteIndexedStorageUtility<>(handler, Ledger.class, Ledger.STORAGE_KEY);
+        userStorage = new SqliteIndexedStorageUtility<>(handler, User.class, User.STORAGE_KEY);
+        userFixtureStorage = new SqliteIndexedStorageUtility<>(handler, FormInstance.class, "UserFixture");
+        appFixtureStorage = new SqliteIndexedStorageUtility<>(handler, FormInstance.class, "AppFixture");
         sqlUtil = createFixturePathsTable(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE);
     }
 
@@ -82,8 +82,6 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
         return new SqliteIndexedStorageUtility<>(handler,
                 StorageIndexedTreeElementModel.class,
-                path,
-                username,
                 tableName,
                 false);
     }
@@ -94,14 +92,14 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
                                            Set<String> indices) {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
         SqliteIndexedStorageUtility<StorageIndexedTreeElementModel> sqlUtil
-                = new SqliteIndexedStorageUtility<>(handler, exampleEntry, path, username, tableName);
+                = new SqliteIndexedStorageUtility<>(handler, exampleEntry, tableName);
         sqlUtil.rebuildTable(exampleEntry);
         sqlUtil.executeStatements(DatabaseIndexingUtils.getIndexStatements(tableName, indices));
     }
 
     @Override
     public Pair<String, String> getIndexedFixturePathBases(String fixtureName) {
-        Connection connection = null;
+        Connection connection;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         try {
@@ -115,8 +113,8 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
                 String child = resultSet.getString(2);
                 return new Pair<>(base, child);
             }
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -150,7 +148,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
         // NOTE PLM: this should maybe be done on server startup instead on
         // ever invocation
         SqliteIndexedStorageUtility<StorageIndexedTreeElementModel> sqlUtil =
-                new SqliteIndexedStorageUtility<>(handler, null, path, username, tableName, false);
+                new SqliteIndexedStorageUtility<>(handler, null, tableName, false);
         String[] indexTableStatements = new String[]{
                 IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE_STMT,
                 // NOTE PLM: commenting out index creation below because

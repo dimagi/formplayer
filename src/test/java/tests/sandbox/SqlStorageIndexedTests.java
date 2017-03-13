@@ -92,8 +92,7 @@ public class SqlStorageIndexedTests {
                     UserSqlSandbox.DEFAULT_DATBASE_PATH),
                     username,
                     UserSqlSandbox.DEFAULT_DATBASE_PATH);
-            caseStorage = new SqliteIndexedStorageUtility<>(sandbox, Case.class,
-                    UserSqlSandbox.DEFAULT_DATBASE_PATH, username, storageKey);
+            caseStorage = new SqliteIndexedStorageUtility<>(sandbox, Case.class, storageKey);
 
             caseStorage.write(a);
 
@@ -156,8 +155,7 @@ public class SqlStorageIndexedTests {
                     UserSqlSandbox.DEFAULT_DATBASE_PATH),
                     username,
                     UserSqlSandbox.DEFAULT_DATBASE_PATH);
-            ledgerStorage = new SqliteIndexedStorageUtility<>(sandbox, Ledger.class,
-                    UserSqlSandbox.DEFAULT_DATBASE_PATH, username, storageKey);
+            ledgerStorage = new SqliteIndexedStorageUtility<>(sandbox, Ledger.class, storageKey);
 
             ledgerStorage.write(l);
             ledgerStorage.write(l2);
