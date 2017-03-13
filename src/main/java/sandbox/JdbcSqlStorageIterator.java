@@ -35,6 +35,9 @@ public class JdbcSqlStorageIterator<E extends Persistable> implements IStorageIt
 
     @Override
     public int peekID() {
+        if (index >= backingList.size()) {
+            return -1;
+        }
         return backingList.get(index).getID();
     }
 
@@ -72,5 +75,10 @@ public class JdbcSqlStorageIterator<E extends Persistable> implements IStorageIt
     @Override
     public void remove() {
         //unsupported
+    }
+
+    @Override
+    public String toString() {
+        return "JDBCIterator with items " + backingList;
     }
 }
