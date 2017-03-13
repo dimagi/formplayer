@@ -208,27 +208,15 @@ public class FormSession {
     }
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
-
         final String databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
-        DataSource dataSource = UserSqlSandbox.getDataSource(username, databasePath);
-        try {
-            final Connection connection = dataSource.getConnection();
-            CommCarePlatform platform = new CommCarePlatform(2, 30, new IStorageIndexedFactory() {
-                @Override
-                public IStorageUtilityIndexed newStorage(String name, Class type) {
-                    return new SqliteIndexedStorageUtility(sandbox, type, databasePath, username, name);
-                }
-            });
-            FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-            formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private FormDef parseFormDef(String formXml) throws IOException {
-        XFormParser mParser = new XFormParser(new StringReader(formXml));
-        return mParser.parse();
+        CommCarePlatform platform = new CommCarePlatform(2, 30, new IStorageIndexedFactory() {
+            @Override
+            public IStorageUtilityIndexed newStorage(String name, Class type) {
+                return new SqliteIndexedStorageUtility(sandbox, type, databasePath, username, name);
+            }
+        });
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+        formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
     }
 
     public String getInstanceXml() throws IOException {

@@ -48,10 +48,28 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     }
 
     @Override
+    public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
+                connection = dataSource.getConnection();
+            } else if (!((SQLiteConnection) connection).url().contains(username) ||
+                    !((SQLiteConnection) connection).url().contains(domain) ||
+                    !((SQLiteConnection) connection).url().contains(appId)) {
+                closeConnection();
+                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
+                connection = dataSource.getConnection();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return connection;
+    }
+
+    @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
         return new SqliteIndexedStorageUtility(this, type, databasePath, trimmedUsername, name);
     }
-
 
     public String getUsername() {
         return username;
@@ -94,24 +112,5 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public Connection getConnection() {
-        try {
-            if (connection == null || connection.isClosed()) {
-                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
-                connection = dataSource.getConnection();
-            } else if (!((SQLiteConnection) connection).url().contains(username) ||
-                    !((SQLiteConnection) connection).url().contains(domain) ||
-                    !((SQLiteConnection) connection).url().contains(appId)) {
-                closeConnection();
-                DataSource dataSource = UserSqlSandbox.getDataSource(trimmedUsername, databasePath);
-                connection = dataSource.getConnection();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return connection;
     }
 }
