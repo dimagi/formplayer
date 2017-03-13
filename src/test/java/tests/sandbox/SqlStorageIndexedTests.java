@@ -69,7 +69,7 @@ public class SqlStorageIndexedTests {
         l.setID(-1);
         l.setEntry("test_section_id", "test_entry_id", 2345);
 
-        l2 = new Ledger("ledger_entity_id");
+        l2 = new Ledger("ledger_entity_id_2");
         l2.setID(-1);
         l2.setEntry("test_section_id_2", "test_entry_id_2", 2345);
 
@@ -80,65 +80,56 @@ public class SqlStorageIndexedTests {
 
     @Test
     public void testSqlCaseStorage() {
+
+        PrototypeFactory mPrototypeFactory = new PrototypeFactory();
+        mPrototypeFactory.addClass(Case.class);
+
+        String storageKey = "TFCase";
+        String username = "sql-storage-test";
+
+        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(username,
+                UserSqlSandbox.DEFAULT_DATBASE_PATH),
+                username,
+                UserSqlSandbox.DEFAULT_DATBASE_PATH);
+        caseStorage = new SqliteIndexedStorageUtility<>(sandbox, Case.class, storageKey);
+
+        caseStorage.write(a);
+
+        Case readCase = caseStorage.read(1);
+        assertEquals("a_case_name", readCase.getName());
+        assertEquals(1, readCase.getID());
+        Assert.assertEquals(1, caseStorage.getNumRecords());
+
+        int bID = caseStorage.add(b);
+        readCase = caseStorage.read(bID);
+        assertEquals(bID, readCase.getID());
+        assertEquals("b_case_id", readCase.getCaseId());
+        Assert.assertEquals(2, caseStorage.getNumRecords());
+
+        int id = caseStorage.add(c);
+        Assert.assertEquals(3, caseStorage.getNumRecords());
+        readCase = caseStorage.getRecordForValue("case-id", "c_case_id");
+        assertEquals(id, readCase.getID());
+        Assert.assertEquals(caseStorage.getIDsForValue("case-type", "case_type_ipsum").size(), 3);
+
+        caseStorage.remove(1);
+
+        Assert.assertEquals(2, caseStorage.getNumRecords());
         try {
-
-            PrototypeFactory mPrototypeFactory = new PrototypeFactory();
-            mPrototypeFactory.addClass(Case.class);
-
-            String storageKey = "TFCase";
-            String username = "sql-storage-test";
-
-            UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(username,
-                    UserSqlSandbox.DEFAULT_DATBASE_PATH),
-                    username,
-                    UserSqlSandbox.DEFAULT_DATBASE_PATH);
-            caseStorage = new SqliteIndexedStorageUtility<>(sandbox, Case.class, storageKey);
-
-            caseStorage.write(a);
-
-            Case readCase = caseStorage.read(1);
-            assertEquals("a_case_name", readCase.getName());
-            assertEquals(1, readCase.getID());
-            Assert.assertEquals(1, caseStorage.getNumRecords());
-
-            int bID = caseStorage.add(b);
-            readCase = caseStorage.read(bID);
-            assertEquals(bID, readCase.getID());
-            assertEquals("b_case_id", readCase.getCaseId());
-            Assert.assertEquals(2, caseStorage.getNumRecords());
-
-            int id = caseStorage.add(c);
-            Assert.assertEquals(3, caseStorage.getNumRecords());
-            readCase = caseStorage.getRecordForValue("case-id", "c_case_id");
-            assertEquals(id, readCase.getID());
-            Assert.assertEquals(caseStorage.getIDsForValue("case-type", "case_type_ipsum").size(), 3);
-
-            caseStorage.remove(1);
-
-            Assert.assertEquals(2, caseStorage.getNumRecords());
-            try {
-                caseStorage.read(1);
-                org.junit.Assert.fail();
-            } catch(NullPointerException e){
-                //good
-            }
-
-            for (Case mCase : caseStorage) {
-                String caseId = mCase.getCaseId();
-                assertTrue(caseId.equals("b_case_id") || caseId.equals("c_case_id"));
-            }
-
-            caseStorage.removeAll();
-
-            Assert.assertEquals(0, caseStorage.getNumRecords());
-
+            caseStorage.read(1);
+            org.junit.Assert.fail();
+        } catch (NullPointerException e) {
+            //good
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            fail("Unexpected exception " + e.getMessage());
-        } finally {
-            SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
+
+        for (Case mCase : caseStorage) {
+            String caseId = mCase.getCaseId();
+            assertTrue(caseId.equals("b_case_id") || caseId.equals("c_case_id"));
         }
+
+        caseStorage.removeAll();
+
+        Assert.assertEquals(0, caseStorage.getNumRecords());
     }
 
     @Test
@@ -163,9 +154,9 @@ public class SqlStorageIndexedTests {
 
             Vector ids = ledgerStorage.getIDsForValue("entity_id", "ledger_entity_id");
 
-            assertEquals(2, ids.size());
+            assertEquals(1, ids.size());
             assertTrue(ids.contains(1));
-            assertTrue(ids.contains(2));
+            //assertTrue(ids.contains(2));
 
             Ledger readLedger2 = ledgerStorage.getRecordForValue("entity_id", "ledger_entity_id_3");
             assertEquals(readLedger2.getID(), 3);
@@ -181,6 +172,8 @@ public class SqlStorageIndexedTests {
 
             Assert.assertEquals(3, mIterator.numRecords());
 
+            System.out.println("mIterator " + mIterator);
+
 
             Assert.assertEquals(1, mIterator.nextID());
             Assert.assertEquals(2, mIterator.nextID());
@@ -194,7 +187,7 @@ public class SqlStorageIndexedTests {
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
 
