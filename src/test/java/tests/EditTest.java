@@ -26,4 +26,11 @@ public class EditTest extends BaseTestClass{
         NewFormResponse newFormResponse = startNewForm("requests/new_form/edit_form.json", "xforms/edit_form.xml");
         assert newFormResponse.getInstanceXml().getOutput().contains("<datetoday>2017-02-13</datetoday>");
     }
+
+    // test that we can override today() successfully
+    @Test
+    public void testEditImage() throws Throwable {
+        NewFormResponse newFormResponse = startNewForm("requests/new_form/edit_image.json", "xforms/edit_image.xml");
+        assert newFormResponse.getTree()[22].getAnswer().equals("1488964254571.jpg");
+    }
 }
