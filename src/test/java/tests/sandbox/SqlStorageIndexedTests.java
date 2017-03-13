@@ -171,10 +171,6 @@ public class SqlStorageIndexedTests {
             IStorageIterator<Ledger> mIterator = ledgerStorage.iterate();
 
             Assert.assertEquals(3, mIterator.numRecords());
-
-            System.out.println("mIterator " + mIterator);
-
-
             Assert.assertEquals(1, mIterator.nextID());
             Assert.assertEquals(2, mIterator.nextID());
             Assert.assertEquals(3, mIterator.nextID());
