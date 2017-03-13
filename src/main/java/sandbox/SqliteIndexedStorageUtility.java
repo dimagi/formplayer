@@ -97,16 +97,13 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     @Override
     public void write(Persistable p) {
-        System.out.println("Writing p " + p);
         if (p.getID() != -1) {
-            System.out.println("Updating p");
             update(p.getID(), p);
             return;
         }
         Connection connection;
         connection = getConnection();
         int id = SqlHelper.insertToTable(connection, tableName, p);
-        System.out.println("Inserting p got id " + id);
         p.setID(id);
         SqlHelper.updateId(connection, tableName, p);
     }
@@ -313,7 +310,6 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             while (resultSet.next()) {
                 byte[] bytes = resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
                 T t = readFromBytes(bytes);
-                System.out.println("Adding t " + t + " to backing list");
                 backingList.add(t);
             }
             return new JdbcSqlStorageIterator<>(backingList);

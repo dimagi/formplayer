@@ -66,11 +66,9 @@ public class CaseAPIs {
         UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
 
-        System.out.println("Parsing...");
         restoreFactory.setAutoCommit(false);
         ParseUtils.parseXMLIntoSandbox(restorePayload, factory);
         restoreFactory.commit();
-        System.out.println("I am committed");
         restoreFactory.setAutoCommit(true);
 
         // initialize our sandbox's logged in user

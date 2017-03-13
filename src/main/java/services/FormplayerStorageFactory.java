@@ -12,6 +12,7 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.stereotype.Component;
 import util.ApplicationUtils;
 
+import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -67,6 +68,18 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         return connection;
     }
 
+    @PreDestroy
+    public void closeConnection() {
+        try {
+            if(connection != null && !connection.isClosed()) {
+                connection.close();
+                connection = null;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
         return new SqliteIndexedStorageUtility(this, type, name);
@@ -102,16 +115,5 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
 
     public String getTrimmedUsername() {
         return trimmedUsername;
-    }
-
-    public static void closeConnection() {
-        try {
-            if(connection != null && !connection.isClosed()) {
-                connection.close();
-                connection = null;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 }
