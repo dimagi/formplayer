@@ -127,9 +127,7 @@ public class BaseTestClass {
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         Mockito.doReturn(FileUtils.getFile(this.getClass(), this.getMockRestoreFileName()))
-                .when(restoreFactoryMock).getRestoreXml();
-        Mockito.doReturn(FileUtils.getFileStream(this.getClass(), this.getMockRestoreFileName()))
-                .when(restoreFactoryMock).getRestoreStream();
+                .when(restoreFactoryMock).getRestoreXml(anyBoolean());
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
                 .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
         Mockito.doReturn(false)
