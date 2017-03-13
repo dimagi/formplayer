@@ -34,7 +34,6 @@ import java.util.List;
  * Repo has read only access
  * In addition to reading from the database, this repository handles the migration including:
  *  - Parsing the old JSON blob into our POJO
- *  - Adding restoreXml since the old one didn't contain it
  *  - Adding the PostURL since the old one didn't contain it
  *  - Converting the formXml into a serialized version
  */
@@ -144,10 +143,6 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         SerializableFormSession session = loadSessionFromJson(instanceSession.getSessionJson());
         session.setDateOpened(FormplayerDateUtils.convertIsoToJavaDate(entrySession.getCreatedDate()));
         session.setId(entrySession.getSessionId());
-
-        if (session.getRestoreXml() == null) {
-            session.setRestoreXml(restoreFactory.getRestoreXml());
-        }
 
         if(session.getPostUrl() == null) {
             session.setPostUrl(

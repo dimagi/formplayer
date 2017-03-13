@@ -11,6 +11,8 @@ import org.commcare.api.persistence.SqlSandboxUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.*;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -34,6 +36,8 @@ import utils.FileUtils;
 import utils.TestContext;
 
 import javax.servlet.http.Cookie;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
@@ -125,8 +129,9 @@ public class BaseTestClass {
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
-        Mockito.doReturn(FileUtils.getFile(this.getClass(), this.getMockRestoreFileName()))
-                .when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
                 .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
         Mockito.doReturn(false)
@@ -139,6 +144,19 @@ public class BaseTestClass {
     @After
     public void tearDown() {
         SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
+    }
+
+    private class RestoreFactoryAnswer implements Answer {
+        private String mRestoreFile;
+
+        public RestoreFactoryAnswer(String restoreFile) {
+            mRestoreFile = restoreFile;
+        }
+
+        @Override
+        public InputStream answer(InvocationOnMock invocation) throws Throwable {
+            return new FileInputStream("src/test/resources/" + mRestoreFile);
+        }
     }
 
     private String urlPrepend(String string) {
