@@ -46,14 +46,13 @@ public class CaseAPIs {
         }
     }
 
-    public static UserSqlSandbox restoreIfNotExists(String username, String asUsername, String domain, String xml) throws Exception {
+    public static UserSqlSandbox restoreIfNotExists(String username, String asUsername, String domain) throws Exception {
         // This is a shitty hack to allow serialized sessions to use the RestoreFactory path methods.
         // We need a refactor of the entire infrastructure
         RestoreFactory restoreFactory = new RestoreFactory();
         restoreFactory.setDomain(domain);
         restoreFactory.setUsername(username);
         restoreFactory.setAsUsername(asUsername);
-        restoreFactory.setCachedRestore(xml);
         return restoreIfNotExists(restoreFactory, false);
     }
 
