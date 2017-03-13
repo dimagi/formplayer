@@ -16,8 +16,6 @@ public class FormplayerCaseXmlParser extends CaseXmlParser {
     private final EntityStorageCache mEntityCache;
     private final FormplayerCaseIndexTable mCaseIndexTable;
 
-    public static int caseCount = 0;
-
     public FormplayerCaseXmlParser(KXmlParser parser, boolean acceptCreateOverwrites,
                                    UserSqlSandbox sandbox) {
         super(parser, acceptCreateOverwrites, sandbox.getCaseStorage());
@@ -29,7 +27,6 @@ public class FormplayerCaseXmlParser extends CaseXmlParser {
     @Override
     public void commit(Case parsed) throws IOException {
         super.commit(parsed);
-        caseCount++;
         mEntityCache.invalidateCache(String.valueOf(parsed.getID()));
         mCaseIndexTable.clearCaseIndices(parsed);
         mCaseIndexTable.indexCase(parsed);

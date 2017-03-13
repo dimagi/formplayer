@@ -29,7 +29,9 @@ import javax.annotation.Resource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -150,45 +152,11 @@ public class RestoreFactory {
         }
     }
 
-    public InputStream getRestoreStream() {
-        ensureValidParameters();
-
-        String restoreUrl;
-        if (asUsername == null) {
-            restoreUrl = getRestoreUrl(host, domain);
-        } else {
-            restoreUrl = getRestoreUrl(host, domain, asUsername);
-        }
-
-        log.info("Restoring from URL " + restoreUrl);
-        InputStream ret = getRestoreInputStreamHelper(restoreUrl, hqAuth);
-        setLastSyncTime();
-        return ret;
-    }
-
-    private InputStream getRestoreInputStreamHelper(String restoreUrl, HqAuth auth) {
-        RestTemplate restTemplate = new RestTemplate();
-        log.info("Restoring at domain: " + domain + " with auth: " + auth);
-        HttpHeaders headers = auth.getAuthHeaders();
-        headers.add("x-openrosa-version",  "2.0");
-
-        ResponseEntity<org.springframework.core.io.Resource> responseEntity = restTemplate.exchange(
-                restoreUrl,
-                HttpMethod.GET,
-                new HttpEntity<String>(headers),
-                org.springframework.core.io.Resource.class );
-
-        InputStream responseInputStream;
-        try {
-            responseInputStream = responseEntity.getBody().getInputStream();
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return responseInputStream;
-    }
-
     public String getRestoreXml() {
+        return getRestoreXml(false);
+    }
+
+    public String getRestoreXml(boolean overwriteCache) {
         if (cachedRestore != null) {
             return cachedRestore;
         }
@@ -196,9 +164,9 @@ public class RestoreFactory {
 
         String restoreUrl;
         if (asUsername == null) {
-            restoreUrl = getRestoreUrl(host, domain);
+            restoreUrl = getRestoreUrl(host, domain, overwriteCache);
         } else {
-            restoreUrl = getRestoreUrl(host, domain, asUsername);
+            restoreUrl = getRestoreUrl(host, domain, asUsername, overwriteCache);
         }
 
         log.info("Restoring from URL " + restoreUrl);
@@ -295,13 +263,22 @@ public class RestoreFactory {
         return response.getBody();
     }
 
-    public static String getRestoreUrl(String host, String domain){
-        return host + "/a/" + domain + "/phone/restore/?version=2.0";
+    public static String getRestoreUrl(String host, String domain, boolean overwriteCache){
+        String url = host + "/a/" + domain + "/phone/restore/?version=2.0";
+        if (overwriteCache) {
+            url += "&overwrite_cache=true";
+        }
+        return url;
     }
 
-    public String getRestoreUrl(String host, String domain, String username) {
-        return host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
+    public String getRestoreUrl(String host, String domain, String username, boolean overwriteCache) {
+        String url = host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
                 domain + ".commcarehq.org&version=2.0";
+
+        if (overwriteCache) {
+            url += "&overwrite_cache=true";
+        }
+        return url;
     }
 
     public String getUsername() {
