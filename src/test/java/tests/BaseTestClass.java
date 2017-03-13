@@ -139,7 +139,7 @@ public class BaseTestClass {
 
     @After
     public void tearDown() {
-        UserSqlSandbox.closeConnection();
+        restoreFactoryMock.closeConnection();
         FormplayerStorageFactory.closeConnection();
         SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
     }

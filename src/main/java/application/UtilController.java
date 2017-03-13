@@ -50,7 +50,6 @@ public class UtilController extends AbstractBaseController {
         } else {
             CaseAPIs.forceRestore(restoreFactory);
         }
-        UserSqlSandbox.closeConnection();
         return new SyncDbResponseBean();
     }
 

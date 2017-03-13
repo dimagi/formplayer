@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import tests.sandbox.TestConnectionHandler;
 import util.Constants;
 import utils.TestContext;
 
@@ -29,11 +30,14 @@ public class FilterTests extends BaseTestClass {
         assert(syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
         assert(SqlSandboxUtils.databaseFolderExists(SQLiteProperties.getDataDir()));
 
-        UserSqlSandbox sandbox = new UserSqlSandbox("synctestuser", SQLiteProperties.getDataDir() + "synctestdomain");
+        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler("synctestuser",
+                SQLiteProperties.getDataDir() + "synctestdomain"),
+                "synctestuser",
+                SQLiteProperties.getDataDir() + "synctestdomain");
 
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
-        assert(15 == caseStorage.getNumRecords());
+        assert (15 == caseStorage.getNumRecords());
 
         //TODO add ledgers, fixtures, etc.
     }

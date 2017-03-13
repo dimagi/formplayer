@@ -1,6 +1,11 @@
 package sandbox;
 
+import org.sqlite.javax.SQLiteConnectionPoolDataSource;
+
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.sql.SQLException;
 
 /**
  * Methods that mostly are used around the mocks that replicate stuff from
@@ -35,5 +40,22 @@ public class SqlSandboxUtils {
             }
         }
         folder.delete();
+    }
+
+    public static SQLiteConnectionPoolDataSource getDataSource(String databaseName, String databasePath) {
+        File databaseFolder = new File(databasePath);
+
+        try {
+            if (!databaseFolder.exists()) {
+                Files.createDirectories(databaseFolder.toPath());
+            }
+            Class.forName("org.sqlite.JDBC");
+            SQLiteConnectionPoolDataSource dataSource = new SQLiteConnectionPoolDataSource();
+            dataSource.setUrl("jdbc:sqlite:" + databasePath + "/" + databaseName + ".db");
+            dataSource.getConnection().setAutoCommit(false);
+            return dataSource;
+        } catch (ClassNotFoundException|SQLException |IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

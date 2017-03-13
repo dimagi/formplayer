@@ -441,7 +441,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     @Override
     public Iterator<T> iterator() {
-        return iterate();
+        return (Iterator<T>) iterate();
     }
 
     public void getIDsForValues(String[] namesToMatch, String[] valuesToMatch, LinkedHashSet<Integer> ids) {

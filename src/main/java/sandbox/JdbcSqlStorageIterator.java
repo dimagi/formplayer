@@ -19,10 +19,12 @@ import java.util.Iterator;
 public class JdbcSqlStorageIterator<E extends Persistable> implements IStorageIterator<E>, Iterator<E> {
     final private ArrayList<E> backingList;
     private int index;
+    private boolean hasMore;
 
     public JdbcSqlStorageIterator(ArrayList<E> backingList) {
         this.backingList = backingList;
         index = 0;
+        hasMore = index < this.backingList.size();
     }
 
     @Override
@@ -39,9 +41,8 @@ public class JdbcSqlStorageIterator<E extends Persistable> implements IStorageIt
     @Override
     public int nextID() {
         int id = peekID();
-        if (index + 1 < backingList.size()) {
-            index++;
-        }
+        index++;
+        hasMore = index < backingList.size();
         return id;
     }
 
@@ -49,12 +50,13 @@ public class JdbcSqlStorageIterator<E extends Persistable> implements IStorageIt
     public E nextRecord() {
         E e = backingList.get(index);
         index++;
+        hasMore = index < this.backingList.size();
         return e;
     }
 
     @Override
     public boolean hasMore() {
-        return index < backingList.size();
+        return hasMore;
     }
 
     @Override

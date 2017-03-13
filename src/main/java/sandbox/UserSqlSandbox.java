@@ -9,6 +9,7 @@ import org.commcare.modern.database.IndexedFixturePathsConstants;
 import org.commcare.modern.util.Pair;
 import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.sqlite.SQLiteConnection;
 import org.sqlite.javax.SQLiteConnectionPoolDataSource;
@@ -31,7 +32,7 @@ import java.util.Set;
  *
  * @author wspride
  */
-public class UserSqlSandbox extends UserSandbox implements ConnectionHandler{
+public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
 
     private final SqliteIndexedStorageUtility<Case> caseStorage;
     private final SqliteIndexedStorageUtility<Ledger> ledgerStorage;
@@ -42,71 +43,23 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler{
     private final String username, path;
     private User user = null;
     public static final String DEFAULT_DATBASE_PATH = "dbs";
-    private static Connection connection;
+    private ConnectionHandler handler;
 
     /**
      * Create a sandbox of the necessary storage objects with the shared
      * factory.
      */
-    public UserSqlSandbox(String username, String path) {
+    public UserSqlSandbox(ConnectionHandler handler, String username, String path) {
         this.username = username;
         this.path = path;
-        getConnection();
+        this.handler = handler;
         //we can't name this table "Case" becase that's reserved by sqlite
-        caseStorage = new SqliteIndexedStorageUtility<>(this, Case.class, path, username, "CCCase");
-        ledgerStorage = new SqliteIndexedStorageUtility<>(this, Ledger.class, path, username, Ledger.STORAGE_KEY);
-        userStorage = new SqliteIndexedStorageUtility<>(this, User.class, path, username, User.STORAGE_KEY);
-        userFixtureStorage = new SqliteIndexedStorageUtility<>(this, FormInstance.class, path, username, "UserFixture");
-        appFixtureStorage = new SqliteIndexedStorageUtility<>(this, FormInstance.class, path, username, "AppFixture");
+        caseStorage = new SqliteIndexedStorageUtility<>(handler, Case.class, path, username, "CCCase");
+        ledgerStorage = new SqliteIndexedStorageUtility<>(handler, Ledger.class, path, username, Ledger.STORAGE_KEY);
+        userStorage = new SqliteIndexedStorageUtility<>(handler, User.class, path, username, User.STORAGE_KEY);
+        userFixtureStorage = new SqliteIndexedStorageUtility<>(handler, FormInstance.class, path, username, "UserFixture");
+        appFixtureStorage = new SqliteIndexedStorageUtility<>(handler, FormInstance.class, path, username, "AppFixture");
         sqlUtil = createFixturePathsTable(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE);
-    }
-
-    public Connection getConnection() {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = getDataSource(username, path).getConnection();
-            } else if (!((SQLiteConnection)connection).url().contains(username)
-                    || !((SQLiteConnection)connection).url().contains(path)) {
-                closeConnection();
-                connection = getDataSource(username, path).getConnection();
-            }
-            return connection;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void setAutoCommit(boolean autoCommit) {
-        try {
-            connection.setAutoCommit(autoCommit);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void commit() {
-        try {
-            connection.commit();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static SQLiteConnectionPoolDataSource getDataSource(String databaseName, String databasePath) {
-        File databaseFolder = new File(databasePath);
-
-        try {
-            if (!databaseFolder.exists()) {
-                Files.createDirectories(databaseFolder.toPath());
-            }
-            Class.forName("org.sqlite.JDBC");
-            SQLiteConnectionPoolDataSource dataSource = new SQLiteConnectionPoolDataSource();
-            dataSource.setUrl("jdbc:sqlite:" + databasePath + "/" + databaseName + ".db");
-            dataSource.getConnection().setAutoCommit(false);
-            return dataSource;
-        } catch (ClassNotFoundException|SQLException|IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -127,7 +80,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler{
     @Override
     public IStorageUtilityIndexed<StorageIndexedTreeElementModel> getIndexedFixtureStorage(String fixtureName) {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
-        return new SqliteIndexedStorageUtility<>(this,
+        return new SqliteIndexedStorageUtility<>(handler,
                 StorageIndexedTreeElementModel.class,
                 path,
                 username,
@@ -141,7 +94,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler{
                                            Set<String> indices) {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
         SqliteIndexedStorageUtility<StorageIndexedTreeElementModel> sqlUtil
-                = new SqliteIndexedStorageUtility<>(this, exampleEntry, path, username, tableName);
+                = new SqliteIndexedStorageUtility<>(handler, exampleEntry, path, username, tableName);
         sqlUtil.rebuildTable(exampleEntry);
         sqlUtil.executeStatements(DatabaseIndexingUtils.getIndexStatements(tableName, indices));
     }
@@ -197,7 +150,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler{
         // NOTE PLM: this should maybe be done on server startup instead on
         // ever invocation
         SqliteIndexedStorageUtility<StorageIndexedTreeElementModel> sqlUtil =
-                new SqliteIndexedStorageUtility<>(this, null, path, username, tableName, false);
+                new SqliteIndexedStorageUtility<>(handler, null, path, username, tableName, false);
         String[] indexTableStatements = new String[]{
                 IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE_STMT,
                 // NOTE PLM: commenting out index creation below because
@@ -227,7 +180,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler{
             JdbcSqlStorageIterator<User> iterator = userStorage.iterate();
             if (iterator.hasMore()) {
                 // should be only one user here
-                user = iterator.next();
+                user = iterator.nextRecord();
             } else {
                 user = null;
             }
@@ -241,18 +194,12 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler{
         this.user = user;
     }
 
-    public static void closeConnection() {
-        if (connection != null) {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            connection = null;
-        }
-    }
-
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public Connection getConnection() {
+        return handler.getConnection();
     }
 }
