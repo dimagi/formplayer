@@ -11,7 +11,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * Created by wpride1 on 6/25/15.
+ * Simple implemenation of IStorageIterator that is actually just backed by an ArrayList
+ * since we don't want to deal with Connections or ResultSets lingering around.
+ *
+ * @author wspride
  */
 public class JdbcSqlStorageIterator<E extends Persistable> implements IStorageIterator<E>, Iterator<E> {
     final private ArrayList<E> backingList;
