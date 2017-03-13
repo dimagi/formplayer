@@ -69,7 +69,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqliteIndexedStorageUtility(this, type, databasePath, trimmedUsername, name);
+        return new SqliteIndexedStorageUtility(this, type, name);
     }
 
     public String getUsername() {

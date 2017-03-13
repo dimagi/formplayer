@@ -210,7 +210,7 @@ public class FormSession {
         CommCarePlatform platform = new CommCarePlatform(2, 33, new IStorageIndexedFactory() {
             @Override
             public IStorageUtilityIndexed newStorage(String name, Class type) {
-                return new SqliteIndexedStorageUtility(sandbox, type, databasePath, username, name);
+                return new SqliteIndexedStorageUtility(sandbox, type, name);
             }
         });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);

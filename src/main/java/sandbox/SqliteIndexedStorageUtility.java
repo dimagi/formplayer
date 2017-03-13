@@ -33,25 +33,20 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     private Class<T> prototype;
     private final String tableName;
-    private final String path;
-    private final String username;
 
     private ConnectionHandler connectionHandler;
 
-    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, T prototype, String path, String username, String tableName) {
-        this(connectionHandler, (Class<T>) prototype.getClass(), path, username, tableName);
+    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, T prototype, String tableName) {
+        this(connectionHandler, (Class<T>) prototype.getClass(), tableName);
     }
 
-    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, Class<T> prototype, String path, String username, String tableName) {
-        this(connectionHandler, prototype, path, username, tableName, true);
+    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, Class<T> prototype, String tableName) {
+        this(connectionHandler, prototype, tableName, true);
     }
 
     public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, Class<T> prototype,
-                                       String path, String username,
                                        String tableName, boolean initialize) {
         this.tableName = tableName;
-        this.path = path;
-        this.username = username;
         this.prototype = prototype;
         this.connectionHandler = connectionHandler;
         if (initialize) {
@@ -69,7 +64,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         try {
             SqlHelper.dropTable(getConnection(), tableName);
             buildTableFromInstance(prototypeInstance);
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
@@ -81,32 +76,22 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             for (String statement : statements) {
                 c.prepareStatement(statement).execute();
             }
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void basicInsert(Map<String, String> contentVals) {
-        Connection c;
-        try {
-            c = getConnection();
-            SqlHelper.basicInsert(c, tableName, contentVals);
-        } catch (ClassNotFoundException | SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void buildTableFromInstance(T instance) throws ClassNotFoundException {
-        Connection c;
-        try {
-            c = getConnection();
-            SqlHelper.createTable(c, tableName, instance);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Connection getConnection() throws SQLException, ClassNotFoundException {
+    public void basicInsert(Map<String, String> contentVals) {
+        Connection connection = getConnection();
+        SqlHelper.basicInsert(connection, tableName, contentVals);
+    }
+
+    private void buildTableFromInstance(T instance) throws ClassNotFoundException {
+        Connection connection = getConnection();
+        SqlHelper.createTable(connection, tableName, instance);
+    }
+
+    public Connection getConnection() {
         return connectionHandler.getConnection();
     }
 
@@ -116,15 +101,11 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             update(p.getID(), p);
             return;
         }
-        Connection c;
-        try {
-            c = getConnection();
-            int id = SqlHelper.insertToTable(c, tableName, p);
-            p.setID(id);
-            SqlHelper.updateId(c, tableName, p);
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        Connection connection;
+        connection = getConnection();
+        int id = SqlHelper.insertToTable(connection, tableName, p);
+        p.setID(id);
+        SqlHelper.updateId(connection, tableName, p);
     }
 
     public T readFromBytes(byte[] mBytes) {
@@ -177,7 +158,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             }
             resultSet = preparedStatement.executeQuery();
             return fillIdWindow(resultSet, DatabaseHelper.ID_COL, new LinkedHashSet<Integer>());
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
             try {
@@ -214,7 +195,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             }
             byte[] mBytes = resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
             return readFromBytes(mBytes);
-        } catch (SQLException | NullPointerException | ClassNotFoundException e) {
+        } catch (SQLException | NullPointerException e) {
             throw new RuntimeException(e);
         } finally {
             try {
@@ -229,17 +210,12 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     @Override
     public int add(T e) {
-        Connection connection;
-        try {
-            connection = getConnection();
-            int id = SqlHelper.insertToTable(connection, tableName, e);
-            connection = getConnection();
-            e.setID(id);
-            SqlHelper.updateId(connection, tableName, e);
-            return id;
-        } catch (SQLException | ClassNotFoundException ex) {
-            throw new RuntimeException(ex);
-        }
+        Connection connection = getConnection();
+        int id = SqlHelper.insertToTable(connection, tableName, e);
+        connection = getConnection();
+        e.setID(id);
+        SqlHelper.updateId(connection, tableName, e);
+        return id;
     }
 
     @Override
@@ -297,8 +273,8 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             preparedStatement = connection.prepareStatement(sqlQuery);
             resultSet = preparedStatement.executeQuery();
             return resultSet.getInt(1);
-        } catch (Exception e) {
-            throw new RuntimeException("SqliteIndexedStorageUtility readBytes exception: " + e);
+        } catch (SQLException e) {
+            // pass
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -315,6 +291,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                 e.printStackTrace();
             }
         }
+        return -1;
     }
 
     @Override
@@ -337,7 +314,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             }
             return new JdbcSqlStorageIterator<>(backingList);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
             try {
@@ -397,24 +374,14 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     @Override
     public void update(int id, Persistable p) {
-        Connection connection;
-        try {
-            connection = getConnection();
-            SqlHelper.updateToTable(connection, tableName, p, id);
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        Connection connection = getConnection();
+        SqlHelper.updateToTable(connection, tableName, p, id);
     }
 
     @Override
     public void remove(int id) {
-        Connection connection;
-        try {
-            connection = getConnection();
-            SqlHelper.deleteIdFromTable(connection, tableName, id);
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        Connection connection = getConnection();
+        SqlHelper.deleteIdFromTable(connection, tableName, id);
     }
 
     @Override
@@ -424,13 +391,8 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     @Override
     public void removeAll() {
-        Connection connection;
-        try {
-            connection = getConnection();
-            SqlHelper.deleteAllFromTable(connection, tableName);
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        Connection connection = getConnection();
+        SqlHelper.deleteAllFromTable(connection, tableName);
     }
 
     // not yet implemented
@@ -459,7 +421,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             while (resultSet.next()) {
                 ids.add(resultSet.getInt(DatabaseHelper.ID_COL));
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
             try {
@@ -535,7 +497,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                             newObject(data, resultSet.getInt(DatabaseHelper.ID_COL)));
                 }
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
             try {

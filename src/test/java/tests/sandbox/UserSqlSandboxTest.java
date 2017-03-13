@@ -34,7 +34,7 @@ public class UserSqlSandboxTest {
 
     @Test
     public void test() {
-        sandbox = new UserSqlSandbox(new TestConnectionHandler(username, UserSqlSandbox.DEFAULT_DATBASE_PATHs), username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
+        sandbox = new UserSqlSandbox(new TestConnectionHandler(username, UserSqlSandbox.DEFAULT_DATBASE_PATH), username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
         Assert.assertEquals(sandbox.getCaseStorage().getNumRecords(), 6);
         Assert.assertEquals(sandbox.getLedgerStorage().getNumRecords(), 3);
         Assert.assertEquals(sandbox.getUserFixtureStorage().getNumRecords(), 4);
