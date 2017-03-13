@@ -21,6 +21,7 @@ import services.RestoreFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by willpride on 1/7/16.
@@ -41,7 +42,7 @@ public class CaseAPIs {
             return restoreFactory.getSqlSandbox();
         } else{
             db.getParentFile().mkdirs();
-            String xml = restoreFactory.getRestoreXml(overwriteCache);
+            InputStream xml = restoreFactory.getRestoreXml(overwriteCache);
             return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(), xml);
         }
     }
@@ -61,7 +62,7 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(String username, String path, String restorePayload) throws
+    private static UserSqlSandbox restoreUser(String username, String path, InputStream restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         UserSqlSandbox mSandbox = new UserSqlSandbox(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
