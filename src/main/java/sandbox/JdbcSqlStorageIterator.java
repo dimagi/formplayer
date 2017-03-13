@@ -7,87 +7,51 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
  * Created by wpride1 on 6/25/15.
  */
 public class JdbcSqlStorageIterator<E extends Persistable> implements IStorageIterator<E>, Iterator<E> {
+    final private ArrayList<E> backingList;
+    private int index;
 
-    private final PreparedStatement preparedStatement;
-    private final ResultSet resultSet;
-    private int count = -1;
-    private final SqliteIndexedStorageUtility<E> storage;
-    private Connection connection;
-    private IStorageIterator<E> backingIterator;
-
-    public JdbcSqlStorageIterator(PreparedStatement preparedStatement,
-                                  ResultSet resultSet,
-                                  int count,
-                                  SqliteIndexedStorageUtility<E> storage,
-                                  Connection conn) {
-        this.preparedStatement = preparedStatement;
-        this.resultSet = resultSet;
-        this.count = count;
-        this.storage = storage;
-        this.connection = conn;
-        try {
-            resultSet.next();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public JdbcSqlStorageIterator(ArrayList<E> backingList) {
+        this.backingList = backingList;
+        index = 0;
     }
 
     @Override
     public int numRecords() {
-        return count;
+        return backingList.size();
     }
 
 
     @Override
     public int peekID() {
-        try {
-            return resultSet.getInt(org.commcare.modern.database.DatabaseHelper.ID_COL);
-        } catch (SQLException e) {
-            return -1;
-        }
+        return backingList.get(index).getID();
     }
 
     @Override
     public int nextID() {
-        int nextID = peekID();
-        try {
-            boolean hasMore = resultSet.next();
-            if (!hasMore) {
-                resultSet.close();
-                preparedStatement.close();
-            }
-        } catch (SQLException e) {
+        int id = peekID();
+        if (index + 1 < backingList.size()) {
+            index++;
         }
-        return nextID;
+        return id;
     }
 
     @Override
     public E nextRecord() {
-        byte[] data = new byte[0];
-        try {
-            data = resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        //we don't really use this
-        nextID();
-        return storage.readFromBytes(data);
+        E e = backingList.get(index);
+        index++;
+        return e;
     }
 
     @Override
     public boolean hasMore() {
-        try {
-            return (!resultSet.isClosed());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return index < backingList.size();
     }
 
     @Override
@@ -104,16 +68,4 @@ public class JdbcSqlStorageIterator<E extends Persistable> implements IStorageIt
     public void remove() {
         //unsupported
     }
-
-    public void closeConnection(){
-        try {
-            if(connection != null) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 }
