@@ -365,7 +365,10 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
         session.setAsUser(null);
         session.setInstanceXml(sessionObject.getString("instance"));
         session.setFormXml(sessionObject.getString("xform"));
-        session.setInitLang(sessionObject.getString("init_lang"));
+        // default behavior of null locale just results in default
+        if (sessionObject.has("init_lang")) {
+            session.setInitLang(sessionObject.getString("init_lang"));
+        }
         session.setSequenceId(sessionObject.getInt("seq_id"));
         HashMap<String, String> sessionDataMap = new HashMap<>();
         session.setSessionData(sessionDataMap);
