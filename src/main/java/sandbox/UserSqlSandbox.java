@@ -92,10 +92,6 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler{
         }
     }
 
-    public SQLiteConnectionPoolDataSource getDataSource() {
-        return getDataSource(username, path);
-    }
-
     public static SQLiteConnectionPoolDataSource getDataSource(String databaseName, String databasePath) {
         File databaseFolder = new File(databasePath);
 
