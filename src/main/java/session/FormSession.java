@@ -204,7 +204,6 @@ public class FormSession {
     }
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
-        final String databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
         CommCarePlatform platform = new CommCarePlatform(2, 33, new IStorageIndexedFactory() {
             @Override
             public IStorageUtilityIndexed newStorage(String name, Class type) {

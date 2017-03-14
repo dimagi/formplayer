@@ -120,6 +120,10 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
                 if (preparedStatement != null) {
                     preparedStatement.close();
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
                 if (resultSet != null) {
                     resultSet.close();
                 }
@@ -182,7 +186,6 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
             } else {
                 user = null;
             }
-            //iterator.closeConnection();
         }
         return user;
     }
