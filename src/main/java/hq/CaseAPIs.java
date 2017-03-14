@@ -65,12 +65,11 @@ public class CaseAPIs {
 
         UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
-
+        
         restoreFactory.setAutoCommit(false);
         ParseUtils.parseIntoSandbox(restorePayload, false, factory);
         restoreFactory.commit();
         restoreFactory.setAutoCommit(true);
-
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
