@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -70,7 +71,22 @@ public class RestoreFactory implements ConnectionHandler{
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private Connection connection;
+    private static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>(){
+        @Override
+        protected Connection initialValue()
+        {
+            return null;
+        }
+    };
+
+    public static Connection instance() {
+        return connection.get();
+    }
+
+    public static void setConnection(Connection conn) {
+        connection.set(conn);
+    }
+
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
         configure(authenticatedRequestBean.getUsername(),
@@ -94,22 +110,31 @@ public class RestoreFactory implements ConnectionHandler{
     @Override
     public Connection getConnection() {
         try {
-            if (connection == null || connection.isClosed()) {
-                connection = SqlSandboxUtils.getDataSource(username, getDbPath()).getConnection();
-            } else if (!((SQLiteConnection)connection).url().contains(username)
-                    || !((SQLiteConnection)connection).url().contains(getDbPath())) {
-                closeConnection();
-                connection = SqlSandboxUtils.getDataSource(username, getDbPath()).getConnection();
+            if (connection.get() == null || connection.get().isClosed()) {
+                DataSource dataSource = SqlSandboxUtils.getDataSource(getUsername(), getDbPath());
+                connection.set(dataSource.getConnection());
             }
-            return connection;
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+        return connection.get();
+    }
+
+    @PreDestroy
+    public void closeConnection() {
+        try {
+            if(connection.get() != null && !connection.get().isClosed()) {
+                connection.get().close();
+                connection.set(null);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
     public void setAutoCommit(boolean autoCommit) {
         try {
-            connection.setAutoCommit(autoCommit);
+            connection.get().setAutoCommit(autoCommit);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -117,21 +142,9 @@ public class RestoreFactory implements ConnectionHandler{
 
     public void commit() {
         try {
-            connection.commit();
+            connection.get().commit();
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    @PreDestroy
-    public void closeConnection() {
-        try {
-            if(connection != null && !connection.isClosed()) {
-                connection.close();
-                connection = null;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 

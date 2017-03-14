@@ -2,6 +2,7 @@ package services;
 
 import beans.InstallRequestBean;
 import org.apache.commons.lang3.StringUtils;
+import org.javarosa.core.services.IPropertyManager;
 import org.sqlite.SQLiteConnection;
 import org.sqlite.javax.SQLiteConnectionPoolDataSource;
 import sandbox.SqlSandboxUtils;
@@ -29,7 +30,22 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     private String databasePath;
     private String trimmedUsername;
 
-    private static Connection connection;
+    private static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>(){
+        @Override
+        protected Connection initialValue()
+        {
+            return null;
+        }
+    };
+
+    public static Connection instance() {
+        return connection.get();
+    }
+
+    public static void setConnection(Connection conn) {
+        connection.set(conn);
+    }
+
 
     public void configure(InstallRequestBean authenticatedRequestBean) {
         configure(authenticatedRequestBean.getUsername(),
@@ -52,28 +68,22 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     @Override
     public Connection getConnection() {
         try {
-            if (connection == null || connection.isClosed()) {
+            if (connection.get() == null || connection.get().isClosed()) {
                 DataSource dataSource = SqlSandboxUtils.getDataSource(trimmedUsername, databasePath);
-                connection = dataSource.getConnection();
-            } else if (!((SQLiteConnection) connection).url().contains(username) ||
-                    !((SQLiteConnection) connection).url().contains(domain) ||
-                    !((SQLiteConnection) connection).url().contains(appId)) {
-                closeConnection();
-                DataSource dataSource = SqlSandboxUtils.getDataSource(trimmedUsername, databasePath);
-                connection = dataSource.getConnection();
+                connection.set(dataSource.getConnection());
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return connection;
+        return connection.get();
     }
 
     @PreDestroy
     public void closeConnection() {
         try {
-            if(connection != null && !connection.isClosed()) {
-                connection.close();
-                connection = null;
+            if(connection.get() != null && !connection.get().isClosed()) {
+                connection.get().close();
+                connection.set(null);
             }
         } catch (SQLException e) {
             e.printStackTrace();
