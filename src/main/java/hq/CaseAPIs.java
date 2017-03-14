@@ -18,6 +18,7 @@ import services.RestoreFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by willpride on 1/7/16.
@@ -38,19 +39,18 @@ public class CaseAPIs {
             return restoreFactory.getSqlSandbox();
         } else{
             new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
-            String xml = restoreFactory.getRestoreXml(overwriteCache);
-            return restoreUser(restoreFactory, restoreFactory.getWrappedUsername(), xml);
+            InputStream xml = restoreFactory.getRestoreXml(overwriteCache);
+            return restoreUser(restoreFactory, xml);
         }
     }
 
-    public static UserSqlSandbox restoreIfNotExists(String username, String asUsername, String domain, String xml) throws Exception {
+    public static UserSqlSandbox restoreIfNotExists(String username, String asUsername, String domain) throws Exception {
         // This is a shitty hack to allow serialized sessions to use the RestoreFactory path methods.
         // We need a refactor of the entire infrastructure
         RestoreFactory restoreFactory = new RestoreFactory();
         restoreFactory.setDomain(domain);
         restoreFactory.setUsername(username);
         restoreFactory.setAsUsername(asUsername);
-        restoreFactory.setCachedRestore(xml);
         return restoreIfNotExists(restoreFactory, false);
     }
 
@@ -59,7 +59,7 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, String username, String restorePayload) throws
+    private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, InputStream restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
@@ -67,14 +67,14 @@ public class CaseAPIs {
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
 
         restoreFactory.setAutoCommit(false);
-        ParseUtils.parseXMLIntoSandbox(restorePayload, factory);
+        ParseUtils.parseIntoSandbox(restorePayload, false, factory);
         restoreFactory.commit();
         restoreFactory.setAutoCommit(true);
 
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
-            if (username.equalsIgnoreCase(u.getUsername())) {
+            if (restoreFactory.getWrappedUsername().equalsIgnoreCase(u.getUsername())) {
                 sandbox.setLoggedInUser(u);
             }
         }

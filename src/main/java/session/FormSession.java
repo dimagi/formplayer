@@ -49,7 +49,7 @@ import java.util.UUID;
  *
  * OK this (and MenuSession) is a total god object that basically mananges everything about the state of
  * a form entry session. We turn this into a SerializableFormSession to persist it. Within that we also
- * serialize the formDef to persist the session, in addition to a bunch of other information like the restoreXml.
+ * serialize the formDef to persist the session, in addition to a bunch of other information.
  * Confusingly we also have a SessionWrapper object within this session which tracks a bunch of other information. There
  * is a lot of unification that needs to happen here.
  *
@@ -64,7 +64,6 @@ public class FormSession {
     private FormEntryModel formEntryModel;
     private FormEntryController formEntryController;
     private FormController formController;
-    private String restoreXml;
     private UserSqlSandbox sandbox;
     private int sequenceId;
     private String dateOpened;
@@ -95,10 +94,9 @@ public class FormSession {
     public FormSession(SerializableFormSession session) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
-        this.restoreXml = session.getRestoreXml();
         this.appId = session.getAppId();
         this.domain = session.getDomain();
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, asUser, this.domain, restoreXml);
+        this.sandbox = CaseAPIs.restoreIfNotExists(username, asUser, this.domain);
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
         this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
@@ -260,10 +258,6 @@ public class FormSession {
         return metaData.toString();
     }
 
-    private String getRestoreXml() {
-        return restoreXml;
-    }
-
     public int getSequenceId() {
         return sequenceId;
     }
@@ -321,7 +315,6 @@ public class FormSession {
         serializableFormSession.setInitLang(getLocale());
         serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setDomain(getDomain());
-        serializableFormSession.setRestoreXml(getRestoreXml());
         serializableFormSession.setPostUrl(getPostUrl());
         serializableFormSession.setMenuSessionId(menuSessionId);
         serializableFormSession.setTitle(getTitle());

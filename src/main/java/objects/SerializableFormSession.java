@@ -14,7 +14,6 @@ public class SerializableFormSession implements Serializable{
     private String id;
     private String instanceXml;
     private String formXml;
-    private String restoreXml;
     private String username;
     private String initLang;
     private int sequenceId;
@@ -75,14 +74,6 @@ public class SerializableFormSession implements Serializable{
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getRestoreXml() {
-        return restoreXml;
-    }
-
-    public void setRestoreXml(String restoreXml){
-        this.restoreXml = restoreXml;
     }
 
     public String getInitLang() {
