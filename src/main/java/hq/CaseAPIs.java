@@ -66,7 +66,7 @@ public class CaseAPIs {
 
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
 
-        ParseUtils.parseXMLIntoSandbox(restorePayload, factory);
+        ParseUtils.parseIntoSandbox(restorePayload, false, factory);
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
