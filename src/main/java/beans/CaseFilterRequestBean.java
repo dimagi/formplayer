@@ -16,7 +16,6 @@ public class CaseFilterRequestBean extends AuthenticatedRequestBean {
     private String filterExpression;
     private Map<String, String> hqAuth;
     private SessionData sessionData;
-    private String restoreXml;
 
     @JsonGetter(value = "filter_expr")
     public String getFilterExpression() {
@@ -41,13 +40,5 @@ public class CaseFilterRequestBean extends AuthenticatedRequestBean {
     @JsonSetter(value = "session_data")
     public void setSessionData(SessionData sessionData) {
         this.sessionData = sessionData;
-    }
-
-    public String getRestoreXml() {
-        return restoreXml;
-    }
-
-    public void setRestoreXml(String restoreXml) {
-        this.restoreXml = restoreXml;
     }
 }

@@ -13,6 +13,7 @@ public class CommandListResponseBean extends MenuBean {
 
     private Command[] commands;
     private final String type = "commands";
+    private String layoutStyle;
 
     CommandListResponseBean(){}
 
@@ -34,6 +35,13 @@ public class CommandListResponseBean extends MenuBean {
         }
         this.setCommands(commands);
         this.setMenuSessionId(menuSessionId);
+
+        String menuId = "root";
+        if (session.getCommand() != null) {
+            menuId = session.getCommand();
+        }
+
+        this.layoutStyle = session.getPlatform().getMenuDisplayStyle(menuId);
     }
 
     @Override
@@ -44,5 +52,13 @@ public class CommandListResponseBean extends MenuBean {
 
     public String getType() {
         return type;
+    }
+
+    public String getLayoutStyle() {
+        return layoutStyle;
+    }
+
+    public void setLayoutStyle(String layoutStyle) {
+        this.layoutStyle = layoutStyle;
     }
 }

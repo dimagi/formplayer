@@ -76,30 +76,73 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
 
         if(sessionCount > 0){
             String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, " +
-                    "sequenceId = ?, currentIndex = ?, postUrl = ?, restoreXml = ? WHERE id = ?");
-            this.jdbcTemplate.update(query,  new Object[] {session.getInstanceXml(),
-                    sessionDataBytes, session.getSequenceId(), session.getCurrentIndex(),
-                    session.getPostUrl(), session.getRestoreXml(), session.getId()},
-                    new int[] {Types.VARCHAR, Types.BINARY, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR});
+                    "sequenceId = ?, currentIndex = ?, postUrl = ? WHERE id = ?");
+            this.jdbcTemplate.update(query,
+                    new Object[] {
+                            session.getInstanceXml(),
+                            sessionDataBytes,
+                            session.getSequenceId(),
+                            session.getCurrentIndex(),
+                            session.getPostUrl(),
+                            session.getId()
+                    },
+                    new int[] {
+                            Types.VARCHAR,
+                            Types.BINARY,
+                            Types.VARCHAR,
+                            Types.VARCHAR,
+                            Types.VARCHAR,
+                            Types.VARCHAR
+                    }
+            );
             return session;
         }
 
         String query = replaceTableName("INSERT into %s " +
                 "(id, instanceXml, formXml, " +
-                "restoreXml, username, initLang, sequenceId, " +
+                "username, initLang, sequenceId, " +
                 "domain, postUrl, sessionData, menu_session_id," +
                 "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        this.jdbcTemplate.update(query,  new Object[] {session.getId(), session.getInstanceXml(), session.getFormXml(),
-                session.getRestoreXml(), session.getUsername(), session.getInitLang(), session.getSequenceId(),
-                session.getDomain(), session.getPostUrl(), sessionDataBytes, session.getMenuSessionId(),
-                session.getTitle(), session.getDateOpened(),
-                session.getOneQuestionPerScreen(), session.getCurrentIndex(), session.getAsUser(), session.getAppId()}, new int[] {
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BINARY,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR});
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        this.jdbcTemplate.update(
+                query,
+                new Object[] {
+                        session.getId(),
+                        session.getInstanceXml(),
+                        session.getFormXml(),
+                        session.getUsername(),
+                        session.getInitLang(),
+                        session.getSequenceId(),
+                        session.getDomain(),
+                        session.getPostUrl(),
+                        sessionDataBytes,
+                        session.getMenuSessionId(),
+                        session.getTitle(),
+                        session.getDateOpened(),
+                        session.getOneQuestionPerScreen(),
+                        session.getCurrentIndex(),
+                        session.getAsUser(),
+                        session.getAppId()
+                },
+                new int[] {
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.BINARY,
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.BOOLEAN,
+                        Types.VARCHAR,
+                        Types.VARCHAR,
+                        Types.VARCHAR
+                }
+        );
         return session;
     }
 
@@ -181,7 +224,6 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setId(rs.getString("id"));
             session.setInstanceXml(rs.getString("instanceXml"));
             session.setFormXml(rs.getString("formXml"));
-            session.setRestoreXml(rs.getString("restoreXml"));
             session.setUsername(rs.getString("username"));
             session.setInitLang(rs.getString("initLang"));
             session.setSequenceId(Integer.parseInt(rs.getString("sequenceId")));

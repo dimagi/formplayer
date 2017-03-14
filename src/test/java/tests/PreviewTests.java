@@ -10,6 +10,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.FileUtils;
 import utils.TestContext;
 
+import java.io.FileInputStream;
+
 import static org.mockito.Mockito.when;
 
 /**
@@ -21,8 +23,6 @@ public class PreviewTests extends BaseTestClass {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        when(restoreFactoryMock.getRestoreXml())
-                .thenReturn(FileUtils.getFile(this.getClass(), "restores/ccqa.xml"));
         configureRestoreFactory("previewdomain", "previewuser");
     }
 

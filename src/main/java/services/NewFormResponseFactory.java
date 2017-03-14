@@ -66,9 +66,6 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        if (serializableFormSession.getRestoreXml() == null) {
-            serializableFormSession.setRestoreXml(restoreFactory.getRestoreXml());
-        }
         return new FormSession(serializableFormSession);
     }
 
