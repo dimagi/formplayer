@@ -28,7 +28,7 @@ public class UserSqlSandboxTest {
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
         sandbox = new UserSqlSandbox(new TestConnectionHandler(username, UserSqlSandbox.DEFAULT_DATBASE_PATH), username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
-        ParseUtils.parseIntoSandbox(this.getClass().getClassLoader().getResourceAsStream("ipm_restore.xml"), sandbox);
+        ParseUtils.parseIntoSandbox(this.getClass().getClassLoader().getResourceAsStream("restores/ipm_restore.xml"), sandbox);
         sandbox = null;
     }
 
