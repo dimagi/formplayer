@@ -1,6 +1,7 @@
 package repo.impl;
 
 import exceptions.FormNotFoundException;
+import objects.FunctionHandler;
 import objects.SerializableFormSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -70,6 +71,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     public <S extends SerializableFormSession> S save(S session) {
 
         byte[] sessionDataBytes = writeToBytes(session.getSessionData());
+        byte[] functionContextBytes = writeToBytes(session.getFunctionContext());
 
         int sessionCount = this.jdbcTemplate.queryForObject(
                 replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
@@ -102,8 +104,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 "(id, instanceXml, formXml, " +
                 "username, initLang, sequenceId, " +
                 "domain, postUrl, sessionData, menu_session_id," +
-                "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid, functioncontext) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(
                 query,
                 new Object[] {
@@ -122,7 +124,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                         session.getOneQuestionPerScreen(),
                         session.getCurrentIndex(),
                         session.getAsUser(),
-                        session.getAppId()
+                        session.getAppId(),
+                        functionContextBytes
                 },
                 new int[] {
                         Types.VARCHAR,
@@ -140,7 +143,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                         Types.BOOLEAN,
                         Types.VARCHAR,
                         Types.VARCHAR,
-                        Types.VARCHAR
+                        Types.VARCHAR,
+                        Types.BINARY
                 }
         );
         return session;
@@ -251,6 +255,22 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                     throw new SQLException(e);
                 }
             }
+
+            byte[] fc = (byte[]) rs.getObject("functionContext");
+            if (fc != null) {
+                ByteArrayInputStream byteInputStream = new ByteArrayInputStream(fc);
+                ObjectInputStream objectInputStream;
+                try {
+                    objectInputStream = new ObjectInputStream(byteInputStream);
+                    Map<String, FunctionHandler[]> functionContext = (HashMap) objectInputStream.readObject();
+                    session.setFunctionContext(functionContext);
+                } catch (IOException e) {
+                    throw new SQLException(e);
+                } catch (ClassNotFoundException e) {
+                    throw new SQLException(e);
+                }
+            }
+
             return session;
         }
     }
