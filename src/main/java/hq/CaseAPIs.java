@@ -67,7 +67,7 @@ public class CaseAPIs {
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
         
         restoreFactory.setAutoCommit(false);
-        ParseUtils.parseIntoSandbox(restorePayload, false, factory);
+        ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
         restoreFactory.commit();
         restoreFactory.setAutoCommit(true);
         // initialize our sandbox's logged in user
