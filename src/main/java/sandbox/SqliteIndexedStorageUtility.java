@@ -105,7 +105,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         connection = getConnection();
         int id = SqlHelper.insertToTable(connection, tableName, p);
         p.setID(id);
-        SqlHelper.updateId(connection, tableName, p);
+        //SqlHelper.updateId(connection, tableName, p);
     }
 
     public T readFromBytes(byte[] mBytes) {
@@ -131,8 +131,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     @Override
     public T read(int id) {
-        byte[] mBytes = readBytes(id);
-        return readFromBytes(mBytes);
+        return newObject(readBytes(id), id);
     }
 
     public static Vector<Integer> fillIdWindow(ResultSet resultSet, String columnName, LinkedHashSet newReturn) throws SQLException {
@@ -193,8 +192,8 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             if (!resultSet.next()) {
                 throw new NoSuchElementException();
             }
-            byte[] mBytes = resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
-            return readFromBytes(mBytes);
+            byte[] mBytes = resultSet.getBytes(DatabaseHelper.DATA_COL);
+            return newObject(mBytes, resultSet.getInt(DatabaseHelper.ID_COL));
         } catch (SQLException | NullPointerException e) {
             throw new RuntimeException(e);
         } finally {
@@ -308,8 +307,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
             ArrayList<T> backingList = new ArrayList<>();
             while (resultSet.next()) {
-                byte[] bytes = resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
-                T t = readFromBytes(bytes);
+                T t = newObject(resultSet.getBytes(DatabaseHelper.DATA_COL), resultSet.getInt(DatabaseHelper.ID_COL));
                 backingList.add(t);
             }
             return new JdbcSqlStorageIterator<>(backingList);
