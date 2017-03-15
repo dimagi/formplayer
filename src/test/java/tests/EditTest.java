@@ -1,6 +1,7 @@
 package tests;
 
 import beans.NewFormResponse;
+import beans.SubmitResponseBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -24,7 +25,8 @@ public class EditTest extends BaseTestClass{
     @Test
     public void testFunctionHandlers() throws Throwable {
         NewFormResponse newFormResponse = startNewForm("requests/new_form/edit_form.json", "xforms/edit_form.xml");
-        assert newFormResponse.getInstanceXml().getOutput().contains("<datetoday>2017-02-13</datetoday>");
+        assert newFormResponse.getInstanceXml().getOutput().contains("<datetoday>2016-11-14</datetoday>");
+        assert newFormResponse.getInstanceXml().getOutput().contains("<datenow>2016-11-14T23:24:00.334+02</datenow>");
     }
 
     // test that we can override today() successfully
