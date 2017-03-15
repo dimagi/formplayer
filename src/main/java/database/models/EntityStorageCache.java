@@ -2,6 +2,7 @@ package database.models;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.modern.database.TableBuilder;
 import sandbox.SqlHelper;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
@@ -13,7 +14,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author wspride
@@ -135,6 +138,19 @@ public class EntityStorageCache {
                 DatabaseHelper.createWhere(new String[]{COL_CACHE_NAME, COL_ENTITY_KEY},
                         new String[]{this.mCacheName, recordId});
         SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
+    }
+
+    /**
+     * Removes cache records associated with the provided IDs
+     */
+    public void invalidateCaches(Collection<Integer> recordIds) {
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(recordIds);
+        for(Pair<String, String[]> querySet : whereParamList) {
+            SqlHelper.deleteFromTableWhere(handler.getConnection(),
+                    TABLE_NAME,
+                    COL_CACHE_NAME + " = '" + this.mCacheName + "' AND " + COL_ENTITY_KEY + " IN " + querySet.first,
+                    querySet.second);
+        }
     }
 
     public static int getSortFieldIdFromCacheKey(String detailId, String cacheKey) {

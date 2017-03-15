@@ -516,4 +516,33 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             }
         }
     }
+
+    /**
+     * Retrieves a set of the models in storage based on a list of values matching one if the
+     * indexes of this storage
+     */
+    public List<T> getBulkRecordsForIndex(String indexName, Collection<String> matchingValues) {
+        List<T> returnSet = new ArrayList<>();
+        String fieldName = TableBuilder.scrubName(indexName);
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(matchingValues, "?");
+        try {
+            for (Pair<String, String[]> querySet : whereParamList) {
+                //Cursor c = helper.getHandle().query(tableName, new String[]{DatabaseHelper.ID_COL, DatabaseHelper.DATA_COL, fieldName}, fieldName + " IN " + querySet.first, querySet.second, null, null, null);
+                PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
+                        tableName,
+                        fieldName + " IN " + querySet.first,
+                        querySet.second);
+                ResultSet resultSet = selectStatement.executeQuery();
+                while (resultSet.next()) {
+                    int index = resultSet.getInt(DatabaseHelper.DATA_COL);
+                    byte[] data = resultSet.getBytes(index);
+                    returnSet.add(newObject(data, resultSet.getInt(DatabaseHelper.ID_COL)));
+                }
+            }
+            return returnSet;
+        } catch (SQLException e) {
+
+        }
+        return returnSet;
+    }
 }
