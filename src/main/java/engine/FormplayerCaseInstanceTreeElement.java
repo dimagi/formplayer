@@ -6,7 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.engine.cases.CaseGroupResultCache;
 import org.commcare.modern.engine.cases.CaseIndexQuerySetTransform;
 import org.commcare.modern.engine.cases.query.CaseIndexPrefetchHandler;
-import sandbox.SqliteIndexedStorageUtility;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.query.*;
