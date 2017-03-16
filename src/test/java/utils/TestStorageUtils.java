@@ -1,11 +1,10 @@
 package utils;
 
-import application.SQLiteProperties;
-import org.commcare.api.persistence.UserSqlSandbox;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
+import sandbox.UserSqlSandbox;
 import session.FormplayerInstanceInitializer;
 
 import java.util.Hashtable;
@@ -22,8 +21,7 @@ public class TestStorageUtils {
      * @return An evaluation context which is capable of evaluating against
      * the connected storage instances: casedb is the only one supported for now
      */
-    public static EvaluationContext getEvaluationContextWithoutSession() {
-        UserSqlSandbox sandbox = new UserSqlSandbox("synctestuser", SQLiteProperties.getDataDir() + "synctestdomain");
+    public static EvaluationContext getEvaluationContextWithoutSession(UserSqlSandbox sandbox) {
         FormplayerInstanceInitializer iif = new FormplayerInstanceInitializer(sandbox);
         return buildEvaluationContext(iif);
     }
