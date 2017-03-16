@@ -9,16 +9,9 @@ import org.commcare.modern.database.IndexedFixturePathsConstants;
 import org.commcare.modern.util.Pair;
 import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.FormInstance;
-import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
-import org.sqlite.SQLiteConnection;
-import org.sqlite.javax.SQLiteConnectionPoolDataSource;
 import services.ConnectionHandler;
 
-import javax.sql.DataSource;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
