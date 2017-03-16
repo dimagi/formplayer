@@ -32,6 +32,7 @@ public class InstallServiceImpl implements InstallService {
     @Override
     public FormplayerConfigEngine configureApplication(String reference) {
         String dbPath = storageFactory.getDatabasePath();
+        storageFactory.setAutoCommit(false);
         log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         try {
             File dbFolder = new File(dbPath);
@@ -57,6 +58,8 @@ public class InstallServiceImpl implements InstallService {
                 engine.initFromArchive(reference);
             }
             engine.initEnvironment();
+            storageFactory.commit();
+            storageFactory.setAutoCommit(false);
             return engine;
         } catch (InstallCancelledException | UnresolvedResourceException | UnfullfilledRequirementsException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPath);
