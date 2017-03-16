@@ -2,50 +2,23 @@ package services;
 
 import beans.InstallRequestBean;
 import org.apache.commons.lang3.StringUtils;
-import org.javarosa.core.services.IPropertyManager;
-import org.sqlite.SQLiteConnection;
-import org.sqlite.javax.SQLiteConnectionPoolDataSource;
-import sandbox.SqlSandboxUtils;
-import sandbox.SqliteIndexedStorageUtility;
-import sandbox.UserSqlSandbox;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.stereotype.Component;
 import util.ApplicationUtils;
 
-import javax.annotation.PreDestroy;
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
  */
 @Component
-public class FormplayerStorageFactory implements IStorageIndexedFactory, ConnectionHandler{
+public class FormplayerStorageFactory implements IStorageIndexedFactory{
 
     private String username;
     private String domain;
     private String appId;
     private String databasePath;
     private String trimmedUsername;
-
-    private static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>(){
-        @Override
-        protected Connection initialValue()
-        {
-            return null;
-        }
-    };
-
-    public static Connection instance() {
-        return connection.get();
-    }
-
-    public static void setConnection(Connection conn) {
-        connection.set(conn);
-    }
-
 
     public void configure(InstallRequestBean authenticatedRequestBean) {
         configure(authenticatedRequestBean.getUsername(),
@@ -66,34 +39,10 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     }
 
     @Override
-    public Connection getConnection() {
-        try {
-            if (connection.get() == null || connection.get().isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource(trimmedUsername, databasePath);
-                connection.set(dataSource.getConnection());
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return connection.get();
-    }
-
-    @PreDestroy
-    public void closeConnection() {
-        try {
-            if(connection.get() != null && !connection.get().isClosed()) {
-                connection.get().close();
-                connection.set(null);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqliteIndexedStorageUtility(this, type, name);
+        return new SqliteIndexedStorageUtility(type, trimmedUsername, name, databasePath);
     }
+
 
     public String getUsername() {
         return username;
