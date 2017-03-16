@@ -7,9 +7,6 @@ import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sqlite.SQLiteConnection;
-import sandbox.SqlSandboxUtils;
-import sandbox.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.services.PropertyManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +24,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import sandbox.SqlSandboxUtils;
+import sandbox.UserSqlSandbox;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -123,8 +122,8 @@ public class RestoreFactory implements ConnectionHandler{
     @PreDestroy
     public void closeConnection() {
         try {
-            if(connection.get() != null && !connection.get().isClosed()) {
-                connection.get().close();
+            if(getConnection() != null && !getConnection().isClosed()) {
+                getConnection().close();
                 connection.set(null);
             }
         } catch (SQLException e) {
@@ -134,7 +133,7 @@ public class RestoreFactory implements ConnectionHandler{
 
     public void setAutoCommit(boolean autoCommit) {
         try {
-            connection.get().setAutoCommit(autoCommit);
+            getConnection().setAutoCommit(autoCommit);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -142,7 +141,7 @@ public class RestoreFactory implements ConnectionHandler{
 
     public void commit() {
         try {
-            connection.get().commit();
+            getConnection().commit();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
