@@ -1,9 +1,9 @@
 package session;
 
+import database.models.FormplayerCaseIndexTable;
 import engine.FormplayerCaseInstanceTreeElement;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
@@ -20,10 +20,13 @@ import java.util.Map;
 /**
  * Created by willpride on 1/29/16.
  */
-class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
+public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
-    private final Map<String, String> sessionData;
-    private final Log log = LogFactory.getLog(FormplayerInstanceInitializer.class);
+    private Map<String, String> sessionData;
+
+    public FormplayerInstanceInitializer(UserSqlSandbox sandbox) {
+        super(sandbox);
+    }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
                                          UserSandbox mSandbox, CommCarePlatform mPlatform,
@@ -36,7 +39,9 @@ class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     protected AbstractTreeElement setupCaseData(ExternalDataInstance instance) {
         if (casebase == null) {
             SqliteIndexedStorageUtility<Case> storage = (SqliteIndexedStorageUtility<Case>) mSandbox.getCaseStorage();
-            casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage);
+            FormplayerCaseIndexTable formplayerCaseIndexTable;
+            formplayerCaseIndexTable = new FormplayerCaseIndexTable(((UserSqlSandbox) mSandbox).getDataSource());
+            casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
         } else {
             //re-use the existing model if it exists.
             casebase.rebase(instance.getBase());
