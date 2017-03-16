@@ -7,7 +7,7 @@ import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import installers.FormplayerInstallerFactory;
-import org.commcare.api.persistence.SqlSandboxUtils;
+import sandbox.SqlSandboxUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.*;
@@ -29,6 +29,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
+import sandbox.UserSqlSandbox;
 import services.*;
 import util.Constants;
 import util.PrototypeUtils;
@@ -143,6 +144,8 @@ public class BaseTestClass {
 
     @After
     public void tearDown() {
+        restoreFactoryMock.closeConnection();
+        storageFactoryMock.closeConnection();
         SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
     }
 
