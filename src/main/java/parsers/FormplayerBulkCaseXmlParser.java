@@ -1,4 +1,4 @@
-package org.commcare.xml;
+package parsers;
 
 import database.models.EntityStorageCache;
 import database.models.FormplayerCaseIndexTable;
@@ -11,10 +11,7 @@ import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * A bulk processing parser for the android platform. Provides superior performance when
@@ -48,16 +45,17 @@ public class FormplayerBulkCaseXmlParser extends BulkProcessingCaseXmlParser {
     }
 
     @Override
-    protected void performBulkWrite(SortedMap<String, Case> writeLog) throws IOException {
+    protected void performBulkWrite(LinkedHashMap<String, Case> writeLog) throws IOException {
         ArrayList<Integer> recordIdsToWipe = new ArrayList<>();
-        for(Case c : writeLog.values()) {
+        for (String cid : writeLog.keySet()) {
+            Case c = writeLog.get(cid);
             storage.write(c);
             recordIdsToWipe.add(c.getID());
-            mCaseIndexTable.indexCase(c);
         }
         mEntityCache.invalidateCaches(recordIdsToWipe);
         mCaseIndexTable.clearCaseIndices(recordIdsToWipe);
-        for(Case c : writeLog.values()) {
+        for (String cid : writeLog.keySet()) {
+            Case c = writeLog.get(cid);
             mCaseIndexTable.indexCase(c);
         }
     }

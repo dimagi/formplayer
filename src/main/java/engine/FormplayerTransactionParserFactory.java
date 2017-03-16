@@ -1,6 +1,6 @@
 package engine;
 
-import org.commcare.xml.FormplayerBulkCaseXmlParser;
+import parsers.FormplayerBulkCaseXmlParser;
 import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.parse.CommCareTransactionParserFactory;
