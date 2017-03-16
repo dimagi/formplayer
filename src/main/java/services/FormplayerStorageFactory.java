@@ -65,22 +65,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
     }
 
-    public void setAutoCommit(boolean autoCommit) {
-        try {
-            connection.get().setAutoCommit(autoCommit);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void commit() {
-        try {
-            connection.get().commit();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public Connection getConnection() {
         try {
