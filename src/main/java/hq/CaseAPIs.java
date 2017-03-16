@@ -1,21 +1,18 @@
 package hq;
 
 import beans.CaseBean;
+import engine.FormplayerTransactionParserFactory;
 import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
-import org.commcare.core.sandbox.SandboxUtils;
-import org.commcare.modern.parse.ParseUtilsHelper;
+import org.commcare.core.parse.ParseUtils;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
-import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
-import org.javarosa.xpath.XPathParseTool;
-import org.javarosa.xpath.expr.FunctionUtils;
 import org.xmlpull.v1.XmlPullParserException;
 import services.RestoreFactory;
 
@@ -64,16 +61,19 @@ public class CaseAPIs {
 
     private static UserSqlSandbox restoreUser(String username, String path, InputStream restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
-        UserSqlSandbox mSandbox = new UserSqlSandbox(username, path);
+        UserSqlSandbox sandbox = new UserSqlSandbox(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
-        ParseUtilsHelper.parseXMLIntoSandbox(restorePayload, mSandbox);
+
+        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
+
+        ParseUtils.parseIntoSandbox(restorePayload, false, factory);
         // initialize our sandbox's logged in user
-        for (IStorageIterator<User> iterator = mSandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
+        for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
             if (username.equalsIgnoreCase(u.getUsername())) {
-                mSandbox.setLoggedInUser(u);
+                sandbox.setLoggedInUser(u);
             }
         }
-        return mSandbox;
+        return sandbox;
     }
 }
