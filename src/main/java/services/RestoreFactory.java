@@ -99,6 +99,7 @@ public class RestoreFactory implements ConnectionHandler{
         this.setDomain(domain);
         this.setAsUsername(asUsername);
         this.setHqAuth(auth);
+        setConnection(null);
     }
 
 
@@ -119,7 +120,6 @@ public class RestoreFactory implements ConnectionHandler{
         return connection.get();
     }
 
-    @PreDestroy
     public void closeConnection() {
         try {
             if(getConnection() != null && !getConnection().isClosed()) {

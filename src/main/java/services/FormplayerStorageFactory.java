@@ -63,6 +63,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.appId = appId;
         this.trimmedUsername = StringUtils.substringBefore(username, "@");
         this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
+        setConnection(null);
     }
 
     @Override
@@ -77,8 +78,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         }
         return connection.get();
     }
-
-    @PreDestroy
+    
     public void closeConnection() {
         try {
             if(connection.get() != null && !connection.get().isClosed()) {

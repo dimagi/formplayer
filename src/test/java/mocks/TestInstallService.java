@@ -25,6 +25,16 @@ public class TestInstallService implements InstallService {
     public FormplayerConfigEngine configureApplication(String reference) {
         try {
             File dbFolder = new File(storageFactory.getDatabasePath());
+            if(dbFolder.exists()) {
+                // Try reusing old install, fail quietly
+                try {
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+                    engine.initEnvironment();
+                    return engine;
+                } catch (Exception e) {
+                    // pass
+                }
+            }
             SqlSandboxUtils.deleteDatabaseFolder(storageFactory.getDatabasePath());
             dbFolder.mkdirs();
             FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory,
