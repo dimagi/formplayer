@@ -2,16 +2,18 @@ package database.models;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.persistence.SqlHelper;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
 import org.commcare.cases.query.queryset.DualTableSingleMatchModelQuerySet;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.database.TableBuilder;
+import org.commcare.modern.engine.cases.CaseIndexTable;
 import org.commcare.modern.util.Pair;
-import org.sqlite.javax.SQLiteConnectionPoolDataSource;
+import sandbox.SqlHelper;
+import sandbox.SqliteIndexedStorageUtility;
+import sandbox.UserSqlSandbox;
+import services.ConnectionHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,7 +24,7 @@ import java.util.*;
 /**
  * @author ctsims
  */
-public class FormplayerCaseIndexTable implements org.commcare.modern.engine.cases.CaseIndexTable {
+public class FormplayerCaseIndexTable implements CaseIndexTable {
     public static final String TABLE_NAME = "case_index_storage";
 
     private static final String COL_CASE_RECORD_ID = "case_rec_id";
@@ -30,31 +32,17 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
     private static final String COL_INDEX_TYPE = "type";
     private static final String COL_INDEX_TARGET = "target";
 
-    SQLiteConnectionPoolDataSource dataSource;
+    ConnectionHandler connectionHandler;
 
     private static final Log log = LogFactory.getLog(FormplayerCaseIndexTable.class);
 
     //TODO: We should do some synchronization to make it the case that nothing can hold
     //an object for the same cache at once and let us manage the lifecycle
 
-    public FormplayerCaseIndexTable(SQLiteConnectionPoolDataSource dataSource) {
-        this.dataSource = dataSource;
-        Connection connection = null;
-        try {
-            connection = dataSource.getConnection();
-            execSQL(connection, getTableDefinition());
-            createIndexes(connection);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing connection ", e);
-                }
-            }
-        }
+    public FormplayerCaseIndexTable(ConnectionHandler connectionHandler) {
+        this.connectionHandler = connectionHandler;
+        execSQL(connectionHandler.getConnection(), getTableDefinition());
+        createIndexes(connectionHandler.getConnection());
     }
 
     private static void execSQL(Connection connection, String query) {
@@ -100,27 +88,13 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
      * TODO: this doesn't ensure any sort of uniquenes, you should wipe constraints first
      */
     public void indexCase(Case c) {
-        Connection connection = null;
-        try {
-            connection = dataSource.getConnection();
-            for (CaseIndex ci : c.getIndices()) {
-                HashMap<String, String> contentValues = new HashMap<>();
-                contentValues.put(COL_CASE_RECORD_ID, "" + c.getID());
-                contentValues.put(COL_INDEX_NAME, ci.getName());
-                contentValues.put(COL_INDEX_TYPE, ci.getTargetType());
-                contentValues.put(COL_INDEX_TARGET, ci.getTarget());
-                SqlHelper.basicInsert(connection, TABLE_NAME, contentValues);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing connection ", e);
-                }
-            }
+        for (CaseIndex ci : c.getIndices()) {
+            HashMap<String, String> contentValues = new HashMap<>();
+            contentValues.put(COL_CASE_RECORD_ID, "" + c.getID());
+            contentValues.put(COL_INDEX_NAME, ci.getName());
+            contentValues.put(COL_INDEX_TYPE, ci.getTargetType());
+            contentValues.put(COL_INDEX_TARGET, ci.getTarget());
+            SqlHelper.basicInsert(connectionHandler.getConnection(), TABLE_NAME, contentValues);
         }
     }
 
@@ -130,24 +104,10 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
 
     public void clearCaseIndices(int recordId) {
         String recordIdString = String.valueOf(recordId);
-        Connection connection = null;
-        try {
-            connection = dataSource.getConnection();
-            SqlHelper.deleteFromTableWhere(connection,
-                    TABLE_NAME,
-                    COL_CASE_RECORD_ID + "= CAST(? as INT)",
-                    recordIdString);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing connection ", e);
-                }
-            }
-        }
+        SqlHelper.deleteFromTableWhere(connectionHandler.getConnection(),
+                TABLE_NAME,
+                COL_CASE_RECORD_ID + "= CAST(? as INT)",
+                recordIdString);
     }
 
     /**
@@ -159,11 +119,9 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
      */
     public LinkedHashSet<Integer> getCasesMatchingIndex(String indexName, String targetValue) {
         String[] args = new String[]{indexName, targetValue};
-        Connection connection = null;
         PreparedStatement selectStatement = null;
         try {
-            connection = dataSource.getConnection();
-            selectStatement = SqlHelper.prepareTableSelectStatement(connection,
+            selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
                     TABLE_NAME,
                     new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
                     args);
@@ -177,13 +135,6 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
             if (selectStatement != null) {
                 try {
                     selectStatement.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing connection ", e);
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
                 } catch (SQLException e) {
                     log.debug("Exception closing connection ", e);
                 }
@@ -207,11 +158,9 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
 
         String whereExpr = String.format("%s = ? AND %s IN %s", COL_INDEX_NAME, COL_INDEX_TARGET, inSet);
 
-        Connection connection = null;
         PreparedStatement selectStatement = null;
         try {
-            connection = dataSource.getConnection();
-            selectStatement = SqlHelper.prepareTableSelectStatement(connection,
+            selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
                     TABLE_NAME,
                     whereExpr,
                     args);
@@ -229,13 +178,6 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                     log.debug("Exception prepared statement connection ", e);
                 }
             }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing connection ", e);
-                }
-            }
         }
     }
 
@@ -243,11 +185,9 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
         int resultsReturned = 0;
         String[] args = new String[]{indexName};
 
-        Connection connection = null;
         PreparedStatement preparedStatement = null;
         try {
-            connection = dataSource.getConnection();
-            preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
+            preparedStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
                     TABLE_NAME,
                     new String[]{COL_INDEX_NAME},
                     args);
@@ -283,13 +223,6 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                     log.debug("Exception closing prepared statement ", e);
                 }
             }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing connection ", e);
-                }
-            }
         }
     }
 
@@ -305,10 +238,8 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
         String caseIdIndex = TableBuilder.scrubName(Case.INDEX_CASE_ID);
 
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases, "CAST(? as INT)");
-        Connection connection = null;
         PreparedStatement preparedStatement = null;
         try {
-            connection = dataSource.getConnection();
             for (Pair<String, String[]> querySet : whereParamList) {
 
                 String query = String.format(
@@ -327,7 +258,8 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                         COL_INDEX_NAME, indexName,
                         COL_CASE_RECORD_ID, querySet.first);
 
-                preparedStatement = SqlHelper.prepareTableSelectStatement(connection, TABLE_NAME, query, querySet.second);
+                preparedStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
+                        TABLE_NAME, query, querySet.second);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 try {
                     if (resultSet.getFetchSize() == 0) {
@@ -352,13 +284,6 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                     preparedStatement.close();
                 } catch (SQLException e) {
                     log.debug("Exception closing prepared statement ", e);
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing connection ", e);
                 }
             }
         }
