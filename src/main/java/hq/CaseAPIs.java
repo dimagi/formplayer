@@ -2,9 +2,9 @@ package hq;
 
 import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
-import sandbox.SqlSandboxUtils;
-import sandbox.SqliteIndexedStorageUtility;
-import sandbox.UserSqlSandbox;
+import org.commcare.api.persistence.SqlSandboxUtils;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.parse.ParseUtils;
 import org.javarosa.core.api.ClassNameHasher;
@@ -27,7 +27,6 @@ public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
-        restoreFactory.closeConnection();
         return restoreIfNotExists(restoreFactory, true);
     }
 
@@ -35,12 +34,13 @@ public class CaseAPIs {
         if (restoreFactory.isRestoreXmlExpired()) {
             SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         }
-        if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
+        File db = new File(restoreFactory.getDbFile());
+        if(db.exists()){
             return restoreFactory.getSqlSandbox();
         } else{
-            new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
+            db.getParentFile().mkdirs();
             InputStream xml = restoreFactory.getRestoreXml(overwriteCache);
-            return restoreUser(restoreFactory, xml);
+            return restoreUser(restoreFactory.getWrappedUsername(), restoreFactory.getDbPath(), xml);
         }
     }
 
@@ -59,21 +59,18 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, InputStream restorePayload) throws
+    private static UserSqlSandbox restoreUser(String username, String path, InputStream restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
+        UserSqlSandbox sandbox = new UserSqlSandbox(username, path);
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
-        UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
-        
-        restoreFactory.setAutoCommit(false);
+
         ParseUtils.parseIntoSandbox(restorePayload, false, factory);
-        restoreFactory.commit();
-        restoreFactory.setAutoCommit(true);
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
-            if (restoreFactory.getWrappedUsername().equalsIgnoreCase(u.getUsername())) {
+            if (username.equalsIgnoreCase(u.getUsername())) {
                 sandbox.setLoggedInUser(u);
             }
         }

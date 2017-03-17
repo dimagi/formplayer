@@ -5,7 +5,6 @@ import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.CommCareSession;
 import org.commcare.util.CommCarePlatform;
-import sandbox.UserSqlSandbox;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -35,7 +34,7 @@ class FormplayerSessionWrapper extends SessionWrapper {
     @Override
     public CommCareInstanceInitializer getIIF() {
         if (initializer == null) {
-            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox) mSandbox, mPlatform, sessionData);
+            initializer = new FormplayerInstanceInitializer(this, mSandbox, mPlatform, sessionData);
         }
         return initializer;
     }

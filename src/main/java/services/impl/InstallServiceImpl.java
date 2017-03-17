@@ -4,7 +4,7 @@ import engine.FormplayerConfigEngine;
 import installers.FormplayerInstallerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import sandbox.SqlSandboxUtils;
+import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.resources.model.InstallCancelledException;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;

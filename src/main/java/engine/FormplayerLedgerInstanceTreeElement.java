@@ -1,7 +1,7 @@
 package engine.cases;
 
-import sandbox.JdbcSqlStorageIterator;
-import sandbox.SqliteIndexedStorageUtility;
+import org.commcare.api.persistence.JdbcSqlStorageIterator;
+import org.commcare.api.persistence.SqliteIndexedStorageUtility;
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.instance.LedgerInstanceTreeElement;
 import org.commcare.cases.query.PredicateProfile;

@@ -1,7 +1,7 @@
 package util;
 
 import application.SQLiteProperties;
-import sandbox.SqlSandboxUtils;
+import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.modern.database.TableBuilder;
 
 /**
