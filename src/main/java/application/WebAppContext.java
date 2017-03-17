@@ -298,13 +298,15 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public RestoreFactory restoreFactory(){
+    public RestoreFactory restoreFactory() {
+        RestoreFactory.closeConnection();
         return new RestoreFactory();
     }
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public FormplayerStorageFactory storageFactory(){
+    public FormplayerStorageFactory storageFactory() {
+        FormplayerStorageFactory.closeConnection();
         return new FormplayerStorageFactory();
     }
 
