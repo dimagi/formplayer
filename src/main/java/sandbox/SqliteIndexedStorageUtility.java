@@ -105,28 +105,6 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         connection = getConnection();
         int id = SqlHelper.insertToTable(connection, tableName, p);
         p.setID(id);
-        //SqlHelper.updateId(connection, tableName, p);
-    }
-
-    public T readFromBytes(byte[] mBytes) {
-        T returnPrototype;
-        ByteArrayInputStream mByteStream = null;
-        try {
-            returnPrototype = prototype.newInstance();
-            mByteStream = new ByteArrayInputStream(mBytes);
-            returnPrototype.readExternal(new DataInputStream(mByteStream), PrototypeManager.getDefault());
-            return returnPrototype;
-        } catch (InstantiationException | IllegalAccessException | DeserializationException | IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (mByteStream != null) {
-                try {
-                    mByteStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     @Override
@@ -528,7 +506,6 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(matchingValues, "?");
         try {
             for (Pair<String, String[]> querySet : whereParamList) {
-                //Cursor c = helper.getHandle().query(tableName, new String[]{DatabaseHelper.ID_COL, DatabaseHelper.DATA_COL, fieldName}, fieldName + " IN " + querySet.first, querySet.second, null, null, null);
                 PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
                         tableName,
                         fieldName + " IN " + querySet.first,
@@ -542,8 +519,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             }
             return returnSet;
         } catch (SQLException e) {
-
+            throw new RuntimeException(e);
         }
-        return returnSet;
     }
 }
