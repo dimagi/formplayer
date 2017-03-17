@@ -33,7 +33,6 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     private final SqliteIndexedStorageUtility<FormInstance> userFixtureStorage;
     private final SqliteIndexedStorageUtility<FormInstance> appFixtureStorage;
     private final SqliteIndexedStorageUtility<StorageIndexedTreeElementModel> sqlUtil;
-    private final String username, path;
     private User user = null;
     public static final String DEFAULT_DATBASE_PATH = "dbs";
     private ConnectionHandler handler;
@@ -42,9 +41,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
      * Create a sandbox of the necessary storage objects with the shared
      * factory.
      */
-    public UserSqlSandbox(ConnectionHandler handler, String username, String path) {
-        this.username = username;
-        this.path = path;
+    public UserSqlSandbox(ConnectionHandler handler) {
         this.handler = handler;
         //we can't name this table "Case" becase that's reserved by sqlite
         caseStorage = new SqliteIndexedStorageUtility<>(handler, Case.class, "CCCase");
@@ -186,10 +183,6 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     @Override
     public void setLoggedInUser(User user) {
         this.user = user;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     @Override

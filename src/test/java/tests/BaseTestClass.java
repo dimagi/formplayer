@@ -132,20 +132,19 @@ public class BaseTestClass {
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
-
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
                 .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
+        RestoreFactory.closeConnection();
+        FormplayerStorageFactory.closeConnection();
         PrototypeUtils.setupPrototypes();
         new SQLiteProperties().setDataDir("testdbs/");
     }
 
     @After
     public void tearDown() {
-        restoreFactoryMock.closeConnection();
-        storageFactoryMock.closeConnection();
         SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
     }
 
