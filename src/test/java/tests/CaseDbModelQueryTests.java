@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import sandbox.UserSqlSandbox;
 import utils.TestContext;
 import utils.TestStorageUtils;
 
@@ -39,7 +40,8 @@ public class CaseDbModelQueryTests extends BaseTestClass {
     @Test
     public void testDbModelQueryLookups() throws Exception {
         syncDb();
-        EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession();
+        UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
+        EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         ec.setDebugModeOn();
         evaluate("join(',',instance('casedb')/casedb/case[@case_type='unit_test_child_child'][@status='open'][true() and " +
                 "instance('casedb')/casedb/case[@case_id = instance('casedb')/casedb/case[@case_id=current()/index/parent]/index/parent]/test = 'true']/@case_id)", "child_ptwo_one_one,child_one_one", ec);

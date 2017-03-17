@@ -56,7 +56,6 @@ public class GroupTests extends BaseTestClass{
         cityBean = groupBean.getChildren()[3];
         labelBean = groupBean.getChildren()[2];
 
-        System.out.println("City Bean: " + cityBean);
         assert labelBean.getCaption().equals("Selected county was: ex");
         assert cityBean.getChoices().length == 2;
 

@@ -39,8 +39,9 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
         String username = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
         String domain = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
         String appId = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
+        String restoreAs = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
         storageFactory = new FormplayerStorageFactory();
-        storageFactory.configure(username, domain, appId);
+        storageFactory.configure(username, domain, appId, restoreAs);
 
     }
 
@@ -50,5 +51,6 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
         ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getUsername()));
         ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getDomain()));
         ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getAppId()));
+        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getAsUsername()));
     }
 }
