@@ -488,7 +488,10 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             for (Pair<String, String[]> querySet : whereParamList) {
 
                 preparedStatement =
-                        SqlHelper.prepareTableSelectStatement(connection, this.tableName, querySet.first, querySet.second);
+                        SqlHelper.prepareTableSelectStatement(connection,
+                                this.tableName,
+                                DatabaseHelper.ID_COL + " IN " + querySet.first,
+                                querySet.second);
                 resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
                     int index = resultSet.findColumn(DatabaseHelper.DATA_COL);
