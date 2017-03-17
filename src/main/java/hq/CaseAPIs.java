@@ -27,13 +27,13 @@ public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
-        restoreFactory.closeConnection();
+        RestoreFactory.closeConnection();
         return restoreIfNotExists(restoreFactory, true);
     }
 
     public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory, boolean overwriteCache) throws Exception{
         if (restoreFactory.isRestoreXmlExpired()) {
-            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
+            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());;
         }
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             return restoreFactory.getSqlSandbox();
