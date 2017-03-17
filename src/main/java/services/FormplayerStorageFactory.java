@@ -28,7 +28,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     private String domain;
     private String appId;
     private String databasePath;
-    private String trimmedUsername;
+    private String asUsername;
 
     private static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>(){
         @Override
@@ -38,38 +38,37 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         }
     };
 
-    public static Connection instance() {
-        return connection.get();
-    }
-
-    public static void setConnection(Connection conn) {
-        connection.set(conn);
-    }
-
-
     public void configure(InstallRequestBean authenticatedRequestBean) {
         configure(authenticatedRequestBean.getUsername(),
                 authenticatedRequestBean.getDomain(),
-                authenticatedRequestBean.getAppId());
+                authenticatedRequestBean.getAppId(),
+                authenticatedRequestBean.getRestoreAs());
     }
 
-    public void configure(String username, String domain, String appId) {
+    public void configure(String username, String domain, String appId, String asUsername) {
         if(username == null || domain == null || appId == null) {
             throw new RuntimeException(String.format("Cannot configure FormplayerStorageFactory with null arguments. " +
                     "username = %s, domain = %s, appId = %s", username, domain, appId));
         }
         this.username = username;
+        this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.trimmedUsername = StringUtils.substringBefore(username, "@");
-        this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
+        this.databasePath = ApplicationUtils.getApplicationDBPath(domain, getUsernameDetail(), appId);
+    }
+
+    public String getUsernameDetail() {
+        if (asUsername != null) {
+            return username + "_" + asUsername;
+        }
+        return username;
     }
 
     @Override
     public Connection getConnection() {
         try {
             if (connection.get() == null || connection.get().isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource(trimmedUsername, databasePath);
+                DataSource dataSource = SqlSandboxUtils.getDataSource("application", databasePath);
                 connection.set(dataSource.getConnection());
             }
         } catch (SQLException e) {
@@ -77,17 +76,16 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         }
         return connection.get();
     }
-
-    @PreDestroy
-    public void closeConnection() {
+    
+    public static void closeConnection() {
         try {
             if(connection.get() != null && !connection.get().isClosed()) {
                 connection.get().close();
-                connection.set(null);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        connection.set(null);
     }
 
     @Override
@@ -119,11 +117,17 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.appId = appId;
     }
 
-    public String getDatabasePath() {
-        return databasePath;
+    public String getDatabaseFile() {
+        return databasePath + "/application.db";
     }
 
-    public String getTrimmedUsername() {
-        return trimmedUsername;
+    public String getAsUsername() {
+        return asUsername;
+    }
+
+    @Override
+    public String toString() {
+        return "FormplayerStorageFactory username=" + username + ", dbPath=" + databasePath +
+                ", appId=" + appId + " connection=" + connection.get();
     }
 }
