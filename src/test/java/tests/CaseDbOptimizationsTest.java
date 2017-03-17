@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import sandbox.UserSqlSandbox;
 import utils.TestContext;
 import utils.TestStorageUtils;
 
@@ -35,8 +34,7 @@ public class CaseDbOptimizationsTest extends BaseTestClass {
     @Test
     public void testDbOptimizations() throws Exception {
         syncDb();
-        UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
-        EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
+        EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession();
         ec.setDebugModeOn();
         evaluate("join(',',instance('casedb')/casedb/case[index/parent = 'test_case_parent']/@case_id)", "child_one,child_two,child_three", ec);
         evaluate("join(',',instance('casedb')/casedb/case[index/parent = 'test_case_parent'][@case_id = 'child_two']/@case_id)", "child_two", ec);
