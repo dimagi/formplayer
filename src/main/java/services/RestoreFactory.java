@@ -78,14 +78,6 @@ public class RestoreFactory implements ConnectionHandler{
         }
     };
 
-    public static Connection instance() {
-        return connection.get();
-    }
-
-    public static void setConnection(Connection conn) {
-        connection.set(conn);
-    }
-
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
         configure(authenticatedRequestBean.getUsername(),
@@ -99,7 +91,6 @@ public class RestoreFactory implements ConnectionHandler{
         this.setDomain(domain);
         this.setAsUsername(asUsername);
         this.setHqAuth(auth);
-        setConnection(null);
     }
 
 
@@ -120,15 +111,15 @@ public class RestoreFactory implements ConnectionHandler{
         return connection.get();
     }
 
-    public void closeConnection() {
+    public static void closeConnection() {
         try {
-            if(getConnection() != null && !getConnection().isClosed()) {
-                getConnection().close();
-                connection.set(null);
+            if(connection.get() != null && !connection.get().isClosed()) {
+                connection.get().close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        connection.set(null);
     }
 
     public void setAutoCommit(boolean autoCommit) {
