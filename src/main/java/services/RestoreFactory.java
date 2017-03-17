@@ -95,14 +95,21 @@ public class RestoreFactory implements ConnectionHandler{
 
 
     public UserSqlSandbox getSqlSandbox() {
-        return new UserSqlSandbox(this, username, getDbPath());
+        return new UserSqlSandbox(this);
+    }
+
+    public String getUsernameDetail() {
+        if (asUsername != null) {
+            return username + "_" + asUsername;
+        }
+        return username;
     }
 
     @Override
     public Connection getConnection() {
         try {
             if (connection.get() == null || connection.get().isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource(getUsername(), getDbPath());
+                DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
                 connection.set(dataSource.getConnection());
             }
         } catch (SQLException e) {
@@ -137,21 +144,12 @@ public class RestoreFactory implements ConnectionHandler{
             throw new RuntimeException(e);
         }
     }
-
     public String getDbFile() {
-        if (getAsUsername() == null) {
-            log.info("Restoring to database " + SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db");
-            return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db";
-        }
-        log.info("Restoring to database " + SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + "/" + getAsUsername() + ".db");
-        return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + "/" + getAsUsername() + ".db";
+        return getDbPath() + "/user.db";
     }
 
-    public String getDbPath() {
-        if (asUsername == null) {
-            return SQLiteProperties.getDataDir() + domain;
-        }
-        return SQLiteProperties.getDataDir() + domain + "/" + username;
+    private String getDbPath() {
+        return SQLiteProperties.getDataDir() + domain + "/" + getUsernameDetail();
     }
 
     public String getWrappedUsername() {

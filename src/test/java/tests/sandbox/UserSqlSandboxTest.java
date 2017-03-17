@@ -26,7 +26,7 @@ public class UserSqlSandboxTest {
     @Before
     public void setUp() throws Exception {
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
-        sandbox = new UserSqlSandbox(new TestConnectionHandler(username, UserSqlSandbox.DEFAULT_DATBASE_PATH), username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
+        sandbox = new UserSqlSandbox(new TestConnectionHandler(UserSqlSandbox.DEFAULT_DATBASE_PATH));
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         ParseUtils.parseIntoSandbox(this.getClass().getClassLoader().getResourceAsStream("restores/ipm_restore.xml"), sandbox);
         sandbox = null;
@@ -34,7 +34,7 @@ public class UserSqlSandboxTest {
 
     @Test
     public void test() {
-        sandbox = new UserSqlSandbox(new TestConnectionHandler(username, UserSqlSandbox.DEFAULT_DATBASE_PATH), username, UserSqlSandbox.DEFAULT_DATBASE_PATH);
+        sandbox = new UserSqlSandbox(new TestConnectionHandler(UserSqlSandbox.DEFAULT_DATBASE_PATH));
         Assert.assertEquals(sandbox.getCaseStorage().getNumRecords(), 6);
         Assert.assertEquals(sandbox.getLedgerStorage().getNumRecords(), 3);
         Assert.assertEquals(sandbox.getUserFixtureStorage().getNumRecords(), 4);
