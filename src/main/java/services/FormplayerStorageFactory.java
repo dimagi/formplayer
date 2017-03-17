@@ -38,15 +38,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         }
     };
 
-    public static Connection instance() {
-        return connection.get();
-    }
-
-    public static void setConnection(Connection conn) {
-        connection.set(conn);
-    }
-
-
     public void configure(InstallRequestBean authenticatedRequestBean) {
         configure(authenticatedRequestBean.getUsername(),
                 authenticatedRequestBean.getDomain(),
@@ -63,7 +54,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.appId = appId;
         this.trimmedUsername = StringUtils.substringBefore(username, "@");
         this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, appId);
-        setConnection(null);
     }
 
     @Override
@@ -79,15 +69,15 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         return connection.get();
     }
     
-    public void closeConnection() {
+    public static void closeConnection() {
         try {
             if(connection.get() != null && !connection.get().isClosed()) {
                 connection.get().close();
-                connection.set(null);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        connection.set(null);
     }
 
     @Override
