@@ -65,7 +65,12 @@ public class CaseAPIs {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
         UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
-        boolean useBulkProcessing = PropertyManager.instance().getSingularProperty("cc-enable-bulk-performance").equals("yes");
+        boolean useBulkProcessing = false;
+        try {
+            useBulkProcessing = PropertyManager.instance().getSingularProperty("cc-enable-bulk-performance").equals("yes");
+        } catch (RuntimeException e) {
+            // pass
+        }
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, useBulkProcessing);
         
         restoreFactory.setAutoCommit(false);
