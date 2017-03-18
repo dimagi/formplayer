@@ -22,13 +22,14 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
 
     private TransactionParserFactory formInstanceParser;
     private boolean caseIndexesWereDisrupted = false;
+    private boolean useBulkProcessing;
 
     /**
      * A mapping from an installed form's namespace its install path.
      */
     private Hashtable<String, String> formInstanceNamespaces;
 
-    public FormplayerTransactionParserFactory(UserSqlSandbox sandbox) {
+    public FormplayerTransactionParserFactory(UserSqlSandbox sandbox, boolean useBulkProcessing) {
         super(sandbox);
     }
 
@@ -44,7 +45,7 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
 
     @Override
     public void initCaseParser() {
-        if (true) {
+        if (useBulkProcessing) {
             caseParser = getBulkCaseParser();
         } else {
             caseParser = getNormalCaseParser();
