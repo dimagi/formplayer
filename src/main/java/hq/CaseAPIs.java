@@ -2,6 +2,7 @@ package hq;
 
 import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
+import org.javarosa.core.services.PropertyManager;
 import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
@@ -64,7 +65,8 @@ public class CaseAPIs {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
         UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
-        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
+        boolean useBulkProcessing = PropertyManager.instance().getSingularProperty("cc-enable-bulk-performance").equals("yes");
+        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, useBulkProcessing);
         
         restoreFactory.setAutoCommit(false);
         ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
