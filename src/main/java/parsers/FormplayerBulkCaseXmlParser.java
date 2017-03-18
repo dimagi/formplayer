@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * A bulk processing parser for the android platform. Provides superior performance when
+ * A bulk processing parser for Formplayer. Provides superior performance when
  * processing high case loads during syncing and/or processing.
  *
  * @author ctsims
@@ -47,9 +47,10 @@ public class FormplayerBulkCaseXmlParser extends BulkProcessingCaseXmlParser {
     @Override
     protected void performBulkWrite(LinkedHashMap<String, Case> writeLog) throws IOException {
         ArrayList<Integer> recordIdsToWipe = new ArrayList<>();
-        for (String cid : writeLog.keySet()) {
-            Case c = writeLog.get(cid);
+        for (String caseId : writeLog.keySet()) {
+            Case c = writeLog.get(caseId);
             storage.write(c);
+            // Add the case's SQL record ID
             recordIdsToWipe.add(c.getID());
         }
         mEntityCache.invalidateCaches(recordIdsToWipe);

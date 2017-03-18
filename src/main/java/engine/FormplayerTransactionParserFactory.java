@@ -18,8 +18,6 @@ import java.util.Hashtable;
  */
 public class FormplayerTransactionParserFactory extends CommCareTransactionParserFactory {
 
-    //final private Context context;
-    //final private HttpRequestEndpoints generator;
     final private ArrayList<String> createdAndUpdatedCases = new ArrayList<>();
 
     private TransactionParserFactory formInstanceParser;

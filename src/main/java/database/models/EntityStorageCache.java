@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -144,11 +145,14 @@ public class EntityStorageCache {
      * Removes cache records associated with the provided IDs
      */
     public void invalidateCaches(Collection<Integer> recordIds) {
+        if (recordIds.size() == 0) {
+            return;
+        }
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(recordIds);
         for(Pair<String, String[]> querySet : whereParamList) {
             SqlHelper.deleteFromTableWhere(handler.getConnection(),
                     TABLE_NAME,
-                    COL_CACHE_NAME + " = '" + this.mCacheName + "' AND " + COL_ENTITY_KEY + " IN " + querySet.first,
+                    MessageFormat.format("{0} = {1} AND {2} IN {3}", COL_CACHE_NAME, this.mCacheName, COL_ENTITY_KEY, querySet.first),
                     querySet.second);
         }
     }
