@@ -26,7 +26,7 @@ public class ApplicationUtilsTests extends BaseTestClass {
 
         assert file.exists();
 
-        Boolean success = ApplicationUtils.deleteApplicationDbs("dummy-domain", "dummy-username", "dummy-app-id");
+        Boolean success = ApplicationUtils.deleteApplicationDbs("dummy-domain", "dummy-username", null, "dummy-app-id");
 
         file = new File(dbPath);
         assert !file.exists();
