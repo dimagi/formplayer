@@ -272,6 +272,7 @@ public class MenuController extends AbstractBaseController{
         ApplicationUtils.deleteApplicationDbs(
                 sessionNavigationBean.getDomain(),
                 sessionNavigationBean.getUsername(),
+                sessionNavigationBean.getRestoreAs(),
                 sessionNavigationBean.getAppId()
         );
         menuSession = performInstall(sessionNavigationBean, authToken);
