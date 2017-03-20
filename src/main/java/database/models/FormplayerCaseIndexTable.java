@@ -253,7 +253,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
                         COL_CASE_RECORD_ID, UserSqlSandbox.FORMPLAYER_CASE + "." + DatabaseHelper.ID_COL,
                         TABLE_NAME,
-                        "CCCase",
+                        UserSqlSandbox.FORMPLAYER_CASE,
                         COL_INDEX_TARGET, caseIdIndex,
                         COL_INDEX_NAME, indexName,
                         COL_CASE_RECORD_ID, querySet.first);
