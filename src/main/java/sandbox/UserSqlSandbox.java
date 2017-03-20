@@ -27,6 +27,9 @@ import java.util.Set;
  */
 public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
 
+    // Need a different key than the default "Case" which is reserved by SQL
+    public final static String FORMPLAYER_CASE = "CCCase";
+
     private final SqliteIndexedStorageUtility<Case> caseStorage;
     private final SqliteIndexedStorageUtility<Ledger> ledgerStorage;
     private final SqliteIndexedStorageUtility<User> userStorage;
@@ -44,7 +47,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     public UserSqlSandbox(ConnectionHandler handler) {
         this.handler = handler;
         //we can't name this table "Case" becase that's reserved by sqlite
-        caseStorage = new SqliteIndexedStorageUtility<>(handler, Case.class, "CCCase");
+        caseStorage = new SqliteIndexedStorageUtility<>(handler, Case.class, FORMPLAYER_CASE);
         ledgerStorage = new SqliteIndexedStorageUtility<>(handler, Ledger.class, Ledger.STORAGE_KEY);
         userStorage = new SqliteIndexedStorageUtility<>(handler, User.class, User.STORAGE_KEY);
         userFixtureStorage = new SqliteIndexedStorageUtility<>(handler, FormInstance.class, "UserFixture");
