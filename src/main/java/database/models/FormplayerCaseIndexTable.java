@@ -251,17 +251,21 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                                 "AND " +
                                 "%s IN %s",
 
-                        COL_CASE_RECORD_ID, Case.STORAGE_KEY + "." + DatabaseHelper.ID_COL,
+                        COL_CASE_RECORD_ID, UserSqlSandbox.FORMPLAYER_CASE + "." + DatabaseHelper.ID_COL,
                         TABLE_NAME,
-                        Case.STORAGE_KEY,
+                        "CCCase",
                         COL_INDEX_TARGET, caseIdIndex,
                         COL_INDEX_NAME, indexName,
                         COL_CASE_RECORD_ID, querySet.first);
 
-                preparedStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
-                        TABLE_NAME, query, querySet.second);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                try {
+                preparedStatement = connectionHandler.getConnection().prepareStatement(query);
+                int argIndex = 1;
+                for (String arg: querySet.second) {
+                    preparedStatement.setString(argIndex, arg);
+                    argIndex++;
+                }
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.getFetchSize() == 0) {
                         return set;
                     } else {
@@ -271,8 +275,6 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                             set.loadResult(caseId, targetCase);
                         }
                     }
-                } finally {
-                    resultSet.close();
                 }
             }
             return set;
