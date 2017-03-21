@@ -2,8 +2,8 @@ package session;
 
 import database.models.FormplayerCaseIndexTable;
 import engine.FormplayerCaseInstanceTreeElement;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
-import org.commcare.api.persistence.UserSqlSandbox;
+import sandbox.SqliteIndexedStorageUtility;
+import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
@@ -29,7 +29,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
-                                         UserSandbox mSandbox, CommCarePlatform mPlatform,
+                                         UserSqlSandbox mSandbox, CommCarePlatform mPlatform,
                                          Map<String, String> sessionData) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
         this.sessionData = sessionData;
@@ -40,7 +40,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         if (casebase == null) {
             SqliteIndexedStorageUtility<Case> storage = (SqliteIndexedStorageUtility<Case>) mSandbox.getCaseStorage();
             FormplayerCaseIndexTable formplayerCaseIndexTable;
-            formplayerCaseIndexTable = new FormplayerCaseIndexTable(((UserSqlSandbox) mSandbox).getDataSource());
+            formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox) mSandbox);
             casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
         } else {
             //re-use the existing model if it exists.
