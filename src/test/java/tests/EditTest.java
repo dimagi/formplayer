@@ -29,7 +29,7 @@ public class EditTest extends BaseTestClass {
     @Test
     public void testFunctionHandlers() throws Throwable {
         NewFormResponse newFormResponse = startNewForm("requests/new_form/edit_form.json", "xforms/edit_form.xml");
-        log.info("Instance XML " + newFormResponse.getInstanceXml());
+        System.out.println("Instance XML " + newFormResponse.getInstanceXml());
         assert newFormResponse.getInstanceXml().getOutput().contains("<datetoday>2016-11-14</datetoday>");
         assert newFormResponse.getInstanceXml().getOutput().contains("<datenow>2016-11-14T23:24:00.334+02</datenow>");
     }
