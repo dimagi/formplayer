@@ -2,6 +2,8 @@ package tests;
 
 import beans.NewFormResponse;
 import beans.SubmitResponseBean;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -13,7 +15,9 @@ import utils.TestContext;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class EditTest extends BaseTestClass{
+public class EditTest extends BaseTestClass {
+
+    private final Log log = LogFactory.getLog(EditTest.class);
 
     @Override
     public void setUp() throws Exception {
@@ -25,6 +29,7 @@ public class EditTest extends BaseTestClass{
     @Test
     public void testFunctionHandlers() throws Throwable {
         NewFormResponse newFormResponse = startNewForm("requests/new_form/edit_form.json", "xforms/edit_form.xml");
+        log.info("Instance XML " + newFormResponse.getInstanceXml());
         assert newFormResponse.getInstanceXml().getOutput().contains("<datetoday>2016-11-14</datetoday>");
         assert newFormResponse.getInstanceXml().getOutput().contains("<datenow>2016-11-14T23:24:00.334+02</datenow>");
     }
