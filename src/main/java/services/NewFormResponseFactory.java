@@ -6,8 +6,9 @@ import beans.NewSessionRequestBean;
 import hq.CaseAPIs;
 import objects.SerializableFormSession;
 import org.apache.commons.io.IOUtils;
-import sandbox.UserSqlSandbox;
+import org.commcare.api.persistence.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import session.FormSession;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,

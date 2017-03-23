@@ -2,12 +2,11 @@ package database.models;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import sandbox.SqlHelper;
+import org.commcare.api.persistence.SqlHelper;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.util.Pair;
-import sandbox.UserSqlSandbox;
-import services.ConnectionHandler;
+import org.sqlite.javax.SQLiteConnectionPoolDataSource;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,19 +27,29 @@ public class EntityStorageCache {
     private static final String COL_VALUE = "value";
     private static final String COL_TIMESTAMP = "timestamp";
 
-    private final ConnectionHandler handler;
+    private final SQLiteConnectionPoolDataSource dataSource;
     private final String mCacheName;
 
     private static final Log log = LogFactory.getLog(EntityStorageCache.class);
 
-    public EntityStorageCache(String cacheName, ConnectionHandler handler) {
+    public EntityStorageCache(String cacheName, SQLiteConnectionPoolDataSource dataSource) {
+        this.dataSource = dataSource;
         this.mCacheName = cacheName;
-        this.handler = handler;
+        Connection connection = null;
         try {
-            execSQL(handler.getConnection(), getTableDefinition());
-            EntityStorageCache.createIndexes(handler.getConnection());
+            connection = dataSource.getConnection();
+            execSQL(connection, getTableDefinition());
+            EntityStorageCache.createIndexes(connection);
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    log.debug("Exception closing connection ", e);
+                }
+            }
         }
     }
 
@@ -63,7 +72,7 @@ public class EntityStorageCache {
     }
 
     public static String getTableDefinition() {
-        return "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
+        return "CREATE TABLE " + TABLE_NAME + "(" +
                 DatabaseHelper.ID_COL + " INTEGER PRIMARY KEY, " +
                 COL_CACHE_NAME + ", " +
                 COL_ENTITY_KEY + ", " +
@@ -87,7 +96,7 @@ public class EntityStorageCache {
         Pair<String, String[]> wherePair =
                 DatabaseHelper.createWhere(new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
                         new String[]{this.mCacheName, entityKey, cacheKey});
-        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
+        SqlHelper.deleteFromTableWhere(dataSource.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
         //We need to clear this cache value if it exists first.
         HashMap<String, String> contentValues = new HashMap<>();
         contentValues.put(COL_CACHE_NAME, mCacheName);
@@ -95,7 +104,7 @@ public class EntityStorageCache {
         contentValues.put(COL_CACHE_KEY, cacheKey);
         contentValues.put(COL_VALUE, value);
         contentValues.put(COL_TIMESTAMP, String.valueOf(timestamp));
-        SqlHelper.basicInsert(handler.getConnection(), TABLE_NAME, contentValues);
+        SqlHelper.basicInsert(dataSource.getConnection(), TABLE_NAME, contentValues);
     }
 
     // Currently unused
@@ -103,6 +112,8 @@ public class EntityStorageCache {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         try {
+
+            connection = dataSource.getConnection();
             preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
                     TABLE_NAME,
                     new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
@@ -117,6 +128,13 @@ public class EntityStorageCache {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    log.debug("Exception closing connection ", e);
+                }
+            }
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
@@ -134,7 +152,21 @@ public class EntityStorageCache {
         Pair<String, String[]> wherePair =
                 DatabaseHelper.createWhere(new String[]{COL_CACHE_NAME, COL_ENTITY_KEY},
                         new String[]{this.mCacheName, recordId});
-        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
+        Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
+            SqlHelper.deleteFromTableWhere(connection, TABLE_NAME, wherePair.first, wherePair.second);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    log.debug("Exception closing connection ", e);
+                }
+            }
+        }
     }
 
     public static int getSortFieldIdFromCacheKey(String detailId, String cacheKey) {
