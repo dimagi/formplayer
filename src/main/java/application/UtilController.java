@@ -14,7 +14,6 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import sandbox.UserSqlSandbox;
 import util.Constants;
 
 import java.io.StringReader;
@@ -50,6 +49,7 @@ public class UtilController extends AbstractBaseController {
         } else {
             CaseAPIs.forceRestore(restoreFactory);
         }
+
         return new SyncDbResponseBean();
     }
 
@@ -61,7 +61,7 @@ public class UtilController extends AbstractBaseController {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
         boolean success = deleteRequest.clear();
-        if (!success) {
+        if (success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
         return new NotificationMessageBean(message, !success);

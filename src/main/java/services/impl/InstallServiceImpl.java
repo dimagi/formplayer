@@ -4,7 +4,7 @@ import engine.FormplayerConfigEngine;
 import installers.FormplayerInstallerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import sandbox.SqlSandboxUtils;
+import org.commcare.api.persistence.SqlSandboxUtils;
 import org.commcare.resources.model.InstallCancelledException;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -31,11 +31,10 @@ public class InstallServiceImpl implements InstallService {
 
     @Override
     public FormplayerConfigEngine configureApplication(String reference) {
-        String dbFilePath = storageFactory.getDatabaseFile();
-        log.info("Configuring application with reference " + reference + " and dbPath: " + dbFilePath + ".");
-        System.out.println(" and storage factory " + storageFactory);
+        String dbPath = storageFactory.getDatabasePath();
+        log.info("Configuring application with reference " + reference + " and dbPath: " + dbPath + ".");
         try {
-            File dbFolder = new File(dbFilePath);
+            File dbFolder = new File(dbPath);
             if(dbFolder.exists()) {
                 // Try reusing old install, fail quietly
                 try {
@@ -43,13 +42,12 @@ public class InstallServiceImpl implements InstallService {
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
-                    log.error("Got exception " + e + " while reinitializing at path " + dbFilePath);
+                    log.error("Got exception " + e + " while reinitializing at path " + dbPath);
                 }
             }
             // Wipe out folder and attempt install
-            FormplayerStorageFactory.closeConnection();
-            SqlSandboxUtils.deleteDatabaseFolder(dbFilePath);
-            if (!dbFolder.getParentFile().exists() && !dbFolder.getParentFile().mkdirs()) {
+            SqlSandboxUtils.deleteDatabaseFolder(dbPath);
+            if (!dbFolder.mkdirs()) {
                 throw new RuntimeException("Error instantiationing folder " + dbFolder);
             }
             FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
@@ -61,12 +59,12 @@ public class InstallServiceImpl implements InstallService {
             engine.initEnvironment();
             return engine;
         } catch (InstallCancelledException | UnresolvedResourceException | UnfullfilledRequirementsException e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbFilePath);
-            SqlSandboxUtils.deleteDatabaseFolder(dbFilePath);
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPath);
+            SqlSandboxUtils.deleteDatabaseFolder(dbPath);
             throw new RuntimeException(e);
         } catch (Exception e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbFilePath);
-            SqlSandboxUtils.deleteDatabaseFolder(dbFilePath);
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPath);
+            SqlSandboxUtils.deleteDatabaseFolder(dbPath);
             throw e;
         }
     }
