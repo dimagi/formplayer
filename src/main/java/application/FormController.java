@@ -117,7 +117,8 @@ public class FormController extends AbstractBaseController{
         );
         storageFactory.configure(serializableFormSession.getUsername(),
                 serializableFormSession.getDomain(),
-                serializableFormSession.getAppId()
+                serializableFormSession.getAppId(),
+                serializableFormSession.getAsUser()
         );
 
         FormSession formEntrySession = new FormSession(serializableFormSession);
