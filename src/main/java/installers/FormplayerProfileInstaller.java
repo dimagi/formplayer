@@ -40,9 +40,8 @@ public class FormplayerProfileInstaller extends ProfileInstaller {
         String username = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
         String domain = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
         String appId = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
-        String asUsername = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
         storageFactory = new FormplayerStorageFactory();
-        storageFactory.configure(username, domain, appId, asUsername);
+        storageFactory.configure(username, domain, appId);
 
     }
 
@@ -52,6 +51,5 @@ public class FormplayerProfileInstaller extends ProfileInstaller {
         ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getUsername()));
         ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getDomain()));
         ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getAppId()));
-        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getAsUsername()));
     }
 }
