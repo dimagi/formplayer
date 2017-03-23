@@ -7,8 +7,6 @@ import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.persistence.SqlSandboxUtils;
-import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.services.PropertyManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +24,12 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import sandbox.SqlSandboxUtils;
+import sandbox.UserSqlSandbox;
 
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -35,6 +37,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,7 +46,7 @@ import java.util.concurrent.TimeUnit;
  * then retrieves and returns the restore XML.
  */
 @Component
-public class RestoreFactory {
+public class RestoreFactory implements ConnectionHandler{
     @Value("${commcarehq.host}")
     private String host;
 
@@ -66,6 +70,15 @@ public class RestoreFactory {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
+    private static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>(){
+        @Override
+        protected Connection initialValue()
+        {
+            return null;
+        }
+    };
+
+
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
         configure(authenticatedRequestBean.getUsername(),
                 authenticatedRequestBean.getDomain(),
@@ -80,28 +93,67 @@ public class RestoreFactory {
         this.setHqAuth(auth);
     }
 
-    public String getDbFile() {
-        if (getAsUsername() == null) {
-            log.info("Restoring to database " + SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db");
-            return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db";
-        }
-        log.info("Restoring to database " + SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + "/" + getAsUsername() + ".db");
-        return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + "/" + getAsUsername() + ".db";
+
+    public UserSqlSandbox getSqlSandbox() {
+        return new UserSqlSandbox(this);
     }
 
-    public String getDbPath() {
-        if (asUsername == null) {
-            return SQLiteProperties.getDataDir() + domain;
+    public String getUsernameDetail() {
+        if (asUsername != null) {
+            return username + "_" + asUsername;
         }
-        return SQLiteProperties.getDataDir() + domain + "/" + username;
+        return username;
+    }
+
+    @Override
+    public Connection getConnection() {
+        try {
+            if (connection.get() == null || connection.get().isClosed()) {
+                DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
+                connection.set(dataSource.getConnection());
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return connection.get();
+    }
+
+    public static void closeConnection() {
+        try {
+            if(connection.get() != null && !connection.get().isClosed()) {
+                connection.get().close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        connection.set(null);
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        try {
+            getConnection().setAutoCommit(autoCommit);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void commit() {
+        try {
+            getConnection().commit();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public String getDbFile() {
+        return getDbPath() + "/user.db";
+    }
+
+    private String getDbPath() {
+        return SQLiteProperties.getDataDir() + domain + "/" + getUsernameDetail();
     }
 
     public String getWrappedUsername() {
         return asUsername == null ? username : asUsername;
-    }
-
-    public UserSqlSandbox getSqlSandbox() {
-        return new UserSqlSandbox(getWrappedUsername(), getDbPath());
     }
 
     private void ensureValidParameters() {

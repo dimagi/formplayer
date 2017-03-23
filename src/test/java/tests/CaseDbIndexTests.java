@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import sandbox.UserSqlSandbox;
 import utils.TestContext;
 import utils.TestStorageUtils;
 
@@ -39,7 +40,8 @@ public class CaseDbIndexTests extends BaseTestClass {
     @Test
     public void testCaseCreateIndex() throws Exception {
         syncDb();
-        EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession();
+        UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
+        EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id_child']/index/parent", "test_case_id", ec);
         evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/index/missing", "", ec);
         evaluate("instance('casedb')/casedb/case[@case_type = 'unit_test_child'][index/parent = 'test_case_id_2']/@case_id",
