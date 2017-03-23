@@ -61,7 +61,7 @@ public class UtilController extends AbstractBaseController {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
         boolean success = deleteRequest.clear();
-        if (!success) {
+        if (success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
         return new NotificationMessageBean(message, !success);
