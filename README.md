@@ -45,6 +45,23 @@ When building on Linux it is sometimes necessary to run:
     $ gradle wrapper
     
 Finally, turn on the "Use the new formplayer frontend" feature flag on your CommCareHQ domain
+
+### Contributing
+
+For PRs that just modify code in the Formplayer repo, submit a PR to Formplayer on a separate branch.
+
+
+#### Contributing changes to commcare
+
+Formplayer also has a dependency on the commcare-core repository. The commcare-core `master` branch is not
+stable and Formplayer uses a different branch. The submodule repo `libs/commcare` should always be pointing to
+the `formplayer` branch.
+
+#### Updating the CommCare version
+
+When updating the commcare version on formplayer. A PR should be opened from the `commcare_X.Y` branch into
+the `formplayer` branch. Once QA has been finished, merge the PR and update the Formplayer submodule.
+
     
 ### Docs
 ____________
