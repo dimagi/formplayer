@@ -52,53 +52,5 @@ Finally, turn on the "Use the new formplayer frontend" feature flag on your Comm
 ____________
 
 We automatically generate API documentation using the Swagger plug-in [SpringFox](https://github.com/springfox/springfox)
-for Spring. To view the generated docs, run the server (above) and navigate to localhost:8000/swagger-ui.html#/ (changing
+for Spring. To view the generated docs, run the server (above) and navigate to http://localhost:8080/swagger-ui.html#/ (changing
 host and port as appropriate)
-
-Endpoints
-------------
-
-### Implemented
-
-####/new_session
-+ Download requisite XForm and instantiate FormEntrySession 
-+ If necessary, download OTA restore payload and generate the User's SQLite DB
-+ Return the XForm description tree, the form title, form languages, and session-id
-
-####/answer
-+ Retrieve cached session and enter given answer at given form index
-+ Process this in the form entry model, then return the new form tree if accepted or the error message if rejected.
-+ Return updated form entry tree if answer accepted, error message otherwise
-
-####/filter_cases
-+ Given a user and filter expression (IE predicate expression) return the list of caseIds of that user's cases 
-matching that expression
-+ Will fetch the user restore from the host server and generate the user's SQLite DB if necessary
-
-####/current
-+ Provided with a sessionId, restore that session from the cache or Postgres and return the current decision tree
-
-### TODO
-
-####/submit_all
-Submit the set of form indexes and corresponding answer values. Return the completed form instance. Optionally update the touchforms user db. 
-####/evaluate_xpath
-Used by debugger. Submit an XPath, evaluate against the current instance, and return the value on that path.
-####/get_instance
-Given a session id, return the instance XML and XMLNS associated with that session.
-####/sync_db
-Given a userna,e sync that user's DB. 
-####/new_repeat
-Add a new repeat, presumably after being prompted.
-####/edit_repeat
-Edit a repeat group
-####/delete_repeat
-Delete a repeat group
- 
-xformplayer.Actions.DELETE_REPEAT:
-
-###TBD
-####/next
-Move to next event, skipping the current. Can't think of how this would be used considering we display all questions at once so wouldn't have the notion of being at one index and skipping the next.
-####/set_lang
-Set the language to be used by the XForm engine
