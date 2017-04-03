@@ -59,10 +59,10 @@ the `formplayer` branch.
 
 #### Updating the CommCare version
 
-When updating the commcare version on formplayer. A PR should be opened from the `commcare_X.Y` branch into
+When updating Formplayer to have a new release of a CommCare version (e.g. 2.34 to 2.35), a PR should be opened from the `commcare_X.Y` branch into
 the `formplayer` branch. Once QA has been finished, merge the PR and update the Formplayer submodule.
 
-    
+
 ### Docs
 ____________
 
