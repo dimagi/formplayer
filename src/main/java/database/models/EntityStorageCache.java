@@ -72,7 +72,7 @@ public class EntityStorageCache {
     }
 
     public static String getTableDefinition() {
-        return "CREATE TABLE " + TABLE_NAME + "(" +
+        return "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
                 DatabaseHelper.ID_COL + " INTEGER PRIMARY KEY, " +
                 COL_CACHE_NAME + ", " +
                 COL_ENTITY_KEY + ", " +

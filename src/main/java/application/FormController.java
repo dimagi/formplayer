@@ -6,6 +6,7 @@ import auth.HqAuth;
 import beans.*;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import engine.FormplayerTransactionParserFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -137,7 +138,8 @@ public class FormController extends AbstractBaseController{
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
             try {
-                FormRecordProcessorHelper.processXML(formEntrySession.getSandbox(), formEntrySession.submitGetXml());
+                FormRecordProcessorHelper.processXML(new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox()),
+                        formEntrySession.submitGetXml());
             } catch(InvalidStructureException e) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 submitResponseBean.setNotification(new NotificationMessageBean(e.getMessage(), true));
