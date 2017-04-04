@@ -19,7 +19,7 @@ import java.sql.SQLException;
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
  */
 @Component
-public class FormplayerStorageFactory implements IStorageIndexedFactory, ConnectionHandler{
+public class FormplayerStorageFactory implements IStorageIndexedFactory, ConnectionHandler {
 
     private String username;
     private String domain;
