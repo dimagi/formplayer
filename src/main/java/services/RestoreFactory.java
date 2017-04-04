@@ -70,13 +70,7 @@ public class RestoreFactory implements ConnectionHandler{
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>(){
-        @Override
-        protected Connection initialValue()
-        {
-            return null;
-        }
-    };
+    private Connection connection;
 
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
@@ -108,25 +102,25 @@ public class RestoreFactory implements ConnectionHandler{
     @Override
     public Connection getConnection() {
         try {
-            if (connection.get() == null || connection.get().isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
-                connection.set(dataSource.getConnection());
+                connection = dataSource.getConnection();
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return connection.get();
+        return connection;
     }
 
-    public static void closeConnection() {
+    public void closeConnection() {
         try {
-            if(connection.get() != null && !connection.get().isClosed()) {
-                connection.get().close();
+            if(connection != null && !connection.isClosed()) {
+                connection.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        connection.set(null);
+        connection = null;
     }
 
     public void setAutoCommit(boolean autoCommit) {
