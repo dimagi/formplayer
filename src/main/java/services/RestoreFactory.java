@@ -19,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.sqlite.SQLiteConnection;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -96,6 +97,17 @@ public class RestoreFactory implements ConnectionHandler{
             if (connection == null || connection.isClosed()) {
                 DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
                 connection = dataSource.getConnection();
+            } else {
+                if (connection instanceof SQLiteConnection) {
+                    SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
+                    if (!sqLiteConnection.url().contains(getDbPath())) {
+                        log.error(String.format("Had connection with path %s in StorageFactory %s",
+                                sqLiteConnection.url(),
+                                toString()));
+                        DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
+                        connection = dataSource.getConnection();
+                    }
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
