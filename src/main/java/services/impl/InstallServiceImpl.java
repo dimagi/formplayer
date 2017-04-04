@@ -47,7 +47,7 @@ public class InstallServiceImpl implements InstallService {
                 }
             }
             // Wipe out folder and attempt install
-            FormplayerStorageFactory.closeConnection();
+            storageFactory.closeConnection();
             SqlSandboxUtils.deleteDatabaseFolder(dbFilePath);
             if (!dbFolder.getParentFile().exists() && !dbFolder.getParentFile().mkdirs()) {
                 throw new RuntimeException("Error instantiationing folder " + dbFolder);

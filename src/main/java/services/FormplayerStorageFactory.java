@@ -1,19 +1,16 @@
 package services;
 
 import beans.InstallRequestBean;
-import org.apache.commons.lang3.StringUtils;
-import org.javarosa.core.services.IPropertyManager;
-import org.sqlite.SQLiteConnection;
-import org.sqlite.javax.SQLiteConnectionPoolDataSource;
-import sandbox.SqlSandboxUtils;
-import sandbox.SqliteIndexedStorageUtility;
-import sandbox.UserSqlSandbox;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.stereotype.Component;
+import org.sqlite.SQLiteConnection;
+import sandbox.SqlSandboxUtils;
+import sandbox.SqliteIndexedStorageUtility;
 import util.ApplicationUtils;
 
-import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -30,13 +27,9 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     private String databasePath;
     private String asUsername;
 
-    private static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>(){
-        @Override
-        protected Connection initialValue()
-        {
-            return null;
-        }
-    };
+    private Connection connection;
+
+    private final Log log = LogFactory.getLog(FormplayerStorageFactory.class);
 
     public void configure(InstallRequestBean authenticatedRequestBean) {
         configure(authenticatedRequestBean.getUsername(),
@@ -67,25 +60,34 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     @Override
     public Connection getConnection() {
         try {
-            if (connection.get() == null || connection.get().isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 DataSource dataSource = SqlSandboxUtils.getDataSource("application", databasePath);
-                connection.set(dataSource.getConnection());
+                connection = dataSource.getConnection();
+            } else {
+                if (connection instanceof SQLiteConnection) {
+                    SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
+                    if (!sqLiteConnection.url().contains(databasePath)) {
+                        log.error(String.format("Had connection with path %s in StorageFactory %s",
+                                sqLiteConnection.url(),
+                                toString()));
+                    }
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return connection.get();
+        return connection;
     }
     
-    public static void closeConnection() {
+    public void closeConnection() {
         try {
-            if(connection.get() != null && !connection.get().isClosed()) {
-                connection.get().close();
+            if(connection!= null && !connection.isClosed()) {
+                connection.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        connection.set(null);
+        connection = null;
     }
 
     @Override
@@ -128,6 +130,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     @Override
     public String toString() {
         return "FormplayerStorageFactory username=" + username + ", dbPath=" + databasePath +
-                ", appId=" + appId + " connection=" + connection.get();
+                ", appId=" + appId + " connection=" + connection;
     }
 }

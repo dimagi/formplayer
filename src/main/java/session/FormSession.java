@@ -35,6 +35,7 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import services.RestoreFactory;
 import util.ApplicationUtils;
 
 import javax.sql.DataSource;
@@ -92,12 +93,12 @@ public class FormSession {
         initLocale();
     }
 
-    public FormSession(SerializableFormSession session) throws Exception{
+    public FormSession(SerializableFormSession session, RestoreFactory restoreFactory) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();
         this.domain = session.getDomain();
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, asUser, this.domain);
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
         this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
