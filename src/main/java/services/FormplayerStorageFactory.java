@@ -48,6 +48,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.domain = domain;
         this.appId = appId;
         this.databasePath = ApplicationUtils.getApplicationDBPath(domain, getUsernameDetail(), appId);
+        closeConnection();
     }
 
     public String getUsernameDetail() {
@@ -70,6 +71,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
                         log.error(String.format("Had connection with path %s in StorageFactory %s",
                                 sqLiteConnection.url(),
                                 toString()));
+                        DataSource dataSource = SqlSandboxUtils.getDataSource("application", databasePath);
+                        connection = dataSource.getConnection();
                     }
                 }
             }
