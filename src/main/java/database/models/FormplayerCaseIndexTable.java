@@ -327,7 +327,7 @@ public class FormplayerCaseIndexTable implements org.commcare.modern.engine.case
                         COL_INDEX_NAME, indexName,
                         COL_CASE_RECORD_ID, querySet.first);
 
-                preparedStatement = SqlHelper.prepareTableSelectStatement(connection, TABLE_NAME, query, querySet.second);
+                preparedStatement = SqlHelper.prepareStatement(connection, query, querySet.second);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 try {
                     if (resultSet.getFetchSize() == 0) {
