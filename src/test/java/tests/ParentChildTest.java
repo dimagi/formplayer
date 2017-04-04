@@ -36,7 +36,7 @@ public class ParentChildTest extends BaseTestClass{
         HashMap<String, Object> answers = new HashMap<>();
         answers.put("0", "Sr");
         answers.put("1", "Jr");
-        SubmitResponseBean submitResponseBean = submitFormAnswers(answers, newFormResponse.getSessionId());
+        SubmitResponseBean submitResponseBean = submitForm(answers, newFormResponse.getSessionId());
         assert submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
         EntityListResponse entityListResponse = sessionNavigate(new String[]{"1"}, "parentchild", EntityListResponse.class);
         assert entityListResponse.getEntities().length == 1;

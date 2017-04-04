@@ -242,11 +242,11 @@ public class BaseTestClass {
                 SubmitResponseBean.class);
     }
 
-    SubmitResponseBean submitFormAnswers(Map<String, Object> answers, String sessionId) throws Exception {
-        SubmitRequestBean submitRequestBean = mapper.readValue
-                (FileUtils.getFile(this.getClass(), "requests/submit/submit_request.json"), SubmitRequestBean.class);
+    SubmitResponseBean submitForm(Map<String, Object> answers, String sessionId) throws Exception {
+        SubmitRequestBean submitRequestBean = new SubmitRequestBean();
         submitRequestBean.setSessionId(sessionId);
         submitRequestBean.setAnswers(answers);
+        submitRequestBean.setPrevalidated(true);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_SUBMIT_FORM,
