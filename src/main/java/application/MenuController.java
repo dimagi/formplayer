@@ -123,9 +123,11 @@ public class MenuController extends AbstractBaseController{
         advanceSessionWithSelections(menuSession,
                 commitSelections,
                 auth,
+                detailSelection,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText());
+                sessionNavigationBean.getSearchText()
+        );
         Screen currentScreen = menuSession.getNextScreen();
         if (!(currentScreen instanceof EntityScreen)) {
             throw new RuntimeException("Tried to get details while not on a case list.");
@@ -163,12 +165,15 @@ public class MenuController extends AbstractBaseController{
         );
         menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
-        return advanceSessionWithSelections(menuSession,
+        return advanceSessionWithSelections(
+                menuSession,
                 selections,
                 auth,
+                null,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText());
+                sessionNavigationBean.getSearchText()
+        );
     }
 
     private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
@@ -210,6 +215,7 @@ public class MenuController extends AbstractBaseController{
     private BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                               String[] selections,
                                               HqAuth auth,
+                                              String detailSelection,
                                               Hashtable<String, String> queryDictionary,
                                               int offset,
                                               String searchText) throws Exception {
@@ -252,10 +258,13 @@ public class MenuController extends AbstractBaseController{
                 return syncResponse;
             }
         }
-        nextMenu = getNextMenu(menuSession,
+        nextMenu = getNextMenu(
+                menuSession,
+                detailSelection,
                 offset,
                 searchText,
-                titles);
+                titles
+        );
         if (nextMenu != null) {
             nextMenu.setNotification(notificationMessageBean);
             log.info("Returning menu: " + nextMenu);

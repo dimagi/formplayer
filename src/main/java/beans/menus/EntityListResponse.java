@@ -47,17 +47,23 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse() {}
 
-    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText, String id) {
+    public EntityListResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
         nextScreen.getLongDetailList();
 
         EvaluationContext ec = nextScreen.getEvalContext();
+        EntityDatum datum = (EntityDatum) session.getNeededDatum();
+        if (detailSelection != null) {
+            TreeReference reference = datum.getEntityFromID(ec, detailSelection);
+            entities = new EntityBean[]{processEntity(reference, nextScreen, ec)};
+        } else {
+            Vector<TreeReference> references = ec.expandReference(datum.getNodeset());
+            processEntities(nextScreen, references, ec, offset, searchText);
+        }
 
-        Vector<TreeReference> references = ec.expandReference(((EntityDatum) session.getNeededDatum()).getNodeset());
         processTitle(session);
         processCaseTiles(shortDetail);
-        processEntities(nextScreen, references, ec, offset, searchText);
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
