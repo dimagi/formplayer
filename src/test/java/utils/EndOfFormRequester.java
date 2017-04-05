@@ -33,10 +33,12 @@ public class EndOfFormRequester extends RequesterThread {
                 answers.put("1", null);
                 submitRequestBean.setAnswers(answers);
                 submitRequestBean.setDomain(testRequest.getDomain());
+                submitRequestBean.setPrevalidated(true);
                 submitRequestBean.setUsername(testRequest.getUsername());
                 result = makeRequest(submitRequestBean, "submit-all");
-                Thread.sleep(randomGenerator.nextInt(10) * 1000);
                 testRequest.loadNewResult(result);
+                System.out.println(String.format("TestRequest %s passed.", testRequest));
+                Thread.sleep(randomGenerator.nextInt(10) * 1000);
             } catch (InterruptedException | IOException e) {
                 System.out.println(e);
             } catch (RuntimeException e) {

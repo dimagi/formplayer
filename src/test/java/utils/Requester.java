@@ -6,8 +6,8 @@ public class Requester {
 
     private static Vector<String[]> testArgs;
 
-    private static final String[] testUsers = new String[] {"test"};
-    private static final String[] normalUsers = new String[] {"derp"};
+    private static final String[] testUsers = new String[] {"test", "t", "will", "derp"};
+    private static final String[] normalUsers = new String[] {"derp", "skip", "t", "test"};
 
     public static void main(String[] args) throws Exception {
         loadTestArgs();
@@ -41,6 +41,7 @@ public class Requester {
             testArgs.add(new String[] {"2ea640e99c708a56120a7ac569ca5669", user, "normal", "0"});
             testArgs.add(new String[] {"2ea640e99c708a56120a7ac569ca5669", user, "normal", "1"});
         }
+
     }
 
     private static void startTests() {
