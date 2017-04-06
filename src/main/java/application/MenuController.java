@@ -65,8 +65,7 @@ public class MenuController extends AbstractBaseController{
 
         restoreFactory.configure(installRequestBean, auth);
         storageFactory.configure(installRequestBean);
-        BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-        return response;
+        return getNextMenu(performInstall(installRequestBean, authToken));
     }
 
     @ApiOperation(value = "Update the application at the given reference")
