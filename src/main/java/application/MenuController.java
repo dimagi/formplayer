@@ -139,9 +139,11 @@ public class MenuController extends AbstractBaseController{
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        EntityDetailListResponse response = new EntityDetailListResponse(entityScreen,
+        EntityDetailListResponse response = new EntityDetailListResponse(
+                entityScreen,
                 menuSession.getSessionWrapper().getEvaluationContext(),
-                reference);
+                reference
+        );
         return response;
     }
 
@@ -206,12 +208,25 @@ public class MenuController extends AbstractBaseController{
         return menuSession;
     }
 
-    // Selections are either an integer index into a list of modules
-    // or a case id indicating the case selected.
-    //
-    // An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
-    //
-    // This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
+    /**
+     * Advances the session based on the selections.
+     *
+     * @param menuSession
+     * @param selections - Selections are either an integer index into a list of modules
+     * or a case id indicating the case selected for a case detail.
+     *
+     * An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+     *
+     * This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
+     *
+     * @param auth
+     * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
+     * it is used to short circuit the normal TreeReference calculation by inserting a predicate that
+     * is [@case_id = <detailSelection>].
+     * @param queryDictionary
+     * @param offset
+     * @param searchText
+     *  */
     private BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                               String[] selections,
                                               HqAuth auth,
