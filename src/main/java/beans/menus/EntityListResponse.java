@@ -54,12 +54,15 @@ public class EntityListResponse extends MenuBean {
 
         EvaluationContext ec = nextScreen.getEvalContext();
         EntityDatum datum = (EntityDatum) session.getNeededDatum();
+
+        // When detailSelection is not null it means we're processing a case detail, not a case list.
+        // We will shortcircuit the computation to just get the relevant detailSelection.
         if (detailSelection != null) {
             TreeReference reference = datum.getEntityFromID(ec, detailSelection);
-            entities = new EntityBean[]{processEntity(reference, nextScreen, ec)};
+            processEntitiesForCaseDetail(nextScreen, reference, ec);
         } else {
             Vector<TreeReference> references = ec.expandReference(datum.getNodeset());
-            processEntities(nextScreen, references, ec, offset, searchText);
+            processEntitiesForCaseList(nextScreen, references, ec, offset, searchText);
         }
 
         processTitle(session);
@@ -97,7 +100,11 @@ public class EntityListResponse extends MenuBean {
         widthHints = pair.second;
     }
 
-    private void processEntities(EntityScreen screen, Vector<TreeReference> references,
+    private void processEntitiesForCaseDetail(EntityScreen screen, TreeReference reference, EvaluationContext ec) {
+        entities = new EntityBean[]{processEntity(reference, screen, ec)};
+    }
+
+    private void processEntitiesForCaseList(EntityScreen screen, Vector<TreeReference> references,
                                  EvaluationContext ec,
                                  int offset,
                                  String searchText) {
