@@ -65,8 +65,7 @@ public class MenuController extends AbstractBaseController{
 
         restoreFactory.configure(installRequestBean, auth);
         storageFactory.configure(installRequestBean);
-        BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-        return response;
+        return getNextMenu(performInstall(installRequestBean, authToken));
     }
 
     @ApiOperation(value = "Update the application at the given reference")
@@ -86,7 +85,7 @@ public class MenuController extends AbstractBaseController{
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
             try {
-                FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()));
+                FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()), restoreFactory);
                 updatedSession.reloadSession(oldSession);
                 return new NewFormResponse(oldSession);
             } catch(FormNotFoundException e) {
@@ -296,6 +295,7 @@ public class MenuController extends AbstractBaseController{
         ApplicationUtils.deleteApplicationDbs(
                 sessionNavigationBean.getDomain(),
                 sessionNavigationBean.getUsername(),
+                sessionNavigationBean.getRestoreAs(),
                 sessionNavigationBean.getAppId()
         );
         menuSession = performInstall(sessionNavigationBean, authToken);

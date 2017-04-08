@@ -9,7 +9,8 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
-import org.commcare.api.persistence.SqliteIndexedStorageUtility;
+import sandbox.SqliteIndexedStorageUtility;
+import sandbox.UserSqlSandbox;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
@@ -34,9 +35,13 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import services.RestoreFactory;
 import util.ApplicationUtils;
 
+import javax.sql.DataSource;
 import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -60,7 +65,7 @@ public class FormSession {
     private FormEntryModel formEntryModel;
     private FormEntryController formEntryController;
     private FormController formController;
-    private UserSandbox sandbox;
+    private UserSqlSandbox sandbox;
     private int sequenceId;
     private String dateOpened;
     private String locale;
@@ -88,12 +93,12 @@ public class FormSession {
         initLocale();
     }
 
-    public FormSession(SerializableFormSession session) throws Exception{
+    public FormSession(SerializableFormSession session, RestoreFactory restoreFactory) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();
         this.domain = session.getDomain();
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, asUser, this.domain);
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
         this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
@@ -114,7 +119,7 @@ public class FormSession {
     }
 
     // New FormSession constructor
-    public FormSession(UserSandbox sandbox,
+    public FormSession(UserSqlSandbox sandbox,
                        FormDef formDef,
                        String username,
                        String domain,
@@ -211,20 +216,14 @@ public class FormSession {
     }
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
-        CommCarePlatform platform = new CommCarePlatform(2, 30, new IStorageIndexedFactory() {
+        CommCarePlatform platform = new CommCarePlatform(2, 33, new IStorageIndexedFactory() {
             @Override
             public IStorageUtilityIndexed newStorage(String name, Class type) {
-                return new SqliteIndexedStorageUtility(type, username, name,
-                        ApplicationUtils.getApplicationDBPath(domain, username, appId));
+                return new SqliteIndexedStorageUtility(sandbox, type, name);
             }
         });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
-    }
-
-    private FormDef parseFormDef(String formXml) throws IOException {
-        XFormParser mParser = new XFormParser(new StringReader(formXml));
-        return mParser.parse();
     }
 
     public String getInstanceXml() throws IOException {

@@ -8,5 +8,7 @@
   "form_context": {
     "case_model": null
   },
-  "session_id": "chazz"
+  "session_id": "chazz",
+  "username": "doublemgmtusername",
+  "domain": "doublemgmtdomain"
 }

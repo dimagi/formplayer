@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import sandbox.UserSqlSandbox;
 import utils.TestContext;
 import utils.TestStorageUtils;
 import static utils.DbTestUtils.evaluate;
@@ -33,7 +34,8 @@ public class CaseDbQueryTest extends BaseTestClass {
     @Test
     public void testBasicCaseQueries() throws Exception {
         syncDb();
-        EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession();
+        UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
+        EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         evaluate("count(instance('casedb')/casedb/case[@case_id = 'test_case_id'])", "1", ec);
         evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/case_name", "Test Case", ec);
         evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/case_name", "Test Case", ec);
