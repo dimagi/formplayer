@@ -1,6 +1,7 @@
 package tests;
 
 import auth.DjangoAuth;
+import beans.AuthenticatedRequestBean;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,11 @@ public class RestoreFactoryTest {
     public void setUp() throws Exception {
         Mockito.reset(restoreFactorySpy);
         MockitoAnnotations.initMocks(this);
-        restoreFactorySpy.configure(username, domain, asUsername, new DjangoAuth("key"));
+        AuthenticatedRequestBean requestBean = new AuthenticatedRequestBean();
+        requestBean.setRestoreAs(asUsername);
+        requestBean.setUsername(username);
+        requestBean.setDomain(domain);
+        restoreFactorySpy.configure(requestBean, new DjangoAuth("key"));
     }
 
     private void mockSyncFreq(String freq) {

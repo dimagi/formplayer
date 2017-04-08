@@ -1,7 +1,7 @@
 package util;
 
 import application.SQLiteProperties;
-import org.commcare.api.persistence.SqlSandboxUtils;
+import sandbox.SqlSandboxUtils;
 import org.commcare.modern.database.TableBuilder;
 
 /**
@@ -9,11 +9,11 @@ import org.commcare.modern.database.TableBuilder;
  */
 public class ApplicationUtils {
 
-    public static boolean deleteApplicationDbs(String domain, String username, String appId) {
+    public static boolean deleteApplicationDbs(String domain, String username, String asUsername, String appId) {
         Boolean success = true;
 
         try {
-            SqlSandboxUtils.deleteDatabaseFolder(getApplicationDBPath(domain, username, appId));
+            SqlSandboxUtils.deleteDatabaseFolder(getApplicationDBPath(domain, getUsernameDetail(username, asUsername), appId));
         } catch (Exception e) {
             e.printStackTrace();
             success = false;
@@ -23,5 +23,12 @@ public class ApplicationUtils {
 
     public static String getApplicationDBPath(String domain, String username, String appId) {
         return SQLiteProperties.getDataDir() + domain + "/" + TableBuilder.scrubName(username) + "/" + appId;
+    }
+
+    public static String getUsernameDetail(String username, String asUsername) {
+        if (asUsername != null) {
+            return username + "_" + asUsername;
+        }
+        return username;
     }
 }
