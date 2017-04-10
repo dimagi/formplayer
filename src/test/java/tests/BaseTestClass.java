@@ -251,6 +251,8 @@ public class BaseTestClass {
         submitRequestBean.setSessionId(sessionId);
         submitRequestBean.setAnswers(answers);
         submitRequestBean.setPrevalidated(true);
+        submitRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        submitRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_SUBMIT_FORM,
