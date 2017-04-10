@@ -7,7 +7,7 @@ import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import installers.FormplayerInstallerFactory;
-import org.commcare.api.persistence.SqlSandboxUtils;
+import sandbox.SqlSandboxUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.*;
@@ -29,6 +29,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
+import sandbox.UserSqlSandbox;
 import services.*;
 import util.Constants;
 import util.PrototypeUtils;
@@ -132,12 +133,13 @@ public class BaseTestClass {
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
-
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
                 .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
+        storageFactoryMock.closeConnection();
+        restoreFactoryMock.closeConnection();
         PrototypeUtils.setupPrototypes();
         new SQLiteProperties().setDataDir("testdbs/");
     }
@@ -207,6 +209,8 @@ public class BaseTestClass {
 
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
+        answerQuestionBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        answerQuestionBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_ANSWER_QUESTION,
@@ -318,6 +322,8 @@ public class BaseTestClass {
                 FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"),
                 EvaluateXPathRequestBean.class
         );
+        evaluateXPathRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        evaluateXPathRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
         return generateMockQuery(

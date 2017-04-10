@@ -8,5 +8,7 @@
   "form_context": {
     "case_model": null
   },
-  "session_id": "786e7bb985dd4c8ca96204f7dfe69dfe"
+  "session_id": "786e7bb985dd4c8ca96204f7dfe69dfe",
+  "domain": "test",
+  "username": "test3"
 }
