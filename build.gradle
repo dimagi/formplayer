@@ -10,7 +10,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
 
 jar {
     baseName = 'formplayer'
@@ -75,6 +75,7 @@ dependencies {
     testCompile("org.springframework:spring-mock:2.0.8")
     testCompile("com.jayway.jsonpath:json-path:0.8.1")
     testCompile("com.jayway.jsonpath:json-path-assert:0.8.1")
+    testCompile 'com.carrotsearch:hppc:0.7.2'
     testRuntime("org.skyscreamer:jsonassert:1.4.0")
 }
 
@@ -85,7 +86,7 @@ test {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.5'
+    gradleVersion = '3.4.1'
 }
 
 task copyTestResources(type: Copy) {

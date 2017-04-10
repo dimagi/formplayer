@@ -139,12 +139,13 @@ public abstract class AbstractBaseController {
         // If the nextScreen is null, that means we are heading into
         // form entry and there isn't a screen title
         if (nextScreen == null) {
-            return getNextMenu(menuSession, offset, searchText, null);
+            return getNextMenu(menuSession, null, offset, searchText, null);
         }
-        return getNextMenu(menuSession, offset, searchText, new String[] {nextScreen.getScreenTitle()});
+        return getNextMenu(menuSession, null, offset, searchText, new String[] {nextScreen.getScreenTitle()});
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
+                                           String detailSelection,
                                            int offset,
                                            String searchText,
                                            String[] breadcrumbs) throws Exception {
@@ -171,8 +172,13 @@ public abstract class AbstractBaseController {
             }
             // We're looking at a case list or detail screen
             else if (nextScreen instanceof EntityScreen) {
-                menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset, searchText,
-                        menuSession.getId());
+                menuResponseBean = generateEntityScreen(
+                        (EntityScreen) nextScreen,
+                        detailSelection,
+                        offset,
+                        searchText,
+                        menuSession.getId()
+                );
             } else if(nextScreen instanceof FormplayerQueryScreen){
                     menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
             } else {
@@ -242,9 +248,9 @@ public abstract class AbstractBaseController {
         return new CommandListResponseBean(nextScreen, session, menuSessionId);
     }
 
-    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, int offset, String searchText,
+    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
                                                     String menuSessionId) {
-        return new EntityListResponse(nextScreen, offset, searchText, menuSessionId);
+        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSessionId);
     }
 
     private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {

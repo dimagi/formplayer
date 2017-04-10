@@ -19,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.sqlite.SQLiteConnection;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -70,29 +71,14 @@ public class RestoreFactory implements ConnectionHandler{
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>(){
-        @Override
-        protected Connection initialValue()
-        {
-            return null;
-        }
-    };
-
+    private Connection connection;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
-        configure(authenticatedRequestBean.getUsername(),
-                authenticatedRequestBean.getDomain(),
-                authenticatedRequestBean.getRestoreAs(),
-                auth);
-    }
-
-    public void configure(String username, String domain, String asUsername, HqAuth auth) {
-        this.setUsername(username);
-        this.setDomain(domain);
-        this.setAsUsername(asUsername);
+        this.setUsername(authenticatedRequestBean.getUsername());
+        this.setDomain(authenticatedRequestBean.getDomain());
+        this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
     }
-
 
     public UserSqlSandbox getSqlSandbox() {
         return new UserSqlSandbox(this);
@@ -108,25 +94,36 @@ public class RestoreFactory implements ConnectionHandler{
     @Override
     public Connection getConnection() {
         try {
-            if (connection.get() == null || connection.get().isClosed()) {
+            if (connection == null || connection.isClosed()) {
                 DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
-                connection.set(dataSource.getConnection());
+                connection = dataSource.getConnection();
+            } else {
+                if (connection instanceof SQLiteConnection) {
+                    SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
+                    if (!sqLiteConnection.url().contains(getDbPath())) {
+                        log.error(String.format("Had connection with path %s in StorageFactory %s",
+                                sqLiteConnection.url(),
+                                toString()));
+                        DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
+                        connection = dataSource.getConnection();
+                    }
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return connection.get();
+        return connection;
     }
 
-    public static void closeConnection() {
+    public void closeConnection() {
         try {
-            if(connection.get() != null && !connection.get().isClosed()) {
-                connection.get().close();
+            if(connection != null && !connection.isClosed()) {
+                connection.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        connection.set(null);
+        connection = null;
     }
 
     public void setAutoCommit(boolean autoCommit) {

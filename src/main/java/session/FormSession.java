@@ -35,6 +35,7 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import services.RestoreFactory;
 import util.ApplicationUtils;
 
 import javax.sql.DataSource;
@@ -81,6 +82,7 @@ public class FormSession {
     private boolean isAtLastIndex = false;
     private String asUser;
     private String appId;
+    private Map<String, FunctionHandler[]> functionContext;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -91,12 +93,12 @@ public class FormSession {
         initLocale();
     }
 
-    public FormSession(SerializableFormSession session) throws Exception{
+    public FormSession(SerializableFormSession session, RestoreFactory restoreFactory) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();
         this.domain = session.getDomain();
-        this.sandbox = CaseAPIs.restoreIfNotExists(username, asUser, this.domain);
+        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
         this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
@@ -109,7 +111,9 @@ public class FormSession {
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
+        this.functionContext = session.getFunctionContext();
         setupJavaRosaObjects();
+        setupFunctionContext();
         initialize(false, session.getSessionData());
         this.postUrl = session.getPostUrl();
     }
@@ -143,8 +147,9 @@ public class FormSession {
         this.asUser = asUser;
         this.appId = appId;
         this.currentIndex = "0";
+        this.functionContext = functionContext;
         setupJavaRosaObjects();
-        setupFunctionContext(this.formDef, functionContext);
+        setupFunctionContext();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
             initialize(false, sessionData);
@@ -167,7 +172,7 @@ public class FormSession {
      * Setup static function handlers. At the moment we only expect/accept date functions
      * (in particular, now() and today()) but could be extended in the future.
      */
-    private void setupFunctionContext(FormDef formDef, Map<String, FunctionHandler[]> functionContext) {
+    private void setupFunctionContext() {
         if (functionContext == null || functionContext.size() < 1) {
             return;
         }
@@ -175,10 +180,17 @@ public class FormSession {
             FunctionHandler[] functionHandlers = functionContext.get(outerKey);
             if(outerKey.equals("static-date")) {
                 for (FunctionHandler functionHandler: functionHandlers) {
+                    String funcName = functionHandler.getName();
+                    Date funcValue;
+                    if (funcName.contains("now")) {
+                        funcValue = DateUtils.parseDateTime(functionHandler.getValue());
+                    } else {
+                        funcValue = DateUtils.parseDate(functionHandler.getValue());
+                    }
                     formDef.exprEvalContext.addFunctionHandler(
                         new FunctionExtensions.TodayFunc(
-                                functionHandler.getName(),
-                                DateUtils.parseDate(functionHandler.getValue()))
+                                funcName,
+                                funcValue)
                     );
                 }
             }
@@ -322,6 +334,7 @@ public class FormSession {
         serializableFormSession.setCurrentIndex(currentIndex);
         serializableFormSession.setAsUser(asUser);
         serializableFormSession.setAppId(appId);
+        serializableFormSession.setFunctionContext(functionContext);
         return serializableFormSession;
     }
 
