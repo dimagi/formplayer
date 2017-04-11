@@ -105,34 +105,11 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         connection = getConnection();
         int id = SqlHelper.insertToTable(connection, tableName, p);
         p.setID(id);
-        SqlHelper.updateId(connection, tableName, p);
-    }
-
-    public T readFromBytes(byte[] mBytes) {
-        T returnPrototype;
-        ByteArrayInputStream mByteStream = null;
-        try {
-            returnPrototype = prototype.newInstance();
-            mByteStream = new ByteArrayInputStream(mBytes);
-            returnPrototype.readExternal(new DataInputStream(mByteStream), PrototypeManager.getDefault());
-            return returnPrototype;
-        } catch (InstantiationException | IllegalAccessException | DeserializationException | IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (mByteStream != null) {
-                try {
-                    mByteStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     @Override
     public T read(int id) {
-        byte[] mBytes = readBytes(id);
-        return readFromBytes(mBytes);
+        return newObject(readBytes(id), id);
     }
 
     public static Vector<Integer> fillIdWindow(ResultSet resultSet, String columnName, LinkedHashSet newReturn) throws SQLException {
@@ -193,8 +170,8 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             if (!resultSet.next()) {
                 throw new NoSuchElementException();
             }
-            byte[] mBytes = resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
-            return readFromBytes(mBytes);
+            byte[] mBytes = resultSet.getBytes(DatabaseHelper.DATA_COL);
+            return newObject(mBytes, resultSet.getInt(DatabaseHelper.ID_COL));
         } catch (SQLException | NullPointerException e) {
             throw new RuntimeException(e);
         } finally {
@@ -308,8 +285,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
             ArrayList<T> backingList = new ArrayList<>();
             while (resultSet.next()) {
-                byte[] bytes = resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
-                T t = readFromBytes(bytes);
+                T t = newObject(resultSet.getBytes(DatabaseHelper.DATA_COL), resultSet.getInt(DatabaseHelper.ID_COL));
                 backingList.add(t);
             }
             return new JdbcSqlStorageIterator<>(backingList);
@@ -517,6 +493,33 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    /**
+     * Retrieves a set of the models in storage based on a list of values matching one if the
+     * indexes of this storage
+     */
+    public List<T> getBulkRecordsForIndex(String indexName, Collection<String> matchingValues) {
+        List<T> returnSet = new ArrayList<>();
+        String fieldName = TableBuilder.scrubName(indexName);
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(matchingValues, "?");
+        try {
+            for (Pair<String, String[]> querySet : whereParamList) {
+                PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
+                        tableName,
+                        fieldName + " IN " + querySet.first,
+                        querySet.second);
+                ResultSet resultSet = selectStatement.executeQuery();
+                while (resultSet.next()) {
+                    int index = resultSet.getInt(DatabaseHelper.DATA_COL);
+                    byte[] data = resultSet.getBytes(index);
+                    returnSet.add(newObject(data, resultSet.getInt(DatabaseHelper.ID_COL)));
+                }
+            }
+            return returnSet;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

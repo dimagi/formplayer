@@ -110,6 +110,19 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 recordIdString);
     }
 
+    public void clearCaseIndices(Collection<Integer> idsToClear) {
+        if (idsToClear.size() == 0) {
+            return;
+        }
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(idsToClear);
+        for (Pair<String, String[]> whereParams : whereParamList) {
+            SqlHelper.deleteFromTableWhere(connectionHandler.getConnection(),
+                    TABLE_NAME,
+                    COL_CASE_RECORD_ID + " IN " + whereParams.first,
+                    whereParams.second);
+        }
+    }
+
     /**
      * Get a list of Case Record id's for cases which index a provided value.
      *
