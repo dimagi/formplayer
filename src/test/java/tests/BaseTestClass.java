@@ -39,6 +39,7 @@ import utils.TestContext;
 import javax.servlet.http.Cookie;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Map;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
@@ -230,6 +231,20 @@ public class BaseTestClass {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
         submitRequestBean.setSessionId(sessionId);
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_SUBMIT_FORM,
+                submitRequestBean,
+                SubmitResponseBean.class);
+    }
+
+    SubmitResponseBean submitForm(Map<String, Object> answers, String sessionId) throws Exception {
+        SubmitRequestBean submitRequestBean = new SubmitRequestBean();
+        submitRequestBean.setSessionId(sessionId);
+        submitRequestBean.setAnswers(answers);
+        submitRequestBean.setPrevalidated(true);
+        submitRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        submitRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_SUBMIT_FORM,
