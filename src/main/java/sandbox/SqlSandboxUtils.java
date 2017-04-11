@@ -51,7 +51,7 @@ public class SqlSandboxUtils {
             }
             Class.forName("org.sqlite.JDBC");
             SQLiteConnectionPoolDataSource dataSource = new SQLiteConnectionPoolDataSource();
-            dataSource.setUrl("jdbc:sqlite:" + databasePath + "/" + databaseName + ".db");
+            dataSource.setUrl("jdbc:sqlite:" + databasePath + "/" + databaseName + ".db?journal_mode=MEMORY");
             dataSource.getConnection().setAutoCommit(false);
             return dataSource;
         } catch (ClassNotFoundException|SQLException |IOException e) {
