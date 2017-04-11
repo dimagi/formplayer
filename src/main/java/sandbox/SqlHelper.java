@@ -340,7 +340,7 @@ public class SqlHelper {
             preparedStatement.setString(1, arg);
             preparedStatement.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -363,7 +363,7 @@ public class SqlHelper {
             }
             preparedStatement.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -391,7 +391,7 @@ public class SqlHelper {
             preparedStatement.setInt(1, id);
             preparedStatement.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -417,7 +417,7 @@ public class SqlHelper {
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {

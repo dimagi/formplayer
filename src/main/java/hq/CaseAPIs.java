@@ -15,6 +15,7 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
 import services.RestoreFactory;
+import util.PropertyUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,10 +55,11 @@ public class CaseAPIs {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
         UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
-        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox);
+        boolean useBulkProcessing = PropertyUtils.isBulkPerformanceEnabled();
+        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, useBulkProcessing);
         
         restoreFactory.setAutoCommit(false);
-        ParseUtils.parseIntoSandbox(restorePayload, false, factory);
+        ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
         restoreFactory.commit();
         restoreFactory.setAutoCommit(true);
         // initialize our sandbox's logged in user

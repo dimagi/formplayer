@@ -1,5 +1,6 @@
 package engine;
 
+import parsers.FormplayerBulkCaseXmlParser;
 import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.parse.CommCareTransactionParserFactory;
@@ -17,8 +18,6 @@ import java.util.Hashtable;
  */
 public class FormplayerTransactionParserFactory extends CommCareTransactionParserFactory {
 
-    //final private Context context;
-    //final private HttpRequestEndpoints generator;
     final private ArrayList<String> createdAndUpdatedCases = new ArrayList<>();
 
     private TransactionParserFactory formInstanceParser;
@@ -29,8 +28,8 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
      */
     private Hashtable<String, String> formInstanceNamespaces;
 
-    public FormplayerTransactionParserFactory(UserSqlSandbox sandbox) {
-        super(sandbox);
+    public FormplayerTransactionParserFactory(UserSqlSandbox sandbox, boolean useBulkProcessing) {
+        super(sandbox, useBulkProcessing);
     }
 
     @Override
@@ -45,13 +44,49 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
 
     @Override
     public void initCaseParser() {
-        caseParser = new TransactionParserFactory() {
-            CaseXmlParser created = null;
+        if (isBulkProcessingEnabled) {
+            caseParser = getBulkCaseParser();
+        } else {
+            caseParser = getNormalCaseParser();
+        }
+    }
+
+    @Override
+    public TransactionParserFactory getNormalCaseParser() {
+        return new TransactionParserFactory() {
+            FormplayerCaseXmlParser created = null;
 
             @Override
-            public TransactionParser<Case> getParser(KXmlParser parser) {
+            public FormplayerCaseXmlParser getParser(KXmlParser parser) {
                 if (created == null) {
                     created = new FormplayerCaseXmlParser(parser, true, (UserSqlSandbox) sandbox) {
+
+                        @Override
+                        public void onIndexDisrupted(String caseId) {
+                            caseIndexesWereDisrupted = true;
+                        }
+
+                        @Override
+                        protected void onCaseCreateUpdate(String caseId) {
+                            createdAndUpdatedCases.add(caseId);
+                        }
+                    };
+                }
+
+                return created;
+            }
+        };
+    }
+
+    @Override
+    public TransactionParserFactory getBulkCaseParser() {
+        return new TransactionParserFactory() {
+            FormplayerBulkCaseXmlParser created = null;
+
+            @Override
+            public FormplayerBulkCaseXmlParser getParser(KXmlParser parser) {
+                if (created == null) {
+                    created = new FormplayerBulkCaseXmlParser(parser, (UserSqlSandbox)sandbox) {
 
                         @Override
                         public void onIndexDisrupted(String caseId) {
