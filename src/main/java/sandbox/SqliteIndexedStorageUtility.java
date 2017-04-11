@@ -512,8 +512,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                         querySet.second);
                 ResultSet resultSet = selectStatement.executeQuery();
                 while (resultSet.next()) {
-                    int index = resultSet.getInt(DatabaseHelper.DATA_COL);
-                    byte[] data = resultSet.getBytes(index);
+                    byte[] data = resultSet.getBytes(DatabaseHelper.DATA_COL);
                     returnSet.add(newObject(data, resultSet.getInt(DatabaseHelper.ID_COL)));
                 }
             }
