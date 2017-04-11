@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class EntityStorageCache {
 
-    private static final String TABLE_NAME = "entity_cache";
+    private static final String TABLE_NAME = "entitycache";
 
     private static final String COL_CACHE_NAME = "cache_name";
     private static final String COL_ENTITY_KEY = "entity_key";
@@ -43,6 +43,8 @@ public class EntityStorageCache {
         try {
             execSQL(handler.getConnection(), getTableDefinition());
             EntityStorageCache.createIndexes(handler.getConnection());
+            // Need to commit in order to make these tables available
+            handler.getConnection().commit();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -150,10 +152,13 @@ public class EntityStorageCache {
         }
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(recordIds);
         for(Pair<String, String[]> querySet : whereParamList) {
+            String[] updated = new String[querySet.second.length + 1];
+            System.arraycopy(querySet.second, 0, updated, 1, querySet.second.length);
+            updated[0] = this.mCacheName;
             SqlHelper.deleteFromTableWhere(handler.getConnection(),
                     TABLE_NAME,
-                    MessageFormat.format("{0} = {1} AND {2} IN {3}", COL_CACHE_NAME, this.mCacheName, COL_ENTITY_KEY, querySet.first),
-                    querySet.second);
+                    MessageFormat.format("{0} = ? AND {1} IN {2}", COL_CACHE_NAME, COL_ENTITY_KEY, querySet.first),
+                    updated);
         }
     }
 
