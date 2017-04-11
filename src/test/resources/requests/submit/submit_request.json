@@ -1,4 +1,6 @@
 {
+  "username": "test",
+  "domain": "test",
   "action": "submit-all",
   "answers": {
     "0": "123"

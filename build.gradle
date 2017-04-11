@@ -10,7 +10,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
 
 jar {
     baseName = 'formplayer'
@@ -86,7 +86,7 @@ test {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.5'
+    gradleVersion = '3.4.1'
 }
 
 task copyTestResources(type: Copy) {

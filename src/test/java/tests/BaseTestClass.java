@@ -177,37 +177,31 @@ public class BaseTestClass {
     FormEntryNavigationResponseBean nextScreen(String sessionId) throws Exception {
         SessionRequestBean questionsBean = new SessionRequestBean();
         questionsBean.setSessionId(sessionId);
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonBody = mapper.writeValueAsString(questionsBean);
-        MvcResult answerResult = this.mockFormController.perform(
-                post(urlPrepend(Constants.URL_NEXT_INDEX))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        return mapper.readValue(answerResult.getResponse().getContentAsString(),
+        questionsBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        questionsBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_NEXT_INDEX,
+                questionsBean,
                 FormEntryNavigationResponseBean.class);
     }
 
     FormEntryNavigationResponseBean previousScreen(String sessionId) throws Exception {
         SessionRequestBean questionsBean = new SessionRequestBean();
         questionsBean.setSessionId(sessionId);
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonBody = mapper.writeValueAsString(questionsBean);
-        MvcResult answerResult = this.mockFormController.perform(
-                post(urlPrepend(Constants.URL_PREV_INDEX))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        return mapper.readValue(answerResult.getResponse().getContentAsString(),
+        questionsBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        questionsBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_PREV_INDEX,
+                questionsBean,
                 FormEntryNavigationResponseBean.class);
     }
 
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
+        answerQuestionBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        answerQuestionBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_ANSWER_QUESTION,
@@ -275,31 +269,34 @@ public class BaseTestClass {
         RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
                 RepeatRequestBean.class);
         newRepeatRequestBean.setSessionId(sessionId);
+        newRepeatRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        newRepeatRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
 
-        String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
-
-        String repeatResult = mockFormController.perform(
-                post(urlPrepend(Constants.URL_NEW_REPEAT))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
-        return mapper.readValue(repeatResult, FormEntryResponseBean.class);
+        return generateMockQuery(
+                ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_NEW_REPEAT,
+                newRepeatRequestBean,
+                FormEntryResponseBean.class
+        );
     }
 
     FormEntryResponseBean deleteRepeatRequest(String sessionId) throws Exception {
 
         String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/delete_repeat/delete_repeat.json");
 
-        RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
+        RepeatRequestBean deleteRepeatRequest = mapper.readValue(newRepeatRequestPayload,
                 RepeatRequestBean.class);
-        newRepeatRequestBean.setSessionId(sessionId);
-
-        String newRepeatRequestString = mapper.writeValueAsString(newRepeatRequestBean);
-
-        String repeatResult = mockFormController.perform(
-                post(urlPrepend(Constants.URL_DELETE_REPEAT))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(newRepeatRequestString)).andReturn().getResponse().getContentAsString();
-        return mapper.readValue(repeatResult, FormEntryResponseBean.class);
+        deleteRepeatRequest.setSessionId(sessionId);
+        deleteRepeatRequest.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        deleteRepeatRequest.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        return generateMockQuery(
+                ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_DELETE_REPEAT,
+                deleteRepeatRequest,
+                FormEntryResponseBean.class
+        );
     }
 
     EvaluateXPathResponseBean evaluateXPath(String sessionId, String xPath) throws Exception {
@@ -307,6 +304,8 @@ public class BaseTestClass {
                 FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"),
                 EvaluateXPathRequestBean.class
         );
+        evaluateXPathRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        evaluateXPathRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
         return generateMockQuery(

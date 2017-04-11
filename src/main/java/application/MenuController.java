@@ -65,8 +65,7 @@ public class MenuController extends AbstractBaseController{
 
         restoreFactory.configure(installRequestBean, auth);
         storageFactory.configure(installRequestBean);
-        BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-        return response;
+        return getNextMenu(performInstall(installRequestBean, authToken));
     }
 
     @ApiOperation(value = "Update the application at the given reference")
@@ -123,9 +122,11 @@ public class MenuController extends AbstractBaseController{
         advanceSessionWithSelections(menuSession,
                 commitSelections,
                 auth,
+                detailSelection,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText());
+                sessionNavigationBean.getSearchText()
+        );
         Screen currentScreen = menuSession.getNextScreen();
         if (!(currentScreen instanceof EntityScreen)) {
             throw new RuntimeException("Tried to get details while not on a case list.");
@@ -137,9 +138,11 @@ public class MenuController extends AbstractBaseController{
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        EntityDetailListResponse response = new EntityDetailListResponse(entityScreen,
+        EntityDetailListResponse response = new EntityDetailListResponse(
+                entityScreen,
                 menuSession.getSessionWrapper().getEvaluationContext(),
-                reference);
+                reference
+        );
         return response;
     }
 
@@ -163,12 +166,15 @@ public class MenuController extends AbstractBaseController{
         );
         menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
-        return advanceSessionWithSelections(menuSession,
+        return advanceSessionWithSelections(
+                menuSession,
                 selections,
                 auth,
+                null,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText());
+                sessionNavigationBean.getSearchText()
+        );
     }
 
     private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
@@ -201,15 +207,29 @@ public class MenuController extends AbstractBaseController{
         return menuSession;
     }
 
-    // Selections are either an integer index into a list of modules
-    // or a case id indicating the case selected.
-    //
-    // An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
-    //
-    // This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
+    /**
+     * Advances the session based on the selections.
+     *
+     * @param menuSession
+     * @param selections - Selections are either an integer index into a list of modules
+     * or a case id indicating the case selected for a case detail.
+     *
+     * An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+     *
+     * This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
+     *
+     * @param auth
+     * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
+     * it is used to short circuit the normal TreeReference calculation by inserting a predicate that
+     * is [@case_id = <detailSelection>].
+     * @param queryDictionary
+     * @param offset
+     * @param searchText
+     *  */
     private BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                               String[] selections,
                                               HqAuth auth,
+                                              String detailSelection,
                                               Hashtable<String, String> queryDictionary,
                                               int offset,
                                               String searchText) throws Exception {
@@ -252,10 +272,13 @@ public class MenuController extends AbstractBaseController{
                 return syncResponse;
             }
         }
-        nextMenu = getNextMenu(menuSession,
+        nextMenu = getNextMenu(
+                menuSession,
+                detailSelection,
                 offset,
                 searchText,
-                titles);
+                titles
+        );
         if (nextMenu != null) {
             nextMenu.setNotification(notificationMessageBean);
             log.info("Returning menu: " + nextMenu);
