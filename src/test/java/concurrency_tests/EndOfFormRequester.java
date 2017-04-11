@@ -1,4 +1,4 @@
-package utils;
+package concurrency_tests;
 
 import beans.NewFormResponse;
 import beans.SubmitRequestBean;
@@ -11,7 +11,7 @@ import java.util.Random;
 /**
  * Created by willpride on 4/5/17.
  */
-public class EndOfFormRequester extends RequesterThread {
+public class EndOfFormRequester extends SessionNavigatorThread {
 
     public EndOfFormRequester(TestRequest testRequest) {
         super(testRequest);

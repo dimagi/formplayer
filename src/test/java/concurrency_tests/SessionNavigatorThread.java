@@ -1,4 +1,4 @@
-package utils;
+package concurrency_tests;
 
 import beans.SessionNavigationBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,11 +18,11 @@ import java.util.Random;
 /**
  * Created by willpride on 4/5/17.
  */
-public class RequesterThread extends Thread {
+public class SessionNavigatorThread extends Thread {
 
     TestRequest testRequest;
 
-    public RequesterThread (TestRequest testRequest) {
+    public SessionNavigatorThread(TestRequest testRequest) {
         super();
         this.testRequest = testRequest;
     }

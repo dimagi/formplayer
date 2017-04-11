@@ -1,4 +1,4 @@
-package utils;
+package concurrency_tests;
 
 import beans.NewFormResponse;
 import beans.QuestionBean;
@@ -7,6 +7,7 @@ import beans.menus.CommandListResponseBean;
 import beans.menus.EntityBean;
 import beans.menus.EntityListResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -38,14 +39,14 @@ public class TestRequest {
                     throw new RuntimeException(String.format("New result \n%s differs from old result \n%s",
                             newResult, oldResult));
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
         setOldResult(newResult);
     }
 
-    private static boolean testEquality(String resultOne, String resultTwo) throws IOException {
+    private static boolean testEquality(String resultOne, String resultTwo) throws IOException, JSONException {
         JSONObject jsonResultOne = new JSONObject(resultOne);
         JSONObject jsonResultTwo = new JSONObject(resultTwo);
         if (jsonResultOne.has("nextScreen")) {
