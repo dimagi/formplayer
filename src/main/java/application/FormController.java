@@ -264,9 +264,8 @@ public class FormController extends AbstractBaseController{
         restoreFactory.configure(requestBean, new DjangoAuth(authToken));
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);
         formSession.stepToNextIndex();
-        JSONObject resp = formSession.getNextJson();
+        FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
         updateSession(formSession, serializableFormSession);
-        FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
         return responseBean;
     }
 
@@ -280,12 +279,8 @@ public class FormController extends AbstractBaseController{
         restoreFactory.configure(requestBean, new DjangoAuth(authToken));
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);
         formSession.stepToPreviousIndex();
-        JSONObject resp = JsonActionUtils.getCurrentJson(formSession.getFormEntryController(),
-                formSession.getFormEntryModel(),
-                formSession.getCurrentIndex());
+        FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
         updateSession(formSession, serializableFormSession);
-        FormEntryNavigationResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryNavigationResponseBean.class);
-        responseBean.setCurrentIndex(formSession.getCurrentIndex());
         return responseBean;
     }
 
