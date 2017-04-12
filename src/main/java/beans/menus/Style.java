@@ -9,7 +9,7 @@ public class Style {
 
     private DisplayFormat displayFormats;
     private int fontSize;
-    private String widthHint;
+    private int widthHint;
 
     public Style(){}
 
@@ -21,8 +21,14 @@ public class Style {
                 setFontSize(12);
             }
         }
+        if(detail.getTemplateWidthHint() != null) {
+            try {
+                setWidthHint(Integer.parseInt(detail.getTemplateWidthHint()));;
+            } catch (NumberFormatException nfe) {
+                // Pass, let it be null
+            }
+        }
         setDisplayFormatFromString(detail.getTemplateForm());
-        setWidthHint(detail.getTemplateWidthHint());
     }
 
     enum DisplayFormat {
@@ -48,11 +54,11 @@ public class Style {
         this.fontSize = fontSize;
     }
 
-    public String getWidthHint() {
+    public int getWidthHint() {
         return widthHint;
     }
 
-    private void setWidthHint(String widthHint) {
+    private void setWidthHint(int widthHint) {
         this.widthHint = widthHint;
     }
 
