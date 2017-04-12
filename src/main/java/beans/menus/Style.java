@@ -21,12 +21,15 @@ public class Style {
                 setFontSize(12);
             }
         }
+        // For width, default to -1 since '0' is reserved for hidden (Search) fiekds
         if(detail.getTemplateWidthHint() != null) {
             try {
-                setWidthHint(Integer.parseInt(detail.getTemplateWidthHint()));;
+                setWidthHint(Integer.parseInt(detail.getTemplateWidthHint()));
             } catch (NumberFormatException nfe) {
-                // Pass, let it be null
+                setWidthHint(-1);
             }
+        } else {
+            setWidthHint(-1);
         }
         setDisplayFormatFromString(detail.getTemplateForm());
     }
