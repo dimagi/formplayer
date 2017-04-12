@@ -9,5 +9,5 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public interface InstallService {
-    FormplayerConfigEngine configureApplication(String reference);
+    FormplayerConfigEngine configureApplication(String reference) throws Exception;
 }
