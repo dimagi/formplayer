@@ -44,7 +44,9 @@ public class EntityStorageCache {
             execSQL(handler.getConnection(), getTableDefinition());
             EntityStorageCache.createIndexes(handler.getConnection());
             // Need to commit in order to make these tables available
-            handler.getConnection().commit();
+            if (!handler.getConnection().getAutoCommit()) {
+                handler.getConnection().commit();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
