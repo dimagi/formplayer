@@ -30,7 +30,7 @@ public class InstallServiceImpl implements InstallService {
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     @Override
-    public FormplayerConfigEngine configureApplication(String reference) {
+    public FormplayerConfigEngine configureApplication(String reference) throws Exception {
         String dbFilePath = storageFactory.getDatabaseFile();
         log.info("Configuring application with reference " + reference + " and dbPath: " + dbFilePath + ".");
         System.out.println(" and storage factory " + storageFactory);
@@ -60,10 +60,6 @@ public class InstallServiceImpl implements InstallService {
             }
             engine.initEnvironment();
             return engine;
-        } catch (InstallCancelledException | UnresolvedResourceException | UnfullfilledRequirementsException e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbFilePath);
-            SqlSandboxUtils.deleteDatabaseFolder(dbFilePath);
-            throw new RuntimeException(e);
         } catch (Exception e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbFilePath);
             SqlSandboxUtils.deleteDatabaseFolder(dbFilePath);
