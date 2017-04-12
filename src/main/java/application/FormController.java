@@ -32,6 +32,7 @@ import services.XFormService;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
+import util.PropertyUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -134,7 +135,8 @@ public class FormController extends AbstractBaseController{
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
             try {
-                FormRecordProcessorHelper.processXML(new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox()),
+                FormRecordProcessorHelper.processXML(new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox(),
+                                PropertyUtils.isBulkPerformanceEnabled()),
                         formEntrySession.submitGetXml());
             } catch(InvalidStructureException e) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
