@@ -1,5 +1,7 @@
 package session;
 
+import beans.FormEntryNavigationResponseBean;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hq.CaseAPIs;
 import objects.FunctionHandler;
 import objects.SerializableFormSession;
@@ -9,6 +11,8 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.api.json.JsonActionUtils;
+import org.commcare.suite.model.FormEntry;
+import org.json.JSONException;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import org.commcare.core.interfaces.UserSandbox;
@@ -83,6 +87,7 @@ public class FormSession {
     private String asUser;
     private String appId;
     private Map<String, FunctionHandler[]> functionContext;
+    private boolean isAtFirstIndex;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -403,12 +408,22 @@ public class FormSession {
         // check if this index is the beginning of a group that is not a question list.
         IFormElement element = formEntryController.getModel().getForm().getChild(newIndex);
         while (element instanceof GroupDef && !formEntryController.isFieldListHost(newIndex)) {
-            newIndex =  formController.getPreviousFormIndex();
+            newIndex = formController.getPreviousFormIndex();
             element = formEntryController.getModel().getForm().getChild(newIndex);
         }
-
+        setIsAtFirstIndex(checkFirstQuestion());
         formEntryController.jumpToIndex(newIndex);
         setCurrentIndex(newIndex.toString());
+    }
+
+    private boolean checkFirstQuestion() {
+        FormIndex previousIndex = formController.getPreviousFormIndex();;
+        IFormElement element = formEntryController.getModel().getForm().getChild(previousIndex);
+        while (element instanceof GroupDef && !formEntryController.isFieldListHost(previousIndex)) {
+            previousIndex = formController.getPreviousFormIndex();
+            element = formEntryController.getModel().getForm().getChild(previousIndex);
+        }
+        return formController.getEvent() == FormEntryController.EVENT_BEGINNING_OF_FORM;
     }
 
     public JSONObject answerQuestionToJSON(Object answer, String answerIndex) {
@@ -420,12 +435,15 @@ public class FormSession {
                 currentIndex);
     }
 
-    public JSONObject getNextJson() {
+    public FormEntryNavigationResponseBean getFormNavigation() throws IOException {
         JSONObject resp = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel, currentIndex);
-        resp.put("isAtLastIndex", isAtLastIndex);
-        resp.put("currentIndex", currentIndex);
-        resp.put("title", title);
-        return resp;
+        FormEntryNavigationResponseBean responseBean
+                = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
+        responseBean.setIsAtLastIndex(isAtLastIndex);
+        responseBean.setIsAtFirstIndex(isAtFirstIndex);
+        responseBean.setTitle(title);
+        responseBean.setCurrentIndex(currentIndex);
+        return responseBean;
     }
 
     public String getDateOpened() {
@@ -465,5 +483,9 @@ public class FormSession {
             this.currentIndex = firstIndex.toString();
         }
         this.postUrl = postUrl;
+    }
+
+    public void setIsAtFirstIndex(boolean isAtFirstIndex) {
+        this.isAtFirstIndex = isAtFirstIndex;
     }
 }
