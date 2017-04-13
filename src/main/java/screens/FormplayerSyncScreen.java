@@ -17,7 +17,6 @@ import java.util.Hashtable;
  * Screen to make a sync request to HQ after a case claim
  */
 public class FormplayerSyncScreen extends SyncScreen {
-    SessionWrapper sessionWrapper;
 
     public ResponseEntity<String> launchRemoteSync(HqAuth auth){
         String command = sessionWrapper.getCommand();
