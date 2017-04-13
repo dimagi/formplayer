@@ -53,11 +53,8 @@ public class CaseAPIs {
     private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, InputStream restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
-
         UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
-        boolean useBulkProcessing = PropertyUtils.isBulkPerformanceEnabled();
-        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, useBulkProcessing);
-        
+        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
         restoreFactory.setAutoCommit(false);
         ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
         restoreFactory.commit();
