@@ -8,19 +8,13 @@ import hq.models.PostgresUser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.support.locks.LockRegistry;
-import org.springframework.web.bind.annotation.RequestMapping;
 import repo.impl.PostgresUserRepo;
 import services.RestoreFactory;
 import util.UserUtils;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
@@ -37,7 +31,7 @@ public class UserRestoreAspect {
     @Autowired
     protected PostgresUserRepo postgresUserRepo;
 
-    @Before(value = "@annotation(annotations.UserLock)")
+    @Before(value = "@annotation(annotations.UserRestore)")
     public void configureRestoreFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         if (!(args.length > 1 && args[0] instanceof AuthenticatedRequestBean && args[1] instanceof String)) {
