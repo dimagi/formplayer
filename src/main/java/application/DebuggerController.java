@@ -1,6 +1,7 @@
 package application;
 
 import annotations.UserLock;
+import annotations.UserRestore;
 import auth.DjangoAuth;
 import beans.EvaluateXPathRequestBean;
 import beans.EvaluateXPathResponseBean;
@@ -45,11 +46,11 @@ public class DebuggerController extends AbstractBaseController {
 
     @ApiOperation(value = "Get formatted questions and instance xml")
     @RequestMapping(value = Constants.URL_DEBUGGER_FORMATTED_QUESTIONS, method = RequestMethod.POST)
+    @UserRestore
     public DebuggerFormattedQuestionsResponseBean getFormattedQuesitons(
             @RequestBody SessionRequestBean debuggerRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(debuggerRequest.getSessionId());
-        restoreFactory.configure(debuggerRequest, new DjangoAuth(authToken));
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);
         SerializableMenuSession serializableMenuSession = menuSessionRepo.findOne(serializableFormSession.getMenuSessionId());
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
@@ -74,10 +75,10 @@ public class DebuggerController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
+    @UserRestore
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
-        restoreFactory.configure(evaluateXPathRequestBean, new DjangoAuth(authToken));
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
         EvaluateXPathResponseBean evaluateXPathResponseBean =
                 new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
