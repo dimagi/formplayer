@@ -1,13 +1,12 @@
 package services;
 
-import auth.HqAuth;
 import org.json.JSONArray;
 
 /**
  * Service that gets HTML formatted questions to display to the user
  */
 public interface FormattedQuestionsService {
-    QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml, HqAuth auth);
+    QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml);
 
     class QuestionResponse {
         private String formattedQuestions;
