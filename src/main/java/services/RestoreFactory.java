@@ -74,6 +74,8 @@ public class RestoreFactory implements ConnectionHandler{
     private Connection connection;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
+        log.info(String.format("configuring RestoreFactory with arguments " +
+                "username = %s, asUsername = %s, domain = %s", username, asUsername, domain));
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
