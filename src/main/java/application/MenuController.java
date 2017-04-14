@@ -59,11 +59,6 @@ public class MenuController extends AbstractBaseController{
     @UserRestore
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        HqAuth auth = getAuthHeaders(
-                installRequestBean.getDomain(),
-                installRequestBean.getUsername(),
-                authToken
-        );
         storageFactory.configure(installRequestBean);
         return getNextMenu(performInstall(installRequestBean, authToken));
     }
@@ -74,11 +69,6 @@ public class MenuController extends AbstractBaseController{
     @UserRestore
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        HqAuth auth = getAuthHeaders(
-                updateRequestBean.getDomain(),
-                updateRequestBean.getUsername(),
-                authToken
-        );
         storageFactory.configure(updateRequestBean);
         MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
         if (updateRequestBean.getSessionId() != null) {
