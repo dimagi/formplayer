@@ -9,10 +9,7 @@ import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
 import com.timgroup.statsd.StatsDClient;
-import exceptions.ApplicationConfigException;
-import exceptions.AsyncRetryException;
-import exceptions.FormNotFoundException;
-import exceptions.FormattedApplicationConfigException;
+import exceptions.*;
 import hq.models.PostgresUser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -271,7 +268,7 @@ public abstract class AbstractBaseController {
             FormNotFoundException.class,
             RecordTooLargeException.class,
             InvalidStructureException.class,
-            UnresolvedResourceException.class})
+            UnresolvedResourceRuntimeException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
