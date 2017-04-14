@@ -48,10 +48,7 @@ import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import repo.impl.PostgresUserRepo;
 import screens.FormplayerQueryScreen;
-import services.FormplayerStorageFactory;
-import services.InstallService;
-import services.NewFormResponseFactory;
-import services.RestoreFactory;
+import services.*;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
@@ -82,6 +79,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected RestoreFactory restoreFactory;
+
+    @Autowired
+    protected AuthService authService;
 
     @Autowired
     private HtmlEmail exceptionMessage;
