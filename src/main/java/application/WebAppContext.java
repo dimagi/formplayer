@@ -1,9 +1,6 @@
 package application;
 
-import aspects.LockAspect;
-import aspects.LoggingAspect;
-import aspects.MetricsAspect;
-import aspects.UserRestoreAspect;
+import aspects.*;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import installers.FormplayerInstallerFactory;
@@ -351,5 +348,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public UserRestoreAspect userRestoreAspect() {
         return new UserRestoreAspect();
+    }
+
+    @Bean
+    public AppInstallAspect appInstallAspect() {
+        return new AppInstallAspect();
     }
 }
