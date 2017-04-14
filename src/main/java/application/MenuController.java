@@ -1,5 +1,6 @@
 package application;
 
+import annotations.AppInstall;
 import annotations.UserLock;
 import annotations.UserRestore;
 import auth.BasicAuth;
@@ -57,9 +58,9 @@ public class MenuController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     @UserLock
     @UserRestore
+    @AppInstall
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        storageFactory.configure(installRequestBean);
         return getNextMenu(performInstall(installRequestBean, authToken));
     }
 
@@ -67,9 +68,9 @@ public class MenuController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
     @UserLock
     @UserRestore
+    @AppInstall
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        storageFactory.configure(updateRequestBean);
         MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
@@ -90,6 +91,7 @@ public class MenuController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
     @UserLock
     @UserRestore
+    @AppInstall
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
@@ -147,6 +149,7 @@ public class MenuController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
+    @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
@@ -175,7 +178,6 @@ public class MenuController extends AbstractBaseController{
                 sessionNavigationBean.getUsername(),
                 authToken
         );
-        storageFactory.configure(sessionNavigationBean);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             menuSession = new MenuSession(

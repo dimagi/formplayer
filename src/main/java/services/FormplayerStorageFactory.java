@@ -43,6 +43,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
             throw new RuntimeException(String.format("Cannot configure FormplayerStorageFactory with null arguments. " +
                     "username = %s, domain = %s, appId = %s", username, domain, appId));
         }
+        log.info(String.format("configuring FormplayerStorageFactory with arguments " +
+                "username = %s, asUsername = %s, domain = %s, appId = %s", username, asUsername, domain, appId));
         this.username = username;
         this.asUsername = asUsername;
         this.domain = domain;
