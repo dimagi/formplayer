@@ -1,6 +1,7 @@
 package application;
 
 import annotations.UserLock;
+import annotations.UserRestore;
 import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
@@ -55,6 +56,7 @@ public class MenuController extends AbstractBaseController{
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         HqAuth auth = getAuthHeaders(
@@ -62,8 +64,6 @@ public class MenuController extends AbstractBaseController{
                 installRequestBean.getUsername(),
                 authToken
         );
-
-        restoreFactory.configure(installRequestBean, auth);
         storageFactory.configure(installRequestBean);
         return getNextMenu(performInstall(installRequestBean, authToken));
     }
@@ -71,6 +71,7 @@ public class MenuController extends AbstractBaseController{
     @ApiOperation(value = "Update the application at the given reference")
     @RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         HqAuth auth = getAuthHeaders(
@@ -78,8 +79,6 @@ public class MenuController extends AbstractBaseController{
                 updateRequestBean.getUsername(),
                 authToken
         );
-
-        restoreFactory.configure(updateRequestBean, auth);
         storageFactory.configure(updateRequestBean);
         MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
         if (updateRequestBean.getSessionId() != null) {
@@ -100,6 +99,7 @@ public class MenuController extends AbstractBaseController{
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
@@ -156,6 +156,7 @@ public class MenuController extends AbstractBaseController{
      */
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
@@ -184,7 +185,6 @@ public class MenuController extends AbstractBaseController{
                 sessionNavigationBean.getUsername(),
                 authToken
         );
-        restoreFactory.configure(sessionNavigationBean, auth);
         storageFactory.configure(sessionNavigationBean);
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
@@ -395,7 +395,6 @@ public class MenuController extends AbstractBaseController{
                 bean.getUsername(),
                 authToken
         );
-        restoreFactory.configure(bean, auth);
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");

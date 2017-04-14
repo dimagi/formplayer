@@ -1,6 +1,7 @@
 package application;
 
 import annotations.UserLock;
+import annotations.UserRestore;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.*;
@@ -66,9 +67,9 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
         public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        restoreFactory.configure(newSessionBean, new DjangoAuth(authToken));
         String postUrl = host + newSessionBean.getPostUrl();
         return newFormResponseFactory.getResponse(newSessionBean,
                 postUrl,
@@ -78,12 +79,10 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
                                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
-        restoreFactory.configure(answerQuestionBean,
-                getAuthHeaders(answerQuestionBean.getDomain(), answerQuestionBean.getUsername(), authToken)
-        );
         FormSession formEntrySession = new FormSession(session, restoreFactory);
         JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
@@ -99,6 +98,7 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
+    @UserRestore
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
 
@@ -108,10 +108,6 @@ public class FormController extends AbstractBaseController{
                 authToken
         );
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
-
-        restoreFactory.configure(submitRequestBean,
-                auth
-        );
         storageFactory.configure(serializableFormSession.getUsername(),
                 serializableFormSession.getDomain(),
                 serializableFormSession.getAppId(),
@@ -220,10 +216,10 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
+    @UserRestore
     public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(newRepeatRequestBean.getSessionId());
-        restoreFactory.configure(newRepeatRequestBean, new DjangoAuth(authToken));
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
         JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -239,10 +235,10 @@ public class FormController extends AbstractBaseController{
     @ApiOperation(value = "Delete the repeat at the given index")
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
+    @UserRestore
     public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(deleteRepeatRequestBean.getSessionId());
-        restoreFactory.configure(deleteRepeatRequestBean, new DjangoAuth(authToken));
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
         JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
@@ -258,10 +254,10 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_NEXT_INDEX, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
+    @UserRestore
     public FormEntryNavigationResponseBean getNext(@RequestBody SessionRequestBean requestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
-        restoreFactory.configure(requestBean, new DjangoAuth(authToken));
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);
         formSession.stepToNextIndex();
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
@@ -273,10 +269,10 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_PREV_INDEX, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
+    @UserRestore
     public FormEntryNavigationResponseBean getPrevious(@RequestBody SessionRequestBean requestBean,
                                                        @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
-        restoreFactory.configure(requestBean, new DjangoAuth(authToken));
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);
         formSession.stepToPreviousIndex();
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();

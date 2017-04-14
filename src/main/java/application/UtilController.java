@@ -2,6 +2,7 @@ package application;
 
 import annotations.NoLogging;
 import annotations.UserLock;
+import annotations.UserRestore;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.*;
@@ -35,16 +36,9 @@ public class UtilController extends AbstractBaseController {
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        HqAuth auth = getAuthHeaders(
-                syncRequest.getDomain(),
-                syncRequest.getUsername(),
-                authToken
-        );
-
-        restoreFactory.configure(syncRequest, auth);
-
         if (syncRequest.isPreserveCache()) {
             CaseAPIs.restoreIfNotExists(restoreFactory, false);
         } else {
