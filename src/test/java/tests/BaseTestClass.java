@@ -1,6 +1,7 @@
 package tests;
 
 import application.*;
+import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.*;
 import beans.debugger.XPathQueryItem;
@@ -463,6 +464,15 @@ public class BaseTestClass {
                                     Class<T> clazz) throws Exception {
         MockMvc controller = null;
         ResultActions evaluateXpathResult = null;
+
+        if (bean instanceof AuthenticatedRequestBean) {
+            restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"));
+        }
+
+        if (bean instanceof InstallRequestBean) {
+            storageFactoryMock.configure((InstallRequestBean) bean);
+        }
+
         if (!(bean instanceof String)) {
             bean = mapper.writeValueAsString(bean);
         }
