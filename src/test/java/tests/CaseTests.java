@@ -33,7 +33,7 @@ public class CaseTests extends BaseTestClass {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(SQLiteProperties.getDataDir() + "test/test3"));
+        UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
 
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
@@ -76,7 +76,7 @@ public class CaseTests extends BaseTestClass {
     public void testCaseClose() throws Exception {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(SQLiteProperties.getDataDir() + "test/test3"));
+        UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
         assert(caseStorage.getNumRecords() == 15);
 
