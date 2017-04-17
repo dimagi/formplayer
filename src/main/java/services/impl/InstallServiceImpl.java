@@ -1,6 +1,7 @@
 package services.impl;
 
 import engine.FormplayerConfigEngine;
+import exceptions.UnresolvedResourceRuntimeException;
 import installers.FormplayerInstallerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,6 +61,9 @@ public class InstallServiceImpl implements InstallService {
             }
             engine.initEnvironment();
             return engine;
+        } catch (UnresolvedResourceException e) {
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbFilePath);
+            throw new UnresolvedResourceRuntimeException(e);
         } catch (Exception e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbFilePath);
             SqlSandboxUtils.deleteDatabaseFolder(dbFilePath);
