@@ -49,7 +49,8 @@ public class IncompleteSessionController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
     @UserLock
     @UserRestore
-    public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean) throws Exception {
+    public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session;
         try {
             session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
@@ -65,7 +66,8 @@ public class IncompleteSessionController extends AbstractBaseController{
     @ApiOperation(value = "Get a list of the current user's sessions")
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     @UserRestore
-    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest) throws Exception {
+    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
         // Old CloudCare doesn't use scrubbed usernames
@@ -99,7 +101,8 @@ public class IncompleteSessionController extends AbstractBaseController{
     @ApiOperation(value = "Delete an incomplete form session")
     @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
     public NotificationMessageBean deleteIncompleteForm(
-            @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean) throws Exception {
+            @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         deleteSession(incompleteSessionRequestBean.getSessionId());
         return new NotificationMessageBean("Successfully deleted incomplete form.", false);
     }

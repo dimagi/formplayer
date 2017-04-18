@@ -48,7 +48,8 @@ public class DebuggerController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_DEBUGGER_FORMATTED_QUESTIONS, method = RequestMethod.POST)
     @UserRestore
     public DebuggerFormattedQuestionsResponseBean getFormattedQuesitons(
-            @RequestBody SessionRequestBean debuggerRequest) throws Exception {
+            @RequestBody SessionRequestBean debuggerRequest,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(debuggerRequest.getSessionId());
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);
         SerializableMenuSession serializableMenuSession = menuSessionRepo.findOne(serializableFormSession.getMenuSessionId());
@@ -56,7 +57,8 @@ public class DebuggerController extends AbstractBaseController {
                 debuggerRequest.getDomain(),
                 serializableMenuSession.getAppId(),
                 formSession.getXmlns(),
-                formSession.getInstanceXml()
+                formSession.getInstanceXml(),
+                new DjangoAuth(authToken)
         );
         return new DebuggerFormattedQuestionsResponseBean(
                 serializableMenuSession.getAppId(),
@@ -74,7 +76,8 @@ public class DebuggerController extends AbstractBaseController {
     @ResponseBody
     @UserLock
     @UserRestore
-    public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
+    public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
+                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
         EvaluateXPathResponseBean evaluateXPathResponseBean =

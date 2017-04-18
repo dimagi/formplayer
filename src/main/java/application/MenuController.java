@@ -59,8 +59,9 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     @UserRestore
     @AppInstall
-    public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean) throws Exception {
-        return getNextMenu(performInstall(installRequestBean));
+    public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        return getNextMenu(performInstall(installRequestBean, authToken));
     }
 
     @ApiOperation(value = "Update the application at the given reference")
@@ -68,8 +69,9 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     @UserRestore
     @AppInstall
-    public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean) throws Exception {
-        MenuSession updatedSession = performUpdate(updateRequestBean);
+    public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
             try {
@@ -90,10 +92,16 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     @UserRestore
     @AppInstall
-    public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
+    public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
+                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
+        HqAuth auth = getAuthHeaders(
+                sessionNavigationBean.getDomain(),
+                sessionNavigationBean.getUsername(),
+                authToken
+        );
         try {
-            menuSession = getMenuSessionFromBean(sessionNavigationBean);
+            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         } catch (MenuNotFoundException e) {
             return null;
         }
@@ -105,6 +113,7 @@ public class MenuController extends AbstractBaseController{
 
         advanceSessionWithSelections(menuSession,
                 commitSelections,
+                auth,
                 detailSelection,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
@@ -133,6 +142,7 @@ public class MenuController extends AbstractBaseController{
      * Make a a series of menu selections (as above, but can have multiple)
      *
      * @param sessionNavigationBean Give an installation code or path and a set of session selections
+     * @param authToken             The Django session id auth token
      * @return A MenuBean or a NewFormResponse
      * @throws Exception
      */
@@ -140,13 +150,20 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     @UserRestore
     @AppInstall
-    public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
+    public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
+                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
-        menuSession = getMenuSessionFromBean(sessionNavigationBean);
+        HqAuth auth = getAuthHeaders(
+                sessionNavigationBean.getDomain(),
+                sessionNavigationBean.getUsername(),
+                authToken
+        );
+        menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
         return advanceSessionWithSelections(
                 menuSession,
                 selections,
+                auth,
                 null,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
@@ -154,24 +171,29 @@ public class MenuController extends AbstractBaseController{
         );
     }
 
-    private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
+    private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
         MenuSession menuSession = null;
+        HqAuth auth = getAuthHeaders(
+                sessionNavigationBean.getDomain(),
+                sessionNavigationBean.getUsername(),
+                authToken
+        );
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             menuSession = new MenuSession(
                     menuSessionRepo.findOneWrapped(menuSessionId),
                     installService,
                     restoreFactory,
-                    authService.getAuth(),
+                    auth,
                     host
             );
             menuSession.getSessionWrapper().syncState();
         } else {
             // If we have a preview command, load that up
             if(sessionNavigationBean.getPreviewCommand() != null){
-                menuSession = handlePreviewCommand(sessionNavigationBean);
+                menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
             } else {
-                menuSession = performInstall(sessionNavigationBean);
+                menuSession = performInstall(sessionNavigationBean, authToken);
             }
         }
         return menuSession;
@@ -188,6 +210,7 @@ public class MenuController extends AbstractBaseController{
      *
      * This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
      *
+     * @param auth
      * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
      * it is used to short circuit the normal TreeReference calculation by inserting a predicate that
      * is [@case_id = <detailSelection>].
@@ -197,6 +220,7 @@ public class MenuController extends AbstractBaseController{
      *  */
     private BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                               String[] selections,
+                                              HqAuth auth,
                                               String detailSelection,
                                               Hashtable<String, String> queryDictionary,
                                               int offset,
@@ -234,7 +258,8 @@ public class MenuController extends AbstractBaseController{
 
             BaseResponseBean syncResponse = checkDoSync(nextScreen,
                     menuSession,
-                    notificationMessageBean);
+                    notificationMessageBean,
+                    auth);
             if (syncResponse != null) {
                 return syncResponse;
             }
@@ -255,7 +280,7 @@ public class MenuController extends AbstractBaseController{
         }
     }
 
-    private MenuSession handlePreviewCommand(SessionNavigationBean sessionNavigationBean) throws Exception{
+    private MenuSession handlePreviewCommand(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception{
         MenuSession menuSession;
         // When previewing, clear and reinstall DBs to get newest version
         // Big TODO: app updates
@@ -265,7 +290,7 @@ public class MenuController extends AbstractBaseController{
                 sessionNavigationBean.getRestoreAs(),
                 sessionNavigationBean.getAppId()
         );
-        menuSession = performInstall(sessionNavigationBean);
+        menuSession = performInstall(sessionNavigationBean, authToken);
         try {
             menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
             menuSession.updateScreen();
@@ -319,11 +344,13 @@ public class MenuController extends AbstractBaseController{
      */
     private BaseResponseBean checkDoSync(Screen nextScreen,
                              MenuSession menuSession,
-                             NotificationMessageBean notificationMessageBean) throws Exception {
+                             NotificationMessageBean notificationMessageBean,
+                             HqAuth auth) throws Exception {
         // If we've encountered a SyncScreen, perform the sync
         if(nextScreen instanceof FormplayerSyncScreen){
             notificationMessageBean = doSync(
-                    (FormplayerSyncScreen) nextScreen
+                    (FormplayerSyncScreen) nextScreen,
+                    auth
             );
 
             BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
@@ -341,8 +368,8 @@ public class MenuController extends AbstractBaseController{
         return null;
     }
 
-    private NotificationMessageBean doSync(FormplayerSyncScreen screen) throws Exception {
-        ResponseEntity<String> responseEntity = screen.launchRemoteSync(authService.getAuth());
+    private NotificationMessageBean doSync(FormplayerSyncScreen screen, HqAuth auth) throws Exception {
+        ResponseEntity<String> responseEntity = screen.launchRemoteSync(auth);
         if(responseEntity == null){
             return new NotificationMessageBean("Session error, expected sync block but didn't get one.", true);
         }
@@ -354,7 +381,12 @@ public class MenuController extends AbstractBaseController{
     }
 
 
-    private MenuSession performInstall(InstallRequestBean bean) throws Exception {
+    private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
+        HqAuth auth = getAuthHeaders(
+                bean.getDomain(),
+                bean.getUsername(),
+                authToken
+        );
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");
@@ -368,15 +400,15 @@ public class MenuController extends AbstractBaseController{
                 bean.getLocale(),
                 installService,
                 restoreFactory,
-                authService.getAuth(),
+                auth,
                 host,
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs()
         );
     }
 
-    private MenuSession performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
-        MenuSession currentSession = performInstall(updateRequestBean);
+    private MenuSession performUpdate(UpdateRequestBean updateRequestBean, String authToken) throws Exception {
+        MenuSession currentSession = performInstall(updateRequestBean, authToken);
         currentSession.updateApp(updateRequestBean.getUpdateMode());
         return currentSession;
     }
