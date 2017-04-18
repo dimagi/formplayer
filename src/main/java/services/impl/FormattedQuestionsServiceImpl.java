@@ -1,7 +1,7 @@
 package services.impl;
 
+import auth.HqAuth;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import services.AuthService;
 import services.FormattedQuestionsService;
 
 /**
@@ -20,11 +19,8 @@ public class FormattedQuestionsServiceImpl implements FormattedQuestionsService 
     @Value("${commcarehq.host}")
     private String host;
 
-    @Autowired
-    private AuthService authService;
-
     @Override
-    public QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml) {
+    public QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
         MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
 
@@ -32,7 +28,7 @@ public class FormattedQuestionsServiceImpl implements FormattedQuestionsService 
         body.add("xmlns", xmlns);
         body.add("appId", appId);
 
-        HttpEntity<?> entity = new HttpEntity<Object>(body, authService.getAuth().getAuthHeaders());
+        HttpEntity<?> entity = new HttpEntity<Object>(body, auth.getAuthHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
                 getFormattedQuestionsUrl(host, domain),
                 HttpMethod.POST,
