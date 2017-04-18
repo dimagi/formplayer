@@ -153,7 +153,7 @@ public class QATestRunner {
 
         HttpEntity e = new StringEntity(body.toString());
         httppost.setEntity(e);
-        httppost.setHeader("Cookie", "sessionid="+ "ygvolsnvniy72p4wmlgipb5xlg0see8q");
+        httppost.setHeader("Cookie", "sessionid="+ "exrjtza7k4q8xpq9xud9ogkg4x96i8df");
         httppost.setHeader("Accept", "application/json");
         httppost.setHeader("Content-type", "application/json");
 

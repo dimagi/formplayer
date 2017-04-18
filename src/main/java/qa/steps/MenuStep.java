@@ -33,7 +33,7 @@ public class MenuStep implements StepDefinition {
             }
         }
         if (!matched) {
-            throw new TestFailException("Argument "  + menuSelection + " didn't match any commands.");
+            throw new TestFailException(String.format("Argument %s didn't match any commands %s", menuSelection, commands));
         }
         return requestBody;
     }
