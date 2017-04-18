@@ -32,7 +32,10 @@ import repo.MenuSessionRepo;
 import repo.TokenRepo;
 import repo.impl.*;
 import services.*;
-import services.impl.*;
+import services.impl.FormattedQuestionsServiceImpl;
+import services.impl.InstallServiceImpl;
+import services.impl.SubmitServiceImpl;
+import services.impl.XFormServiceImpl;
 import util.Constants;
 
 import java.util.Properties;
@@ -292,11 +295,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public AuthService authService() {
-        return new AuthServiceImpl();
-    }
-
-    @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public RestoreFactory restoreFactory() {
         return new RestoreFactory();
@@ -355,10 +353,5 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public AppInstallAspect appInstallAspect() {
         return new AppInstallAspect();
-    }
-
-    @Bean
-    public AuthAspect authAspect() {
-        return new AuthAspect();
     }
 }

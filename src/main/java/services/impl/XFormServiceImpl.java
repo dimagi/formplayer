@@ -1,28 +1,24 @@
 package services.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import auth.HqAuth;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import services.AuthService;
 import services.XFormService;
 
 /**
  * Created by willpride on 1/20/16.
  */
-public class XFormServiceImpl implements XFormService {
-
-    @Autowired
-    AuthService authService;
+public class XFormServiceImpl implements XFormService{
 
     @Override
-    public String getFormXml(String formUrl) {
+    public String getFormXml(String formUrl, HqAuth hqAuth) {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
                 restTemplate.exchange(formUrl,
                         HttpMethod.GET,
-                        new HttpEntity<String>(authService.getAuth().getAuthHeaders()), String.class);
+                        new HttpEntity<String>(hqAuth.getAuthHeaders()), String.class);
         return response.getBody();
     }
 }
