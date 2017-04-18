@@ -54,6 +54,7 @@ public class RestoreFactory implements ConnectionHandler{
     private String asUsername;
     private String username;
     private String domain;
+    private HqAuth hqAuth;
 
     public static final String FREQ_DAILY = "freq-daily";
     public static final String FREQ_WEEKLY = "freq-weekly";
@@ -65,9 +66,6 @@ public class RestoreFactory implements ConnectionHandler{
     @Autowired
     private RedisTemplate redisTemplateLong;
 
-    @Autowired
-    private AuthService authService;
-
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
 
@@ -75,12 +73,13 @@ public class RestoreFactory implements ConnectionHandler{
 
     private Connection connection;
 
-    public void configure(AuthenticatedRequestBean authenticatedRequestBean) {
+    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s", username, asUsername, domain));
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
+        this.setHqAuth(auth);
     }
 
     public UserSqlSandbox getSqlSandbox() {
@@ -216,7 +215,7 @@ public class RestoreFactory implements ConnectionHandler{
         }
 
         log.info("Restoring from URL " + restoreUrl);
-        InputStream restoreStream = getRestoreXmlHelper(restoreUrl, authService.getAuth());
+        InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
         setLastSyncTime();
         return restoreStream;
     }
@@ -356,6 +355,14 @@ public class RestoreFactory implements ConnectionHandler{
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public HqAuth getHqAuth() {
+        return hqAuth;
+    }
+
+    public void setHqAuth(HqAuth hqAuth) {
+        this.hqAuth = hqAuth;
     }
 
     public String getAsUsername() {
