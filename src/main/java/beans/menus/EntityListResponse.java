@@ -161,7 +161,7 @@ public class EntityListResponse extends MenuBean {
         List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
         sort(matched, shortDetail);
 
-        if (matched.size() > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
+        if (matched.size() > CASE_LENGTH_LIMIT && !(shortDetail.getNumEntitiesToDisplayPerRow() > 1)) {
             // we're doing pagination
             setCurrentPage(offset / CASE_LENGTH_LIMIT);
             setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
