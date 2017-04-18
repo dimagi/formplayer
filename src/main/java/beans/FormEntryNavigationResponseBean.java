@@ -8,8 +8,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * Use this to respond to requests related to in form navigation (next / previous / etc)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FormEntryNavigationResponseBean extends FormEntryResponseBean{
+public class FormEntryNavigationResponseBean extends FormEntryResponseBean {
   private boolean isAtLastIndex = false;
+  private boolean isAtFirstIndex = false;
   private String currentIndex;
 
   public boolean getIsAtLastIndex() { return isAtLastIndex; }
@@ -24,4 +25,11 @@ public class FormEntryNavigationResponseBean extends FormEntryResponseBean{
     this.currentIndex = currentIndex;
   }
 
+  public boolean getIsAtFirstIndex() {
+    return isAtFirstIndex;
+  }
+
+  public void setIsAtFirstIndex(boolean atFirstIndex) {
+    isAtFirstIndex = atFirstIndex;
+  }
 }

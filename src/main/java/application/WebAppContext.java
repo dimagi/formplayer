@@ -1,8 +1,6 @@
 package application;
 
-import aspects.LockAspect;
-import aspects.LoggingAspect;
-import aspects.MetricsAspect;
+import aspects.*;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import installers.FormplayerInstallerFactory;
@@ -229,7 +227,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public RedisLockRegistry userLockRegistry() {
         JedisConnectionFactory jedisConnectionFactory = jedisConnFactory();
-        return new RedisLockRegistry(jedisConnectionFactory, "formplayer-user", 5 * 60 * 1000);
+        return new RedisLockRegistry(jedisConnectionFactory, "formplayer-user", Constants.LOCK_DURATION);
     }
 
     @Bean
@@ -298,13 +296,13 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public RestoreFactory restoreFactory(){
+    public RestoreFactory restoreFactory() {
         return new RestoreFactory();
     }
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public FormplayerStorageFactory storageFactory(){
+    public FormplayerStorageFactory storageFactory() {
         return new FormplayerStorageFactory();
     }
 
@@ -328,6 +326,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     FormplayerInstallerFactory installerFactory() {
         return new FormplayerInstallerFactory();
     }
@@ -344,5 +343,15 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public MetricsAspect metricsAspect() {
         return new MetricsAspect();
+    }
+
+    @Bean
+    public UserRestoreAspect userRestoreAspect() {
+        return new UserRestoreAspect();
+    }
+
+    @Bean
+    public AppInstallAspect appInstallAspect() {
+        return new AppInstallAspect();
     }
 }

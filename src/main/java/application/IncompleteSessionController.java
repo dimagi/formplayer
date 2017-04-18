@@ -1,7 +1,9 @@
 package application;
 
 import annotations.UserLock;
+import annotations.UserRestore;
 import auth.DjangoAuth;
+import auth.HqAuth;
 import beans.*;
 import exceptions.FormNotFoundException;
 import io.swagger.annotations.Api;
@@ -46,10 +48,10 @@ public class IncompleteSessionController extends AbstractBaseController{
     @ApiOperation(value = "Open an incomplete form session")
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session;
-        restoreFactory.configure(incompleteSessionRequestBean, new DjangoAuth(authToken));
         try {
             session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         } catch(FormNotFoundException e) {
@@ -63,11 +65,10 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @ApiOperation(value = "Get a list of the current user's sessions")
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
+    @UserRestore
     public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
-
-        restoreFactory.configure(getSessionRequest, new DjangoAuth(authToken));
 
         // Old CloudCare doesn't use scrubbed usernames
         List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(

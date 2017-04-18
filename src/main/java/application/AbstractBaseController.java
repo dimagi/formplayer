@@ -1,15 +1,16 @@
 package application;
 
+import auth.DjangoAuth;
+import auth.HqAuth;
+import auth.TokenAuth;
 import beans.NewFormResponse;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
 import com.timgroup.statsd.StatsDClient;
-import exceptions.ApplicationConfigException;
-import exceptions.AsyncRetryException;
-import exceptions.FormNotFoundException;
-import exceptions.FormattedApplicationConfigException;
+import exceptions.*;
+import hq.models.PostgresUser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -19,6 +20,7 @@ import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
@@ -41,6 +43,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
+import repo.impl.PostgresUserRepo;
 import screens.FormplayerQueryScreen;
 import services.FormplayerStorageFactory;
 import services.InstallService;
@@ -51,6 +54,7 @@ import session.MenuSession;
 import util.Constants;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
+import util.UserUtils;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -88,6 +92,9 @@ public abstract class AbstractBaseController {
     @Autowired
     protected StatsDClient datadogStatsDClient;
 
+    @Autowired
+    PostgresUserRepo postgresUserRepo;
+
     @Value("${commcarehq.host}")
     private String hqHost;
 
@@ -111,6 +118,17 @@ public abstract class AbstractBaseController {
         return getNextMenu(menuSession, 0, "");
     }
 
+    protected HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
+        HqAuth auth;
+        if (UserUtils.isAnonymous(domain, username)) {
+            PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
+            auth = new TokenAuth(postgresUser.getAuthToken());
+        } else {
+            auth = new DjangoAuth(sessionToken);
+        }
+        return auth;
+    }
+
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
                                            int offset,
                                            String searchText) throws Exception {
@@ -118,12 +136,13 @@ public abstract class AbstractBaseController {
         // If the nextScreen is null, that means we are heading into
         // form entry and there isn't a screen title
         if (nextScreen == null) {
-            return getNextMenu(menuSession, offset, searchText, null);
+            return getNextMenu(menuSession, null, offset, searchText, null);
         }
-        return getNextMenu(menuSession, offset, searchText, new String[] {nextScreen.getScreenTitle()});
+        return getNextMenu(menuSession, null, offset, searchText, new String[] {nextScreen.getScreenTitle()});
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
+                                           String detailSelection,
                                            int offset,
                                            String searchText,
                                            String[] breadcrumbs) throws Exception {
@@ -150,8 +169,13 @@ public abstract class AbstractBaseController {
             }
             // We're looking at a case list or detail screen
             else if (nextScreen instanceof EntityScreen) {
-                menuResponseBean = generateEntityScreen((EntityScreen) nextScreen, offset, searchText,
-                        menuSession.getId());
+                menuResponseBean = generateEntityScreen(
+                        (EntityScreen) nextScreen,
+                        detailSelection,
+                        offset,
+                        searchText,
+                        menuSession.getId()
+                );
             } else if(nextScreen instanceof FormplayerQueryScreen){
                     menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
             } else {
@@ -221,16 +245,17 @@ public abstract class AbstractBaseController {
         return new CommandListResponseBean(nextScreen, session, menuSessionId);
     }
 
-    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, int offset, String searchText,
+    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
                                                     String menuSessionId) {
-        return new EntityListResponse(nextScreen, offset, searchText, menuSessionId);
+        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSessionId);
     }
 
     private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession();
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
+        NewFormResponse response = new NewFormResponse(formEntrySession);
         formSessionRepo.save(formEntrySession.serialize());
-        return new NewFormResponse(formEntrySession);
+        return response;
     }
 
     /**
@@ -242,7 +267,8 @@ public abstract class AbstractBaseController {
             CommCareSessionException.class,
             FormNotFoundException.class,
             RecordTooLargeException.class,
-            InvalidStructureException.class})
+            InvalidStructureException.class,
+            UnresolvedResourceRuntimeException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);

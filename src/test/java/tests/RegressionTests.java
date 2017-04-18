@@ -2,11 +2,9 @@ package tests;
 
 import beans.NewFormResponse;
 import beans.SubmitResponseBean;
-import beans.menus.CommandListResponseBean;
-import beans.menus.DisplayElement;
-import beans.menus.EntityDetailResponse;
-import beans.menus.EntityListResponse;
+import beans.menus.*;
 import org.commcare.util.screen.CommCareSessionException;
+import org.javarosa.xpath.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,6 +37,17 @@ public class RegressionTests extends BaseTestClass{
         try {
             sessionNavigate(new String[]{"2", "1"}, "doublemgmt", NewFormResponse.class);
         } catch(Exception e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test(expected=CommCareSessionException.class)
+    public void testBadModuleFilter() throws Throwable {
+        try {
+            sessionNavigate(new String[]{"0"}, "badmodulefilter", NewFormResponse.class);
+        } catch(Exception e) {
+            assert e.getMessage().contains("Cannot evaluate the reference");
+            assert e.getMessage().contains("/next_supervision_visit");
             throw e.getCause();
         }
     }

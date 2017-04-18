@@ -1,6 +1,8 @@
 package application;
 
+import annotations.AppInstall;
 import annotations.UserLock;
+import annotations.UserRestore;
 import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
@@ -33,6 +35,7 @@ import session.MenuSession;
 import util.ApplicationUtils;
 import util.Constants;
 import util.SessionUtils;
+import util.UserUtils;
 
 import java.io.InputStream;
 import java.util.Hashtable;
@@ -54,30 +57,27 @@ public class MenuController extends AbstractBaseController{
     @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
+    @AppInstall
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        DjangoAuth auth = new DjangoAuth(authToken);
-        restoreFactory.configure(installRequestBean, auth);
-        storageFactory.configure(installRequestBean);
-        BaseResponseBean response = getNextMenu(performInstall(installRequestBean, authToken));
-        return response;
+        return getNextMenu(performInstall(installRequestBean, authToken));
     }
 
     @ApiOperation(value = "Update the application at the given reference")
     @RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
+    @AppInstall
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        DjangoAuth auth = new DjangoAuth(authToken);
-        restoreFactory.configure(updateRequestBean, auth);
-        storageFactory.configure(updateRequestBean);
         MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
             try {
-                FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()));
-                FormSession newSession = updatedSession.reloadSession(oldSession);
-                return new NewFormResponse(newSession);
+                FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()), restoreFactory);
+                updatedSession.reloadSession(oldSession);
+                return new NewFormResponse(oldSession);
             } catch(FormNotFoundException e) {
                 log.info("FormSession with id " + updateRequestBean.getSessionId() + " not found, returning root");
             } catch(Exception e) {
@@ -90,10 +90,16 @@ public class MenuController extends AbstractBaseController{
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
+    @AppInstall
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
-        DjangoAuth auth = new DjangoAuth(authToken);
+        HqAuth auth = getAuthHeaders(
+                sessionNavigationBean.getDomain(),
+                sessionNavigationBean.getUsername(),
+                authToken
+        );
         try {
             menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         } catch (MenuNotFoundException e) {
@@ -108,9 +114,11 @@ public class MenuController extends AbstractBaseController{
         advanceSessionWithSelections(menuSession,
                 commitSelections,
                 auth,
+                detailSelection,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText());
+                sessionNavigationBean.getSearchText()
+        );
         Screen currentScreen = menuSession.getNextScreen();
         if (!(currentScreen instanceof EntityScreen)) {
             throw new RuntimeException("Tried to get details while not on a case list.");
@@ -122,9 +130,11 @@ public class MenuController extends AbstractBaseController{
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        EntityDetailListResponse response = new EntityDetailListResponse(entityScreen,
+        EntityDetailListResponse response = new EntityDetailListResponse(
+                entityScreen,
                 menuSession.getSessionWrapper().getEvaluationContext(),
-                reference);
+                reference
+        );
         return response;
     }
 
@@ -138,29 +148,36 @@ public class MenuController extends AbstractBaseController{
      */
     @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
+    @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
-        DjangoAuth auth = new DjangoAuth(authToken);
-        try {
-            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
-        } catch (MenuNotFoundException e) {
-            return new BaseResponseBean(null, e.getMessage(), true, true);
-        }
+        HqAuth auth = getAuthHeaders(
+                sessionNavigationBean.getDomain(),
+                sessionNavigationBean.getUsername(),
+                authToken
+        );
+        menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
-        return advanceSessionWithSelections(menuSession,
+        return advanceSessionWithSelections(
+                menuSession,
                 selections,
                 auth,
+                null,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText());
+                sessionNavigationBean.getSearchText()
+        );
     }
 
     private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
         MenuSession menuSession = null;
-        DjangoAuth auth = new DjangoAuth(authToken);
-        restoreFactory.configure(sessionNavigationBean, auth);
-        storageFactory.configure(sessionNavigationBean);
+        HqAuth auth = getAuthHeaders(
+                sessionNavigationBean.getDomain(),
+                sessionNavigationBean.getUsername(),
+                authToken
+        );
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             menuSession = new MenuSession(
@@ -182,15 +199,29 @@ public class MenuController extends AbstractBaseController{
         return menuSession;
     }
 
-    // Selections are either an integer index into a list of modules
-    // or a case id indicating the case selected.
-    //
-    // An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
-    //
-    // This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
+    /**
+     * Advances the session based on the selections.
+     *
+     * @param menuSession
+     * @param selections - Selections are either an integer index into a list of modules
+     * or a case id indicating the case selected for a case detail.
+     *
+     * An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+     *
+     * This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
+     *
+     * @param auth
+     * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
+     * it is used to short circuit the normal TreeReference calculation by inserting a predicate that
+     * is [@case_id = <detailSelection>].
+     * @param queryDictionary
+     * @param offset
+     * @param searchText
+     *  */
     private BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                               String[] selections,
-                                              DjangoAuth auth,
+                                              HqAuth auth,
+                                              String detailSelection,
                                               Hashtable<String, String> queryDictionary,
                                               int offset,
                                               String searchText) throws Exception {
@@ -219,11 +250,11 @@ public class MenuController extends AbstractBaseController{
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             Screen nextScreen = menuSession.getNextScreen();
 
-            checkDoQuery(nextScreen,
+            notificationMessageBean = checkDoQuery(
+                    nextScreen,
                     menuSession,
-                    notificationMessageBean,
-                    queryDictionary,
-                    auth);
+                    queryDictionary
+            );
 
             BaseResponseBean syncResponse = checkDoSync(nextScreen,
                     menuSession,
@@ -233,10 +264,13 @@ public class MenuController extends AbstractBaseController{
                 return syncResponse;
             }
         }
-        nextMenu = getNextMenu(menuSession,
+        nextMenu = getNextMenu(
+                menuSession,
+                detailSelection,
                 offset,
                 searchText,
-                titles);
+                titles
+        );
         if (nextMenu != null) {
             nextMenu.setNotification(notificationMessageBean);
             log.info("Returning menu: " + nextMenu);
@@ -253,6 +287,7 @@ public class MenuController extends AbstractBaseController{
         ApplicationUtils.deleteApplicationDbs(
                 sessionNavigationBean.getDomain(),
                 sessionNavigationBean.getUsername(),
+                sessionNavigationBean.getRestoreAs(),
                 sessionNavigationBean.getAppId()
         );
         menuSession = performInstall(sessionNavigationBean, authToken);
@@ -273,32 +308,30 @@ public class MenuController extends AbstractBaseController{
      *
      * Will do nothing if this wasn't a query screen.
      */
-    private void checkDoQuery(Screen nextScreen,
+    private NotificationMessageBean checkDoQuery(Screen nextScreen,
                               MenuSession menuSession,
-                              NotificationMessageBean notificationMessageBean,
-                              Hashtable<String, String> quertDictionary,
-                              DjangoAuth auth) throws CommCareSessionException {
-        if(nextScreen instanceof FormplayerQueryScreen && quertDictionary != null){
-            log.info("Formplayer doing query with dictionary " + quertDictionary);
-            notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
-                    quertDictionary,
-                    auth);
+                              Hashtable<String, String> queryDictionary) throws CommCareSessionException {
+        if(nextScreen instanceof FormplayerQueryScreen && queryDictionary != null){
+            log.info("Formplayer doing query with dictionary " + queryDictionary);
+            NotificationMessageBean notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
+                    queryDictionary);
             menuSession.updateScreen();
             nextScreen = menuSession.getNextScreen();
             log.info("Next screen after query: " + nextScreen);
+            return notificationMessageBean;
         }
+        return null;
     }
 
     protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
-                                              Hashtable<String, String> queryDictionary,
-                                              HqAuth auth) {
+                                              Hashtable<String, String> queryDictionary) {
         nextScreen.answerPrompts(queryDictionary);
         InputStream responseStream = nextScreen.makeQueryRequestReturnStream();
         boolean success = nextScreen.processSuccess(responseStream);
         if(success){
             return new NotificationMessageBean("Successfully queried server", false);
         } else{
-            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), false);
+            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), true);
         }
     }
 
@@ -312,12 +345,13 @@ public class MenuController extends AbstractBaseController{
     private BaseResponseBean checkDoSync(Screen nextScreen,
                              MenuSession menuSession,
                              NotificationMessageBean notificationMessageBean,
-                             DjangoAuth auth) throws Exception {
+                             HqAuth auth) throws Exception {
         // If we've encountered a SyncScreen, perform the sync
         if(nextScreen instanceof FormplayerSyncScreen){
             notificationMessageBean = doSync(
-                    (FormplayerSyncScreen)nextScreen,
-                    auth);
+                    (FormplayerSyncScreen) nextScreen,
+                    auth
+            );
 
             BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
             if(postSyncResponse != null){
@@ -334,8 +368,8 @@ public class MenuController extends AbstractBaseController{
         return null;
     }
 
-    private NotificationMessageBean doSync(FormplayerSyncScreen screen, DjangoAuth djangoAuth) throws Exception {
-        ResponseEntity<String> responseEntity = screen.launchRemoteSync(djangoAuth);
+    private NotificationMessageBean doSync(FormplayerSyncScreen screen, HqAuth auth) throws Exception {
+        ResponseEntity<String> responseEntity = screen.launchRemoteSync(auth);
         if(responseEntity == null){
             return new NotificationMessageBean("Session error, expected sync block but didn't get one.", true);
         }
@@ -348,26 +382,29 @@ public class MenuController extends AbstractBaseController{
 
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
-        restoreFactory.configure(bean, new DjangoAuth(authToken));
+        HqAuth auth = getAuthHeaders(
+                bean.getDomain(),
+                bean.getUsername(),
+                authToken
+        );
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");
         }
 
-        HqAuth auth;
-        if (authToken != null && !authToken.trim().equals("")) {
-            auth = new DjangoAuth(authToken);
-        } else {
-            String password = bean.getPassword();
-            if (password == null || "".equals(password.trim())) {
-                throw new RuntimeException("Either authToken or password must be non-null");
-            }
-            auth = new BasicAuth(bean.getUsername(), bean.getDomain(), host, password);
-        }
-
-        return new MenuSession(bean.getUsername(), bean.getDomain(), bean.getAppId(),
-                bean.getInstallReference(), bean.getLocale(), installService, restoreFactory, auth, host,
-                        bean.getOneQuestionPerScreen(), bean.getRestoreAs());
+        return new MenuSession(
+                bean.getUsername(),
+                bean.getDomain(),
+                bean.getAppId(),
+                bean.getInstallReference(),
+                bean.getLocale(),
+                installService,
+                restoreFactory,
+                auth,
+                host,
+                bean.getOneQuestionPerScreen(),
+                bean.getRestoreAs()
+        );
     }
 
     private MenuSession performUpdate(UpdateRequestBean updateRequestBean, String authToken) throws Exception {

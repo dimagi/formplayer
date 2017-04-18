@@ -2,6 +2,9 @@ package beans.menus;
 
 import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
+import org.commcare.core.graph.model.GraphData;
+import org.commcare.core.graph.util.GraphException;
+import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Action;
@@ -24,7 +27,7 @@ import java.util.Vector;
 @ApiModel("EntityBean List Response")
 public class EntityListResponse extends MenuBean {
     private EntityBean[] entities;
-    private DisplayElement action;
+    private DisplayElement[] actions;
     private Style[] styles;
     private String[] headers;
     private Tile[] tiles;
@@ -44,17 +47,26 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse() {}
 
-    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText, String id) {
+    public EntityListResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
         nextScreen.getLongDetailList();
 
         EvaluationContext ec = nextScreen.getEvalContext();
+        EntityDatum datum = (EntityDatum) session.getNeededDatum();
 
-        Vector<TreeReference> references = ec.expandReference(((EntityDatum) session.getNeededDatum()).getNodeset());
+        // When detailSelection is not null it means we're processing a case detail, not a case list.
+        // We will shortcircuit the computation to just get the relevant detailSelection.
+        if (detailSelection != null) {
+            TreeReference reference = datum.getEntityFromID(ec, detailSelection);
+            processEntitiesForCaseDetail(nextScreen, reference, ec);
+        } else {
+            Vector<TreeReference> references = ec.expandReference(datum.getNodeset());
+            processEntitiesForCaseList(nextScreen, references, ec, offset, searchText);
+        }
+
         processTitle(session);
         processCaseTiles(shortDetail);
-        processEntities(nextScreen, references, ec, offset, searchText);
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
@@ -88,7 +100,11 @@ public class EntityListResponse extends MenuBean {
         widthHints = pair.second;
     }
 
-    private void processEntities(EntityScreen screen, Vector<TreeReference> references,
+    private void processEntitiesForCaseDetail(EntityScreen screen, TreeReference reference, EvaluationContext ec) {
+        entities = new EntityBean[]{processEntity(reference, screen, ec)};
+    }
+
+    private void processEntitiesForCaseList(EntityScreen screen, Vector<TreeReference> references,
                                  EvaluationContext ec,
                                  int offset,
                                  String searchText) {
@@ -187,7 +203,15 @@ public class EntityListResponse extends MenuBean {
         for (DetailField field : fields) {
             Object o;
             o = field.getTemplate().evaluate(context);
-            data[i] = o;
+            if(o instanceof GraphData) {
+                try {
+                    data[i] = GraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
+                } catch (GraphException e) {
+                    data[i] = "<html><body>Error loading graph " + e + "</body></html>";
+                }
+            } else {
+                data[i] = o;
+            }
             i++;
         }
         ret.setData(data);
@@ -207,11 +231,12 @@ public class EntityListResponse extends MenuBean {
 
     private void processActions(SessionWrapper session) {
         Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions(session.getEvaluationContext());
-        // Assume we only have one TODO WSP: is that correct?
-        if (actions != null && !actions.isEmpty()) {
-            Action action = actions.firstElement();
-            setAction(new DisplayElement(action, session.getEvaluationContext()));
+        ArrayList<DisplayElement> displayActions = new ArrayList<>();
+        for (Action action: actions) {
+            displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
         }
+        this.actions = new DisplayElement[actions.size()];
+        displayActions.toArray(this.actions);
     }
 
     public EntityBean[] getEntities() {
@@ -230,18 +255,18 @@ public class EntityListResponse extends MenuBean {
         this.styles = styles;
     }
 
-    public DisplayElement getAction() {
-        return action;
+    public DisplayElement[] getActions() {
+        return actions;
     }
 
-    private void setAction(DisplayElement action) {
-        this.action = action;
+    private void setActions(DisplayElement[] actions) {
+        this.actions = actions;
     }
 
     @Override
     public String toString() {
         return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
-                ", action=" + action + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) +
+                ", action=" + Arrays.toString(actions) + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) +
                 ", locales=" + Arrays.toString(getLocales()) + "]";
     }
 

@@ -2,7 +2,9 @@ package application;
 
 import annotations.NoLogging;
 import annotations.UserLock;
+import annotations.UserRestore;
 import auth.DjangoAuth;
+import auth.HqAuth;
 import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
@@ -13,6 +15,7 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import sandbox.UserSqlSandbox;
 import util.Constants;
 
 import java.io.StringReader;
@@ -33,16 +36,14 @@ public class UtilController extends AbstractBaseController {
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        restoreFactory.configure(syncRequest, new DjangoAuth(authToken));
-
         if (syncRequest.isPreserveCache()) {
             CaseAPIs.restoreIfNotExists(restoreFactory, false);
         } else {
             CaseAPIs.forceRestore(restoreFactory);
         }
-
         return new SyncDbResponseBean();
     }
 
@@ -54,7 +55,7 @@ public class UtilController extends AbstractBaseController {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
         boolean success = deleteRequest.clear();
-        if (success) {
+        if (!success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
         return new NotificationMessageBean(message, !success);

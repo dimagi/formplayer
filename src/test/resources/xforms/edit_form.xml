@@ -1,0 +1,81 @@
+
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
+    <h:head>
+        <h:title>Male_Breast_v3</h:title>
+        <model>
+            <instance>
+                <data xmlns="http://openrosa.org/formdesigner/89277f89f09aa858ab2a4c1d5881acfcb07a1db1" xmlns:jrm="http://dev.commcarehq.org/jr/xforms" uiVersion="1" version="2" name="Male Breast">
+                    <phone/>
+                    <datetoday/>
+                    <datenow/>
+                    <client/>
+                    <phone_names/>
+                    <age/>
+                    <results/>
+                    <instanceID/>
+                    <meta xmlns:cc="http://commcarehq.org/xforms" xmlns="http://openrosa.org/jr/xforms"><deviceID/><timeStart/><timeEnd/><username/><userID/><instanceID/><cc:appVersion/><cc:location/></meta></data></instance><instance id="commcaresession" src="jr://instance/session"/>
+            <itext>
+                <translation lang="en" default="">
+                    <text id="/data/datetoday:label">
+                        <value>Today Date</value>
+                    </text>
+                    <text id="/data/datenow:label">
+                        <value>Now</value>
+                    </text>
+                    <text id="/data/client:label">
+                        <value>Client number</value>
+                    </text>
+                    <text id="/data/phone_names:label">
+                        <value>Phone or Name</value>
+                    </text>
+                    <text id="/data/phone_names:hint">
+                        <value>Phone is the priority</value>
+                    </text>
+                    <text id="/data/age:label">
+                        <value>Age</value>
+                    </text>
+                    <text id="/data/results:label">
+                        <value>Results</value>
+                    </text>
+                    <text id="/data/results:option0">
+                        <value>Normal or negative</value>
+                    </text>
+                    <text id="/data/results:option1">
+                        <value>Suspicious</value>
+                    </text>
+                </translation>
+            </itext>
+            <bind nodeset="/data/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+            <bind nodeset="/data/phone" type="string" jr:preload="property" jr:preloadParams="deviceid"/>
+            <bind nodeset="/data/datetoday" type="date" readonly="true()" calculate="today()"/>
+            <bind nodeset="/data/datenow" type="xsd:dateTime" readonly="true()" calculate="now()"/>
+            <bind nodeset="/data/client" type="string"/>
+            <bind nodeset="/data/phone_names" type="string" required="true()"/>
+            <bind nodeset="/data/age" type="int"/>
+            <bind nodeset="/data/results" type="select"/>
+            <setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/><ns0:pollsensor xmlns:ns0="http://openrosa.org/jr/xforms" event="xforms-ready" ref="/data/meta/location"/><bind nodeset="/data/meta/location" type="geopoint"/></model>
+    </h:head>
+    <h:body>
+        <input ref="/data/client">
+            <label ref="jr:itext('/data/client:label')"/>
+        </input>
+        <input ref="/data/phone_names">
+            <label ref="jr:itext('/data/phone_names:label')"/>
+            <hint ref="jr:itext('/data/phone_names:hint')"/>
+        </input>
+        <input ref="/data/age">
+            <label ref="jr:itext('/data/age:label')"/>
+        </input>
+        <select ref="/data/results">
+            <label ref="jr:itext('/data/results:label')"/>
+            <item>
+                <label ref="jr:itext('/data/results:option0')"/>
+                <value>Normal</value>
+            </item>
+            <item>
+                <label ref="jr:itext('/data/results:option1')"/>
+                <value>Suspicious</value>
+            </item>
+        </select>
+    </h:body>
+</h:html>
