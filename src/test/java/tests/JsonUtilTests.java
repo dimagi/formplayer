@@ -3,9 +3,9 @@ package tests;
 import api.json.JsonActionUtils;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
-import org.javarosa.core.test.FormParseInit;
 import org.junit.Before;
 import org.junit.Test;
+import util.FormParseInit;
 
 /**
  * Created by willpride on 3/31/16.
