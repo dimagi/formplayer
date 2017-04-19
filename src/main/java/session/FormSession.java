@@ -3,6 +3,7 @@ package session;
 import beans.FormEntryNavigationResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hq.CaseAPIs;
+import json.JsonActionUtils;
 import objects.FunctionHandler;
 import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
@@ -10,11 +11,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.json.JsonActionUtils;
-import org.commcare.suite.model.FormEntry;
-import org.json.JSONException;
-import sandbox.SqliteIndexedStorageUtility;
-import sandbox.UserSqlSandbox;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
@@ -39,13 +35,11 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import sandbox.SqliteIndexedStorageUtility;
+import sandbox.UserSqlSandbox;
 import services.RestoreFactory;
-import util.ApplicationUtils;
 
-import javax.sql.DataSource;
 import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -90,7 +84,7 @@ public class FormSession {
     private boolean isAtFirstIndex;
 
     private void setupJavaRosaObjects() {
-        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
+        formEntryModel = new FormEntryModel(formDef);
         formEntryController = new FormEntryController(formEntryModel);
         formController = new FormController(formEntryController, false);
         title = formDef.getTitle();

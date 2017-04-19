@@ -3,9 +3,9 @@ package tests;
 import json.JsonActionUtils;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
-import org.javarosa.core.test.FormParseInit;
 import org.junit.Before;
 import org.junit.Test;
+import utils.FormParseInit;
 
 /**
  * Created by willpride on 3/31/16.
@@ -17,7 +17,7 @@ public class JsonUtilTests {
 
     @Test
     public void testIndexFromString() {
-        FormParseInit fpi = new FormParseInit("/xforms/repeat.xml");
+        FormParseInit fpi = new FormParseInit("/xforms/json_repeat.xml");
         FormDef formDef = fpi.getFormDef();
         FormIndex formIndexOne = JsonActionUtils.indexFromString("4_0,1_0,0", formDef);
         assert formIndexOne.getDepth() == 3;
