@@ -61,7 +61,7 @@ public class JsonActionUtils {
      * @param model      the FormEntryModel under consideration
      * @return The JSON representation of the question tree
      */
-    public static JSONObject getCurrentJson(FormEntryController controller,
+    private static JSONObject getCurrentJson(FormEntryController controller,
                                                  FormEntryModel model) {
         JSONObject ret = new JSONObject();
         ret.put(ApiConstants.QUESTION_TREE_KEY, getFullFormJSON(model, controller));
@@ -88,7 +88,7 @@ public class JsonActionUtils {
      * @param prompt     the question to be answered
      * @return The JSON representation of the updated question tree
      */
-    public static JSONObject questionAnswerToJson(FormEntryController controller,
+    private static JSONObject questionAnswerToJson(FormEntryController controller,
                                                   FormEntryModel model, String answer,
                                                   FormEntryPrompt prompt,
                                                   boolean oneQuestionPerScreen,
@@ -156,7 +156,7 @@ public class JsonActionUtils {
      * @param data            the String answer
      * @return the IAnswerData version of @data above
      */
-    public static IAnswerData getAnswerData(FormEntryPrompt formEntryPrompt, String data) {
+    private static IAnswerData getAnswerData(FormEntryPrompt formEntryPrompt, String data) {
         int index;
         switch(formEntryPrompt.getDataType()){
             case Constants.DATATYPE_CHOICE:
