@@ -228,6 +228,8 @@ public class FormController extends AbstractBaseController{
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        responseBean.setStatus("accepted");
+        responseBean.setSequenceId(formEntrySession.getSequenceId());
         log.info("New response: " + responseBean);
         return responseBean;
     }
