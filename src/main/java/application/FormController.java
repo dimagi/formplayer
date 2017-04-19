@@ -10,12 +10,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import engine.FormplayerTransactionParserFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import json.ApiConstants;
+import json.JsonActionUtils;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.json.JsonActionUtils;
 import org.commcare.api.process.FormRecordProcessorHelper;
-import org.commcare.api.util.ApiConstants;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -228,6 +228,8 @@ public class FormController extends AbstractBaseController{
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        responseBean.setStatus("accepted");
+        responseBean.setSequenceId(formEntrySession.getSequenceId());
         log.info("New response: " + responseBean);
         return responseBean;
     }
