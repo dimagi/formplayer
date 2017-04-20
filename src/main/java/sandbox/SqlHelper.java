@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class SqlHelper {
 
-    public static final boolean SQL_DEBUG = true;
+    public static final boolean SQL_DEBUG = false;
 
     public static void explainSql(Connection c, String sql, String[] args) {
         PreparedStatement preparedStatement = null;

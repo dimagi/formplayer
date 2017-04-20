@@ -74,7 +74,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
 
         int mult = 0;
 
-        for (IStorageIterator i = ((SqliteIndexedStorageUtility<Case>)storage).iterate(); i.hasMore(); ) {
+        for (IStorageIterator i = ((SqliteIndexedStorageUtility<Case>)storage).iterate(false); i.hasMore(); ) {
             int id = i.nextID();
             elements.add(buildElement(this, id, null, mult));
             objectIdMapping.put(DataUtil.integer(id), DataUtil.integer(mult));
@@ -83,6 +83,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         }
         long value = System.currentTimeMillis() - timeInMillis;
         log.debug("Case iterate took: " + value + "ms");
+        System.out.println("Case iterate took: " + value + "ms");
     }
 
     @Override
