@@ -134,6 +134,12 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         String[] args = new String[]{indexName, targetValue};
         PreparedStatement selectStatement = null;
         try {
+
+            if (SqlHelper.SQL_DEBUG) {
+                String query = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ?", COL_CASE_RECORD_ID, TABLE_NAME, COL_INDEX_NAME, COL_INDEX_TARGET);
+                SqlHelper.explainSql(connectionHandler.getConnection(), query, args);
+            }
+
             selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
                     TABLE_NAME,
                     new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
@@ -276,6 +282,10 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 for (String arg: querySet.second) {
                     preparedStatement.setString(argIndex, arg);
                     argIndex++;
+                }
+
+                if (SqlHelper.SQL_DEBUG) {
+                    SqlHelper.explainSql(connectionHandler.getConnection(), query, querySet.second);
                 }
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
