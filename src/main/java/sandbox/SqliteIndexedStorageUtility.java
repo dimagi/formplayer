@@ -271,11 +271,11 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         return -1;
     }
     @Override
-    public JdbcSqlStorageIterator<T> iterate() {
+    public AbstractSqlIterator<T> iterate() {
         return iterate(true);
     }
 
-    public JdbcSqlStorageIterator<T> iterate(boolean includeData) {
+    public AbstractSqlIterator<T> iterate(boolean includeData) {
         Connection connection;
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
@@ -304,7 +304,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             if (includeData) {
                 return new JdbcSqlStorageIterator<>(backingList);
             } else {
-                return new JdbcSqlIndexIterator<>(idSet);
+                return new JdbcSqlIndexIterator(idSet);
             }
 
         } catch (SQLException e) {
