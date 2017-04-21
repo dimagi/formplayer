@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.engine.cases.CaseGroupResultCache;
 import org.commcare.modern.engine.cases.CaseIndexQuerySetTransform;
 import org.commcare.modern.engine.cases.query.CaseIndexPrefetchHandler;
+import sandbox.SqlHelper;
 import sandbox.SqliteIndexedStorageUtility;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
@@ -83,7 +84,9 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         }
         long value = System.currentTimeMillis() - timeInMillis;
         log.debug("Case iterate took: " + value + "ms");
-        System.out.println("Case iterate took: " + value + "ms");
+        if (SqlHelper.SQL_DEBUG) {
+            System.out.println("Case iterate took: " + value + "ms");
+        }
     }
 
     @Override
