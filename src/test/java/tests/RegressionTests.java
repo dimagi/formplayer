@@ -32,7 +32,7 @@ public class RegressionTests extends BaseTestClass{
         return "restores/parent_child.xml";
     }
 
-    @Test(expected=CommCareSessionException.class)
+    @Test
     public void testBadCaseSelection() {
         try {
             sessionNavigate(new String[]{"2", "1"}, "doublemgmt", NewFormResponse.class);
@@ -41,6 +41,7 @@ public class RegressionTests extends BaseTestClass{
         }
     }
 
+    @Test
     public void testBadModuleFilter() {
         try {
             sessionNavigate(new String[]{"0"}, "badmodulefilter", NewFormResponse.class);
