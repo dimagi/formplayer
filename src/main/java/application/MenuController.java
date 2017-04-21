@@ -376,8 +376,7 @@ public class MenuController extends AbstractBaseController{
         }
         if(responseEntity.getStatusCode().is2xxSuccessful()){
             CaseAPIs.forceRestore(restoreFactory);
-            return new NotificationMessageBean(
-                    String.format("Case claim successful. Message: %s", responseEntity.getBody()), false);
+            return new NotificationMessageBean("Case claim successful.", false);
         } else{
             return new NotificationMessageBean(
                     String.format("Case claim failed. Message: %s", responseEntity.getBody()), true);
