@@ -15,6 +15,7 @@ import beans.menus.EntityDetailListResponse;
 import beans.menus.UpdateRequestBean;
 import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
+import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
@@ -374,9 +375,11 @@ public class MenuController extends AbstractBaseController{
             return new NotificationMessageBean("Session error, expected sync block but didn't get one.", true);
         }
         if(responseEntity.getStatusCode().is2xxSuccessful()){
-            return new NotificationMessageBean("Case claim successful", false);
+            CaseAPIs.forceRestore(restoreFactory);
+            return new NotificationMessageBean("Case claim successful.", false);
         } else{
-            return new NotificationMessageBean("Case claim failed with message: " + responseEntity.getBody(), true);
+            return new NotificationMessageBean(
+                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true);
         }
     }
 
