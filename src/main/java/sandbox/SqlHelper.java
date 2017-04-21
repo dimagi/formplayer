@@ -110,15 +110,14 @@ public class SqlHelper {
         try {
             preparedStatement = c.prepareStatement(sqlStatement);
             preparedStatement.execute();
-            if (storageKey.equals("CCCase")) {
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_id_index", "CCCase", "case_id"));
+            if (storageKey.equals(UserSqlSandbox.FORMPLAYER_CASE)) {
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_id_index", UserSqlSandbox.FORMPLAYER_CASE, "case_id"));
                 preparedStatement.execute();
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_type_index", "CCCase", "case_type"));
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_type_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type"));
                 preparedStatement.execute();
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_index", "CCCase", "case_status"));
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_index", UserSqlSandbox.FORMPLAYER_CASE, "case_status"));
                 preparedStatement.execute();
-
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_open_index", "CCCase", "case_type,case_status"));
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_open_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type,case_status"));
                 preparedStatement.execute();
             }
         } catch (SQLException e) {
