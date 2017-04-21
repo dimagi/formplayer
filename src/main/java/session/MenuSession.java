@@ -34,6 +34,7 @@ import services.InstallService;
 import services.RestoreFactory;
 import util.Constants;
 import util.SessionUtils;
+import util.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -192,7 +193,9 @@ public class MenuSession {
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
-            FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(asUser);
+            FormplayerSyncScreen syncScreen = 
+                    new FormplayerSyncScreen(
+                            StringUtils.getFullUsername(asUser != null ? asUser : username, domain, Constants.COMMCARE_USER_SUFFIX));
             syncScreen.init(sessionWrapper);
             return syncScreen;
         }
