@@ -8,7 +8,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.TestContext;
 
 /**
- * Regression tests for fixed behaviors
+ * Tests that large user payloads are performant
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
@@ -26,7 +26,7 @@ public class LoadTest extends BaseTestClass{
     }
 
     @Test
-    public void loadTest() throws Exception{
+    public void testSyncDbLoad() throws Exception{
         long tStart = System.currentTimeMillis();
         syncDb();
         long tEnd = System.currentTimeMillis();
@@ -36,7 +36,7 @@ public class LoadTest extends BaseTestClass{
     }
 
     @Test
-    public void testEnik() throws Throwable {
+    public void testEnikshayCaseList() throws Throwable {
         long tStart = System.currentTimeMillis();
         EntityListResponse entityListResponse = sessionNavigate(new String[]{"3"}, "enik2", EntityListResponse.class);
         long tEnd = System.currentTimeMillis();
