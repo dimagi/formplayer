@@ -18,6 +18,13 @@ import java.util.Hashtable;
  */
 public class FormplayerSyncScreen extends SyncScreen {
 
+    private String asUser;
+
+    public FormplayerSyncScreen(String asUser) {
+        super();
+        this.asUser = asUser;
+    }
+
     public ResponseEntity<String> launchRemoteSync(HqAuth auth){
         String command = sessionWrapper.getCommand();
         Entry commandEntry = sessionWrapper.getPlatform().getEntry(command);
@@ -27,6 +34,9 @@ public class FormplayerSyncScreen extends SyncScreen {
             UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
             // hack because HQ isn't accepting the first query param key properly
             builder.queryParam("buffer", "buffer");
+            if (asUser != null) {
+                builder.queryParam("commcare_login_as", asUser);
+            }
             HttpHeaders headers = auth.getAuthHeaders();
             for(String key: params.keySet()){
                 builder.queryParam(key, params.get(key));
@@ -41,7 +51,7 @@ public class FormplayerSyncScreen extends SyncScreen {
                     restTemplate.exchange(syncPost.getUrl().toString(),
                             HttpMethod.POST,
                             entity, String.class);
-            return response;
+                return response;
         } else {
             // expected a sync entry; clear session and show vague 'session error' message to user
             return null;

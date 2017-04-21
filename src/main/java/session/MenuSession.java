@@ -192,7 +192,7 @@ public class MenuSession {
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
-            FormplayerSyncScreen syncScreen = new FormplayerSyncScreen();
+            FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(asUser);
             syncScreen.init(sessionWrapper);
             return syncScreen;
         }
