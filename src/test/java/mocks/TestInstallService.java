@@ -32,7 +32,7 @@ public class TestInstallService implements InstallService {
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
-                    // pass
+                    throw new RuntimeException(e);
                 }
             }
             SqlSandboxUtils.deleteDatabaseFolder(storageFactory.getDatabaseFile());
