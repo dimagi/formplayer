@@ -7,6 +7,7 @@ import org.commcare.core.graph.util.GraphException;
 import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
+import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
@@ -231,9 +232,7 @@ public class EntityListResponse extends MenuBean {
 
     private void processActions(SessionWrapper session) {
         EntityDatum datum = (EntityDatum) session.getNeededDatum();
-        // HACKY! Uses the fact that case claim results will always be in a "result" instance
-        // (rather than the casedb instance) to not show actions when appropriate.
-        if (datum.getNodeset().getInstanceName().equals("results")) {
+        if (session.getFrame().getSteps().lastElement().getElementType().equals(SessionFrame.STATE_QUERY_REQUEST)) {
             return;
         }
         Vector<Action> actions = session.getDetail((datum).getShortDetail()).getCustomActions(session.getEvaluationContext());
