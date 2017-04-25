@@ -1,5 +1,6 @@
 package services.impl;
 
+import engine.FormplayerArchiveFileRoot;
 import engine.FormplayerConfigEngine;
 import exceptions.UnresolvedResourceRuntimeException;
 import installers.FormplayerInstallerFactory;
@@ -28,6 +29,9 @@ public class InstallServiceImpl implements InstallService {
     @Autowired
     FormplayerInstallerFactory formplayerInstallerFactory;
 
+    @Autowired
+    FormplayerArchiveFileRoot formplayerArchiveFileRoot;
+
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     @Override
@@ -40,7 +44,7 @@ public class InstallServiceImpl implements InstallService {
             if(dbFolder.exists()) {
                 // Try reusing old install, fail quietly
                 try {
-                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
@@ -53,7 +57,7 @@ public class InstallServiceImpl implements InstallService {
             if (!dbFolder.getParentFile().exists() && !dbFolder.getParentFile().mkdirs()) {
                 throw new RuntimeException("Error instantiationing folder " + dbFolder);
             }
-            FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+            FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
             if (reference.endsWith(".ccpr")) {
                 engine.initFromLocalFileResource(reference);
             } else {

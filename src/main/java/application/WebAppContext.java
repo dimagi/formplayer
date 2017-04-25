@@ -3,6 +3,7 @@ package application;
 import aspects.*;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
+import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
@@ -353,5 +354,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public AppInstallAspect appInstallAspect() {
         return new AppInstallAspect();
+    }
+
+    @Bean
+    public FormplayerArchiveFileRoot formplayerArchiveFileRoot() {
+        return new FormplayerArchiveFileRoot();
     }
 }
