@@ -39,6 +39,7 @@ import util.SessionUtils;
 import util.UserUtils;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -260,7 +261,8 @@ public class MenuController extends AbstractBaseController{
             BaseResponseBean syncResponse = checkDoSync(nextScreen,
                     menuSession,
                     notificationMessageBean,
-                    auth);
+                    auth,
+                    selections);
             if (syncResponse != null) {
                 return syncResponse;
             }
@@ -346,7 +348,8 @@ public class MenuController extends AbstractBaseController{
     private BaseResponseBean checkDoSync(Screen nextScreen,
                              MenuSession menuSession,
                              NotificationMessageBean notificationMessageBean,
-                             HqAuth auth) throws Exception {
+                             HqAuth auth,
+                             String[] selections) throws Exception {
         // If we've encountered a SyncScreen, perform the sync
         if(nextScreen instanceof FormplayerSyncScreen){
             notificationMessageBean = doSync(
@@ -358,6 +361,7 @@ public class MenuController extends AbstractBaseController{
             if(postSyncResponse != null){
                 // If not null, we have a form or menu to redirect to
                 postSyncResponse.setNotification(notificationMessageBean);
+                postSyncResponse.setSelections(trimCaseClaimSelections(selections));
                 return postSyncResponse;
             } else{
                 // Otherwise, return use to the app root
@@ -367,6 +371,20 @@ public class MenuController extends AbstractBaseController{
             }
         }
         return null;
+    }
+
+    private String[] trimCaseClaimSelections(String[] selections) {
+        String actionSelections = selections[selections.length - 2];
+        if (!actionSelections.contains("action")) {
+            log.error(String.format("Selections %s did not contain expected action at position %s.",
+                    Arrays.toString(selections),
+                    selections[selections.length - 2]));
+            return selections;
+        }
+        String[] newSelections = new String[selections.length - 1];
+        System.arraycopy(selections, 0, newSelections, 0, selections.length - 2);
+        newSelections[selections.length - 2] = selections[selections.length - 1];
+        return newSelections;
     }
 
     private NotificationMessageBean doSync(FormplayerSyncScreen screen, HqAuth auth) throws Exception {
