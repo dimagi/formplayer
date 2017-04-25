@@ -230,7 +230,13 @@ public class EntityListResponse extends MenuBean {
     }
 
     private void processActions(SessionWrapper session) {
-        Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions(session.getEvaluationContext());
+        EntityDatum datum = (EntityDatum) session.getNeededDatum();
+        // HACKY! Uses the fact that case claim results will always be in a "result" instance
+        // (rather than the casedb instance) to not show actions when appropriate.
+        if (datum.getNodeset().getInstanceName().equals("results")) {
+            return;
+        }
+        Vector<Action> actions = session.getDetail((datum).getShortDetail()).getCustomActions(session.getEvaluationContext());
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action: actions) {
             displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
