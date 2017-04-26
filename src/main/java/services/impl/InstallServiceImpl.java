@@ -1,16 +1,14 @@
 package services.impl;
 
-import engine.FormplayerArchiveFileRoot;
 import engine.FormplayerConfigEngine;
 import exceptions.UnresolvedResourceRuntimeException;
 import installers.FormplayerInstallerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import sandbox.SqlSandboxUtils;
-import org.commcare.resources.model.InstallCancelledException;
+import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.resources.model.UnresolvedResourceException;
-import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
+import sandbox.SqlSandboxUtils;
 import services.FormplayerStorageFactory;
 import services.InstallService;
 
@@ -30,7 +28,7 @@ public class InstallServiceImpl implements InstallService {
     FormplayerInstallerFactory formplayerInstallerFactory;
 
     @Autowired
-    FormplayerArchiveFileRoot formplayerArchiveFileRoot;
+    ArchiveFileRoot formplayerArchiveFileRoot;
 
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 

@@ -6,6 +6,7 @@ import mocks.MockFormSessionRepo;
 import mocks.MockLockRegistry;
 import mocks.MockMenuSessionRepo;
 import mocks.TestInstallService;
+import org.commcare.modern.reference.ArchiveFileRoot;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
+import services.impl.InstallServiceImpl;
 import services.impl.SubmitServiceImpl;
 
 @Configuration
@@ -110,7 +112,7 @@ public class TestContext {
     }
 
     @Bean
-    public FormplayerArchiveFileRoot formplayerArchiveFileRoot() {
-        return Mockito.spy(FormplayerArchiveFileRoot.class);
+    public ArchiveFileRoot formplayerArchiveFileRoot() {
+        return Mockito.spy(ArchiveFileRoot.class);
     }
 }

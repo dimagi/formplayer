@@ -1,6 +1,5 @@
 package engine;
 
-import beans.debugger.XPathQueryItem;
 import org.commcare.modern.reference.ArchiveFileReference;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.javarosa.core.reference.InvalidReferenceException;

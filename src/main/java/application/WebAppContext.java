@@ -8,6 +8,7 @@ import installers.FormplayerInstallerFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.apache.tomcat.jdbc.pool.DataSource;
+import org.commcare.modern.reference.ArchiveFileRoot;
 import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -357,7 +358,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public FormplayerArchiveFileRoot formplayerArchiveFileRoot() {
+    public ArchiveFileRoot formplayerArchiveFileRoot() {
         return new FormplayerArchiveFileRoot();
     }
 }
