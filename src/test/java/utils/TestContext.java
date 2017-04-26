@@ -1,6 +1,5 @@
 package utils;
 
-import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
 import mocks.MockFormSessionRepo;
 import mocks.MockLockRegistry;
@@ -9,21 +8,18 @@ import mocks.TestInstallService;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
-import services.impl.InstallServiceImpl;
+import services.impl.QueryRequesterImpl;
 import services.impl.SubmitServiceImpl;
 
 @Configuration
@@ -114,5 +110,15 @@ public class TestContext {
     @Bean
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return Mockito.spy(ArchiveFileRoot.class);
+    }
+
+    @Bean
+    public QueryRequester queryRequester() {
+        return Mockito.mock(QueryRequesterImpl.class);
+    }
+
+    @Bean
+    public SyncRequester syncRequester() {
+        return Mockito.mock(SyncRequester.class);
     }
 }

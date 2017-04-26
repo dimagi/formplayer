@@ -34,10 +34,7 @@ import repo.MenuSessionRepo;
 import repo.TokenRepo;
 import repo.impl.*;
 import services.*;
-import services.impl.FormattedQuestionsServiceImpl;
-import services.impl.InstallServiceImpl;
-import services.impl.SubmitServiceImpl;
-import services.impl.XFormServiceImpl;
+import services.impl.*;
 import util.Constants;
 
 import java.util.Properties;
@@ -360,5 +357,15 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return new FormplayerArchiveFileRoot();
+    }
+
+    @Bean
+    public QueryRequester queryRequester() {
+        return new QueryRequesterImpl();
+    }
+
+    @Bean
+    public SyncRequester syncRequester() {
+        return new SyncRequesterImpl();
     }
 }
