@@ -1,5 +1,6 @@
 package mocks;
 
+import engine.FormplayerArchiveFileRoot;
 import engine.FormplayerConfigEngine;
 import installers.FormplayerInstallerFactory;
 import sandbox.SqlSandboxUtils;
@@ -21,6 +22,9 @@ public class TestInstallService implements InstallService {
     @Autowired
     FormplayerInstallerFactory formplayerInstallerFactory;
 
+    @Autowired
+    FormplayerArchiveFileRoot formplayerArchiveFileRoot;
+
     @Override
     public FormplayerConfigEngine configureApplication(String reference) {
         try {
@@ -28,7 +32,7 @@ public class TestInstallService implements InstallService {
             if(dbFile.exists()) {
                 // Try reusing old install, fail quietly
                 try {
-                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
@@ -38,7 +42,7 @@ public class TestInstallService implements InstallService {
             SqlSandboxUtils.deleteDatabaseFolder(storageFactory.getDatabaseFile());
             dbFile.getParentFile().mkdirs();
             FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory,
-                    formplayerInstallerFactory);
+                    formplayerInstallerFactory, formplayerArchiveFileRoot);
             String absolutePath = getTestResourcePath(reference);
             engine.initFromArchive(absolutePath);
             engine.initEnvironment();
