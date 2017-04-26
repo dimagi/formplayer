@@ -15,6 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import tests.sandbox.TestConnectionHandler;
+import utils.FileUtils;
 import utils.TestContext;
 
 import java.util.Hashtable;
@@ -80,7 +81,6 @@ public class CaseClaimTests extends BaseTestClass {
 
     private void configureQueryMock() {
         when(queryRequester.makeQueryRequest(anyString(), any(HttpHeaders.class)))
-                .thenReturn("<results id=\"case\"><case case_id=\"0156fa3e-093e-4136-b95c-01b13dae66c6\" case_type=\"case\" owner_id=\"84c246edf58bfa69e03bdecc39692e1f\" status=\"open\"><case_name>Burt Maclin</case_name><last_modified>2017-04-21T14:25:39.125000Z</last_modified><date_opened>2017-04-21</date_opened><location_id>None</location_id><referrals>None</referrals><sample_choice_question>choice1</sample_choice_question><sample_number_question>123</sample_number_question></case></results>");
-
+                .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
     }
 }
