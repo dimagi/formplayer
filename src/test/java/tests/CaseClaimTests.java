@@ -59,6 +59,7 @@ public class CaseClaimTests extends BaseTestClass {
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
         assert caseStorage.getNumRecords() == 20;
 
+        // When we sync afterwards, include new case and case-claim 
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
 
@@ -76,7 +77,7 @@ public class CaseClaimTests extends BaseTestClass {
 
     private void configureSyncMock() {
         when(syncRequester.makeSyncRequest(anyString(), anyString(), any(HttpHeaders.class)))
-                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+                .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
     }
 
     private void configureQueryMock() {
