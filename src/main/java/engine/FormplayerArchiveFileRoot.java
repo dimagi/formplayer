@@ -43,7 +43,8 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
             String zipName = listOperations.range(String.format("formplayer:archive:%s", getGUID(guidPath)), 0, MAX_RECENT).get(0);
             return new ArchiveFileReference(new ZipFile(zipName), getGUID(guidPath), getPath(guidPath));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            throw new InvalidReferenceException(String.format("Error deriving reference with exception %s."), guidPath);
         }
     }
 }
