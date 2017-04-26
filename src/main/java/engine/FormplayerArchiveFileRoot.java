@@ -28,7 +28,7 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
 
     @Override
     public String addArchiveFile(ZipFile zip) {
-        String mGUID = PropertyUtils.genGUID(GUID_LENGTH);
+        String mGUID = super.addArchiveFile(zip);
         listOperations.leftPush(
                 String.format("formplayer:archive:%s", mGUID),
                 zip.getName()
@@ -38,6 +38,9 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
 
     @Override
     public Reference derive(String guidPath) throws InvalidReferenceException {
+        if (guidToFolderMap.containsKey(getGUID(guidPath))) {
+            return new ArchiveFileReference(guidToFolderMap.get(getGUID(guidPath)), getGUID(guidPath), getPath(guidPath));
+        }
         try {
             listOperations.trim(String.format("formplayer:archive:%s", getGUID(guidPath)), 0, MAX_RECENT);
             String zipName = listOperations.range(String.format("formplayer:archive:%s", getGUID(guidPath)), 0, MAX_RECENT).get(0);
