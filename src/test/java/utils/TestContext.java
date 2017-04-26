@@ -16,11 +16,14 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.integration.support.locks.LockRegistry;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
+import services.impl.QueryRequesterImpl;
 import services.impl.SubmitServiceImpl;
+import services.impl.SyncRequesterImpl;
 
 @Configuration
 public class TestContext {
@@ -100,5 +103,15 @@ public class TestContext {
     @Bean
     public FormplayerInstallerFactory installerFactory() {
         return Mockito.spy(FormplayerInstallerFactory.class);
+    }
+
+    @Bean
+    public QueryRequester queryRequester() {
+        return Mockito.mock(QueryRequesterImpl.class);
+    }
+
+    @Bean
+    public SyncRequester syncRequester() {
+        return Mockito.mock(SyncRequester.class);
     }
 }
