@@ -24,13 +24,19 @@ import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.endpoint.SystemPublicMetrics;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
+import services.QueryRequester;
+import services.SyncRequester;
 import session.FormSession;
 import session.MenuSession;
 import util.ApplicationUtils;
@@ -38,7 +44,10 @@ import util.Constants;
 import util.SessionUtils;
 import util.UserUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -52,6 +61,12 @@ public class MenuController extends AbstractBaseController{
 
     @Value("${commcarehq.host}")
     private String host;
+
+    @Autowired
+    private QueryRequester queryRequester;
+
+    @Autowired
+    private SyncRequester syncRequester;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -260,7 +275,8 @@ public class MenuController extends AbstractBaseController{
             BaseResponseBean syncResponse = checkDoSync(nextScreen,
                     menuSession,
                     notificationMessageBean,
-                    auth);
+                    auth,
+                    selections);
             if (syncResponse != null) {
                 return syncResponse;
             }
@@ -327,8 +343,8 @@ public class MenuController extends AbstractBaseController{
     protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
                                               Hashtable<String, String> queryDictionary) {
         nextScreen.answerPrompts(queryDictionary);
-        InputStream responseStream = nextScreen.makeQueryRequestReturnStream();
-        boolean success = nextScreen.processSuccess(responseStream);
+        String responseString = queryRequester.makeQueryRequest(nextScreen.getUriString(), nextScreen.getAuthHeaders());
+        boolean success = nextScreen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if(success){
             return new NotificationMessageBean("Successfully queried server", false);
         } else{
@@ -346,7 +362,8 @@ public class MenuController extends AbstractBaseController{
     private BaseResponseBean checkDoSync(Screen nextScreen,
                              MenuSession menuSession,
                              NotificationMessageBean notificationMessageBean,
-                             HqAuth auth) throws Exception {
+                             HqAuth auth,
+                             String[] selections) throws Exception {
         // If we've encountered a SyncScreen, perform the sync
         if(nextScreen instanceof FormplayerSyncScreen){
             notificationMessageBean = doSync(
@@ -358,6 +375,7 @@ public class MenuController extends AbstractBaseController{
             if(postSyncResponse != null){
                 // If not null, we have a form or menu to redirect to
                 postSyncResponse.setNotification(notificationMessageBean);
+                postSyncResponse.setSelections(trimCaseClaimSelections(selections));
                 return postSyncResponse;
             } else{
                 // Otherwise, return use to the app root
@@ -369,8 +387,24 @@ public class MenuController extends AbstractBaseController{
         return null;
     }
 
+    private String[] trimCaseClaimSelections(String[] selections) {
+        String actionSelections = selections[selections.length - 2];
+        if (!actionSelections.contains("action")) {
+            log.error(String.format("Selections %s did not contain expected action at position %s.",
+                    Arrays.toString(selections),
+                    selections[selections.length - 2]));
+            return selections;
+        }
+        String[] newSelections = new String[selections.length - 1];
+        System.arraycopy(selections, 0, newSelections, 0, selections.length - 2);
+        newSelections[selections.length - 2] = selections[selections.length - 1];
+        return newSelections;
+    }
+
     private NotificationMessageBean doSync(FormplayerSyncScreen screen, HqAuth auth) throws Exception {
-        ResponseEntity<String> responseEntity = screen.launchRemoteSync(auth);
+        ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
+                screen.getBuiltQuery(),
+                auth.getAuthHeaders());
         if(responseEntity == null){
             return new NotificationMessageBean("Session error, expected sync block but didn't get one.", true);
         }
