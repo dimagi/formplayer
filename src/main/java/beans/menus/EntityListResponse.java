@@ -7,6 +7,7 @@ import org.commcare.core.graph.util.GraphException;
 import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
+import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
@@ -230,7 +231,11 @@ public class EntityListResponse extends MenuBean {
     }
 
     private void processActions(SessionWrapper session) {
-        Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions(session.getEvaluationContext());
+        EntityDatum datum = (EntityDatum) session.getNeededDatum();
+        if (session.getFrame().getSteps().lastElement().getElementType().equals(SessionFrame.STATE_QUERY_REQUEST)) {
+            return;
+        }
+        Vector<Action> actions = session.getDetail((datum).getShortDetail()).getCustomActions(session.getEvaluationContext());
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action: actions) {
             displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
