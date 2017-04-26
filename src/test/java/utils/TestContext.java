@@ -1,5 +1,6 @@
 package utils;
 
+import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
 import mocks.MockFormSessionRepo;
 import mocks.MockLockRegistry;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
@@ -68,6 +70,11 @@ public class TestContext {
     }
 
     @Bean
+    public StringRedisTemplate redisTemplate() {
+        return Mockito.mock(StringRedisTemplate.class);
+    }
+
+    @Bean
     public RestoreFactory restoreFactory() {
         return Mockito.spy(RestoreFactory.class);
     }
@@ -100,5 +107,10 @@ public class TestContext {
     @Bean
     public FormplayerInstallerFactory installerFactory() {
         return Mockito.spy(FormplayerInstallerFactory.class);
+    }
+
+    @Bean
+    public FormplayerArchiveFileRoot formplayerArchiveFileRoot() {
+        return Mockito.spy(FormplayerArchiveFileRoot.class);
     }
 }
