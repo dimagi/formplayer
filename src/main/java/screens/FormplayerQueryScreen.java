@@ -3,6 +3,7 @@ package screens;
 import auth.HqAuth;
 import org.commcare.util.screen.QueryScreen;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -26,25 +27,17 @@ public class FormplayerQueryScreen extends QueryScreen {
         this.auth = auth;
     }
 
-    public String makeQueryRequest() {
+    public String getUriString() {
         URL url = getBaseUrl();
         Hashtable<String, String> params = getQueryParams();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url.toString());
         for(String key: params.keySet()){
             builder.queryParam(key, params.get(key));
         }
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response =
-                restTemplate.exchange(builder.toUriString(),
-                        HttpMethod.GET,
-                        new HttpEntity<String>(auth.getAuthHeaders()), String.class);
-        return response.getBody();
+        return builder.toUriString();
     }
 
-    @Override
-    public InputStream makeQueryRequestReturnStream() {
-        String responseString = makeQueryRequest();
-        return new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8));
+    public HttpHeaders getAuthHeaders() {
+        return auth.getAuthHeaders();
     }
-
 }
