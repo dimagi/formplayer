@@ -1,0 +1,69 @@
+{
+  "serverAddress": "localhost:8090",
+  "domains": [
+    {
+      "domain": "test",
+      "users": [
+        "test",
+        "t",
+        "will",
+        "derp"
+      ],
+      "apps": [
+        {
+          "id": "265ab21237afb735076e07efba8368a8",
+          "steps": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "id": "29a4790f25ebfe5abddedc3bd8c06e5c",
+          "steps": [
+            "0",
+            "1"
+          ]
+        },
+        {
+          "id": "a277245b203f1e0a622d8ee1ba9e1ff0",
+          "steps": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      ]
+    },
+    {
+      "domain": "normal",
+      "users": [
+        "test",
+        "t",
+        "skip",
+        "derp"
+      ],
+      "apps": [
+        {
+          "id": "c440986fe736ad8e7bb47f161565123f",
+          "steps": [
+            "1"
+          ]
+        },
+        {
+          "id": "2ea640e99c708a56120a7ac569ca5669",
+          "steps": [
+            "0",
+            "1"
+          ]
+        }
+      ]
+    }
+  ]
+}
