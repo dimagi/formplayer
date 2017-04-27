@@ -56,9 +56,21 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
             HttpURLConnection.setFollowRedirects(true);
             if (conn.getResponseCode() == 400) {
                 handleInstallError(conn.getErrorStream());
+            } else if (conn.getResponseCode() == 503) {
+                throw new RuntimeException(
+                        "Server is too busy. Please try again in a moment."
+                );
             } else if (conn.getResponseCode() == 500) {
                 throw new ApplicationConfigException(
                         "Encountered an error while processing the application. Please submit a ticket if you continue to see this."
+                );
+            } else if (conn.getResponseCode() == 504) {
+                throw new RuntimeException(
+                        "Timed out fetching the CommCare application. Please submit a ticket if you continue to see this."
+                );
+            } else if (conn.getResponseCode() >= 400) {
+                throw new RuntimeException(
+                        "Formplayer encountered an unknown error. Please submit a ticket if you continue to see this."
                 );
             }
             InputStream result = conn.getInputStream();
