@@ -2,7 +2,6 @@ package api.process;
 
 import engine.FormplayerTransactionParserFactory;
 import org.commcare.core.process.XmlFormRecordProcessor;
-import org.commcare.data.xml.TransactionParserFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
