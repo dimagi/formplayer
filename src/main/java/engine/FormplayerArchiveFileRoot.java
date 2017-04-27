@@ -34,6 +34,7 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
         return mGUID;
     }
 
+    // Given an encoded path (IE jr://archive/ABC123) return a Reference to be used to access the actual filesystem
     @Override
     public Reference derive(String guidPath) throws InvalidReferenceException {
         if (guidToFolderMap.containsKey(getGUID(guidPath))) {
