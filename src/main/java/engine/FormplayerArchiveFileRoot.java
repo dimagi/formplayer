@@ -8,6 +8,7 @@ import org.javarosa.core.util.PropertyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -21,15 +22,12 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    @Resource(name = "redisTemplate")
-    private ListOperations<String, String> listOperations;
-
     private int MAX_RECENT = 5;
 
     @Override
     public String addArchiveFile(ZipFile zip) {
         String mGUID = super.addArchiveFile(zip);
-        listOperations.leftPush(
+        redisTemplate.opsForValue().set(
                 String.format("formplayer:archive:%s", mGUID),
                 zip.getName()
         );
@@ -42,8 +40,7 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
             return new ArchiveFileReference(guidToFolderMap.get(getGUID(guidPath)), getGUID(guidPath), getPath(guidPath));
         }
         try {
-            listOperations.trim(String.format("formplayer:archive:%s", getGUID(guidPath)), 0, MAX_RECENT);
-            String zipName = listOperations.range(String.format("formplayer:archive:%s", getGUID(guidPath)), 0, MAX_RECENT).get(0);
+            String zipName = redisTemplate.opsForValue().get(String.format("formplayer:archive:%s", getGUID(guidPath)));
             return new ArchiveFileReference(new ZipFile(zipName), getGUID(guidPath), getPath(guidPath));
         } catch (IOException e) {
             e.printStackTrace();
