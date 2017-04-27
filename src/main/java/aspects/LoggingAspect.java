@@ -36,22 +36,27 @@ public class LoggingAspect {
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature ms = (MethodSignature) joinPoint.getSignature();
         Method m = ms.getMethod();
+        Object requestBean = null;
         String requestPath = m.getAnnotation(RequestMapping.class).value()[0]; //Should be only one
         try {
-            AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) joinPoint.getArgs()[0];
+            requestBean = joinPoint.getArgs()[0];
             log.info("Request to " + requestPath + " with bean " + requestBean);
+        } catch(ArrayIndexOutOfBoundsException e) {
+            // no request body
+            log.info("Request to " + requestPath + " with no request body.");
+        }
+
+        if (requestBean != null && requestBean instanceof AuthenticatedRequestBean) {
+            AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean) requestBean;
             Map<String, String> data = new HashMap<String, String>();
             data.put("path", requestPath);
-            data.put("domain", requestBean.getDomain());
-            data.put("username", requestBean.getUsername());
-            data.put("restoreAs", requestBean.getRestoreAs());
+            data.put("domain", authenticatedRequestBean.getDomain());
+            data.put("username", authenticatedRequestBean.getUsername());
+            data.put("restoreAs", authenticatedRequestBean.getRestoreAs());
 
             BreadcrumbBuilder builder = new BreadcrumbBuilder();
             builder.setData(data);
             SentryUtils.recordBreadcrumb(builder.build());
-        } catch(ArrayIndexOutOfBoundsException e) {
-            // no request body
-            log.info("Request to " + requestPath + " with no request body.");
         }
         Object result = joinPoint.proceed();
         log.info("Request to " + requestPath + " returned result " + result);
