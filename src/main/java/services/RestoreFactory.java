@@ -29,6 +29,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sandbox.SqlSandboxUtils;
 import sandbox.UserSqlSandbox;
+import util.SentryUtils;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -225,7 +226,7 @@ public class RestoreFactory implements ConnectionHandler{
         builder.setData(data);
         builder.setCategory("restore");
         builder.setMessage("Restoring from URL " + restoreUrl);
-        Breadcrumbs.record(builder.build());
+        SentryUtils.recordBreadcrumb(builder.build());
 
         log.info("Restoring from URL " + restoreUrl);
         InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);

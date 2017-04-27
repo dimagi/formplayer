@@ -29,6 +29,7 @@ import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.StorageManager;
 import org.json.JSONObject;
+import util.SentryUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -60,7 +61,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         builder.setData(data);
         builder.setCategory("application-install");
         builder.setMessage("Downloading application from URL " + downloadUrl);
-        Breadcrumbs.record(builder.build());
+        SentryUtils.recordBreadcrumb(builder.build());
     }
 
     @Override
