@@ -8,6 +8,7 @@ import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
+import com.getsentry.raven.Raven;
 import com.timgroup.statsd.StatsDClient;
 import exceptions.*;
 import hq.models.PostgresUser;
@@ -82,6 +83,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     private HtmlEmail exceptionMessage;
+
+    @Autowired
+    protected Raven raven;
 
     @Autowired
     protected NewFormResponseFactory newFormResponseFactory;
@@ -326,6 +330,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
+        raven.sendException(exception);
         try {
             sendExceptionEmail(req, exception);
         } catch (Exception e) {

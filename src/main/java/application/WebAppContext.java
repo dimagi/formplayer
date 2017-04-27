@@ -1,6 +1,9 @@
 package application;
 
 import aspects.*;
+import com.getsentry.raven.Raven;
+import com.getsentry.raven.RavenFactory;
+import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
@@ -37,6 +40,8 @@ import services.*;
 import services.impl.*;
 import util.Constants;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -46,6 +51,9 @@ import java.util.Properties;
 @ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*", "installers.*"})
 @EnableAspectJAutoProxy
 public class WebAppContext extends WebMvcConfigurerAdapter {
+
+    @Value("${commcarehq.environment}")
+    private String environment;
 
     @Value("${commcarehq.host}")
     private String hqHost;
@@ -112,6 +120,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${couch.databaseName}")
     private String couchDatabaseName;
+
+    @Value("${sentry.dsn}")
+    private String ravenDsn;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -291,6 +302,16 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public XFormService xFormService(){
         return new XFormServiceImpl();
+    }
+
+    @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public Raven raven() {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("environment", environment);
+        BreadcrumbBuilder builder = new BreadcrumbBuilder();
+        builder.setData(data);
+        return RavenFactory.ravenInstance(ravenDsn);
     }
 
     @Bean
