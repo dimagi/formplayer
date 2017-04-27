@@ -13,6 +13,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.ShellProperties;
 import org.springframework.web.bind.annotation.RequestMapping;
+import util.SentryUtils;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -47,7 +48,7 @@ public class LoggingAspect {
 
             BreadcrumbBuilder builder = new BreadcrumbBuilder();
             builder.setData(data);
-            Breadcrumbs.record(builder.build());
+            SentryUtils.recordBreadcrumb(builder.build());
         } catch(ArrayIndexOutOfBoundsException e) {
             // no request body
             log.info("Request to " + requestPath + " with no request body.");

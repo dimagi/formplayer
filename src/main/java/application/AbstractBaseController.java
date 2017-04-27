@@ -55,10 +55,7 @@ import services.NewFormResponseFactory;
 import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
-import util.Constants;
-import util.FormplayerHttpRequest;
-import util.RequestUtils;
-import util.UserUtils;
+import util.*;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -86,9 +83,6 @@ public abstract class AbstractBaseController {
 
     @Autowired
     private HtmlEmail exceptionMessage;
-
-    @Autowired
-    protected Raven raven;
 
     @Autowired
     protected NewFormResponseFactory newFormResponseFactory;
@@ -284,7 +278,7 @@ public abstract class AbstractBaseController {
                 .withMessage("Application Configuration Error")
                 .withLevel(Event.Level.INFO)
                 .withSentryInterface(new ExceptionInterface(exception));
-        raven.sendEvent(eventBuilder);
+        SentryUtils.sendRavenEvent(eventBuilder);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -338,7 +332,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
-        raven.sendException(exception);
+        SentryUtils.sendRavenException(exception);
         try {
             sendExceptionEmail(req, exception);
         } catch (Exception e) {

@@ -11,6 +11,7 @@ import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import repo.impl.PostgresUserRepo;
 import services.FormplayerStorageFactory;
+import util.SentryUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +43,6 @@ public class AppInstallAspect {
         BreadcrumbBuilder builder = new BreadcrumbBuilder();
         builder.setData(data);
         builder.setCategory("application_install");
-        Breadcrumbs.record(builder.build());
+        SentryUtils.recordBreadcrumb(builder.build());
     }
 }
