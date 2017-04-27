@@ -1,6 +1,8 @@
 package aspects;
 
 import beans.InstallRequestBean;
+import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.getsentry.raven.event.Breadcrumbs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
@@ -11,6 +13,8 @@ import repo.impl.PostgresUserRepo;
 import services.FormplayerStorageFactory;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Aspect to configure the FormplayerStorageManager
@@ -29,5 +33,15 @@ public class AppInstallAspect {
         }
         InstallRequestBean requestBean = (InstallRequestBean) args[0];
         storageFactory.configure(requestBean);
+
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("appId", requestBean.getAppId());
+        data.put("installReference", requestBean.getInstallReference());
+        data.put("locale", requestBean.getLocale());
+
+        BreadcrumbBuilder builder = new BreadcrumbBuilder();
+        builder.setData(data);
+        builder.setCategory("application_install");
+        Breadcrumbs.record(builder.build());
     }
 }

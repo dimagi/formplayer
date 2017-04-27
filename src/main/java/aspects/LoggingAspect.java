@@ -39,13 +39,13 @@ public class LoggingAspect {
         try {
             AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) joinPoint.getArgs()[0];
             log.info("Request to " + requestPath + " with bean " + requestBean);
-            BreadcrumbBuilder builder = new BreadcrumbBuilder();
-
             Map<String, String> data = new HashMap<String, String>();
             data.put("path", requestPath);
             data.put("domain", requestBean.getDomain());
             data.put("username", requestBean.getUsername());
             data.put("restoreAs", requestBean.getRestoreAs());
+
+            BreadcrumbBuilder builder = new BreadcrumbBuilder();
             builder.setData(data);
             Breadcrumbs.record(builder.build());
         } catch(ArrayIndexOutOfBoundsException e) {
