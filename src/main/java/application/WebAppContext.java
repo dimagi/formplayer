@@ -3,10 +3,12 @@ package application;
 import aspects.*;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
+import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.apache.tomcat.jdbc.pool.DataSource;
+import org.commcare.modern.reference.ArchiveFileRoot;
 import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -350,6 +352,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public AppInstallAspect appInstallAspect() {
         return new AppInstallAspect();
+    }
+
+    @Bean
+    public ArchiveFileRoot formplayerArchiveFileRoot() {
+        return new FormplayerArchiveFileRoot();
     }
 
     @Bean
