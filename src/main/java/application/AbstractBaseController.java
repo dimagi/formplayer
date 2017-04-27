@@ -9,6 +9,9 @@ import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
 import com.getsentry.raven.Raven;
+import com.getsentry.raven.event.Event;
+import com.getsentry.raven.event.EventBuilder;
+import com.getsentry.raven.event.interfaces.ExceptionInterface;
 import com.timgroup.statsd.StatsDClient;
 import exceptions.*;
 import hq.models.PostgresUser;
@@ -277,6 +280,11 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
+        EventBuilder eventBuilder = new EventBuilder()
+                .withMessage("Application Configuration Error")
+                .withLevel(Event.Level.INFO)
+                .withSentryInterface(new ExceptionInterface(exception));
+        raven.sendEvent(eventBuilder);
         return getPrettyExceptionResponse(exception, request);
     }
 
