@@ -5,11 +5,10 @@ import exceptions.UnresolvedResourceRuntimeException;
 import installers.FormplayerInstallerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import sandbox.SqlSandboxUtils;
-import org.commcare.resources.model.InstallCancelledException;
+import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.resources.model.UnresolvedResourceException;
-import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
+import sandbox.SqlSandboxUtils;
 import services.FormplayerStorageFactory;
 import services.InstallService;
 
@@ -28,6 +27,9 @@ public class InstallServiceImpl implements InstallService {
     @Autowired
     FormplayerInstallerFactory formplayerInstallerFactory;
 
+    @Autowired
+    ArchiveFileRoot formplayerArchiveFileRoot;
+
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     @Override
@@ -40,7 +42,7 @@ public class InstallServiceImpl implements InstallService {
             if(dbFolder.exists()) {
                 // Try reusing old install, fail quietly
                 try {
-                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
@@ -53,7 +55,7 @@ public class InstallServiceImpl implements InstallService {
             if (!dbFolder.getParentFile().exists() && !dbFolder.getParentFile().mkdirs()) {
                 throw new RuntimeException("Error instantiationing folder " + dbFolder);
             }
-            FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory);
+            FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
             if (reference.endsWith(".ccpr")) {
                 engine.initFromLocalFileResource(reference);
             } else {
