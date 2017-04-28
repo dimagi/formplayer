@@ -270,7 +270,7 @@ public class BaseTestClass {
                 SyncDbResponseBean.class);
     }
 
-    NotificationMessageBean deleteApplicationDbs() throws Exception {
+    NotificationMessage deleteApplicationDbs() throws Exception {
         String payload = FileUtils.getFile(this.getClass(), "requests/delete_db/delete_db.json");
         DeleteApplicationDbsRequestBean request = mapper.readValue(
                 payload,
@@ -282,7 +282,7 @@ public class BaseTestClass {
                 RequestType.POST,
                 Constants.URL_DELETE_APPLICATION_DBS,
                 request,
-                NotificationMessageBean.class
+                NotificationMessage.class
         );
     }
 
