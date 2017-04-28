@@ -296,9 +296,10 @@ public class RestoreFactory implements ConnectionHandler{
 
     private InputStream getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
-        log.info("Restoring at domain: " + domain + " with auth: " + auth);
+        log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
+        //headers.add("since", getSyncToken(getWrappedUsername()));
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
@@ -341,10 +342,14 @@ public class RestoreFactory implements ConnectionHandler{
         return storage.getMetaDataFieldForRecord(users.firstElement(), User.META_SYNC_TOKEN);
     }
 
-    public static String getRestoreUrl(String host, String domain, boolean overwriteCache){
+    public String getRestoreUrl(String host, String domain, boolean overwriteCache){
         String url = host + "/a/" + domain + "/phone/restore/?version=2.0";
         if (overwriteCache) {
             url += "&overwrite_cache=true";
+        }
+        String syncToken = getSyncToken(getWrappedUsername());
+        if (syncToken != null) {
+            url += "&since=" + syncToken;
         }
         return url;
     }
@@ -356,6 +361,12 @@ public class RestoreFactory implements ConnectionHandler{
         if (overwriteCache) {
             url += "&overwrite_cache=true";
         }
+
+        String syncToken = getSyncToken(getWrappedUsername());
+        if (syncToken != null) {
+            url += "&since=" + syncToken;
+        }
+
         return url;
     }
 
