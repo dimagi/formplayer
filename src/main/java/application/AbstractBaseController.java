@@ -8,6 +8,10 @@ import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
+import com.getsentry.raven.Raven;
+import com.getsentry.raven.event.Event;
+import com.getsentry.raven.event.EventBuilder;
+import com.getsentry.raven.event.interfaces.ExceptionInterface;
 import com.timgroup.statsd.StatsDClient;
 import exceptions.*;
 import hq.models.PostgresUser;
@@ -51,10 +55,7 @@ import services.NewFormResponseFactory;
 import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
-import util.Constants;
-import util.FormplayerHttpRequest;
-import util.RequestUtils;
-import util.UserUtils;
+import util.*;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -273,6 +274,11 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
+        EventBuilder eventBuilder = new EventBuilder()
+                .withMessage("Application Configuration Error")
+                .withLevel(Event.Level.INFO)
+                .withSentryInterface(new ExceptionInterface(exception));
+        SentryUtils.sendRavenEvent(eventBuilder);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -326,6 +332,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
+        SentryUtils.sendRavenException(exception);
         try {
             sendExceptionEmail(req, exception);
         } catch (Exception e) {

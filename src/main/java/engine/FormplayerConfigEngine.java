@@ -1,5 +1,7 @@
 package engine;
 
+import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.getsentry.raven.event.Breadcrumbs;
 import exceptions.ApplicationConfigException;
 import exceptions.FormattedApplicationConfigException;
 import installers.FormplayerInstallerFactory;
@@ -27,10 +29,13 @@ import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.StorageManager;
 import org.json.JSONObject;
+import util.SentryUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by willpride on 11/22/16.
@@ -47,6 +52,18 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
 
+    private void recordDownloadBreadcrumbs(String downloadUrl, String responseCode) {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("downloadUrl", downloadUrl);
+        data.put("responseCode", responseCode);
+
+        BreadcrumbBuilder builder = new BreadcrumbBuilder();
+        builder.setData(data);
+        builder.setCategory("application-install");
+        builder.setMessage("Downloading application from URL " + downloadUrl);
+        SentryUtils.recordBreadcrumb(builder.build());
+    }
+
     @Override
     protected String downloadToTemp(String resource) {
         try {
@@ -54,6 +71,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setInstanceFollowRedirects(true);  //you still need to handle redirect manully.
             HttpURLConnection.setFollowRedirects(true);
+            recordDownloadBreadcrumbs(resource, conn.getResponseMessage());
+
             if (conn.getResponseCode() == 400) {
                 handleInstallError(conn.getErrorStream());
             } else if (conn.getResponseCode() == 503) {
