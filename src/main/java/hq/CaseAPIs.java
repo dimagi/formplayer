@@ -27,7 +27,7 @@ import java.io.InputStream;
 public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
-        SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
+        //SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         restoreFactory.closeConnection();
         return restoreIfNotExists(restoreFactory, true);
     }
@@ -37,7 +37,8 @@ public class CaseAPIs {
             SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());;
         }
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
-            return restoreFactory.getSqlSandbox();
+            InputStream xml = restoreFactory.getRestoreXml(overwriteCache);
+            return restoreUser(restoreFactory, xml);
         } else{
             new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
             InputStream xml = restoreFactory.getRestoreXml(overwriteCache);
@@ -59,10 +60,13 @@ public class CaseAPIs {
         ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
         restoreFactory.commit();
         restoreFactory.setAutoCommit(true);
+        String syncToken = sandbox.getSyncToken();
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
             if (restoreFactory.getWrappedUsername().equalsIgnoreCase(u.getUsername())) {
+                u.setLastSyncToken(syncToken);
+                sandbox.getUserStorage().write(u);
                 sandbox.setLoggedInUser(u);
             }
         }
