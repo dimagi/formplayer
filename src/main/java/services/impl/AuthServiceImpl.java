@@ -20,14 +20,24 @@ public class AuthServiceImpl implements AuthService {
 
     HqAuth auth;
 
+    String token;
+    String domain;
+    String username;
+
     @Override
-    public void configureAuth(AuthenticatedRequestBean request, String token) {
-        auth = getAuthHeaders(request.getDomain(), request.getUsername(), token);
+    public void configureAuth(AuthenticatedRequestBean request) {
+        domain = request.getDomain();
+        username = request.getUsername();
+    }
+
+    @Override
+    public void configureAuth(String token) {
+        this.token = token;
     }
 
     @Override
     public HqAuth getAuth() {
-        return auth;
+        return getAuthHeaders(domain, username, token);
     }
 
 

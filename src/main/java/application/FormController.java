@@ -1,5 +1,6 @@
 package application;
 
+import annotations.Auth;
 import annotations.UserLock;
 import annotations.UserRestore;
 import auth.DjangoAuth;
@@ -68,7 +69,8 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
-        public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean) throws Exception {
+    @Auth
+    public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean) throws Exception {
         String postUrl = host + newSessionBean.getPostUrl();
         return newFormResponseFactory.getResponse(newSessionBean,
                 postUrl);
@@ -78,6 +80,7 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
+    @Auth
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(session, restoreFactory);
@@ -96,6 +99,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     @UserRestore
+    @Auth
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         storageFactory.configure(serializableFormSession.getUsername(),
@@ -206,6 +210,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     @UserRestore
+    @Auth
     public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
@@ -224,6 +229,7 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     @UserRestore
+    @Auth
     public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(deleteRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
@@ -242,6 +248,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     @UserRestore
+    @Auth
     public FormEntryNavigationResponseBean getNext(@RequestBody SessionRequestBean requestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);
@@ -256,6 +263,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     @UserRestore
+    @Auth
     public FormEntryNavigationResponseBean getPrevious(@RequestBody SessionRequestBean requestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);

@@ -1,5 +1,6 @@
 package application;
 
+import annotations.Auth;
 import annotations.UserLock;
 import annotations.UserRestore;
 import auth.DjangoAuth;
@@ -47,6 +48,7 @@ public class DebuggerController extends AbstractBaseController {
     @ApiOperation(value = "Get formatted questions and instance xml")
     @RequestMapping(value = Constants.URL_DEBUGGER_FORMATTED_QUESTIONS, method = RequestMethod.POST)
     @UserRestore
+    @Auth
     public DebuggerFormattedQuestionsResponseBean getFormattedQuesitons(
             @RequestBody SessionRequestBean debuggerRequest) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(debuggerRequest.getSessionId());
@@ -74,6 +76,7 @@ public class DebuggerController extends AbstractBaseController {
     @ResponseBody
     @UserLock
     @UserRestore
+    @Auth
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);

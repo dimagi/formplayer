@@ -1,6 +1,7 @@
 package application;
 
 import annotations.AppInstall;
+import annotations.Auth;
 import annotations.UserLock;
 import annotations.UserRestore;
 import beans.InstallRequestBean;
@@ -69,6 +70,7 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     @UserRestore
     @AppInstall
+    @Auth
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean) throws Exception {
         return getNextMenu(performInstall(installRequestBean));
     }
@@ -78,6 +80,7 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     @UserRestore
     @AppInstall
+    @Auth
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean) throws Exception {
         MenuSession updatedSession = performUpdate(updateRequestBean);
         if (updateRequestBean.getSessionId() != null) {
@@ -100,6 +103,7 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     @UserRestore
     @AppInstall
+    @Auth
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
         MenuSession menuSession;
         try {
@@ -150,6 +154,7 @@ public class MenuController extends AbstractBaseController{
     @UserLock
     @UserRestore
     @AppInstall
+    @Auth
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean) throws Exception {
         MenuSession menuSession;
         menuSession = getMenuSessionFromBean(sessionNavigationBean);
