@@ -22,6 +22,7 @@ import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
+import util.PropertyUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
     public static void processXML(FormplayerTransactionParserFactory factory, String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
         InputStream stream = new ByteArrayInputStream(fileText.getBytes("UTF-8"));
         process(stream, factory);
-        if (factory.wereCaseIndexesDisrupted()) {
+        if (factory.wereCaseIndexesDisrupted() && PropertyUtils.isAutoPurgeEnabled()) {
             purgeCases(factory.getSqlSandbox());
         }
     }
