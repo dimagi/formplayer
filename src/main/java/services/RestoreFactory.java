@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.model.User;
 import org.javarosa.core.services.PropertyManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sandbox.SqlSandboxUtils;
+import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 
 import javax.annotation.PreDestroy;
@@ -40,6 +42,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -321,6 +324,21 @@ public class RestoreFactory implements ConnectionHandler{
             throw new RuntimeException("Unable to read restore response", e);
         }
         return stream;
+    }
+
+    private String getSyncToken(String username) {
+
+        if (username == null) {
+            return null;
+        }
+        SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
+        Vector<Integer> users = storage.getIDsForValue(User.META_USERNAME, username);
+        //should be exactly one user
+        if (users.size() != 1) {
+            return null;
+        }
+
+        return storage.getMetaDataFieldForRecord(users.firstElement(), User.META_SYNC_TOKEN);
     }
 
     public static String getRestoreUrl(String host, String domain, boolean overwriteCache){
