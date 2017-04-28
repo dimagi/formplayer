@@ -3,15 +3,15 @@ package beans;
 /**
  * Created by willpride on 1/12/16.
  */
-public class NotificationMessageBean {
+public class NotificationMessage {
     private boolean isError;
     private String message;
 
-    public NotificationMessageBean(){
+    public NotificationMessage(){
         this(null, false);
     }
 
-    public NotificationMessageBean(String message, boolean isError) {
+    public NotificationMessage(String message, boolean isError) {
         this.message = message;
         this.isError = isError;
     }
@@ -30,5 +30,10 @@ public class NotificationMessageBean {
 
     public void setError(boolean error) {
         isError = error;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("NotificationMessage message=%s, isError=%s", message, isError);
     }
 }

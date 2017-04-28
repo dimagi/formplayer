@@ -136,7 +136,7 @@ public class FormController extends AbstractBaseController{
                         formEntrySession.submitGetXml());
             } catch(InvalidStructureException e) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
-                submitResponseBean.setNotification(new NotificationMessageBean(e.getMessage(), true));
+                submitResponseBean.setNotification(new NotificationMessage(e.getMessage(), true));
                 log.error("Submission failed with structure exception " + e);
                 return submitResponseBean;
             }
@@ -149,7 +149,7 @@ public class FormController extends AbstractBaseController{
 
             if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                 submitResponseBean.setStatus("error");
-                submitResponseBean.setNotification(new NotificationMessageBean(
+                submitResponseBean.setNotification(new NotificationMessage(
                         "Form submission failed with error response" + submitResponse, true));
                 log.info("Submit response bean: " + submitResponseBean);
                 return submitResponseBean;
