@@ -3,8 +3,6 @@ package application;
 import annotations.NoLogging;
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
@@ -15,7 +13,6 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import sandbox.UserSqlSandbox;
 import util.Constants;
 
 import java.io.StringReader;
@@ -40,9 +37,9 @@ public class UtilController extends AbstractBaseController {
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         if (syncRequest.isPreserveCache()) {
-            CaseAPIs.restoreIfNotExists(restoreFactory, false);
+            CaseAPIs.performSync(restoreFactory, false);
         } else {
-            CaseAPIs.forceRestore(restoreFactory);
+            CaseAPIs.performSync(restoreFactory, true);
         }
         return new SyncDbResponseBean();
     }
