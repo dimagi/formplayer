@@ -121,7 +121,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${couch.databaseName}")
     private String couchDatabaseName;
 
-    @Value("${sentry.dsn}")
+    @Value("${sentry.dsn:}")
     private String ravenDsn;
 
     @Override
