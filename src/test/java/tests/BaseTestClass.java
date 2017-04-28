@@ -37,6 +37,7 @@ import utils.TestContext;
 import javax.servlet.http.Cookie;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Hashtable;
 import java.util.Map;
 
 import static org.mockito.Matchers.anyBoolean;
@@ -95,6 +96,12 @@ public class BaseTestClass {
     @Autowired
     protected FormplayerInstallerFactory formplayerInstallerFactory;
 
+    @Autowired
+    protected QueryRequester queryRequester;
+
+    @Autowired
+    protected SyncRequester syncRequester;
+
     @InjectMocks
     protected FormController formController;
 
@@ -128,6 +135,8 @@ public class BaseTestClass {
         Mockito.reset(newFormResponseFactoryMock);
         Mockito.reset(storageFactoryMock);
         Mockito.reset(formplayerInstallerFactory);
+        Mockito.reset(queryRequester);
+        Mockito.reset(syncRequester);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
@@ -153,7 +162,7 @@ public class BaseTestClass {
         SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
     }
 
-    private class RestoreFactoryAnswer implements Answer {
+    public class RestoreFactoryAnswer implements Answer {
         private String mRestoreFile;
 
         public RestoreFactoryAnswer(String restoreFile) {
@@ -409,6 +418,24 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
+        return generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
+    <T> T sessionNavigateWithQuery(String[] selections,
+                                   String testName,
+                                   Hashtable<String, String> queryDictionary,
+                                   Class<T> clazz) throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
+        sessionNavigationBean.setQueryDictionary(queryDictionary);
         return generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,

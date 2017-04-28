@@ -270,25 +270,42 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         }
         return -1;
     }
-
     @Override
-    public JdbcSqlStorageIterator<T> iterate() {
+    public AbstractSqlIterator<T> iterate() {
+        return iterate(true);
+    }
+
+    public AbstractSqlIterator<T> iterate(boolean includeData) {
         Connection connection;
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         try {
             connection = this.getConnection();
-            String sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL + " , " +
+            String sqlQuery;
+            if (includeData) {
+                sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL + " , " +
                     org.commcare.modern.database.DatabaseHelper.DATA_COL + " FROM " + this.tableName + ";";
+            } else {
+                sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL +" FROM " + this.tableName + ";";
+            }
             preparedStatement = connection.prepareStatement(sqlQuery);
             resultSet = preparedStatement.executeQuery();
 
             ArrayList<T> backingList = new ArrayList<>();
+            ArrayList<Integer> idSet = new ArrayList<>();
             while (resultSet.next()) {
-                T t = newObject(resultSet.getBytes(DatabaseHelper.DATA_COL), resultSet.getInt(DatabaseHelper.ID_COL));
-                backingList.add(t);
+                if (includeData) {
+                    T t = newObject(resultSet.getBytes(DatabaseHelper.DATA_COL), resultSet.getInt(DatabaseHelper.ID_COL));
+                    backingList.add(t);
+                } else {
+                    idSet.add(resultSet.getInt(DatabaseHelper.ID_COL));
+                }
             }
-            return new JdbcSqlStorageIterator<>(backingList);
+            if (includeData) {
+                return new JdbcSqlStorageIterator<>(backingList);
+            } else {
+                return new JdbcSqlIndexIterator(idSet);
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

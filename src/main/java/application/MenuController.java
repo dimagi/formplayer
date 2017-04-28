@@ -3,9 +3,6 @@ package application;
 import annotations.AppInstall;
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.BasicAuth;
-import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.NewFormResponse;
 import beans.NotificationMessageBean;
@@ -15,6 +12,7 @@ import beans.menus.EntityDetailListResponse;
 import beans.menus.UpdateRequestBean;
 import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
+import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
@@ -23,21 +21,27 @@ import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.endpoint.SystemPublicMetrics;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
+import services.QueryRequester;
+import services.SyncRequester;
 import session.FormSession;
 import session.MenuSession;
 import util.ApplicationUtils;
 import util.Constants;
 import util.SessionUtils;
-import util.UserUtils;
 
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -51,6 +55,12 @@ public class MenuController extends AbstractBaseController{
 
     @Value("${commcarehq.host}")
     private String host;
+
+    @Autowired
+    private QueryRequester queryRequester;
+
+    @Autowired
+    private SyncRequester syncRequester;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -234,7 +244,8 @@ public class MenuController extends AbstractBaseController{
 
             BaseResponseBean syncResponse = checkDoSync(nextScreen,
                     menuSession,
-                    notificationMessageBean);
+                    notificationMessageBean,
+                    selections);
             if (syncResponse != null) {
                 return syncResponse;
             }
@@ -301,8 +312,8 @@ public class MenuController extends AbstractBaseController{
     protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
                                               Hashtable<String, String> queryDictionary) {
         nextScreen.answerPrompts(queryDictionary);
-        InputStream responseStream = nextScreen.makeQueryRequestReturnStream();
-        boolean success = nextScreen.processSuccess(responseStream);
+        String responseString = queryRequester.makeQueryRequest(nextScreen.getUriString(), nextScreen.getAuthHeaders());
+        boolean success = nextScreen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if(success){
             return new NotificationMessageBean("Successfully queried server", false);
         } else{
@@ -319,7 +330,8 @@ public class MenuController extends AbstractBaseController{
      */
     private BaseResponseBean checkDoSync(Screen nextScreen,
                              MenuSession menuSession,
-                             NotificationMessageBean notificationMessageBean) throws Exception {
+                             NotificationMessageBean notificationMessageBean,
+                             String[] selections) throws Exception {
         // If we've encountered a SyncScreen, perform the sync
         if(nextScreen instanceof FormplayerSyncScreen){
             notificationMessageBean = doSync(
@@ -330,6 +342,7 @@ public class MenuController extends AbstractBaseController{
             if(postSyncResponse != null){
                 // If not null, we have a form or menu to redirect to
                 postSyncResponse.setNotification(notificationMessageBean);
+                postSyncResponse.setSelections(trimCaseClaimSelections(selections));
                 return postSyncResponse;
             } else{
                 // Otherwise, return use to the app root
@@ -341,15 +354,33 @@ public class MenuController extends AbstractBaseController{
         return null;
     }
 
+    private String[] trimCaseClaimSelections(String[] selections) {
+        String actionSelections = selections[selections.length - 2];
+        if (!actionSelections.contains("action")) {
+            log.error(String.format("Selections %s did not contain expected action at position %s.",
+                    Arrays.toString(selections),
+                    selections[selections.length - 2]));
+            return selections;
+        }
+        String[] newSelections = new String[selections.length - 1];
+        System.arraycopy(selections, 0, newSelections, 0, selections.length - 2);
+        newSelections[selections.length - 2] = selections[selections.length - 1];
+        return newSelections;
+    }
+
     private NotificationMessageBean doSync(FormplayerSyncScreen screen) throws Exception {
-        ResponseEntity<String> responseEntity = screen.launchRemoteSync(authService.getAuth());
+        ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
+                screen.getBuiltQuery(),
+                authService.getAuth().getAuthHeaders());
         if(responseEntity == null){
             return new NotificationMessageBean("Session error, expected sync block but didn't get one.", true);
         }
         if(responseEntity.getStatusCode().is2xxSuccessful()){
-            return new NotificationMessageBean("Case claim successful", false);
+            CaseAPIs.forceRestore(restoreFactory);
+            return new NotificationMessageBean("Case claim successful.", false);
         } else{
-            return new NotificationMessageBean("Case claim failed with message: " + responseEntity.getBody(), true);
+            return new NotificationMessageBean(
+                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true);
         }
     }
 
