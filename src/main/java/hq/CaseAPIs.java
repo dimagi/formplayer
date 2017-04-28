@@ -60,12 +60,12 @@ public class CaseAPIs {
         ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
         restoreFactory.commit();
         restoreFactory.setAutoCommit(true);
-        String syncToken = sandbox.getSyncToken();
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
             if (restoreFactory.getWrappedUsername().equalsIgnoreCase(u.getUsername())) {
-                u.setLastSyncToken(syncToken);
+                // set last sync token
+                u.setLastSyncToken(sandbox.getSyncToken());
                 sandbox.getUserStorage().write(u);
                 sandbox.setLoggedInUser(u);
             }

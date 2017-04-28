@@ -203,20 +203,9 @@ public class RestoreFactory implements ConnectionHandler{
         }
     }
 
-    public InputStream getRestoreXml() {
-        return getRestoreXml(false);
-    }
-
     public InputStream getRestoreXml(boolean overwriteCache) {
         ensureValidParameters();
-
-        String restoreUrl;
-        if (asUsername == null) {
-            restoreUrl = getRestoreUrl(host, domain, overwriteCache);
-        } else {
-            restoreUrl = getRestoreUrl(host, domain, asUsername, overwriteCache);
-        }
-
+        String restoreUrl = getRestoreUrl(overwriteCache);
         log.info("Restoring from URL " + restoreUrl);
         InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
         setLastSyncTime();
@@ -299,7 +288,6 @@ public class RestoreFactory implements ConnectionHandler{
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
-        //headers.add("since", getSyncToken(getWrappedUsername()));
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
@@ -342,32 +330,23 @@ public class RestoreFactory implements ConnectionHandler{
         return storage.getMetaDataFieldForRecord(users.firstElement(), User.META_SYNC_TOKEN);
     }
 
-    public String getRestoreUrl(String host, String domain, boolean overwriteCache){
-        String url = host + "/a/" + domain + "/phone/restore/?version=2.0";
+    public String getRestoreUrl(boolean overwriteCache) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(host);
+        builder.append("/a/");
+        builder.append(domain);
+        builder.append("/phone/restore/?version=2.0");
         if (overwriteCache) {
-            url += "&overwrite_cache=true";
+            builder.append("&overwrite_cache=true");
         }
         String syncToken = getSyncToken(getWrappedUsername());
         if (syncToken != null) {
-            url += "&since=" + syncToken;
+            builder.append("&since=").append(syncToken);
         }
-        return url;
-    }
-
-    public String getRestoreUrl(String host, String domain, String username, boolean overwriteCache) {
-        String url = host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
-                domain + ".commcarehq.org&version=2.0";
-
-        if (overwriteCache) {
-            url += "&overwrite_cache=true";
+        if( asUsername != null) {
+            builder.append("&as=" + asUsername + "@" + domain + ".commcarehq.org");
         }
-
-        String syncToken = getSyncToken(getWrappedUsername());
-        if (syncToken != null) {
-            url += "&since=" + syncToken;
-        }
-
-        return url;
+        return builder.toString();
     }
 
     public String getUsername() {
