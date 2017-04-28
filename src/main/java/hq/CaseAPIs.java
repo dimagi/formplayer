@@ -15,6 +15,7 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
 import services.RestoreFactory;
+import util.PropertyUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,12 +27,12 @@ import java.io.InputStream;
 public class CaseAPIs {
 
     public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
-        SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
+        //SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         restoreFactory.closeConnection();
-        return performSync(restoreFactory, true);
+        return restoreIfNotExists(restoreFactory, true);
     }
 
-    public static UserSqlSandbox performSync(RestoreFactory restoreFactory, boolean overwriteCache) throws Exception{
+    public static UserSqlSandbox restoreIfNotExists(RestoreFactory restoreFactory, boolean overwriteCache) throws Exception{
         if (restoreFactory.isRestoreXmlExpired()) {
             SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());;
         }
