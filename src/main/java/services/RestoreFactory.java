@@ -4,7 +4,6 @@ import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumbs;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -33,7 +32,6 @@ import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import util.SentryUtils;
 
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
@@ -45,12 +43,9 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.SQLException;
-<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
-=======
 import java.util.Vector;
->>>>>>> wsp/incremental-sync
 import java.util.concurrent.TimeUnit;
 
 /**
