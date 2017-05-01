@@ -2,7 +2,6 @@ package tests;
 
 import application.*;
 import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
@@ -41,7 +40,8 @@ import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Map;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -83,6 +83,9 @@ public class BaseTestClass {
 
     @Autowired
     private InstallService installService;
+
+    @Autowired
+    private AuthService authService;
 
     @Autowired
     private NewFormResponseFactory newFormResponseFactoryMock;
@@ -127,6 +130,7 @@ public class BaseTestClass {
         Mockito.reset(restoreFactoryMock);
         Mockito.reset(submitServiceMock);
         Mockito.reset(installService);
+        Mockito.reset(authService);
         Mockito.reset(userLockRegistry);
         Mockito.reset(newFormResponseFactoryMock);
         Mockito.reset(storageFactoryMock);
@@ -141,9 +145,11 @@ public class BaseTestClass {
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
-                .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
+                .when(submitServiceMock).submitForm(anyString(), anyString());
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();
+        when(authService.getAuth())
+                .thenReturn(new DjangoAuth("derp"));
         mapper = new ObjectMapper();
         storageFactoryMock.closeConnection();
         restoreFactoryMock.closeConnection();
@@ -218,7 +224,7 @@ public class BaseTestClass {
     }
 
     NewFormResponse startNewForm(String requestPath, String formPath) throws Exception {
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
+        when(xFormServiceMock.getFormXml(anyString()))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
@@ -490,7 +496,7 @@ public class BaseTestClass {
         ResultActions evaluateXpathResult = null;
 
         if (bean instanceof AuthenticatedRequestBean) {
-            restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"));
+            restoreFactoryMock.configure((AuthenticatedRequestBean) bean);
         }
 
         if (bean instanceof InstallRequestBean) {

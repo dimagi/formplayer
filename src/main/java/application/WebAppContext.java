@@ -305,6 +305,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    public AuthService authService() {
+        return new AuthServiceImpl();
+    }
+
+    @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public Raven raven() {
         Map<String, String> data = new HashMap<String, String>();
@@ -373,6 +378,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public AppInstallAspect appInstallAspect() {
         return new AppInstallAspect();
+    }
+
+    @Bean
+    public AuthAspect authAspect() {
+        return new AuthAspect();
     }
 
     @Bean

@@ -1,5 +1,6 @@
 package application;
 
+import annotations.Auth;
 import annotations.NoLogging;
 import annotations.UserLock;
 import annotations.UserRestore;
@@ -37,8 +38,8 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
     @UserRestore
-    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
-                                         @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    @Auth
+    public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest) throws Exception {
         if (syncRequest.isPreserveCache()) {
             CaseAPIs.restoreIfNotExists(restoreFactory, false);
         } else {

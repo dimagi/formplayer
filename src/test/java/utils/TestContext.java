@@ -32,10 +32,10 @@ public class TestContext {
     @Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
- 
+
         messageSource.setBasename("i18n/messages");
         messageSource.setUseCodeAsDefaultMessage(true);
- 
+
         return messageSource;
     }
 
@@ -85,6 +85,11 @@ public class TestContext {
     @Bean
     public InstallService installService(){
         return Mockito.spy(TestInstallService.class);
+    }
+
+    @Bean
+    public AuthService authService(){
+        return Mockito.spy(AuthService.class);
     }
 
     @Bean

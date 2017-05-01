@@ -1,9 +1,9 @@
 package application;
 
+import annotations.Auth;
 import annotations.UserLock;
 import annotations.UserRestore;
 import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
+import services.AuthService;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -68,20 +69,19 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
-        public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
-                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    @Auth
+    public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean) throws Exception {
         String postUrl = host + newSessionBean.getPostUrl();
         return newFormResponseFactory.getResponse(newSessionBean,
-                postUrl,
-                new DjangoAuth(authToken));
+                postUrl);
     }
 
     @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
-    public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
-                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    @Auth
+    public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(session, restoreFactory);
         JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
@@ -99,14 +99,8 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     @UserRestore
-    public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
-                                             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-
-        HqAuth auth = getAuthHeaders(
-                submitRequestBean.getDomain(),
-                submitRequestBean.getUsername(),
-                authToken
-        );
+    @Auth
+    public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         storageFactory.configure(serializableFormSession.getUsername(),
                 serializableFormSession.getDomain(),
@@ -143,9 +137,7 @@ public class FormController extends AbstractBaseController{
 
             ResponseEntity<String> submitResponse = submitService.submitForm(
                     formEntrySession.getInstanceXml(),
-                    formEntrySession.getPostUrl(),
-                    auth
-            );
+                    formEntrySession.getPostUrl());
 
             if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                 submitResponseBean.setStatus("error");
@@ -157,7 +149,7 @@ public class FormController extends AbstractBaseController{
 
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()), auth);
+                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
                 if (nav != null) {
                     submitResponseBean.setNextScreen(nav);
                 }
@@ -172,9 +164,10 @@ public class FormController extends AbstractBaseController{
         migratedFormSessionRepo.delete(id);
     }
 
-    private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
+    private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
-        MenuSession menuSession = new MenuSession(serializedSession, installService, restoreFactory, auth, host);
+        MenuSession menuSession = new MenuSession(serializedSession, installService,
+                restoreFactory, authService.getAuth(), host);
         return resolveFormGetNext(menuSession);
     }
 
@@ -217,8 +210,8 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     @UserRestore
-    public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean,
-                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    @Auth
+    public FormEntryResponseBean newRepeat(@RequestBody RepeatRequestBean newRepeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(newRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
         JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
@@ -236,8 +229,8 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     @UserRestore
-    public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean,
-                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    @Auth
+    public FormEntryResponseBean deleteRepeat(@RequestBody RepeatRequestBean deleteRepeatRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(deleteRepeatRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
         JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
@@ -255,8 +248,8 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     @UserRestore
-    public FormEntryNavigationResponseBean getNext(@RequestBody SessionRequestBean requestBean,
-                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    @Auth
+    public FormEntryNavigationResponseBean getNext(@RequestBody SessionRequestBean requestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);
         formSession.stepToNextIndex();
@@ -270,8 +263,8 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     @UserRestore
-    public FormEntryNavigationResponseBean getPrevious(@RequestBody SessionRequestBean requestBean,
-                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    @Auth
+    public FormEntryNavigationResponseBean getPrevious(@RequestBody SessionRequestBean requestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory);
         formSession.stepToPreviousIndex();

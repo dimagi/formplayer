@@ -33,9 +33,9 @@ public class NewFormResponseFactory {
     @Autowired
     private FormSessionRepo formSessionRepo;
 
-    public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl, HqAuth auth) throws Exception {
+    public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
-        String formXml = getFormXml(bean.getFormUrl(), auth);
+        String formXml = getFormXml(bean.getFormUrl());
         UserSqlSandbox sandbox = CaseAPIs.forceRestore(restoreFactory);
 
         FormSession formSession = new FormSession(
@@ -67,8 +67,8 @@ public class NewFormResponseFactory {
         return new FormSession(serializableFormSession, restoreFactory);
     }
 
-    private String getFormXml(String formUrl, HqAuth auth) {
-        return xFormService.getFormXml(formUrl, auth);
+    private String getFormXml(String formUrl) {
+        return xFormService.getFormXml(formUrl);
     }
 
     private static FormDef parseFormDef(String formXml) throws IOException {
