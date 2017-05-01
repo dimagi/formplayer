@@ -258,13 +258,13 @@ public class MenuController extends AbstractBaseController {
 
             if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
                 notificationMessage = doQuery(
-                        nextScreen,
+                        (FormplayerQueryScreen) nextScreen,
                         menuSession,
                         queryDictionary
                 );
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
-                BaseResponseBean syncResponse = doSync(nextScreen,
+                BaseResponseBean syncResponse = doSyncGetNext(nextScreen,
                         menuSession,
                         auth,
                         selections);
@@ -344,12 +344,12 @@ public class MenuController extends AbstractBaseController {
      * After a sync, we can either pop another menu/form to begin
      * or just return to the app menu.
      */
-    private BaseResponseBean doSync(Screen nextScreen,
-                                    MenuSession menuSession,
-                                    HqAuth auth,
-                                    String[] selections) throws Exception {
+    private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
+                                           MenuSession menuSession,
+                                           HqAuth auth,
+                                           String[] selections) throws Exception {
         NotificationMessage notificationMessage = doSync(
-                (FormplayerSyncScreen) nextScreen,
+                nextScreen,
                 auth
         );
 
@@ -365,20 +365,6 @@ public class MenuController extends AbstractBaseController {
             postSyncResponse.setNotification(notificationMessage);
             return postSyncResponse;
         }
-    }
-
-    private String[] trimCaseClaimSelections(String[] selections) {
-        String actionSelections = selections[selections.length - 2];
-        if (!actionSelections.contains("action")) {
-            log.error(String.format("Selections %s did not contain expected action at position %s.",
-                    Arrays.toString(selections),
-                    selections[selections.length - 2]));
-            return selections;
-        }
-        String[] newSelections = new String[selections.length - 1];
-        System.arraycopy(selections, 0, newSelections, 0, selections.length - 2);
-        newSelections[selections.length - 2] = selections[selections.length - 1];
-        return newSelections;
     }
 
     private NotificationMessage doSync(FormplayerSyncScreen screen, HqAuth auth) throws Exception {
@@ -397,6 +383,19 @@ public class MenuController extends AbstractBaseController {
         }
     }
 
+    private String[] trimCaseClaimSelections(String[] selections) {
+        String actionSelections = selections[selections.length - 2];
+        if (!actionSelections.contains("action")) {
+            log.error(String.format("Selections %s did not contain expected action at position %s.",
+                    Arrays.toString(selections),
+                    selections[selections.length - 2]));
+            return selections;
+        }
+        String[] newSelections = new String[selections.length - 1];
+        System.arraycopy(selections, 0, newSelections, 0, selections.length - 2);
+        newSelections[selections.length - 2] = selections[selections.length - 1];
+        return newSelections;
+    }
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         HqAuth auth = getAuthHeaders(
