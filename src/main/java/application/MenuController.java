@@ -136,10 +136,7 @@ public class MenuController extends AbstractBaseController{
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
-            EntityDetailListResponse response = new EntityDetailListResponse();
-            response.setEntityDetailList(new EntityDetailResponse[] {detail});
-            response.setPersistentDetail(true);
-            return response;
+            return new EntityDetailListResponse(detail);
         }
         EntityScreen entityScreen = (EntityScreen) currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);

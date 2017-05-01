@@ -20,6 +20,11 @@ public class EntityDetailListResponse {
 
     public EntityDetailListResponse() {}
 
+    public EntityDetailListResponse(EntityDetailResponse entityDetailResponse) {
+        this.entityDetailList = new EntityDetailResponse[] {entityDetailResponse};
+        this.isPersistentDetail = true;
+    }
+
     public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference) {
         EntityDetailSubscreen[] subscreens = processDetails(screen, ec, treeReference);
         if (subscreens != null) {
