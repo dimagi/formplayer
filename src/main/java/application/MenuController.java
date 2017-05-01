@@ -321,28 +321,22 @@ public class MenuController extends AbstractBaseController {
      * <p>
      * Will do nothing if this wasn't a query screen.
      */
-    private NotificationMessage doQuery(Screen nextScreen,
+    private NotificationMessage doQuery(FormplayerQueryScreen screen,
                                         MenuSession menuSession,
                                         Hashtable<String, String> queryDictionary) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
-        NotificationMessage notificationMessage = doQuery((FormplayerQueryScreen) nextScreen,
-                queryDictionary);
-        menuSession.updateScreen();
-        nextScreen = menuSession.getNextScreen();
+        NotificationMessage notificationMessage;
+        screen.answerPrompts(queryDictionary);
+        String responseString = queryRequester.makeQueryRequest(screen.getUriString(), screen.getAuthHeaders());
+        boolean success = screen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
+        if (success) {
+            notificationMessage = new NotificationMessage("Successfully queried server", false);
+        } else {
+            notificationMessage = new NotificationMessage("Query failed with message " + screen.getCurrentMessage(), true);
+        }
+        Screen nextScreen = menuSession.getNextScreen();
         log.info("Next screen after query: " + nextScreen);
         return notificationMessage;
-    }
-
-    protected NotificationMessage doQuery(FormplayerQueryScreen nextScreen,
-                                          Hashtable<String, String> queryDictionary) {
-        nextScreen.answerPrompts(queryDictionary);
-        String responseString = queryRequester.makeQueryRequest(nextScreen.getUriString(), nextScreen.getAuthHeaders());
-        boolean success = nextScreen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
-        if (success) {
-            return new NotificationMessage("Successfully queried server", false);
-        } else {
-            return new NotificationMessage("Query failed with message " + nextScreen.getCurrentMessage(), true);
-        }
     }
 
     /**
