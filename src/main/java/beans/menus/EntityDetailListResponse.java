@@ -16,6 +16,7 @@ import java.util.ArrayList;
 public class EntityDetailListResponse {
 
     private EntityDetailResponse[] entityDetailList;
+    private boolean isPersistentDetail;
 
     public EntityDetailListResponse() {}
 
@@ -60,5 +61,15 @@ public class EntityDetailListResponse {
     @JsonSetter(value = "details")
     public void setEntityDetailList(EntityDetailResponse[] entityDetailList) {
         this.entityDetailList = entityDetailList;
+    }
+
+    @JsonGetter(value = "isPersistentDetail")
+    public boolean getPersistentDetail() {
+        return isPersistentDetail;
+    }
+
+    @JsonSetter(value = "isPersistentDetail")
+    public void setPersistentDetail(boolean persistentDetail) {
+        this.isPersistentDetail = persistentDetail;
     }
 }
