@@ -32,6 +32,10 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
         super(sandbox, useBulkProcessing);
     }
 
+    public UserSqlSandbox getSqlSandbox() {
+        return (UserSqlSandbox) sandbox;
+    }
+
     @Override
     public TransactionParser getParser(KXmlParser parser) {
         String namespace = parser.getNamespace();

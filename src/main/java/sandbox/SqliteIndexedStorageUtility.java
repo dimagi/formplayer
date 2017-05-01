@@ -6,6 +6,7 @@ import org.commcare.modern.util.Pair;
 import org.javarosa.core.services.Logger;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.storage.EntityFilter;
+import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
@@ -391,7 +392,34 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
     // not yet implemented
     @Override
     public Vector<Integer> removeAll(EntityFilter ef) {
-        return null;
+        Vector<Integer> removed = new Vector<>();
+        for (IStorageIterator iterator = this.iterate(); iterator.hasMore(); ) {
+            int id = iterator.nextID();
+            switch (ef.preFilter(id, null)) {
+                case EntityFilter.PREFILTER_INCLUDE:
+                    removed.add(id);
+                    continue;
+                case EntityFilter.PREFILTER_EXCLUDE:
+                    continue;
+                case EntityFilter.PREFILTER_FILTER:
+                    if (ef.matches(read(id))) {
+                        removed.add(id);
+                    }
+            }
+        }
+
+        if (removed.size() == 0) {
+            return removed;
+        }
+
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(removed);
+
+        for (Pair<String, String[]> whereParams : whereParamList) {
+            SqlHelper.deleteFromTableWhere(getConnection(), tableName,
+                    DatabaseHelper.ID_COL + " IN " + whereParams.first, whereParams.second);
+        }
+
+        return removed;
     }
 
     @Override
@@ -536,6 +564,42 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             return returnSet;
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public String getMetaDataFieldForRecord(int recordId, String rawFieldName) {
+        String rid = String.valueOf(recordId);
+        String scrubbedName = TableBuilder.scrubName(rawFieldName);
+        PreparedStatement selectStatement = null;
+        ResultSet resultSet = null;
+        try {
+            selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
+                    tableName,
+                    DatabaseHelper.ID_COL + "=?",
+                    new String[]{rid});
+            resultSet = selectStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString(scrubbedName);
+            } else {
+                throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    // pass
+                }
+            }
+            if (selectStatement != null) {
+                try {
+                    selectStatement.close();
+                } catch (SQLException e) {
+                    // pass
+                }
+            }
         }
     }
 }
