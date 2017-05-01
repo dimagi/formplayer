@@ -3,8 +3,6 @@ package application;
 import annotations.AppInstall;
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.BasicAuth;
-import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.NewFormResponse;
@@ -12,6 +10,7 @@ import beans.NotificationMessageBean;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import beans.menus.EntityDetailListResponse;
+import beans.menus.EntityDetailResponse;
 import beans.menus.UpdateRequestBean;
 import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
@@ -26,13 +25,9 @@ import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.endpoint.SystemPublicMetrics;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.QueryRequester;
@@ -42,10 +37,8 @@ import session.MenuSession;
 import util.ApplicationUtils;
 import util.Constants;
 import util.SessionUtils;
-import util.UserUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -136,8 +129,14 @@ public class MenuController extends AbstractBaseController{
                 sessionNavigationBean.getSearchText()
         );
         Screen currentScreen = menuSession.getNextScreen();
+
         if (!(currentScreen instanceof EntityScreen)) {
-            throw new RuntimeException("Tried to get details while not on a case list.");
+            // See if we have a persistent case tile to expand
+            EntityDetailResponse detail = getPersistentCaseTile(menuSession);
+            if (detail == null) {
+                throw new RuntimeException("Tried to get details while not on a case list.");
+            }
+            return new EntityDetailListResponse(detail);
         }
         EntityScreen entityScreen = (EntityScreen) currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
