@@ -217,11 +217,7 @@ public class MenuSession {
             sessionWrapper.setXmlns(FunctionUtils.toString(form.eval(ec)));
             sessionWrapper.setDatum("", "awful");
         } else {
-            try {
-                sessionWrapper.setDatum(datum.getDataId(), FunctionUtils.toString(form.eval(ec)));
-            } catch (XPathException e) {
-                throw new RuntimeException(e);
-            }
+            sessionWrapper.setDatum(datum.getDataId(), FunctionUtils.toString(form.eval(ec)));
         }
     }
 

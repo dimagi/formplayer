@@ -191,7 +191,8 @@ public abstract class AbstractBaseController {
         }
     }
 
-    private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
+    protected EntityDetailResponse getPersistentCaseTile(MenuSession menuSession) {
+
         SessionWrapper session = menuSession.getSessionWrapper();
 
         StackFrameStep stepToFrame = null;
@@ -212,29 +213,33 @@ public abstract class AbstractBaseController {
         }
 
         if (stepToFrame == null) {
-            return;
+            return null;
         }
 
         EntityDatum entityDatum = session.findDatumDefinition(stepToFrame.getId());
 
         if (entityDatum == null || entityDatum.getPersistentDetail() == null) {
-            return;
+            return null;
         }
 
         Detail persistentDetail = session.getDetail(entityDatum.getPersistentDetail());
         if (persistentDetail == null) {
-            return;
+            return null;
         }
         EvaluationContext ec = session.getEvaluationContext();
 
         TreeReference ref = entityDatum.getEntityFromID(ec, stepToFrame.getValue());
         if (ref == null) {
-            return;
+            return null;
         }
 
         EvaluationContext subContext = new EvaluationContext(ec, ref);
 
-        menuResponseBean.setPersistentCaseTile(new EntityDetailResponse(persistentDetail, subContext));
+        return new EntityDetailResponse(persistentDetail, subContext);
+    }
+
+    private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
+        menuResponseBean.setPersistentCaseTile(getPersistentCaseTile(menuSession));
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {

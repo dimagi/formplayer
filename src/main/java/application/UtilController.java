@@ -47,7 +47,7 @@ public class UtilController extends AbstractBaseController {
     @ApiOperation(value = "Wipe the applications databases")
     @RequestMapping(value = Constants.URL_DELETE_APPLICATION_DBS, method = RequestMethod.POST)
     @UserLock
-    public NotificationMessageBean deleteApplicationDbs(
+    public NotificationMessage deleteApplicationDbs(
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
@@ -55,7 +55,7 @@ public class UtilController extends AbstractBaseController {
         if (!success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
-        return new NotificationMessageBean(message, !success);
+        return new NotificationMessage(message, !success);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")
