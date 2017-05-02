@@ -4,6 +4,7 @@ import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
 import org.commcare.util.screen.EntityDetailSubscreen;
+import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 
@@ -25,6 +26,8 @@ import java.util.Arrays;
     private Tile[] tiles;
     private boolean useUniformUnits;
 
+    private boolean useNodeset = false;
+
     public EntityDetailResponse(){}
 
     public EntityDetailResponse(EntityDetailSubscreen entityScreen){
@@ -39,6 +42,14 @@ import java.util.Arrays;
         this(new EntityDetailSubscreen(0, detail, ec, new String[] {}));
         processCaseTiles(detail);
         processStyles(detail);
+    }
+
+    public EntityDetailResponse(EntityListSubscreen entityScreen, EvaluationContext ec) {
+        this.setTitle("Details");
+        this.details = entityScreen.getOptions();
+        this.headers = EntityListSubscreen.getHeaders(entityScreen.getShortDetail(), ec).first;
+        processStyles(entityScreen.getShortDetail());
+        this.useNodeset = true;
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -158,5 +169,13 @@ import java.util.Arrays;
 
     public void setUseUniformUnits(boolean useUniformUnits) {
         this.useUniformUnits = useUniformUnits;
+    }
+
+    public boolean isUseNodeset() {
+        return useNodeset;
+    }
+
+    public void setUseNodeset(boolean useNodeset) {
+        this.useNodeset = useNodeset;
     }
 }

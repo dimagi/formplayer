@@ -51,8 +51,6 @@ public class EntityListResponse extends MenuBean {
     public EntityListResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
-        nextScreen.getLongDetailList();
-
         EvaluationContext ec = nextScreen.getEvalContext();
         EntityDatum datum = (EntityDatum) session.getNeededDatum();
 
@@ -60,11 +58,20 @@ public class EntityListResponse extends MenuBean {
         // We will shortcircuit the computation to just get the relevant detailSelection.
         if (detailSelection != null) {
             TreeReference reference = datum.getEntityFromID(ec, detailSelection);
-            processEntitiesForCaseDetail(nextScreen, reference, ec);
+            entities = processEntitiesForCaseDetail(nextScreen, reference, ec);
         } else {
             Vector<TreeReference> references = ec.expandReference(datum.getNodeset());
-            processEntitiesForCaseList(nextScreen, references, ec, offset, searchText);
+            List<EntityBean> entityList = processEntitiesForCaseList(nextScreen, references, ec, offset, searchText);
+            if (entityList.size() > CASE_LENGTH_LIMIT && !(shortDetail.getNumEntitiesToDisplayPerRow() > 1)) {
+                // we're doing pagination
+                setCurrentPage(offset / CASE_LENGTH_LIMIT);
+                setPageCount((int) Math.ceil((double) entityList.size() / CASE_LENGTH_LIMIT));
+                entityList = paginateEntities(entityList, offset);
+            }
+            entities = new EntityBean[entityList.size()];
+            entityList.toArray(entities);
         }
+
 
         processTitle(session);
         processCaseTiles(shortDetail);
@@ -101,27 +108,25 @@ public class EntityListResponse extends MenuBean {
         widthHints = pair.second;
     }
 
-    private void processEntitiesForCaseDetail(EntityScreen screen, TreeReference reference, EvaluationContext ec) {
-        entities = new EntityBean[]{processEntity(reference, screen, ec)};
+    private static EntityBean[] processEntitiesForCaseDetail(EntityScreen screen, TreeReference reference, EvaluationContext ec) {
+        return new EntityBean[]{processEntity(reference, screen, ec)};
     }
 
-    private void processEntitiesForCaseList(EntityScreen screen, Vector<TreeReference> references,
-                                 EvaluationContext ec,
-                                 int offset,
-                                 String searchText) {
+    private static List<EntityBean> processEntitiesForCaseList(EntityScreen screen, Vector<TreeReference> references,
+                                                               EvaluationContext ec,
+                                                               int offset,
+                                                               String searchText) {
         List<Entity<TreeReference>> entityList = buildEntityList(screen.getShortDetail(), ec, references, offset, searchText);
-        entities = new EntityBean[entityList.size()];
-        int i = 0;
+        List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
             TreeReference treeReference = entity.getElement();
-            EntityBean newEntityBean = processEntity(treeReference, screen, ec);
-            entities[i] = newEntityBean;
-            i++;
+            entities.add(processEntity(treeReference, screen, ec));
         }
+        return entities;
     }
 
-    private List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
-                                                       List<Entity<TreeReference>> full) {
+    private static List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
+                                                              List<Entity<TreeReference>> full) {
         if (searchText != null && !"".equals(searchText)) {
             EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), false, false, nodeEntityFactory, full);
             full = filterer.buildMatchList();
@@ -129,7 +134,7 @@ public class EntityListResponse extends MenuBean {
         return full;
     }
 
-    private List<Entity<TreeReference>> paginateEntities(List<Entity<TreeReference>> matched,
+    private List<EntityBean> paginateEntities(List<EntityBean> matched,
                                                          int offset) {
         if(offset > matched.size()){
             throw new RuntimeException("Pagination offset " + offset +
@@ -147,11 +152,11 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
-    private List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
-                                                        EvaluationContext context,
-                                                        Vector<TreeReference> references,
-                                                        int offset,
-                                                        String searchText) {
+    private static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
+                                                               EvaluationContext context,
+                                                               Vector<TreeReference> references,
+                                                               int offset,
+                                                               String searchText) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
         nodeEntityFactory.prepareEntities();
         List<Entity<TreeReference>> full = new ArrayList<>();
@@ -161,17 +166,10 @@ public class EntityListResponse extends MenuBean {
 
         List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
         sort(matched, shortDetail);
-
-        if (matched.size() > CASE_LENGTH_LIMIT && !(shortDetail.getNumEntitiesToDisplayPerRow() > 1)) {
-            // we're doing pagination
-            setCurrentPage(offset / CASE_LENGTH_LIMIT);
-            setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
-            matched = paginateEntities(matched, offset);
-        }
         return matched;
     }
 
-    private void sort (List<Entity<TreeReference>> entityList, Detail shortDetail) {
+    private static void sort(List<Entity<TreeReference>> entityList, Detail shortDetail) {
         int[] order = shortDetail.getSortOrder();
         for (int i = 0; i < shortDetail.getFields().length; ++i) {
             String header = shortDetail.getFields()[i].getHeader().evaluate();
@@ -182,14 +180,14 @@ public class EntityListResponse extends MenuBean {
         java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), false, order, new LogNotifier()));
     }
 
-    class LogNotifier implements EntitySortNotificationInterface {
+    static class LogNotifier implements EntitySortNotificationInterface {
         @Override
         public void notifyBadfilter(String[] args) {
 
         }
     }
 
-    private EntityBean processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
+    private static EntityBean processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
         Detail detail = screen.getShortDetail();
         EvaluationContext context = new EvaluationContext(ec, entity);
 
@@ -219,15 +217,16 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private void processStyles(Detail detail) {
+    private static Style[] processStyles(Detail detail) {
         DetailField[] fields = detail.getFields();
-        styles = new Style[fields.length];
+        Style[] styles = new Style[fields.length];
         int i = 0;
         for (DetailField field : fields) {
             Style style = new Style(field);
             styles[i] = style;
             i++;
         }
+        return styles;
     }
 
     private void processActions(SessionWrapper session) {
