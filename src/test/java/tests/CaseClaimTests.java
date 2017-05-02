@@ -71,8 +71,25 @@ public class CaseClaimTests extends BaseTestClass {
         assert commandResponse.getSelections().length == 2;
         assert commandResponse.getSelections()[1].equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
         assert caseStorage.getNumRecords() == 22;
+    }
 
+    @Test
+    public void testAlreadyOwnCase() throws Exception {
 
+        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(SQLiteProperties.getDataDir() + "caseclaimdomain/caseclaimusername"));
+        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        Hashtable<String, String> queryDictionary = new Hashtable<>();
+        queryDictionary.put("name", "Burt");
+
+        configureQueryMockOwned();
+        configureSyncMock();
+        RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim.xml");
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+
+        CommandListResponseBean response = sessionNavigateWithQuery(new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
+                "caseclaim",
+                queryDictionary,
+                CommandListResponseBean.class);
     }
 
     private void configureSyncMock() {
@@ -83,5 +100,10 @@ public class CaseClaimTests extends BaseTestClass {
     private void configureQueryMock() {
         when(queryRequester.makeQueryRequest(anyString(), any(HttpHeaders.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
+    }
+
+    private void configureQueryMockOwned() {
+        when(queryRequester.makeQueryRequest(anyString(), any(HttpHeaders.class)))
+                .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response_owned.xml"));
     }
 }
