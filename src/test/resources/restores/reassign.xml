@@ -1,0 +1,18 @@
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+    <message nature="ota_restore_success">Successfully restored account t!</message>
+    <Sync xmlns="http://commcarehq.org/sync">
+        <restore_id>e1df0c8caac84a2db71e22bc805d0c4c</restore_id>
+    </Sync>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>t</username>
+        <password>sha1$nLr0vriU2StN$9c63b3c5194781793f36e8f4eb09087f87077aa4</password>
+        <uuid>c9de3960880a3d3d0f94b22ebc3cb723</uuid>
+        <date>2015-05-19</date>
+        <user_data>
+            <data key="commcare_project">chadbrochill</data>
+            <data key="commcare_last_name"/>
+            <data key="commcare_phone_number"/>
+            <data key="commcare_first_name"/>
+        </user_data>
+    </Registration>
+</OpenRosaResponse>
