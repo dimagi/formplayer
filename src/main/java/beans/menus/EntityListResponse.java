@@ -75,9 +75,11 @@ public class EntityListResponse extends MenuBean {
 
         processTitle(session);
         processCaseTiles(shortDetail);
-        processStyles(shortDetail);
-        processActions(nextScreen.getSession());
-        processHeader(shortDetail, ec);
+        this.styles = processStyles(shortDetail);
+        this.actions = processActions(nextScreen.getSession());
+        Pair<String[], int[]> pair = processHeader(shortDetail, ec);
+        this.headers = pair.first;
+        this.widthHints = pair.second;
         setMenuSessionId(id);
     }
 
@@ -102,10 +104,8 @@ public class EntityListResponse extends MenuBean {
         maxHeight = maxWidthHeight.second;
     }
 
-    private void processHeader(Detail shortDetail, EvaluationContext ec) {
-        Pair<String[], int[]> pair = EntityListSubscreen.getHeaders(shortDetail, ec);
-        headers = pair.first;
-        widthHints = pair.second;
+    private static Pair<String[], int[]> processHeader(Detail shortDetail, EvaluationContext ec) {
+        return EntityListSubscreen.getHeaders(shortDetail, ec);
     }
 
     private static EntityBean[] processEntitiesForCaseDetail(EntityScreen screen, TreeReference reference, EvaluationContext ec) {
@@ -229,18 +229,19 @@ public class EntityListResponse extends MenuBean {
         return styles;
     }
 
-    private void processActions(SessionWrapper session) {
+    private static DisplayElement[] processActions(SessionWrapper session) {
         EntityDatum datum = (EntityDatum) session.getNeededDatum();
         if (session.getFrame().getSteps().lastElement().getElementType().equals(SessionFrame.STATE_QUERY_REQUEST)) {
-            return;
+            return null;
         }
         Vector<Action> actions = session.getDetail((datum).getShortDetail()).getCustomActions(session.getEvaluationContext());
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action: actions) {
             displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
         }
-        this.actions = new DisplayElement[actions.size()];
-        displayActions.toArray(this.actions);
+        DisplayElement[] ret = new DisplayElement[actions.size()];
+        displayActions.toArray(ret);
+        return ret;
     }
 
     public EntityBean[] getEntities() {
