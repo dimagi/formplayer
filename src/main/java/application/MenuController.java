@@ -342,6 +342,7 @@ public class MenuController extends AbstractBaseController {
         } else {
             notificationMessage = new NotificationMessage("Query failed with message " + screen.getCurrentMessage(), true);
         }
+        menuSession.updateScreen();
         Screen nextScreen = menuSession.getNextScreen();
         log.info("Next screen after query: " + nextScreen);
         return notificationMessage;
