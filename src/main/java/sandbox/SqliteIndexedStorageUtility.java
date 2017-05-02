@@ -6,6 +6,7 @@ import org.commcare.modern.util.Pair;
 import org.javarosa.core.services.Logger;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.storage.EntityFilter;
+import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
@@ -391,7 +392,34 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
     // not yet implemented
     @Override
     public Vector<Integer> removeAll(EntityFilter ef) {
-        return null;
+        Vector<Integer> removed = new Vector<>();
+        for (IStorageIterator iterator = this.iterate(); iterator.hasMore(); ) {
+            int id = iterator.nextID();
+            switch (ef.preFilter(id, null)) {
+                case EntityFilter.PREFILTER_INCLUDE:
+                    removed.add(id);
+                    continue;
+                case EntityFilter.PREFILTER_EXCLUDE:
+                    continue;
+                case EntityFilter.PREFILTER_FILTER:
+                    if (ef.matches(read(id))) {
+                        removed.add(id);
+                    }
+            }
+        }
+
+        if (removed.size() == 0) {
+            return removed;
+        }
+
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(removed);
+
+        for (Pair<String, String[]> whereParams : whereParamList) {
+            SqlHelper.deleteFromTableWhere(getConnection(), tableName,
+                    DatabaseHelper.ID_COL + " IN " + whereParams.first, whereParams.second);
+        }
+
+        return removed;
     }
 
     @Override

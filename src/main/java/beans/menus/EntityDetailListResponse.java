@@ -16,8 +16,14 @@ import java.util.ArrayList;
 public class EntityDetailListResponse {
 
     private EntityDetailResponse[] entityDetailList;
+    private boolean isPersistentDetail;
 
     public EntityDetailListResponse() {}
+
+    public EntityDetailListResponse(EntityDetailResponse entityDetailResponse) {
+        this.entityDetailList = new EntityDetailResponse[] {entityDetailResponse};
+        this.isPersistentDetail = true;
+    }
 
     public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference) {
         EntityDetailSubscreen[] subscreens = processDetails(screen, ec, treeReference);
@@ -60,5 +66,15 @@ public class EntityDetailListResponse {
     @JsonSetter(value = "details")
     public void setEntityDetailList(EntityDetailResponse[] entityDetailList) {
         this.entityDetailList = entityDetailList;
+    }
+
+    @JsonGetter(value = "isPersistentDetail")
+    public boolean getPersistentDetail() {
+        return isPersistentDetail;
+    }
+
+    @JsonSetter(value = "isPersistentDetail")
+    public void setPersistentDetail(boolean persistentDetail) {
+        this.isPersistentDetail = persistentDetail;
     }
 }

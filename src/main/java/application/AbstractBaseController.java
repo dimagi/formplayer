@@ -8,6 +8,10 @@ import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
+import com.getsentry.raven.Raven;
+import com.getsentry.raven.event.Event;
+import com.getsentry.raven.event.EventBuilder;
+import com.getsentry.raven.event.interfaces.ExceptionInterface;
 import com.timgroup.statsd.StatsDClient;
 import exceptions.*;
 import hq.models.PostgresUser;
@@ -51,10 +55,7 @@ import services.NewFormResponseFactory;
 import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
-import util.Constants;
-import util.FormplayerHttpRequest;
-import util.RequestUtils;
-import util.UserUtils;
+import util.*;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -190,7 +191,8 @@ public abstract class AbstractBaseController {
         }
     }
 
-    private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
+    protected EntityDetailResponse getPersistentCaseTile(MenuSession menuSession) {
+
         SessionWrapper session = menuSession.getSessionWrapper();
 
         StackFrameStep stepToFrame = null;
@@ -211,29 +213,33 @@ public abstract class AbstractBaseController {
         }
 
         if (stepToFrame == null) {
-            return;
+            return null;
         }
 
         EntityDatum entityDatum = session.findDatumDefinition(stepToFrame.getId());
 
         if (entityDatum == null || entityDatum.getPersistentDetail() == null) {
-            return;
+            return null;
         }
 
         Detail persistentDetail = session.getDetail(entityDatum.getPersistentDetail());
         if (persistentDetail == null) {
-            return;
+            return null;
         }
         EvaluationContext ec = session.getEvaluationContext();
 
         TreeReference ref = entityDatum.getEntityFromID(ec, stepToFrame.getValue());
         if (ref == null) {
-            return;
+            return null;
         }
 
         EvaluationContext subContext = new EvaluationContext(ec, ref);
 
-        menuResponseBean.setPersistentCaseTile(new EntityDetailResponse(persistentDetail, subContext));
+        return new EntityDetailResponse(persistentDetail, subContext);
+    }
+
+    private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
+        menuResponseBean.setPersistentCaseTile(getPersistentCaseTile(menuSession));
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
@@ -273,6 +279,11 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
+        EventBuilder eventBuilder = new EventBuilder()
+                .withMessage("Application Configuration Error")
+                .withLevel(Event.Level.INFO)
+                .withSentryInterface(new ExceptionInterface(exception));
+        SentryUtils.sendRavenEvent(eventBuilder);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -326,6 +337,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
+        SentryUtils.sendRavenException(exception);
         try {
             sendExceptionEmail(req, exception);
         } catch (Exception e) {

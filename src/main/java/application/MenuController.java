@@ -10,6 +10,7 @@ import beans.NotificationMessage;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import beans.menus.EntityDetailListResponse;
+import beans.menus.EntityDetailResponse;
 import beans.menus.UpdateRequestBean;
 import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
@@ -128,8 +129,14 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText()
         );
         Screen currentScreen = menuSession.getNextScreen();
+
         if (!(currentScreen instanceof EntityScreen)) {
-            throw new RuntimeException("Tried to get details while not on a case list.");
+            // See if we have a persistent case tile to expand
+            EntityDetailResponse detail = getPersistentCaseTile(menuSession);
+            if (detail == null) {
+                throw new RuntimeException("Tried to get details while not on a case list.");
+            }
+            return new EntityDetailListResponse(detail);
         }
         EntityScreen entityScreen = (EntityScreen) currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
