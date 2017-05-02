@@ -271,7 +271,8 @@ public class MenuController extends AbstractBaseController {
                 );
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
-                BaseResponseBean syncResponse = doSyncGetNext(nextScreen,
+                BaseResponseBean syncResponse = doSyncGetNext(
+                        (FormplayerSyncScreen) nextScreen,
                         menuSession,
                         auth,
                         selections);
