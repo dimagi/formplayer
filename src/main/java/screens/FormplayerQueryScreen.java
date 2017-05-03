@@ -38,6 +38,8 @@ public class FormplayerQueryScreen extends QueryScreen {
     }
 
     public HttpHeaders getAuthHeaders() {
-        return auth.getAuthHeaders();
+        HttpHeaders headers = auth.getAuthHeaders();
+        headers.add("Content-Type", "text/html; charset=utf-8");
+        return headers;
     }
 }
