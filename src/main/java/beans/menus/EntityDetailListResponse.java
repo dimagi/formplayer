@@ -50,7 +50,7 @@ public class EntityDetailListResponse {
                 accumulator.add(response);
             } else {
                 TreeReference contextualizedNodeset = detailList[i].getNodeset().contextualize(ref);
-                EntityDetailNodesetResponse response = new EntityDetailNodesetResponse(detailList[i],
+                EntityDetailResponse response = new EntityDetailResponse(detailList[i],
                         subContext.expandReference(contextualizedNodeset),
                         subContext,
                         (EntityDatum) screen.getSession().getNeededDatum());

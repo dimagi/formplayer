@@ -1,23 +1,29 @@
 package beans.menus;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.util.screen.EntityDetailSubscreen;
-import org.commcare.util.screen.EntityListSubscreen;
-import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.TreeReference;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * Represents one detail tab in a case details page.
  */
-    public class EntityDetailResponse {
-    private Object[] details;
-    private Style[] styles;
-    private String[] headers;
-    private String title;
+@JsonIgnoreProperties
+public class EntityDetailResponse {
+    protected Object[] details;
+    private EntityBean[] entities;
+    protected Style[] styles;
+    protected String[] headers;
+    protected String title;
+    protected boolean isUseNodeset;
 
     private boolean usesCaseTiles;
     private int maxWidth;
@@ -26,8 +32,6 @@ import java.util.Arrays;
     private Tile[] tiles;
     private boolean useUniformUnits;
 
-    private boolean useNodeset = false;
-
     public EntityDetailResponse(){}
 
     public EntityDetailResponse(EntityDetailSubscreen entityScreen){
@@ -35,7 +39,7 @@ import java.util.Arrays;
         this.setTitle("Details");
         this.details = entityScreen.getData();
         this.headers = entityScreen.getHeaders();
-        processStyles(entityScreen.getDetail());
+        this.styles = processStyles(entityScreen.getDetail());
     }
 
     public EntityDetailResponse(Detail detail, EvaluationContext ec) {
@@ -44,12 +48,18 @@ import java.util.Arrays;
         processStyles(detail);
     }
 
-    public EntityDetailResponse(EntityListSubscreen entityScreen, EvaluationContext ec) {
-        this.setTitle("Details");
-        this.details = entityScreen.getOptions();
-        this.headers = EntityListSubscreen.getHeaders(entityScreen.getShortDetail(), ec).first;
-        processStyles(entityScreen.getShortDetail());
-        this.useNodeset = true;
+    public EntityDetailResponse(Detail detail,
+                                       Vector<TreeReference> references,
+                                       EvaluationContext ec,
+                                       EntityDatum neededDatum) {
+        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, neededDatum);
+        this.entities = new EntityBean[entityList.size()];
+        entityList.toArray(this.entities);
+        this.title = "Detail";
+        this.styles = processStyles(detail);
+        Pair<String[], int[]> pair = EntityListResponse.processHeader(detail, ec);
+        setHeaders(pair.first);
+        setUseNodeset(true);
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -73,15 +83,16 @@ import java.util.Arrays;
         useUniformUnits = shortDetail.useUniformUnitsInCaseTile();
     }
 
-    private void processStyles(Detail detail) {
+    protected static Style[] processStyles(Detail detail) {
         DetailField[] fields = detail.getFields();
-        styles = new Style[fields.length];
+        Style[] styles = new Style[fields.length];
         int i = 0;
         for (DetailField field : fields) {
             Style style = new Style(field);
             styles[i] = style;
             i++;
         }
+        return styles;
     }
 
     public Object[] getDetails() {
@@ -172,10 +183,18 @@ import java.util.Arrays;
     }
 
     public boolean isUseNodeset() {
-        return useNodeset;
+        return isUseNodeset;
     }
 
     public void setUseNodeset(boolean useNodeset) {
-        this.useNodeset = useNodeset;
+        isUseNodeset = useNodeset;
+    }
+
+    public EntityBean[] getEntities() {
+        return entities;
+    }
+
+    public void setEntities(EntityBean[] entities) {
+        this.entities = entities;
     }
 }
