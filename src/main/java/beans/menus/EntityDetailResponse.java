@@ -32,30 +32,33 @@ public class EntityDetailResponse {
     private Tile[] tiles;
     private boolean useUniformUnits;
 
-    public EntityDetailResponse(){}
+    public EntityDetailResponse() {
+    }
 
-    public EntityDetailResponse(EntityDetailSubscreen entityScreen){
-        //TODO Get correct details title?
-        this.setTitle("Details");
+    public EntityDetailResponse(EntityDetailSubscreen entityScreen, String title) {
+        this.title = title;
         this.details = entityScreen.getData();
         this.headers = entityScreen.getHeaders();
         this.styles = processStyles(entityScreen.getDetail());
     }
 
+    // Constructor used for persistent case tile
     public EntityDetailResponse(Detail detail, EvaluationContext ec) {
-        this(new EntityDetailSubscreen(0, detail, ec, new String[] {}));
+        this(new EntityDetailSubscreen(0, detail, ec, new String[]{}), "Details");
         processCaseTiles(detail);
         processStyles(detail);
     }
 
+    // Constructor used for detail with nodeset
     public EntityDetailResponse(Detail detail,
-                                       Vector<TreeReference> references,
-                                       EvaluationContext ec,
-                                       EntityDatum neededDatum) {
+                                Vector<TreeReference> references,
+                                EvaluationContext ec,
+                                EntityDatum neededDatum,
+                                String title) {
         List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, neededDatum);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);
-        this.title = "Detail";
+        this.title = title;
         this.styles = processStyles(detail);
         Pair<String[], int[]> pair = EntityListResponse.processHeader(detail, ec);
         setHeaders(pair.first);
@@ -120,7 +123,7 @@ public class EntityDetailResponse {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "EntityDetailResponse [details=" + Arrays.toString(details)
                 + ", styles=" + Arrays.toString(styles)
                 + ", headers=" + Arrays.toString(headers) + "]";
