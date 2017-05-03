@@ -3,6 +3,7 @@ package beans.menus;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Detail;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
@@ -20,10 +21,11 @@ public class EntityDetailListResponse {
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
 
-    public EntityDetailListResponse() {}
+    public EntityDetailListResponse() {
+    }
 
     public EntityDetailListResponse(EntityDetailResponse entityDetailResponse) {
-        this.entityDetailList = new EntityDetailResponse[] {entityDetailResponse};
+        this.entityDetailList = new EntityDetailResponse[]{entityDetailResponse};
         this.isPersistentDetail = true;
     }
 
@@ -38,7 +40,7 @@ public class EntityDetailListResponse {
             return null;
         }
         EvaluationContext subContext = new EvaluationContext(ec, ref);
-        ArrayList<EntityDetailResponse> accumulator = new ArrayList<>();
+        ArrayList<Object> accumulator = new ArrayList<>();
         for (int i = 0; i < detailList.length; i++) {
             // For now, don't add sub-details
             if (detailList[i].getNodeset() == null) {
@@ -48,8 +50,10 @@ public class EntityDetailListResponse {
                 accumulator.add(response);
             } else {
                 TreeReference contextualizedNodeset = detailList[i].getNodeset().contextualize(ref);
-                EntityListSubscreen subscreen = new EntityListSubscreen(detailList[i], subContext.expandReference(contextualizedNodeset), subContext);
-                EntityDetailResponse response = new EntityDetailResponse(subscreen, subContext);
+                EntityDetailNodesetResponse response = new EntityDetailNodesetResponse(detailList[i],
+                        subContext.expandReference(contextualizedNodeset),
+                        subContext,
+                        (EntityDatum) screen.getSession().getNeededDatum());
                 response.setTitle(screen.getDetailListTitles(subContext)[i]);
                 accumulator.add(response);
             }
