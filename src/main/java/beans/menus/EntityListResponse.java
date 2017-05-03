@@ -50,19 +50,19 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
-        Detail shortDetail = nextScreen.getShortDetail();
+        Detail detail = nextScreen.getShortDetail();
         EvaluationContext ec = nextScreen.getEvalContext();
-        EntityDatum datum = (EntityDatum) session.getNeededDatum();
+        EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
         // We will shortcircuit the computation to just get the relevant detailSelection.
         if (detailSelection != null) {
-            TreeReference reference = datum.getEntityFromID(ec, detailSelection);
-            entities = processEntitiesForCaseDetail(nextScreen, reference, ec);
+            TreeReference reference = neededDatum.getEntityFromID(ec, detailSelection);
+            entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
-            Vector<TreeReference> references = ec.expandReference(datum.getNodeset());
-            List<EntityBean> entityList = processEntitiesForCaseList(nextScreen, references, ec, offset, searchText);
-            if (entityList.size() > CASE_LENGTH_LIMIT && !(shortDetail.getNumEntitiesToDisplayPerRow() > 1)) {
+            Vector<TreeReference> references = ec.expandReference(neededDatum.getNodeset());
+            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum);
+            if (entityList.size() > CASE_LENGTH_LIMIT && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
                 setCurrentPage(offset / CASE_LENGTH_LIMIT);
                 setPageCount((int) Math.ceil((double) entityList.size() / CASE_LENGTH_LIMIT));
@@ -74,10 +74,10 @@ public class EntityListResponse extends MenuBean {
 
 
         processTitle(session);
-        processCaseTiles(shortDetail);
-        this.styles = processStyles(shortDetail);
+        processCaseTiles(detail);
+        this.styles = processStyles(detail);
         this.actions = processActions(nextScreen.getSession());
-        Pair<String[], int[]> pair = processHeader(shortDetail, ec);
+        Pair<String[], int[]> pair = processHeader(detail, ec);
         this.headers = pair.first;
         this.widthHints = pair.second;
         setMenuSessionId(id);
@@ -104,23 +104,23 @@ public class EntityListResponse extends MenuBean {
         maxHeight = maxWidthHeight.second;
     }
 
-    private static Pair<String[], int[]> processHeader(Detail shortDetail, EvaluationContext ec) {
+    public static Pair<String[], int[]> processHeader(Detail shortDetail, EvaluationContext ec) {
         return EntityListSubscreen.getHeaders(shortDetail, ec);
     }
 
-    private static EntityBean[] processEntitiesForCaseDetail(EntityScreen screen, TreeReference reference, EvaluationContext ec) {
-        return new EntityBean[]{processEntity(reference, screen, ec)};
+    private static EntityBean[] processEntitiesForCaseDetail(Detail detail, TreeReference reference,
+                                                             EvaluationContext ec, EntityDatum neededDatum) {
+        return new EntityBean[]{processEntity(detail, reference, ec, neededDatum)};
     }
 
-    private static List<EntityBean> processEntitiesForCaseList(EntityScreen screen, Vector<TreeReference> references,
+    public static List<EntityBean> processEntitiesForCaseList(Detail detail, Vector<TreeReference> references,
                                                                EvaluationContext ec,
-                                                               int offset,
-                                                               String searchText) {
-        List<Entity<TreeReference>> entityList = buildEntityList(screen.getShortDetail(), ec, references, offset, searchText);
+                                                               String searchText, EntityDatum neededDatum) {
+        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText);
         List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
             TreeReference treeReference = entity.getElement();
-            entities.add(processEntity(treeReference, screen, ec));
+            entities.add(processEntity(detail, treeReference, ec, neededDatum));
         }
         return entities;
     }
@@ -155,7 +155,6 @@ public class EntityListResponse extends MenuBean {
     private static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
                                                                EvaluationContext context,
                                                                Vector<TreeReference> references,
-                                                               int offset,
                                                                String searchText) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
         nodeEntityFactory.prepareEntities();
@@ -187,16 +186,13 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
-    private static EntityBean processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
-        Detail detail = screen.getShortDetail();
-        EvaluationContext context = new EvaluationContext(ec, entity);
-
+    private static EntityBean processEntity(Detail detail, TreeReference treeReference,
+                                            EvaluationContext ec, EntityDatum neededDatum) {
+        EvaluationContext context = new EvaluationContext(ec, treeReference);
         detail.populateEvaluationContextVariables(context);
-
         DetailField[] fields = detail.getFields();
         Object[] data = new Object[fields.length];
-
-        String id = screen.getReturnValueFromSelection(entity, (EntityDatum)screen.getSession().getNeededDatum(), ec);
+        String id = EntityScreen.getReturnValueFromSelection(treeReference, neededDatum, ec);
         EntityBean ret = new EntityBean(id);
         int i = 0;
         for (DetailField field : fields) {
