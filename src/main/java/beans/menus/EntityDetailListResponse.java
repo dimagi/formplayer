@@ -44,17 +44,19 @@ public class EntityDetailListResponse {
         for (int i = 0; i < detailList.length; i++) {
             // For now, don't add sub-details
             if (detailList[i].getNodeset() == null) {
-                EntityDetailSubscreen subscreen = new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext));
-                EntityDetailResponse response = new EntityDetailResponse(subscreen);
-                response.setTitle(screen.getDetailListTitles(subContext)[i]);
+                EntityDetailSubscreen subscreen = new EntityDetailSubscreen(i,
+                        detailList[i],
+                        subContext,
+                        screen.getDetailListTitles(subContext));
+                EntityDetailResponse response = new EntityDetailResponse(subscreen, screen.getDetailListTitles(subContext)[i]);
                 accumulator.add(response);
             } else {
                 TreeReference contextualizedNodeset = detailList[i].getNodeset().contextualize(ref);
                 EntityDetailResponse response = new EntityDetailResponse(detailList[i],
                         subContext.expandReference(contextualizedNodeset),
                         subContext,
-                        (EntityDatum) screen.getSession().getNeededDatum());
-                response.setTitle(screen.getDetailListTitles(subContext)[i]);
+                        (EntityDatum) screen.getSession().getNeededDatum(),
+                        screen.getDetailListTitles(subContext)[i]);
                 accumulator.add(response);
             }
         }
