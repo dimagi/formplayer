@@ -28,6 +28,7 @@ public class Constants {
     public static final String URL_GET_DETAILS = "get_details";
     public static final String URL_GET_SESSIONS = "get_sessions";
     public static final String URL_SERVER_UP = "serverup";
+    public static final String URL_COUCH_CONNECTION = "couch_connection";
     public static final String URL_PREVIEW_FORM = "preview_form";
     public static final String URL_DELETE_APPLICATION_DBS = "delete_application_dbs";
     public static final String URL_NEXT_INDEX = "next_index";

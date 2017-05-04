@@ -33,4 +33,8 @@ public class CouchUserRepo {
         }
         return users.get(0);
     }
+
+    public String couchIsUp() {
+        // Test whether requests to couch are going
+    }
 }
