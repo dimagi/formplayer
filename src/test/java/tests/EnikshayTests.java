@@ -1,7 +1,10 @@
 package tests;
 
+import beans.NewFormResponse;
+import beans.menus.CommandListResponseBean;
 import beans.menus.EntityDetailListResponse;
 import beans.menus.EntityDetailResponse;
+import beans.menus.EntityListResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -33,5 +36,17 @@ public class EnikshayTests extends BaseTestClass{
                         new String[]{"0", "7e2e508b-42c3-4fe5-a216-c8d5473ab43b", "0"},
                         "enikshay",
                         EntityDetailListResponse.class);
+    }
+
+    @Test
+    public void testBreadcrumbs() throws Exception {
+        NewFormResponse newFormResponse =
+                sessionNavigate(
+                        new String[]{"0", "7e2e508b-42c3-4fe5-a216-c8d5473ab43b", "0"},
+                        "enikshay",
+                        NewFormResponse.class);
+        assert newFormResponse.getBreadcrumbs().length == 4;
+        // Assert we see the case name
+        assert newFormResponse.getBreadcrumbs()[2].equals("252923 Test");
     }
 }
