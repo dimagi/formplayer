@@ -6,6 +6,8 @@ import sandbox.SqliteIndexedStorageUtility;
 import util.FormplayerDateUtils;
 import util.SessionUtils;
 
+import java.util.NoSuchElementException;
+
 /**
  * Individual display item in list of incomplete form sessions
  */
@@ -20,7 +22,18 @@ public class SessionListItem {
         this.title = session.getTitle();
         this.dateOpened = FormplayerDateUtils.convertJavaDateStringToISO(session.getDateOpened());
         this.sessionId = session.getId();
-        this.caseName = SessionUtils.tryLoadCaseName(caseStorage, session);
+        this.caseName = loadCaseName(caseStorage, session);
+    }
+
+    private String loadCaseName(SqliteIndexedStorageUtility<Case> caseStorage, SerializableFormSession session) {
+        String caseId = session.getSessionData().get("case_id");
+        try {
+            return SessionUtils.tryLoadCaseName(caseStorage, caseId);
+        } catch (NoSuchElementException e) {
+            // This handles the case where the case is no longer open in the database.
+            // The form will crash on open, but I don't know if there's a more elegant but not-opaque way to handle
+            return "Case with id " + caseId + "does not exist!";
+        }
     }
 
 
