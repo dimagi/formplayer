@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
@@ -177,10 +178,17 @@ public class MenuSession {
 
     private void addTitle(String input, Screen previousScreen) {
         if (previousScreen instanceof EntityScreen) {
-            titles.add(SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), input));
-        } else {
-            titles.add(SessionUtils.getBestTitle(getSessionWrapper()));
+            try {
+                String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), input);
+                if (caseName != null) {
+                    titles.add(caseName);
+                    return;
+                }
+            } catch (NoSuchElementException e) {
+                // That's ok, just fallback quietly
+            }
         }
+        titles.add(SessionUtils.getBestTitle(getSessionWrapper()));
     }
 
     public Screen getNextScreen() throws CommCareSessionException {

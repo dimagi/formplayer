@@ -24,23 +24,12 @@ public class SessionUtils {
 
     private static final Log log = LogFactory.getLog(SessionUtils.class);
 
-
-    public static String tryLoadCaseName(SqliteIndexedStorageUtility<Case> caseStorage, SerializableFormSession session) {
-        return tryLoadCaseName(caseStorage, session.getSessionData().get("case_id"));
-    }
-
-    public static String tryLoadCaseName(SqliteIndexedStorageUtility<Case> caseStorage, String caseId) {
+    public static String tryLoadCaseName(SqliteIndexedStorageUtility<Case> caseStorage, String caseId) throws NoSuchElementException {
         if (caseId == null) {
             return null;
         }
-        try {
-            CaseBean caseBean = CaseAPIs.getFullCase(caseId, caseStorage);
-            return (String) caseBean.getProperties().get("case_name");
-        } catch (NoSuchElementException e) {
-            // This handles the case where the case is no longer open in the database.
-            // The form will crash on open, but I don't know if there's a more elegant but not-opaque way to handle
-            return "Case with id " + caseId + "does not exist!";
-        }
+        CaseBean caseBean = CaseAPIs.getFullCase(caseId, caseStorage);
+        return (String) caseBean.getProperties().get("case_name");
     }
 
     public static String getBestTitle(SessionWrapper session) {
