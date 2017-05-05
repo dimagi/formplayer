@@ -23,7 +23,7 @@ public class Constants {
     public final static String URL_LIST_SESSIONS = "sessions";
     public final static String URL_GET_SESSION = "get_session";
     public static final String URL_INSTALL = "install";
-    public static final String URL_REPLAY = "replay";
+    public static final String URL_REPLAY = "update";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
     public static final String URL_GET_DETAILS = "get_details";
     public static final String URL_GET_SESSIONS = "get_sessions";

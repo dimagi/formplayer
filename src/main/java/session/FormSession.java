@@ -461,6 +461,8 @@ public class FormSession {
     }
 
     public void reload(FormDef formDef, String postUrl) throws IOException {
+        this.formDef = formDef;
+        setupJavaRosaObjects();
         if(getInstanceXml() != null){
             loadInstanceXml(formDef, getInstanceXml());
             initialize(false, sessionData);
