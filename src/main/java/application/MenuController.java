@@ -250,6 +250,7 @@ public class MenuController extends AbstractBaseController {
         }
 
         String[] titles = new String[selections.length + 1];
+        String[] overrideSelections = null;
         titles[0] = SessionUtils.getAppTitle();
         NotificationMessage notificationMessage = new NotificationMessage();
         for (int i = 1; i <= selections.length; i++) {
@@ -269,14 +270,15 @@ public class MenuController extends AbstractBaseController {
                         menuSession,
                         queryDictionary
                 );
+                overrideSelections = trimCaseClaimSelections(selections);
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
                         (FormplayerSyncScreen) nextScreen,
                         menuSession,
-                        auth,
-                        selections);
+                        auth);
                 if (syncResponse != null) {
+                    syncResponse.setSelections(overrideSelections);
                     return syncResponse;
                 }
             }
@@ -290,6 +292,7 @@ public class MenuController extends AbstractBaseController {
         );
         if (nextMenu != null) {
             nextMenu.setNotification(notificationMessage);
+            nextMenu.setSelections(overrideSelections);
             log.info("Returning menu: " + nextMenu);
             return nextMenu;
         } else {
@@ -297,6 +300,7 @@ public class MenuController extends AbstractBaseController {
             if (responseBean == null) {
                 responseBean = new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
             }
+            responseBean.setSelections(overrideSelections);
             return responseBean;
         }
     }
@@ -333,12 +337,14 @@ public class MenuController extends AbstractBaseController {
                                         MenuSession menuSession,
                                         Hashtable<String, String> queryDictionary) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
-        NotificationMessage notificationMessage;
+        NotificationMessage notificationMessage = null;
         screen.answerPrompts(queryDictionary);
         String responseString = queryRequester.makeQueryRequest(screen.getUriString(), screen.getAuthHeaders());
         boolean success = screen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
-            notificationMessage = new NotificationMessage("Successfully queried server", false);
+            if (screen.getCurrentMessage() != null) {
+                notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false);
+            }
         } else {
             notificationMessage = new NotificationMessage("Query failed with message " + screen.getCurrentMessage(), true);
         }
@@ -355,8 +361,7 @@ public class MenuController extends AbstractBaseController {
      */
     private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
                                            MenuSession menuSession,
-                                           HqAuth auth,
-                                           String[] selections) throws Exception {
+                                           HqAuth auth) throws Exception {
         NotificationMessage notificationMessage = doSync(
                 nextScreen,
                 auth
@@ -366,7 +371,6 @@ public class MenuController extends AbstractBaseController {
         if (postSyncResponse != null) {
             // If not null, we have a form or menu to redirect to
             postSyncResponse.setNotification(notificationMessage);
-            postSyncResponse.setSelections(trimCaseClaimSelections(selections));
             return postSyncResponse;
         } else {
             // Otherwise, return use to the app root
