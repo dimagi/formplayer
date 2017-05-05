@@ -1,5 +1,6 @@
 package services;
 
+import engine.FormplayerConfigEngine;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.springframework.stereotype.Service;
 
@@ -8,5 +9,5 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public interface InstallService {
-    CommCareConfigEngine configureApplication(String reference);
+    FormplayerConfigEngine configureApplication(String reference) throws Exception;
 }

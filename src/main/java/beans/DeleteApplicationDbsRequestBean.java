@@ -15,7 +15,7 @@ public class DeleteApplicationDbsRequestBean extends AuthenticatedRequestBean {
     }
 
     public boolean clear() {
-        return deleteApplicationDbs(domain, username, appId);
+        return deleteApplicationDbs(domain, username, restoreAs, appId);
     }
 
     @JsonGetter(value = "app_id")

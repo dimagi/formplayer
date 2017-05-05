@@ -1,14 +1,17 @@
 package application;
 
-import aspects.LockAspect;
-import aspects.LoggingAspect;
-import aspects.MetricsAspect;
+import aspects.*;
+import com.getsentry.raven.Raven;
+import com.getsentry.raven.RavenFactory;
+import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
+import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.apache.tomcat.jdbc.pool.DataSource;
+import org.commcare.modern.reference.ArchiveFileRoot;
 import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,12 +37,11 @@ import repo.MenuSessionRepo;
 import repo.TokenRepo;
 import repo.impl.*;
 import services.*;
-import services.impl.FormattedQuestionsServiceImpl;
-import services.impl.InstallServiceImpl;
-import services.impl.SubmitServiceImpl;
-import services.impl.XFormServiceImpl;
+import services.impl.*;
 import util.Constants;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -49,6 +51,9 @@ import java.util.Properties;
 @ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*", "installers.*"})
 @EnableAspectJAutoProxy
 public class WebAppContext extends WebMvcConfigurerAdapter {
+
+    @Value("${commcarehq.environment}")
+    private String environment;
 
     @Value("${commcarehq.host}")
     private String hqHost;
@@ -115,6 +120,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${couch.databaseName}")
     private String couchDatabaseName;
+
+    @Value("${sentry.dsn:}")
+    private String ravenDsn;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -229,7 +237,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public RedisLockRegistry userLockRegistry() {
         JedisConnectionFactory jedisConnectionFactory = jedisConnFactory();
-        return new RedisLockRegistry(jedisConnectionFactory, "formplayer-user", 5 * 60 * 1000);
+        return new RedisLockRegistry(jedisConnectionFactory, "formplayer-user", Constants.LOCK_DURATION);
     }
 
     @Bean
@@ -298,13 +306,23 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public RestoreFactory restoreFactory(){
+    public Raven raven() {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("environment", environment);
+        BreadcrumbBuilder builder = new BreadcrumbBuilder();
+        builder.setData(data);
+        return RavenFactory.ravenInstance(ravenDsn);
+    }
+
+    @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public RestoreFactory restoreFactory() {
         return new RestoreFactory();
     }
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public FormplayerStorageFactory storageFactory(){
+    public FormplayerStorageFactory storageFactory() {
         return new FormplayerStorageFactory();
     }
 
@@ -328,6 +346,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     FormplayerInstallerFactory installerFactory() {
         return new FormplayerInstallerFactory();
     }
@@ -344,5 +363,30 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public MetricsAspect metricsAspect() {
         return new MetricsAspect();
+    }
+
+    @Bean
+    public UserRestoreAspect userRestoreAspect() {
+        return new UserRestoreAspect();
+    }
+
+    @Bean
+    public AppInstallAspect appInstallAspect() {
+        return new AppInstallAspect();
+    }
+
+    @Bean
+    public ArchiveFileRoot formplayerArchiveFileRoot() {
+        return new FormplayerArchiveFileRoot();
+    }
+
+    @Bean
+    public QueryRequester queryRequester() {
+        return new QueryRequesterImpl();
+    }
+
+    @Bean
+    public SyncRequester syncRequester() {
+        return new SyncRequesterImpl();
     }
 }

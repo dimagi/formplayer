@@ -15,12 +15,14 @@ import repo.impl.PostgresUserRepo;
 import util.Constants;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
+import util.UserUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,15 +55,15 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
         if (isAuthorizationRequired(request)) {
             // These are order dependent
             if (getSessionId(request) == null) {
-                setResponseUnauthorized(response);
+                setResponseUnauthorized(response, "Invalid session id");
                 return;
             }
             setToken(request);
-            setUser(request);
             setDomain(request);
+            setUser(request);
             JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
-                setResponseUnauthorized(response);
+                setResponseUnauthorized(response, "Invalid user");
                 return;
             }
         }
@@ -88,7 +90,15 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
      * @param request
      */
     private void setUser(FormplayerHttpRequest request) {
-        PostgresUser postgresUser = postgresUserRepo.getUserByDjangoId(request.getToken().getUserId());
+        PostgresUser postgresUser;
+        // Need to handle anonymous user workflow
+        if (request.getToken().getUserId() == Constants.ANONYMOUS_DJANGO_USERID) {
+            postgresUser = postgresUserRepo.getUserByUsername(
+                    UserUtils.anonymousUsername(request.getDomain())
+            );
+        } else {
+            postgresUser = postgresUserRepo.getUserByDjangoId(request.getToken().getUserId());
+        }
         CouchUser couchUser = couchUserRepo.getUserByUsername(postgresUser.getUsername());
 
         request.setCouchUser(couchUser);
@@ -155,6 +165,11 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
             return false;
         }
 
+        // Ensure that we actually have a couch user
+        if (request.getCouchUser() == null) {
+            return false;
+        }
+
         // Ensure domain and username match couch user
         return request.getCouchUser().isAuthorized(domain, username);
     }
@@ -164,9 +179,22 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
 
     }
 
-    public void setResponseUnauthorized(HttpServletResponse response) {
+    public void setResponseUnauthorized(HttpServletResponse response, String message) {
         response.reset();
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+
+        PrintWriter writer = null;
+        JSONObject responseJSON = new JSONObject();
+        responseJSON.put("error", message);
+        try {
+            writer = response.getWriter();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to write response", e);
+        }
+        writer.write(responseJSON.toString());
+        writer.flush();
+        writer.close();
     }
 
 }

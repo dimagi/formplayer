@@ -1,17 +1,14 @@
 package tests;
-import beans.NotificationMessageBean;
+import beans.NotificationMessage;
 import beans.menus.CommandListResponseBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.ApplicationUtils;
-import utils.FileUtils;
 import utils.TestContext;
 
 import java.io.File;
-
-import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -43,7 +40,7 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
         File file = new File(dbPath);
         assert file.exists();
 
-        NotificationMessageBean response = deleteApplicationDbs();
+        NotificationMessage response = deleteApplicationDbs();
         assert !response.isError();
 
         file = new File(dbPath);
@@ -61,7 +58,7 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
         File file = new File(dbPath);
         assert !file.exists();
 
-        NotificationMessageBean response = deleteApplicationDbs();
+        NotificationMessage response = deleteApplicationDbs();
         assert !response.isError();
 
         file = new File(dbPath);

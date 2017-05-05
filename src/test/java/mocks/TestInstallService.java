@@ -1,11 +1,7 @@
 package mocks;
 
 import engine.FormplayerConfigEngine;
-import installers.FormplayerInstallerFactory;
-import org.commcare.util.engine.CommCareConfigEngine;
-import org.springframework.beans.factory.annotation.Autowired;
-import services.FormplayerStorageFactory;
-import services.InstallService;
+import services.impl.InstallServiceImpl;
 
 import java.io.File;
 import java.net.URL;
@@ -13,30 +9,11 @@ import java.net.URL;
 /**
  * Created by willpride on 12/7/16.
  */
-public class TestInstallService implements InstallService {
-
-    @Autowired
-    FormplayerStorageFactory storageFactory;
-
-    @Autowired
-    FormplayerInstallerFactory formplayerInstallerFactory;
+public class TestInstallService extends InstallServiceImpl {
 
     @Override
-    public CommCareConfigEngine configureApplication(String reference) {
-        try {
-            File dbFolder = new File(storageFactory.getDatabasePath());
-            dbFolder.delete();
-            dbFolder.mkdirs();
-            FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory,
-                    formplayerInstallerFactory);
-            String absolutePath = getTestResourcePath(reference);
-            engine.initFromArchive(absolutePath);
-            engine.initEnvironment();
-            return engine;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+    public FormplayerConfigEngine configureApplication(String reference) throws Exception {
+        return super.configureApplication(getTestResourcePath(reference));
     }
 
     private String getTestResourcePath(String resourcePath){

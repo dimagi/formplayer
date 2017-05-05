@@ -2,7 +2,7 @@ package application;
 
 import annotations.NoLogging;
 import annotations.UserLock;
-import auth.DjangoAuth;
+import annotations.UserRestore;
 import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
@@ -33,31 +33,29 @@ public class UtilController extends AbstractBaseController {
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        restoreFactory.configure(syncRequest, new DjangoAuth(authToken));
-
         if (syncRequest.isPreserveCache()) {
             CaseAPIs.restoreIfNotExists(restoreFactory, false);
         } else {
             CaseAPIs.forceRestore(restoreFactory);
         }
-
         return new SyncDbResponseBean();
     }
 
     @ApiOperation(value = "Wipe the applications databases")
     @RequestMapping(value = Constants.URL_DELETE_APPLICATION_DBS, method = RequestMethod.POST)
     @UserLock
-    public NotificationMessageBean deleteApplicationDbs(
+    public NotificationMessage deleteApplicationDbs(
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
         boolean success = deleteRequest.clear();
-        if (success) {
+        if (!success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
-        return new NotificationMessageBean(message, !success);
+        return new NotificationMessage(message, !success);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")

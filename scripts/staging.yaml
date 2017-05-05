@@ -45,8 +45,8 @@
 trunk: master
 name: autostaging
 branches:
-  - wsp/fixture-storage
+  - wsp/query-planner
 submodules:
   libs/commcare:
     branches:
-      - wsp/fixture-storage
+      - wsp/query-planner

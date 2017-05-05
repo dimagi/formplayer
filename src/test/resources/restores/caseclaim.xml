@@ -1,0 +1,290 @@
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+    <message nature="ota_restore_success">Successfully restored account claimant!</message>
+    <Sync xmlns="http://commcarehq.org/sync">
+        <restore_id>9e5bb063c1264e0fa93f560f481220ae</restore_id>
+    </Sync>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>claimant</username>
+        <password>
+            sha1$4JSloCqp4bcl$9123edc2ac2fba8b403c7366b8c72806662a188c
+        </password>
+        <uuid>47ef5ea3cc348fb6538702449c855dcd</uuid>
+        <date>2017-04-21</date>
+        <user_data>
+            <data key="test">1</data>
+            <data key="commcare_project">test</data>
+            <data key="commcare_last_name"/>
+            <data key="commcare_phone_number"/>
+            <data key="commcare_first_name"/>
+        </user_data>
+    </Registration>
+    <schema id="locations">
+        <indices>
+            <index>@district_id</index>
+            <index>@facility_id</index>
+            <index>@id</index>
+            <index>@mobilizer_id</index>
+            <index>@ngo_id</index>
+            <index>@supervisor_id</index>
+            <index>@type</index>
+        </indices>
+    </schema>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="612b71ac05034045ab5af1ad5b8cc092" date_modified="2017-04-21T14:46:13.391712Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>Rudolph</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">3512eb7c-7a58-4a95-beda-205eb0d7f163</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="7f891a6b475540d288a25027ce96db11" date_modified="2017-04-25T08:06:35.875733Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>Table</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-25</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">b503dc77-f240-4d1e-89cd-69958f52bec4</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="d0ce19021fd3431982340d9d2d3c106c" date_modified="2017-04-21T14:55:02.125474Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>Batman Begins</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="62c03aefec2b43468934024e56cffc9f" date_modified="2017-04-19T09:01:25.353282Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>123</case_name>
+            <owner_id>67056dfba972ea70017477f2217d0b77</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-19</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">5e421eb8bf414e03b4871195b869d894</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="56306779-26a2-4aa5-a952-70c9d8b21e39" date_modified="2017-04-25T08:24:06.416000Z" user_id="67056dfba972ea70017477f2217d0b77">
+        <create>
+            <case_type>case</case_type>
+            <case_name>JAckson</case_name>
+            <owner_id>67056dfba972ea70017477f2217d0b77</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-25</date_opened>
+            <sample_choice_question/>
+            <sample_number_question/>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="5e421eb8bf414e03b4871195b869d894" date_modified="2016-07-18T19:55:11.240000Z" user_id="4bc2b147d2e03808b69351c6373defa0">
+        <create>
+            <case_type>case</case_type>
+            <case_name>123</case_name>
+            <owner_id>4bc2b147d2e03808b69351c6373defa0</owner_id>
+        </create>
+        <update>
+            <date_opened>2016-07-18</date_opened>
+            <sample_choice_question/>
+            <sample_number_question/>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="3512eb7c-7a58-4a95-beda-205eb0d7f163" date_modified="2017-04-21T14:38:49.323000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Rudolph</case_name>
+            <owner_id>84c246edf58bfa69e03bdecc39692e1f</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+            <sample_choice_question>choice1</sample_choice_question>
+            <sample_number_question>123</sample_number_question>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18" date_modified="2016-07-12T22:45:34.770000Z" user_id="4bc2b147d2e03808b69351c6373defa0">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Batman Begins</case_name>
+            <owner_id>4bc2b147d2e03808b69351c6373defa0</owner_id>
+        </create>
+        <update>
+            <date_opened>2016-07-12</date_opened>
+            <sample_choice_question>choice2</sample_choice_question>
+            <sample_number_question>123</sample_number_question>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="f70977c4b27f44d391e118592ef8d08b" date_modified="2016-07-18T19:35:46.018000Z" user_id="4bc2b147d2e03808b69351c6373defa0">
+        <create>
+            <case_type>case</case_type>
+            <case_name>w</case_name>
+            <owner_id>4bc2b147d2e03808b69351c6373defa0</owner_id>
+        </create>
+        <update>
+            <date_opened>2016-07-18</date_opened>
+            <sample_choice_question/>
+            <sample_number_question/>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="4a1ac97615a24a5e9dc84d1d098ab52b" date_modified="2017-04-21T12:45:17.754034Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>Batman Begins</case_name>
+            <owner_id>4bc2b147d2e03808b69351c6373defa0</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="9b26f2c9abeb488e95abb3c50fdc47d1" date_modified="2017-04-25T07:57:42.596211Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>123</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-25</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">5e421eb8bf414e03b4871195b869d894</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="b503dc77-f240-4d1e-89cd-69958f52bec4" date_modified="2017-04-25T08:06:24.085000Z" user_id="67056dfba972ea70017477f2217d0b77">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Table</case_name>
+            <owner_id>67056dfba972ea70017477f2217d0b77</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-25</date_opened>
+            <sample_choice_question>choice1</sample_choice_question>
+            <sample_number_question>1</sample_number_question>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="5308815ca6fd4595b5f60698fc643fcc" date_modified="2017-04-21T14:55:45.355323Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>w</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">f70977c4b27f44d391e118592ef8d08b</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="63967819f09246ba846eedbeb712369e" date_modified="2017-04-21T13:44:38.617489Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>w</case_name>
+            <owner_id>4bc2b147d2e03808b69351c6373defa0</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-21</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">f70977c4b27f44d391e118592ef8d08b</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="0d5a83179bad44849d9b26026daa8331" date_modified="2017-04-25T08:36:12.431235Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>Superman</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-25</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">3a028cab-fa70-4611-a423-046d25f3e2f4</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="c4e1f2c8ace647f8877b9b45b117523a" date_modified="2016-08-08T18:25:00.081511Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>Batman Begins</case_name>
+            <owner_id>84c246edf58bfa69e03bdecc39692e1f</owner_id>
+        </create>
+        <update>
+            <date_opened>2016-08-08</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="87e36221bd76466387d2d98f1dc461c5" date_modified="2016-08-08T16:43:26.274086Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>w</case_name>
+            <owner_id>84c246edf58bfa69e03bdecc39692e1f</owner_id>
+        </create>
+        <update>
+            <date_opened>2016-08-08</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">f70977c4b27f44d391e118592ef8d08b</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="3a028cab-fa70-4611-a423-046d25f3e2f4" date_modified="2017-04-25T08:36:41.619000Z" user_id="47ef5ea3cc348fb6538702449c855dcd">
+        <create>
+            <case_type>case</case_type>
+            <case_name>Superman</case_name>
+            <owner_id>67056dfba972ea70017477f2217d0b77</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-25</date_opened>
+            <sample_choice_question>choice1</sample_choice_question>
+            <sample_number_question>1</sample_number_question>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="9f230d994662408e80e19c0700e113ef" date_modified="2017-04-25T08:24:18.559344Z" user_id="">
+        <create>
+            <case_type>commcare-case-claim</case_type>
+            <case_name>JAckson</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-04-25</date_opened>
+        </update>
+        <index>
+            <host case_type="case" relationship="extension">56306779-26a2-4aa5-a952-70c9d8b21e39</host>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="eb6d408324904dfa8bb7e1a108d1c775" date_modified="2017-04-21T12:44:32.696769Z" user_id="callcenter-system">
+        <create>
+            <case_type>commcare-user</case_type>
+            <case_name>claimant</case_name>
+            <owner_id>47ef5ea3cc348fb6538702449c855dcd</owner_id>
+        </create>
+        <update>
+            <external_id>47ef5ea3cc348fb6538702449c855dcd</external_id>
+            <date_opened>2017-04-21</date_opened>
+            <commcare_project>test</commcare_project>
+            <email/>
+            <hq_user_id>47ef5ea3cc348fb6538702449c855dcd</hq_user_id>
+            <language/>
+            <phone_number/>
+            <test>1</test>
+            <username>claimant</username>
+        </update>
+    </case>
+</OpenRosaResponse>

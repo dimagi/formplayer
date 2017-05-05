@@ -6,9 +6,8 @@ import beans.NewSessionRequestBean;
 import hq.CaseAPIs;
 import objects.SerializableFormSession;
 import org.apache.commons.io.IOUtils;
-import org.commcare.api.persistence.UserSqlSandbox;
+import sandbox.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
-import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,7 +16,6 @@ import session.FormSession;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -38,11 +36,23 @@ public class NewFormResponseFactory {
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl, HqAuth auth) throws Exception {
 
         String formXml = getFormXml(bean.getFormUrl(), auth);
-        UserSqlSandbox sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
+        UserSqlSandbox sandbox = CaseAPIs.forceRestore(restoreFactory);
 
-        FormSession formSession = new FormSession(sandbox, parseFormDef(formXml), bean.getUsername(),
-                bean.getDomain(), bean.getSessionData().getData(), postUrl, bean.getLang(), null,
-                bean.getInstanceContent(), bean.getOneQuestionPerScreen(), bean.getRestoreAs(), bean.getSessionData().getAppId());
+        FormSession formSession = new FormSession(
+                sandbox,
+                parseFormDef(formXml),
+                bean.getUsername(),
+                bean.getDomain(),
+                bean.getSessionData().getData(),
+                postUrl,
+                bean.getLang(),
+                null,
+                bean.getInstanceContent(),
+                bean.getOneQuestionPerScreen(),
+                bean.getRestoreAs(),
+                bean.getSessionData().getAppId(),
+                bean.getSessionData().getFunctionContext()
+        );
 
         formSessionRepo.save(formSession.serialize());
         return new NewFormResponse(formSession);
@@ -54,10 +64,7 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        if (serializableFormSession.getRestoreXml() == null) {
-            serializableFormSession.setRestoreXml(restoreFactory.getRestoreXml());
-        }
-        return new FormSession(serializableFormSession);
+        return new FormSession(serializableFormSession, restoreFactory);
     }
 
     private String getFormXml(String formUrl, HqAuth auth) {

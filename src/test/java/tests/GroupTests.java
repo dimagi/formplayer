@@ -1,6 +1,5 @@
 package tests;
 
-import auth.HqAuth;
 import beans.FormEntryResponseBean;
 import beans.NewFormResponse;
 import beans.QuestionBean;
@@ -11,14 +10,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import utils.FileUtils;
 import utils.TestContext;
 
-import java.io.IOException;
-
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 /**
  * Fills out the "Basic Tests > Groups" Form from the QA plan.
@@ -42,7 +36,7 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testConditionalItemsets() throws Exception {
 
-        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json", "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -62,7 +56,6 @@ public class GroupTests extends BaseTestClass{
         cityBean = groupBean.getChildren()[3];
         labelBean = groupBean.getChildren()[2];
 
-        System.out.println("City Bean: " + cityBean);
         assert labelBean.getCaption().equals("Selected county was: ex");
         assert cityBean.getChoices().length == 2;
 
@@ -87,7 +80,7 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testMultiSelectGroups() throws Exception {
 
-        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json", "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -121,6 +114,6 @@ public class GroupTests extends BaseTestClass{
 
     @Test
     public void testInnerOuterGroups() throws Exception {
-        NewFormResponse newSessionResponse = startNewSession("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json", "xforms/groups.xml");
     }
 }

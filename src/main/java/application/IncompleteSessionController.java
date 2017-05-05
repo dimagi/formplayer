@@ -1,7 +1,7 @@
 package application;
 
 import annotations.UserLock;
-import auth.DjangoAuth;
+import annotations.UserRestore;
 import beans.*;
 import exceptions.FormNotFoundException;
 import io.swagger.annotations.Api;
@@ -10,14 +10,12 @@ import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
-import org.javarosa.core.util.externalizable.DeserializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.FormSessionRepo;
-import session.FormSession;
 import util.Constants;
 
 import java.util.ArrayList;
@@ -46,10 +44,10 @@ public class IncompleteSessionController extends AbstractBaseController{
     @ApiOperation(value = "Open an incomplete form session")
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
     @UserLock
+    @UserRestore
     public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session;
-        restoreFactory.configure(incompleteSessionRequestBean, new DjangoAuth(authToken));
         try {
             session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         } catch(FormNotFoundException e) {
@@ -63,11 +61,10 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @ApiOperation(value = "Get a list of the current user's sessions")
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
+    @UserRestore
     public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
-
-        restoreFactory.configure(getSessionRequest, new DjangoAuth(authToken));
 
         // Old CloudCare doesn't use scrubbed usernames
         List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(
@@ -99,11 +96,11 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @ApiOperation(value = "Delete an incomplete form session")
     @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
-    public NotificationMessageBean deleteIncompleteForm(
+    public NotificationMessage deleteIncompleteForm(
             @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         deleteSession(incompleteSessionRequestBean.getSessionId());
-        return new NotificationMessageBean("Successfully deleted incomplete form.", false);
+        return new NotificationMessage("Successfully deleted incomplete form.", false);
     }
 
     protected void deleteSession(String id) {

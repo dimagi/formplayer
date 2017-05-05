@@ -62,6 +62,8 @@ public class Constants {
     // Postgres tables
     public static final String POSTGRES_SESSION_TABLE_NAME = "formplayer_sessions";
     public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
+    // Token table generated from django rest framework
+    public static final String POSTGRES_AUTH_TOKEN_TABLE_NAME = "authtoken_token";
     public static final String POSTGRES_USER_TABLE_NAME = "auth_user";
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
 
@@ -69,6 +71,9 @@ public class Constants {
     public static final String COUCH_USERS_DB = "__users";
 
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
+    public static final String ANONYMOUS_USERNAME = "anonymous_user";
+    public static final int ANONYMOUS_DJANGO_USERID = -1;
+    public static final String COMMCARE_USER_SUFFIX = "commcarehq.org";
 
     public static final Set<Pattern> AUTH_WHITELIST = new HashSet<Pattern>(Arrays.asList(
             Pattern.compile(Constants.URL_SERVER_UP),
@@ -80,6 +85,8 @@ public class Constants {
     ));
 
     public static final int USER_LOCK_TIMEOUT = 120;
+    // 15 minutes in milliseconds
+    public static final int LOCK_DURATION = 60 * 15 * 1000;
 
     // Datadog metrics
     public static final String DATADOG_REQUESTS = "requests";

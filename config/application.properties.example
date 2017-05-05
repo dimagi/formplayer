@@ -6,6 +6,7 @@ logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=INFO
 server.port=8080
 redis.hostname=localhost
 sqlite.dataDir=dbs/  # Must end in /
+sentry.dsn=  # Only needed for production environments
 
 couch.username=commcarehq
 couch.password=commcarehq

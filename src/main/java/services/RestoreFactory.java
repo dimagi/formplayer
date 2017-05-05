@@ -3,10 +3,12 @@ package services;
 import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
+import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.getsentry.raven.event.Breadcrumbs;
 import exceptions.AsyncRetryException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.api.persistence.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.services.PropertyManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,19 +21,30 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.sqlite.SQLiteConnection;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import sandbox.SqlSandboxUtils;
+import sandbox.UserSqlSandbox;
+import util.SentryUtils;
 
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  * then retrieves and returns the restore XML.
  */
 @Component
-public class RestoreFactory {
+public class RestoreFactory implements ConnectionHandler{
     @Value("${commcarehq.host}")
     private String host;
 
@@ -63,45 +76,88 @@ public class RestoreFactory {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private String cachedRestore = null;
+    private Connection connection;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
-        configure(authenticatedRequestBean.getUsername(),
-                authenticatedRequestBean.getDomain(),
-                authenticatedRequestBean.getRestoreAs(),
-                auth);
-    }
-
-    public void configure(String username, String domain, String asUsername, HqAuth auth) {
-        this.setUsername(username);
-        this.setDomain(domain);
-        this.setAsUsername(asUsername);
+        log.info(String.format("configuring RestoreFactory with arguments " +
+                "username = %s, asUsername = %s, domain = %s", username, asUsername, domain));
+        this.setUsername(authenticatedRequestBean.getUsername());
+        this.setDomain(authenticatedRequestBean.getDomain());
+        this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
-        cachedRestore = null;
     }
 
+    public UserSqlSandbox getSqlSandbox() {
+        return new UserSqlSandbox(this);
+    }
+
+    public String getUsernameDetail() {
+        if (asUsername != null) {
+            return username + "_" + asUsername;
+        }
+        return username;
+    }
+
+    @Override
+    public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
+                connection = dataSource.getConnection();
+            } else {
+                if (connection instanceof SQLiteConnection) {
+                    SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
+                    if (!sqLiteConnection.url().contains(getDbPath())) {
+                        log.error(String.format("Had connection with path %s in StorageFactory %s",
+                                sqLiteConnection.url(),
+                                toString()));
+                        DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
+                        connection = dataSource.getConnection();
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return connection;
+    }
+
+    public void closeConnection() {
+        try {
+            if(connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        connection = null;
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        try {
+            getConnection().setAutoCommit(autoCommit);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void commit() {
+        try {
+            getConnection().commit();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public String getDbFile() {
-        if (getAsUsername() == null) {
-            log.info("Restoring to database " + SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db");
-            return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + ".db";
-        }
-        log.info("Restoring to database " + SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + "/" + getAsUsername() + ".db");
-        return SQLiteProperties.getDataDir() + getDomain() + "/" + getUsername() + "/" + getAsUsername() + ".db";
+        return getDbPath() + "/user.db";
     }
 
-    public String getDbPath() {
-        if (asUsername == null) {
-            return SQLiteProperties.getDataDir() + domain;
-        }
-        return SQLiteProperties.getDataDir() + domain + "/" + username;
+    private String getDbPath() {
+        return SQLiteProperties.getDataDir() + domain + "/" + getUsernameDetail();
     }
 
     public String getWrappedUsername() {
         return asUsername == null ? username : asUsername;
-    }
-
-    public UserSqlSandbox getSqlSandbox() {
-        return new UserSqlSandbox(getWrappedUsername(), getDbPath());
     }
 
     private void ensureValidParameters() {
@@ -149,14 +205,11 @@ public class RestoreFactory {
         }
     }
 
-    public String getRestoreXml() {
+    public InputStream getRestoreXml() {
         return getRestoreXml(false);
     }
 
-    public String getRestoreXml(boolean overwriteCache) {
-        if (cachedRestore != null) {
-            return cachedRestore;
-        }
+    public InputStream getRestoreXml(boolean overwriteCache) {
         ensureValidParameters();
 
         String restoreUrl;
@@ -166,10 +219,19 @@ public class RestoreFactory {
             restoreUrl = getRestoreUrl(host, domain, asUsername, overwriteCache);
         }
 
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("restoreUrl", restoreUrl);
+
+        BreadcrumbBuilder builder = new BreadcrumbBuilder();
+        builder.setData(data);
+        builder.setCategory("restore");
+        builder.setMessage("Restoring from URL " + restoreUrl);
+        SentryUtils.recordBreadcrumb(builder.build());
+
         log.info("Restoring from URL " + restoreUrl);
-        cachedRestore = getRestoreXmlHelper(restoreUrl, hqAuth);
+        InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
         setLastSyncTime();
-        return cachedRestore;
+        return restoreStream;
     }
 
     private void setLastSyncTime() {
@@ -243,21 +305,36 @@ public class RestoreFactory {
         );
     }
 
-    private String getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
+    private InputStream getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
         log.info("Restoring at domain: " + domain + " with auth: " + auth);
         HttpHeaders headers = auth.getAuthHeaders();
-        headers.add("x-openrosa-version",  "2.0");
-        ResponseEntity<String> response = restTemplate.exchange(
+        headers.add("x-openrosa-version", "2.0");
+        ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
-                String.class
+                org.springframework.core.io.Resource.class
         );
+
+        // Handle Async restore
         if (response.getStatusCode().value() == 202) {
-            handleAsyncRestoreResponse(response.getBody(), response.getHeaders());
+            String responseBody = null;
+            try {
+                responseBody = IOUtils.toString(response.getBody().getInputStream(), "utf-8");
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to read async restore response", e);
+            }
+            handleAsyncRestoreResponse(responseBody, response.getHeaders());
         }
-        return response.getBody();
+
+        InputStream stream = null;
+        try {
+            stream = response.getBody().getInputStream();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to read restore response", e);
+        }
+        return stream;
     }
 
     public static String getRestoreUrl(String host, String domain, boolean overwriteCache){
@@ -308,9 +385,5 @@ public class RestoreFactory {
 
     public void setAsUsername(String asUsername) {
         this.asUsername = asUsername;
-    }
-
-    public void setCachedRestore(String cachedRestore) {
-        this.cachedRestore = cachedRestore;
     }
 }

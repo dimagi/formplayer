@@ -8,14 +8,22 @@ import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 
+import java.util.ArrayList;
+
 /**
  * Created by willpride on 1/4/17.
  */
 public class EntityDetailListResponse {
 
     private EntityDetailResponse[] entityDetailList;
+    private boolean isPersistentDetail;
 
     public EntityDetailListResponse() {}
+
+    public EntityDetailListResponse(EntityDetailResponse entityDetailResponse) {
+        this.entityDetailList = new EntityDetailResponse[] {entityDetailResponse};
+        this.isPersistentDetail = true;
+    }
 
     public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference) {
         EntityDetailSubscreen[] subscreens = processDetails(screen, ec, treeReference);
@@ -38,10 +46,15 @@ public class EntityDetailListResponse {
             return null;
         }
         EvaluationContext subContext = new EvaluationContext(ec, ref);
-        EntityDetailSubscreen[] ret = new EntityDetailSubscreen[detailList.length];
+        ArrayList<EntityDetailSubscreen> accumulator = new ArrayList<EntityDetailSubscreen>();
         for (int i = 0; i < detailList.length; i++) {
-            ret[i] = new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext));
+            // For now, don't add sub-details
+            if (detailList[i].getNodeset() == null) {
+                accumulator.add(new EntityDetailSubscreen(i, detailList[i], subContext, screen.getDetailListTitles(subContext)));
+            }
         }
+        EntityDetailSubscreen[] ret = new EntityDetailSubscreen[accumulator.size()];
+        accumulator.toArray(ret);
         return ret;
     }
 
@@ -53,5 +66,15 @@ public class EntityDetailListResponse {
     @JsonSetter(value = "details")
     public void setEntityDetailList(EntityDetailResponse[] entityDetailList) {
         this.entityDetailList = entityDetailList;
+    }
+
+    @JsonGetter(value = "isPersistentDetail")
+    public boolean getPersistentDetail() {
+        return isPersistentDetail;
+    }
+
+    @JsonSetter(value = "isPersistentDetail")
+    public void setPersistentDetail(boolean persistentDetail) {
+        this.isPersistentDetail = persistentDetail;
     }
 }

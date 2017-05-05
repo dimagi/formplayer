@@ -1,0 +1,43 @@
+{
+  "instance-content": "<?xml version='1.0' ?><data uiVersion=\"1\" version=\"2\" name=\"Male Breast\" xmlns:jrm=\"http://dev.commcarehq.org/jr/xforms\" xmlns=\"http://openrosa.org/formdesigner/89277f89f09aa858ab2a4c1d5881acfcb07a1db1\"><phone /><datetoday>2016-11-14</datetoday><datenow>2016-11-14T21:24:00.334Z</datenow><client>123</client><phone_names>Will</phone_names><age /><results /><instanceID>uuid:cce953ec-2deb-4bdf-b44b-ab675f42123f</instanceID><n0:meta xmlns:n0=\"http://openrosa.org/jr/xforms\"><n0:deviceID>cloudcare</n0:deviceID><n0:timeStart>2016-11-14T21:35:45.334Z</n0:timeStart><n0:timeEnd>2016-11-14T21:24:00.334Z</n0:timeEnd><n0:username>test</n0:username><n0:userID>84c246edf58bfa69e03bdecc39692e1f</n0:userID><n0:instanceID>f795ca0d-1e16-429b-a769-3abeb53c8c2a</n0:instanceID><n1:appVersion xmlns:n1=\"http://commcarehq.org/xforms\">2.0</n1:appVersion><n2:location xmlns:n2=\"http://commcarehq.org/xforms\" /></n0:meta></data>",
+  "lang": "en",
+  "session-data": {
+    "username": "test",
+    "additional_filters": {
+      "footprint": true
+    },
+    "domain": "test",
+    "user_id": "84c246edf58bfa69e03bdecc39692e1f",
+    "session_name": "Application > Form",
+    "app_version": "2.0",
+    "app_id": "264220464efc8df66a8de6a6ba422c9f",
+    "user_data": {
+      "test": "1",
+      "commcare_project": "test",
+      "commcare_last_name": "",
+      "commcare_phone_number": null,
+      "commcare_first_name": ""
+    },
+    "device_id": "cloudcare",
+    "function_context": {
+      "static-date": [
+        {
+          "name": "now",
+          "value": "2016-11-14T21:24:00.334Z"
+        },
+        {
+          "name": "today",
+          "value": "2016-11-14"
+        }
+      ]
+    },
+    "is_editing": true,
+    "host": "http://localhost:8000"
+  },
+  "domain": "test",
+  "post_url": "/a/test/receiver/secure/264220464efc8df66a8de6a6ba422c9f/",
+  "oneQuestionPerScreen": false,
+  "form-url": "http://localhost:8000/a/test/apps/download/264220464efc8df66a8de6a6ba422c9f/modules-0/forms-0.xml",
+  "username": "wpride@dimagi.com",
+  "restoreAs": "test"
+}

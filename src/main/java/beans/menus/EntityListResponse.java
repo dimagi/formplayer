@@ -2,8 +2,12 @@ package beans.menus;
 
 import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
+import org.commcare.core.graph.model.GraphData;
+import org.commcare.core.graph.util.GraphException;
+import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
+import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
@@ -44,17 +48,26 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse() {}
 
-    public EntityListResponse(EntityScreen nextScreen, int offset, String searchText, String id) {
+    public EntityListResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
         Detail shortDetail = nextScreen.getShortDetail();
         nextScreen.getLongDetailList();
 
         EvaluationContext ec = nextScreen.getEvalContext();
+        EntityDatum datum = (EntityDatum) session.getNeededDatum();
 
-        Vector<TreeReference> references = ec.expandReference(((EntityDatum) session.getNeededDatum()).getNodeset());
+        // When detailSelection is not null it means we're processing a case detail, not a case list.
+        // We will shortcircuit the computation to just get the relevant detailSelection.
+        if (detailSelection != null) {
+            TreeReference reference = datum.getEntityFromID(ec, detailSelection);
+            processEntitiesForCaseDetail(nextScreen, reference, ec);
+        } else {
+            Vector<TreeReference> references = ec.expandReference(datum.getNodeset());
+            processEntitiesForCaseList(nextScreen, references, ec, offset, searchText);
+        }
+
         processTitle(session);
         processCaseTiles(shortDetail);
-        processEntities(nextScreen, references, ec, offset, searchText);
         processStyles(shortDetail);
         processActions(nextScreen.getSession());
         processHeader(shortDetail, ec);
@@ -88,7 +101,11 @@ public class EntityListResponse extends MenuBean {
         widthHints = pair.second;
     }
 
-    private void processEntities(EntityScreen screen, Vector<TreeReference> references,
+    private void processEntitiesForCaseDetail(EntityScreen screen, TreeReference reference, EvaluationContext ec) {
+        entities = new EntityBean[]{processEntity(reference, screen, ec)};
+    }
+
+    private void processEntitiesForCaseList(EntityScreen screen, Vector<TreeReference> references,
                                  EvaluationContext ec,
                                  int offset,
                                  String searchText) {
@@ -145,7 +162,7 @@ public class EntityListResponse extends MenuBean {
         List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
         sort(matched, shortDetail);
 
-        if (matched.size() > CASE_LENGTH_LIMIT && !(numEntitiesPerRow > 1)) {
+        if (matched.size() > CASE_LENGTH_LIMIT && !(shortDetail.getNumEntitiesToDisplayPerRow() > 1)) {
             // we're doing pagination
             setCurrentPage(offset / CASE_LENGTH_LIMIT);
             setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
@@ -187,7 +204,15 @@ public class EntityListResponse extends MenuBean {
         for (DetailField field : fields) {
             Object o;
             o = field.getTemplate().evaluate(context);
-            data[i] = o;
+            if(o instanceof GraphData) {
+                try {
+                    data[i] = GraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
+                } catch (GraphException e) {
+                    data[i] = "<html><body>Error loading graph " + e + "</body></html>";
+                }
+            } else {
+                data[i] = o;
+            }
             i++;
         }
         ret.setData(data);
@@ -206,7 +231,11 @@ public class EntityListResponse extends MenuBean {
     }
 
     private void processActions(SessionWrapper session) {
-        Vector<Action> actions = session.getDetail(((EntityDatum) session.getNeededDatum()).getShortDetail()).getCustomActions(session.getEvaluationContext());
+        EntityDatum datum = (EntityDatum) session.getNeededDatum();
+        if (session.getFrame().getSteps().lastElement().getElementType().equals(SessionFrame.STATE_QUERY_REQUEST)) {
+            return;
+        }
+        Vector<Action> actions = session.getDetail((datum).getShortDetail()).getCustomActions(session.getEvaluationContext());
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action: actions) {
             displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
