@@ -384,7 +384,7 @@ public class MenuController extends AbstractBaseController {
             return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
         }
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            CaseAPIs.forceRestore(restoreFactory);
+            CaseAPIs.performSync(restoreFactory, false);
             return new NotificationMessage("Case claim successful.", false);
         } else {
             return new NotificationMessage(
