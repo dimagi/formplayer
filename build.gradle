@@ -41,7 +41,7 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core'
-    compile group: 'org.json', name:'json'
+    compile 'org.json:json:20140107'
     compile group: 'org.apache.httpcomponents', name: 'httpclient'
     compile group: 'org.postgresql', name: 'postgresql'
     compile group: 'org.flywaydb', name: 'flyway-core'
