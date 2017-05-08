@@ -13,6 +13,7 @@ import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
+import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.FormDef;
@@ -41,6 +42,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -221,7 +223,7 @@ public class MenuSession {
         }
     }
 
-    private HashMap<String, String> getSessionData() {
+    public HashMap<String, String> getSessionData() {
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
         HashMap<String, String> ret = new HashMap<>();
         for (String key : sessionData.keySet()) {
@@ -327,5 +329,20 @@ public class MenuSession {
 
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    public String[] getSessionStack() {
+        ArrayList<String> steps = new ArrayList<>();
+        SessionFrame frame = sessionWrapper.getFrame();
+        for (StackFrameStep step : frame.getSteps()) {
+            if (step.getType().equals(SessionFrame.STATE_COMMAND_ID)) {
+                steps.add("COMMAND: " + step.getId());
+            } else {
+                steps.add("DATUM : " + step.getId() + " - " + step.getValue());
+            }
+        }
+        String[] ret = new String[steps.size()];
+        steps.toArray(ret);
+        return ret;
     }
 }
