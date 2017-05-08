@@ -12,6 +12,7 @@ public class PropertyUtils {
     public final static String NONE = "none";
 
     public static final String ENABLE_BULK_PERFORMANCE = "cc-enable-bulk-performance";
+    public static final String AUTO_PURGE_ENABLED = "cc-auto-purge";
 
     private static boolean doesPropertyMatch(String key, String defaultValue, String matchingValue) {
         try {
@@ -24,5 +25,9 @@ public class PropertyUtils {
 
     public static boolean isBulkPerformanceEnabled() {
         return doesPropertyMatch(ENABLE_BULK_PERFORMANCE, NO, YES);
+    }
+
+    public static boolean isAutoPurgeEnabled() {
+        return doesPropertyMatch(AUTO_PURGE_ENABLED, NO, YES);
     }
 }

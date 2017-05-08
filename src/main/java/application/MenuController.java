@@ -3,18 +3,18 @@ package application;
 import annotations.AppInstall;
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.BasicAuth;
-import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.NewFormResponse;
-import beans.NotificationMessageBean;
+import beans.NotificationMessage;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import beans.menus.EntityDetailListResponse;
+import beans.menus.EntityDetailResponse;
 import beans.menus.UpdateRequestBean;
 import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
+import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
@@ -23,21 +23,24 @@ import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.endpoint.SystemPublicMetrics;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
+import services.QueryRequester;
+import services.SyncRequester;
 import session.FormSession;
 import session.MenuSession;
 import util.ApplicationUtils;
 import util.Constants;
 import util.SessionUtils;
-import util.UserUtils;
 
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -47,10 +50,16 @@ import java.util.Hashtable;
 @Api(value = "Menu Controllers", description = "Operations for navigating CommCare Menus and Cases")
 @RestController
 @EnableAutoConfiguration
-public class MenuController extends AbstractBaseController{
+public class MenuController extends AbstractBaseController {
 
     @Value("${commcarehq.host}")
     private String host;
+
+    @Autowired
+    private QueryRequester queryRequester;
+
+    @Autowired
+    private SyncRequester syncRequester;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -70,7 +79,7 @@ public class MenuController extends AbstractBaseController{
     @UserRestore
     @AppInstall
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
-                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
@@ -78,9 +87,9 @@ public class MenuController extends AbstractBaseController{
                 FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()), restoreFactory);
                 updatedSession.reloadSession(oldSession);
                 return new NewFormResponse(oldSession);
-            } catch(FormNotFoundException e) {
+            } catch (FormNotFoundException e) {
                 log.info("FormSession with id " + updateRequestBean.getSessionId() + " not found, returning root");
-            } catch(Exception e) {
+            } catch (Exception e) {
                 log.info("FormSession with id " + updateRequestBean.getSessionId()
                         + " failed to load with exception " + e);
             }
@@ -120,8 +129,14 @@ public class MenuController extends AbstractBaseController{
                 sessionNavigationBean.getSearchText()
         );
         Screen currentScreen = menuSession.getNextScreen();
+
         if (!(currentScreen instanceof EntityScreen)) {
-            throw new RuntimeException("Tried to get details while not on a case list.");
+            // See if we have a persistent case tile to expand
+            EntityDetailResponse detail = getPersistentCaseTile(menuSession);
+            if (detail == null) {
+                throw new RuntimeException("Tried to get details while not on a case list.");
+            }
+            return new EntityDetailListResponse(detail);
         }
         EntityScreen entityScreen = (EntityScreen) currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
@@ -151,17 +166,15 @@ public class MenuController extends AbstractBaseController{
     @UserRestore
     @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
-                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        MenuSession menuSession;
+                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         HqAuth auth = getAuthHeaders(
                 sessionNavigationBean.getDomain(),
                 sessionNavigationBean.getUsername(),
                 authToken
         );
-        menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         String[] selections = sessionNavigationBean.getSelections();
-        return advanceSessionWithSelections(
-                menuSession,
+        BaseResponseBean response = advanceSessionWithSelections(
+                getMenuSessionFromBean(sessionNavigationBean, authToken),
                 selections,
                 auth,
                 null,
@@ -169,6 +182,7 @@ public class MenuController extends AbstractBaseController{
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText()
         );
+        return response;
     }
 
     private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
@@ -190,7 +204,7 @@ public class MenuController extends AbstractBaseController{
             menuSession.getSessionWrapper().syncState();
         } else {
             // If we have a preview command, load that up
-            if(sessionNavigationBean.getPreviewCommand() != null){
+            if (sessionNavigationBean.getPreviewCommand() != null) {
                 menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
             } else {
                 menuSession = performInstall(sessionNavigationBean, authToken);
@@ -203,28 +217,27 @@ public class MenuController extends AbstractBaseController{
      * Advances the session based on the selections.
      *
      * @param menuSession
-     * @param selections - Selections are either an integer index into a list of modules
-     * or a case id indicating the case selected for a case detail.
-     *
-     * An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
-     *
-     * This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
-     *
+     * @param selections      - Selections are either an integer index into a list of modules
+     *                        or a case id indicating the case selected for a case detail.
+     *                        <p>
+     *                        An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+     *                        <p>
+     *                        This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
      * @param auth
      * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
-     * it is used to short circuit the normal TreeReference calculation by inserting a predicate that
-     * is [@case_id = <detailSelection>].
+     *                        it is used to short circuit the normal TreeReference calculation by inserting a predicate that
+     *                        is [@case_id = <detailSelection>].
      * @param queryDictionary
      * @param offset
      * @param searchText
-     *  */
+     */
     private BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
-                                              String[] selections,
-                                              HqAuth auth,
-                                              String detailSelection,
-                                              Hashtable<String, String> queryDictionary,
-                                              int offset,
-                                              String searchText) throws Exception {
+                                                          String[] selections,
+                                                          HqAuth auth,
+                                                          String detailSelection,
+                                                          Hashtable<String, String> queryDictionary,
+                                                          int offset,
+                                                          String searchText) throws Exception {
         BaseResponseBean nextMenu;
         // If we have no selections, we're are the root screen.
         if (selections == null) {
@@ -238,30 +251,34 @@ public class MenuController extends AbstractBaseController{
 
         String[] titles = new String[selections.length + 1];
         titles[0] = SessionUtils.getAppTitle();
-        NotificationMessageBean notificationMessageBean = new NotificationMessageBean();
+        NotificationMessage notificationMessage = new NotificationMessage();
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
             boolean gotNextScreen = menuSession.handleInput(selection);
             if (!gotNextScreen) {
-                notificationMessageBean = new NotificationMessageBean(
+                notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i, (true));
                 break;
             }
             titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             Screen nextScreen = menuSession.getNextScreen();
 
-            notificationMessageBean = checkDoQuery(
-                    nextScreen,
-                    menuSession,
-                    queryDictionary
-            );
-
-            BaseResponseBean syncResponse = checkDoSync(nextScreen,
-                    menuSession,
-                    notificationMessageBean,
-                    auth);
-            if (syncResponse != null) {
-                return syncResponse;
+            if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
+                notificationMessage = doQuery(
+                        (FormplayerQueryScreen) nextScreen,
+                        menuSession,
+                        queryDictionary
+                );
+            }
+            if (nextScreen instanceof FormplayerSyncScreen) {
+                BaseResponseBean syncResponse = doSyncGetNext(
+                        (FormplayerSyncScreen) nextScreen,
+                        menuSession,
+                        auth,
+                        selections);
+                if (syncResponse != null) {
+                    return syncResponse;
+                }
             }
         }
         nextMenu = getNextMenu(
@@ -272,15 +289,19 @@ public class MenuController extends AbstractBaseController{
                 titles
         );
         if (nextMenu != null) {
-            nextMenu.setNotification(notificationMessageBean);
+            nextMenu.setNotification(notificationMessage);
             log.info("Returning menu: " + nextMenu);
             return nextMenu;
         } else {
-            return new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
+            BaseResponseBean responseBean = resolveFormGetNext(menuSession);
+            if (responseBean == null) {
+                responseBean = new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
+            }
+            return responseBean;
         }
     }
 
-    private MenuSession handlePreviewCommand(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception{
+    private MenuSession handlePreviewCommand(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
         MenuSession menuSession;
         // When previewing, clear and reinstall DBs to get newest version
         // Big TODO: app updates
@@ -294,7 +315,7 @@ public class MenuController extends AbstractBaseController{
         try {
             menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
             menuSession.updateScreen();
-        } catch(ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             throw new RuntimeException("Couldn't get entries from preview command "
                     + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
                     " please report a bug to the CommCareHQ Team.");
@@ -305,81 +326,85 @@ public class MenuController extends AbstractBaseController{
     /**
      * If we've encountered a QueryScreen and have a QueryDictionary, do the query
      * and update the session, screen, and notification message accordingly.
-     *
+     * <p>
      * Will do nothing if this wasn't a query screen.
      */
-    private NotificationMessageBean checkDoQuery(Screen nextScreen,
-                              MenuSession menuSession,
-                              Hashtable<String, String> queryDictionary) throws CommCareSessionException {
-        if(nextScreen instanceof FormplayerQueryScreen && queryDictionary != null){
-            log.info("Formplayer doing query with dictionary " + queryDictionary);
-            NotificationMessageBean notificationMessageBean = doQuery((FormplayerQueryScreen) nextScreen,
-                    queryDictionary);
-            menuSession.updateScreen();
-            nextScreen = menuSession.getNextScreen();
-            log.info("Next screen after query: " + nextScreen);
-            return notificationMessageBean;
+    private NotificationMessage doQuery(FormplayerQueryScreen screen,
+                                        MenuSession menuSession,
+                                        Hashtable<String, String> queryDictionary) throws CommCareSessionException {
+        log.info("Formplayer doing query with dictionary " + queryDictionary);
+        NotificationMessage notificationMessage;
+        screen.answerPrompts(queryDictionary);
+        String responseString = queryRequester.makeQueryRequest(screen.getUriString(), screen.getAuthHeaders());
+        boolean success = screen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
+        if (success) {
+            notificationMessage = new NotificationMessage("Successfully queried server", false);
+        } else {
+            notificationMessage = new NotificationMessage("Query failed with message " + screen.getCurrentMessage(), true);
         }
-        return null;
-    }
-
-    protected NotificationMessageBean doQuery(FormplayerQueryScreen nextScreen,
-                                              Hashtable<String, String> queryDictionary) {
-        nextScreen.answerPrompts(queryDictionary);
-        InputStream responseStream = nextScreen.makeQueryRequestReturnStream();
-        boolean success = nextScreen.processSuccess(responseStream);
-        if(success){
-            return new NotificationMessageBean("Successfully queried server", false);
-        } else{
-            return new NotificationMessageBean("Query failed with message " + nextScreen.getCurrentMessage(), true);
-        }
+        menuSession.updateScreen();
+        Screen nextScreen = menuSession.getNextScreen();
+        log.info("Next screen after query: " + nextScreen);
+        return notificationMessage;
     }
 
     /**
-     * If we've encountered a sync screen, performing the sync and update the notification
-     * and screen accordingly. After a sync, we can either pop another menu/form to begin
+     * Perform the sync and update the notification and screen accordingly.
+     * After a sync, we can either pop another menu/form to begin
      * or just return to the app menu.
-     *
-     * Return null if this wasn't a sync screen.
      */
-    private BaseResponseBean checkDoSync(Screen nextScreen,
-                             MenuSession menuSession,
-                             NotificationMessageBean notificationMessageBean,
-                             HqAuth auth) throws Exception {
-        // If we've encountered a SyncScreen, perform the sync
-        if(nextScreen instanceof FormplayerSyncScreen){
-            notificationMessageBean = doSync(
-                    (FormplayerSyncScreen) nextScreen,
-                    auth
-            );
+    private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
+                                           MenuSession menuSession,
+                                           HqAuth auth,
+                                           String[] selections) throws Exception {
+        NotificationMessage notificationMessage = doSync(
+                nextScreen,
+                auth
+        );
 
-            BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
-            if(postSyncResponse != null){
-                // If not null, we have a form or menu to redirect to
-                postSyncResponse.setNotification(notificationMessageBean);
-                return postSyncResponse;
-            } else{
-                // Otherwise, return use to the app root
-                postSyncResponse = new BaseResponseBean(null, "Redirecting after sync", false, true);
-                postSyncResponse.setNotification(notificationMessageBean);
-                return postSyncResponse;
-            }
-        }
-        return null;
-    }
-
-    private NotificationMessageBean doSync(FormplayerSyncScreen screen, HqAuth auth) throws Exception {
-        ResponseEntity<String> responseEntity = screen.launchRemoteSync(auth);
-        if(responseEntity == null){
-            return new NotificationMessageBean("Session error, expected sync block but didn't get one.", true);
-        }
-        if(responseEntity.getStatusCode().is2xxSuccessful()){
-            return new NotificationMessageBean("Case claim successful", false);
-        } else{
-            return new NotificationMessageBean("Case claim failed with message: " + responseEntity.getBody(), true);
+        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+        if (postSyncResponse != null) {
+            // If not null, we have a form or menu to redirect to
+            postSyncResponse.setNotification(notificationMessage);
+            postSyncResponse.setSelections(trimCaseClaimSelections(selections));
+            return postSyncResponse;
+        } else {
+            // Otherwise, return use to the app root
+            postSyncResponse = new BaseResponseBean(null, "Redirecting after sync", false, true);
+            postSyncResponse.setNotification(notificationMessage);
+            return postSyncResponse;
         }
     }
 
+    private NotificationMessage doSync(FormplayerSyncScreen screen, HqAuth auth) throws Exception {
+        ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
+                screen.getBuiltQuery(),
+                auth.getAuthHeaders());
+        if (responseEntity == null) {
+            return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
+        }
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            CaseAPIs.forceRestore(restoreFactory);
+            return new NotificationMessage("Case claim successful.", false);
+        } else {
+            return new NotificationMessage(
+                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true);
+        }
+    }
+
+    private String[] trimCaseClaimSelections(String[] selections) {
+        String actionSelections = selections[selections.length - 2];
+        if (!actionSelections.contains("action")) {
+            log.error(String.format("Selections %s did not contain expected action at position %s.",
+                    Arrays.toString(selections),
+                    selections[selections.length - 2]));
+            return selections;
+        }
+        String[] newSelections = new String[selections.length - 1];
+        System.arraycopy(selections, 0, newSelections, 0, selections.length - 2);
+        newSelections[selections.length - 2] = selections[selections.length - 1];
+        return newSelections;
+    }
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
         HqAuth auth = getAuthHeaders(

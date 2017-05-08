@@ -3,8 +3,6 @@ package application;
 import annotations.NoLogging;
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
@@ -15,7 +13,6 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import sandbox.UserSqlSandbox;
 import util.Constants;
 
 import java.io.StringReader;
@@ -50,7 +47,7 @@ public class UtilController extends AbstractBaseController {
     @ApiOperation(value = "Wipe the applications databases")
     @RequestMapping(value = Constants.URL_DELETE_APPLICATION_DBS, method = RequestMethod.POST)
     @UserLock
-    public NotificationMessageBean deleteApplicationDbs(
+    public NotificationMessage deleteApplicationDbs(
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
@@ -58,7 +55,7 @@ public class UtilController extends AbstractBaseController {
         if (!success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
-        return new NotificationMessageBean(message, !success);
+        return new NotificationMessage(message, !success);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")

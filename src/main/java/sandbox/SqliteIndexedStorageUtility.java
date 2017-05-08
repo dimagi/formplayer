@@ -6,6 +6,7 @@ import org.commcare.modern.util.Pair;
 import org.javarosa.core.services.Logger;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.storage.EntityFilter;
+import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
@@ -270,25 +271,42 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         }
         return -1;
     }
-
     @Override
-    public JdbcSqlStorageIterator<T> iterate() {
+    public AbstractSqlIterator<T> iterate() {
+        return iterate(true);
+    }
+
+    public AbstractSqlIterator<T> iterate(boolean includeData) {
         Connection connection;
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         try {
             connection = this.getConnection();
-            String sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL + " , " +
+            String sqlQuery;
+            if (includeData) {
+                sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL + " , " +
                     org.commcare.modern.database.DatabaseHelper.DATA_COL + " FROM " + this.tableName + ";";
+            } else {
+                sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL +" FROM " + this.tableName + ";";
+            }
             preparedStatement = connection.prepareStatement(sqlQuery);
             resultSet = preparedStatement.executeQuery();
 
             ArrayList<T> backingList = new ArrayList<>();
+            ArrayList<Integer> idSet = new ArrayList<>();
             while (resultSet.next()) {
-                T t = newObject(resultSet.getBytes(DatabaseHelper.DATA_COL), resultSet.getInt(DatabaseHelper.ID_COL));
-                backingList.add(t);
+                if (includeData) {
+                    T t = newObject(resultSet.getBytes(DatabaseHelper.DATA_COL), resultSet.getInt(DatabaseHelper.ID_COL));
+                    backingList.add(t);
+                } else {
+                    idSet.add(resultSet.getInt(DatabaseHelper.ID_COL));
+                }
             }
-            return new JdbcSqlStorageIterator<>(backingList);
+            if (includeData) {
+                return new JdbcSqlStorageIterator<>(backingList);
+            } else {
+                return new JdbcSqlIndexIterator(idSet);
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -374,7 +392,34 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
     // not yet implemented
     @Override
     public Vector<Integer> removeAll(EntityFilter ef) {
-        return null;
+        Vector<Integer> removed = new Vector<>();
+        for (IStorageIterator iterator = this.iterate(); iterator.hasMore(); ) {
+            int id = iterator.nextID();
+            switch (ef.preFilter(id, null)) {
+                case EntityFilter.PREFILTER_INCLUDE:
+                    removed.add(id);
+                    continue;
+                case EntityFilter.PREFILTER_EXCLUDE:
+                    continue;
+                case EntityFilter.PREFILTER_FILTER:
+                    if (ef.matches(read(id))) {
+                        removed.add(id);
+                    }
+            }
+        }
+
+        if (removed.size() == 0) {
+            return removed;
+        }
+
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(removed);
+
+        for (Pair<String, String[]> whereParams : whereParamList) {
+            SqlHelper.deleteFromTableWhere(getConnection(), tableName,
+                    DatabaseHelper.ID_COL + " IN " + whereParams.first, whereParams.second);
+        }
+
+        return removed;
     }
 
     @Override

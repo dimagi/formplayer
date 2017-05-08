@@ -1,6 +1,6 @@
 package beans.menus;
 
-import beans.NotificationMessageBean;
+import beans.NotificationMessage;
 import org.commcare.modern.session.SessionWrapper;
 import util.SessionUtils;
 
@@ -12,17 +12,18 @@ import util.SessionUtils;
  *  NOTE: clearSession causes all other displayables to be disregarded
  */
 public class BaseResponseBean {
-    protected NotificationMessageBean notification;
+    protected NotificationMessage notification;
     protected String title;
     protected boolean clearSession;
     private String appId;
     private String appVersion;
+    private String[] selections;
 
     public BaseResponseBean() {}
 
     public BaseResponseBean(String title, String message, boolean isError, boolean clearSession){
         this.title = title;
-        this.notification = new NotificationMessageBean(message, isError);
+        this.notification = new NotificationMessage(message, isError);
         this.clearSession = clearSession;
     }
 
@@ -38,11 +39,11 @@ public class BaseResponseBean {
         this.title = title;
     }
 
-    public NotificationMessageBean getNotification() {
+    public NotificationMessage getNotification() {
         return notification;
     }
 
-    public void setNotification(NotificationMessageBean notification) {
+    public void setNotification(NotificationMessage notification) {
         this.notification = notification;
     }
 
@@ -74,5 +75,13 @@ public class BaseResponseBean {
 
     public void setAppVersion(String appVersion) {
         this.appVersion = appVersion;
+    }
+
+    public String[] getSelections() {
+        return selections;
+    }
+
+    public void setSelections(String[] selections) {
+        this.selections = selections;
     }
 }

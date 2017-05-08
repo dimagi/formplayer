@@ -34,6 +34,7 @@ import services.InstallService;
 import services.RestoreFactory;
 import util.Constants;
 import util.SessionUtils;
+import util.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -192,7 +193,9 @@ public class MenuSession {
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
-            FormplayerSyncScreen syncScreen = new FormplayerSyncScreen();
+            String username = asUser != null ?
+                    StringUtils.getFullUsername(asUser, domain, Constants.COMMCARE_USER_SUFFIX) : null;
+            FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
             syncScreen.init(sessionWrapper);
             return syncScreen;
         }
@@ -214,11 +217,7 @@ public class MenuSession {
             sessionWrapper.setXmlns(FunctionUtils.toString(form.eval(ec)));
             sessionWrapper.setDatum("", "awful");
         } else {
-            try {
-                sessionWrapper.setDatum(datum.getDataId(), FunctionUtils.toString(form.eval(ec)));
-            } catch (XPathException e) {
-                throw new RuntimeException(e);
-            }
+            sessionWrapper.setDatum(datum.getDataId(), FunctionUtils.toString(form.eval(ec)));
         }
     }
 

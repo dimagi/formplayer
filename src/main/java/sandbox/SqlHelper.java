@@ -6,11 +6,8 @@ import org.javarosa.core.services.Logger;
 import org.javarosa.core.services.storage.Persistable;
 
 import java.io.ByteArrayInputStream;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.PrintStream;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +24,66 @@ import java.util.Map;
  */
 public class SqlHelper {
 
-    public static final boolean SQL_DEBUG = true;
+    public static final boolean SQL_DEBUG = false;
+
+    public static void explainSql(Connection c, String sql, String[] args) {
+        PreparedStatement preparedStatement = null;
+        try {
+            preparedStatement = c.prepareStatement("EXPLAIN QUERY PLAN " + sql);
+            for (int i = 1; i <= args.length; i++) {
+                preparedStatement.setString(i, args[i-1]);
+            }
+            ResultSet resultSet = preparedStatement.executeQuery();
+            dumpResultSet(resultSet);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Prints the contents of a Cursor to System.out. The position is restored
+     * after printing.
+     *
+     * @param resultSet the ResultSet to print
+     */
+    public static void dumpResultSet(ResultSet resultSet) throws SQLException {
+        dumpResultSet(resultSet, System.out);
+    }
+
+    /**
+     * Prints the contents of a Cursor to a PrintSteam. The position is restored
+     * after printing.
+     *
+     * @param resultSet the ResultSet to print
+     * @param stream the stream to print to
+     */
+    public static void dumpResultSet(ResultSet resultSet, PrintStream stream) throws SQLException {
+        stream.println(">>>>> Dumping cursor " + resultSet);
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        while (resultSet.next()) {
+            dumpResultSetRow(metaData, resultSet, stream);
+        }
+        stream.println("<<<<<");
+    }
+
+    private static void dumpResultSetRow(ResultSetMetaData metaData, ResultSet resultSet, PrintStream stream) throws SQLException {
+        stream.println("" + resultSet.getRow() + " {");
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+            if (i > 1) stream.print(",  ");
+            String columnValue = resultSet.getString(i);
+            stream.println("   " + metaData.getColumnName(i) + "=" + columnValue);
+        }
+        stream.println("}");
+    }
 
     public static void dropTable(Connection c, String storageKey) {
         String sqlStatement = "DROP TABLE IF EXISTS " + storageKey;
@@ -54,6 +110,16 @@ public class SqlHelper {
         try {
             preparedStatement = c.prepareStatement(sqlStatement);
             preparedStatement.execute();
+            if (storageKey.equals(UserSqlSandbox.FORMPLAYER_CASE)) {
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_id_index", UserSqlSandbox.FORMPLAYER_CASE, "case_id"));
+                preparedStatement.execute();
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_type_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type"));
+                preparedStatement.execute();
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_index", UserSqlSandbox.FORMPLAYER_CASE, "case_status"));
+                preparedStatement.execute();
+                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_open_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type,case_status"));
+                preparedStatement.execute();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {

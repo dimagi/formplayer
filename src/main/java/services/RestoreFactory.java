@@ -3,6 +3,8 @@ package services;
 import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
+import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.getsentry.raven.event.Breadcrumbs;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -27,6 +29,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sandbox.SqlSandboxUtils;
 import sandbox.UserSqlSandbox;
+import util.SentryUtils;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -40,6 +43,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -213,6 +218,15 @@ public class RestoreFactory implements ConnectionHandler{
         } else {
             restoreUrl = getRestoreUrl(host, domain, asUsername, overwriteCache);
         }
+
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("restoreUrl", restoreUrl);
+
+        BreadcrumbBuilder builder = new BreadcrumbBuilder();
+        builder.setData(data);
+        builder.setCategory("restore");
+        builder.setMessage("Restoring from URL " + restoreUrl);
+        SentryUtils.recordBreadcrumb(builder.build());
 
         log.info("Restoring from URL " + restoreUrl);
         InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);

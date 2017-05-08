@@ -2,8 +2,6 @@ package application;
 
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import exceptions.FormNotFoundException;
 import io.swagger.annotations.Api;
@@ -12,14 +10,12 @@ import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
-import org.javarosa.core.util.externalizable.DeserializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import repo.FormSessionRepo;
-import session.FormSession;
 import util.Constants;
 
 import java.util.ArrayList;
@@ -100,11 +96,11 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @ApiOperation(value = "Delete an incomplete form session")
     @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
-    public NotificationMessageBean deleteIncompleteForm(
+    public NotificationMessage deleteIncompleteForm(
             @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         deleteSession(incompleteSessionRequestBean.getSessionId());
-        return new NotificationMessageBean("Successfully deleted incomplete form.", false);
+        return new NotificationMessage("Successfully deleted incomplete form.", false);
     }
 
     protected void deleteSession(String id) {
