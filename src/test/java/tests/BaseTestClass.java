@@ -7,6 +7,7 @@ import beans.*;
 import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.getsentry.raven.Raven;
 import installers.FormplayerInstallerFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -88,6 +89,9 @@ public class BaseTestClass {
     private NewFormResponseFactory newFormResponseFactoryMock;
 
     @Autowired
+    protected Raven ravenMock;
+
+    @Autowired
     protected LockRegistry userLockRegistry;
 
     @Autowired
@@ -133,6 +137,7 @@ public class BaseTestClass {
         Mockito.reset(formplayerInstallerFactory);
         Mockito.reset(queryRequester);
         Mockito.reset(syncRequester);
+        Mockito.reset(ravenMock);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
