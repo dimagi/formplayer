@@ -6,7 +6,6 @@ import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
-import sandbox.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.CommCareSession;
@@ -20,7 +19,6 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
@@ -28,6 +26,7 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
 import repo.SerializableMenuSession;
+import sandbox.UserSqlSandbox;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
@@ -41,7 +40,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
@@ -71,6 +72,7 @@ public class MenuSession {
     private String appId;
     private HqAuth auth;
     private boolean oneQuestionPerScreen;
+    ArrayList<String> titles;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, HqAuth auth, String host) throws Exception {
@@ -93,6 +95,8 @@ public class MenuSession {
         sessionWrapper.syncState();
         this.screen = getNextScreen();
         this.appId = session.getAppId();
+        this.titles = new ArrayList<>();
+        titles.add(SessionUtils.getAppTitle());
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -112,6 +116,8 @@ public class MenuSession {
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+        this.titles = new ArrayList<>();
+        this.titles.add(SessionUtils.getAppTitle());
     }
     
     public void updateApp(String updateMode) {
@@ -158,14 +164,31 @@ public class MenuSession {
         }
         try {
             boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
+            Screen previousScreen = screen;
             screen = getNextScreen();
             log.info("Screen " + screen + " set to " + ret);
+            addTitle(input, previousScreen);
             return true;
         } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
                     " threw exception " + e.getMessage() + ". Please try reloading this application" +
                     " and if the problem persists please report a bug.", e);
         }
+    }
+
+    private void addTitle(String input, Screen previousScreen) {
+        if (previousScreen instanceof EntityScreen) {
+            try {
+                String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), input);
+                if (caseName != null) {
+                    titles.add(caseName);
+                    return;
+                }
+            } catch (NoSuchElementException e) {
+                // That's ok, just fallback quietly
+            }
+        }
+        titles.add(SessionUtils.getBestTitle(getSessionWrapper()));
     }
 
     public Screen getNextScreen() throws CommCareSessionException {
@@ -327,5 +350,11 @@ public class MenuSession {
 
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    public String[] getTitles() {
+        String[] ret = new String[titles.size()];
+        titles.toArray(ret);
+        return ret;
     }
 }
