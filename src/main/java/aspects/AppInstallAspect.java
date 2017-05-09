@@ -1,6 +1,7 @@
 package aspects;
 
 import beans.InstallRequestBean;
+import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.getsentry.raven.event.Breadcrumbs;
 import org.apache.commons.logging.Log;
@@ -26,6 +27,9 @@ public class AppInstallAspect {
     @Autowired
     protected FormplayerStorageFactory storageFactory;
 
+    @Autowired
+    private Raven raven;
+
     @Before(value = "@annotation(annotations.AppInstall)")
     public void configureStorageFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
@@ -43,6 +47,6 @@ public class AppInstallAspect {
         BreadcrumbBuilder builder = new BreadcrumbBuilder();
         builder.setData(data);
         builder.setCategory("application_install");
-        SentryUtils.recordBreadcrumb(builder.build());
+        SentryUtils.recordBreadcrumb(raven, builder.build());
     }
 }

@@ -39,6 +39,7 @@ import repo.impl.*;
 import services.*;
 import services.impl.*;
 import util.Constants;
+import util.SentryUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -311,7 +312,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         data.put("environment", environment);
         BreadcrumbBuilder builder = new BreadcrumbBuilder();
         builder.setData(data);
-        return RavenFactory.ravenInstance(ravenDsn);
+        Raven raven = RavenFactory.ravenInstance(ravenDsn);
+        SentryUtils.recordBreadcrumb(raven, builder.build());
+        return raven;
     }
 
     @Bean

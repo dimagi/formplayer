@@ -28,8 +28,7 @@ public class LoggingAspect {
     private final Log log = LogFactory.getLog(LoggingAspect.class);
 
     @Autowired
-    protected Raven raven;
-
+    private Raven raven;
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping) " +
             "&& !@annotation(annotations.NoLogging)")
@@ -46,6 +45,7 @@ public class LoggingAspect {
             log.info("Request to " + requestPath + " with no request body.");
         }
 
+        Object result = joinPoint.proceed();
         if (requestBean != null && requestBean instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean) requestBean;
             Map<String, String> data = new HashMap<String, String>();
@@ -56,9 +56,8 @@ public class LoggingAspect {
 
             BreadcrumbBuilder builder = new BreadcrumbBuilder();
             builder.setData(data);
-            SentryUtils.recordBreadcrumb(builder.build());
+            SentryUtils.recordBreadcrumb(raven, builder.build());
         }
-        Object result = joinPoint.proceed();
         log.info("Request to " + requestPath + " returned result " + result);
         return result;
     }
