@@ -566,4 +566,40 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             throw new RuntimeException(e);
         }
     }
+
+    public String getMetaDataFieldForRecord(int recordId, String rawFieldName) {
+        String rid = String.valueOf(recordId);
+        String scrubbedName = TableBuilder.scrubName(rawFieldName);
+        PreparedStatement selectStatement = null;
+        ResultSet resultSet = null;
+        try {
+            selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
+                    tableName,
+                    DatabaseHelper.ID_COL + "=?",
+                    new String[]{rid});
+            resultSet = selectStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString(scrubbedName);
+            } else {
+                throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    // pass
+                }
+            }
+            if (selectStatement != null) {
+                try {
+                    selectStatement.close();
+                } catch (SQLException e) {
+                    // pass
+                }
+            }
+        }
+    }
 }
