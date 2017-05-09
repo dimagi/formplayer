@@ -12,6 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Created by benrudolph on 4/27/17.
  */
 public class SentryUtils {
+    /**
+     * We require a Raven instance in these Utils to ensure that the caller has instantiated
+     * the Raven instance. Raven keeps track of the raven instance internally with
+     * Raven.getStoredInstance(). If this call returns null, the Sentry call will fail.
+     * In order to ensure the bean gets created, we need to ensure that the instance is
+     * Autowired, which is why it is a required parameter.
+     */
 
     private static final Log log = LogFactory.getLog(SentryUtils.class);
 
