@@ -248,9 +248,6 @@ public class MenuController extends AbstractBaseController {
             );
             return nextMenu;
         }
-
-        String[] titles = new String[selections.length + 1];
-        titles[0] = SessionUtils.getAppTitle();
         NotificationMessage notificationMessage = new NotificationMessage();
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
@@ -260,7 +257,6 @@ public class MenuController extends AbstractBaseController {
                         "Overflowed selections with selection " + selection + " at index " + i, (true));
                 break;
             }
-            titles[i] = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             Screen nextScreen = menuSession.getNextScreen();
 
             if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
@@ -281,12 +277,14 @@ public class MenuController extends AbstractBaseController {
                 }
             }
         }
+
+
+
         nextMenu = getNextMenu(
                 menuSession,
                 detailSelection,
                 offset,
-                searchText,
-                titles
+                searchText
         );
         if (nextMenu != null) {
             nextMenu.setNotification(notificationMessage);
@@ -384,7 +382,7 @@ public class MenuController extends AbstractBaseController {
             return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
         }
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            CaseAPIs.forceRestore(restoreFactory);
+            CaseAPIs.performSync(restoreFactory, false);
             return new NotificationMessage("Case claim successful.", false);
         } else {
             return new NotificationMessage(

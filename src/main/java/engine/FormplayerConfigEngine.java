@@ -1,5 +1,6 @@
 package engine;
 
+import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.getsentry.raven.event.Breadcrumbs;
 import exceptions.ApplicationConfigException;
@@ -29,6 +30,7 @@ import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.StorageManager;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import util.SentryUtils;
 
 import java.io.*;
@@ -43,6 +45,9 @@ import java.util.Map;
 public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     private final Log log = LogFactory.getLog(FormplayerConfigEngine.class);
+
+    @Autowired
+    private Raven raven;
 
     public FormplayerConfigEngine(IStorageIndexedFactory storageFactory,
                                   FormplayerInstallerFactory formplayerInstallerFactory,
@@ -61,7 +66,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         builder.setData(data);
         builder.setCategory("application-install");
         builder.setMessage("Downloading application from URL " + downloadUrl);
-        SentryUtils.recordBreadcrumb(builder.build());
+        SentryUtils.recordBreadcrumb(raven, builder.build());
     }
 
     @Override

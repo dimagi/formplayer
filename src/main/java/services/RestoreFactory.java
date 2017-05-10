@@ -3,13 +3,14 @@ package services;
 import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
+import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumbs;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.model.User;
 import org.javarosa.core.services.PropertyManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,10 +29,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sandbox.SqlSandboxUtils;
+import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import util.SentryUtils;
 
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
@@ -45,6 +46,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -67,6 +69,9 @@ public class RestoreFactory implements ConnectionHandler{
 
     public static final Long ONE_DAY_IN_MILLISECONDS = 86400000l;
     public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
+
+    @Autowired
+    private Raven raven;
 
     @Autowired
     private RedisTemplate redisTemplateLong;
@@ -205,33 +210,24 @@ public class RestoreFactory implements ConnectionHandler{
         }
     }
 
-    public InputStream getRestoreXml() {
-        return getRestoreXml(false);
-    }
-
     public InputStream getRestoreXml(boolean overwriteCache) {
         ensureValidParameters();
-
-        String restoreUrl;
-        if (asUsername == null) {
-            restoreUrl = getRestoreUrl(host, domain, overwriteCache);
-        } else {
-            restoreUrl = getRestoreUrl(host, domain, asUsername, overwriteCache);
-        }
-
-        Map<String, String> data = new HashMap<String, String>();
-        data.put("restoreUrl", restoreUrl);
-
-        BreadcrumbBuilder builder = new BreadcrumbBuilder();
-        builder.setData(data);
-        builder.setCategory("restore");
-        builder.setMessage("Restoring from URL " + restoreUrl);
-        SentryUtils.recordBreadcrumb(builder.build());
-
+        String restoreUrl = getRestoreUrl(overwriteCache);
+        recordSentryData(restoreUrl);
         log.info("Restoring from URL " + restoreUrl);
         InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
         setLastSyncTime();
         return restoreStream;
+    }
+
+    private void recordSentryData(String restoreUrl) {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("restoreUrl", restoreUrl);
+        BreadcrumbBuilder builder = new BreadcrumbBuilder();
+        builder.setData(data);
+        builder.setCategory("restore");
+        builder.setMessage("Restoring from URL " + restoreUrl);
+        SentryUtils.recordBreadcrumb(raven, builder.build());
     }
 
     private void setLastSyncTime() {
@@ -307,7 +303,7 @@ public class RestoreFactory implements ConnectionHandler{
 
     private InputStream getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
-        log.info("Restoring at domain: " + domain + " with auth: " + auth);
+        log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
@@ -337,22 +333,38 @@ public class RestoreFactory implements ConnectionHandler{
         return stream;
     }
 
-    public static String getRestoreUrl(String host, String domain, boolean overwriteCache){
-        String url = host + "/a/" + domain + "/phone/restore/?version=2.0";
-        if (overwriteCache) {
-            url += "&overwrite_cache=true";
+    private String getSyncToken(String username) {
+
+        if (username == null) {
+            return null;
         }
-        return url;
+        SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
+        Vector<Integer> users = storage.getIDsForValue(User.META_USERNAME, username);
+        //should be exactly one user
+        if (users.size() != 1) {
+            return null;
+        }
+
+        return storage.getMetaDataFieldForRecord(users.firstElement(), User.META_SYNC_TOKEN);
     }
 
-    public String getRestoreUrl(String host, String domain, String username, boolean overwriteCache) {
-        String url = host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
-                domain + ".commcarehq.org&version=2.0";
-
+    public String getRestoreUrl(boolean overwriteCache) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(host);
+        builder.append("/a/");
+        builder.append(domain);
+        builder.append("/phone/restore/?version=2.0");
         if (overwriteCache) {
-            url += "&overwrite_cache=true";
+            builder.append("&overwrite_cache=true");
         }
-        return url;
+        String syncToken = getSyncToken(getWrappedUsername());
+        if (syncToken != null) {
+            builder.append("&since=").append(syncToken);
+        }
+        if( asUsername != null) {
+            builder.append("&as=" + asUsername + "@" + domain + ".commcarehq.org");
+        }
+        return builder.toString();
     }
 
     public String getUsername() {
