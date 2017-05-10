@@ -94,6 +94,9 @@ public abstract class AbstractBaseController {
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
+    protected Raven raven;
+
+    @Autowired
     PostgresUserRepo postgresUserRepo;
 
     @Value("${commcarehq.host}")
@@ -282,7 +285,7 @@ public abstract class AbstractBaseController {
                 .withMessage("Application Configuration Error")
                 .withLevel(Event.Level.INFO)
                 .withSentryInterface(new ExceptionInterface(exception));
-        SentryUtils.sendRavenEvent(eventBuilder);
+        SentryUtils.sendRavenEvent(raven, eventBuilder);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -336,7 +339,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
-        SentryUtils.sendRavenException(exception);
+        SentryUtils.sendRavenException(raven, exception);
         try {
             sendExceptionEmail(req, exception);
         } catch (Exception e) {

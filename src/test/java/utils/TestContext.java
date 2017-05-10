@@ -1,5 +1,6 @@
 package utils;
 
+import com.getsentry.raven.Raven;
 import installers.FormplayerInstallerFactory;
 import mocks.MockFormSessionRepo;
 import mocks.MockLockRegistry;
@@ -90,6 +91,11 @@ public class TestContext {
     @Bean
     public SubmitService submitService() {
         return Mockito.mock(SubmitServiceImpl.class);
+    }
+
+    @Bean
+    public Raven raven() {
+        return Mockito.mock(Raven.class);
     }
 
     @Bean
