@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.3.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.3.RELEASE")
     }
 }
 
@@ -28,62 +28,59 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-    // Versionless dependencies that the spring-boot plugin will manage for us
-    compile group: 'org.springframework.boot', name: 'spring-boot'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
-    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure'
-    compile group: 'org.springframework.data', name: 'spring-data-jpa'
-    compile group: 'org.springframework', name: 'spring-web'
-    compile group: 'org.springframework.data', name: 'spring-data-redis'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core'
-    compile 'org.json:json:20140107'
-    compile group: 'org.apache.httpcomponents', name: 'httpclient'
-    compile group: 'org.postgresql', name: 'postgresql'
-    compile group: 'org.flywaydb', name: 'flyway-core'
-    compile group: 'org.springframework', name: 'spring-orm'
-    compile group: 'org.springframework', name: 'spring-jdbc'
-    compile group: 'org.hibernate', name: 'hibernate-entitymanager'
-    compile group: 'org.hibernate', name: 'hibernate-core'
-    compile group: 'org.springframework.data', name: 'spring-data-commons'
-    compile group: 'org.springframework', name: 'spring-test'
-    compile group: 'org.springframework.integration', name: 'spring-integration-redis'
-    compile group: 'org.xerial', name: 'sqlite-jdbc'
-    compile group: 'javax.servlet', name: 'jstl'
-
-    testCompile("org.springframework.boot:spring-boot-starter-test")
-    testCompile group: 'com.jayway.jsonpath', name: 'json-path'
-    testCompile group: 'com.jayway.jsonpath', name: 'json-path-assert'
-
-
+    compile group: 'org.springframework.boot', name: 'spring-boot', version: '1.4.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.4.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '1.4.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '1.4.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version: '1.4.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '1.4.3.RELEASE'
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.10.6.RELEASE'
+    compile("org.springframework:spring-web")
+    compile group: 'org.springframework.data', name: 'spring-data-redis', version: '1.7.6.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '1.4.3.RELEASE'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.6'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.6'
     compile 'com.carrotsearch:hppc:0.7.2'
     compile 'com.getsentry.raven:raven:8.0.2'
 
-    compile 'org.apache.directory.studio:org.apache.commons.io:2.0.1'
+    compile("org.apache.directory.studio:org.apache.commons.io:2.0.1")
     compile 'net.sf.kxml:kxml2:2.3.0'
     compile 'xpp3:xpp3:1.1.4c'
+    compile 'org.json:json:20131018'
     compile 'redis.clients:jedis:2.8.0'
     compile 'org.apache.commons:commons-pool2:2.4.2'
     compile 'commons-codec:commons-codec:1.5'
-    compile 'org.lightcouch:lightcouch:0.1.6'
-    compile 'io.springfox:springfox-swagger2:2.4.0'
-    compile 'io.springfox:springfox-swagger-ui:2.4.0'
+    compile("javax.servlet:jstl:1.2")
+    compile('org.lightcouch:lightcouch:0.1.6')
+    compile("io.springfox:springfox-swagger2:2.4.0")
+    compile("io.springfox:springfox-swagger-ui:2.4.0")
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
     compile group: 'org.apache.commons', name: 'commons-email', version: '1.2'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
+    compile group: 'org.springframework', name: 'spring-jdbc', version: '3.1.0.RELEASE'
+    compile group: 'org.postgresql', name: 'postgresql', version: '9.3-1100-jdbc4'
+    compile group: 'org.flywaydb', name: 'flyway-core', version: '4.0.3'
+    compile group: 'org.springframework', name: 'spring-orm', version: '3.1.1.RELEASE'
+    compile group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.1.0.Final'
+    compile group: 'org.hibernate', name: 'hibernate-core', version: '5.1.0.Final'
+    compile group: 'org.springframework.data', name: 'spring-data-commons', version: '1.12.2.RELEASE'
     compile group: 'javax.mail', name: 'mail', version: '1.5.0-b01'
     compile group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.3'
+    compile group: 'org.springframework.integration', name: 'spring-integration-redis', version: '4.3.9.RELEASE'
+    compile 'org.xerial:sqlite-jdbc:3.16.1'
     compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
     compile group: 'regexp', name: 'regexp', version: '1.3'
     compile fileTree(dir: 'libs', include: '*.jar')
     compile project(path: ':commcare', configuration: 'api')
     compile project(path: ':commcare', configuration: 'translate')
     testCompile project(path: ':commcare', configuration: 'api')
+    testCompile("org.springframework.boot:spring-boot-starter-test:1.4.3.RELEASE")
+    testCompile('org.springframework:spring-test:4.2.4.RELEASE')
+    testCompile("org.springframework:spring-mock:2.0.8")
+    testCompile("com.jayway.jsonpath:json-path:0.8.1")
+    testCompile("com.jayway.jsonpath:json-path-assert:0.8.1")
     testCompile 'com.carrotsearch:hppc:0.7.2'
-    testRuntime 'org.skyscreamer:jsonassert:1.4.0'
+    testRuntime("org.skyscreamer:jsonassert:1.4.0")
 }
 
 test {
