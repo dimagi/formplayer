@@ -94,6 +94,9 @@ public abstract class AbstractBaseController {
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
+    protected Raven raven;
+
+    @Autowired
     PostgresUserRepo postgresUserRepo;
 
     @Value("${commcarehq.host}")
@@ -137,16 +140,15 @@ public abstract class AbstractBaseController {
         // If the nextScreen is null, that means we are heading into
         // form entry and there isn't a screen title
         if (nextScreen == null) {
-            return getNextMenu(menuSession, null, offset, searchText, null);
+            return getNextMenu(menuSession, null, offset, searchText);
         }
-        return getNextMenu(menuSession, null, offset, searchText, new String[] {nextScreen.getScreenTitle()});
+        return getNextMenu(menuSession, null, offset, searchText);
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
                                            String detailSelection,
                                            int offset,
-                                           String searchText,
-                                           String[] breadcrumbs) throws Exception {
+                                           String searchText) throws Exception {
         Screen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
@@ -155,7 +157,7 @@ public abstract class AbstractBaseController {
         if (nextScreen == null) {
             if(menuSession.getSessionWrapper().getForm() != null) {
                 NewFormResponse formResponseBean = generateFormEntryScreen(menuSession);
-                formResponseBean.setBreadcrumbs(breadcrumbs);
+                formResponseBean.setBreadcrumbs(menuSession.getTitles());
                 return formResponseBean;
             } else{
                 return null;
@@ -182,7 +184,7 @@ public abstract class AbstractBaseController {
             } else {
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
-            menuResponseBean.setBreadcrumbs(breadcrumbs);
+            menuResponseBean.setBreadcrumbs(menuSession.getTitles());
             menuResponseBean.setAppId(menuSession.getAppId());
             menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
                     ", App Version: " + menuSession.getAppVersion());
@@ -283,7 +285,7 @@ public abstract class AbstractBaseController {
                 .withMessage("Application Configuration Error")
                 .withLevel(Event.Level.INFO)
                 .withSentryInterface(new ExceptionInterface(exception));
-        SentryUtils.sendRavenEvent(eventBuilder);
+        SentryUtils.sendRavenEvent(raven, eventBuilder);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -337,7 +339,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
-        SentryUtils.sendRavenException(exception);
+        SentryUtils.sendRavenException(raven, exception);
         try {
             sendExceptionEmail(req, exception);
         } catch (Exception e) {

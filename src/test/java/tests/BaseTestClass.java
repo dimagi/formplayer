@@ -7,6 +7,7 @@ import beans.*;
 import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.getsentry.raven.Raven;
 import installers.FormplayerInstallerFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -38,6 +39,7 @@ import utils.TestContext;
 import javax.servlet.http.Cookie;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -88,6 +90,9 @@ public class BaseTestClass {
     private NewFormResponseFactory newFormResponseFactoryMock;
 
     @Autowired
+    protected Raven ravenMock;
+
+    @Autowired
     protected LockRegistry userLockRegistry;
 
     @Autowired
@@ -133,6 +138,7 @@ public class BaseTestClass {
         Mockito.reset(formplayerInstallerFactory);
         Mockito.reset(queryRequester);
         Mockito.reset(syncRequester);
+        Mockito.reset(ravenMock);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
@@ -473,6 +479,18 @@ public class BaseTestClass {
                 CommandListResponseBean.class);
     }
 
+    ResultActions doValidate(String formXML) throws Exception {
+        MediaType contentType = new MediaType(MediaType.APPLICATION_XML.getType(),
+                MediaType.APPLICATION_XML.getSubtype(),
+                Charset.forName("utf8"));
+        return generateMockQuery(ControllerType.UTIL,
+                RequestType.POST,
+                Constants.URL_VALIDATE_FORM,
+                formXML,
+                ResultActions.class,
+                contentType);
+    }
+
     public enum RequestType {
         POST, GET
     }
@@ -486,6 +504,22 @@ public class BaseTestClass {
                                     String urlPath,
                                     Object bean,
                                     Class<T> clazz) throws Exception {
+        return generateMockQuery(controllerType,
+                requestType,
+                urlPath,
+                bean,
+                clazz,
+                MediaType.APPLICATION_JSON
+
+        );
+    }
+
+    private <T> T generateMockQuery(ControllerType controllerType,
+                                    RequestType requestType,
+                                    String urlPath,
+                                    Object bean,
+                                    Class<T> clazz,
+                                    MediaType contentType) throws Exception {
         MockMvc controller = null;
         ResultActions result = null;
 
@@ -518,7 +552,7 @@ public class BaseTestClass {
             case POST:
                 result = controller.perform(
                         post(urlPrepend(urlPath))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(contentType)
                                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                                 .content((String) bean));
                 break;
@@ -526,11 +560,16 @@ public class BaseTestClass {
             case GET:
                 result = controller.perform(
                         get(urlPrepend(urlPath))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(contentType)
                                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
                                 .content((String) bean));
                 break;
         }
+
+        if (clazz == ResultActions.class) {
+            return (T) evaluateXpathResult;
+        }
+
         return mapper.readValue(
                 result.andReturn().getResponse().getContentAsString(),
                 clazz
