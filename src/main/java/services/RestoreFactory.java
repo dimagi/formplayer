@@ -3,6 +3,7 @@ package services;
 import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
+import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
@@ -68,6 +69,9 @@ public class RestoreFactory implements ConnectionHandler{
 
     public static final Long ONE_DAY_IN_MILLISECONDS = 86400000l;
     public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
+
+    @Autowired
+    private Raven raven;
 
     @Autowired
     private RedisTemplate redisTemplateLong;
@@ -223,7 +227,7 @@ public class RestoreFactory implements ConnectionHandler{
         builder.setData(data);
         builder.setCategory("restore");
         builder.setMessage("Restoring from URL " + restoreUrl);
-        SentryUtils.recordBreadcrumb(builder.build());
+        SentryUtils.recordBreadcrumb(raven, builder.build());
     }
 
     private void setLastSyncTime() {
