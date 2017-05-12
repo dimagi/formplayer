@@ -31,6 +31,8 @@ import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.*;
 import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
@@ -306,6 +308,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     public ExceptionResponseBean handleHttpRequestError(FormplayerHttpRequest req, HttpClientErrorException exception) {
         incrementDatadogCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
+        log.error(String.format("Exception %s making external request %s.", exception, req);
         return new ExceptionResponseBean(exception.getResponseBodyAsString(), req.getRequestURL().toString());
     }
 
