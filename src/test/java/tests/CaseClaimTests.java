@@ -90,6 +90,7 @@ public class CaseClaimTests extends BaseTestClass {
                 "caseclaim",
                 queryDictionary,
                 CommandListResponseBean.class);
+        assert response.getSelections().length == 2;
     }
 
     private void configureSyncMock() {
