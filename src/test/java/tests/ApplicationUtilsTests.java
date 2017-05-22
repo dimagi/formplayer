@@ -16,7 +16,7 @@ import java.io.File;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class ApplicationUtilsTests extends BaseTestClass {
+public class ApplicationUtilsTests {
 
     @Test
     public void testDeleteApplicationDbs() throws Exception {
