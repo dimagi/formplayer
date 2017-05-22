@@ -25,7 +25,7 @@ public class SentryUtils {
             return;
         }
         try {
-            Breadcrumbs.record(breadcrumb);
+            raven.getContext().recordBreadcrumb(breadcrumb);
         } catch (Exception e) {
             log.info("Error recording breadcrumb. Ensure that raven is configured. " + e.toString());
         }
