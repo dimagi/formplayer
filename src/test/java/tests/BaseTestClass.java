@@ -492,7 +492,7 @@ public class BaseTestClass {
                                     Object bean,
                                     Class<T> clazz) throws Exception {
         MockMvc controller = null;
-        ResultActions evaluateXpathResult = null;
+        ResultActions result = null;
 
         if (bean instanceof AuthenticatedRequestBean) {
             restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"));
@@ -521,7 +521,7 @@ public class BaseTestClass {
         }
         switch (requestType) {
             case POST:
-                evaluateXpathResult = controller.perform(
+                result = controller.perform(
                         post(urlPrepend(urlPath))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
@@ -529,7 +529,7 @@ public class BaseTestClass {
                 break;
 
             case GET:
-                evaluateXpathResult = controller.perform(
+                result = controller.perform(
                         get(urlPrepend(urlPath))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
@@ -537,7 +537,7 @@ public class BaseTestClass {
                 break;
         }
         return mapper.readValue(
-                evaluateXpathResult.andReturn().getResponse().getContentAsString(),
+                result.andReturn().getResponse().getContentAsString(),
                 clazz
         );
     }
