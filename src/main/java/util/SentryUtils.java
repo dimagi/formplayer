@@ -25,9 +25,9 @@ public class SentryUtils {
             return;
         }
         try {
-            Breadcrumbs.record(breadcrumb);
+            raven.getContext().recordBreadcrumb(breadcrumb);
         } catch (Exception e) {
-            log.info("Error recording breadcrumb. Ensure that raven is configured. " + e.toString());
+            log.info("Error recording breadcrumb. Ensure that raven is configured. ", e);
         }
     }
 
@@ -36,9 +36,9 @@ public class SentryUtils {
             return;
         }
         try {
-            Raven.getStoredInstance().sendException(exception);
+            raven.sendException(exception);
         } catch (Exception e) {
-            log.info("Error sending to Sentry. Ensure that raven is configured. " + e.toString());
+            log.info("Error sending exception to Sentry. Ensure that raven is configured. ", e);
         }
     }
 
@@ -47,9 +47,9 @@ public class SentryUtils {
             return;
         }
         try {
-            Raven.getStoredInstance().sendEvent(event);
+            raven.sendEvent(event);
         } catch (Exception e) {
-            log.info("Error sending to Sentry. Ensure that raven is configured. " + e.toString());
+            log.info("Error sending event to Sentry. Ensure that raven is configured. ", e);
         }
     }
 }
