@@ -2,6 +2,7 @@ package beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import org.commcare.cases.entity.EntityUtil;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.util.screen.EntityDetailSubscreen;
@@ -39,7 +40,7 @@ public class EntityDetailListResponse {
             // No details, just return null
             return null;
         }
-        EvaluationContext subContext = new EvaluationContext(ec, ref);
+        EvaluationContext subContext = getFactoryContextForRef(ref, ec, screen.getLongDetail());
         ArrayList<Object> accumulator = new ArrayList<>();
         for (int i = 0; i < detailList.length; i++) {
             // For now, don't add sub-details
@@ -63,6 +64,15 @@ public class EntityDetailListResponse {
         EntityDetailResponse[] ret = new EntityDetailResponse[accumulator.size()];
         accumulator.toArray(ret);
         return ret;
+    }
+
+    private EvaluationContext getFactoryContextForRef(TreeReference referenceToDisplay,
+                                                        EvaluationContext ec,
+                                                        Detail detail) {
+        return EntityUtil.getEntityFactoryContext(referenceToDisplay,
+                true,
+                detail,
+                ec);
     }
 
     @JsonGetter(value = "details")
