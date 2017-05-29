@@ -24,7 +24,6 @@ import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
@@ -97,7 +96,7 @@ public abstract class AbstractBaseController {
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
-    protected Raven raven;
+    protected FormplayerRaven raven;
 
     @Autowired
     PostgresUserRepo postgresUserRepo;
@@ -284,11 +283,7 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
-        EventBuilder eventBuilder = new EventBuilder()
-                .withMessage("Application Configuration Error")
-                .withLevel(Event.Level.INFO)
-                .withSentryInterface(new ExceptionInterface(exception));
-        SentryUtils.sendRavenEvent(raven, eventBuilder);
+        raven.sendRavenException(exception, Event.Level.INFO);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -343,7 +338,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
-        SentryUtils.sendRavenException(raven, exception);
+        raven.sendRavenException(exception);
         try {
             sendExceptionEmail(req, exception);
         } catch (Exception e) {

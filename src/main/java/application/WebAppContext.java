@@ -39,7 +39,7 @@ import repo.impl.*;
 import services.*;
 import services.impl.*;
 import util.Constants;
-import util.SentryUtils;
+import util.FormplayerRaven;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -307,13 +307,13 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public Raven raven() {
+    public FormplayerRaven raven() {
         Map<String, String> data = new HashMap<String, String>();
         data.put("environment", environment);
         BreadcrumbBuilder builder = new BreadcrumbBuilder();
         builder.setData(data);
-        Raven raven = RavenFactory.ravenInstance(ravenDsn);
-        SentryUtils.recordBreadcrumb(raven, builder.build());
+        FormplayerRaven raven = new FormplayerRaven(RavenFactory.ravenInstance(ravenDsn));
+        raven.recordBreadcrumb(builder.build());
         return raven;
     }
 

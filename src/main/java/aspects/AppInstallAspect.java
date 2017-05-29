@@ -3,16 +3,12 @@ package aspects;
 import beans.InstallRequestBean;
 import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumbs;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
-import repo.impl.PostgresUserRepo;
 import services.FormplayerStorageFactory;
-import util.SentryUtils;
+import util.FormplayerRaven;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,7 +24,7 @@ public class AppInstallAspect {
     protected FormplayerStorageFactory storageFactory;
 
     @Autowired
-    private Raven raven;
+    private FormplayerRaven raven;
 
     @Before(value = "@annotation(annotations.AppInstall)")
     public void configureStorageFactory(JoinPoint joinPoint) throws Throwable {
@@ -47,6 +43,6 @@ public class AppInstallAspect {
         BreadcrumbBuilder builder = new BreadcrumbBuilder();
         builder.setData(data);
         builder.setCategory("application_install");
-        SentryUtils.recordBreadcrumb(raven, builder.build());
+        raven.recordBreadcrumb(builder.build());
     }
 }
