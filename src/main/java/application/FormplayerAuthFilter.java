@@ -12,10 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import repo.TokenRepo;
 import repo.impl.CouchUserRepo;
 import repo.impl.PostgresUserRepo;
-import util.Constants;
-import util.FormplayerHttpRequest;
-import util.RequestUtils;
-import util.UserUtils;
+import util.*;
 
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
@@ -47,6 +44,9 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     CouchUserRepo couchUserRepo;
 
     @Autowired
+    FormplayerRaven raven;
+
+    @Autowired
     RedisLockRegistry userLockRegistry;
 
     @Override
@@ -61,6 +61,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
             setToken(request);
             setDomain(request);
             setUser(request);
+            raven.setDomain(request.getDomain());
             JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
                 setResponseUnauthorized(response, "Invalid user");
