@@ -50,6 +50,7 @@ public class LoggingAspect {
             data.put("domain", authenticatedRequestBean.getDomain());
             data.put("username", authenticatedRequestBean.getUsername());
             data.put("restoreAs", authenticatedRequestBean.getRestoreAs());
+            data.put("bean", authenticatedRequestBean.toString());
 
             BreadcrumbBuilder builder = new BreadcrumbBuilder();
             builder.setData(data);
