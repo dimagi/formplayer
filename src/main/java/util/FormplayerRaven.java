@@ -23,7 +23,6 @@ public class FormplayerRaven {
 
     private static final Log log = LogFactory.getLog(FormplayerRaven.class);
 
-    private final String ENV_TAG = "environment";
     private final String HQ_HOST_TAG = "HQHost";
     private final String DOMAIN_TAG = "domain";
 
@@ -69,7 +68,7 @@ public class FormplayerRaven {
     private EventBuilder getDefaultBuilder() {
         return (
                 new EventBuilder()
-                .withTag(ENV_TAG, environment)
+                .withEnvironment(environment)
                 .withTag(HQ_HOST_TAG, host)
                 .withTag(DOMAIN_TAG, domain)
         );
