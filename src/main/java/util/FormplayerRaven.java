@@ -18,11 +18,6 @@ import java.net.URISyntaxException;
  * Created by benrudolph on 4/27/17.
  */
 public class FormplayerRaven {
-    /**
-     * We require a Raven instance in these Utils to ensure that the caller has instantiated
-     * the Raven instance. Raven keeps track of the raven instance internally with
-     * Raven.getStoredInstance(). If this call returns null, the Sentry call will fail.
-     */
 
     private static final Log log = LogFactory.getLog(FormplayerRaven.class);
 
