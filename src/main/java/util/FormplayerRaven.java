@@ -4,6 +4,7 @@ import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.Breadcrumb;
 import com.getsentry.raven.event.Event;
 import com.getsentry.raven.event.EventBuilder;
+import com.getsentry.raven.event.User;
 import com.getsentry.raven.event.interfaces.ExceptionInterface;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +49,20 @@ public class FormplayerRaven {
             raven.getContext().recordBreadcrumb(breadcrumb);
         } catch (Exception e) {
             log.info("Error recording breadcrumb. Ensure that raven is configured. ", e);
+        }
+    }
+
+    public void setUserContext(String userId, String username, String ipAddress) {
+        User user = new User(
+                userId,
+                username,
+                ipAddress,
+                null
+        );
+        try {
+            raven.getContext().setUser(user);
+        } catch (Exception e) {
+            log.info("Error setting user context. Ensure that raven is configured. ", e);
         }
     }
 
