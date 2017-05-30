@@ -44,9 +44,6 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     CouchUserRepo couchUserRepo;
 
     @Autowired
-    FormplayerRaven raven;
-
-    @Autowired
     RedisLockRegistry userLockRegistry;
 
     @Override
@@ -61,17 +58,11 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
             setToken(request);
             setDomain(request);
             setUser(request);
-            raven.setDomain(request.getDomain());
             JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
                 setResponseUnauthorized(response, "Invalid user");
                 return;
             }
-            raven.setUserContext(
-                    String.valueOf(request.getPostgresUser().getUserId()),
-                    request.getCouchUser().getUsername(),
-                    request.getRemoteAddr()
-            );
         }
         filterChain.doFilter(request, response);
     }
