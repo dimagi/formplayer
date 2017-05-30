@@ -44,5 +44,6 @@ public class AppInstallAspect {
         builder.setData(data);
         builder.setCategory("application_install");
         raven.recordBreadcrumb(builder.build());
+        raven.setAppId(requestBean.getAppId());
     }
 }
