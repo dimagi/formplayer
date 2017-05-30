@@ -106,11 +106,20 @@ public class FormplayerRaven {
         );
     }
 
-    public void sendRavenException(Exception exception) {
-        sendRavenException(exception, Event.Level.ERROR);
+    public void sendRavenException(FormplayerHttpRequest request, Exception exception) {
+        sendRavenException(request, exception, Event.Level.ERROR);
     }
 
-    public void sendRavenException(Exception exception, Event.Level level) {
+    public void sendRavenException(FormplayerHttpRequest request, Exception exception, Event.Level level) {
+        setDomain(request.getDomain());
+
+        if (request.getCouchUser() != null && request.getPostgresUser() != null) {
+            setUserContext(
+                    String.valueOf(request.getPostgresUser().getUserId()),
+                    request.getCouchUser().getUsername(),
+                    request.getRemoteAddr()
+            );
+        }
 
         EventBuilder eventBuilder = getDefaultBuilder()
                 .withMessage(exception.getMessage())
