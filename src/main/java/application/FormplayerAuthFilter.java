@@ -67,6 +67,11 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 setResponseUnauthorized(response, "Invalid user");
                 return;
             }
+            raven.setUserContext(
+                    String.valueOf(request.getPostgresUser().getUserId()),
+                    request.getCouchUser().getUsername(),
+                    request.getRemoteAddr()
+            );
         }
         filterChain.doFilter(request, response);
     }
