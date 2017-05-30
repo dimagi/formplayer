@@ -3,6 +3,7 @@ package application;
 import aspects.*;
 import com.getsentry.raven.Raven;
 import com.getsentry.raven.RavenFactory;
+import com.getsentry.raven.dsn.InvalidDsnException;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
@@ -312,7 +313,12 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         data.put("environment", environment);
         BreadcrumbBuilder builder = new BreadcrumbBuilder();
         builder.setData(data);
-        FormplayerRaven raven = new FormplayerRaven(RavenFactory.ravenInstance(ravenDsn));
+        FormplayerRaven raven;
+        try {
+            raven = new FormplayerRaven(RavenFactory.ravenInstance(ravenDsn));
+        } catch (InvalidDsnException e) {
+            raven = new FormplayerRaven(null);
+        }
         raven.recordBreadcrumb(builder.build());
         return raven;
     }
