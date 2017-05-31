@@ -39,7 +39,7 @@ public class UtilController extends AbstractBaseController {
         if (syncRequest.isPreserveCache()) {
             CaseAPIs.getSandbox(restoreFactory, false);
         } else {
-            CaseAPIs.forceRestore(restoreFactory);
+            CaseAPIs.performSync(restoreFactory, true);
         }
         return new SyncDbResponseBean();
     }
