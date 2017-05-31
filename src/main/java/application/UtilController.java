@@ -40,8 +40,7 @@ public class UtilController extends AbstractBaseController {
         if (syncRequest.isPreserveCache()) {
             CaseAPIs.getSandbox(restoreFactory, false);
         } else {
-            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
-            CaseAPIs.performSync(restoreFactory, true);
+            CaseAPIs.forceRestore(restoreFactory);
         }
         return new SyncDbResponseBean();
     }
