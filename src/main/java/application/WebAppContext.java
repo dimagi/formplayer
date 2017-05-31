@@ -3,6 +3,7 @@ package application;
 import aspects.*;
 import com.getsentry.raven.Raven;
 import com.getsentry.raven.RavenFactory;
+import com.getsentry.raven.dsn.InvalidDsnException;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
@@ -39,7 +40,7 @@ import repo.impl.*;
 import services.*;
 import services.impl.*;
 import util.Constants;
-import util.SentryUtils;
+import util.FormplayerRaven;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -307,13 +308,18 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public Raven raven() {
+    public FormplayerRaven raven() {
         Map<String, String> data = new HashMap<String, String>();
         data.put("environment", environment);
         BreadcrumbBuilder builder = new BreadcrumbBuilder();
         builder.setData(data);
-        Raven raven = RavenFactory.ravenInstance(ravenDsn);
-        SentryUtils.recordBreadcrumb(raven, builder.build());
+        FormplayerRaven raven;
+        try {
+            raven = new FormplayerRaven(RavenFactory.ravenInstance(ravenDsn));
+        } catch (InvalidDsnException e) {
+            raven = new FormplayerRaven(null);
+        }
+        raven.recordBreadcrumb(builder.build());
         return raven;
     }
 

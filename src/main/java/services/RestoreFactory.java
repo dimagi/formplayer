@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
 import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
-import util.SentryUtils;
+import util.FormplayerRaven;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -71,7 +71,7 @@ public class RestoreFactory implements ConnectionHandler{
     public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
 
     @Autowired
-    private Raven raven;
+    private FormplayerRaven raven;
 
     @Autowired
     private RedisTemplate redisTemplateLong;
@@ -227,7 +227,7 @@ public class RestoreFactory implements ConnectionHandler{
         builder.setData(data);
         builder.setCategory("restore");
         builder.setMessage("Restoring from URL " + restoreUrl);
-        SentryUtils.recordBreadcrumb(raven, builder.build());
+        raven.recordBreadcrumb(builder.build());
     }
 
     private void setLastSyncTime() {
@@ -357,10 +357,12 @@ public class RestoreFactory implements ConnectionHandler{
         if (overwriteCache) {
             builder.append("&overwrite_cache=true");
         }
+        /*
         String syncToken = getSyncToken(getWrappedUsername());
         if (syncToken != null) {
             builder.append("&since=").append(syncToken);
         }
+        */
         if( asUsername != null) {
             builder.append("&as=" + asUsername + "@" + domain + ".commcarehq.org");
         }
