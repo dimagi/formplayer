@@ -361,7 +361,7 @@ public class RestoreFactory implements ConnectionHandler{
             builder.append("&overwrite_cache=true");
         }
         String syncToken = getSyncToken(getWrappedUsername());
-        if (syncToken != null) {
+        if (syncToken != null && !"".equals(syncToken)) {
             builder.append("&since=").append(syncToken);
         }
         if( asUsername != null) {
