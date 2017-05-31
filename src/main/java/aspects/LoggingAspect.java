@@ -3,7 +3,6 @@ package aspects;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumbs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,9 +10,8 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.ShellProperties;
 import org.springframework.web.bind.annotation.RequestMapping;
-import util.SentryUtils;
+import util.FormplayerRaven;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -28,7 +26,7 @@ public class LoggingAspect {
     private final Log log = LogFactory.getLog(LoggingAspect.class);
 
     @Autowired
-    private Raven raven;
+    private FormplayerRaven raven;
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping) " +
             "&& !@annotation(annotations.NoLogging)")
@@ -45,7 +43,6 @@ public class LoggingAspect {
             log.info("Request to " + requestPath + " with no request body.");
         }
 
-        Object result = joinPoint.proceed();
         if (requestBean != null && requestBean instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean) requestBean;
             Map<String, String> data = new HashMap<String, String>();
@@ -53,11 +50,14 @@ public class LoggingAspect {
             data.put("domain", authenticatedRequestBean.getDomain());
             data.put("username", authenticatedRequestBean.getUsername());
             data.put("restoreAs", authenticatedRequestBean.getRestoreAs());
+            data.put("bean", authenticatedRequestBean.toString());
 
             BreadcrumbBuilder builder = new BreadcrumbBuilder();
             builder.setData(data);
-            SentryUtils.recordBreadcrumb(raven, builder.build());
+            raven.recordBreadcrumb(builder.build());
         }
+
+        Object result = joinPoint.proceed();
         log.info("Request to " + requestPath + " returned result " + result);
         return result;
     }

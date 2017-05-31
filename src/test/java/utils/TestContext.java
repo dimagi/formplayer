@@ -22,6 +22,7 @@ import repo.MenuSessionRepo;
 import services.*;
 import services.impl.QueryRequesterImpl;
 import services.impl.SubmitServiceImpl;
+import util.FormplayerRaven;
 
 @Configuration
 public class TestContext {
@@ -94,8 +95,8 @@ public class TestContext {
     }
 
     @Bean
-    public Raven raven() {
-        return Mockito.mock(Raven.class);
+    public FormplayerRaven raven() {
+        return Mockito.mock(FormplayerRaven.class);
     }
 
     @Bean
