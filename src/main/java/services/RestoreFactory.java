@@ -357,12 +357,10 @@ public class RestoreFactory implements ConnectionHandler{
         if (overwriteCache) {
             builder.append("&overwrite_cache=true");
         }
-        /*
         String syncToken = getSyncToken(getWrappedUsername());
         if (syncToken != null) {
             builder.append("&since=").append(syncToken);
         }
-        */
         if( asUsername != null) {
             builder.append("&as=" + asUsername + "@" + domain + ".commcarehq.org");
         }
