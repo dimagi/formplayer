@@ -67,6 +67,7 @@ public class DebuggerController extends AbstractBaseController {
                 response.getFormattedQuestions(),
                 response.getQuestionList(),
                 FunctionUtils.xPathFuncList(),
+                formSession.getFormEntryModel().getForm().getEvaluationContext().getInstanceIds(),
                 fetchRecentXPathQueries(debuggerRequest.getDomain(), debuggerRequest.getUsername())
         );
     }
