@@ -56,7 +56,7 @@ public class EvaluateXPathResponseBean {
         }
         XPathNodeset nodeset = (XPathNodeset) value;
         Vector<TreeReference> refs = nodeset.getReferences();
-        if (refs.size() != 1) {
+        if (refs == null || refs.size() != 1) {
             return false;
         }
 
