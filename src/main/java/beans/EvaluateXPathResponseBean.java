@@ -31,9 +31,8 @@ public class EvaluateXPathResponseBean {
     //Jackson requires the default constructor
     public EvaluateXPathResponseBean(){}
 
-    public EvaluateXPathResponseBean(FormSession formEntrySession, String xpath) throws XPathSyntaxException {
+    public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath) throws XPathSyntaxException {
         status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
-        EvaluationContext evaluationContext = formEntrySession.getFormEntryModel().getForm().getEvaluationContext();
 
         try {
             XPathExpression  expr = XPathParseTool.parseXPath(xpath);
