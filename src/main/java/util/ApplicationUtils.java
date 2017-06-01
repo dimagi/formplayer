@@ -1,6 +1,7 @@
 package util;
 
 import application.SQLiteProperties;
+import org.apache.tomcat.util.bcel.Const;
 import sandbox.SqlSandboxUtils;
 import org.commcare.modern.database.TableBuilder;
 
@@ -26,7 +27,7 @@ public class ApplicationUtils {
     }
 
     public static String getApplicationDBFile(String domain, String username, String asUsername, String appId) {
-        return getApplicationDBPath(domain, username, asUsername, appId) + "/application.db";
+        return getApplicationDBPath(domain, username, asUsername, appId) + "/" + getApplicationDBName() + ".db";
     }
 
     public static String getUserDBPath(String domain, String username, String asUsername) {
@@ -34,7 +35,15 @@ public class ApplicationUtils {
     }
 
     public static String getUserDBFile(String domain, String username, String asUsername) {
-        return getUserDBPath(domain, username, asUsername) + "/user.db";
+        return getUserDBPath(domain, username, asUsername) + "/" + getUserDBName() + ".db";
+    }
+
+    public static String getUserDBName() {
+        return "user_" + Constants.SQLITE_DB_VERSION;
+    }
+
+    public static String getApplicationDBName() {
+        return "application_" + Constants.SQLITE_DB_VERSION;
     }
 
     private static String getUsernameDetail(String username, String asUsername) {
