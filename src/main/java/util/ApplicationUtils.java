@@ -13,7 +13,7 @@ public class ApplicationUtils {
         Boolean success = true;
 
         try {
-            SqlSandboxUtils.deleteDatabaseFolder(getApplicationDBPath(domain, getUsernameDetail(username, asUsername), appId));
+            SqlSandboxUtils.deleteDatabaseFolder(getApplicationDBPath(domain, username, asUsername, appId));
         } catch (Exception e) {
             e.printStackTrace();
             success = false;
@@ -21,11 +21,23 @@ public class ApplicationUtils {
         return success;
     }
 
-    public static String getApplicationDBPath(String domain, String username, String appId) {
-        return SQLiteProperties.getDataDir() + domain + "/" + TableBuilder.scrubName(username) + "/" + appId;
+    public static String getApplicationDBPath(String domain, String username, String asUsername, String appId) {
+        return SQLiteProperties.getDataDir() + domain + "/" + TableBuilder.scrubName(getUsernameDetail(username, asUsername)) + "/" + appId;
     }
 
-    public static String getUsernameDetail(String username, String asUsername) {
+    public static String getApplicationDBFile(String domain, String username, String asUsername, String appId) {
+        return getApplicationDBPath(domain, username, asUsername, appId) + "/application.db";
+    }
+
+    public static String getUserDBPath(String domain, String username, String asUsername) {
+        return SQLiteProperties.getDataDir() + domain + "/" + TableBuilder.scrubName(getUsernameDetail(username, asUsername));
+    }
+
+    public static String getUserDBFile(String domain, String username, String asUsername) {
+        return getUserDBPath(domain, username, asUsername) + "/user.db";
+    }
+
+    private static String getUsernameDetail(String username, String asUsername) {
         if (asUsername != null) {
             return username + "_" + asUsername;
         }
