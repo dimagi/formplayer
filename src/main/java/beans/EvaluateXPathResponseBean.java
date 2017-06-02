@@ -27,6 +27,7 @@ import java.util.Vector;
 public class EvaluateXPathResponseBean {
     private String output;
     private String status;
+    private String contentType;
 
     //Jackson requires the default constructor
     public EvaluateXPathResponseBean(){}
@@ -40,12 +41,15 @@ public class EvaluateXPathResponseBean {
 
             if (isCaseElement(val)) {
                 output = serializeCaseElement((XPathNodeset) val);
+                contentType = "text/xml";
             } else {
                 output = XFormPlayer.getDisplayString(val);
+                contentType = "text/plain";
             }
         } catch (XPathException | XPathSyntaxException e) {
             status = Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
             output = e.getMessage();
+            contentType = "text/plain";
         }
     }
 
@@ -110,5 +114,13 @@ public class EvaluateXPathResponseBean {
     @Override
     public String toString(){
         return "EvaluateXPathResponseBean: [output=" + output + "]";
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }
