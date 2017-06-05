@@ -15,6 +15,7 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
 import services.RestoreFactory;
+import util.UserUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class CaseAPIs {
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public static UserSqlSandbox performSync(RestoreFactory restoreFactory, boolean overwriteCache) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
-            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());;
+            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         }
         // Create parent dirs if needed
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
@@ -48,7 +49,7 @@ public class CaseAPIs {
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
     public static UserSqlSandbox getSandbox(RestoreFactory restoreFactory, boolean overwriteCache) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
-            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());;
+            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         }
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             return restoreFactory.getSqlSandbox();
@@ -76,7 +77,8 @@ public class CaseAPIs {
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
-            if (restoreFactory.getWrappedUsername().equalsIgnoreCase(u.getUsername())) {
+            String unwrappedUsername = UserUtils.unwrapUsername(restoreFactory.getWrappedUsername());
+            if (unwrappedUsername.equalsIgnoreCase(u.getUsername())) {
                 // set last sync token
                 u.setLastSyncToken(sandbox.getSyncToken());
                 sandbox.getUserStorage().write(u);
