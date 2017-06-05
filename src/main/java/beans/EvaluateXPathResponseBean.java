@@ -39,8 +39,8 @@ public class EvaluateXPathResponseBean {
             XPathExpression  expr = XPathParseTool.parseXPath(xpath);
             Object val = expr.eval(evaluationContext);
 
-            if (isCaseElement(val)) {
-                output = serializeCaseElement((XPathNodeset) val);
+            if (!isLeafNode(val)) {
+                output = serializeElements((XPathNodeset) val);
                 contentType = "text/xml";
             } else {
                 output = XFormPlayer.getDisplayString(val);
@@ -53,7 +53,7 @@ public class EvaluateXPathResponseBean {
         }
     }
 
-    private boolean isCaseElement(Object value) {
+    private boolean isLeafNode(Object value) {
         if (!(value instanceof XPathNodeset)) {
             return false;
         }
@@ -65,13 +65,10 @@ public class EvaluateXPathResponseBean {
 
         DataInstance instance = ((XPathLazyNodeset) value).getInstance();
         AbstractTreeElement treeElement = instance.resolveReference(refs.get(0));
-        if (!(treeElement instanceof CaseChildElement)) {
-            return false;
-        }
-        return true;
+        return treeElement.getNumChildren() == 0;
     }
 
-    private String serializeCaseElement(XPathNodeset nodeset) {
+    private String serializeElements(XPathNodeset nodeset) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         KXmlSerializer serializer = new KXmlSerializer();
 
@@ -83,14 +80,16 @@ public class EvaluateXPathResponseBean {
 
         DataModelSerializer s = new DataModelSerializer(serializer);
 
-        Vector<TreeReference> refs = nodeset.getReferences();
         DataInstance instance = nodeset.getInstance();
-        AbstractTreeElement treeElement = instance.resolveReference(refs.get(0));
+        Vector<TreeReference> refs = nodeset.getReferences();
+        for (TreeReference ref : refs) {
+            AbstractTreeElement treeElement = instance.resolveReference(ref);
 
-        try {
-            s.serialize(treeElement);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            try {
+                s.serialize(treeElement);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         return outputStream.toString();
     }
