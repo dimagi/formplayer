@@ -3,6 +3,7 @@ package services;
 import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
+import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
@@ -31,7 +32,6 @@ import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import util.FormplayerRaven;
-import util.UserUtils;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -338,9 +338,6 @@ public class RestoreFactory implements ConnectionHandler{
         if (username == null) {
             return null;
         }
-
-        username = UserUtils.unwrapUsername(username);
-
         SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
         Vector<Integer> users = storage.getIDsForValue(User.META_USERNAME, username);
         //should be exactly one user
@@ -360,10 +357,12 @@ public class RestoreFactory implements ConnectionHandler{
         if (overwriteCache) {
             builder.append("&overwrite_cache=true");
         }
+        /*
         String syncToken = getSyncToken(getWrappedUsername());
-        if (syncToken != null && !"".equals(syncToken)) {
+        if (syncToken != null) {
             builder.append("&since=").append(syncToken);
         }
+        */
         if( asUsername != null) {
             builder.append("&as=" + asUsername + "@" + domain + ".commcarehq.org");
         }
