@@ -15,7 +15,7 @@ before_script:
   - curl -X PUT localhost:5984/_config/admins/commcarehq -d '"commcarehq"'
 script:
   - ./gradlew copyTestResources
-  - ./gradlew test
+  - ./gradlew test --stacktrace --i
 services:
   - postgresql
   - redis-server
