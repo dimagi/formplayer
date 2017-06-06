@@ -4,6 +4,7 @@ import auth.DjangoAuth;
 import auth.HqAuth;
 import auth.TokenAuth;
 import beans.AuthenticatedRequestBean;
+import hq.CaseAPIs;
 import hq.models.PostgresUser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,6 +42,9 @@ public class UserRestoreAspect {
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
         HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
         restoreFactory.configure((AuthenticatedRequestBean)args[0], auth);
+        if (requestBean.isMustRestore()) {
+            CaseAPIs.performSync(restoreFactory, false);
+        }
     }
 
     private HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
