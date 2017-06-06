@@ -348,6 +348,14 @@ public class RestoreFactory implements ConnectionHandler{
         return storage.getMetaDataFieldForRecord(users.firstElement(), User.META_SYNC_TOKEN);
     }
 
+    // Device ID for tracking usage in the same way Android uses IMEI
+    private String getSyncDeviceId() {
+        if (asUsername == null) {
+            return "WebAppsLogin";
+        }
+        return String.format("WebAppsLogin|%s|as|%s", username, asUsername);
+    }
+
     public String getRestoreUrl(boolean overwriteCache) {
         StringBuilder builder = new StringBuilder();
         builder.append(host);
@@ -363,6 +371,9 @@ public class RestoreFactory implements ConnectionHandler{
             builder.append("&since=").append(syncToken);
         }
         */
+
+        builder.append("&device_id=" + getSyncDeviceId());
+
         if( asUsername != null) {
             builder.append("&as=" + asUsername + "@" + domain + ".commcarehq.org");
         }
