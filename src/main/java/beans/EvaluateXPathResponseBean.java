@@ -6,6 +6,7 @@ import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.engine.XFormPlayer;
+import org.javarosa.engine.xml.XmlUtil;
 import org.javarosa.model.xform.DataModelSerializer;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathLazyNodeset;
@@ -19,6 +20,7 @@ import util.Constants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Vector;
 
 /**
@@ -34,65 +36,29 @@ public class EvaluateXPathResponseBean {
 
     public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath) throws XPathSyntaxException {
         status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
-
-        try {
-            XPathExpression  expr = XPathParseTool.parseXPath(xpath);
-            Object val = expr.eval(evaluationContext);
-
-            if (!isLeafNode(val)) {
-                output = serializeElements((XPathNodeset) val);
-                contentType = "text/xml";
-            } else {
-                output = XFormPlayer.getDisplayString(val);
-                contentType = "text/plain";
-            }
-        } catch (XPathException | XPathSyntaxException e) {
-            status = Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
-            output = e.getMessage();
-            contentType = "text/plain";
-        }
-    }
-
-    private boolean isLeafNode(Object value) {
-        if (!(value instanceof XPathNodeset)) {
-            return false;
-        }
-        XPathNodeset nodeset = (XPathNodeset) value;
-        Vector<TreeReference> refs = nodeset.getReferences();
-        if (refs == null || refs.size() != 1) {
-            return false;
-        }
-
-        DataInstance instance = ((XPathLazyNodeset) value).getInstance();
-        AbstractTreeElement treeElement = instance.resolveReference(refs.get(0));
-        return treeElement.getNumChildren() == 0;
-    }
-
-    private String serializeElements(XPathNodeset nodeset) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         KXmlSerializer serializer = new KXmlSerializer();
 
         try {
+            XPathExpression  expr = XPathParseTool.parseXPath(xpath);
+            Object value = expr.eval(evaluationContext);
+
+            // Wrap output in a top level node
             serializer.setOutput(outputStream, "UTF-8");
+            serializer.startTag(null, "result");
+            serializer.flush();
+            XPathExpression.serializeResult(value, outputStream);
+            serializer.endTag(null, "result");
+            serializer.flush();
+            output = XmlUtil.getPrettyXml(outputStream.toByteArray());
+        } catch (XPathException | XPathSyntaxException e) {
+            status = Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
+            output = e.getMessage();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        DataModelSerializer s = new DataModelSerializer(serializer);
-
-        DataInstance instance = nodeset.getInstance();
-        Vector<TreeReference> refs = nodeset.getReferences();
-        for (TreeReference ref : refs) {
-            AbstractTreeElement treeElement = instance.resolveReference(ref);
-
-            try {
-                s.serialize(treeElement);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return outputStream.toString();
     }
+
 
     public String getOutput() {
         return output;
