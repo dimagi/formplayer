@@ -13,6 +13,7 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import repo.impl.CouchUserRepo;
 import util.Constants;
 
 import java.io.StringReader;
@@ -62,6 +63,12 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = Constants.URL_SERVER_UP, method = RequestMethod.GET)
     public ServerUpBean serverUp() throws Exception {
         return new ServerUpBean();
+    }
+
+    @ApiOperation(value = "Check whether formplayer can connect to couch")
+    @RequestMapping(value = Constants.URL_COUCH_CONNECTION, method = RequestMethod.GET)
+    public String serverUp() throws Exception {
+        return CouchUserRepo.couchIsUp();
     }
 
     @ApiOperation(value = "Validates an XForm")
