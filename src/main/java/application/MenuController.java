@@ -132,11 +132,11 @@ public class MenuController extends AbstractBaseController {
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
-            EntityDetailResponse detail = getPersistentCaseTile(menuSession);
+            EntityDetailListResponse detail = getInlineDetail(menuSession);
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
-            return new EntityDetailListResponse(detail);
+            return detail;
         }
         EntityScreen entityScreen = (EntityScreen) currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
@@ -145,12 +145,11 @@ public class MenuController extends AbstractBaseController {
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        EntityDetailListResponse response = new EntityDetailListResponse(
+        return new EntityDetailListResponse(
                 entityScreen,
                 menuSession.getSessionWrapper().getEvaluationContext(),
                 reference
         );
-        return response;
     }
 
     /**

@@ -195,6 +195,51 @@ public abstract class AbstractBaseController {
         }
     }
 
+    protected EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
+
+        SessionWrapper session = menuSession.getSessionWrapper();
+
+        StackFrameStep stepToFrame = null;
+        Vector<StackFrameStep> v = session.getFrame().getSteps();
+
+        //So we need to work our way backwards through each "step" we've taken, since our RelativeLayout
+        //displays the Z-Order b insertion (so items added later are always "on top" of items added earlier
+        for (int i = v.size() - 1; i >= 0; i--) {
+            StackFrameStep step = v.elementAt(i);
+
+            if (SessionFrame.STATE_DATUM_VAL.equals(step.getType())) {
+                //Only add steps which have a tile.
+                EntityDatum entityDatum = session.findDatumDefinition(step.getId());
+                if (entityDatum != null && entityDatum.getPersistentDetail() != null) {
+                    stepToFrame = step;
+                }
+            }
+        }
+
+        if (stepToFrame == null) {
+            return null;
+        }
+
+        EntityDatum entityDatum = session.findDatumDefinition(stepToFrame.getId());
+
+        if (entityDatum == null || entityDatum.getInlineDetail() == null) {
+            return null;
+        }
+
+        Detail inlineDetail = session.getDetail(entityDatum.getInlineDetail());
+        if (inlineDetail == null) {
+            return null;
+        }
+        EvaluationContext ec = session.getEvaluationContext();
+
+        TreeReference ref = entityDatum.getEntityFromID(ec, stepToFrame.getValue());
+        if (ref == null) {
+            return null;
+        }
+
+        return new EntityDetailListResponse(inlineDetail.getDetails(), session.getNeededDatum(), ec, ref);
+    }
+
     protected EntityDetailResponse getPersistentCaseTile(MenuSession menuSession) {
 
         SessionWrapper session = menuSession.getSessionWrapper();
