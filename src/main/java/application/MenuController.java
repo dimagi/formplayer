@@ -52,9 +52,6 @@ import java.util.Hashtable;
 @EnableAutoConfiguration
 public class MenuController extends AbstractBaseController {
 
-    @Value("${commcarehq.host}")
-    private String host;
-
     @Autowired
     private QueryRequester queryRequester;
 
@@ -203,25 +200,6 @@ public class MenuController extends AbstractBaseController {
                 menuSession = performInstall(sessionNavigationBean, authToken);
             }
         }
-        return menuSession;
-    }
-
-    protected MenuSession getMenuSession(String domain, String username, String menuSessionId, String authToken) throws Exception {
-        MenuSession menuSession = null;
-        HqAuth auth = getAuthHeaders(
-                domain,
-                username,
-                authToken
-        );
-
-        menuSession = new MenuSession(
-                menuSessionRepo.findOneWrapped(menuSessionId),
-                installService,
-                restoreFactory,
-                auth,
-                host
-        );
-        menuSession.getSessionWrapper().syncState();
         return menuSession;
     }
 
