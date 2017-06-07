@@ -12,7 +12,6 @@ import java.util.Map;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EvaluateXPathRequestBean extends SessionRequestBean {
-    private Map<String, Object> formContext;
     private String xpath;
 
     // default constructor for Jackson
@@ -28,6 +27,6 @@ public class EvaluateXPathRequestBean extends SessionRequestBean {
     }
 
     public String toString(){
-        return "EvaluateXPathRequestBean [formcontext: " + formContext + ", xpath: " + xpath + ", sessionId: " + sessionId + "]";
+        return "EvaluateXPathRequestBean [xpath: " + xpath + ", sessionId: " + sessionId + "]";
     }
 }
