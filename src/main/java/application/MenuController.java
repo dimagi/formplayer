@@ -187,21 +187,14 @@ public class MenuController extends AbstractBaseController {
 
     private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
         MenuSession menuSession = null;
-        HqAuth auth = getAuthHeaders(
-                sessionNavigationBean.getDomain(),
-                sessionNavigationBean.getUsername(),
-                authToken
-        );
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
-            menuSession = new MenuSession(
-                    menuSessionRepo.findOneWrapped(menuSessionId),
-                    installService,
-                    restoreFactory,
-                    auth,
-                    host
+            menuSession = getMenuSession(
+                    sessionNavigationBean.getDomain(),
+                    sessionNavigationBean.getUsername(),
+                    menuSessionId,
+                    authToken
             );
-            menuSession.getSessionWrapper().syncState();
         } else {
             // If we have a preview command, load that up
             if (sessionNavigationBean.getPreviewCommand() != null) {
@@ -210,6 +203,25 @@ public class MenuController extends AbstractBaseController {
                 menuSession = performInstall(sessionNavigationBean, authToken);
             }
         }
+        return menuSession;
+    }
+
+    protected MenuSession getMenuSession(String domain, String username, String menuSessionId, String authToken) throws Exception {
+        MenuSession menuSession = null;
+        HqAuth auth = getAuthHeaders(
+                domain,
+                username,
+                authToken
+        );
+
+        menuSession = new MenuSession(
+                menuSessionRepo.findOneWrapped(menuSessionId),
+                installService,
+                restoreFactory,
+                auth,
+                host
+        );
+        menuSession.getSessionWrapper().syncState();
         return menuSession;
     }
 
