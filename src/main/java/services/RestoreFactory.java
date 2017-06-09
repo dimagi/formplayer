@@ -70,6 +70,8 @@ public class RestoreFactory implements ConnectionHandler{
     public static final Long ONE_DAY_IN_MILLISECONDS = 86400000l;
     public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
 
+    private static final String DEVICE_ID_SLUG = "WebAppsLogin";
+
     @Autowired
     private FormplayerRaven raven;
 
@@ -351,6 +353,14 @@ public class RestoreFactory implements ConnectionHandler{
         return storage.getMetaDataFieldForRecord(users.firstElement(), User.META_SYNC_TOKEN);
     }
 
+    // Device ID for tracking usage in the same way Android uses IMEI
+    private String getSyncDeviceId() {
+        if (asUsername == null) {
+            return DEVICE_ID_SLUG;
+        }
+        return String.format("%s|%s|as|%s", DEVICE_ID_SLUG, username, asUsername);
+    }
+
     public String getRestoreUrl(boolean overwriteCache) {
         StringBuilder builder = new StringBuilder();
         builder.append(host);
@@ -364,8 +374,9 @@ public class RestoreFactory implements ConnectionHandler{
         if (syncToken != null && !"".equals(syncToken)) {
             builder.append("&since=").append(syncToken);
         }
+        builder.append("&device_id=").append(getSyncDeviceId());
         if( asUsername != null) {
-            builder.append("&as=" + asUsername + "@" + domain + ".commcarehq.org");
+            builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
         }
         return builder.toString();
     }
