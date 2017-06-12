@@ -1,5 +1,6 @@
 package services;
 
+import application.Application;
 import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
@@ -30,6 +31,7 @@ import org.xml.sax.SAXException;
 import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
+import util.ApplicationUtils;
 import util.FormplayerRaven;
 import util.UserUtils;
 
@@ -109,7 +111,7 @@ public class RestoreFactory implements ConnectionHandler{
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
+                DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), getDbPath());
                 connection = dataSource.getConnection();
             } else {
                 if (connection instanceof SQLiteConnection) {
@@ -118,7 +120,7 @@ public class RestoreFactory implements ConnectionHandler{
                         log.error(String.format("Had connection with path %s in StorageFactory %s",
                                 sqLiteConnection.url(),
                                 toString()));
-                        DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
+                        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), getDbPath());
                         connection = dataSource.getConnection();
                     }
                 }
@@ -156,11 +158,11 @@ public class RestoreFactory implements ConnectionHandler{
         }
     }
     public String getDbFile() {
-        return getDbPath() + "/user.db";
+        return ApplicationUtils.getUserDBFile(domain, username, asUsername);
     }
 
     private String getDbPath() {
-        return SQLiteProperties.getDataDir() + domain + "/" + getUsernameDetail();
+        return ApplicationUtils.getUserDBPath(domain, username, asUsername);
     }
 
     public String getWrappedUsername() {
