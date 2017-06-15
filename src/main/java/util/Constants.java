@@ -36,6 +36,10 @@ public class Constants {
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
 
+    // Change this version when a backwards incompatible change is made to the
+    // mobile sqlite dbs.
+    public static final String SQLITE_DB_VERSION = "V1";
+
     //Menus
     public static final String MENU_MODULE = "modules";
     public static final String MENU_ENTITY = "entity";

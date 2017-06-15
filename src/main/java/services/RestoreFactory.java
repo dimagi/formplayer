@@ -1,9 +1,9 @@
 package services;
 
+import application.Application;
 import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
-import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
@@ -31,7 +31,9 @@ import org.xml.sax.SAXException;
 import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
+import util.ApplicationUtils;
 import util.FormplayerRaven;
+import util.UserUtils;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -70,6 +72,8 @@ public class RestoreFactory implements ConnectionHandler{
     public static final Long ONE_DAY_IN_MILLISECONDS = 86400000l;
     public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
 
+    private static final String DEVICE_ID_SLUG = "WebAppsLogin";
+
     @Autowired
     private FormplayerRaven raven;
 
@@ -107,7 +111,7 @@ public class RestoreFactory implements ConnectionHandler{
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
+                DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), getDbPath());
                 connection = dataSource.getConnection();
             } else {
                 if (connection instanceof SQLiteConnection) {
@@ -116,7 +120,7 @@ public class RestoreFactory implements ConnectionHandler{
                         log.error(String.format("Had connection with path %s in StorageFactory %s",
                                 sqLiteConnection.url(),
                                 toString()));
-                        DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
+                        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), getDbPath());
                         connection = dataSource.getConnection();
                     }
                 }
@@ -154,11 +158,11 @@ public class RestoreFactory implements ConnectionHandler{
         }
     }
     public String getDbFile() {
-        return getDbPath() + "/user.db";
+        return ApplicationUtils.getUserDBFile(domain, username, asUsername);
     }
 
     private String getDbPath() {
-        return SQLiteProperties.getDataDir() + domain + "/" + getUsernameDetail();
+        return ApplicationUtils.getUserDBPath(domain, username, asUsername);
     }
 
     public String getWrappedUsername() {
@@ -338,6 +342,9 @@ public class RestoreFactory implements ConnectionHandler{
         if (username == null) {
             return null;
         }
+
+        username = UserUtils.unwrapUsername(username);
+
         SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
         Vector<Integer> users = storage.getIDsForValue(User.META_USERNAME, username);
         //should be exactly one user
@@ -346,6 +353,14 @@ public class RestoreFactory implements ConnectionHandler{
         }
 
         return storage.getMetaDataFieldForRecord(users.firstElement(), User.META_SYNC_TOKEN);
+    }
+
+    // Device ID for tracking usage in the same way Android uses IMEI
+    private String getSyncDeviceId() {
+        if (asUsername == null) {
+            return DEVICE_ID_SLUG;
+        }
+        return String.format("%s|%s|as|%s", DEVICE_ID_SLUG, username, asUsername);
     }
 
     public String getRestoreUrl(boolean overwriteCache) {
@@ -357,14 +372,13 @@ public class RestoreFactory implements ConnectionHandler{
         if (overwriteCache) {
             builder.append("&overwrite_cache=true");
         }
-        /*
         String syncToken = getSyncToken(getWrappedUsername());
-        if (syncToken != null) {
+        if (syncToken != null && !"".equals(syncToken)) {
             builder.append("&since=").append(syncToken);
         }
-        */
+        builder.append("&device_id=").append(getSyncDeviceId());
         if( asUsername != null) {
-            builder.append("&as=" + asUsername + "@" + domain + ".commcarehq.org");
+            builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
         }
         return builder.toString();
     }

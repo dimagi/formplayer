@@ -1,5 +1,6 @@
 package services;
 
+import application.Application;
 import beans.InstallRequestBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,22 +48,15 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.databasePath = ApplicationUtils.getApplicationDBPath(domain, getUsernameDetail(), appId);
+        this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, asUsername, appId);
         closeConnection();
-    }
-
-    public String getUsernameDetail() {
-        if (asUsername != null) {
-            return username + "_" + asUsername;
-        }
-        return username;
     }
 
     @Override
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource("application", databasePath);
+                DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getApplicationDBName(), databasePath);
                 connection = dataSource.getConnection();
             } else {
                 if (connection instanceof SQLiteConnection) {
@@ -71,7 +65,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
                         log.error(String.format("Had connection with path %s in StorageFactory %s",
                                 sqLiteConnection.url(),
                                 toString()));
-                        DataSource dataSource = SqlSandboxUtils.getDataSource("application", databasePath);
+                        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getApplicationDBName(), databasePath);
                         connection = dataSource.getConnection();
                     }
                 }
@@ -123,7 +117,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     }
 
     public String getDatabaseFile() {
-        return databasePath + "/application.db";
+        return ApplicationUtils.getApplicationDBFile(domain, username, asUsername, appId);
     }
 
     public String getAsUsername() {
