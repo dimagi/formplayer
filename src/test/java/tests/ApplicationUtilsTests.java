@@ -20,7 +20,7 @@ public class ApplicationUtilsTests {
 
     @Test
     public void testDeleteApplicationDbs() throws Exception {
-        String dbPath = ApplicationUtils.getApplicationDBPath("dummy-domain", "dummy-username", "dummy-app-id");
+        String dbPath = ApplicationUtils.getApplicationDBPath("dummy-domain", "dummy-username", null, "dummy-app-id");
         File file = new File(dbPath);
         file.mkdirs();
 
