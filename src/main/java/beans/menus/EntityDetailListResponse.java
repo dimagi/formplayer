@@ -22,8 +22,7 @@ public class EntityDetailListResponse {
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
 
-    public EntityDetailListResponse() {
-    }
+    public EntityDetailListResponse() {}
 
     public EntityDetailListResponse(EntityDetailResponse entityDetailResponse) {
         this.entityDetailList = new EntityDetailResponse[]{entityDetailResponse};
@@ -34,46 +33,18 @@ public class EntityDetailListResponse {
         entityDetailList = processDetails(screen, ec, treeReference);
     }
 
-    private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref) {
-        Detail[] detailList = screen.getLongDetailList();
-        if (detailList == null || !(detailList.length > 0)) {
-            // No details, just return null
-            return null;
-        }
-        EvaluationContext subContext = new EvaluationContext(ec, ref);
-        ArrayList<Object> accumulator = new ArrayList<>();
-        for (int i = 0; i < detailList.length; i++) {
-            if (detailList[i].getNodeset() == null) {
-                EntityDetailSubscreen subscreen = new EntityDetailSubscreen(i,
-                        detailList[i],
-                        subContext,
-                        screen.getDetailListTitles(subContext));
-                EntityDetailResponse response = new EntityDetailResponse(subscreen, screen.getDetailListTitles(subContext)[i]);
-                accumulator.add(response);
-            } else {
-                TreeReference contextualizedNodeset = detailList[i].getNodeset().contextualize(ref);
-                EntityDetailResponse response = new EntityDetailResponse(detailList[i],
-                        subContext.expandReference(contextualizedNodeset),
-                        subContext,
-                        screen.getDetailListTitles(subContext)[i]);
-                accumulator.add(response);
-            }
-        }
-        EntityDetailResponse[] ret = new EntityDetailResponse[accumulator.size()];
-        accumulator.toArray(ret);
-        return ret;
+    public EntityDetailListResponse(Detail[] detailList,
+                                    EvaluationContext ec, TreeReference treeReference) {
+        entityDetailList = processDetails(detailList, ec, treeReference);
     }
 
-    public EntityDetailListResponse(Detail[] detailList, SessionDatum datum,
-                                    EvaluationContext ec, TreeReference treeReference) {
-        entityDetailList = processDetails(detailList, datum, ec, treeReference);
+    private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref) {
+        return processDetails(screen.getLongDetailList(), ec, ref);
     }
 
     private EntityDetailResponse[] processDetails(Detail[] detailList,
-                                                  SessionDatum neededDatum,
                                                   EvaluationContext ec,
                                                   TreeReference ref) {
-
         if (detailList == null || !(detailList.length > 0)) {
             // No details, just return null
             return null;

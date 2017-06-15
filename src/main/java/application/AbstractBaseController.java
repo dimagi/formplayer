@@ -212,7 +212,6 @@ public abstract class AbstractBaseController {
         }
         EvaluationContext ec = menuSession.getSessionWrapper().getEvaluationContext();
         return new EntityDetailListResponse(pair.second.getDetails(),
-                menuSession.getSessionWrapper().getNeededDatum(),
                 ec,
                 pair.first);
     }
