@@ -24,6 +24,7 @@ import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
@@ -195,52 +196,28 @@ public abstract class AbstractBaseController {
         }
     }
 
-    protected EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
-
-        SessionWrapper session = menuSession.getSessionWrapper();
-
-        StackFrameStep stepToFrame = null;
-        Vector<StackFrameStep> v = session.getFrame().getSteps();
-
-        //So we need to work our way backwards through each "step" we've taken, since our RelativeLayout
-        //displays the Z-Order b insertion (so items added later are always "on top" of items added earlier
-        for (int i = v.size() - 1; i >= 0; i--) {
-            StackFrameStep step = v.elementAt(i);
-
-            if (SessionFrame.STATE_DATUM_VAL.equals(step.getType())) {
-                //Only add steps which have a tile.
-                EntityDatum entityDatum = session.findDatumDefinition(step.getId());
-                if (entityDatum != null && entityDatum.getPersistentDetail() != null) {
-                    stepToFrame = step;
-                }
-            }
-        }
-
-        if (stepToFrame == null) {
+    protected EntityDetailResponse getPersistentDetail(MenuSession menuSession) {
+        Pair<TreeReference, Detail> pair = getDetail(menuSession, false);
+        if (pair == null) {
             return null;
         }
-
-        EntityDatum entityDatum = session.findDatumDefinition(stepToFrame.getId());
-
-        if (entityDatum == null || entityDatum.getInlineDetail() == null) {
-            return null;
-        }
-
-        Detail inlineDetail = session.getDetail(entityDatum.getInlineDetail());
-        if (inlineDetail == null) {
-            return null;
-        }
-        EvaluationContext ec = session.getEvaluationContext();
-
-        TreeReference ref = entityDatum.getEntityFromID(ec, stepToFrame.getValue());
-        if (ref == null) {
-            return null;
-        }
-
-        return new EntityDetailListResponse(inlineDetail.getDetails(), session.getNeededDatum(), ec, ref);
+        EvaluationContext ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), pair.first);
+        return new EntityDetailResponse(pair.second, ec);
     }
 
-    protected EntityDetailResponse getPersistentCaseTile(MenuSession menuSession) {
+    protected EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
+        Pair<TreeReference, Detail> pair = getDetail(menuSession, true);
+        if (pair == null) {
+            return null;
+        }
+        EvaluationContext ec = menuSession.getSessionWrapper().getEvaluationContext();
+        return new EntityDetailListResponse(pair.second.getDetails(),
+                menuSession.getSessionWrapper().getNeededDatum(),
+                ec,
+                pair.first);
+    }
+
+    protected Pair<TreeReference, Detail> getDetail(MenuSession menuSession, boolean inline) {
 
         SessionWrapper session = menuSession.getSessionWrapper();
 
@@ -267,14 +244,22 @@ public abstract class AbstractBaseController {
 
         EntityDatum entityDatum = session.findDatumDefinition(stepToFrame.getId());
 
-        if (entityDatum == null || entityDatum.getPersistentDetail() == null) {
+        if (entityDatum == null) {
             return null;
         }
 
-        Detail persistentDetail = session.getDetail(entityDatum.getPersistentDetail());
-        if (persistentDetail == null) {
+        String detailId;
+        if (inline) {
+            detailId = entityDatum.getInlineDetail();
+        } else {
+            detailId = entityDatum.getPersistentDetail();
+        }
+        if (detailId == null) {
             return null;
         }
+
+        Detail persistentDetail = session.getDetail(detailId);
+
         EvaluationContext ec = session.getEvaluationContext();
 
         TreeReference ref = entityDatum.getEntityFromID(ec, stepToFrame.getValue());
@@ -282,13 +267,12 @@ public abstract class AbstractBaseController {
             return null;
         }
 
-        EvaluationContext subContext = new EvaluationContext(ec, ref);
+        return new Pair(ref, persistentDetail);
 
-        return new EntityDetailResponse(persistentDetail, subContext);
     }
 
     private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
-        menuResponseBean.setPersistentCaseTile(getPersistentCaseTile(menuSession));
+        menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
