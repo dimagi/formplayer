@@ -2,6 +2,7 @@ package tests.sandbox;
 
 import sandbox.SqlSandboxUtils;
 import services.ConnectionHandler;
+import util.ApplicationUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -21,7 +22,7 @@ public class TestConnectionHandler implements ConnectionHandler {
     @Override
     public Connection getConnection() {
         try {
-            return SqlSandboxUtils.getDataSource("user", dbPath).getConnection();
+            return SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), dbPath).getConnection();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

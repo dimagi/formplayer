@@ -67,6 +67,7 @@ public class DebuggerController extends AbstractBaseController {
                 response.getFormattedQuestions(),
                 response.getQuestionList(),
                 FunctionUtils.xPathFuncList(),
+                formSession.getFormEntryModel().getForm().getEvaluationContext().getInstanceIds(),
                 fetchRecentXPathQueries(debuggerRequest.getDomain(), debuggerRequest.getUsername())
         );
     }
@@ -80,8 +81,10 @@ public class DebuggerController extends AbstractBaseController {
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
-        EvaluateXPathResponseBean evaluateXPathResponseBean =
-                new EvaluateXPathResponseBean(formEntrySession, evaluateXPathRequestBean.getXpath());
+        EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
+                formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
+                evaluateXPathRequestBean.getXpath()
+        );
 
         cacheXPathQuery(
                 evaluateXPathRequestBean.getDomain(),

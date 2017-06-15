@@ -34,7 +34,7 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
     @Test
     public void testDeleteApplicationDbsView() throws Exception {
         // Create application db by making an install request
-        String dbPath = ApplicationUtils.getApplicationDBPath("casetestdomain", "casetestuser", "casetestappid");
+        String dbPath = ApplicationUtils.getApplicationDBPath("casetestdomain", "casetestuser", null, "casetestappid");
         CommandListResponseBean menuResponseBean = doInstall("requests/install/install.json");
 
         File file = new File(dbPath);
@@ -54,7 +54,7 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
      */
     @Test
     public void testDeleteApplicationDbsWithNoDbView() throws Exception {
-        String dbPath = ApplicationUtils.getApplicationDBPath("casetestdomain", "casetestuser", "casetestappid");
+        String dbPath = ApplicationUtils.getApplicationDBPath("casetestdomain", "casetestuser", null, "casetestappid");
         File file = new File(dbPath);
         assert !file.exists();
 
