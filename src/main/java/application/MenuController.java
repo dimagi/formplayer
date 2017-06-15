@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.QueryRequester;
@@ -117,7 +118,8 @@ public class MenuController extends AbstractBaseController {
         String detailSelection = selections[selections.length - 1];
         System.arraycopy(selections, 0, commitSelections, 0, selections.length - 1);
 
-        advanceSessionWithSelections(menuSession,
+        advanceSessionWithSelections(
+                menuSession,
                 commitSelections,
                 auth,
                 detailSelection,
@@ -126,6 +128,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText()
         );
         Screen currentScreen = menuSession.getNextScreen();
+        menuSessionRepo.save(new SerializableMenuSession(menuSession));
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
@@ -170,8 +173,9 @@ public class MenuController extends AbstractBaseController {
                 authToken
         );
         String[] selections = sessionNavigationBean.getSelections();
+        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken),
         BaseResponseBean response = advanceSessionWithSelections(
-                getMenuSessionFromBean(sessionNavigationBean, authToken),
+                menuSession,
                 selections,
                 auth,
                 null,
@@ -179,6 +183,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText()
         );
+        menuSessionRepo.save(new SerializableMenuSession(menuSession));
         return response;
     }
 
