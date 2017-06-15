@@ -1,8 +1,11 @@
 package application;
 
+import annotations.AppInstall;
+import annotations.AppInstallFromSession;
 import annotations.UserLock;
 import annotations.UserRestore;
 import auth.DjangoAuth;
+import beans.EvaluateXPathMenuRequestBean;
 import beans.EvaluateXPathRequestBean;
 import beans.EvaluateXPathResponseBean;
 import beans.SessionRequestBean;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
 import services.FormattedQuestionsService;
 import session.FormSession;
+import session.MenuSession;
 import util.Constants;
 
 import javax.annotation.Resource;
@@ -83,6 +87,37 @@ public class DebuggerController extends AbstractBaseController {
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
+                evaluateXPathRequestBean.getXpath()
+        );
+
+        cacheXPathQuery(
+                evaluateXPathRequestBean.getDomain(),
+                evaluateXPathRequestBean.getUsername(),
+                evaluateXPathRequestBean.getXpath(),
+                evaluateXPathResponseBean.getOutput(),
+                evaluateXPathResponseBean.getStatus()
+        );
+
+        return evaluateXPathResponseBean;
+    }
+
+    @ApiOperation(value = "Evaluate the given XPath under the current context")
+    @RequestMapping(value = Constants.URL_EVALUATE_MENU_XPATH, method = RequestMethod.POST)
+    @ResponseBody
+    @UserLock
+    @UserRestore
+    @AppInstallFromSession
+    public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
+                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        MenuSession menuSession = getMenuSession(
+                evaluateXPathRequestBean.getDomain(),
+                evaluateXPathRequestBean.getUsername(),
+                evaluateXPathRequestBean.getMenuSessionId(),
+                authToken
+        );
+
+        EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
+                menuSession.getSessionWrapper().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath()
         );
 
