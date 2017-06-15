@@ -43,7 +43,6 @@ public class EntityDetailListResponse {
         EvaluationContext subContext = new EvaluationContext(ec, ref);
         ArrayList<Object> accumulator = new ArrayList<>();
         for (int i = 0; i < detailList.length; i++) {
-            // For now, don't add sub-details
             if (detailList[i].getNodeset() == null) {
                 EntityDetailSubscreen subscreen = new EntityDetailSubscreen(i,
                         detailList[i],
@@ -56,7 +55,6 @@ public class EntityDetailListResponse {
                 EntityDetailResponse response = new EntityDetailResponse(detailList[i],
                         subContext.expandReference(contextualizedNodeset),
                         subContext,
-                        (EntityDatum) screen.getSession().getNeededDatum(),
                         screen.getDetailListTitles(subContext)[i]);
                 accumulator.add(response);
             }
@@ -89,7 +87,6 @@ public class EntityDetailListResponse {
         EvaluationContext subContext = new EvaluationContext(ec, ref);
         ArrayList<Object> accumulator = new ArrayList<>();
         for (int i = 0; i < detailList.length; i++) {
-            // For now, don't add sub-details
             if (detailList[i].getNodeset() == null) {
                 EntityDetailSubscreen subscreen = new EntityDetailSubscreen(i,
                         detailList[i],
@@ -102,7 +99,6 @@ public class EntityDetailListResponse {
                 EntityDetailResponse response = new EntityDetailResponse(detailList[i],
                         subContext.expandReference(contextualizedNodeset),
                         subContext,
-                        (EntityDatum) neededDatum,
                         titles[i]);
                 accumulator.add(response);
             }

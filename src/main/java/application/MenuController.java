@@ -115,6 +115,24 @@ public class MenuController extends AbstractBaseController {
             return null;
         }
 
+        if (sessionNavigationBean.getIsPersistent()) {
+            advanceSessionWithSelections(menuSession,
+                    sessionNavigationBean.getSelections(),
+                    auth,
+                    null,
+                    sessionNavigationBean.getQueryDictionary(),
+                    sessionNavigationBean.getOffset(),
+                    sessionNavigationBean.getSearchText()
+            );
+
+            // See if we have a persistent case tile to expand
+            EntityDetailListResponse detail = getInlineDetail(menuSession);
+            if (detail == null) {
+                throw new RuntimeException("Could not get inline details");
+            }
+            return detail;
+        }
+
         String[] selections = sessionNavigationBean.getSelections();
         String[] commitSelections = new String[selections.length - 1];
         String detailSelection = selections[selections.length - 1];
@@ -132,11 +150,11 @@ public class MenuController extends AbstractBaseController {
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
-            EntityDetailListResponse detail = getInlineDetail(menuSession);
+            EntityDetailResponse detail = getPersistentCaseTile(menuSession);
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
-            return detail;
+            return new EntityDetailListResponse(detail);
         }
         EntityScreen entityScreen = (EntityScreen) currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
