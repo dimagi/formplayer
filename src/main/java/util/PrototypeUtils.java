@@ -11,7 +11,6 @@ import org.commcare.core.graph.suite.Graph;
 import org.commcare.core.graph.suite.XYSeries;
 import org.commcare.resources.model.installers.*;
 import org.commcare.suite.model.*;
-import org.commcare.xml.DummyGraphParser;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.GroupDef;
@@ -44,7 +43,6 @@ public class PrototypeUtils {
                 PropertySetter.class.getName(),
                 XPathReference.class.getName(),
                 TableLocaleSource.class.getName(),
-                DummyGraphParser.DummyGraphDetailTemplate.class.getName(),
                 FormEntry.class.getName(),
                 CaseDataInstance.class.getName(),
                 QuestionDef.class.getName(),

@@ -169,7 +169,7 @@ public class EntityListResponse extends MenuBean {
     }
 
     private static void sort(List<Entity<TreeReference>> entityList, Detail shortDetail) {
-        int[] order = shortDetail.getSortOrder();
+        int[] order = shortDetail.getOrderedFieldIndicesForSorting();
         for (int i = 0; i < shortDetail.getFields().length; ++i) {
             String header = shortDetail.getFields()[i].getHeader().evaluate();
             if (order.length == 0 && !"".equals(header)) {
@@ -181,7 +181,7 @@ public class EntityListResponse extends MenuBean {
 
     static class LogNotifier implements EntitySortNotificationInterface {
         @Override
-        public void notifyBadfilter(String[] args) {
+        public void notifyBadFilter(String[] args) {
 
         }
     }
