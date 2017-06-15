@@ -72,7 +72,7 @@ public class DebuggerController extends AbstractBaseController {
                 response.getQuestionList(),
                 FunctionUtils.xPathFuncList(),
                 formSession.getFormEntryModel().getForm().getEvaluationContext().getInstanceIds(),
-                fetchRecentXPathQueries(debuggerRequest.getDomain(), debuggerRequest.getUsername())
+                fetchRecentFormXPathQueries(debuggerRequest.getDomain(), debuggerRequest.getUsername())
         );
     }
 
@@ -90,7 +90,7 @@ public class DebuggerController extends AbstractBaseController {
                 evaluateXPathRequestBean.getXpath()
         );
 
-        cacheXPathQuery(
+        cacheFormXPathQuery(
                 evaluateXPathRequestBean.getDomain(),
                 evaluateXPathRequestBean.getUsername(),
                 evaluateXPathRequestBean.getXpath(),
@@ -121,7 +121,7 @@ public class DebuggerController extends AbstractBaseController {
                 evaluateXPathRequestBean.getXpath()
         );
 
-        cacheXPathQuery(
+        cacheMenuXPathQuery(
                 evaluateXPathRequestBean.getDomain(),
                 evaluateXPathRequestBean.getUsername(),
                 evaluateXPathRequestBean.getXpath(),
@@ -132,21 +132,33 @@ public class DebuggerController extends AbstractBaseController {
         return evaluateXPathResponseBean;
     }
 
-    private void cacheXPathQuery(String domain, String username, String xpath, String output, String status) {
+    private List<XPathQueryItem> fetchRecentFormXPathQueries(String domain, String username) {
+        return fetchRecentXPathQueries("menu", domain, username);
+    }
+
+    private void cacheMenuXPathQuery(String domain, String username, String xpath, String output, String status) {
+        cacheXPathQuery("menu", domain, username, xpath, output, status);
+    }
+
+    private void cacheFormXPathQuery(String domain, String username, String xpath, String output, String status) {
+        cacheXPathQuery("form", domain, username, xpath, output, status);
+    }
+
+    private void cacheXPathQuery(String prefix, String domain, String username, String xpath, String output, String status) {
         XPathQueryItem queryItem = new XPathQueryItem(xpath, output, status);
 
         listOperations.leftPush(
-                redisXPathKey(domain, username),
+                redisXPathKey(prefix, domain, username),
                 queryItem
         );
     }
 
-    private List<XPathQueryItem> fetchRecentXPathQueries(String domain, String username) {
-        listOperations.trim(redisXPathKey(domain, username), 0, MAX_RECENT);
-        return listOperations.range(redisXPathKey(domain, username), 0, MAX_RECENT);
+    private List<XPathQueryItem> fetchRecentXPathQueries(String prefix, String domain, String username) {
+        listOperations.trim(redisXPathKey(prefix, domain, username), 0, MAX_RECENT);
+        return listOperations.range(redisXPathKey(prefix, domain, username), 0, MAX_RECENT);
     }
 
-    private String redisXPathKey(String domain, String username) {
-        return "debugger:xpath:" + domain + ":" + username;
+    private String redisXPathKey(String prefix, String domain, String username) {
+        return "debugger:xpath:" + prefix + ":" + domain + ":" + username;
     }
 }
