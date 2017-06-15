@@ -17,6 +17,7 @@ public class Constants {
     public final static String URL_CURRENT = "current";
     public final static String URL_SUBMIT_FORM = "submit-all";
     public final static String URL_EVALUATE_XPATH = "evaluate-xpath";
+    public final static String URL_EVALUATE_MENU_XPATH = "evaluate-menu-xpath";
     public final static String URL_NEW_REPEAT = "new-repeat";
     public final static String URL_DELETE_REPEAT = "delete-repeat";
     public final static String URL_SYNC_DB = "sync-db";
