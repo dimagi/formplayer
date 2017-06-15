@@ -36,7 +36,6 @@ import session.FormSession;
 import session.MenuSession;
 import util.ApplicationUtils;
 import util.Constants;
-import util.SessionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -150,7 +149,7 @@ public class MenuController extends AbstractBaseController {
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
-            EntityDetailResponse detail = getPersistentCaseTile(menuSession);
+            EntityDetailResponse detail = getPersistentDetail(menuSession);
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
