@@ -6,8 +6,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.sqlite.SQLiteConnection;
+import repo.MenuSessionRepo;
+import repo.SerializableMenuSession;
 import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import util.ApplicationUtils;
@@ -30,13 +33,28 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
 
     private Connection connection;
 
+    @Autowired
+    protected MenuSessionRepo menuSessionRepo;
+
     private final Log log = LogFactory.getLog(FormplayerStorageFactory.class);
 
-    public void configure(InstallRequestBean authenticatedRequestBean) {
-        configure(authenticatedRequestBean.getUsername(),
-                authenticatedRequestBean.getDomain(),
-                authenticatedRequestBean.getAppId(),
-                authenticatedRequestBean.getRestoreAs());
+    public void configure(InstallRequestBean installRequestBean) {
+        configure(
+                installRequestBean.getUsername(),
+                installRequestBean.getDomain(),
+                installRequestBean.getAppId(),
+                installRequestBean.getRestoreAs()
+        );
+    }
+
+    public void configure(String menuSessionId) {
+        SerializableMenuSession menuSession = menuSessionRepo.findOneWrapped(menuSessionId);
+        configure(
+                menuSession.getUsername(),
+                menuSession.getDomain(),
+                menuSession.getAppId(),
+                menuSession.getAsUser()
+        );
     }
 
     public void configure(String username, String domain, String appId, String asUsername) {
