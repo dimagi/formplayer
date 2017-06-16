@@ -6,6 +6,8 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+env:
+  GRADLE_OPTS: '-Xmx128m'
 before_script:
   - gradle wrapper
   - cp .travis/application.properties.example config/application.properties
