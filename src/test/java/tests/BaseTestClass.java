@@ -9,6 +9,7 @@ import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.getsentry.raven.Raven;
 import installers.FormplayerInstallerFactory;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.*;
@@ -31,6 +32,7 @@ import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import sandbox.SqlSandboxUtils;
 import services.*;
+import session.MenuSession;
 import util.Constants;
 import util.FormplayerRaven;
 import util.PrototypeUtils;
@@ -340,6 +342,24 @@ public class BaseTestClass {
                 ControllerType.DEBUGGER,
                 RequestType.POST,
                 Constants.URL_EVALUATE_XPATH,
+                evaluateXPathRequestBean,
+                EvaluateXPathResponseBean.class
+        );
+    }
+
+    EvaluateXPathResponseBean evaluateMenuXPath(String menuSessionId, String xpath) throws Exception {
+        SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(menuSessionId);
+
+        EvaluateXPathMenuRequestBean evaluateXPathRequestBean = new EvaluateXPathMenuRequestBean();
+        evaluateXPathRequestBean.setUsername(menuSession.getUsername());
+        evaluateXPathRequestBean.setDomain(menuSession.getDomain());
+        evaluateXPathRequestBean.setRestoreAs(menuSession.getAsUser());
+        evaluateXPathRequestBean.setMenuSessionId(menuSessionId);
+        evaluateXPathRequestBean.setXpath(xpath);
+        return generateMockQuery(
+                ControllerType.DEBUGGER,
+                RequestType.POST,
+                Constants.URL_EVALUATE_MENU_XPATH,
                 evaluateXPathRequestBean,
                 EvaluateXPathResponseBean.class
         );
