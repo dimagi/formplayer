@@ -173,7 +173,7 @@ public class MenuController extends AbstractBaseController {
                 authToken
         );
         String[] selections = sessionNavigationBean.getSelections();
-        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken),
+        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         BaseResponseBean response = advanceSessionWithSelections(
                 menuSession,
                 selections,

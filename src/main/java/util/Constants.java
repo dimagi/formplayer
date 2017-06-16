@@ -36,6 +36,7 @@ public class Constants {
     public static final String URL_VALIDATE_FORM = "validate_form";
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
+    public static final String URL_DEBUGGER_MENU_CONTENT = "menu_debugger_content";
 
     // Change this version when a backwards incompatible change is made to the
     // mobile sqlite dbs.
