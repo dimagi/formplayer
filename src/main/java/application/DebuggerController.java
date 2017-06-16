@@ -5,11 +5,10 @@ import annotations.AppInstallFromSession;
 import annotations.UserLock;
 import annotations.UserRestore;
 import auth.DjangoAuth;
-import beans.EvaluateXPathMenuRequestBean;
-import beans.EvaluateXPathRequestBean;
-import beans.EvaluateXPathResponseBean;
-import beans.SessionRequestBean;
+import beans.*;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
+import beans.debugger.MenuDebuggerContentResponseBean;
+import beans.debugger.MenuDebuggerRequestBean;
 import beans.debugger.XPathQueryItem;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -76,6 +75,29 @@ public class DebuggerController extends AbstractBaseController {
         );
     }
 
+    @ApiOperation(value = "Get content needed for the menu debugger")
+    @RequestMapping(value = Constants.URL_DEBUGGER_MENU_CONTENT, method = RequestMethod.POST)
+    @UserRestore
+    @AppInstallFromSession
+    public MenuDebuggerContentResponseBean menuDebuggerContent(
+            @RequestBody MenuDebuggerRequestBean debuggerMenuRequest,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+
+        MenuSession menuSession = getMenuSession(
+                debuggerMenuRequest.getDomain(),
+                debuggerMenuRequest.getUsername(),
+                debuggerMenuRequest.getMenuSessionId(),
+                authToken
+        );
+
+        return new MenuDebuggerContentResponseBean(
+                menuSession.getAppId(),
+                FunctionUtils.xPathFuncList(),
+                menuSession.getSessionWrapper().getEvaluationContext().getInstanceIds(),
+                fetchRecentMenuXPathQueries(debuggerMenuRequest.getDomain(), debuggerMenuRequest.getUsername())
+        );
+    }
+
     @ApiOperation(value = "Evaluate the given XPath under the current context")
     @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.POST)
     @ResponseBody
@@ -132,8 +154,12 @@ public class DebuggerController extends AbstractBaseController {
         return evaluateXPathResponseBean;
     }
 
-    private List<XPathQueryItem> fetchRecentFormXPathQueries(String domain, String username) {
+    private List<XPathQueryItem> fetchRecentMenuXPathQueries(String domain, String username) {
         return fetchRecentXPathQueries("menu", domain, username);
+    }
+
+    private List<XPathQueryItem> fetchRecentFormXPathQueries(String domain, String username) {
+        return fetchRecentXPathQueries("form", domain, username);
     }
 
     private void cacheMenuXPathQuery(String domain, String username, String xpath, String output, String status) {
