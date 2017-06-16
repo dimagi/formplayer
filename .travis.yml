@@ -6,11 +6,10 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-env:
-  GRADLE_OPTS: '-Xmx128m'
 before_script:
   - gradle wrapper
   - cp .travis/application.properties.example config/application.properties
+  - cp .travis/travis.gradle.properties gradle.properties
   - psql -c 'create database commcarehq;' -U postgres
   - psql -c 'create database formplayer;' -U postgres
   - curl -X PUT localhost:5984/commcarehq
