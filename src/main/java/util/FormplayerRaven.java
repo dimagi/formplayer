@@ -97,7 +97,7 @@ public class FormplayerRaven {
                 .withTag(HQ_HOST_TAG, host)
                 .withTag(DOMAIN_TAG, domain)
                 .withExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL())
-                .withExtra(APP_URL_EXTRA, getAppDownloadURL())
+                .withExtra(APP_URL_EXTRA, getAppURL())
         );
     }
 
