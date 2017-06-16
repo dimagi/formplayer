@@ -7,6 +7,7 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 before_script:
+  - gradle wrapper
   - cp .travis/application.properties.example config/application.properties
   - cp .travis/travis.gradle.properties gradle.properties
   - psql -c 'create database commcarehq;' -U postgres
