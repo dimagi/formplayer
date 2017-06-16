@@ -14,6 +14,7 @@ public class CommandListResponseBean extends MenuBean {
     private Command[] commands;
     private final String type = "commands";
     private String layoutStyle;
+    private String[] badges;
 
     CommandListResponseBean(){}
 
@@ -42,6 +43,7 @@ public class CommandListResponseBean extends MenuBean {
         }
 
         this.layoutStyle = session.getPlatform().getMenuDisplayStyle(menuId);
+        this.badges = menuScreen.getBadges();
     }
 
     @Override
@@ -60,5 +62,13 @@ public class CommandListResponseBean extends MenuBean {
 
     public void setLayoutStyle(String layoutStyle) {
         this.layoutStyle = layoutStyle;
+    }
+
+    public String[] getBadges() {
+        return badges;
+    }
+
+    public void setBadges(String[] badges) {
+        this.badges = badges;
     }
 }
