@@ -24,6 +24,7 @@ import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
@@ -198,7 +199,27 @@ public abstract class AbstractBaseController {
         }
     }
 
-    protected EntityDetailResponse getPersistentCaseTile(MenuSession menuSession) {
+    protected EntityDetailResponse getPersistentDetail(MenuSession menuSession) {
+        Pair<TreeReference, Detail> pair = getDetail(menuSession, false);
+        if (pair == null) {
+            return null;
+        }
+        EvaluationContext ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), pair.first);
+        return new EntityDetailResponse(pair.second, ec);
+    }
+
+    protected EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
+        Pair<TreeReference, Detail> pair = getDetail(menuSession, true);
+        if (pair == null) {
+            return null;
+        }
+        EvaluationContext ec = menuSession.getSessionWrapper().getEvaluationContext();
+        return new EntityDetailListResponse(pair.second.getDetails(),
+                ec,
+                pair.first);
+    }
+
+    protected Pair<TreeReference, Detail> getDetail(MenuSession menuSession, boolean inline) {
 
         SessionWrapper session = menuSession.getSessionWrapper();
 
@@ -225,14 +246,22 @@ public abstract class AbstractBaseController {
 
         EntityDatum entityDatum = session.findDatumDefinition(stepToFrame.getId());
 
-        if (entityDatum == null || entityDatum.getPersistentDetail() == null) {
+        if (entityDatum == null) {
             return null;
         }
 
-        Detail persistentDetail = session.getDetail(entityDatum.getPersistentDetail());
-        if (persistentDetail == null) {
+        String detailId;
+        if (inline) {
+            detailId = entityDatum.getInlineDetail();
+        } else {
+            detailId = entityDatum.getPersistentDetail();
+        }
+        if (detailId == null) {
             return null;
         }
+
+        Detail persistentDetail = session.getDetail(detailId);
+
         EvaluationContext ec = session.getEvaluationContext();
 
         TreeReference ref = entityDatum.getEntityFromID(ec, stepToFrame.getValue());
@@ -240,13 +269,12 @@ public abstract class AbstractBaseController {
             return null;
         }
 
-        EvaluationContext subContext = new EvaluationContext(ec, ref);
+        return new Pair(ref, persistentDetail);
 
-        return new EntityDetailResponse(persistentDetail, subContext);
     }
 
     private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
-        menuResponseBean.setPersistentCaseTile(getPersistentCaseTile(menuSession));
+        menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
