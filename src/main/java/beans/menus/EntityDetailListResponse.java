@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
+import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
@@ -21,8 +22,7 @@ public class EntityDetailListResponse {
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
 
-    public EntityDetailListResponse() {
-    }
+    public EntityDetailListResponse() {}
 
     public EntityDetailListResponse(EntityDetailResponse entityDetailResponse) {
         this.entityDetailList = new EntityDetailResponse[]{entityDetailResponse};
@@ -33,30 +33,44 @@ public class EntityDetailListResponse {
         entityDetailList = processDetails(screen, ec, treeReference);
     }
 
+    public EntityDetailListResponse(Detail[] detailList,
+                                    EvaluationContext ec, TreeReference treeReference) {
+        entityDetailList = processDetails(detailList, ec, treeReference);
+    }
+
     private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref) {
-        Detail[] detailList = screen.getLongDetailList();
+        return processDetails(screen.getLongDetailList(), ec, ref);
+    }
+
+    private EntityDetailResponse[] processDetails(Detail[] detailList,
+                                                  EvaluationContext ec,
+                                                  TreeReference ref) {
         if (detailList == null || !(detailList.length > 0)) {
             // No details, just return null
             return null;
         }
+
+        String[] titles = new String[detailList.length];
+        for (int i = 0; i < detailList.length; ++i) {
+            titles[i] = detailList[i].getTitle().getText().evaluate(ec);
+        }
+
         EvaluationContext subContext = new EvaluationContext(ec, ref);
         ArrayList<Object> accumulator = new ArrayList<>();
         for (int i = 0; i < detailList.length; i++) {
-            // For now, don't add sub-details
             if (detailList[i].getNodeset() == null) {
                 EntityDetailSubscreen subscreen = new EntityDetailSubscreen(i,
                         detailList[i],
                         subContext,
-                        screen.getDetailListTitles(subContext));
-                EntityDetailResponse response = new EntityDetailResponse(subscreen, screen.getDetailListTitles(subContext)[i]);
+                        titles);
+                EntityDetailResponse response = new EntityDetailResponse(subscreen, titles[i]);
                 accumulator.add(response);
             } else {
                 TreeReference contextualizedNodeset = detailList[i].getNodeset().contextualize(ref);
                 EntityDetailResponse response = new EntityDetailResponse(detailList[i],
                         subContext.expandReference(contextualizedNodeset),
                         subContext,
-                        (EntityDatum) screen.getSession().getNeededDatum(),
-                        screen.getDetailListTitles(subContext)[i]);
+                        titles[i]);
                 accumulator.add(response);
             }
         }

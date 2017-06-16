@@ -192,7 +192,7 @@ public class EntityListResponse extends MenuBean {
         detail.populateEvaluationContextVariables(context);
         DetailField[] fields = detail.getFields();
         Object[] data = new Object[fields.length];
-        String id = EntityScreen.getReturnValueFromSelection(treeReference, neededDatum, ec);
+        String id = neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(treeReference, neededDatum, ec);
         EntityBean ret = new EntityBean(id);
         int i = 0;
         for (DetailField field : fields) {
