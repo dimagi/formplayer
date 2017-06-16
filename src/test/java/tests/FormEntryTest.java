@@ -86,6 +86,14 @@ public class FormEntryTest extends BaseTestClass{
         evaluateXPathResponseBean = evaluateXPath(sessionId, "!data/broken");
         assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
 
+        // Should be able to evaluate functions that do not return nodesets
+        evaluateXPathResponseBean = evaluateXPath(sessionId, "true()");
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+
+        // Should be able to evaluate instance expressions
+        evaluateXPath(sessionId, "instance('commcaresession')/session/context/username");
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+
         //Test Submission
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request.json", sessionId);
     }
