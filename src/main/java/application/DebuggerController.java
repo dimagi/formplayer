@@ -1,12 +1,14 @@
 package application;
 
+import annotations.AppInstall;
+import annotations.AppInstallFromSession;
 import annotations.UserLock;
 import annotations.UserRestore;
 import auth.DjangoAuth;
-import beans.EvaluateXPathRequestBean;
-import beans.EvaluateXPathResponseBean;
-import beans.SessionRequestBean;
+import beans.*;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
+import beans.debugger.MenuDebuggerContentResponseBean;
+import beans.debugger.MenuDebuggerRequestBean;
 import beans.debugger.XPathQueryItem;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
 import services.FormattedQuestionsService;
 import session.FormSession;
+import session.MenuSession;
 import util.Constants;
 
 import javax.annotation.Resource;
@@ -68,7 +71,30 @@ public class DebuggerController extends AbstractBaseController {
                 response.getQuestionList(),
                 FunctionUtils.xPathFuncList(),
                 formSession.getFormEntryModel().getForm().getEvaluationContext().getInstanceIds(),
-                fetchRecentXPathQueries(debuggerRequest.getDomain(), debuggerRequest.getUsername())
+                fetchRecentFormXPathQueries(debuggerRequest.getDomain(), debuggerRequest.getUsername())
+        );
+    }
+
+    @ApiOperation(value = "Get content needed for the menu debugger")
+    @RequestMapping(value = Constants.URL_DEBUGGER_MENU_CONTENT, method = RequestMethod.POST)
+    @UserRestore
+    @AppInstallFromSession
+    public MenuDebuggerContentResponseBean menuDebuggerContent(
+            @RequestBody MenuDebuggerRequestBean debuggerMenuRequest,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+
+        MenuSession menuSession = getMenuSession(
+                debuggerMenuRequest.getDomain(),
+                debuggerMenuRequest.getUsername(),
+                debuggerMenuRequest.getMenuSessionId(),
+                authToken
+        );
+
+        return new MenuDebuggerContentResponseBean(
+                menuSession.getAppId(),
+                FunctionUtils.xPathFuncList(),
+                menuSession.getSessionWrapper().getEvaluationContext().getInstanceIds(),
+                fetchRecentMenuXPathQueries(debuggerMenuRequest.getDomain(), debuggerMenuRequest.getUsername())
         );
     }
 
@@ -86,7 +112,7 @@ public class DebuggerController extends AbstractBaseController {
                 evaluateXPathRequestBean.getXpath()
         );
 
-        cacheXPathQuery(
+        cacheFormXPathQuery(
                 evaluateXPathRequestBean.getDomain(),
                 evaluateXPathRequestBean.getUsername(),
                 evaluateXPathRequestBean.getXpath(),
@@ -97,21 +123,68 @@ public class DebuggerController extends AbstractBaseController {
         return evaluateXPathResponseBean;
     }
 
-    private void cacheXPathQuery(String domain, String username, String xpath, String output, String status) {
+    @ApiOperation(value = "Evaluate the given XPath under the current context")
+    @RequestMapping(value = Constants.URL_EVALUATE_MENU_XPATH, method = RequestMethod.POST)
+    @ResponseBody
+    @UserLock
+    @UserRestore
+    @AppInstallFromSession
+    public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
+                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        MenuSession menuSession = getMenuSession(
+                evaluateXPathRequestBean.getDomain(),
+                evaluateXPathRequestBean.getUsername(),
+                evaluateXPathRequestBean.getMenuSessionId(),
+                authToken
+        );
+
+        EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
+                menuSession.getSessionWrapper().getEvaluationContext(),
+                evaluateXPathRequestBean.getXpath()
+        );
+
+        cacheMenuXPathQuery(
+                evaluateXPathRequestBean.getDomain(),
+                evaluateXPathRequestBean.getUsername(),
+                evaluateXPathRequestBean.getXpath(),
+                evaluateXPathResponseBean.getOutput(),
+                evaluateXPathResponseBean.getStatus()
+        );
+
+        return evaluateXPathResponseBean;
+    }
+
+    private List<XPathQueryItem> fetchRecentMenuXPathQueries(String domain, String username) {
+        return fetchRecentXPathQueries("menu", domain, username);
+    }
+
+    private List<XPathQueryItem> fetchRecentFormXPathQueries(String domain, String username) {
+        return fetchRecentXPathQueries("form", domain, username);
+    }
+
+    private void cacheMenuXPathQuery(String domain, String username, String xpath, String output, String status) {
+        cacheXPathQuery("menu", domain, username, xpath, output, status);
+    }
+
+    private void cacheFormXPathQuery(String domain, String username, String xpath, String output, String status) {
+        cacheXPathQuery("form", domain, username, xpath, output, status);
+    }
+
+    private void cacheXPathQuery(String prefix, String domain, String username, String xpath, String output, String status) {
         XPathQueryItem queryItem = new XPathQueryItem(xpath, output, status);
 
         listOperations.leftPush(
-                redisXPathKey(domain, username),
+                redisXPathKey(prefix, domain, username),
                 queryItem
         );
     }
 
-    private List<XPathQueryItem> fetchRecentXPathQueries(String domain, String username) {
-        listOperations.trim(redisXPathKey(domain, username), 0, MAX_RECENT);
-        return listOperations.range(redisXPathKey(domain, username), 0, MAX_RECENT);
+    private List<XPathQueryItem> fetchRecentXPathQueries(String prefix, String domain, String username) {
+        listOperations.trim(redisXPathKey(prefix, domain, username), 0, MAX_RECENT);
+        return listOperations.range(redisXPathKey(prefix, domain, username), 0, MAX_RECENT);
     }
 
-    private String redisXPathKey(String domain, String username) {
-        return "debugger:xpath:" + domain + ":" + username;
+    private String redisXPathKey(String prefix, String domain, String username) {
+        return "debugger:xpath:" + prefix + ":" + domain + ":" + username;
     }
 }

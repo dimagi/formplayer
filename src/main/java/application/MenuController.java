@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.QueryRequester;
@@ -50,9 +51,6 @@ import java.util.Hashtable;
 @RestController
 @EnableAutoConfiguration
 public class MenuController extends AbstractBaseController {
-
-    @Value("${commcarehq.host}")
-    private String host;
 
     @Autowired
     private QueryRequester queryRequester;
@@ -137,7 +135,8 @@ public class MenuController extends AbstractBaseController {
         String detailSelection = selections[selections.length - 1];
         System.arraycopy(selections, 0, commitSelections, 0, selections.length - 1);
 
-        advanceSessionWithSelections(menuSession,
+        advanceSessionWithSelections(
+                menuSession,
                 commitSelections,
                 auth,
                 detailSelection,
@@ -146,6 +145,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText()
         );
         Screen currentScreen = menuSession.getNextScreen();
+        menuSessionRepo.save(new SerializableMenuSession(menuSession));
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
@@ -189,8 +189,9 @@ public class MenuController extends AbstractBaseController {
                 authToken
         );
         String[] selections = sessionNavigationBean.getSelections();
+        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         BaseResponseBean response = advanceSessionWithSelections(
-                getMenuSessionFromBean(sessionNavigationBean, authToken),
+                menuSession,
                 selections,
                 auth,
                 null,
@@ -198,26 +199,20 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText()
         );
+        menuSessionRepo.save(new SerializableMenuSession(menuSession));
         return response;
     }
 
     private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
         MenuSession menuSession = null;
-        HqAuth auth = getAuthHeaders(
-                sessionNavigationBean.getDomain(),
-                sessionNavigationBean.getUsername(),
-                authToken
-        );
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
-            menuSession = new MenuSession(
-                    menuSessionRepo.findOneWrapped(menuSessionId),
-                    installService,
-                    restoreFactory,
-                    auth,
-                    host
+            menuSession = getMenuSession(
+                    sessionNavigationBean.getDomain(),
+                    sessionNavigationBean.getUsername(),
+                    menuSessionId,
+                    authToken
             );
-            menuSession.getSessionWrapper().syncState();
         } else {
             // If we have a preview command, load that up
             if (sessionNavigationBean.getPreviewCommand() != null) {
