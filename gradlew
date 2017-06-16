@@ -29,6 +29,7 @@ APP_BASE_NAME=`basename "$0"`
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 DEFAULT_JVM_OPTS=""
+GRADLE_OPTS="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -XX:MaxPermSize=256m -XX:MaxHeapSize=256m"
 
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD="maximum"
