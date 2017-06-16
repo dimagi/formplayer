@@ -36,7 +36,6 @@ import session.FormSession;
 import session.MenuSession;
 import util.ApplicationUtils;
 import util.Constants;
-import util.SessionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -115,6 +114,24 @@ public class MenuController extends AbstractBaseController {
             return null;
         }
 
+        if (sessionNavigationBean.getIsPersistent()) {
+            advanceSessionWithSelections(menuSession,
+                    sessionNavigationBean.getSelections(),
+                    auth,
+                    null,
+                    sessionNavigationBean.getQueryDictionary(),
+                    sessionNavigationBean.getOffset(),
+                    sessionNavigationBean.getSearchText()
+            );
+
+            // See if we have a persistent case tile to expand
+            EntityDetailListResponse detail = getInlineDetail(menuSession);
+            if (detail == null) {
+                throw new RuntimeException("Could not get inline details");
+            }
+            return detail;
+        }
+
         String[] selections = sessionNavigationBean.getSelections();
         String[] commitSelections = new String[selections.length - 1];
         String detailSelection = selections[selections.length - 1];
@@ -132,7 +149,7 @@ public class MenuController extends AbstractBaseController {
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
-            EntityDetailResponse detail = getPersistentCaseTile(menuSession);
+            EntityDetailResponse detail = getPersistentDetail(menuSession);
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
@@ -145,12 +162,11 @@ public class MenuController extends AbstractBaseController {
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        EntityDetailListResponse response = new EntityDetailListResponse(
+        return new EntityDetailListResponse(
                 entityScreen,
                 menuSession.getSessionWrapper().getEvaluationContext(),
                 reference
         );
-        return response;
     }
 
     /**

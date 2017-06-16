@@ -35,8 +35,8 @@ public class InstallServiceImpl implements InstallService {
     @Override
     public FormplayerConfigEngine configureApplication(String reference) throws Exception {
         String dbFilePath = storageFactory.getDatabaseFile();
-        log.info("Configuring application with reference " + reference + " and dbPath: " + dbFilePath + ".");
-        System.out.println(" and storage factory " + storageFactory);
+        log.info("Configuring application with reference " + reference + " and dbPath: " + dbFilePath + " \n" +
+                "and storage factory \" + storageFactory");
         try {
             File dbFolder = new File(dbFilePath);
             if(dbFolder.exists()) {

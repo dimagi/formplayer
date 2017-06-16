@@ -18,6 +18,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private String menuSessionId;
     private Hashtable<String, String> queryDictionary;
     private String previewCommand;
+    private boolean isPersistent;
 
     public String[] getSelections() {
         return selections;
@@ -74,5 +75,13 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     public void setPreviewCommand(String previewCommand) {
         this.previewCommand = previewCommand;
+    }
+
+    public boolean getIsPersistent() {
+        return isPersistent;
+    }
+
+    public void setIsPersistent(boolean persistent) {
+        isPersistent = persistent;
     }
 }
