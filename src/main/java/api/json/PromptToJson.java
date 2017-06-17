@@ -1,5 +1,6 @@
 package api.json;
 
+import exceptions.ApplicationConfigException;
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.SelectChoice;
@@ -182,6 +183,11 @@ public class PromptToJson {
     private static JSONArray parseSelect(FormEntryPrompt prompt) {
         JSONArray obj = new JSONArray();
         for (SelectChoice choice : prompt.getSelectChoices()) {
+            String choiceValue = prompt.getSelectChoiceText(choice);
+            if (choiceValue.contains(" ")) {
+                throw new ApplicationConfigException(String.format("Select answer options cannot contain spaces. " +
+                        "Question %s with answer %s", prompt, choiceValue));
+            }
             obj.put(prompt.getSelectChoiceText(choice));
         }
         return obj;
