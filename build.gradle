@@ -93,7 +93,7 @@ test {
     }
     if (isTravisBuild) {
         System.out.print('Is Travis test run')
-        maxParallelForks = 2
+        maxParallelForks = 1
         maxHeapSize = '768m'
         forkEvery = 100   // helps when tests leak memory
         afterSuite {
