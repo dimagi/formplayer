@@ -23,3 +23,7 @@ services:
   - couchdb
 addons:
   postgresql: "9.4"
+env:
+  global:
+  - MALLOC_ARENA_MAX=1
+  - GRADLE_OPTS="-Xmx512m"

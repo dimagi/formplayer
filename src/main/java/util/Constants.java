@@ -17,6 +17,7 @@ public class Constants {
     public final static String URL_CURRENT = "current";
     public final static String URL_SUBMIT_FORM = "submit-all";
     public final static String URL_EVALUATE_XPATH = "evaluate-xpath";
+    public final static String URL_EVALUATE_MENU_XPATH = "evaluate-menu-xpath";
     public final static String URL_NEW_REPEAT = "new-repeat";
     public final static String URL_DELETE_REPEAT = "delete-repeat";
     public final static String URL_SYNC_DB = "sync-db";
@@ -35,6 +36,7 @@ public class Constants {
     public static final String URL_VALIDATE_FORM = "validate_form";
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
+    public static final String URL_DEBUGGER_MENU_CONTENT = "menu_debugger_content";
 
     // Change this version when a backwards incompatible change is made to the
     // mobile sqlite dbs.
