@@ -72,6 +72,9 @@ import java.util.Vector;
  */
 public abstract class AbstractBaseController {
 
+    @Value("${commcarehq.host}")
+    protected String host;
+
     @Autowired
     protected FormSessionRepo formSessionRepo;
 
@@ -294,6 +297,25 @@ public abstract class AbstractBaseController {
         NewFormResponse response = new NewFormResponse(formEntrySession);
         formSessionRepo.save(formEntrySession.serialize());
         return response;
+    }
+
+    protected MenuSession getMenuSession(String domain, String username, String menuSessionId, String authToken) throws Exception {
+        MenuSession menuSession = null;
+        HqAuth auth = getAuthHeaders(
+                domain,
+                username,
+                authToken
+        );
+
+        menuSession = new MenuSession(
+                menuSessionRepo.findOneWrapped(menuSessionId),
+                installService,
+                restoreFactory,
+                auth,
+                host
+        );
+        menuSession.getSessionWrapper().syncState();
+        return menuSession;
     }
 
     /**
