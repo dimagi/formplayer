@@ -24,6 +24,10 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+}
+
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
@@ -86,6 +90,16 @@ dependencies {
 test {
     testLogging {
         exceptionFormat = 'full'
+    }
+    if (isTravisBuild) {
+        System.out.print('Is Travis test run')
+        maxParallelForks = 2
+        maxHeapSize = '768m'
+        forkEvery = 100   // helps when tests leak memory
+        afterSuite {
+            System.out.print('.')
+            System.out.flush()
+        }
     }
 }
 
