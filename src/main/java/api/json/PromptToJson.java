@@ -178,7 +178,7 @@ public class PromptToJson {
     }
 
     /**
-     * Given a prompt, generate a JSONArray of the possible select choices. return empty array if no choices. 
+     * Given a prompt, generate a JSONArray of the possible select choices. return empty array if no choices.
      */
     private static JSONArray parseSelect(FormEntryPrompt prompt) {
         JSONArray obj = new JSONArray();
