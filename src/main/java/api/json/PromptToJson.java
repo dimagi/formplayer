@@ -184,7 +184,7 @@ public class PromptToJson {
         JSONArray obj = new JSONArray();
         for (SelectChoice choice : prompt.getSelectChoices()) {
             String choiceValue = prompt.getSelectChoiceText(choice);
-            if (choiceValue.contains(" ")) {
+            if (choice.getValue().contains(" ")) {
                 throw new ApplicationConfigException(String.format("Select answer options cannot contain spaces. " +
                         "Question %s with answer %s", prompt, choiceValue));
             }
