@@ -134,6 +134,7 @@ public class PromptToJson {
             case Constants.DATATYPE_TEXT:
             case Constants.DATATYPE_BINARY:
             case Constants.DATATYPE_TIME:
+            case Constants.DATATYPE_DATE_TIME:
                 obj.put("answer", answerValue.getDisplayText());
                 return;
             case Constants.DATATYPE_INTEGER:
@@ -145,7 +146,6 @@ public class PromptToJson {
                 return;
             case Constants.DATATYPE_DATE:
                 obj.put("answer", (DateUtils.formatDate((Date) answerValue.getValue(), DateUtils.FORMAT_ISO8601)));
-                return;
                 return;
             case Constants.DATATYPE_CHOICE:
                 Selection singleSelection = ((Selection) answerValue.getValue());
