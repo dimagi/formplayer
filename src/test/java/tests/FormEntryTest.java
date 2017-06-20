@@ -33,7 +33,7 @@ public class FormEntryTest extends BaseTestClass{
         // Date
         response = answerQuestionGetResult("4","1970-10-23", sessionId);
         // Datetime
-        response = answerQuestionGetResult("5","1990-09-26T00:00:00.000000", sessionId);
+        response = answerQuestionGetResult("5","1990-09-26T00:00:00.000000Z", sessionId);
         // Time
         response = answerQuestionGetResult("6", "12:30:30", sessionId);
         // Text
@@ -57,7 +57,7 @@ public class FormEntryTest extends BaseTestClass{
         assert dateBean.getAnswer().equals("1970-10-23");
 
         QuestionBean dateTimeBean = tree[5];
-        assert dateTimeBean.getAnswer().equals("26/09/90 00:00");
+        assert dateTimeBean.getAnswer().equals("1990-09-26T00:00:00.000000Z");
 
         QuestionBean multiSelectQuestion = tree[11];
         assert(multiSelectQuestion.getAnswer() instanceof ArrayList);

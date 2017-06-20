@@ -134,7 +134,8 @@ public class PromptToJson {
             case Constants.DATATYPE_TEXT:
             case Constants.DATATYPE_BINARY:
             case Constants.DATATYPE_TIME:
-            case Constants.DATATYPE_DATE_TIME:
+            // Unrecognized data
+            case Constants.NULL_ID:
                 obj.put("answer", answerValue.getDisplayText());
                 return;
             case Constants.DATATYPE_INTEGER:
