@@ -26,10 +26,17 @@ public class FormEntryTest extends BaseTestClass{
         String sessionId = newSessionResponse.getSessionId();
 
         FormEntryResponseBean response = answerQuestionGetResult("1","William Pride", sessionId);
+        // Int
         response = answerQuestionGetResult("2","345", sessionId);
+        // Numeric
         response = answerQuestionGetResult("3","2.54", sessionId);
+        // Date
         response = answerQuestionGetResult("4","1970-10-23", sessionId);
+        // Datetime
+        response = answerQuestionGetResult("5","1990-09-26T00:00:00.000000", sessionId);
+        // Time
         response = answerQuestionGetResult("6", "12:30:30", sessionId);
+        // Text
         response = answerQuestionGetResult("7", "ben rudolph", sessionId);
         response = answerQuestionGetResult("8","123456789", sessionId);
         response = answerQuestionGetResult("10", "2",sessionId);
@@ -48,6 +55,9 @@ public class FormEntryTest extends BaseTestClass{
 
         QuestionBean dateBean = tree[4];
         assert dateBean.getAnswer().equals("1970-10-23");
+
+        QuestionBean dateTimeBean = tree[5];
+        assert dateTimeBean.getAnswer().equals("26/09/90 00:00");
 
         QuestionBean multiSelectQuestion = tree[11];
         assert(multiSelectQuestion.getAnswer() instanceof ArrayList);
