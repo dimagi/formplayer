@@ -132,6 +132,10 @@ public class PromptToJson {
             case Constants.DATATYPE_NULL:
             case Constants.DATATYPE_BARCODE:
             case Constants.DATATYPE_TEXT:
+            case Constants.DATATYPE_BINARY:
+            case Constants.DATATYPE_TIME:
+            // Unrecognized data
+            case Constants.NULL_ID:
                 obj.put("answer", answerValue.getDisplayText());
                 return;
             case Constants.DATATYPE_INTEGER:
@@ -143,9 +147,6 @@ public class PromptToJson {
                 return;
             case Constants.DATATYPE_DATE:
                 obj.put("answer", (DateUtils.formatDate((Date) answerValue.getValue(), DateUtils.FORMAT_ISO8601)));
-                return;
-            case Constants.DATATYPE_TIME:
-                obj.put("answer", answerValue.getDisplayText());
                 return;
             case Constants.DATATYPE_CHOICE:
                 Selection singleSelection = ((Selection) answerValue.getValue());
@@ -172,8 +173,6 @@ public class PromptToJson {
                 double[] coords = new double[]{geoPointData.getLatitude(), geoPointData.getLongitude()};
                 obj.put("answer", new JSONArray(Arrays.toString(coords)));
                 return;
-            case Constants.DATATYPE_BINARY:
-                obj.put("answer", answerValue.getDisplayText());
         }
     }
 
