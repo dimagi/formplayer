@@ -7,6 +7,8 @@ public class InstanceAutocompletableItem extends AutoCompletableItem {
 
     private final String CASEDB_INSTANCE = "casedb";
     private final String SESSION_INSTANCE = "commcaresession";
+    private final String LOCATION_INSTANCE = "locations";
+    private final String REPORTS_INSTANCE = "commcare:reports";
 
     public InstanceAutocompletableItem(String instanceId) {
         super(null, null, null);
@@ -15,10 +17,16 @@ public class InstanceAutocompletableItem extends AutoCompletableItem {
 
         switch (instanceId) {
             case CASEDB_INSTANCE:
-                instance = baseInstance + "casedb/case[]";
+                instance = baseInstance + "casedb/case";
                 break;
             case SESSION_INSTANCE:
-                instance = baseInstance + "session/";
+                instance = baseInstance + "session";
+                break;
+            case LOCATION_INSTANCE:
+                instance = baseInstance + "locations";
+                break;
+            case REPORTS_INSTANCE:
+                instance = baseInstance + "reports";
                 break;
             default:
                 instance = baseInstance;

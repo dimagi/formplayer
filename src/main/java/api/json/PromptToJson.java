@@ -1,5 +1,6 @@
 package api.json;
 
+import exceptions.ApplicationConfigException;
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.SelectChoice;
@@ -146,6 +147,10 @@ public class PromptToJson {
             case Constants.DATATYPE_TIME:
                 obj.put("answer", answerValue.getDisplayText());
                 return;
+            case Constants.DATATYPE_DATE_TIME:
+                DateTime answer = new DateTime(answerValue.getValue());
+                obj.put("answer", answer.toString("yyyy-MM-dd'T'HH:mm:ssZZ"));
+                return;
             case Constants.DATATYPE_CHOICE:
                 Selection singleSelection = ((Selection) answerValue.getValue());
                 singleSelection.attachChoice(prompt.getQuestion());
@@ -182,6 +187,11 @@ public class PromptToJson {
     private static JSONArray parseSelect(FormEntryPrompt prompt) {
         JSONArray obj = new JSONArray();
         for (SelectChoice choice : prompt.getSelectChoices()) {
+            String choiceValue = prompt.getSelectChoiceText(choice);
+            if (choice.getValue().contains(" ")) {
+                throw new ApplicationConfigException(String.format("Select answer options cannot contain spaces. " +
+                        "Question %s with answer %s", prompt, choiceValue));
+            }
             obj.put(prompt.getSelectChoiceText(choice));
         }
         return obj;

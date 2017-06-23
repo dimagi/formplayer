@@ -44,9 +44,7 @@
 
 trunk: master
 name: autostaging
-branches:
-  - wsp/query-planner
+branches: []
 submodules:
   libs/commcare:
-    branches:
-      - wsp/query-planner
+    branches: []
