@@ -518,7 +518,7 @@ public class BaseTestClass {
         ResultActions result = null;
 
         if (bean instanceof AuthenticatedRequestBean) {
-            restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"));
+            restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"), false);
         }
 
         if (bean instanceof InstallRequestBean) {
