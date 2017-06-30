@@ -380,7 +380,7 @@ public class RestoreFactory implements ConnectionHandler{
         builder.append("&device_id=").append(getSyncDeviceId());
 
         if (useLiveQuery) {
-            builder.append("&livequery=true");
+            builder.append("&case_sync=livequery");
         }
 
         if( asUsername != null) {
