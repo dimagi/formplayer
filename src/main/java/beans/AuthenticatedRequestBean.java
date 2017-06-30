@@ -11,6 +11,7 @@ public class AuthenticatedRequestBean {
     protected String username;
     protected String restoreAs;
     protected boolean mustRestore;
+    private boolean useLiveQuery;
 
     public String getUsername() {
         return username;
@@ -56,5 +57,13 @@ public class AuthenticatedRequestBean {
 
     public void setMustRestore(boolean mustRestore) {
         this.mustRestore = mustRestore;
+    }
+
+    public boolean getUseLiveQuery() {
+        return useLiveQuery;
+    }
+
+    public void setUseLiveQuery(boolean useLiveQuery) {
+        this.useLiveQuery = useLiveQuery;
     }
 }
