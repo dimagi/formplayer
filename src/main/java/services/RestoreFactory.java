@@ -1,7 +1,5 @@
 package services;
 
-import application.Application;
-import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
@@ -33,6 +31,7 @@ import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import util.ApplicationUtils;
 import util.FormplayerRaven;
+import util.PropertyUtils;
 import util.UserUtils;
 
 import javax.annotation.Resource;
@@ -377,6 +376,11 @@ public class RestoreFactory implements ConnectionHandler{
             builder.append("&since=").append(syncToken);
         }
         builder.append("&device_id=").append(getSyncDeviceId());
+
+        if (PropertyUtils.isLiveQueryEnabled()) {
+            builder.append("&livequery=true");
+        }
+
         if( asUsername != null) {
             builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
         }
