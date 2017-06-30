@@ -13,7 +13,6 @@ public class PropertyUtils {
 
     public static final String ENABLE_BULK_PERFORMANCE = "cc-enable-bulk-performance";
     public static final String AUTO_PURGE_ENABLED = "cc-auto-purge";
-    public static final String ENABLE_LIVE_QUERY = "cc-enable-live-query";
 
     private static boolean doesPropertyMatch(String key, String defaultValue, String matchingValue) {
         try {
@@ -22,11 +21,6 @@ public class PropertyUtils {
         } catch (RuntimeException e) {
             return defaultValue.equals(matchingValue);
         }
-    }
-
-
-    public static boolean isLiveQueryEnabled() {
-        return doesPropertyMatch(ENABLE_LIVE_QUERY, NO, YES);
     }
 
     public static boolean isBulkPerformanceEnabled() {
