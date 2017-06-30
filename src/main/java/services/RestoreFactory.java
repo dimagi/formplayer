@@ -1,7 +1,5 @@
 package services;
 
-import application.Application;
-import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
@@ -33,6 +31,7 @@ import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import util.ApplicationUtils;
 import util.FormplayerRaven;
+import util.PropertyUtils;
 import util.UserUtils;
 
 import javax.annotation.Resource;
@@ -86,14 +85,16 @@ public class RestoreFactory implements ConnectionHandler{
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
     private Connection connection;
+    private boolean useLiveQuery;
 
-    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
+    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
+        this.setUseLiveQuery(useLiveQuery);
         log.info(String.format("configuring RestoreFactory with arguments " +
-                "username = %s, asUsername = %s, domain = %s", username, asUsername, domain));
+                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
 
     public UserSqlSandbox getSqlSandbox() {
@@ -377,6 +378,11 @@ public class RestoreFactory implements ConnectionHandler{
             builder.append("&since=").append(syncToken);
         }
         builder.append("&device_id=").append(getSyncDeviceId());
+
+        if (useLiveQuery) {
+            builder.append("&case_sync=livequery");
+        }
+
         if( asUsername != null) {
             builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
         }
@@ -413,5 +419,13 @@ public class RestoreFactory implements ConnectionHandler{
 
     public void setAsUsername(String asUsername) {
         this.asUsername = asUsername;
+    }
+
+    public boolean isUseLiveQuery() {
+        return useLiveQuery;
+    }
+
+    public void setUseLiveQuery(boolean useLiveQuery) {
+        this.useLiveQuery = useLiveQuery;
     }
 }
