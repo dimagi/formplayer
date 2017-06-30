@@ -36,7 +36,7 @@ public class RestoreFactoryTest {
         requestBean.setRestoreAs(asUsername);
         requestBean.setUsername(username);
         requestBean.setDomain(domain);
-        restoreFactorySpy.configure(requestBean, new DjangoAuth("key"));
+        restoreFactorySpy.configure(requestBean, new DjangoAuth("key"), false);
     }
 
     private void mockSyncFreq(String freq) {
