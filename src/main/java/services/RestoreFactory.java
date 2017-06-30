@@ -85,14 +85,16 @@ public class RestoreFactory implements ConnectionHandler{
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
     private Connection connection;
+    private boolean useLiveQuery;
 
-    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
+    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
+        this.setUseLiveQuery(useLiveQuery);
         log.info(String.format("configuring RestoreFactory with arguments " +
-                "username = %s, asUsername = %s, domain = %s", username, asUsername, domain));
+                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
 
     public UserSqlSandbox getSqlSandbox() {
@@ -377,7 +379,7 @@ public class RestoreFactory implements ConnectionHandler{
         }
         builder.append("&device_id=").append(getSyncDeviceId());
 
-        if (PropertyUtils.isLiveQueryEnabled()) {
+        if (useLiveQuery) {
             builder.append("&livequery=true");
         }
 
@@ -417,5 +419,13 @@ public class RestoreFactory implements ConnectionHandler{
 
     public void setAsUsername(String asUsername) {
         this.asUsername = asUsername;
+    }
+
+    public boolean isUseLiveQuery() {
+        return useLiveQuery;
+    }
+
+    public void setUseLiveQuery(boolean useLiveQuery) {
+        this.useLiveQuery = useLiveQuery;
     }
 }
