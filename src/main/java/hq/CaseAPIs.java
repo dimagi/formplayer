@@ -1,5 +1,6 @@
 package hq;
 
+import api.process.FormRecordProcessorHelper;
 import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
 import sandbox.SqlSandboxUtils;
@@ -78,6 +79,7 @@ public class CaseAPIs {
                 sandbox.setLoggedInUser(u);
             }
         }
+        FormRecordProcessorHelper.purgeCases(sandbox);
         return sandbox;
     }
 }
