@@ -26,16 +26,8 @@ import java.io.InputStream;
  */
 public class CaseAPIs {
 
-    // This function will always wipe all user DBs and perform a fresh restore
-    public static UserSqlSandbox forceRestore(RestoreFactory restoreFactory) throws Exception {
-        SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
-        restoreFactory.closeConnection();
-        return getSandbox(restoreFactory, true);
-    }
-
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
-    public static UserSqlSandbox performSync(RestoreFactory restoreFactory,
-                                             boolean overwriteCache) throws Exception {
+    public static UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
             SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         }
@@ -43,13 +35,12 @@ public class CaseAPIs {
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
         }
-        InputStream xml = restoreFactory.getRestoreXml(overwriteCache);
+        InputStream xml = restoreFactory.getRestoreXml();
         return restoreUser(restoreFactory, xml);
     }
 
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
-    public static UserSqlSandbox getSandbox(RestoreFactory restoreFactory,
-                                            boolean overwriteCache) throws Exception {
+    public static UserSqlSandbox getSandbox(RestoreFactory restoreFactory) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
             SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
         }
@@ -57,7 +48,7 @@ public class CaseAPIs {
             return restoreFactory.getSqlSandbox();
         } else{
             new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
-            InputStream xml = restoreFactory.getRestoreXml(overwriteCache);
+            InputStream xml = restoreFactory.getRestoreXml();
             return restoreUser(restoreFactory, xml);
         }
     }

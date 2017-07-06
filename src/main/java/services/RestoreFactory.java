@@ -215,9 +215,9 @@ public class RestoreFactory implements ConnectionHandler{
         }
     }
 
-    public InputStream getRestoreXml(boolean overwriteCache) {
+    public InputStream getRestoreXml() {
         ensureValidParameters();
-        String restoreUrl = getRestoreUrl(overwriteCache);
+        String restoreUrl = getRestoreUrl();
         recordSentryData(restoreUrl);
         log.info("Restoring from URL " + restoreUrl);
         InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
@@ -364,15 +364,12 @@ public class RestoreFactory implements ConnectionHandler{
         return String.format("%s|%s|as|%s", DEVICE_ID_SLUG, username, asUsername);
     }
 
-    public String getRestoreUrl(boolean overwriteCache) {
+    public String getRestoreUrl() {
         StringBuilder builder = new StringBuilder();
         builder.append(host);
         builder.append("/a/");
         builder.append(domain);
         builder.append("/phone/restore/?version=2.0");
-        if (overwriteCache) {
-            builder.append("&overwrite_cache=true");
-        }
         String syncToken = getSyncToken(getWrappedUsername());
         if (syncToken != null && !"".equals(syncToken)) {
             builder.append("&since=").append(syncToken);
