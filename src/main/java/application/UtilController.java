@@ -37,11 +37,7 @@ public class UtilController extends AbstractBaseController {
     @UserRestore
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        if (syncRequest.isPreserveCache()) {
-            CaseAPIs.getSandbox(restoreFactory, false);
-        } else {
-            CaseAPIs.forceRestore(restoreFactory);
-        }
+        CaseAPIs.performSync(restoreFactory);
         return new SyncDbResponseBean();
     }
 
