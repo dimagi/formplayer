@@ -1,5 +1,6 @@
 package hq;
 
+import api.process.FormRecordProcessorHelper;
 import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
 import sandbox.SqlSandboxUtils;
@@ -36,7 +37,9 @@ public class CaseAPIs {
             new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
         }
         InputStream xml = restoreFactory.getRestoreXml();
-        return restoreUser(restoreFactory, xml);
+        UserSqlSandbox sandbox = restoreUser(restoreFactory, xml);
+        FormRecordProcessorHelper.purgeCases(sandbox);
+        return sandbox;
     }
 
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
