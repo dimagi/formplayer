@@ -51,7 +51,7 @@ public class SerializableMenuSession {
         return uuid;
     }
 
-    public void getId(String uuid) {
+    public void setId(String uuid) {
         this.uuid = uuid;
     }
 
