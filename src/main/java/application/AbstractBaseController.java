@@ -117,9 +117,7 @@ public abstract class AbstractBaseController {
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         menuSession.getSessionWrapper().syncState();
         if(menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
-            BaseResponseBean nextMenu = getNextMenu(menuSession);
-            menuSessionRepo.save(new SerializableMenuSession(menuSession));
-            return nextMenu;
+            return getNextMenu(menuSession);
         }
         return null;
     }
