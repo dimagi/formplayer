@@ -16,6 +16,7 @@ public abstract class MockMenuSessionRepo implements MenuSessionRepo {
 
     @Override
     public SerializableMenuSession save(SerializableMenuSession toBeSaved) {
+        serializableMenuSession.setId(toBeSaved.getId());
         serializableMenuSession.setCommcareSession(toBeSaved.getCommcareSession());
         serializableMenuSession.setUsername(toBeSaved.getUsername());
         serializableMenuSession.setDomain(toBeSaved.getDomain());
