@@ -163,6 +163,7 @@ public abstract class AbstractBaseController {
         if (nextScreen == null) {
             if(menuSession.getSessionWrapper().getForm() != null) {
                 NewFormResponse formResponseBean = generateFormEntryScreen(menuSession);
+                setPersistentCaseTile(menuSession, formResponseBean);
                 formResponseBean.setBreadcrumbs(menuSession.getTitles());
                 return formResponseBean;
             } else{
@@ -271,6 +272,10 @@ public abstract class AbstractBaseController {
 
         return new Pair(ref, persistentDetail);
 
+    }
+
+    private void setPersistentCaseTile(MenuSession menuSession, NewFormResponse formResponse) {
+        formResponse.setPersistentCaseTile(getPersistentDetail(menuSession));
     }
 
     private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
