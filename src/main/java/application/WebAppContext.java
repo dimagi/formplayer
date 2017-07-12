@@ -203,6 +203,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         ds.setUrl(formplayerPostgresUrl);
         ds.setUsername(formplayerPostgresUsername);
         ds.setPassword(formplayerPostgresPassword);
+        ds.setRemoveAbandoned(true);
         return ds;
     }
     @Bean
@@ -212,6 +213,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         ds.setUrl(hqPostgresUrl);
         ds.setUsername(hqPostgresUsername);
         ds.setPassword(hqPostgresPassword);
+        ds.setRemoveAbandoned(true);
         return ds;
     }
 
