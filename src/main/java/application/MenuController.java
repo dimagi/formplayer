@@ -198,6 +198,10 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText()
         );
+        // Don't update the menu session if we're using it already for navigation
+        if (sessionNavigationBean.getMenuSessionId() == null || "".equals(sessionNavigationBean.getMenuSessionId())) {
+            menuSessionRepo.save(new SerializableMenuSession(menuSession));
+        }
         return response;
     }
 
