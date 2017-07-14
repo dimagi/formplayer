@@ -145,7 +145,6 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText()
         );
         Screen currentScreen = menuSession.getNextScreen();
-        menuSessionRepo.save(new SerializableMenuSession(menuSession));
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
@@ -199,7 +198,10 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText()
         );
-        menuSessionRepo.save(new SerializableMenuSession(menuSession));
+        // Don't update the menu session if we're using it already for navigation
+        if (sessionNavigationBean.getMenuSessionId() == null || "".equals(sessionNavigationBean.getMenuSessionId())) {
+            menuSessionRepo.save(new SerializableMenuSession(menuSession));
+        }
         return response;
     }
 
