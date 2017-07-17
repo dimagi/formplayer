@@ -84,24 +84,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${datasource.formplayer.driverClassName}")
     private String formplayerPostgresDriverName;
 
-    @Value("${smtp.host}")
-    private String smtpHost;
-
-    @Value("${smtp.port}")
-    private int smtpPort;
-
-    @Value("${smtp.username:}")
-    private String smtpUsername;
-
-    @Value("${smtp.password:}")
-    private String smtpPassword;
-
-    @Value("${smtp.from.address}")
-    private String smtpFromAddress;
-
-    @Value("${smtp.to.address}")
-    private String smtpToAddress;
-
     @Value("${redis.hostname}")
     private String redisHostName;
 
@@ -261,19 +243,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         template.setConnectionFactory(jedisConnFactory());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
-    }
-
-    @Bean
-    public HtmlEmail exceptionMessage() throws EmailException {
-        HtmlEmail message = new HtmlEmail();
-        message.setFrom(smtpFromAddress);
-        message.addTo(smtpToAddress);
-        if (smtpUsername != null &&  smtpPassword != null) {
-            message.setAuthentication(smtpUsername, smtpPassword);
-        }
-        message.setHostName(smtpHost);
-        message.setSmtpPort(smtpPort);
-        return message;
     }
 
     @Bean
