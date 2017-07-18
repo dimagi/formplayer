@@ -3,9 +3,10 @@ package engine;
 import database.models.FormplayerCaseIndexTable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.modern.engine.cases.CaseGroupResultCache;
 import org.commcare.modern.engine.cases.CaseIndexQuerySetTransform;
+import org.commcare.modern.engine.cases.RecordSetResultCache;
 import org.commcare.modern.engine.cases.query.CaseIndexPrefetchHandler;
+import org.commcare.modern.util.PerformanceTuningUtil;
 import sandbox.SqlHelper;
 import sandbox.SqliteIndexedStorageUtility;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
@@ -145,9 +146,9 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
             mPairedIndexCache.put(cacheKey, ids);
         }
 
-        if(ids.size() > 50 && ids.size() < CaseGroupResultCache.MAX_PREFETCH_CASE_BLOCK) {
-            CaseGroupResultCache cue = currentQueryContext.getQueryCache(CaseGroupResultCache.class);
-            cue.reportBulkCaseBody(cacheKey, ids);
+        if(ids.size() > 50 && ids.size() < PerformanceTuningUtil.getMaxPrefetchCaseBlock()) {
+            RecordSetResultCache cue = currentQueryContext.getQueryCache(RecordSetResultCache.class);
+            cue.reportBulkRecordSet(cacheKey, getStorageCacheName(), ids);
         }
 
         //Ok, we matched! Remove all of the keys that we matched
@@ -271,24 +272,4 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         return mMostRecentBatchFetch;
     }
 
-
-    @Override
-    protected Case getElement(int recordId, QueryContext context) {
-        if(context == null) {
-            return super.getElement(recordId, context);
-        }
-        CaseGroupResultCache cue = context.getQueryCacheOrNull(CaseGroupResultCache.class);
-        if(cue != null && cue.hasMatchingCaseSet(recordId)) {
-            if(!cue.isLoaded(recordId)) {
-                EvaluationTrace loadTrace = new EvaluationTrace("Bulk Case Load");
-                SqliteIndexedStorageUtility<Case> sqlStorage = ((SqliteIndexedStorageUtility<Case>)storage);
-                LinkedHashSet<Integer>  body = cue.getTranche(recordId);
-                sqlStorage.bulkRead(body, cue.getLoadedCaseMap());
-                loadTrace.setOutcome("Loaded: " + body.size());
-                context.reportTrace(loadTrace);
-            }
-            return cue.getLoadedCase(recordId);
-        }
-        return super.getElement(recordId, context);
-    }
 }
