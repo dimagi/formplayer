@@ -39,7 +39,7 @@ public class EntityDetailListResponse {
     }
 
     private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref) {
-        return processDetails(screen.getLongDetailList(), ec, ref);
+        return processDetails(screen.getLongDetailList(ref), ec, ref);
     }
 
     private EntityDetailResponse[] processDetails(Detail[] detailList,
