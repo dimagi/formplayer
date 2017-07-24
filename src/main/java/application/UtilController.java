@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import sandbox.SqlSandboxUtils;
+import util.ApplicationUtils;
 import util.Constants;
 
 import java.io.StringReader;
@@ -53,6 +54,21 @@ public class UtilController extends AbstractBaseController {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
         return new NotificationMessage(message, !success);
+    }
+
+    @ApiOperation(value = "Clear the user's data")
+    @RequestMapping(value = Constants.URL_CLEAR_USER_DATA, method = RequestMethod.POST)
+    @UserLock
+    public NotificationMessage clearUserData(
+            @RequestBody AuthenticatedRequestBean requestBean) {
+
+        String message = "Successfully cleared the user data for  " + requestBean.getUsername();
+        ApplicationUtils.clearUserData(
+                requestBean.getDomain(),
+                requestBean.getUsername(),
+                requestBean.getRestoreAs()
+        );
+        return new NotificationMessage(message, true);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")

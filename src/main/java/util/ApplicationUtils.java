@@ -22,6 +22,10 @@ public class ApplicationUtils {
         return success;
     }
 
+    public static void clearUserData(String domain, String username, String asUsername) {
+        SqlSandboxUtils.deleteDatabaseFolder(getUserDBPath(domain, username, asUsername));
+    }
+
     public static String getApplicationDBPath(String domain, String username, String asUsername, String appId) {
         return SQLiteProperties.getDataDir() + domain + "/" + TableBuilder.scrubName(getUsernameDetail(username, asUsername)) + "/" + appId;
     }
