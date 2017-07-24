@@ -31,6 +31,7 @@ public class Constants {
     public static final String URL_SERVER_UP = "serverup";
     public static final String URL_PREVIEW_FORM = "preview_form";
     public static final String URL_DELETE_APPLICATION_DBS = "delete_application_dbs";
+    public static final String URL_CLEAR_USER_DATA = "clear_user_data";
     public static final String URL_NEXT_INDEX = "next_index";
     public static final String URL_PREV_INDEX = "prev_index";
     public static final String URL_VALIDATE_FORM = "validate_form";
