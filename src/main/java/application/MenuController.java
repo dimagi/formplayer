@@ -254,6 +254,10 @@ public class MenuController extends AbstractBaseController {
         BaseResponseBean nextMenu;
         // If we have no selections, we're are the root screen.
         if (selections == null) {
+
+            // Perform sync when at root
+            CaseAPIs.performSync(restoreFactory);
+
             nextMenu = getNextMenu(
                     menuSession,
                     offset,
