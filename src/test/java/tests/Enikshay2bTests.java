@@ -55,4 +55,15 @@ public class Enikshay2bTests extends BaseTestClass {
                 commandResponse.getMenuSessionId(),
                 NewFormResponse.class);
     }
+
+    @Test
+    public void testPersistentCaseTile() throws Exception {
+        NewFormResponse newFormResponse =
+                sessionNavigate(
+                        new String[]{"0", "13c960c6-81d9-4606-806f-f685fb24789b", "0"},
+                        "enikshay-2b",
+                        NewFormResponse.class);
+        assert newFormResponse.getPersistentCaseTile() != null;
+        assert newFormResponse.getPersistentCaseTile().getDetails().length == 5;
+    }
 }
