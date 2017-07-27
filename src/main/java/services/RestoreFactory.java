@@ -338,7 +338,8 @@ public class RestoreFactory implements ConnectionHandler{
         return stream;
     }
 
-    private String getSyncToken(String username) {
+    public String getSyncToken() {
+        String username = getWrappedUsername();
 
         if (username == null) {
             return null;
@@ -370,7 +371,7 @@ public class RestoreFactory implements ConnectionHandler{
         builder.append("/a/");
         builder.append(domain);
         builder.append("/phone/restore/?version=2.0");
-        String syncToken = getSyncToken(getWrappedUsername());
+        String syncToken = getSyncToken();
         if (syncToken != null && !"".equals(syncToken)) {
             builder.append("&since=").append(syncToken);
         }
