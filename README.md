@@ -20,7 +20,7 @@ Download submodule dependencies
 
 To make properties file:
 
-    $ cp config/application.properties.example config/application.properties // Update properties as necessary
+    $ cp config/application.example.properties config/application.properties // Update properties as necessary
 
 Make sure you have the formplayer database created
 
