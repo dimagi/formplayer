@@ -3,6 +3,7 @@ package services;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
+import dbpath.UserDBPath;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -26,16 +27,12 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
-import util.ApplicationUtils;
 import util.FormplayerRaven;
-import util.PropertyUtils;
 import util.UserUtils;
 
 import javax.annotation.Resource;
-import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -84,6 +81,7 @@ public class RestoreFactory implements ConnectionHandler{
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
+    private UserDBPath userDBPath;
     private Connection connection;
     private boolean useLiveQuery;
 
@@ -93,6 +91,7 @@ public class RestoreFactory implements ConnectionHandler{
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
+        userDBPath = new UserDBPath(domain, username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
@@ -112,17 +111,15 @@ public class RestoreFactory implements ConnectionHandler{
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), getDbPath());
-                connection = dataSource.getConnection();
+                connection = userDBPath.getConnection();
             } else {
                 if (connection instanceof SQLiteConnection) {
                     SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
-                    if (!sqLiteConnection.url().contains(getDbPath())) {
+                    if (!userDBPath.matchesConnection(sqLiteConnection)) {
                         log.error(String.format("Had connection with path %s in StorageFactory %s",
                                 sqLiteConnection.url(),
                                 toString()));
-                        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), getDbPath());
-                        connection = dataSource.getConnection();
+                        connection = userDBPath.getConnection();
                     }
                 }
             }
@@ -159,11 +156,11 @@ public class RestoreFactory implements ConnectionHandler{
         }
     }
     public String getDbFile() {
-        return ApplicationUtils.getUserDBFile(domain, username, asUsername);
+        return userDBPath.getDatabaseFile();
     }
 
     private String getDbPath() {
-        return ApplicationUtils.getUserDBPath(domain, username, asUsername);
+        return userDBPath.getDatabasePath();
     }
 
     public String getWrappedUsername() {
