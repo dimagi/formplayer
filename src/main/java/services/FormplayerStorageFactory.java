@@ -2,19 +2,19 @@ package services;
 
 import beans.InstallRequestBean;
 import dbpath.ApplicationDBPath;
+import dbpath.DBPath;
+import dbpath.DBPathConnectionHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.sqlite.SQLiteConnection;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import sandbox.SqliteIndexedStorageUtility;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
@@ -25,10 +25,10 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     private String username;
     private String domain;
     private String appId;
-    private ApplicationDBPath applicationDBPath;
     private String asUsername;
 
-    private Connection connection;
+    private DBPath dbPath;
+    private DBPathConnectionHandler dbPathConnectionHandler = new DBPathConnectionHandler(null, null);
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
@@ -63,41 +63,18 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.applicationDBPath = new ApplicationDBPath(domain, username, asUsername, appId);
+        this.dbPath = new ApplicationDBPath(domain, username, asUsername, appId);
+        this.dbPathConnectionHandler = new DBPathConnectionHandler(dbPath, log);
         closeConnection();
     }
 
     @Override
     public Connection getConnection() {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = applicationDBPath.getConnection();
-            } else {
-                if (connection instanceof SQLiteConnection) {
-                    SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
-                    if (!applicationDBPath.matchesConnection(sqLiteConnection)) {
-                        log.error(String.format("Had connection with path %s in StorageFactory %s",
-                                sqLiteConnection.url(),
-                                toString()));
-                        connection = applicationDBPath.getConnection();
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return connection;
+        return dbPathConnectionHandler.getConnection();
     }
-    
+
     public void closeConnection() {
-        try {
-            if(connection!= null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        connection = null;
+        dbPathConnectionHandler.closeConnection();
     }
 
     @Override
@@ -130,16 +107,11 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     }
 
     public String getDatabaseFile() {
-        return applicationDBPath.getDatabaseFile();
+        return dbPath.getDatabaseFile();
     }
 
     public String getAsUsername() {
         return asUsername;
     }
 
-    @Override
-    public String toString() {
-        return "FormplayerStorageFactory username=" + username + ", dbPath=" + applicationDBPath.getDatabasePath() +
-                ", appId=" + appId + " connection=" + connection;
-    }
 }

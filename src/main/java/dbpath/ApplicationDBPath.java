@@ -1,12 +1,6 @@
 package dbpath;
 
-import org.sqlite.SQLiteConnection;
-import sandbox.SqlSandboxUtils;
 import util.ApplicationUtils;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 public class ApplicationDBPath implements DBPath {
 
@@ -23,12 +17,6 @@ public class ApplicationDBPath implements DBPath {
     }
 
     @Override
-    public Connection getConnection() throws SQLException {
-        DataSource dataSource = SqlSandboxUtils.getDataSource(getDatabaseName(), getDatabasePath());
-        return dataSource.getConnection();
-    }
-
-    @Override
     public String getDatabasePath() {
         return ApplicationUtils.getApplicationDBPath(domain, username, asUsername, appId);
     }
@@ -41,10 +29,5 @@ public class ApplicationDBPath implements DBPath {
     @Override
     public String getDatabaseFile() {
         return ApplicationUtils.getApplicationDBFile(domain, username, asUsername, appId);
-    }
-
-    @Override
-    public Boolean matchesConnection(SQLiteConnection sqLiteConnection) {
-        return sqLiteConnection.url().contains(getDatabasePath());
     }
 }

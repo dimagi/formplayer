@@ -3,6 +3,8 @@ package services;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
+import dbpath.DBPath;
+import dbpath.DBPathConnectionHandler;
 import dbpath.UserDBPath;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
@@ -21,7 +23,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.sqlite.SQLiteConnection;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -52,7 +53,7 @@ import java.util.concurrent.TimeUnit;
  * then retrieves and returns the restore XML.
  */
 @Component
-public class RestoreFactory implements ConnectionHandler{
+public class RestoreFactory implements ConnectionHandler {
     @Value("${commcarehq.host}")
     private String host;
 
@@ -81,8 +82,8 @@ public class RestoreFactory implements ConnectionHandler{
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private UserDBPath userDBPath;
-    private Connection connection;
+    private DBPath dbPath;
+    private DBPathConnectionHandler dbPathConnectionHandler = new DBPathConnectionHandler(null, null);
     private boolean useLiveQuery;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
@@ -91,7 +92,8 @@ public class RestoreFactory implements ConnectionHandler{
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
-        userDBPath = new UserDBPath(domain, username, asUsername);
+        dbPath = new UserDBPath(domain, username, asUsername);
+        dbPathConnectionHandler = new DBPathConnectionHandler(dbPath, log);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
@@ -109,35 +111,11 @@ public class RestoreFactory implements ConnectionHandler{
 
     @Override
     public Connection getConnection() {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = userDBPath.getConnection();
-            } else {
-                if (connection instanceof SQLiteConnection) {
-                    SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
-                    if (!userDBPath.matchesConnection(sqLiteConnection)) {
-                        log.error(String.format("Had connection with path %s in StorageFactory %s",
-                                sqLiteConnection.url(),
-                                toString()));
-                        connection = userDBPath.getConnection();
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return connection;
+        return dbPathConnectionHandler.getConnection();
     }
 
     public void closeConnection() {
-        try {
-            if(connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        connection = null;
+        dbPathConnectionHandler.closeConnection();
     }
 
     public void setAutoCommit(boolean autoCommit) {
@@ -156,11 +134,7 @@ public class RestoreFactory implements ConnectionHandler{
         }
     }
     public String getDbFile() {
-        return userDBPath.getDatabaseFile();
-    }
-
-    private String getDbPath() {
-        return userDBPath.getDatabasePath();
+        return dbPath.getDatabaseFile();
     }
 
     public String getWrappedUsername() {
