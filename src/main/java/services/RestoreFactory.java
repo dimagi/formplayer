@@ -99,13 +99,6 @@ public class RestoreFactory implements ConnectionHandler {
         return new UserSqlSandbox(this);
     }
 
-    public String getUsernameDetail() {
-        if (asUsername != null) {
-            return username + "_" + asUsername;
-        }
-        return username;
-    }
-
     @Override
     public Connection getConnection() {
         return dbPathConnectionHandler.getConnection();
