@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import sqlitedb.ApplicationDB;
 import util.ApplicationUtils;
 import utils.TestContext;
 
@@ -25,7 +26,7 @@ public class ApplicationUtilsTests {
 
         assert file.exists();
 
-        ApplicationUtils.deleteApplicationDb("dummy-domain", "dummy-username", null, "dummy-app-id");
+        new ApplicationDB("dummy-domain", "dummy-username", null, "dummy-app-id").deleteDatabaseFolder();
 
         file = new File(dbPath);
         assert !file.exists();

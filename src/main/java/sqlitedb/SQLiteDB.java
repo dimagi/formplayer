@@ -64,6 +64,10 @@ public class SQLiteDB implements ConnectionHandler {
         SqlSandboxUtils.deleteDatabaseFolder(dbPath.getDatabaseFile());
     }
 
+    public void deleteDatabaseFolder() {
+        SqlSandboxUtils.deleteDatabaseFolder(dbPath.getDatabasePath());
+    }
+
     public boolean createDatabaseFolder() {
         return new File(dbPath.getDatabaseFile()).getParentFile().mkdirs();
     }
