@@ -3,8 +3,6 @@ package services;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
-import sqlitedb.SQLiteDB;
-import sqlitedb.UserDBPath;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -29,6 +27,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
+import sqlitedb.SQLiteDB;
+import sqlitedb.UserDB;
 import util.FormplayerRaven;
 import util.UserUtils;
 
@@ -89,7 +89,7 @@ public class RestoreFactory {
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
-        sqLiteDB = new SQLiteDB(new UserDBPath(domain, username, asUsername));
+        sqLiteDB = new UserDB(domain, username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
