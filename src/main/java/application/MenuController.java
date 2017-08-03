@@ -34,7 +34,7 @@ import services.QueryRequester;
 import services.SyncRequester;
 import session.FormSession;
 import session.MenuSession;
-import util.ApplicationUtils;
+import sqlitedb.ApplicationDB;
 import util.Constants;
 
 import java.io.ByteArrayInputStream;
@@ -320,12 +320,12 @@ public class MenuController extends AbstractBaseController {
         MenuSession menuSession;
         // When previewing, clear and reinstall DBs to get newest version
         // Big TODO: app updates
-        ApplicationUtils.deleteApplicationDb(
+        new ApplicationDB(
                 sessionNavigationBean.getDomain(),
                 sessionNavigationBean.getUsername(),
                 sessionNavigationBean.getRestoreAs(),
                 sessionNavigationBean.getAppId()
-        );
+        ).deleteDatabaseFolder();
         menuSession = performInstall(sessionNavigationBean, authToken);
         try {
             menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
