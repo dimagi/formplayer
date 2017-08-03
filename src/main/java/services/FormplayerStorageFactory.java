@@ -25,7 +25,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     private String username;
     private String domain;
     private String appId;
-    private ApplicationDBPath applicationDbPath;
+    private ApplicationDBPath applicationDBPath;
     private String asUsername;
 
     private Connection connection;
@@ -63,7 +63,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.applicationDbPath = new ApplicationDBPath(domain, username, asUsername, appId);
+        this.applicationDBPath = new ApplicationDBPath(domain, username, asUsername, appId);
         closeConnection();
     }
 
@@ -71,15 +71,15 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                connection = applicationDbPath.getConnection();
+                connection = applicationDBPath.getConnection();
             } else {
                 if (connection instanceof SQLiteConnection) {
                     SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
-                    if (!applicationDbPath.matchesConnection(sqLiteConnection)) {
+                    if (!applicationDBPath.matchesConnection(sqLiteConnection)) {
                         log.error(String.format("Had connection with path %s in StorageFactory %s",
                                 sqLiteConnection.url(),
                                 toString()));
-                        connection = applicationDbPath.getConnection();
+                        connection = applicationDBPath.getConnection();
                     }
                 }
             }
@@ -130,7 +130,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     }
 
     public String getDatabaseFile() {
-        return applicationDbPath.getDatabaseFile();
+        return applicationDBPath.getDatabaseFile();
     }
 
     public String getAsUsername() {
@@ -139,7 +139,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
 
     @Override
     public String toString() {
-        return "FormplayerStorageFactory username=" + username + ", dbPath=" + applicationDbPath.getDatabasePath() +
+        return "FormplayerStorageFactory username=" + username + ", dbPath=" + applicationDBPath.getDatabasePath() +
                 ", appId=" + appId + " connection=" + connection;
     }
 }
