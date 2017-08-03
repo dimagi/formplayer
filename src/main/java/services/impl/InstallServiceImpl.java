@@ -1,6 +1,6 @@
 package services.impl;
 
-import dbpath.SQLiteDB;
+import sqlitedb.SQLiteDB;
 import engine.FormplayerConfigEngine;
 import exceptions.UnresolvedResourceRuntimeException;
 import installers.FormplayerInstallerFactory;
@@ -32,7 +32,7 @@ public class InstallServiceImpl implements InstallService {
 
     @Override
     public FormplayerConfigEngine configureApplication(String reference) throws Exception {
-        SQLiteDB sqliteDB = storageFactory.getDB();
+        SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
         log.info("Configuring application with reference " + reference +
                 " and dbPath: " + sqliteDB.getDatabaseFileForLoggingPurposes() + " \n" +
                 "and storage factory \" + storageFactory");
