@@ -13,7 +13,6 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import sandbox.SqlSandboxUtils;
 import util.ApplicationUtils;
 import util.Constants;
 
@@ -49,7 +48,14 @@ public class UtilController extends AbstractBaseController {
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
-        boolean success = deleteRequest.clear();
+        boolean success = true;
+        try {
+            deleteRequest.clear();
+        } catch (Exception e) {
+            e.printStackTrace();
+            success = false;
+        }
+
         if (!success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
