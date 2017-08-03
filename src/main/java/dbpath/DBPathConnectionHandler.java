@@ -70,6 +70,10 @@ public class DBPathConnectionHandler implements ConnectionHandler {
         return new File(dbPath.getDatabaseFile()).getParentFile().mkdirs();
     }
 
+    public boolean databaseFolderExists() {
+        return new File(dbPath.getDatabaseFile()).exists();
+    }
+
     public String getDatabaseFileForLoggingPurposes() {
         return dbPath.getDatabaseFile();
     }
