@@ -37,7 +37,7 @@ public class InstallServiceImpl implements InstallService {
                 " and dbPath: " + sqliteDB.getDatabaseFileForLoggingPurposes() + " \n" +
                 "and storage factory \" + storageFactory");
         try {
-            if(sqliteDB.databaseFolderExists()) {
+            if(sqliteDB.databaseFileExists()) {
                 // Try reusing old install, fail quietly
                 try {
                     FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
@@ -50,7 +50,7 @@ public class InstallServiceImpl implements InstallService {
             // Wipe out folder and attempt install
             sqliteDB.closeConnection();
             sqliteDB.deleteDatabaseFile();
-            if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
+            if (!sqliteDB.databaseFileExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiationing folder " + sqliteDB.getDatabaseFileForLoggingPurposes());
             }
             FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
