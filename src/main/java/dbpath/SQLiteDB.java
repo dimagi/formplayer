@@ -11,17 +11,17 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class DBPathConnectionHandler implements ConnectionHandler {
+public class SQLiteDB implements ConnectionHandler {
     private DBPath dbPath;
     private Log log;
     private Connection connection;
 
-    public DBPathConnectionHandler(DBPath dbPath) {
+    public SQLiteDB(DBPath dbPath) {
         this.dbPath = dbPath;
-        this.log = LogFactory.getLog(DBPathConnectionHandler.class);
+        this.log = LogFactory.getLog(SQLiteDB.class);
     }
 
-    public DBPathConnectionHandler(DBPath dbPath, Log log) {
+    public SQLiteDB(DBPath dbPath, Log log) {
         this.dbPath = dbPath;
         this.log = log;
     }

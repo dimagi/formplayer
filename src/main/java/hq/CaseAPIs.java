@@ -28,11 +28,11 @@ public class CaseAPIs {
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public static UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
-            restoreFactory.getDbPathConnectionHandler().deleteDatabaseFolder();
+            restoreFactory.getDB().deleteDatabaseFolder();
         }
         // Create parent dirs if needed
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
-            restoreFactory.getDbPathConnectionHandler().createDatabaseFolder();
+            restoreFactory.getDB().createDatabaseFolder();
         }
         UserSqlSandbox sandbox = restoreUser(restoreFactory, restoreFactory.getRestoreXml());
         FormRecordProcessorHelper.purgeCases(sandbox);
@@ -42,12 +42,12 @@ public class CaseAPIs {
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
     public static UserSqlSandbox getSandbox(RestoreFactory restoreFactory) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
-            restoreFactory.getDbPathConnectionHandler().deleteDatabaseFolder();
+            restoreFactory.getDB().deleteDatabaseFolder();
         }
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             return restoreFactory.getSqlSandbox();
         } else {
-            restoreFactory.getDbPathConnectionHandler().createDatabaseFolder();
+            restoreFactory.getDB().createDatabaseFolder();
             return restoreUser(restoreFactory, restoreFactory.getRestoreXml());
         }
     }

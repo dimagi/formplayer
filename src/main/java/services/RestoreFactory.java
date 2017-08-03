@@ -3,7 +3,7 @@ package services;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
-import dbpath.DBPathConnectionHandler;
+import dbpath.SQLiteDB;
 import dbpath.UserDBPath;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
@@ -81,7 +81,7 @@ public class RestoreFactory implements ConnectionHandler {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private DBPathConnectionHandler dbPathConnectionHandler = new DBPathConnectionHandler(null);
+    private SQLiteDB sqliteDB = new SQLiteDB(null);
     private boolean useLiveQuery;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
@@ -90,7 +90,7 @@ public class RestoreFactory implements ConnectionHandler {
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
-        dbPathConnectionHandler = new DBPathConnectionHandler(new UserDBPath(domain, username, asUsername), log);
+        sqliteDB = new SQLiteDB(new UserDBPath(domain, username, asUsername), log);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
@@ -101,11 +101,11 @@ public class RestoreFactory implements ConnectionHandler {
 
     @Override
     public Connection getConnection() {
-        return dbPathConnectionHandler.getConnection();
+        return sqliteDB.getConnection();
     }
 
     public void closeConnection() {
-        dbPathConnectionHandler.closeConnection();
+        sqliteDB.closeConnection();
     }
 
     public void setAutoCommit(boolean autoCommit) {
@@ -124,8 +124,8 @@ public class RestoreFactory implements ConnectionHandler {
         }
     }
 
-    public DBPathConnectionHandler getDbPathConnectionHandler() {
-        return dbPathConnectionHandler;
+    public SQLiteDB getDB() {
+        return sqliteDB;
     }
 
     public String getWrappedUsername() {
