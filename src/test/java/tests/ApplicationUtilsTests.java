@@ -1,6 +1,5 @@
 package tests;
 
-import beans.menus.CommandListResponseBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -26,7 +25,7 @@ public class ApplicationUtilsTests {
 
         assert file.exists();
 
-        Boolean success = ApplicationUtils.deleteApplicationDbs("dummy-domain", "dummy-username", null, "dummy-app-id");
+        Boolean success = ApplicationUtils.deleteApplicationDb("dummy-domain", "dummy-username", null, "dummy-app-id");
 
         file = new File(dbPath);
         assert !file.exists();

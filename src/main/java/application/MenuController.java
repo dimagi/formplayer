@@ -24,7 +24,6 @@ import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -321,7 +320,7 @@ public class MenuController extends AbstractBaseController {
         MenuSession menuSession;
         // When previewing, clear and reinstall DBs to get newest version
         // Big TODO: app updates
-        ApplicationUtils.deleteApplicationDbs(
+        ApplicationUtils.deleteApplicationDb(
                 sessionNavigationBean.getDomain(),
                 sessionNavigationBean.getUsername(),
                 sessionNavigationBean.getRestoreAs(),
