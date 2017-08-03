@@ -9,18 +9,6 @@ import sqlitedb.UserDB;
  */
 public class ApplicationUtils {
 
-    public static String getApplicationDBPath(String domain, String username, String asUsername, String appId) {
-        return SQLiteProperties.getDataDir() + domain + "/" + TableBuilder.scrubName(getUsernameDetail(username, asUsername)) + "/" + appId;
-    }
-
-    public static String getApplicationDBFile(String domain, String username, String asUsername, String appId) {
-        return getApplicationDBPath(domain, username, asUsername, appId) + "/" + getApplicationDBName() + ".db";
-    }
-
-    public static String getApplicationDBName() {
-        return "application_" + Constants.SQLITE_DB_VERSION;
-    }
-
 
     public static void clearUserData(String domain, String username, String asUsername) {
         new UserDB(domain, username, asUsername).deleteDatabaseFolder();
