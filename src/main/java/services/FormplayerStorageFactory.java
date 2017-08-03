@@ -1,10 +1,6 @@
 package services;
 
 import beans.InstallRequestBean;
-import sqlitedb.ApplicationDBPath;
-import sqlitedb.SQLiteDB;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +8,8 @@ import org.springframework.stereotype.Component;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import sandbox.SqliteIndexedStorageUtility;
+import sqlitedb.ApplicationDBPath;
+import sqlitedb.SQLiteDB;
 
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
@@ -28,8 +26,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
-
-    private final Log log = LogFactory.getLog(FormplayerStorageFactory.class);
 
     public void configure(InstallRequestBean installRequestBean) {
         configure(
@@ -59,7 +55,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.sqLiteDB = new SQLiteDB(new ApplicationDBPath(domain, username, asUsername, appId), log);
+        this.sqLiteDB = new SQLiteDB(new ApplicationDBPath(domain, username, asUsername, appId));
         this.sqLiteDB.closeConnection();
     }
 

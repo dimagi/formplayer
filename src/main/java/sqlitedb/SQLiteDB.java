@@ -13,17 +13,11 @@ import java.sql.SQLException;
 
 public class SQLiteDB implements ConnectionHandler {
     private DBPath dbPath;
-    private Log log;
+    private final Log log = LogFactory.getLog(SQLiteDB.class);
     private Connection connection;
 
     public SQLiteDB(DBPath dbPath) {
         this.dbPath = dbPath;
-        this.log = LogFactory.getLog(SQLiteDB.class);
-    }
-
-    public SQLiteDB(DBPath dbPath, Log log) {
-        this.dbPath = dbPath;
-        this.log = log;
     }
 
     private Connection getNewConnection() throws SQLException {
@@ -44,9 +38,7 @@ public class SQLiteDB implements ConnectionHandler {
                 if (connection instanceof SQLiteConnection) {
                     SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
                     if (!matchesConnection(sqLiteConnection)) {
-                        log.error(String.format("Had connection with path %s in StorageFactory %s",
-                                sqLiteConnection.url(),
-                                toString()));
+                        log.error(String.format("Connection for path %s already exists",  sqLiteConnection.url()));
                         connection = getNewConnection();
                     }
                 }
