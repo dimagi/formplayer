@@ -1,7 +1,7 @@
 package services;
 
-import application.Application;
 import beans.InstallRequestBean;
+import dbpath.ApplicationDBPath;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -11,11 +11,9 @@ import org.springframework.stereotype.Component;
 import org.sqlite.SQLiteConnection;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
-import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import util.ApplicationUtils;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -28,7 +26,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     private String username;
     private String domain;
     private String appId;
-    private String databasePath;
+    private ApplicationDBPath applicationDbPath;
     private String asUsername;
 
     private Connection connection;
@@ -66,7 +64,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, asUsername, appId);
+        this.applicationDbPath = new ApplicationDBPath(domain, username, asUsername, appId);
         closeConnection();
     }
 
@@ -74,17 +72,15 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getApplicationDBName(), databasePath);
-                connection = dataSource.getConnection();
+                connection = applicationDbPath.getConnection();
             } else {
                 if (connection instanceof SQLiteConnection) {
                     SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
-                    if (!sqLiteConnection.url().contains(databasePath)) {
+                    if (!applicationDbPath.matchesConnection(sqLiteConnection)) {
                         log.error(String.format("Had connection with path %s in StorageFactory %s",
                                 sqLiteConnection.url(),
                                 toString()));
-                        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getApplicationDBName(), databasePath);
-                        connection = dataSource.getConnection();
+                        connection = applicationDbPath.getConnection();
                     }
                 }
             }
@@ -144,7 +140,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
 
     @Override
     public String toString() {
-        return "FormplayerStorageFactory username=" + username + ", dbPath=" + databasePath +
+        return "FormplayerStorageFactory username=" + username + ", dbPath=" + applicationDbPath.getDatabasePath() +
                 ", appId=" + appId + " connection=" + connection;
     }
 }
