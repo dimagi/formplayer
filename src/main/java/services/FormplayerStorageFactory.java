@@ -13,13 +13,11 @@ import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import sandbox.SqliteIndexedStorageUtility;
 
-import java.sql.Connection;
-
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
  */
 @Component
-public class FormplayerStorageFactory implements IStorageIndexedFactory, ConnectionHandler {
+public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     private String username;
     private String domain;
@@ -62,21 +60,12 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.domain = domain;
         this.appId = appId;
         this.sqliteDB = new SQLiteDB(new ApplicationDBPath(domain, username, asUsername, appId), log);
-        closeConnection();
-    }
-
-    @Override
-    public Connection getConnection() {
-        return sqliteDB.getConnection();
-    }
-
-    public void closeConnection() {
-        sqliteDB.closeConnection();
+        this.sqliteDB.closeConnection();
     }
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqliteIndexedStorageUtility(this, type, name);
+        return new SqliteIndexedStorageUtility(this.sqliteDB, type, name);
     }
 
     public String getUsername() {
