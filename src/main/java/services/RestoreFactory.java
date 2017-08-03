@@ -3,7 +3,6 @@ package services;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
-import dbpath.DBPath;
 import dbpath.DBPathConnectionHandler;
 import dbpath.UserDBPath;
 import exceptions.AsyncRetryException;
@@ -82,7 +81,6 @@ public class RestoreFactory implements ConnectionHandler {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private DBPath dbPath;
     private DBPathConnectionHandler dbPathConnectionHandler = new DBPathConnectionHandler(null, null);
     private boolean useLiveQuery;
 
@@ -92,8 +90,7 @@ public class RestoreFactory implements ConnectionHandler {
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
-        dbPath = new UserDBPath(domain, username, asUsername);
-        dbPathConnectionHandler = new DBPathConnectionHandler(dbPath, log);
+        dbPathConnectionHandler = new DBPathConnectionHandler(new UserDBPath(domain, username, asUsername), log);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
@@ -133,8 +130,9 @@ public class RestoreFactory implements ConnectionHandler {
             throw new RuntimeException(e);
         }
     }
-    public String getDbFile() {
-        return dbPath.getDatabaseFile();
+
+    public DBPathConnectionHandler getDbPathConnectionHandler() {
+        return dbPathConnectionHandler;
     }
 
     public String getWrappedUsername() {

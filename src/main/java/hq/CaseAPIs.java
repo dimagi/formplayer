@@ -3,9 +3,6 @@ package hq;
 import api.process.FormRecordProcessorHelper;
 import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
-import sandbox.SqlSandboxUtils;
-import sandbox.SqliteIndexedStorageUtility;
-import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.core.parse.ParseUtils;
 import org.javarosa.core.api.ClassNameHasher;
@@ -15,10 +12,11 @@ import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
+import sandbox.SqliteIndexedStorageUtility;
+import sandbox.UserSqlSandbox;
 import services.RestoreFactory;
 import util.UserUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -30,14 +28,13 @@ public class CaseAPIs {
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public static UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
-            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
+            restoreFactory.getDbPathConnectionHandler().deleteDatabaseFolder();
         }
         // Create parent dirs if needed
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
-            new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
+            restoreFactory.getDbPathConnectionHandler().createDatabaseFolder();
         }
-        InputStream xml = restoreFactory.getRestoreXml();
-        UserSqlSandbox sandbox = restoreUser(restoreFactory, xml);
+        UserSqlSandbox sandbox = restoreUser(restoreFactory, restoreFactory.getRestoreXml());
         FormRecordProcessorHelper.purgeCases(sandbox);
         return sandbox;
     }
@@ -45,14 +42,13 @@ public class CaseAPIs {
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
     public static UserSqlSandbox getSandbox(RestoreFactory restoreFactory) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
-            SqlSandboxUtils.deleteDatabaseFolder(restoreFactory.getDbFile());
+            restoreFactory.getDbPathConnectionHandler().deleteDatabaseFolder();
         }
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             return restoreFactory.getSqlSandbox();
-        } else{
-            new File(restoreFactory.getDbFile()).getParentFile().mkdirs();
-            InputStream xml = restoreFactory.getRestoreXml();
-            return restoreUser(restoreFactory, xml);
+        } else {
+            restoreFactory.getDbPathConnectionHandler().createDatabaseFolder();
+            return restoreUser(restoreFactory, restoreFactory.getRestoreXml());
         }
     }
 
