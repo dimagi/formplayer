@@ -1,4 +1,4 @@
-package dbpath;
+package sqlitedb;
 
 import util.ApplicationUtils;
 

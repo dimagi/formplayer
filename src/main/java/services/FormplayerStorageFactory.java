@@ -1,8 +1,8 @@
 package services;
 
 import beans.InstallRequestBean;
-import dbpath.ApplicationDBPath;
-import dbpath.SQLiteDB;
+import sqlitedb.ApplicationDBPath;
+import sqlitedb.SQLiteDB;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -24,7 +24,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private String appId;
     private String asUsername;
 
-    private SQLiteDB sqliteDB = new SQLiteDB(null);
+    private SQLiteDB sqLiteDB = new SQLiteDB(null);
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
@@ -59,13 +59,13 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.sqliteDB = new SQLiteDB(new ApplicationDBPath(domain, username, asUsername, appId), log);
-        this.sqliteDB.closeConnection();
+        this.sqLiteDB = new SQLiteDB(new ApplicationDBPath(domain, username, asUsername, appId), log);
+        this.sqLiteDB.closeConnection();
     }
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqliteIndexedStorageUtility(this.sqliteDB, type, name);
+        return new SqliteIndexedStorageUtility(this.sqLiteDB, type, name);
     }
 
     public String getUsername() {
@@ -92,8 +92,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.appId = appId;
     }
 
-    public SQLiteDB getDB() {
-        return sqliteDB;
+    public SQLiteDB getSQLiteDB() {
+        return sqLiteDB;
     }
 
     public String getAsUsername() {

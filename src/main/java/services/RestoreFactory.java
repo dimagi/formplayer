@@ -3,8 +3,8 @@ package services;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
-import dbpath.SQLiteDB;
-import dbpath.UserDBPath;
+import sqlitedb.SQLiteDB;
+import sqlitedb.UserDBPath;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -80,7 +80,7 @@ public class RestoreFactory {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private SQLiteDB sqliteDB = new SQLiteDB(null);
+    private SQLiteDB sqLiteDB = new SQLiteDB(null);
     private boolean useLiveQuery;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
@@ -89,18 +89,18 @@ public class RestoreFactory {
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
-        sqliteDB = new SQLiteDB(new UserDBPath(domain, username, asUsername), log);
+        sqLiteDB = new SQLiteDB(new UserDBPath(domain, username, asUsername), log);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
 
     public UserSqlSandbox getSqlSandbox() {
-        return new UserSqlSandbox(this.sqliteDB);
+        return new UserSqlSandbox(this.sqLiteDB);
     }
 
     public void setAutoCommit(boolean autoCommit) {
         try {
-            sqliteDB.getConnection().setAutoCommit(autoCommit);
+            sqLiteDB.getConnection().setAutoCommit(autoCommit);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -108,14 +108,14 @@ public class RestoreFactory {
 
     public void commit() {
         try {
-            sqliteDB.getConnection().commit();
+            sqLiteDB.getConnection().commit();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public SQLiteDB getDB() {
-        return sqliteDB;
+    public SQLiteDB getSQLiteDB() {
+        return sqLiteDB;
     }
 
     public String getWrappedUsername() {
