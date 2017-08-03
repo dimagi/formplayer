@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import sandbox.SqliteIndexedStorageUtility;
-import sqlitedb.ApplicationDBPath;
+import sqlitedb.ApplicationDB;
 import sqlitedb.SQLiteDB;
 
 /**
@@ -55,7 +55,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.sqLiteDB = new SQLiteDB(new ApplicationDBPath(domain, username, asUsername, appId));
+        this.sqLiteDB = new ApplicationDB(domain, username, asUsername, appId);
         this.sqLiteDB.closeConnection();
     }
 
