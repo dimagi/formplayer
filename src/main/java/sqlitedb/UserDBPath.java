@@ -9,7 +9,7 @@ public class UserDBPath implements DBPath {
     private String asUsername;
 
 
-    public UserDBPath(String domain, String username, String asUsername) {
+    UserDBPath(String domain, String username, String asUsername) {
         this.domain = domain;
         this.username = username;
         this.asUsername = asUsername;
