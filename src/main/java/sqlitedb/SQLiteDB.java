@@ -72,7 +72,7 @@ public class SQLiteDB implements ConnectionHandler {
         return new File(dbPath.getDatabaseFile()).getParentFile().mkdirs();
     }
 
-    public boolean databaseFolderExists() {
+    public boolean databaseFileExists() {
         return new File(dbPath.getDatabaseFile()).exists();
     }
 
