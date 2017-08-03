@@ -34,7 +34,7 @@ public class InstallServiceImpl implements InstallService {
     public FormplayerConfigEngine configureApplication(String reference) throws Exception {
         SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
         log.info("Configuring application with reference " + reference +
-                " and dbPath: " + sqliteDB.getDatabaseFileForLoggingPurposes() + " \n" +
+                " and dbPath: " + sqliteDB.getDatabaseFileForDebugPurposes() + " \n" +
                 "and storage factory \" + storageFactory");
         try {
             if(sqliteDB.databaseFileExists()) {
@@ -44,14 +44,14 @@ public class InstallServiceImpl implements InstallService {
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
-                    log.error("Got exception " + e + " while reinitializing at path " + sqliteDB.getDatabaseFileForLoggingPurposes());
+                    log.error("Got exception " + e + " while reinitializing at path " + sqliteDB.getDatabaseFileForDebugPurposes());
                 }
             }
             // Wipe out folder and attempt install
             sqliteDB.closeConnection();
             sqliteDB.deleteDatabaseFile();
             if (!sqliteDB.databaseFileExists() && !sqliteDB.createDatabaseFolder()) {
-                throw new RuntimeException("Error instantiationing folder " + sqliteDB.getDatabaseFileForLoggingPurposes());
+                throw new RuntimeException("Error instantiationing folder " + sqliteDB.getDatabaseFileForDebugPurposes());
             }
             FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
             if (reference.endsWith(".ccpr")) {
@@ -62,10 +62,10 @@ public class InstallServiceImpl implements InstallService {
             engine.initEnvironment();
             return engine;
         } catch (UnresolvedResourceException e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForLoggingPurposes());
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
             throw new UnresolvedResourceRuntimeException(e);
         } catch (Exception e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForLoggingPurposes());
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
             sqliteDB.deleteDatabaseFile();
             throw e;
         }

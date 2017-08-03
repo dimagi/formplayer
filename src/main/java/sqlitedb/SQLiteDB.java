@@ -76,7 +76,7 @@ public class SQLiteDB implements ConnectionHandler {
         return new File(dbPath.getDatabaseFile()).exists();
     }
 
-    public String getDatabaseFileForLoggingPurposes() {
+    public String getDatabaseFileForDebugPurposes() {
         return dbPath.getDatabaseFile();
     }
 }
