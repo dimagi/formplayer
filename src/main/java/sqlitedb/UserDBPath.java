@@ -1,8 +1,10 @@
 package sqlitedb;
 
-import util.ApplicationUtils;
+import application.SQLiteProperties;
+import org.commcare.modern.database.TableBuilder;
+import util.Constants;
 
-public class UserDBPath implements DBPath {
+class UserDBPath implements DBPath {
 
     private String domain;
     private String username;
@@ -15,18 +17,29 @@ public class UserDBPath implements DBPath {
         this.asUsername = asUsername;
     }
 
+    static String getUserDBPath(String domain, String username, String asUsername) {
+        return SQLiteProperties.getDataDir() + domain + "/" + TableBuilder.scrubName(getUsernameDetail(username, asUsername));
+    }
+
+    private static String getUsernameDetail(String username, String asUsername) {
+        if (asUsername != null) {
+            return username + "_" + asUsername;
+        }
+        return username;
+    }
+
     @Override
     public String getDatabasePath() {
-        return ApplicationUtils.getUserDBPath(domain, username, asUsername);
+        return getUserDBPath(domain, username, asUsername);
     }
 
     @Override
     public String getDatabaseName() {
-        return ApplicationUtils.getUserDBName();
+        return "user_" + Constants.SQLITE_DB_VERSION;
     }
 
     @Override
     public String getDatabaseFile() {
-        return ApplicationUtils.getUserDBFile(domain, username, asUsername);
+        return getUserDBPath(domain, username, asUsername) + "/" + getDatabaseName() + ".db";
     }
 }

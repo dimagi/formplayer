@@ -1,6 +1,5 @@
 package sqlitedb;
 
-import util.ApplicationUtils;
 import util.Constants;
 
 class ApplicationDBPath implements DBPath {
@@ -19,7 +18,7 @@ class ApplicationDBPath implements DBPath {
 
     @Override
     public String getDatabasePath() {
-        return ApplicationUtils.getUserDBPath(domain, username, asUsername) + "/" + appId;
+        return UserDBPath.getUserDBPath(domain, username, asUsername) + "/" + appId;
     }
 
     @Override

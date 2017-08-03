@@ -13,7 +13,7 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import util.ApplicationUtils;
+import sqlitedb.UserDB;
 import util.Constants;
 
 import java.io.StringReader;
@@ -69,11 +69,11 @@ public class UtilController extends AbstractBaseController {
             @RequestBody AuthenticatedRequestBean requestBean) {
 
         String message = "Successfully cleared the user data for  " + requestBean.getUsername();
-        ApplicationUtils.clearUserData(
+        new UserDB(
                 requestBean.getDomain(),
                 requestBean.getUsername(),
                 requestBean.getRestoreAs()
-        );
+        ).deleteDatabaseFolder();
         return new NotificationMessage(message, true);
     }
 
