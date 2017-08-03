@@ -2,14 +2,14 @@ package sqlitedb;
 
 import util.ApplicationUtils;
 
-public class ApplicationDBPath implements DBPath {
+class ApplicationDBPath implements DBPath {
 
     private String domain;
     private String username;
     private String asUsername;
     private String appId;
 
-    public ApplicationDBPath(String domain, String username, String asUsername, String appId) {
+    ApplicationDBPath(String domain, String username, String asUsername, String appId) {
         this.domain = domain;
         this.username = username;
         this.asUsername = asUsername;
