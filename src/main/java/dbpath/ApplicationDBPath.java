@@ -10,25 +10,36 @@ import java.sql.SQLException;
 
 public class ApplicationDBPath implements DBPath {
 
-    private String databasePath;
+    private String domain;
+    private String username;
+    private String asUsername;
+    private String appId;
 
     public ApplicationDBPath(String domain, String username, String asUsername, String appId) {
-        this.databasePath = ApplicationUtils.getApplicationDBPath(domain, username, asUsername, appId);
+        this.domain = domain;
+        this.username = username;
+        this.asUsername = asUsername;
+        this.appId = appId;
     }
 
     @Override
     public Connection getConnection() throws SQLException {
-        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getApplicationDBName(), databasePath);
+        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getApplicationDBName(), getDatabasePath());
         return dataSource.getConnection();
     }
 
     @Override
     public String getDatabasePath() {
-        return databasePath;
+        return ApplicationUtils.getApplicationDBPath(domain, username, asUsername, appId);
+    }
+
+    @Override
+    public String getDatabaseFile() {
+        return ApplicationUtils.getApplicationDBFile(domain, username, asUsername, appId);
     }
 
     @Override
     public Boolean matchesConnection(SQLiteConnection sqLiteConnection) {
-        return sqLiteConnection.url().contains(databasePath);
+        return sqLiteConnection.url().contains(getDatabasePath());
     }
 }

@@ -12,7 +12,6 @@ import org.sqlite.SQLiteConnection;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import sandbox.SqliteIndexedStorageUtility;
-import util.ApplicationUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -131,7 +130,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     }
 
     public String getDatabaseFile() {
-        return ApplicationUtils.getApplicationDBFile(domain, username, asUsername, appId);
+        return applicationDbPath.getDatabaseFile();
     }
 
     public String getAsUsername() {
