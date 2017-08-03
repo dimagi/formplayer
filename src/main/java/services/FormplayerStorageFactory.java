@@ -2,7 +2,6 @@ package services;
 
 import beans.InstallRequestBean;
 import dbpath.ApplicationDBPath;
-import dbpath.DBPath;
 import dbpath.DBPathConnectionHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,8 +62,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.dbPath = new ApplicationDBPath(domain, username, asUsername, appId);
-        this.dbPathConnectionHandler = new DBPathConnectionHandler(dbPath, log);
+        this.dbPathConnectionHandler = new DBPathConnectionHandler(new ApplicationDBPath(domain, username, asUsername, appId), log);
         closeConnection();
     }
 
