@@ -6,6 +6,7 @@ import sandbox.SqlSandboxUtils;
 import services.ConnectionHandler;
 
 import javax.sql.DataSource;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -59,5 +60,17 @@ public class DBPathConnectionHandler implements ConnectionHandler {
             e.printStackTrace();
         }
         connection = null;
+    }
+
+    public void deleteDatabaseFolder() {
+        SqlSandboxUtils.deleteDatabaseFolder(dbPath.getDatabaseFile());
+    }
+
+    public boolean createDatabaseFolder() {
+        return new File(dbPath.getDatabaseFile()).getParentFile().mkdirs();
+    }
+
+    public String getDatabaseFileForLoggingPurposes() {
+        return dbPath.getDatabaseFile();
     }
 }
