@@ -1,6 +1,7 @@
 package dbpath;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.sqlite.SQLiteConnection;
 import sandbox.SqlSandboxUtils;
 import services.ConnectionHandler;
@@ -14,6 +15,11 @@ public class DBPathConnectionHandler implements ConnectionHandler {
     private DBPath dbPath;
     private Log log;
     private Connection connection;
+
+    public DBPathConnectionHandler(DBPath dbPath) {
+        this.dbPath = dbPath;
+        this.log = LogFactory.getLog(DBPathConnectionHandler.class);
+    }
 
     public DBPathConnectionHandler(DBPath dbPath, Log log) {
         this.dbPath = dbPath;

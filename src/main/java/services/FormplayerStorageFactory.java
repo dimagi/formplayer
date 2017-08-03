@@ -26,8 +26,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     private String appId;
     private String asUsername;
 
-    private DBPath dbPath;
-    private DBPathConnectionHandler dbPathConnectionHandler = new DBPathConnectionHandler(null, null);
+    private DBPathConnectionHandler dbPathConnectionHandler = new DBPathConnectionHandler(null);
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;

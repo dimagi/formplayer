@@ -81,7 +81,7 @@ public class RestoreFactory implements ConnectionHandler {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private DBPathConnectionHandler dbPathConnectionHandler = new DBPathConnectionHandler(null, null);
+    private DBPathConnectionHandler dbPathConnectionHandler = new DBPathConnectionHandler(null);
     private boolean useLiveQuery;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
