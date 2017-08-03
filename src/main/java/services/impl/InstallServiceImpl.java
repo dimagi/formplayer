@@ -48,7 +48,7 @@ public class InstallServiceImpl implements InstallService {
                 }
             }
             // Wipe out folder and attempt install
-            storageFactory.closeConnection();
+            sqliteDB.closeConnection();
             sqliteDB.deleteDatabaseFolder();
             if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiationing folder " + sqliteDB.getDatabaseFileForLoggingPurposes());

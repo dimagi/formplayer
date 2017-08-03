@@ -40,7 +40,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  * then retrieves and returns the restore XML.
  */
 @Component
-public class RestoreFactory implements ConnectionHandler {
+public class RestoreFactory {
     @Value("${commcarehq.host}")
     private String host;
 
@@ -96,21 +95,12 @@ public class RestoreFactory implements ConnectionHandler {
     }
 
     public UserSqlSandbox getSqlSandbox() {
-        return new UserSqlSandbox(this);
-    }
-
-    @Override
-    public Connection getConnection() {
-        return sqliteDB.getConnection();
-    }
-
-    public void closeConnection() {
-        sqliteDB.closeConnection();
+        return new UserSqlSandbox(this.sqliteDB);
     }
 
     public void setAutoCommit(boolean autoCommit) {
         try {
-            getConnection().setAutoCommit(autoCommit);
+            sqliteDB.getConnection().setAutoCommit(autoCommit);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -118,7 +108,7 @@ public class RestoreFactory implements ConnectionHandler {
 
     public void commit() {
         try {
-            getConnection().commit();
+            sqliteDB.getConnection().commit();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
