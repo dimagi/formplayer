@@ -106,8 +106,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.appId = appId;
     }
 
-    public String getDatabaseFile() {
-        return dbPath.getDatabaseFile();
+    public DBPathConnectionHandler getDbPathConnectionHandler() {
+        return dbPathConnectionHandler;
     }
 
     public String getAsUsername() {
