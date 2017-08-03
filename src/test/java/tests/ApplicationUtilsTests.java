@@ -25,10 +25,9 @@ public class ApplicationUtilsTests {
 
         assert file.exists();
 
-        Boolean success = ApplicationUtils.deleteApplicationDb("dummy-domain", "dummy-username", null, "dummy-app-id");
+        ApplicationUtils.deleteApplicationDb("dummy-domain", "dummy-username", null, "dummy-app-id");
 
         file = new File(dbPath);
         assert !file.exists();
-        assert success;
     }
 }

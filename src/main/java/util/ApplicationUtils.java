@@ -9,16 +9,8 @@ import sandbox.SqlSandboxUtils;
  */
 public class ApplicationUtils {
 
-    public static boolean deleteApplicationDb(String domain, String username, String asUsername, String appId) {
-        Boolean success = true;
-
-        try {
-            SqlSandboxUtils.deleteDatabaseFolder(getApplicationDBPath(domain, username, asUsername, appId));
-        } catch (Exception e) {
-            e.printStackTrace();
-            success = false;
-        }
-        return success;
+    public static void deleteApplicationDb(String domain, String username, String asUsername, String appId) {
+        SqlSandboxUtils.deleteDatabaseFolder(getApplicationDBPath(domain, username, asUsername, appId));
     }
 
     public static void clearUserData(String domain, String username, String asUsername) {
