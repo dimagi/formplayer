@@ -2,7 +2,7 @@ package services;
 
 import beans.InstallRequestBean;
 import dbpath.ApplicationDBPath;
-import dbpath.DBPathConnectionHandler;
+import dbpath.SQLiteDB;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -26,7 +26,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
     private String appId;
     private String asUsername;
 
-    private DBPathConnectionHandler dbPathConnectionHandler = new DBPathConnectionHandler(null);
+    private SQLiteDB sqliteDB = new SQLiteDB(null);
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
@@ -61,17 +61,17 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.dbPathConnectionHandler = new DBPathConnectionHandler(new ApplicationDBPath(domain, username, asUsername, appId), log);
+        this.sqliteDB = new SQLiteDB(new ApplicationDBPath(domain, username, asUsername, appId), log);
         closeConnection();
     }
 
     @Override
     public Connection getConnection() {
-        return dbPathConnectionHandler.getConnection();
+        return sqliteDB.getConnection();
     }
 
     public void closeConnection() {
-        dbPathConnectionHandler.closeConnection();
+        sqliteDB.closeConnection();
     }
 
     @Override
@@ -103,8 +103,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory, Connect
         this.appId = appId;
     }
 
-    public DBPathConnectionHandler getDbPathConnectionHandler() {
-        return dbPathConnectionHandler;
+    public SQLiteDB getDB() {
+        return sqliteDB;
     }
 
     public String getAsUsername() {

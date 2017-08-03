@@ -1,6 +1,6 @@
 package services.impl;
 
-import dbpath.DBPathConnectionHandler;
+import dbpath.SQLiteDB;
 import engine.FormplayerConfigEngine;
 import exceptions.UnresolvedResourceRuntimeException;
 import installers.FormplayerInstallerFactory;
@@ -32,26 +32,26 @@ public class InstallServiceImpl implements InstallService {
 
     @Override
     public FormplayerConfigEngine configureApplication(String reference) throws Exception {
-        DBPathConnectionHandler dbPathConnectionHandler = storageFactory.getDbPathConnectionHandler();
+        SQLiteDB sqliteDB = storageFactory.getDB();
         log.info("Configuring application with reference " + reference +
-                " and dbPath: " + dbPathConnectionHandler.getDatabaseFileForLoggingPurposes() + " \n" +
+                " and dbPath: " + sqliteDB.getDatabaseFileForLoggingPurposes() + " \n" +
                 "and storage factory \" + storageFactory");
         try {
-            if(dbPathConnectionHandler.databaseFolderExists()) {
+            if(sqliteDB.databaseFolderExists()) {
                 // Try reusing old install, fail quietly
                 try {
                     FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
-                    log.error("Got exception " + e + " while reinitializing at path " + dbPathConnectionHandler.getDatabaseFileForLoggingPurposes());
+                    log.error("Got exception " + e + " while reinitializing at path " + sqliteDB.getDatabaseFileForLoggingPurposes());
                 }
             }
             // Wipe out folder and attempt install
             storageFactory.closeConnection();
-            dbPathConnectionHandler.deleteDatabaseFolder();
-            if (!dbPathConnectionHandler.databaseFolderExists() && !dbPathConnectionHandler.createDatabaseFolder()) {
-                throw new RuntimeException("Error instantiationing folder " + dbPathConnectionHandler.getDatabaseFileForLoggingPurposes());
+            sqliteDB.deleteDatabaseFolder();
+            if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
+                throw new RuntimeException("Error instantiationing folder " + sqliteDB.getDatabaseFileForLoggingPurposes());
             }
             FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
             if (reference.endsWith(".ccpr")) {
@@ -62,11 +62,11 @@ public class InstallServiceImpl implements InstallService {
             engine.initEnvironment();
             return engine;
         } catch (UnresolvedResourceException e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPathConnectionHandler.getDatabaseFileForLoggingPurposes());
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForLoggingPurposes());
             throw new UnresolvedResourceRuntimeException(e);
         } catch (Exception e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbPathConnectionHandler.getDatabaseFileForLoggingPurposes());
-            dbPathConnectionHandler.deleteDatabaseFolder();
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForLoggingPurposes());
+            sqliteDB.deleteDatabaseFolder();
             throw e;
         }
     }
