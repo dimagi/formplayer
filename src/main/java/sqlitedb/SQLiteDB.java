@@ -60,7 +60,7 @@ public class SQLiteDB implements ConnectionHandler {
         connection = null;
     }
 
-    public void deleteDatabaseFolder() {
+    public void deleteDatabaseFile() {
         SqlSandboxUtils.deleteDatabaseFolder(dbPath.getDatabaseFile());
     }
 

@@ -28,7 +28,7 @@ public class CaseAPIs {
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public static UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
-            restoreFactory.getSQLiteDB().deleteDatabaseFolder();
+            restoreFactory.getSQLiteDB().deleteDatabaseFile();
         }
         // Create parent dirs if needed
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
@@ -42,7 +42,7 @@ public class CaseAPIs {
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
     public static UserSqlSandbox getSandbox(RestoreFactory restoreFactory) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
-            restoreFactory.getSQLiteDB().deleteDatabaseFolder();
+            restoreFactory.getSQLiteDB().deleteDatabaseFile();
         }
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             return restoreFactory.getSqlSandbox();

@@ -49,7 +49,7 @@ public class InstallServiceImpl implements InstallService {
             }
             // Wipe out folder and attempt install
             sqliteDB.closeConnection();
-            sqliteDB.deleteDatabaseFolder();
+            sqliteDB.deleteDatabaseFile();
             if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiationing folder " + sqliteDB.getDatabaseFileForLoggingPurposes());
             }
@@ -66,7 +66,7 @@ public class InstallServiceImpl implements InstallService {
             throw new UnresolvedResourceRuntimeException(e);
         } catch (Exception e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForLoggingPurposes());
-            sqliteDB.deleteDatabaseFolder();
+            sqliteDB.deleteDatabaseFile();
             throw e;
         }
     }
