@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import sqlitedb.ApplicationDB;
-import util.ApplicationUtils;
+import sqlitedb.SQLiteDB;
 import utils.TestContext;
 
 import java.io.File;
@@ -20,15 +20,13 @@ public class ApplicationUtilsTests {
 
     @Test
     public void testDeleteApplicationDbs() throws Exception {
-        String dbPath = ApplicationUtils.getApplicationDBPath("dummy-domain", "dummy-username", null, "dummy-app-id");
-        File file = new File(dbPath);
-        file.mkdirs();
+        SQLiteDB db = new ApplicationDB("dummy-domain", "dummy-username", null, "dummy-app-id");
+        db.createDatabaseFolder();
 
-        assert file.exists();
+        assert new File(db.getDatabaseFileForDebugPurposes()).getParentFile().exists();
 
-        new ApplicationDB("dummy-domain", "dummy-username", null, "dummy-app-id").deleteDatabaseFolder();
+        db.deleteDatabaseFolder();
 
-        file = new File(dbPath);
-        assert !file.exists();
+        assert !new File(db.getDatabaseFileForDebugPurposes()).getParentFile().exists();
     }
 }
