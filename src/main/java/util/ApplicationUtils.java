@@ -1,16 +1,15 @@
 package util;
 
 import application.SQLiteProperties;
-import org.apache.tomcat.util.bcel.Const;
-import sandbox.SqlSandboxUtils;
 import org.commcare.modern.database.TableBuilder;
+import sandbox.SqlSandboxUtils;
 
 /**
  * Utility methods for dealing with Applications
  */
 public class ApplicationUtils {
 
-    public static boolean deleteApplicationDbs(String domain, String username, String asUsername, String appId) {
+    public static boolean deleteApplicationDb(String domain, String username, String asUsername, String appId) {
         Boolean success = true;
 
         try {
