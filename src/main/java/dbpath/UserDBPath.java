@@ -23,13 +23,18 @@ public class UserDBPath implements DBPath {
 
     @Override
     public Connection getConnection() throws SQLException {
-        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), getDatabasePath());
+        DataSource dataSource = SqlSandboxUtils.getDataSource(getDatabaseName(), getDatabasePath());
         return dataSource.getConnection();
     }
 
     @Override
     public String getDatabasePath() {
         return ApplicationUtils.getUserDBPath(domain, username, asUsername);
+    }
+
+    @Override
+    public String getDatabaseName() {
+        return ApplicationUtils.getUserDBName();
     }
 
     @Override

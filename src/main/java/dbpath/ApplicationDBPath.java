@@ -24,13 +24,18 @@ public class ApplicationDBPath implements DBPath {
 
     @Override
     public Connection getConnection() throws SQLException {
-        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getApplicationDBName(), getDatabasePath());
+        DataSource dataSource = SqlSandboxUtils.getDataSource(getDatabaseName(), getDatabasePath());
         return dataSource.getConnection();
     }
 
     @Override
     public String getDatabasePath() {
         return ApplicationUtils.getApplicationDBPath(domain, username, asUsername, appId);
+    }
+
+    @Override
+    public String getDatabaseName() {
+        return ApplicationUtils.getApplicationDBName();
     }
 
     @Override
