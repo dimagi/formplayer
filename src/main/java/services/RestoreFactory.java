@@ -89,7 +89,7 @@ public class RestoreFactory {
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
-        sqLiteDB = new SQLiteDB(new UserDBPath(domain, username, asUsername), log);
+        sqLiteDB = new SQLiteDB(new UserDBPath(domain, username, asUsername));
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
