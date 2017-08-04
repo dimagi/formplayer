@@ -2,8 +2,7 @@ package beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
-
-import static util.ApplicationUtils.deleteApplicationDbs;
+import sqlitedb.ApplicationDB;
 
 /**
  * A request that delete's an application's databases
@@ -14,8 +13,8 @@ public class DeleteApplicationDbsRequestBean extends AuthenticatedRequestBean {
     public DeleteApplicationDbsRequestBean() {
     }
 
-    public boolean clear() {
-        return deleteApplicationDbs(domain, username, restoreAs, appId);
+    public void clear() {
+        new ApplicationDB(domain, username, restoreAs, appId).deleteDatabaseFolder();
     }
 
     @JsonGetter(value = "app_id")
