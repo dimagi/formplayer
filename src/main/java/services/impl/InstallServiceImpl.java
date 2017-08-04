@@ -1,5 +1,6 @@
 package services.impl;
 
+import sqlitedb.SQLiteDB;
 import engine.FormplayerConfigEngine;
 import exceptions.UnresolvedResourceRuntimeException;
 import installers.FormplayerInstallerFactory;
@@ -8,11 +9,8 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
-import sandbox.SqlSandboxUtils;
 import services.FormplayerStorageFactory;
 import services.InstallService;
-
-import java.io.File;
 
 /**
  * The InstallService handles configuring the application,
@@ -34,26 +32,26 @@ public class InstallServiceImpl implements InstallService {
 
     @Override
     public FormplayerConfigEngine configureApplication(String reference) throws Exception {
-        String dbFilePath = storageFactory.getDatabaseFile();
-        log.info("Configuring application with reference " + reference + " and dbPath: " + dbFilePath + " \n" +
+        SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
+        log.info("Configuring application with reference " + reference +
+                " and dbPath: " + sqliteDB.getDatabaseFileForDebugPurposes() + " \n" +
                 "and storage factory \" + storageFactory");
         try {
-            File dbFolder = new File(dbFilePath);
-            if(dbFolder.exists()) {
+            if(sqliteDB.databaseFileExists()) {
                 // Try reusing old install, fail quietly
                 try {
                     FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
                     engine.initEnvironment();
                     return engine;
                 } catch (Exception e) {
-                    log.error("Got exception " + e + " while reinitializing at path " + dbFilePath);
+                    log.error("Got exception " + e + " while reinitializing at path " + sqliteDB.getDatabaseFileForDebugPurposes());
                 }
             }
             // Wipe out folder and attempt install
-            storageFactory.closeConnection();
-            SqlSandboxUtils.deleteDatabaseFolder(dbFilePath);
-            if (!dbFolder.getParentFile().exists() && !dbFolder.getParentFile().mkdirs()) {
-                throw new RuntimeException("Error instantiationing folder " + dbFolder);
+            sqliteDB.closeConnection();
+            sqliteDB.deleteDatabaseFile();
+            if (!sqliteDB.databaseFileExists() && !sqliteDB.createDatabaseFolder()) {
+                throw new RuntimeException("Error instantiationing folder " + sqliteDB.getDatabaseFileForDebugPurposes());
             }
             FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
             if (reference.endsWith(".ccpr")) {
@@ -64,11 +62,11 @@ public class InstallServiceImpl implements InstallService {
             engine.initEnvironment();
             return engine;
         } catch (UnresolvedResourceException e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbFilePath);
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
             throw new UnresolvedResourceRuntimeException(e);
         } catch (Exception e) {
-            log.error("Got exception " + e + " while installing reference " + reference + " at path " + dbFilePath);
-            SqlSandboxUtils.deleteDatabaseFolder(dbFilePath);
+            log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
+            sqliteDB.deleteDatabaseFile();
             throw e;
         }
     }

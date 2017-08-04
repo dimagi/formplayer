@@ -105,7 +105,7 @@ public class FormplayerRaven {
                 .withExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL())
                 .withExtra(APP_URL_EXTRA, getAppURL())
                 .withExtra(USER_SYNC_TOKEN, restoreFactory == null ? "unknown" : restoreFactory.getSyncToken())
-                .withExtra(USER_SANDBOX_PATH, restoreFactory == null ? "unknown" : restoreFactory.getDbFile())
+                .withExtra(USER_SANDBOX_PATH, restoreFactory == null ? "unknown" : restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes())
         );
     }
 

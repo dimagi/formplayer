@@ -8,8 +8,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import sandbox.SqlSandboxUtils;
 import sandbox.UserSqlSandbox;
+import sqlitedb.UserDB;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,8 +25,8 @@ public class UserSqlSandboxTest {
 
     @Before
     public void setUp() throws Exception {
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
-        sandbox = new UserSqlSandbox(new TestConnectionHandler(UserSqlSandbox.DEFAULT_DATBASE_PATH));
+        new UserDB("a", "b", null).deleteDatabaseFolder();
+        sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         ParseUtils.parseIntoSandbox(this.getClass().getClassLoader().getResourceAsStream("restores/ipm_restore.xml"), sandbox);
         sandbox = null;
@@ -34,7 +34,7 @@ public class UserSqlSandboxTest {
 
     @Test
     public void test() {
-        sandbox = new UserSqlSandbox(new TestConnectionHandler(UserSqlSandbox.DEFAULT_DATBASE_PATH));
+        sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
         Assert.assertEquals(sandbox.getCaseStorage().getNumRecords(), 6);
         Assert.assertEquals(sandbox.getLedgerStorage().getNumRecords(), 3);
         Assert.assertEquals(sandbox.getUserFixtureStorage().getNumRecords(), 4);
@@ -44,6 +44,6 @@ public class UserSqlSandboxTest {
 
     @After
     public void tearDown(){
-        SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
+        new UserDB("a", "b", null).deleteDatabaseFolder();
     }
 }
