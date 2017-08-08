@@ -50,7 +50,7 @@ public class InstallServiceImpl implements InstallService {
             // Wipe out folder and attempt install
             sqliteDB.closeConnection();
             sqliteDB.deleteDatabaseFile();
-            if (!sqliteDB.databaseFileExists() && !sqliteDB.createDatabaseFolder()) {
+            if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiationing folder " + sqliteDB.getDatabaseFileForDebugPurposes());
             }
             FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
