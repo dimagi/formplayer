@@ -15,6 +15,7 @@ import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -359,5 +360,13 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public SyncRequester syncRequester() {
         return new SyncRequesterImpl();
+    }
+
+    @Bean
+    public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsServiceImpl(builder); }
+
+    @Bean
+    public RestTemplateBuilder restTemplateBuilder() {
+        return new RestTemplateBuilder();
     }
 }
