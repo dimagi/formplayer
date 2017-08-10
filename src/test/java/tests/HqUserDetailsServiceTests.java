@@ -19,8 +19,7 @@ import util.Constants;
 import utils.TestContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @RunWith(SpringRunner.class)
@@ -58,14 +57,16 @@ public class HqUserDetailsServiceTests {
         ReflectionTestUtils.setField(service, "formplayerAuthKey", "secretkey");
 
         this.server.expect(requestTo(host + Constants.SESSION_DETAILS_VIEW))
-                .andExpect(header("X-MAC-DIGEST", "v5/Bfr2kmxjbe5gFIexnY5Lo08cglL28nizvPBBpXCY="))
+                .andExpect(header("X-MAC-DIGEST", "4mpTOxhuJ+QJQcbeEPtRkr9goVhNh9HP2NszeP+bguc="))
+                .andExpect(jsonPath("$.domain").value("domain"))
+                .andExpect(jsonPath("$.sessionId").value("123abc"))
                 .andRespond(withSuccess(detailsString, MediaType.APPLICATION_JSON));
     }
 
     @Test
     public void whenCallingGetUserDetails_thenClientMakesCorrectCall()
             throws Exception {
-        HqUserDetailsBean details = this.service.getUserDetails("123abc");
+        HqUserDetailsBean details = this.service.getUserDetails("domain", "123abc");
 
         assertThat(details.getUsername()).isEqualTo("user@domain.commcarehq.org");
         assertThat(details.getDomains()).isEqualTo(new String[]{"domain"});
