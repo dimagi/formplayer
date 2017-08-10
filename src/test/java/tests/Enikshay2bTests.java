@@ -48,6 +48,10 @@ public class Enikshay2bTests extends BaseTestClass {
         LinkedHashMap commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
         String jsonString = new JSONObject(commandsRaw).toString();
         CommandListResponseBean commandResponse = mapper.readValue(jsonString, CommandListResponseBean.class);
+        EntityListResponse sortedEntityResponse = sessionNavigateWithId(new String[] {"10"},
+                commandResponse.getMenuSessionId(),
+                4,
+                EntityListResponse.class);
         EntityListResponse entityResponse = sessionNavigateWithId(new String[] {"10"},
                 commandResponse.getMenuSessionId(),
                 EntityListResponse.class);
