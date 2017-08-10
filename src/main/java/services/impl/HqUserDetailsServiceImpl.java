@@ -49,7 +49,7 @@ public class HqUserDetailsServiceImpl implements HqUserDetailsService {
         String data = null;
         try {
             data = objectMapper.writeValueAsString(new HqSessionKeyBean(sessionKey));
-            headers.set("X_MAC_DIGEST", getHmac(data));
+            headers.set("X-MAC-DIGEST", getHmac(data));
         } catch (Exception e) {
             throw new UserDetailsException(e);
         }
