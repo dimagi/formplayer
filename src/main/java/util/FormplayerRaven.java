@@ -108,10 +108,10 @@ public class FormplayerRaven {
     public void sendRavenException(FormplayerHttpRequest request, Exception exception, Event.Level level) {
         setDomain(request.getDomain());
 
-        if (request.getCouchUser() != null && request.getPostgresUser() != null) {
+        if (request.getUserDetails() != null) {
             setUserContext(
-                    String.valueOf(request.getPostgresUser().getUserId()),
-                    request.getCouchUser().getUsername(),
+                    String.valueOf(request.getUserDetails().getDjangoUserId()),
+                    request.getUserDetails().getUsername(),
                     request.getRemoteAddr()
             );
         }

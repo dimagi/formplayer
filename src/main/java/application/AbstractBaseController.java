@@ -388,8 +388,8 @@ public abstract class AbstractBaseController {
     private void incrementDatadogCounter(String metric, FormplayerHttpRequest req) {
         String user = "unknown";
         String domain = "unknown";
-        if (req.getCouchUser() != null) {
-            user = req.getCouchUser().getUsername();
+        if (req.getUserDetails() != null) {
+            user = req.getUserDetails().getUsername();
         }
         if (req.getDomain() != null) {
             domain = req.getDomain();
