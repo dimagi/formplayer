@@ -19,8 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.HtmlEmail;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
@@ -88,9 +86,6 @@ public abstract class AbstractBaseController {
     protected RestoreFactory restoreFactory;
 
     @Autowired
-    private HtmlEmail exceptionMessage;
-
-    @Autowired
     protected NewFormResponseFactory newFormResponseFactory;
 
     @Autowired
@@ -117,9 +112,7 @@ public abstract class AbstractBaseController {
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         menuSession.getSessionWrapper().syncState();
         if(menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
-            BaseResponseBean nextMenu = getNextMenu(menuSession);
-            menuSessionRepo.save(new SerializableMenuSession(menuSession));
-            return nextMenu;
+            return getNextMenu(menuSession);
         }
         return null;
     }
@@ -163,6 +156,7 @@ public abstract class AbstractBaseController {
         if (nextScreen == null) {
             if(menuSession.getSessionWrapper().getForm() != null) {
                 NewFormResponse formResponseBean = generateFormEntryScreen(menuSession);
+                setPersistentCaseTile(menuSession, formResponseBean);
                 formResponseBean.setBreadcrumbs(menuSession.getTitles());
                 return formResponseBean;
             } else{
@@ -271,6 +265,10 @@ public abstract class AbstractBaseController {
 
         return new Pair(ref, persistentDetail);
 
+    }
+
+    private void setPersistentCaseTile(MenuSession menuSession, NewFormResponse formResponse) {
+        formResponse.setPersistentCaseTile(getPersistentDetail(menuSession));
     }
 
     private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
@@ -389,12 +387,6 @@ public abstract class AbstractBaseController {
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
         raven.sendRavenException(req, exception);
-        try {
-            sendExceptionEmail(req, exception);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("Unable to send email");
-        }
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
@@ -413,50 +405,5 @@ public abstract class AbstractBaseController {
                 "user:" + user,
                 "request:" + req.getRequestURL()
         );
-    }
-
-    private void sendExceptionEmail(FormplayerHttpRequest req, Exception exception) {
-        try {
-            exceptionMessage.setHtmlMsg(getExceptionEmailBody(req, exception));
-            exceptionMessage.setSubject("[" + hqEnvironment + "] Formplayer Exception: " + exception.getMessage());
-            exceptionMessage.send();
-        } catch(EmailException e){
-            // I think we should fail quietly on this
-            log.error("Couldn't send exception email: " + e);
-        }
-    }
-
-
-    private String getExceptionEmailBody(FormplayerHttpRequest req, Exception exception){
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        String formattedTime = dateFormat.format(new Date());
-        String[] stackTrace = ExceptionUtils.getStackTrace(exception).split("\n");
-        String stackTraceHTML = StringUtils.replace(
-            StringUtils.join(stackTrace, "<br />"), "\t", "&nbsp;&nbsp;&nbsp;"
-        );
-        String username = "Unknown";
-        if (req.getCouchUser() != null) {
-            username = req.getCouchUser().getUsername();
-        }
-        String params = "No data found";
-        try {
-            params = RequestUtils.getBody(req);
-        } catch (IOException e) {}
-        return "<h3>Message</h3>" +
-                "<p>" + exception.getMessage() + "</p>" +
-                "<h3>Domain</h3>" +
-                "<p>" + req.getDomain() + "</p>" +
-                "<h3>Username</h3>" +
-                "<p>" + username + "</p>" +
-                "<h3>Request URI</h3>" +
-                "<p>" + req.getRequestURI() + "</p>" +
-                "<h3>Post Data</h3>" +
-                "<p>" + params + "</p>" +
-                "<h3>Host</h3>" +
-                "<p>" + hqHost + "</p>" +
-                "<h3>Time</h3>" +
-                "<p>" + formattedTime + "</p>" +
-                "<h3>Trace</h3>" +
-                "<p>" + stackTraceHTML + "</p>";
     }
 }
