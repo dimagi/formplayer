@@ -118,7 +118,8 @@ public class MenuController extends AbstractBaseController {
                     null,
                     sessionNavigationBean.getQueryDictionary(),
                     sessionNavigationBean.getOffset(),
-                    sessionNavigationBean.getSearchText()
+                    sessionNavigationBean.getSearchText(),
+                    sessionNavigationBean.getSortIndex()
             );
 
             // See if we have a persistent case tile to expand
@@ -141,7 +142,8 @@ public class MenuController extends AbstractBaseController {
                 detailSelection,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText()
+                sessionNavigationBean.getSearchText(),
+                sessionNavigationBean.getSortIndex()
         );
         Screen currentScreen = menuSession.getNextScreen();
 
@@ -195,7 +197,8 @@ public class MenuController extends AbstractBaseController {
                 null,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
-                sessionNavigationBean.getSearchText()
+                sessionNavigationBean.getSearchText(),
+                sessionNavigationBean.getSortIndex()
         );
         // Don't update the menu session if we're using it already for navigation
         if (sessionNavigationBean.getMenuSessionId() == null || "".equals(sessionNavigationBean.getMenuSessionId())) {
@@ -249,14 +252,16 @@ public class MenuController extends AbstractBaseController {
                                                           String detailSelection,
                                                           Hashtable<String, String> queryDictionary,
                                                           int offset,
-                                                          String searchText) throws Exception {
+                                                          String searchText,
+                                                          int sortIndex) throws Exception {
         BaseResponseBean nextMenu;
         // If we have no selections, we're are the root screen.
         if (selections == null) {
             nextMenu = getNextMenu(
                     menuSession,
                     offset,
-                    searchText
+                    searchText,
+                    sortIndex
             );
             return nextMenu;
         }
@@ -299,7 +304,8 @@ public class MenuController extends AbstractBaseController {
                 menuSession,
                 detailSelection,
                 offset,
-                searchText
+                searchText,
+                sortIndex
         );
         if (nextMenu != null) {
             nextMenu.setNotification(notificationMessage);
