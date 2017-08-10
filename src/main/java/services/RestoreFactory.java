@@ -20,22 +20,19 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.sqlite.SQLiteConnection;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
-import util.ApplicationUtils;
+import sqlitedb.SQLiteDB;
+import sqlitedb.UserDB;
 import util.FormplayerRaven;
-import util.PropertyUtils;
 import util.UserUtils;
 
 import javax.annotation.Resource;
-import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -43,7 +40,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  * then retrieves and returns the restore XML.
  */
 @Component
-public class RestoreFactory implements ConnectionHandler{
+public class RestoreFactory {
     @Value("${commcarehq.host}")
     private String host;
 
@@ -84,7 +80,7 @@ public class RestoreFactory implements ConnectionHandler{
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private Connection connection;
+    private SQLiteDB sqLiteDB = new SQLiteDB(null);
     private boolean useLiveQuery;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
@@ -93,59 +89,18 @@ public class RestoreFactory implements ConnectionHandler{
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
+        sqLiteDB = new UserDB(domain, username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
 
     public UserSqlSandbox getSqlSandbox() {
-        return new UserSqlSandbox(this);
-    }
-
-    public String getUsernameDetail() {
-        if (asUsername != null) {
-            return username + "_" + asUsername;
-        }
-        return username;
-    }
-
-    @Override
-    public Connection getConnection() {
-        try {
-            if (connection == null || connection.isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), getDbPath());
-                connection = dataSource.getConnection();
-            } else {
-                if (connection instanceof SQLiteConnection) {
-                    SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
-                    if (!sqLiteConnection.url().contains(getDbPath())) {
-                        log.error(String.format("Had connection with path %s in StorageFactory %s",
-                                sqLiteConnection.url(),
-                                toString()));
-                        DataSource dataSource = SqlSandboxUtils.getDataSource(ApplicationUtils.getUserDBName(), getDbPath());
-                        connection = dataSource.getConnection();
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return connection;
-    }
-
-    public void closeConnection() {
-        try {
-            if(connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        connection = null;
+        return new UserSqlSandbox(this.sqLiteDB);
     }
 
     public void setAutoCommit(boolean autoCommit) {
         try {
-            getConnection().setAutoCommit(autoCommit);
+            sqLiteDB.getConnection().setAutoCommit(autoCommit);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -153,17 +108,14 @@ public class RestoreFactory implements ConnectionHandler{
 
     public void commit() {
         try {
-            getConnection().commit();
+            sqLiteDB.getConnection().commit();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-    public String getDbFile() {
-        return ApplicationUtils.getUserDBFile(domain, username, asUsername);
-    }
 
-    private String getDbPath() {
-        return ApplicationUtils.getUserDBPath(domain, username, asUsername);
+    public SQLiteDB getSQLiteDB() {
+        return sqLiteDB;
     }
 
     public String getWrappedUsername() {
@@ -338,7 +290,8 @@ public class RestoreFactory implements ConnectionHandler{
         return stream;
     }
 
-    private String getSyncToken(String username) {
+    public String getSyncToken() {
+        String username = getWrappedUsername();
 
         if (username == null) {
             return null;
@@ -370,7 +323,7 @@ public class RestoreFactory implements ConnectionHandler{
         builder.append("/a/");
         builder.append(domain);
         builder.append("/phone/restore/?version=2.0");
-        String syncToken = getSyncToken(getWrappedUsername());
+        String syncToken = getSyncToken();
         if (syncToken != null && !"".equals(syncToken)) {
             builder.append("&since=").append(syncToken);
         }
