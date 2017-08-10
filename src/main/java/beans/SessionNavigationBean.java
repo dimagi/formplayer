@@ -19,7 +19,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     private Hashtable<String, String> queryDictionary;
     private String previewCommand;
     private boolean isPersistent;
-    private int sortIndex;
 
     public String[] getSelections() {
         return selections;
@@ -84,13 +83,5 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     public void setIsPersistent(boolean persistent) {
         isPersistent = persistent;
-    }
-
-    public int getSortIndex() {
-        return sortIndex;
-    }
-
-    public void setSortIndex(int sortIndex) {
-        this.sortIndex = sortIndex;
     }
 }

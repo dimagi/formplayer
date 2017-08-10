@@ -118,7 +118,7 @@ public abstract class AbstractBaseController {
     }
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, 0, "", -1);
+        return getNextMenu(menuSession, 0, "");
     }
 
     protected HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
@@ -134,22 +134,20 @@ public abstract class AbstractBaseController {
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
                                            int offset,
-                                           String searchText,
-                                           int sortIndex) throws Exception {
+                                           String searchText) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
         // If the nextScreen is null, that means we are heading into
         // form entry and there isn't a screen title
         if (nextScreen == null) {
-            return getNextMenu(menuSession, null, offset, searchText, sortIndex);
+            return getNextMenu(menuSession, null, offset, searchText);
         }
-        return getNextMenu(menuSession, null, offset, searchText, sortIndex);
+        return getNextMenu(menuSession, null, offset, searchText);
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
                                            String detailSelection,
                                            int offset,
-                                           String searchText,
-                                           int sortIndex) throws Exception {
+                                           String searchText) throws Exception {
         Screen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
@@ -179,8 +177,7 @@ public abstract class AbstractBaseController {
                         detailSelection,
                         offset,
                         searchText,
-                        menuSession.getId(),
-                        sortIndex
+                        menuSession.getId()
                 );
             } else if(nextScreen instanceof FormplayerQueryScreen){
                     menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
@@ -288,8 +285,8 @@ public abstract class AbstractBaseController {
     }
 
     private EntityListResponse generateEntityScreen(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
-                                                    String menuSessionId, int sortIndex) {
-        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSessionId, sortIndex);
+                                                    String menuSessionId) {
+        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSessionId);
     }
 
     private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
