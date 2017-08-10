@@ -12,6 +12,9 @@ public class HqUserDetailsBean {
     private String username;
     private String authToken;
 
+    public HqUserDetailsBean() {
+    }
+
     public HqUserDetailsBean(String[] domains, String username, boolean isSuperuser) {
         this.domains = domains;
         this.username = username;

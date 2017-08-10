@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import javax.crypto.spec.SecretKeySpec;
 @Service
 public class HqUserDetailsServiceImpl implements HqUserDetailsService {
     private final Log log = LogFactory.getLog(HqUserDetailsServiceImpl.class);
+    private final RestTemplate restTemplate;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -31,14 +33,22 @@ public class HqUserDetailsServiceImpl implements HqUserDetailsService {
     private String formplayerAuthKey;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private ObjectMapper objectMapper;
+
+    public HqUserDetailsServiceImpl(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public HqUserDetailsServiceImpl(RestTemplateBuilder builder) {
+        restTemplate = builder.build();
+    }
 
     @Override
     public HqUserDetailsBean getUserDetails(String sessionKey) {
         HttpHeaders headers = new HttpHeaders();
         String data = null;
         try {
-            data = getPostData(sessionKey);
+            data = objectMapper.writeValueAsString(new HqSessionKeyBean(sessionKey));
             headers.set("X_MAC_DIGEST", getHmac(data));
         } catch (Exception e) {
             throw new UserDetailsException(e);
@@ -58,10 +68,5 @@ public class HqUserDetailsServiceImpl implements HqUserDetailsService {
         SecretKeySpec secret_key = new SecretKeySpec(formplayerAuthKey.getBytes("UTF-8"), "HmacSHA256");
         sha256_HMAC.init(secret_key);
         return Base64.encodeBase64String(sha256_HMAC.doFinal(data.getBytes("UTF-8")));
-    }
-
-    private String getPostData(String sessionKey) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(new HqSessionKeyBean(sessionKey));
     }
 }
