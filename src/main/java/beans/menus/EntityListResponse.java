@@ -48,12 +48,7 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse() {}
 
-    public EntityListResponse(EntityScreen nextScreen,
-                              String detailSelection,
-                              int offset,
-                              String searchText,
-                              String id,
-                              int sortIndex) {
+    public EntityListResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText, String id) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EvaluationContext ec = nextScreen.getEvalContext();
@@ -66,7 +61,7 @@ public class EntityListResponse extends MenuBean {
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
             Vector<TreeReference> references = ec.expandReference(neededDatum.getNodeset());
-            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex);
+            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum);
             if (entityList.size() > CASE_LENGTH_LIMIT && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
                 setCurrentPage(offset / CASE_LENGTH_LIMIT);
@@ -76,6 +71,7 @@ public class EntityListResponse extends MenuBean {
             entities = new EntityBean[entityList.size()];
             entityList.toArray(entities);
         }
+
 
         processTitle(session);
         processCaseTiles(detail);
@@ -118,11 +114,9 @@ public class EntityListResponse extends MenuBean {
     }
 
     public static List<EntityBean> processEntitiesForCaseList(Detail detail, Vector<TreeReference> references,
-                                                              EvaluationContext ec,
-                                                              String searchText,
-                                                              EntityDatum neededDatum,
-                                                              int sortIndex) {
-        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText, sortIndex);
+                                                               EvaluationContext ec,
+                                                               String searchText, EntityDatum neededDatum) {
+        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText);
         List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
             TreeReference treeReference = entity.getElement();
@@ -161,8 +155,7 @@ public class EntityListResponse extends MenuBean {
     private static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
                                                                EvaluationContext context,
                                                                Vector<TreeReference> references,
-                                                               String searchText,
-                                                               int sortIndex) {
+                                                               String searchText) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
         nodeEntityFactory.prepareEntities();
         List<Entity<TreeReference>> full = new ArrayList<>();
@@ -171,56 +164,20 @@ public class EntityListResponse extends MenuBean {
         }
 
         List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
-        sort(matched, shortDetail, sortIndex);
+        sort(matched, shortDetail);
         return matched;
     }
 
-    private static void sort(List<Entity<TreeReference>> entityList,
-                             Detail shortDetail,
-                             int sortIndex) {
-        int[] order;
-        if (sortIndex != -1) {
-            order = new int[]{sortIndex};
-        } else {
-            order = shortDetail.getOrderedFieldIndicesForSorting();
-            for (int i = 0; i < shortDetail.getFields().length; ++i) {
-                String header = shortDetail.getFields()[i].getHeader().evaluate();
-                if (order.length == 0 && !"".equals(header)) {
-                    order = new int[]{i};
-                }
+    private static void sort(List<Entity<TreeReference>> entityList, Detail shortDetail) {
+        int[] order = shortDetail.getOrderedFieldIndicesForSorting();
+        for (int i = 0; i < shortDetail.getFields().length; ++i) {
+            String header = shortDetail.getFields()[i].getHeader().evaluate();
+            if (order.length == 0 && !"".equals(header)) {
+                order = new int[]{i};
             }
         }
         java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), false, order, new LogNotifier()));
     }
-
-    private static int[] getSortOptionsList(DetailField[] fields, int[] sorts) {
-        List<String> namesList = new ArrayList<>();
-        final int[] keyArray = new int[fields.length];
-        int currentSort = sorts.length == 1 ? sorts[0] : -1;
-        boolean reversed = false; //adapter.isCurrentSortReversed();
-
-        int added = 0;
-        for (int i = 0; i < fields.length; ++i) {
-            String result = fields[i].getHeader().evaluate();
-            if (!"".equals(result)) {
-                String prepend = "";
-                if (currentSort == -1) {
-                    for (int j = 0; j < sorts.length; ++j) {
-                        if (sorts[j] == i) {
-                            prepend = (j + 1) + " " + (fields[i].getSortDirection() == DetailField.DIRECTION_DESCENDING ? "(v) " : "(^) ");
-                        }
-                    }
-                } else if (currentSort == i) {
-                    prepend = reversed ^ fields[i].getSortDirection() == DetailField.DIRECTION_DESCENDING ? "(v) " : "(^) ";
-                }
-                namesList.add(prepend + result);
-                keyArray[added] = i;
-                added++;
-            }
-        }
-        return keyArray;
-    }
-
 
     static class LogNotifier implements EntitySortNotificationInterface {
         @Override
