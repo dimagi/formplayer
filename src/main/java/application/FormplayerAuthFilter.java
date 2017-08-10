@@ -48,8 +48,8 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 setResponseUnauthorized(response, "Invalid session id");
                 return;
             }
-            setUserDetails(request);
             setDomain(request);
+            setUserDetails(request);
             JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
                 setResponseUnauthorized(response, "Invalid user");
@@ -69,7 +69,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     }
 
     private void setUserDetails(FormplayerHttpRequest request) {
-        request.setUserDetails(userDetailsService.getUserDetails(getSessionId(request)));
+        request.setUserDetails(userDetailsService.getUserDetails(request.getDomain(), getSessionId(request)));
 
     }
 

@@ -2,7 +2,6 @@ package services.impl;
 
 import beans.auth.HqSessionKeyBean;
 import beans.auth.HqUserDetailsBean;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import exceptions.UserDetailsException;
 import org.apache.commons.codec.binary.Base64;
@@ -44,18 +43,17 @@ public class HqUserDetailsServiceImpl implements HqUserDetailsService {
     }
 
     @Override
-    public HqUserDetailsBean getUserDetails(String sessionKey) {
+    public HqUserDetailsBean getUserDetails(String domain, String sessionKey) {
         HttpHeaders headers = new HttpHeaders();
         String data = null;
         try {
-            data = objectMapper.writeValueAsString(new HqSessionKeyBean(sessionKey));
+            data = objectMapper.writeValueAsString(new HqSessionKeyBean(domain, sessionKey));
             headers.set("X-MAC-DIGEST", getHmac(data));
         } catch (Exception e) {
             throw new UserDetailsException(e);
         }
         HttpEntity<String> request = new HttpEntity<>(data, headers);
         HqUserDetailsBean userDetails = restTemplate.postForObject(getSessionDetailsUrl(), request, HqUserDetailsBean.class);
-        log.info(userDetails.toString());
         return userDetails;
     }
 
