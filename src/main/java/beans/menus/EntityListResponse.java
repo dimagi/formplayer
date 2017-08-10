@@ -179,14 +179,8 @@ public class EntityListResponse extends MenuBean {
                              Detail shortDetail,
                              int sortIndex) {
         int[] order;
-        boolean reverse = false;
-        if (sortIndex != 0) {
-            if (sortIndex < 0) {
-                reverse = true;
-                sortIndex = Math.abs(sortIndex);
-            }
-            // sort index is one indexed so adjust for that
-            order = new int[]{sortIndex - 1};
+        if (sortIndex != -1) {
+            order = new int[]{sortIndex};
         } else {
             order = shortDetail.getOrderedFieldIndicesForSorting();
             for (int i = 0; i < shortDetail.getFields().length; ++i) {
@@ -196,7 +190,7 @@ public class EntityListResponse extends MenuBean {
                 }
             }
         }
-        java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), reverse, order, new LogNotifier()));
+        java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), false, order, new LogNotifier()));
     }
 
     private static int[] getSortOptionsList(DetailField[] fields, int[] sorts) {
