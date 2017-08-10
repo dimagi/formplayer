@@ -1,9 +1,6 @@
 package util;
 
 import beans.auth.HqUserDetailsBean;
-import hq.interfaces.CouchUser;
-import hq.models.PostgresUser;
-import hq.models.SessionToken;
 
 import javax.servlet.http.HttpServletRequest;
 

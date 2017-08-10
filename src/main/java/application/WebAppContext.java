@@ -9,8 +9,6 @@ import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.HtmlEmail;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.lightcouch.CouchDbClient;
@@ -35,7 +33,6 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
-import repo.TokenRepo;
 import repo.impl.*;
 import services.*;
 import services.impl.*;
@@ -248,16 +245,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public PostgresUserRepo postgresUserRepo(){
         return new PostgresUserRepo();
-    }
-
-    @Bean
-    public CouchUserRepo couchUserRepo(){
-        return new CouchUserRepo();
-    }
-
-    @Bean
-    public TokenRepo tokenRepo(){
-        return new PostgresTokenRepo();
     }
 
     @Bean
