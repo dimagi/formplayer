@@ -31,6 +31,7 @@ public class EntityDetailResponse {
     private int numEntitiesPerRow;
     private Tile[] tiles;
     private boolean useUniformUnits;
+    private boolean hasInlineTile;
 
     public EntityDetailResponse() {
     }
@@ -198,5 +199,13 @@ public class EntityDetailResponse {
 
     public void setEntities(EntityBean[] entities) {
         this.entities = entities;
+    }
+
+    public boolean isHasInlineTile() {
+        return hasInlineTile;
+    }
+
+    public void setHasInlineTile(boolean hasInlineTile) {
+        this.hasInlineTile = hasInlineTile;
     }
 }

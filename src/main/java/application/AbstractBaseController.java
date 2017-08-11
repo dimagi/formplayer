@@ -193,33 +193,9 @@ public abstract class AbstractBaseController {
         }
     }
 
-    protected EntityDetailResponse getPersistentDetail(MenuSession menuSession) {
-        Pair<TreeReference, Detail> pair = getDetail(menuSession, false);
-        if (pair == null) {
-            return null;
-        }
-        EvaluationContext ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), pair.first);
-        return new EntityDetailResponse(pair.second, ec);
-    }
-
-    protected EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
-        Pair<TreeReference, Detail> pair = getDetail(menuSession, true);
-        if (pair == null) {
-            return null;
-        }
-        EvaluationContext ec = menuSession.getSessionWrapper().getEvaluationContext();
-        return new EntityDetailListResponse(pair.second.getDetails(),
-                ec,
-                pair.first);
-    }
-
-    protected Pair<TreeReference, Detail> getDetail(MenuSession menuSession, boolean inline) {
-
-        SessionWrapper session = menuSession.getSessionWrapper();
-
+    protected StackFrameStep getStepToFrame(SessionWrapper session) {
         StackFrameStep stepToFrame = null;
         Vector<StackFrameStep> v = session.getFrame().getSteps();
-
         //So we need to work our way backwards through each "step" we've taken, since our RelativeLayout
         //displays the Z-Order b insertion (so items added later are always "on top" of items added earlier
         for (int i = v.size() - 1; i >= 0; i--) {
@@ -233,17 +209,41 @@ public abstract class AbstractBaseController {
                 }
             }
         }
+        return stepToFrame;
+    }
 
+    protected TreeReference getReference(SessionWrapper session, EntityDatum entityDatum) {
+        EvaluationContext ec = session.getEvaluationContext();
+        StackFrameStep stepToFrame = getStepToFrame(session);
+        return entityDatum.getEntityFromID(ec, stepToFrame.getValue());
+    }
+
+    protected EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
+        return getDetail(menuSession, true);
+    }
+
+    protected EntityDetailResponse getPersistentDetail(MenuSession menuSession) {
+        EntityDetailListResponse detailListResponse = getDetail(menuSession, false);
+        if (detailListResponse == null) {
+            return null;
+        }
+        EntityDetailResponse[] detailList = detailListResponse.getEntityDetailList();
+        if (detailList == null) {
+            return null;
+        }
+        return detailList[0];
+    }
+
+    protected EntityDetailListResponse getDetail(MenuSession menuSession, boolean inline) {
+        SessionWrapper session = menuSession.getSessionWrapper();
+        StackFrameStep stepToFrame = getStepToFrame(session);
         if (stepToFrame == null) {
             return null;
         }
-
         EntityDatum entityDatum = session.findDatumDefinition(stepToFrame.getId());
-
         if (entityDatum == null) {
             return null;
         }
-
         String detailId;
         if (inline) {
             detailId = entityDatum.getInlineDetail();
@@ -253,17 +253,21 @@ public abstract class AbstractBaseController {
         if (detailId == null) {
             return null;
         }
-
         Detail persistentDetail = session.getDetail(detailId);
+        TreeReference reference = getReference(session, entityDatum);
 
-        EvaluationContext ec = session.getEvaluationContext();
-
-        TreeReference ref = entityDatum.getEntityFromID(ec, stepToFrame.getValue());
-        if (ref == null) {
-            return null;
+        EvaluationContext ec;
+        if (inline) {
+            ec = session.getEvaluationContext();
+            return new EntityDetailListResponse(persistentDetail.getDetails(),
+                    ec,
+                    reference);
+        } else {
+            ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), reference);
+            EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
+            detailResponse.setHasInlineTile(entityDatum.getInlineDetail() == null);
+            return new EntityDetailListResponse(detailResponse);
         }
-
-        return new Pair(ref, persistentDetail);
 
     }
 
