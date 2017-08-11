@@ -1,6 +1,5 @@
 package tests;
 
-import application.SQLiteProperties;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
 import org.commcare.cases.model.Case;
@@ -14,13 +13,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
-import tests.sandbox.TestConnectionHandler;
+import sqlitedb.UserDB;
 import utils.FileUtils;
 import utils.TestContext;
 
 import java.util.Hashtable;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -44,7 +44,7 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testQueryScreen() throws Exception {
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(SQLiteProperties.getDataDir() + "caseclaimdomain/caseclaimusername"));
+        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("caseclaimdomain", "caseclaimusername", null));
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
 
         configureQueryMock();
@@ -76,7 +76,7 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testAlreadyOwnCase() throws Exception {
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(SQLiteProperties.getDataDir() + "caseclaimdomain/caseclaimusername"));
+        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("caseclaimdomain", "caseclaimusername", null));
         SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
         Hashtable<String, String> queryDictionary = new Hashtable<>();
         queryDictionary.put("name", "Burt");

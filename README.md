@@ -20,15 +20,19 @@ Download submodule dependencies
 
 To make properties file:
 
-    $ cp config/application.properties.example config/application.properties // Update properties as necessary
+    $ cp config/application.example.properties config/application.properties // Update properties as necessary
 
 Make sure you have the formplayer database created
 
     $ createdb formplayer -U commcarehq -h localhost  // Update connection info as necessary
 
-To run:
+To run (with tests):
 
-    $ ./gradlew build; java -jar build/libs/formplayer.jar
+    $ ./gradlew build && java -jar build/libs/formplayer.jar
+
+To run without tests:
+
+    $ ./gradlew build -x test && java -jar build/libs/formplayer.jar
 
 To test:
 
