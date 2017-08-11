@@ -9,12 +9,11 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import sandbox.JdbcSqlStorageIterator;
 import sandbox.SqlSandboxUtils;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
+import sqlitedb.UserDB;
 
-import javax.sql.DataSource;
 import java.util.Vector;
 
 import static junit.framework.Assert.fail;
@@ -87,7 +86,7 @@ public class SqlStorageIndexedTests {
         String storageKey = "TFCase";
         String username = "sql-storage-test";
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(UserSqlSandbox.DEFAULT_DATBASE_PATH));
+        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
         caseStorage = new SqliteIndexedStorageUtility<>(sandbox, Case.class, storageKey);
 
         caseStorage.write(a);
@@ -139,7 +138,7 @@ public class SqlStorageIndexedTests {
             String storageKey = "Ledger";
             String username = "wspride";
 
-            UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(UserSqlSandbox.DEFAULT_DATBASE_PATH));
+            UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
             ledgerStorage = new SqliteIndexedStorageUtility<>(sandbox, Ledger.class, storageKey);
 
             ledgerStorage.write(l);

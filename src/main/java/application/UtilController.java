@@ -13,7 +13,7 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import sandbox.SqlSandboxUtils;
+import sqlitedb.UserDB;
 import util.Constants;
 
 import java.io.StringReader;
@@ -48,11 +48,33 @@ public class UtilController extends AbstractBaseController {
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
-        boolean success = deleteRequest.clear();
+        boolean success = true;
+        try {
+            deleteRequest.clear();
+        } catch (Exception e) {
+            e.printStackTrace();
+            success = false;
+        }
+
         if (!success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
         return new NotificationMessage(message, !success);
+    }
+
+    @ApiOperation(value = "Clear the user's data")
+    @RequestMapping(value = Constants.URL_CLEAR_USER_DATA, method = RequestMethod.POST)
+    @UserLock
+    public NotificationMessage clearUserData(
+            @RequestBody AuthenticatedRequestBean requestBean) {
+
+        String message = "Successfully cleared the user data for  " + requestBean.getUsername();
+        new UserDB(
+                requestBean.getDomain(),
+                requestBean.getUsername(),
+                requestBean.getRestoreAs()
+        ).deleteDatabaseFolder();
+        return new NotificationMessage(message, true);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")

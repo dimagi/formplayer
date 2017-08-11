@@ -150,8 +150,8 @@ public class BaseTestClass {
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
-        storageFactoryMock.closeConnection();
-        restoreFactoryMock.closeConnection();
+        storageFactoryMock.getSQLiteDB().closeConnection();
+        restoreFactoryMock.getSQLiteDB().closeConnection();
         PrototypeUtils.setupPrototypes();
         new SQLiteProperties().setDataDir("testdbs/");
     }

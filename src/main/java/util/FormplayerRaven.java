@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import services.RestoreFactory;
 
 import java.net.URISyntaxException;
 
@@ -25,6 +26,8 @@ public class FormplayerRaven {
     private final String DOMAIN_TAG = "domain";
     private final String APP_URL_EXTRA = "app_url";
     private final String APP_DOWNLOAD_URL_EXTRA = "app_download";
+    private final String USER_SYNC_TOKEN = "sync_token";
+    private final String USER_SANDBOX_PATH = "sandbox_path";
 
     private Raven raven;
 
@@ -36,6 +39,9 @@ public class FormplayerRaven {
 
     @Value("${commcarehq.host}")
     private String host;
+
+    @Autowired
+    private RestoreFactory restoreFactory;
 
     public FormplayerRaven(Raven raven) {
         this.raven = raven;
@@ -98,6 +104,8 @@ public class FormplayerRaven {
                 .withTag(DOMAIN_TAG, domain)
                 .withExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL())
                 .withExtra(APP_URL_EXTRA, getAppURL())
+                .withExtra(USER_SYNC_TOKEN, restoreFactory == null ? "unknown" : restoreFactory.getSyncToken())
+                .withExtra(USER_SANDBOX_PATH, restoreFactory == null ? "unknown" : restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes())
         );
     }
 
