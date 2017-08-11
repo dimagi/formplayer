@@ -276,6 +276,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         return iterate(true);
     }
 
+    @Override
     public AbstractSqlIterator<T> iterate(boolean includeData) {
         Connection connection;
         ResultSet resultSet = null;
