@@ -259,13 +259,13 @@ public abstract class AbstractBaseController {
         EvaluationContext ec;
         if (inline) {
             ec = session.getEvaluationContext();
-            return new EntityDetailListResponse(persistentDetail.getDetails(),
+            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(),
                     ec,
                     reference);
         } else {
             ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), reference);
             EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
-            detailResponse.setHasInlineTile(entityDatum.getInlineDetail() == null);
+            detailResponse.setHasInlineTile(entityDatum.getInlineDetail() != null);
             return new EntityDetailListResponse(detailResponse);
         }
 
