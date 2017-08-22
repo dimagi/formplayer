@@ -118,7 +118,7 @@ public abstract class AbstractBaseController {
     }
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, 0, "", -1);
+        return getNextMenu(menuSession, 0, "", 0);
     }
 
     protected HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
