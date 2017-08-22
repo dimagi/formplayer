@@ -8,6 +8,7 @@ import services.ConnectionHandler;
 
 import javax.sql.DataSource;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -21,6 +22,11 @@ public class SQLiteDB implements ConnectionHandler {
     }
 
     private Connection getNewConnection() throws SQLException {
+        try {
+            SqlSandboxUtils.unarchiveIfArchived(dbPath.getDatabaseName(), dbPath.getDatabasePath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         DataSource dataSource = SqlSandboxUtils.getDataSource(dbPath.getDatabaseName(), dbPath.getDatabasePath());
         return dataSource.getConnection();
     }
