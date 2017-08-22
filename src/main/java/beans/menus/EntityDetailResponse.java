@@ -54,7 +54,7 @@ public class EntityDetailResponse {
                                 Vector<TreeReference> references,
                                 EvaluationContext ec,
                                 String title) {
-        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, null, -1);
+        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, null, 0);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);
         this.title = title;
