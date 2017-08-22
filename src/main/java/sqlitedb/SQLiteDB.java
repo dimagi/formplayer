@@ -79,7 +79,7 @@ public class SQLiteDB implements ConnectionHandler {
     }
 
     public boolean databaseFileExists() {
-        return new File(dbPath.getDatabaseFile()).exists();
+        return new File(dbPath.getDatabaseFile()).exists() || new File(dbPath.getDatabaseFile() + ".gz").exists();
     }
 
     public boolean databaseFolderExists() {
