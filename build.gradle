@@ -79,8 +79,6 @@ dependencies {
     compile project(path: ':commcare', configuration: 'translate')
     testCompile project(path: ':commcare', configuration: 'api')
     testCompile("org.springframework.boot:spring-boot-starter-test:1.4.3.RELEASE")
-    testCompile('org.springframework:spring-test:4.2.4.RELEASE')
-    testCompile("org.springframework:spring-mock:2.0.8")
     testCompile("com.jayway.jsonpath:json-path:2.2.0")
     testCompile("com.jayway.jsonpath:json-path-assert:2.2.0")
     testCompile 'com.carrotsearch:hppc:0.7.2'
