@@ -2,8 +2,6 @@ package tests;
 
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityDetailListResponse;
-import beans.menus.EntityListResponse;
-import beans.menus.Tile;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -44,6 +42,6 @@ public class InlineCaseTilesTest extends BaseTestClass{
                 sessionNavigate(new String[] {"1", "1d59d16b-c52c-49d6-889e-801736962281"},
                         "inlinecasetiles",
                         CommandListResponseBean.class);
-        assert response.getPersistentCaseTile().isHasInlineTile() == false;
+        assert response.getPersistentCaseTile().hasInlineTile() == false;
     }
 }
