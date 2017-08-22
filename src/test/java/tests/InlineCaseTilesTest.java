@@ -29,11 +29,21 @@ public class InlineCaseTilesTest extends BaseTestClass{
     }
 
     @Test
-    public void testCaseTiles() throws Exception {
+    public void testHasInline() throws Exception {
         EntityDetailListResponse response =
-                getDetailsInline(new String[] {"1", "1d59d16b-c52c-49d6-889e-801736962281"},
+                getDetailsInline(new String[] {"3", "1d59d16b-c52c-49d6-889e-801736962281"},
                         "inlinecasetiles",
                         EntityDetailListResponse.class);
-        assert response.getEntityDetailList().length == 2;
+        assert response.getEntityDetailList().length == 1;
+        assert response.getEntityDetailList()[0].getDetails().length == 2;
+    }
+
+    @Test
+    public void testNoInline() throws Exception {
+        CommandListResponseBean response =
+                sessionNavigate(new String[] {"1", "1d59d16b-c52c-49d6-889e-801736962281"},
+                        "inlinecasetiles",
+                        CommandListResponseBean.class);
+        assert response.getPersistentCaseTile().isHasInlineTile() == false;
     }
 }
