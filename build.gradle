@@ -110,3 +110,10 @@ task copyTestResources(type: Copy) {
     into "${buildDir}/classes/test"
 }
 test.dependsOn copyTestResources
+
+task copyScripts(type: Copy) {
+    from "${projectDir}/scripts/archive_dbs.sh"
+    into "${buildDir}/scripts/archive_dbs.sh"
+}
+
+assemble.dependsOn copyScripts
