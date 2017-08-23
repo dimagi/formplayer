@@ -44,7 +44,8 @@
 
 trunk: master
 name: autostaging
-branches: []
+branches:
+  - gzip-archiving
 submodules:
   libs/commcare:
     branches: []
