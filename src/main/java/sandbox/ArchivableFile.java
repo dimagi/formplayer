@@ -12,12 +12,20 @@ public class ArchivableFile extends File {
         super(pathname);
     }
 
-    @Override
-    public boolean exists() {
-        return super.exists() || new File(getPath() + ".gz").exists();
+    private File getGzipFile() {
+        return new File(getPath() + ".gz");
     }
 
-    private static void decompressGzipFile(String gzipFile, String newFile) throws IOException {
+    private File getLockFile() {
+        return new File(getPath() + ".lock");
+    }
+
+    @Override
+    public boolean exists() {
+        return super.exists() || getGzipFile().exists();
+    }
+
+    private static void decompressGzipFile(File gzipFile, File newFile) throws IOException {
         // copied and modified from http://www.journaldev.com/966/java-gzip-example-compress-decompress-file
         FileInputStream fis = new FileInputStream(gzipFile);
         GZIPInputStream gis = new GZIPInputStream(fis);
@@ -33,21 +41,22 @@ public class ArchivableFile extends File {
         gis.close();
     }
 
-    public void unarchiveIfArchived() throws IOException {
-        String dbPath = getPath();
-        String dbLockPath = getPath() + ".lock";
-        String dbGzipPath = getPath() + ".gz";
-        File databaseFile = new File(dbPath);
-        File databaseLockFile = new File(dbLockPath);
-        File databaseGzipFile = new File(dbGzipPath);
-
-        while (databaseLockFile.exists()) {
+    private void waitOnLock() {
+        while (getLockFile().exists()) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    public void unarchiveIfArchived() throws IOException {
+        File databaseFile = new File(getPath());
+        File databaseLockFile = getLockFile();
+        File databaseGzipFile = getGzipFile();
+
+        waitOnLock();
 
         if (!databaseFile.exists() && databaseGzipFile.exists()) {
             try {
@@ -55,7 +64,7 @@ public class ArchivableFile extends File {
                 if (!lockCreated) {
                     throw new IOException("Could not create lock file");
                 }
-                decompressGzipFile(dbGzipPath, dbPath);
+                decompressGzipFile(databaseGzipFile, databaseFile);
                 boolean gzipDeleted = databaseGzipFile.delete();
                 if (!gzipDeleted) {
                     throw new IOException("Could not delete gzipFile");
