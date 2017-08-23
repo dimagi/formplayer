@@ -3,6 +3,7 @@ package sqlitedb;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sqlite.SQLiteConnection;
+import sandbox.ArchivableFile;
 import sandbox.SqlSandboxUtils;
 import services.ConnectionHandler;
 
@@ -14,20 +15,29 @@ import java.sql.SQLException;
 
 public class SQLiteDB implements ConnectionHandler {
     private DBPath dbPath;
+    private ArchivableFile dbArchivableFile;
     private final Log log = LogFactory.getLog(SQLiteDB.class);
     private Connection connection;
 
     public SQLiteDB(DBPath dbPath) {
         this.dbPath = dbPath;
+        /*
+           FormplayerStorageFactory and RestoreFactory are instantiated with sqLiteDB = SQLLiteDB(null)
+           and sqLiteDB is only set to a real value during .configure;
+           this doesn't make a lot of sense to me, but appears to be required for tests.
+        */
+        if (dbPath != null) {
+            dbArchivableFile = new ArchivableFile(dbPath.getDatabaseFile());
+        }
     }
 
     private Connection getNewConnection() throws SQLException {
         try {
-            SqlSandboxUtils.unarchiveIfArchived(dbPath.getDatabaseName(), dbPath.getDatabasePath());
+            dbArchivableFile.unarchiveIfArchived();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        DataSource dataSource = SqlSandboxUtils.getDataSource(dbPath.getDatabaseName(), dbPath.getDatabasePath());
+        DataSource dataSource = SqlSandboxUtils.getDataSource(dbArchivableFile);
         return dataSource.getConnection();
     }
 
@@ -75,11 +85,11 @@ public class SQLiteDB implements ConnectionHandler {
     }
 
     public boolean createDatabaseFolder() {
-        return new File(dbPath.getDatabaseFile()).getParentFile().mkdirs();
+        return dbArchivableFile.getParentFile().mkdirs();
     }
 
     public boolean databaseFileExists() {
-        return new File(dbPath.getDatabaseFile()).exists() || new File(dbPath.getDatabaseFile() + ".gz").exists();
+        return dbArchivableFile.exists();
     }
 
     public boolean databaseFolderExists() {
