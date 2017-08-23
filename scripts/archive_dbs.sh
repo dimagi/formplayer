@@ -25,6 +25,12 @@ do
     lock="${line}.lock"
     gz="${line}.gz"
 
+    if [ -f ${lock} ]
+    then
+        echo >&2 "skipping due to ${lock}"
+        continue
+    fi
+
     touch ${lock}
     gzip ${db}
     rm ${lock}
