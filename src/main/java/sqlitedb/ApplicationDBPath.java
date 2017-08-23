@@ -2,7 +2,7 @@ package sqlitedb;
 
 import util.Constants;
 
-class ApplicationDBPath implements DBPath {
+class ApplicationDBPath extends DBPath {
 
     private String domain;
     private String username;
@@ -24,10 +24,5 @@ class ApplicationDBPath implements DBPath {
     @Override
     public String getDatabaseName() {
         return "application_" + Constants.SQLITE_DB_VERSION;
-    }
-
-    @Override
-    public String getDatabaseFile() {
-        return getDatabasePath() + "/" + getDatabaseName() + ".db";
     }
 }
