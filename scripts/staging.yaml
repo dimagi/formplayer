@@ -48,4 +48,5 @@ branches:
   - gzip-archiving
 submodules:
   libs/commcare:
+    trunk: formplayer
     branches: []
