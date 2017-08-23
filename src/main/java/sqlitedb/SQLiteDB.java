@@ -8,7 +8,6 @@ import sandbox.SqlSandboxUtils;
 import services.ConnectionHandler;
 
 import javax.sql.DataSource;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -77,11 +76,11 @@ public class SQLiteDB implements ConnectionHandler {
     }
 
     public void deleteDatabaseFile() {
-        SqlSandboxUtils.deleteDatabaseFolder(dbPath.getDatabaseFile());
+        SqlSandboxUtils.deleteDatabaseFolder(dbArchivableFile);
     }
 
     public void deleteDatabaseFolder() {
-        SqlSandboxUtils.deleteDatabaseFolder(dbPath.getDatabasePath());
+        SqlSandboxUtils.deleteDatabaseFolder(dbArchivableFile.getParentFile());
     }
 
     public boolean createDatabaseFolder() {
@@ -93,7 +92,7 @@ public class SQLiteDB implements ConnectionHandler {
     }
 
     public boolean databaseFolderExists() {
-        return new File(dbPath.getDatabasePath()).exists();
+        return dbArchivableFile.getParentFile().exists();
     }
 
     public String getDatabaseFileForDebugPurposes() {

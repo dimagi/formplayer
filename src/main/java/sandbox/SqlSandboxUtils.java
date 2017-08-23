@@ -18,6 +18,10 @@ public class SqlSandboxUtils {
 
     public static void deleteDatabaseFolder(String path) {
         File databaseFolder = new File(path);
+        deleteDatabaseFolder(databaseFolder);
+    }
+
+    public static void deleteDatabaseFolder(File databaseFolder) {
         if (databaseFolder.exists()) {
             deleteFolder(databaseFolder);
         }
