@@ -25,6 +25,16 @@ public class ArchivableFile extends File {
         return super.exists() || getGzipFile().exists();
     }
 
+    @Override
+    public boolean delete() {
+        boolean gzipDeleted = false;
+        waitOnLock();
+        if (getGzipFile().exists()) {
+            gzipDeleted = getGzipFile().delete();
+        }
+        return super.delete() || gzipDeleted;
+    }
+
     private static void decompressGzipFile(File gzipFile, File newFile) throws IOException {
         // copied and modified from http://www.journaldev.com/966/java-gzip-example-compress-decompress-file
         FileInputStream fis = new FileInputStream(gzipFile);
