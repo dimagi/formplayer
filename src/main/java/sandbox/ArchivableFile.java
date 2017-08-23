@@ -36,7 +36,7 @@ public class ArchivableFile extends File {
     public void unarchiveIfArchived() throws IOException {
         String dbPath = getPath();
         String dbLockPath = getPath() + ".lock";
-        String dbGzipPath = getPath() + ".db.gz";
+        String dbGzipPath = getPath() + ".gz";
         File databaseFile = new File(dbPath);
         File databaseLockFile = new File(dbLockPath);
         File databaseGzipFile = new File(dbGzipPath);
