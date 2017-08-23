@@ -44,8 +44,7 @@
 
 trunk: master
 name: autostaging
-branches:
-  - gzip-archiving
+branches: []
 submodules:
   libs/commcare:
     trunk: formplayer
