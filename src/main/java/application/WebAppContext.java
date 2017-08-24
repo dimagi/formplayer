@@ -85,24 +85,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${redis.hostname}")
     private String redisHostName;
 
-    @Value("${couch.protocol}")
-    private String couchProtocol;
-
-    @Value("${couch.host}")
-    private String couchHost;
-
-    @Value("${couch.port}")
-    private int couchPort;
-
-    @Value("${couch.username}")
-    private String couchUsername;
-
-    @Value("${couch.password}")
-    private String couchPassword;
-
-    @Value("${couch.databaseName}")
-    private String couchDatabaseName;
-
     @Value("${sentry.dsn:}")
     private String ravenDsn;
 
@@ -207,19 +189,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         jedisConnectionFactory.setUsePool(true);
         jedisConnectionFactory.setHostName(redisHostName);
         return jedisConnectionFactory;
-    }
-
-    @Bean
-    public CouchDbClient userCouchDbClient() {
-        return new CouchDbClient(
-                couchDatabaseName + Constants.COUCH_USERS_DB,
-                false,
-                couchProtocol,
-                couchHost,
-                couchPort,
-                couchUsername,
-                couchPassword
-        );
     }
 
     @Bean
