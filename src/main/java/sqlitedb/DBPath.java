@@ -1,7 +1,10 @@
 package sqlitedb;
 
-public interface DBPath {
-    String getDatabasePath();
-    String getDatabaseName();
-    String getDatabaseFile();
+abstract class DBPath {
+    abstract String getDatabasePath();
+    abstract String getDatabaseName();
+
+    String getDatabaseFile() {
+        return getDatabasePath() + "/" + getDatabaseName() + ".db";
+    }
 }
