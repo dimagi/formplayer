@@ -18,6 +18,10 @@ public class SqlSandboxUtils {
 
     public static void deleteDatabaseFolder(String path) {
         File databaseFolder = new File(path);
+        deleteDatabaseFolder(databaseFolder);
+    }
+
+    public static void deleteDatabaseFolder(File databaseFolder) {
         if (databaseFolder.exists()) {
             deleteFolder(databaseFolder);
         }
@@ -42,16 +46,15 @@ public class SqlSandboxUtils {
         folder.delete();
     }
 
-    public static SQLiteConnectionPoolDataSource getDataSource(String databaseName, String databasePath) {
-        File databaseFolder = new File(databasePath);
-
+    public static SQLiteConnectionPoolDataSource getDataSource(File databasePath) {
+        File databaseFolder = new File(databasePath.getParent());
         try {
             if (!databaseFolder.exists()) {
                 Files.createDirectories(databaseFolder.toPath());
             }
             Class.forName("org.sqlite.JDBC");
             SQLiteConnectionPoolDataSource dataSource = new SQLiteConnectionPoolDataSource();
-            dataSource.setUrl("jdbc:sqlite:" + databasePath + "/" + databaseName + ".db?journal_mode=MEMORY");
+            dataSource.setUrl("jdbc:sqlite:" + databasePath.getPath() + "?journal_mode=MEMORY");
             dataSource.getConnection().setAutoCommit(false);
             return dataSource;
         } catch (ClassNotFoundException|SQLException |IOException e) {

@@ -4,7 +4,7 @@ import application.SQLiteProperties;
 import org.commcare.modern.database.TableBuilder;
 import util.Constants;
 
-class UserDBPath implements DBPath {
+class UserDBPath extends DBPath {
 
     private String domain;
     private String username;
@@ -36,10 +36,5 @@ class UserDBPath implements DBPath {
     @Override
     public String getDatabaseName() {
         return "user_" + Constants.SQLITE_DB_VERSION;
-    }
-
-    @Override
-    public String getDatabaseFile() {
-        return getUserDBPath(domain, username, asUsername) + "/" + getDatabaseName() + ".db";
     }
 }
