@@ -34,22 +34,43 @@ public class MetricsAspect {
             user = bean.getUsernameDetail();
         }
 
+        long startTime = System.nanoTime();
+        Object result = joinPoint.proceed();
+        long timeInMs = (System.nanoTime() - startTime) / 1000000;
+
         datadogStatsDClient.increment(
                 Constants.DATADOG_REQUESTS,
                 "domain:" + domain,
                 "user:" + user,
-                "request:" + requestPath
+                "request:" + requestPath,
+                "duration:" + getDurationBucket(timeInMs)
         );
-        long startTime = System.nanoTime();
-        Object result = joinPoint.proceed();
+
         datadogStatsDClient.recordExecutionTime(
                 Constants.DATADOG_TIMINGS,
-                (System.nanoTime() - startTime) / 1000000,
+                timeInMs,
                 "domain:" + domain,
                 "user:" + user,
                 "request:" + requestPath
         );
         return result;
+    }
+
+    private static String getDurationBucket(long timeInMs) {
+        long timeInS = timeInMs / 1000;
+        if (timeInS < 1) {
+            return "lt_001s";
+        } else if (timeInS <= 5) {
+            return "lt_005s";
+        } else if (timeInS <= 20) {
+            return "lt_020s";
+        } else if (timeInS <= 60) {
+            return "lt_060s";
+        } else if (timeInS <= 120) {
+            return "lt_120s";
+        } else {
+            return "over_120s";
+        }
     }
 
     private String getRequestPath(ProceedingJoinPoint joinPoint) {
