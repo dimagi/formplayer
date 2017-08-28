@@ -408,7 +408,7 @@ public abstract class AbstractBaseController {
                 metric,
                 "domain:" + domain,
                 "user:" + user,
-                "request:" + req.getRequestURL()
+                "request:" + req.getRequestURI()
         );
     }
 }
