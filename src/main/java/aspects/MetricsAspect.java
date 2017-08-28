@@ -73,7 +73,7 @@ public class MetricsAspect {
         }
     }
 
-    private String getRequestPath(ProceedingJoinPoint joinPoint) {
+    static String getRequestPath(ProceedingJoinPoint joinPoint) {
         MethodSignature ms = (MethodSignature) joinPoint.getSignature();
         Method m = ms.getMethod();
         return m.getAnnotation(RequestMapping.class).value()[0];
