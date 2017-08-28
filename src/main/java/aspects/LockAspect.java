@@ -20,7 +20,7 @@ import java.util.concurrent.locks.Lock;
 public class LockAspect {
 
     @Autowired
-    protected LockRegistry userLockRegistry;
+    private LockRegistry userLockRegistry;
 
     @Autowired
     private StatsDClient datadogStatsDClient;
@@ -77,7 +77,7 @@ public class LockAspect {
         );
     }
 
-    protected Lock getLockAndBlock(String username) throws LockError {
+    private Lock getLockAndBlock(String username) throws LockError {
         Lock lock = userLockRegistry.obtain(username);
         if (obtainLock(lock)) {
             return lock;
@@ -86,7 +86,7 @@ public class LockAspect {
         }
     }
 
-    protected boolean obtainLock(Lock lock) {
+    private boolean obtainLock(Lock lock) {
         try {
             return lock.tryLock(Constants.USER_LOCK_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e){
