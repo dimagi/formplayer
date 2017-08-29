@@ -25,10 +25,11 @@ public class LockAspect {
     @Autowired
     private StatsDClient datadogStatsDClient;
 
-    private class LockError extends Exception {}
+    // needs to be accessible from WebAppContext.exceptionResolver
+    public class LockError extends Exception {}
 
     @Around(value = "@annotation(annotations.UserLock)")
-    public Object beforeLock(ProceedingJoinPoint joinPoint) throws Throwable {
+    public Object aroundLock(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
 
         if (!(args[0] instanceof AuthenticatedRequestBean)) {
@@ -48,8 +49,7 @@ public class LockAspect {
             lock = getLockAndBlock(username);
         } catch (LockError e) {
             logLockError(bean, joinPoint, "timed_out");
-            throw new RuntimeException("Timed out trying to obtain lock for username " + username  +
-                    ". Please try your request again in a moment.");
+            throw e;
         }
 
         try {
