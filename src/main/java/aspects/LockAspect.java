@@ -61,7 +61,6 @@ public class LockAspect {
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
                     logLockError(bean, joinPoint, "expired");
-                    throw new IllegalStateException("That request took too long to process, please try again.", e);
                 }
             }
         }
