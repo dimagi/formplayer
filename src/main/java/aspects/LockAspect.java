@@ -48,7 +48,7 @@ public class LockAspect {
         try {
             lock = getLockAndBlock(username);
         } catch (LockError e) {
-            logLockError(bean, joinPoint, "timed_out");
+            logLockError(bean, joinPoint, "_timed_out");
             throw e;
         }
 
@@ -60,7 +60,7 @@ public class LockAspect {
                     lock.unlock();
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
-                    logLockError(bean, joinPoint, "expired");
+                    logLockError(bean, joinPoint, "_expired");
                 }
             }
         }
@@ -72,7 +72,7 @@ public class LockAspect {
                 "domain:" + bean.getDomain(),
                 "user:" + bean.getUsernameDetail(),
                 "request:" + MetricsAspect.getRequestPath(joinPoint),
-                "lock_issue: " + lockIssue
+                "lock_issue:" + lockIssue
         );
     }
 
