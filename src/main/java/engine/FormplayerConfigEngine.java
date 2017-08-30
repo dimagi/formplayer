@@ -52,7 +52,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
                 );
             } else if (conn.getResponseCode() == 500) {
                 throw new ApplicationConfigException(
-                        "Encountered an error while processing the application. Please submit a ticket if you continue to see this."
+                        "There are errors in your application. Please fix these errors in your application before using app preview."
                 );
             } else if (conn.getResponseCode() == 504) {
                 throw new RuntimeException(
