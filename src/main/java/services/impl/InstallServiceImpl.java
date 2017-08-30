@@ -1,5 +1,8 @@
 package services.impl;
 
+import com.timgroup.statsd.StatsDClient;
+import services.RestoreFactory;
+import services.SubmitService;
 import sqlitedb.SQLiteDB;
 import engine.FormplayerConfigEngine;
 import exceptions.UnresolvedResourceRuntimeException;
@@ -11,6 +14,7 @@ import org.commcare.resources.model.UnresolvedResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import services.FormplayerStorageFactory;
 import services.InstallService;
+import util.Constants;
 
 /**
  * The InstallService handles configuring the application,
@@ -28,6 +32,9 @@ public class InstallServiceImpl implements InstallService {
     @Autowired
     ArchiveFileRoot formplayerArchiveFileRoot;
 
+    @Autowired
+    protected StatsDClient datadogStatsDClient;
+
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     @Override
@@ -37,6 +44,7 @@ public class InstallServiceImpl implements InstallService {
                 " and dbPath: " + sqliteDB.getDatabaseFileForDebugPurposes() + " \n" +
                 "and storage factory \" + storageFactory");
         try {
+            long start = System.currentTimeMillis();
             if(sqliteDB.databaseFileExists()) {
                 // Try reusing old install, fail quietly
                 try {
@@ -60,6 +68,14 @@ public class InstallServiceImpl implements InstallService {
                 engine.initFromArchive(reference);
             }
             engine.initEnvironment();
+            long taken = System.currentTimeMillis() - start;
+            datadogStatsDClient.recordExecutionTime(
+                    Constants.DATADOG_TIMINGS,
+                    taken,
+                    "domain:" + storageFactory.getDomain(),
+                    "username" + storageFactory.getWrappedUsername(),
+                    "request:" + "submit-form"
+            );
             return engine;
         } catch (UnresolvedResourceException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
