@@ -50,10 +50,7 @@ import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import repo.impl.PostgresUserRepo;
 import screens.FormplayerQueryScreen;
-import services.FormplayerStorageFactory;
-import services.InstallService;
-import services.NewFormResponseFactory;
-import services.RestoreFactory;
+import services.*;
 import session.FormSession;
 import session.MenuSession;
 import util.*;
@@ -99,6 +96,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     PostgresUserRepo postgresUserRepo;
+
+    @Autowired
+    protected RecordProcessorService recordProcessorService;
 
     @Value("${commcarehq.host}")
     private String hqHost;

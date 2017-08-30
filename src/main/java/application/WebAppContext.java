@@ -338,4 +338,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     public RestTemplateBuilder restTemplateBuilder() {
         return new RestTemplateBuilder();
     }
+
+    @Bean
+    public RecordProcessorService formRecordProcessor() {
+        return new FormRecordProcessorImpl();
+    }
 }

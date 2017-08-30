@@ -14,7 +14,7 @@ import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import api.json.JsonActionUtils;
-import api.process.FormRecordProcessorHelper;
+import services.impl.FormRecordProcessorImpl;
 import api.util.ApiConstants;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -131,7 +131,7 @@ public class FormController extends AbstractBaseController{
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
             try {
-                FormRecordProcessorHelper.processXML(new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox(),
+                recordProcessorService.processXML(new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox(),
                                 PropertyUtils.isBulkPerformanceEnabled()),
                         formEntrySession.submitGetXml());
             } catch(InvalidStructureException e) {

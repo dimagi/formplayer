@@ -32,6 +32,7 @@ import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.QueryRequester;
 import services.SyncRequester;
+import services.impl.FormRecordProcessorImpl;
 import session.FormSession;
 import session.MenuSession;
 import sqlitedb.ApplicationDB;
@@ -399,7 +400,7 @@ public class MenuController extends AbstractBaseController {
             return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
         }
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            CaseAPIs.performSync(restoreFactory);
+            recordProcessorService.performSync(restoreFactory);
             return new NotificationMessage("Case claim successful.", false);
         } else {
             return new NotificationMessage(

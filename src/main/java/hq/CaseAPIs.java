@@ -1,6 +1,6 @@
 package hq;
 
-import api.process.FormRecordProcessorHelper;
+import services.impl.FormRecordProcessorImpl;
 import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
 import org.commcare.cases.model.Case;
@@ -25,20 +25,6 @@ import java.io.InputStream;
  */
 public class CaseAPIs {
 
-    // This function will only wipe user DBs when they have expired, otherwise will incremental sync
-    public static UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
-        if (restoreFactory.isRestoreXmlExpired()) {
-            restoreFactory.getSQLiteDB().deleteDatabaseFile();
-        }
-        // Create parent dirs if needed
-        if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
-            restoreFactory.getSQLiteDB().createDatabaseFolder();
-        }
-        UserSqlSandbox sandbox = restoreUser(restoreFactory, restoreFactory.getRestoreXml());
-        FormRecordProcessorHelper.purgeCases(sandbox);
-        return sandbox;
-    }
-
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
     public static UserSqlSandbox getSandbox(RestoreFactory restoreFactory) throws Exception {
         if (restoreFactory.isRestoreXmlExpired()) {
@@ -57,7 +43,7 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, InputStream restorePayload) throws
+    public static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, InputStream restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();

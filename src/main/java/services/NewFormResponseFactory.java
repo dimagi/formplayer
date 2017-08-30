@@ -12,6 +12,7 @@ import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
+import services.impl.FormRecordProcessorImpl;
 import session.FormSession;
 
 import java.io.IOException;
@@ -33,10 +34,13 @@ public class NewFormResponseFactory {
     @Autowired
     private FormSessionRepo formSessionRepo;
 
+    @Autowired
+    RecordProcessorService recordProcessorService;
+
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl, HqAuth auth) throws Exception {
 
         String formXml = getFormXml(bean.getFormUrl(), auth);
-        UserSqlSandbox sandbox = CaseAPIs.performSync(restoreFactory);
+        UserSqlSandbox sandbox = recordProcessorService.performSync(restoreFactory);
 
         FormSession formSession = new FormSession(
                 sandbox,

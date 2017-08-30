@@ -1,10 +1,14 @@
 package services.impl;
 
+import com.timgroup.statsd.StatsDClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import services.RestoreFactory;
 import services.SyncRequester;
+import util.Constants;
 
 import java.util.Arrays;
 
@@ -12,6 +16,13 @@ import java.util.Arrays;
  * Created by willpride on 4/26/17.
  */
 public class SyncRequesterImpl implements SyncRequester {
+
+    @Autowired
+    protected StatsDClient datadogStatsDClient;
+
+    @Autowired
+    protected RestoreFactory restoreFactory;
+
 
     private final Log log = LogFactory.getLog(SyncRequesterImpl.class);
 
@@ -22,11 +33,20 @@ public class SyncRequesterImpl implements SyncRequester {
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED));
         HttpEntity<String> entity = new HttpEntity<>(params, headers);
         RestTemplate restTemplate = new RestTemplate();
+        long start = System.currentTimeMillis();
         ResponseEntity<String> response =
                 restTemplate.exchange(url,
                         HttpMethod.POST,
                         entity, String.class);
         log.info(String.format("SyncRequest gave response %s", response));
+        long taken = System.currentTimeMillis() - start;
+        datadogStatsDClient.recordExecutionTime(
+                Constants.DATADOG_TIMINGS,
+                taken,
+                "domain:" + restoreFactory.getDomain(),
+                "username" + restoreFactory.getWrappedUsername(),
+                "request:" + "case-claim"
+        );
         return response;
     }
 }

@@ -3,6 +3,7 @@ package services;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.timgroup.statsd.StatsDClient;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -29,6 +30,7 @@ import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
+import util.Constants;
 import util.FormplayerRaven;
 import util.UserUtils;
 
@@ -77,6 +79,9 @@ public class RestoreFactory {
 
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
+
+    @Autowired
+    protected StatsDClient datadogStatsDClient;
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
@@ -263,6 +268,7 @@ public class RestoreFactory {
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
+        long start = System.currentTimeMillis();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
@@ -287,6 +293,15 @@ public class RestoreFactory {
         } catch (IOException e) {
             throw new RuntimeException("Unable to read restore response", e);
         }
+        long taken = System.currentTimeMillis() - start;
+
+        datadogStatsDClient.recordExecutionTime(
+                Constants.DATADOG_TIMINGS,
+                taken,
+                "domain:" + getDomain(),
+                "username" + getWrappedUsername(),
+                "request:" + "sync"
+        );
         return stream;
     }
 
