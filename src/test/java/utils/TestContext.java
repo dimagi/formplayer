@@ -1,6 +1,8 @@
 package utils;
 
 import com.getsentry.raven.Raven;
+import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.StatsDClient;
 import installers.FormplayerInstallerFactory;
 import mocks.MockFormSessionRepo;
 import mocks.MockLockRegistry;
@@ -20,6 +22,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
+import services.impl.FormRecordProcessorImpl;
 import services.impl.QueryRequesterImpl;
 import services.impl.SubmitServiceImpl;
 import util.FormplayerRaven;
@@ -127,5 +130,19 @@ public class TestContext {
     @Bean
     public SyncRequester syncRequester() {
         return Mockito.mock(SyncRequester.class);
+    }
+
+    @Bean
+    public RecordProcessorService formRecordProcessor() {
+        return Mockito.spy(FormRecordProcessorImpl.class);
+    }
+
+    @Bean
+    public StatsDClient datadogStatsDClient() {
+        return new NonBlockingStatsDClient(
+                "formplayer.metrics",
+                "localhost",
+                8125
+        );
     }
 }
