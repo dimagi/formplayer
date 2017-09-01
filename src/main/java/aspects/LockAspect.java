@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.integration.support.locks.LockRegistry;
 import util.Constants;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.locks.Lock;
  * Aspect for weaving locking for classes that require it
  */
 @Aspect
+@Order(2)
 public class LockAspect {
 
     @Autowired
