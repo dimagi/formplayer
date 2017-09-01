@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.RequestMapping;
 import util.Constants;
 
@@ -16,6 +17,7 @@ import java.lang.reflect.Method;
  * This aspect records various metrics for every request.
  */
 @Aspect
+@Order(1)
 public class MetricsAspect {
 
     @Autowired
@@ -60,13 +62,13 @@ public class MetricsAspect {
         long timeInS = timeInMs / 1000;
         if (timeInS < 1) {
             return "lt_001s";
-        } else if (timeInS <= 5) {
+        } else if (timeInS < 5) {
             return "lt_005s";
-        } else if (timeInS <= 20) {
+        } else if (timeInS < 20) {
             return "lt_020s";
-        } else if (timeInS <= 60) {
+        } else if (timeInS < 60) {
             return "lt_060s";
-        } else if (timeInS <= 120) {
+        } else if (timeInS < 120) {
             return "lt_120s";
         } else {
             return "over_120s";

@@ -12,6 +12,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import repo.impl.PostgresUserRepo;
 import services.RestoreFactory;
 import util.UserUtils;
@@ -22,6 +23,7 @@ import java.util.Arrays;
  * Aspect to configure the RestoreFactory
  */
 @Aspect
+@Order(4)
 public class UserRestoreAspect {
 
     private final Log log = LogFactory.getLog(UserRestoreAspect.class);
