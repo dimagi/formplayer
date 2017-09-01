@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.RequestMapping;
 import util.Constants;
 
@@ -16,6 +17,7 @@ import java.lang.reflect.Method;
  * This aspect records various metrics for every request.
  */
 @Aspect
+@Order(1)
 public class MetricsAspect {
 
     @Autowired
