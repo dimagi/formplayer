@@ -175,18 +175,30 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
+    private static boolean intArrayContains(int[]sorts, int sortIndex) {
+        int zeroIndexed = Math.abs(sortIndex) - 1;
+        for (int sort: sorts) {
+            if (sort == zeroIndexed) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void sort(List<Entity<TreeReference>> entityList,
                              Detail shortDetail,
                              int sortIndex) {
         int[] order;
         boolean reverse = false;
-        if (sortIndex != 0) {
+        int[] sorts = shortDetail.getOrderedFieldIndicesForSorting();
+        if (sortIndex != 0 && intArrayContains(sorts, sortIndex)) {
             if (sortIndex < 0) {
                 reverse = true;
                 sortIndex = Math.abs(sortIndex);
             }
             // sort index is one indexed so adjust for that
-            order = new int[]{sortIndex - 1};
+            int sortFieldIndex = sortIndex - 1;
+            order = new int[]{sortFieldIndex};
         } else {
             order = shortDetail.getOrderedFieldIndicesForSorting();
             for (int i = 0; i < shortDetail.getFields().length; ++i) {
@@ -226,7 +238,6 @@ public class EntityListResponse extends MenuBean {
         }
         return keyArray;
     }
-
 
     static class LogNotifier implements EntitySortNotificationInterface {
         @Override
