@@ -74,6 +74,8 @@ public class Constants {
     public static final String POSTGRES_USER_TABLE_NAME = "auth_user";
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
 
+    public static final String SESSION_DETAILS_VIEW = "/hq/admin/session_details/";
+
     // Couch databases
     public static final String COUCH_USERS_DB = "__users";
 
@@ -91,7 +93,7 @@ public class Constants {
             Pattern.compile("v2/.*")
     ));
 
-    public static final int USER_LOCK_TIMEOUT = 120;
+    public static final int USER_LOCK_TIMEOUT = 21;
     // 15 minutes in milliseconds
     public static final int LOCK_DURATION = 60 * 15 * 1000;
 
@@ -103,6 +105,8 @@ public class Constants {
     public static final String DATADOG_ERRORS_APP_CONFIG = "errors.app_config";
     public static final String DATADOG_ERRORS_EXTERNAL_REQUEST = "errors.external_request";
     public static final String DATADOG_ERRORS_CRASH = "errors.crash";
+    public static final String DATADOG_ERRORS_LOCK = "errors.lock";
+
     // End Datadog metrics
 
 
