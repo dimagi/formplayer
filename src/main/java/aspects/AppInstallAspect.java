@@ -1,14 +1,13 @@
 package aspects;
 
-import beans.AuthenticatedRequestBean;
 import beans.InstallFromSessionRequestBean;
 import beans.InstallRequestBean;
-import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import services.FormplayerStorageFactory;
 import util.FormplayerRaven;
 
@@ -20,6 +19,7 @@ import java.util.Map;
  * Aspect to configure the FormplayerStorageManager
  */
 @Aspect
+@Order(5)
 public class AppInstallAspect {
 
     @Autowired

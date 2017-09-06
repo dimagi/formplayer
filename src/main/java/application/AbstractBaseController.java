@@ -1,5 +1,6 @@
 package application;
 
+import aspects.LockAspect;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import auth.TokenAuth;
@@ -8,31 +9,20 @@ import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
-import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.Event;
-import com.getsentry.raven.event.EventBuilder;
-import com.getsentry.raven.event.interfaces.ExceptionInterface;
 import com.timgroup.statsd.StatsDClient;
 import exceptions.*;
 import hq.models.PostgresUser;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.*;
-import org.commcare.util.screen.CommCareSessionException;
-import org.commcare.util.screen.EntityScreen;
-import org.commcare.util.screen.MenuScreen;
-import org.commcare.util.screen.QueryScreen;
-import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -56,12 +46,11 @@ import services.NewFormResponseFactory;
 import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
-import util.*;
+import util.Constants;
+import util.FormplayerHttpRequest;
+import util.FormplayerRaven;
+import util.UserUtils;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Vector;
 
 /**
@@ -112,6 +101,7 @@ public abstract class AbstractBaseController {
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         menuSession.getSessionWrapper().syncState();
         if(menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
+            menuSession.getSessionWrapper().clearVolatiles();
             return getNextMenu(menuSession);
         }
         return null;
@@ -196,33 +186,9 @@ public abstract class AbstractBaseController {
         }
     }
 
-    protected EntityDetailResponse getPersistentDetail(MenuSession menuSession) {
-        Pair<TreeReference, Detail> pair = getDetail(menuSession, false);
-        if (pair == null) {
-            return null;
-        }
-        EvaluationContext ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), pair.first);
-        return new EntityDetailResponse(pair.second, ec);
-    }
-
-    protected EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
-        Pair<TreeReference, Detail> pair = getDetail(menuSession, true);
-        if (pair == null) {
-            return null;
-        }
-        EvaluationContext ec = menuSession.getSessionWrapper().getEvaluationContext();
-        return new EntityDetailListResponse(pair.second.getDetails(),
-                ec,
-                pair.first);
-    }
-
-    protected Pair<TreeReference, Detail> getDetail(MenuSession menuSession, boolean inline) {
-
-        SessionWrapper session = menuSession.getSessionWrapper();
-
+    protected StackFrameStep getStepToFrame(SessionWrapper session) {
         StackFrameStep stepToFrame = null;
         Vector<StackFrameStep> v = session.getFrame().getSteps();
-
         //So we need to work our way backwards through each "step" we've taken, since our RelativeLayout
         //displays the Z-Order b insertion (so items added later are always "on top" of items added earlier
         for (int i = v.size() - 1; i >= 0; i--) {
@@ -236,17 +202,41 @@ public abstract class AbstractBaseController {
                 }
             }
         }
+        return stepToFrame;
+    }
 
+    protected TreeReference getReference(SessionWrapper session, EntityDatum entityDatum) {
+        EvaluationContext ec = session.getEvaluationContext();
+        StackFrameStep stepToFrame = getStepToFrame(session);
+        return entityDatum.getEntityFromID(ec, stepToFrame.getValue());
+    }
+
+    protected EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
+        return getDetail(menuSession, true);
+    }
+
+    protected EntityDetailResponse getPersistentDetail(MenuSession menuSession) {
+        EntityDetailListResponse detailListResponse = getDetail(menuSession, false);
+        if (detailListResponse == null) {
+            return null;
+        }
+        EntityDetailResponse[] detailList = detailListResponse.getEntityDetailList();
+        if (detailList == null) {
+            return null;
+        }
+        return detailList[0];
+    }
+
+    protected EntityDetailListResponse getDetail(MenuSession menuSession, boolean inline) {
+        SessionWrapper session = menuSession.getSessionWrapper();
+        StackFrameStep stepToFrame = getStepToFrame(session);
         if (stepToFrame == null) {
             return null;
         }
-
         EntityDatum entityDatum = session.findDatumDefinition(stepToFrame.getId());
-
         if (entityDatum == null) {
             return null;
         }
-
         String detailId;
         if (inline) {
             detailId = entityDatum.getInlineDetail();
@@ -256,17 +246,21 @@ public abstract class AbstractBaseController {
         if (detailId == null) {
             return null;
         }
-
         Detail persistentDetail = session.getDetail(detailId);
+        TreeReference reference = getReference(session, entityDatum);
 
-        EvaluationContext ec = session.getEvaluationContext();
-
-        TreeReference ref = entityDatum.getEntityFromID(ec, stepToFrame.getValue());
-        if (ref == null) {
-            return null;
+        EvaluationContext ec;
+        if (inline) {
+            ec = session.getEvaluationContext();
+            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(),
+                    ec,
+                    reference);
+        } else {
+            ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), reference);
+            EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
+            detailResponse.setHasInlineTile(entityDatum.getInlineDetail() != null);
+            return new EntityDetailListResponse(detailResponse);
         }
-
-        return new Pair(ref, persistentDetail);
 
     }
 
@@ -383,6 +377,13 @@ public abstract class AbstractBaseController {
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
+    @ExceptionHandler({LockAspect.LockError.class})
+    @ResponseBody
+    @ResponseStatus(HttpStatus.LOCKED)
+    public ExceptionResponseBean handleLockError(FormplayerHttpRequest req, Exception exception) {
+        return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ExceptionResponseBean handleError(FormplayerHttpRequest req, Exception exception) {
@@ -396,8 +397,8 @@ public abstract class AbstractBaseController {
     private void incrementDatadogCounter(String metric, FormplayerHttpRequest req) {
         String user = "unknown";
         String domain = "unknown";
-        if (req.getCouchUser() != null) {
-            user = req.getCouchUser().getUsername();
+        if (req.getUserDetails() != null) {
+            user = req.getUserDetails().getUsername();
         }
         if (req.getDomain() != null) {
             domain = req.getDomain();
@@ -406,7 +407,7 @@ public abstract class AbstractBaseController {
                 metric,
                 "domain:" + domain,
                 "user:" + user,
-                "request:" + req.getRequestURL()
+                "request:" + req.getRequestURI()
         );
     }
 }
