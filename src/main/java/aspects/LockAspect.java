@@ -1,6 +1,7 @@
 package aspects;
 
 import beans.AuthenticatedRequestBean;
+import com.getsentry.raven.event.Event;
 import com.timgroup.statsd.StatsDClient;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.integration.support.locks.LockRegistry;
 import util.Constants;
+import util.FormplayerRaven;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -26,6 +28,9 @@ public class LockAspect {
 
     @Autowired
     private StatsDClient datadogStatsDClient;
+
+    @Autowired
+    private FormplayerRaven raven;
 
     // needs to be accessible from WebAppContext.exceptionResolver
     public class LockError extends Exception {}
@@ -63,6 +68,7 @@ public class LockAspect {
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
                     logLockError(bean, joinPoint, "_expired");
+                    raven.sendRavenException(e, Event.Level.WARNING);
                 }
             }
         }
