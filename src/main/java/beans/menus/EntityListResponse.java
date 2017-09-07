@@ -177,23 +177,12 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
-    private static boolean intArrayContains(int[]sorts, int sortIndex) {
-        int zeroIndexed = Math.abs(sortIndex) - 1;
-        for (int sort: sorts) {
-            if (sort == zeroIndexed) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static void sort(List<Entity<TreeReference>> entityList,
                              Detail shortDetail,
                              int sortIndex) {
         int[] order;
         boolean reverse = false;
-        int[] sorts = shortDetail.getOrderedFieldIndicesForSorting();
-        if (sortIndex != 0 && intArrayContains(sorts, sortIndex)) {
+        if (sortIndex != 0) {
             if (sortIndex < 0) {
                 reverse = true;
                 sortIndex = Math.abs(sortIndex);
