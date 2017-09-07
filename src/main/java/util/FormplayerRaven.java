@@ -43,6 +43,9 @@ public class FormplayerRaven {
     @Autowired
     private RestoreFactory restoreFactory;
 
+    @Autowired
+    private FormplayerHttpRequest request;
+
     public FormplayerRaven(Raven raven) {
         this.raven = raven;
     }
@@ -109,11 +112,11 @@ public class FormplayerRaven {
         );
     }
 
-    public void sendRavenException(FormplayerHttpRequest request, Exception exception) {
-        sendRavenException(request, exception, Event.Level.ERROR);
+    public void sendRavenException(Exception exception) {
+        sendRavenException(exception, Event.Level.ERROR);
     }
 
-    public void sendRavenException(FormplayerHttpRequest request, Exception exception, Event.Level level) {
+    public void sendRavenException(Exception exception, Event.Level level) {
         setDomain(request.getDomain());
 
         if (request.getUserDetails() != null) {
