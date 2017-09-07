@@ -35,6 +35,7 @@ public class EntityListResponse extends MenuBean {
     private int[] widthHints;
     private int numEntitiesPerRow;
     private boolean useUniformUnits;
+    private int[] sortIndices;
 
     private int pageCount;
     private int currentPage;
@@ -85,6 +86,7 @@ public class EntityListResponse extends MenuBean {
         this.headers = pair.first;
         this.widthHints = pair.second;
         setMenuSessionId(id);
+        this.sortIndices = detail.getOrderedFieldIndicesForSorting();
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -237,6 +239,14 @@ public class EntityListResponse extends MenuBean {
             }
         }
         return keyArray;
+    }
+
+    public int[] getSortIndices() {
+        return sortIndices;
+    }
+
+    public void setSortIndices(int[] sortIndices) {
+        this.sortIndices = sortIndices;
     }
 
     static class LogNotifier implements EntitySortNotificationInterface {
