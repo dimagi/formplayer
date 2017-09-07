@@ -60,7 +60,7 @@ public class EntityDetailResponse {
         entityList.toArray(this.entities);
         this.title = title;
         this.styles = processStyles(detail);
-        Pair<String[], int[]> pair = EntityListResponse.processHeader(detail, ec);
+        Pair<String[], int[]> pair = EntityListResponse.processHeader(detail, ec, 0);
         setHeaders(pair.first);
         setUseNodeset(true);
     }

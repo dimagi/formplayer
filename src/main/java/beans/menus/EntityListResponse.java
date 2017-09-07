@@ -81,7 +81,7 @@ public class EntityListResponse extends MenuBean {
         processCaseTiles(detail);
         this.styles = processStyles(detail);
         this.actions = processActions(nextScreen.getSession());
-        Pair<String[], int[]> pair = processHeader(detail, ec);
+        Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
         this.headers = pair.first;
         this.widthHints = pair.second;
         setMenuSessionId(id);
@@ -108,8 +108,8 @@ public class EntityListResponse extends MenuBean {
         maxHeight = maxWidthHeight.second;
     }
 
-    public static Pair<String[], int[]> processHeader(Detail shortDetail, EvaluationContext ec) {
-        return EntityListSubscreen.getHeaders(shortDetail, ec);
+    public static Pair<String[], int[]> processHeader(Detail shortDetail, EvaluationContext ec, int sortIndex) {
+        return EntityListSubscreen.getHeaders(shortDetail, ec, sortIndex);
     }
 
     private static EntityBean[] processEntitiesForCaseDetail(Detail detail, TreeReference reference,
