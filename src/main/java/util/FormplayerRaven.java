@@ -24,6 +24,7 @@ public class FormplayerRaven {
 
     private final String HQ_HOST_TAG = "HQHost";
     private final String DOMAIN_TAG = "domain";
+    private final String AS_USER = "as_user";
     private final String APP_URL_EXTRA = "app_url";
     private final String APP_DOWNLOAD_URL_EXTRA = "app_download";
     private final String USER_SYNC_TOKEN = "sync_token";
@@ -105,6 +106,7 @@ public class FormplayerRaven {
                 .withEnvironment(environment)
                 .withTag(HQ_HOST_TAG, host)
                 .withTag(DOMAIN_TAG, domain)
+                .withTag(AS_USER, restoreFactory.getAsUsername())
                 .withExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL())
                 .withExtra(APP_URL_EXTRA, getAppURL())
                 .withExtra(USER_SYNC_TOKEN, restoreFactory == null ? "unknown" : restoreFactory.getSyncToken())
