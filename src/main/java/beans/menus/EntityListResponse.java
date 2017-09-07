@@ -213,34 +213,6 @@ public class EntityListResponse extends MenuBean {
         java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), reverse, order, new LogNotifier()));
     }
 
-    private static int[] getSortOptionsList(DetailField[] fields, int[] sorts) {
-        List<String> namesList = new ArrayList<>();
-        final int[] keyArray = new int[fields.length];
-        int currentSort = sorts.length == 1 ? sorts[0] : -1;
-        boolean reversed = false; //adapter.isCurrentSortReversed();
-
-        int added = 0;
-        for (int i = 0; i < fields.length; ++i) {
-            String result = fields[i].getHeader().evaluate();
-            if (!"".equals(result)) {
-                String prepend = "";
-                if (currentSort == -1) {
-                    for (int j = 0; j < sorts.length; ++j) {
-                        if (sorts[j] == i) {
-                            prepend = (j + 1) + " " + (fields[i].getSortDirection() == DetailField.DIRECTION_DESCENDING ? "(v) " : "(^) ");
-                        }
-                    }
-                } else if (currentSort == i) {
-                    prepend = reversed ^ fields[i].getSortDirection() == DetailField.DIRECTION_DESCENDING ? "(v) " : "(^) ";
-                }
-                namesList.add(prepend + result);
-                keyArray[added] = i;
-                added++;
-            }
-        }
-        return keyArray;
-    }
-
     public int[] getSortIndices() {
         return sortIndices;
     }
