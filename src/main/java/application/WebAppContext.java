@@ -328,7 +328,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public SyncRequester syncRequester() {
-        return new SyncRequesterImpl();
+        return new SyncRequester();
     }
 
     @Bean
