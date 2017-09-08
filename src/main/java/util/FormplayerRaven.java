@@ -44,7 +44,7 @@ public class FormplayerRaven {
     @Autowired
     private RestoreFactory restoreFactory;
 
-    @Autowired
+    @Autowired(required = false)
     private FormplayerHttpRequest request;
 
     public FormplayerRaven(Raven raven) {
@@ -119,14 +119,16 @@ public class FormplayerRaven {
     }
 
     public void sendRavenException(Exception exception, Event.Level level) {
-        setDomain(request.getDomain());
+        if (request != null) {
+            setDomain(request.getDomain());
 
-        if (request.getUserDetails() != null) {
-            setUserContext(
-                    String.valueOf(request.getUserDetails().getDjangoUserId()),
-                    request.getUserDetails().getUsername(),
-                    request.getRemoteAddr()
-            );
+            if (request.getUserDetails() != null) {
+                setUserContext(
+                        String.valueOf(request.getUserDetails().getDjangoUserId()),
+                        request.getUserDetails().getUsername(),
+                        request.getRemoteAddr()
+                );
+            }
         }
 
         EventBuilder eventBuilder = getDefaultBuilder()
