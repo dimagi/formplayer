@@ -332,7 +332,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsServiceImpl(builder); }
+    public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsService(builder); }
 
     @Bean
     public RestTemplateBuilder restTemplateBuilder() {

@@ -14,7 +14,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 import services.HqUserDetailsService;
-import services.impl.HqUserDetailsServiceImpl;
 import util.Constants;
 import utils.TestContext;
 
@@ -50,7 +49,7 @@ public class HqUserDetailsServiceTests {
         // TODO: http://www.baeldung.com/restclienttest-in-spring-boot
         RestTemplate restTemplate = new RestTemplate();
         server = MockRestServiceServer.createServer(restTemplate);
-        service = new HqUserDetailsServiceImpl(restTemplate);
+        service = new HqUserDetailsService(restTemplate);
         String host = "http://localhost";
         ReflectionTestUtils.setField(service, "objectMapper", new ObjectMapper());
         ReflectionTestUtils.setField(service, "host", host);
