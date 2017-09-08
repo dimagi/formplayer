@@ -24,6 +24,7 @@ public class FormplayerRaven {
 
     private final String HQ_HOST_TAG = "HQHost";
     private final String DOMAIN_TAG = "domain";
+    private final String AS_USER = "as_user";
     private final String APP_URL_EXTRA = "app_url";
     private final String APP_DOWNLOAD_URL_EXTRA = "app_download";
     private final String USER_SYNC_TOKEN = "sync_token";
@@ -42,6 +43,9 @@ public class FormplayerRaven {
 
     @Autowired
     private RestoreFactory restoreFactory;
+
+    @Autowired(required = false)
+    private FormplayerHttpRequest request;
 
     public FormplayerRaven(Raven raven) {
         this.raven = raven;
@@ -102,6 +106,7 @@ public class FormplayerRaven {
                 .withEnvironment(environment)
                 .withTag(HQ_HOST_TAG, host)
                 .withTag(DOMAIN_TAG, domain)
+                .withTag(AS_USER, restoreFactory.getAsUsername())
                 .withExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL())
                 .withExtra(APP_URL_EXTRA, getAppURL())
                 .withExtra(USER_SYNC_TOKEN, restoreFactory == null ? "unknown" : restoreFactory.getSyncToken())
@@ -109,19 +114,21 @@ public class FormplayerRaven {
         );
     }
 
-    public void sendRavenException(FormplayerHttpRequest request, Exception exception) {
-        sendRavenException(request, exception, Event.Level.ERROR);
+    public void sendRavenException(Exception exception) {
+        sendRavenException(exception, Event.Level.ERROR);
     }
 
-    public void sendRavenException(FormplayerHttpRequest request, Exception exception, Event.Level level) {
-        setDomain(request.getDomain());
+    public void sendRavenException(Exception exception, Event.Level level) {
+        if (request != null) {
+            setDomain(request.getDomain());
 
-        if (request.getUserDetails() != null) {
-            setUserContext(
-                    String.valueOf(request.getUserDetails().getDjangoUserId()),
-                    request.getUserDetails().getUsername(),
-                    request.getRemoteAddr()
-            );
+            if (request.getUserDetails() != null) {
+                setUserContext(
+                        String.valueOf(request.getUserDetails().getDjangoUserId()),
+                        request.getUserDetails().getUsername(),
+                        request.getRemoteAddr()
+                );
+            }
         }
 
         EventBuilder eventBuilder = getDefaultBuilder()

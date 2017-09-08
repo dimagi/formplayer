@@ -1,7 +1,6 @@
 package aspects;
 
 import beans.AuthenticatedRequestBean;
-import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,6 +9,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.RequestMapping;
 import util.FormplayerRaven;
 
@@ -21,6 +21,7 @@ import java.util.Map;
  * Aspect to log the inputs and return of each API method
  */
 @Aspect
+@Order(3)
 public class LoggingAspect {
 
     private final Log log = LogFactory.getLog(LoggingAspect.class);

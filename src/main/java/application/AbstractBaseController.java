@@ -1,5 +1,6 @@
 package application;
 
+import aspects.LockAspect;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import auth.TokenAuth;
@@ -8,31 +9,20 @@ import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
-import com.getsentry.raven.Raven;
 import com.getsentry.raven.event.Event;
-import com.getsentry.raven.event.EventBuilder;
-import com.getsentry.raven.event.interfaces.ExceptionInterface;
 import com.timgroup.statsd.StatsDClient;
 import exceptions.*;
 import hq.models.PostgresUser;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.*;
-import org.commcare.util.screen.CommCareSessionException;
-import org.commcare.util.screen.EntityScreen;
-import org.commcare.util.screen.MenuScreen;
-import org.commcare.util.screen.QueryScreen;
-import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -53,12 +43,11 @@ import screens.FormplayerQueryScreen;
 import services.*;
 import session.FormSession;
 import session.MenuSession;
-import util.*;
+import util.Constants;
+import util.FormplayerHttpRequest;
+import util.FormplayerRaven;
+import util.UserUtils;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Vector;
 
 /**
@@ -336,7 +325,7 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
-        raven.sendRavenException(request, exception, Event.Level.INFO);
+        raven.sendRavenException(exception, Event.Level.INFO);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -385,13 +374,20 @@ public abstract class AbstractBaseController {
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
+    @ExceptionHandler({LockAspect.LockError.class})
+    @ResponseBody
+    @ResponseStatus(HttpStatus.LOCKED)
+    public ExceptionResponseBean handleLockError(FormplayerHttpRequest req, Exception exception) {
+        return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ExceptionResponseBean handleError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
-        raven.sendRavenException(req, exception);
+        raven.sendRavenException(exception);
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 

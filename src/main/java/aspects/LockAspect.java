@@ -1,14 +1,17 @@
 package aspects;
 
 import beans.AuthenticatedRequestBean;
+import com.getsentry.raven.event.Event;
 import com.timgroup.statsd.StatsDClient;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.integration.support.locks.LockRegistry;
 import util.Constants;
+import util.FormplayerRaven;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -17,6 +20,7 @@ import java.util.concurrent.locks.Lock;
  * Aspect for weaving locking for classes that require it
  */
 @Aspect
+@Order(2)
 public class LockAspect {
 
     @Autowired
@@ -25,10 +29,14 @@ public class LockAspect {
     @Autowired
     private StatsDClient datadogStatsDClient;
 
-    private class LockError extends Exception {}
+    @Autowired
+    private FormplayerRaven raven;
+
+    // needs to be accessible from WebAppContext.exceptionResolver
+    public class LockError extends Exception {}
 
     @Around(value = "@annotation(annotations.UserLock)")
-    public Object beforeLock(ProceedingJoinPoint joinPoint) throws Throwable {
+    public Object aroundLock(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
 
         if (!(args[0] instanceof AuthenticatedRequestBean)) {
@@ -47,9 +55,8 @@ public class LockAspect {
         try {
             lock = getLockAndBlock(username);
         } catch (LockError e) {
-            logLockError(bean, joinPoint, "timed_out");
-            throw new RuntimeException("Timed out trying to obtain lock for username " + username  +
-                    ". Please try your request again in a moment.");
+            logLockError(bean, joinPoint, "_timed_out");
+            throw e;
         }
 
         try {
@@ -60,8 +67,8 @@ public class LockAspect {
                     lock.unlock();
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
-                    logLockError(bean, joinPoint, "expired");
-                    throw new IllegalStateException("That request took too long to process, please try again.", e);
+                    logLockError(bean, joinPoint, "_expired");
+                    raven.sendRavenException(e, Event.Level.WARNING);
                 }
             }
         }
@@ -73,7 +80,7 @@ public class LockAspect {
                 "domain:" + bean.getDomain(),
                 "user:" + bean.getUsernameDetail(),
                 "request:" + MetricsAspect.getRequestPath(joinPoint),
-                "lock_issue: " + lockIssue
+                "lock_issue:" + lockIssue
         );
     }
 
