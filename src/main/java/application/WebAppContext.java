@@ -269,7 +269,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public InstallService installService(){
-        return new InstallServiceImpl();
+        return new InstallService();
     }
 
     @Bean FormattedQuestionsService formattedQuestionsService() {
