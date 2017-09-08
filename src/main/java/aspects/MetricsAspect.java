@@ -1,6 +1,9 @@
 package aspects;
 
 import beans.AuthenticatedRequestBean;
+import com.getsentry.raven.event.Breadcrumb;
+import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.getsentry.raven.event.Event;
 import com.timgroup.statsd.StatsDClient;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -10,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.RequestMapping;
 import util.Constants;
+import util.FormplayerRaven;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 
 /**
  * This aspect records various metrics for every request.
@@ -22,6 +27,9 @@ public class MetricsAspect {
 
     @Autowired
     protected StatsDClient datadogStatsDClient;
+
+    @Autowired
+    private FormplayerRaven raven;
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -39,13 +47,14 @@ public class MetricsAspect {
         long startTime = System.nanoTime();
         Object result = joinPoint.proceed();
         long timeInMs = (System.nanoTime() - startTime) / 1000000;
+        String durationBucket = getDurationBucket(timeInMs);
 
         datadogStatsDClient.increment(
                 Constants.DATADOG_REQUESTS,
                 "domain:" + domain,
                 "user:" + user,
                 "request:" + requestPath,
-                "duration:" + getDurationBucket(timeInMs)
+                "duration:" + durationBucket
         );
 
         datadogStatsDClient.recordExecutionTime(
@@ -55,7 +64,21 @@ public class MetricsAspect {
                 "user:" + user,
                 "request:" + requestPath
         );
+        if (durationBucket.equals("lt_120s") || durationBucket.equals("over_120s")) {
+            sendTimingWarningToSentry(timeInMs);
+        }
         return result;
+    }
+
+    private void sendTimingWarningToSentry(final long timeInMs) {
+        raven.recordBreadcrumb(new BreadcrumbBuilder() {{
+            setCategory("long_request");
+            setLevel(Breadcrumb.Level.WARNING);
+            setData(new HashMap<String, String>() {{
+                put("duration", String.format("%.3fs", timeInMs / 1000.));
+            }});
+        }}.build());
+        raven.sendRavenException(new Exception("This request took a long time"), Event.Level.WARNING);
     }
 
     private static String getDurationBucket(long timeInMs) {
