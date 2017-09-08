@@ -19,7 +19,6 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
-import services.impl.SubmitServiceImpl;
 import util.FormplayerRaven;
 
 @Configuration
@@ -89,7 +88,7 @@ public class TestContext {
 
     @Bean
     public SubmitService submitService() {
-        return Mockito.mock(SubmitServiceImpl.class);
+        return Mockito.mock(SubmitService.class);
     }
 
     @Bean

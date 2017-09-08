@@ -278,7 +278,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public SubmitService submitService(){
-        return new SubmitServiceImpl();
+        return new SubmitService();
     }
 
     @Bean
