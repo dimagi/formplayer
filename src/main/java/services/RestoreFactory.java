@@ -3,6 +3,7 @@ package services;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.google.common.collect.ImmutableMap;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -41,8 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
@@ -178,13 +177,11 @@ public class RestoreFactory {
     }
 
     private void recordSentryData(String restoreUrl) {
-        Map<String, String> data = new HashMap<String, String>();
-        data.put("restoreUrl", restoreUrl);
-        BreadcrumbBuilder builder = new BreadcrumbBuilder();
-        builder.setData(data);
-        builder.setCategory("restore");
-        builder.setMessage("Restoring from URL " + restoreUrl);
-        raven.recordBreadcrumb(builder.build());
+        raven.recordBreadcrumb(new BreadcrumbBuilder()
+                .setData(ImmutableMap.of("restoreUrl", restoreUrl))
+                .setCategory("restore")
+                .setMessage("Restoring from URL " + restoreUrl)
+                .build());
     }
 
     private void setLastSyncTime() {
