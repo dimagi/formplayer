@@ -273,7 +273,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean FormattedQuestionsService formattedQuestionsService() {
-        return new FormattedQuestionsServiceImpl();
+        return new FormattedQuestionsService();
     }
 
     @Bean
