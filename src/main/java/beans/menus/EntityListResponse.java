@@ -35,6 +35,7 @@ public class EntityListResponse extends MenuBean {
     private int[] widthHints;
     private int numEntitiesPerRow;
     private boolean useUniformUnits;
+    private int[] sortIndices;
 
     private int pageCount;
     private int currentPage;
@@ -48,7 +49,12 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse() {}
 
-    public EntityListResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText, String id) {
+    public EntityListResponse(EntityScreen nextScreen,
+                              String detailSelection,
+                              int offset,
+                              String searchText,
+                              String id,
+                              int sortIndex) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EvaluationContext ec = nextScreen.getEvalContext();
@@ -61,7 +67,7 @@ public class EntityListResponse extends MenuBean {
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
             Vector<TreeReference> references = ec.expandReference(neededDatum.getNodeset());
-            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum);
+            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex);
             if (entityList.size() > CASE_LENGTH_LIMIT && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
                 setCurrentPage(offset / CASE_LENGTH_LIMIT);
@@ -72,15 +78,15 @@ public class EntityListResponse extends MenuBean {
             entityList.toArray(entities);
         }
 
-
         processTitle(session);
         processCaseTiles(detail);
         this.styles = processStyles(detail);
         this.actions = processActions(nextScreen.getSession());
-        Pair<String[], int[]> pair = processHeader(detail, ec);
+        Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
         this.headers = pair.first;
         this.widthHints = pair.second;
         setMenuSessionId(id);
+        this.sortIndices = detail.getOrderedFieldIndicesForSorting();
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -104,8 +110,8 @@ public class EntityListResponse extends MenuBean {
         maxHeight = maxWidthHeight.second;
     }
 
-    public static Pair<String[], int[]> processHeader(Detail shortDetail, EvaluationContext ec) {
-        return EntityListSubscreen.getHeaders(shortDetail, ec);
+    public static Pair<String[], int[]> processHeader(Detail shortDetail, EvaluationContext ec, int sortIndex) {
+        return EntityListSubscreen.getHeaders(shortDetail, ec, sortIndex);
     }
 
     private static EntityBean[] processEntitiesForCaseDetail(Detail detail, TreeReference reference,
@@ -114,9 +120,11 @@ public class EntityListResponse extends MenuBean {
     }
 
     public static List<EntityBean> processEntitiesForCaseList(Detail detail, Vector<TreeReference> references,
-                                                               EvaluationContext ec,
-                                                               String searchText, EntityDatum neededDatum) {
-        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText);
+                                                              EvaluationContext ec,
+                                                              String searchText,
+                                                              EntityDatum neededDatum,
+                                                              int sortIndex) {
+        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText, sortIndex);
         List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
             TreeReference treeReference = entity.getElement();
@@ -155,7 +163,8 @@ public class EntityListResponse extends MenuBean {
     private static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
                                                                EvaluationContext context,
                                                                Vector<TreeReference> references,
-                                                               String searchText) {
+                                                               String searchText,
+                                                               int sortIndex) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
         nodeEntityFactory.prepareEntities();
         List<Entity<TreeReference>> full = new ArrayList<>();
@@ -164,19 +173,41 @@ public class EntityListResponse extends MenuBean {
         }
 
         List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
-        sort(matched, shortDetail);
+        sort(matched, shortDetail, sortIndex);
         return matched;
     }
 
-    private static void sort(List<Entity<TreeReference>> entityList, Detail shortDetail) {
-        int[] order = shortDetail.getOrderedFieldIndicesForSorting();
-        for (int i = 0; i < shortDetail.getFields().length; ++i) {
-            String header = shortDetail.getFields()[i].getHeader().evaluate();
-            if (order.length == 0 && !"".equals(header)) {
-                order = new int[]{i};
+    private static void sort(List<Entity<TreeReference>> entityList,
+                             Detail shortDetail,
+                             int sortIndex) {
+        int[] order;
+        boolean reverse = false;
+        if (sortIndex != 0) {
+            if (sortIndex < 0) {
+                reverse = true;
+                sortIndex = Math.abs(sortIndex);
+            }
+            // sort index is one indexed so adjust for that
+            int sortFieldIndex = sortIndex - 1;
+            order = new int[]{sortFieldIndex};
+        } else {
+            order = shortDetail.getOrderedFieldIndicesForSorting();
+            for (int i = 0; i < shortDetail.getFields().length; ++i) {
+                String header = shortDetail.getFields()[i].getHeader().evaluate();
+                if (order.length == 0 && !"".equals(header)) {
+                    order = new int[]{i};
+                }
             }
         }
-        java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), false, order, new LogNotifier()));
+        java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), reverse, order, new LogNotifier()));
+    }
+
+    public int[] getSortIndices() {
+        return sortIndices;
+    }
+
+    public void setSortIndices(int[] sortIndices) {
+        this.sortIndices = sortIndices;
     }
 
     static class LogNotifier implements EntitySortNotificationInterface {

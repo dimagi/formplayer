@@ -55,12 +55,12 @@ public class EntityDetailResponse {
                                 Vector<TreeReference> references,
                                 EvaluationContext ec,
                                 String title) {
-        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, null);
+        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, null, 0);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);
         this.title = title;
         this.styles = processStyles(detail);
-        Pair<String[], int[]> pair = EntityListResponse.processHeader(detail, ec);
+        Pair<String[], int[]> pair = EntityListResponse.processHeader(detail, ec, 0);
         setHeaders(pair.first);
         setUseNodeset(true);
     }
