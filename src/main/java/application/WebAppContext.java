@@ -36,7 +36,6 @@ import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.impl.*;
 import services.*;
-import services.impl.*;
 import util.Constants;
 import util.FormplayerRaven;
 
@@ -235,7 +234,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public XFormService xFormService(){
-        return new XFormServiceImpl();
+        return new XFormService();
     }
 
     @Bean
