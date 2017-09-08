@@ -81,7 +81,7 @@ public class FormRecordProcessorImpl extends XmlFormRecordProcessor implements R
      * TODO They should be unified
      *
      */
-    @MethodMetrics(action = "case-purge")
+    @MethodMetrics
     public void purgeCases(UserSqlSandbox sandbox) {
         long start = System.currentTimeMillis();
         //We need to determine if we're using ownership for purging. For right now, only in sync mode

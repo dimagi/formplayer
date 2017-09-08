@@ -6,8 +6,10 @@ import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.getsentry.raven.event.Event;
 import com.timgroup.statsd.StatsDClient;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,17 +36,19 @@ public class MethodMetricsAspect {
     private RestoreFactory restoreFactory;
 
     @Around(value = "@annotation(annotations.MethodMetrics)")
-    public Object timeMethod(ProceedingJoinPoint joinPoint, MethodMetrics methodMetrics) throws Throwable {
+    public Object timeMethod(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.nanoTime();
         Object result = joinPoint.proceed();
         long timeInMs = (System.nanoTime() - startTime) / 1000000;
         String durationBucket = getDurationBucket(timeInMs);
+        final Signature signature = joinPoint.getSignature();
+        final MethodSignature ms = (MethodSignature) signature;
+        final Method method = ms.getMethod();
         datadogStatsDClient.recordExecutionTime(
                 Constants.DATADOG_TIMINGS,
                 timeInMs,
                 "domain:" + restoreFactory.getDomain(),
-                "user:" + restoreFactory.getWrappedUsername(),
-                "action:" + methodMetrics.action()
+                "action:" + method.getName()
         );
         if (durationBucket.equals("lt_120s") || durationBucket.equals("over_120s")) {
             sendTimingWarningToSentry(timeInMs);

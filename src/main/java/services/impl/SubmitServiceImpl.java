@@ -24,7 +24,7 @@ public class SubmitServiceImpl implements SubmitService {
     protected RestoreFactory restoreFactory;
 
     @Override
-    @MethodMetrics(action = "submit-form")
+    @MethodMetrics
     public ResponseEntity<String> submitForm(String formXml, String submitUrl, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<?> entity = new HttpEntity<Object>(formXml, auth.getAuthHeaders());

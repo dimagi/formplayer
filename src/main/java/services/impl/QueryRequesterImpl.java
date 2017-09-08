@@ -21,7 +21,7 @@ public class QueryRequesterImpl implements QueryRequester {
     private final Log log = LogFactory.getLog(QueryRequesterImpl.class);
 
     @Override
-    @MethodMetrics(action = "case-query")
+    @MethodMetrics
     public String makeQueryRequest(String uri, HttpHeaders headers) {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =

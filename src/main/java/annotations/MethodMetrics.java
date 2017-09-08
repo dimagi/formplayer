@@ -8,11 +8,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for methods whose request and response should not be logged
+ * Annotation for methods whose
  */
 @Component
 @Target(value = {ElementType.METHOD, ElementType.TYPE})
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface MethodMetrics {
-    String action();
 }

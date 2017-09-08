@@ -28,7 +28,7 @@ public class SyncRequesterImpl implements SyncRequester {
     private final Log log = LogFactory.getLog(SyncRequesterImpl.class);
 
     @Override
-    @MethodMetrics(action = "case-claim")
+    @MethodMetrics
     public ResponseEntity<String> makeSyncRequest(String url, String params, HttpHeaders headers) {
         log.info(String.format("SyncRequester with url %s and  params %s and headers %s", url, params, headers));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

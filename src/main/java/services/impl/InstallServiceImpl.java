@@ -2,6 +2,9 @@ package services.impl;
 
 import annotations.MethodMetrics;
 import com.timgroup.statsd.StatsDClient;
+import org.commcare.resources.model.InstallCancelledException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.springframework.stereotype.Component;
 import services.RestoreFactory;
 import services.SubmitService;
 import sqlitedb.SQLiteDB;
@@ -22,6 +25,7 @@ import util.Constants;
  * either from a .ccz or .ccpr reference or existing dbs.
  * This can involve app download, install, and initialization of resources.
  */
+@Component
 public class InstallServiceImpl implements InstallService {
 
     @Autowired
@@ -38,8 +42,19 @@ public class InstallServiceImpl implements InstallService {
 
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
+    @MethodMetrics
+    public FormplayerConfigEngine downloadApplication(String reference) throws InstallCancelledException, UnresolvedResourceException, UnfullfilledRequirementsException {
+        FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
+        if (reference.endsWith(".ccpr")) {
+            engine.initFromLocalFileResource(reference);
+        } else {
+            engine.initFromArchive(reference);
+        }
+        engine.initEnvironment();
+        return engine;
+    }
+
     @Override
-    @MethodMetrics(action = "install-app")
     public FormplayerConfigEngine configureApplication(String reference) throws Exception {
         SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
         log.info("Configuring application with reference " + reference +
@@ -62,14 +77,7 @@ public class InstallServiceImpl implements InstallService {
             if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiationing folder " + sqliteDB.getDatabaseFileForDebugPurposes());
             }
-            FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
-            if (reference.endsWith(".ccpr")) {
-                engine.initFromLocalFileResource(reference);
-            } else {
-                engine.initFromArchive(reference);
-            }
-            engine.initEnvironment();
-            return engine;
+            return downloadApplication(reference);
         } catch (UnresolvedResourceException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
             throw new UnresolvedResourceRuntimeException(e);
