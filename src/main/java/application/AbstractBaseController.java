@@ -325,7 +325,7 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
-        raven.sendRavenException(request, exception, Event.Level.INFO);
+        raven.sendRavenException(exception, Event.Level.INFO);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -387,7 +387,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
-        raven.sendRavenException(req, exception);
+        raven.sendRavenException(exception);
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
