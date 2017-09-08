@@ -323,7 +323,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public QueryRequester queryRequester() {
-        return new QueryRequesterImpl();
+        return new QueryRequester();
     }
 
     @Bean
