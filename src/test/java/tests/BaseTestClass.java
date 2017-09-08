@@ -481,6 +481,23 @@ public class BaseTestClass {
                 clazz);
     }
 
+    <T> T sessionNavigateWithId(String[] selections, String sessionId, int sortIndex, Class<T> clazz) throws Exception {
+        SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(sessionId);
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(menuSession.getDomain());
+        sessionNavigationBean.setAppId(menuSession.getAppId());
+        sessionNavigationBean.setUsername(menuSession.getUsername());
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setMenuSessionId(sessionId);
+        sessionNavigationBean.setInstallReference(menuSession.getInstallReference());
+        sessionNavigationBean.setSortIndex(sortIndex);
+        return generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
     CommandListResponseBean doInstall(String requestPath) throws Exception {
         InstallRequestBean installRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
