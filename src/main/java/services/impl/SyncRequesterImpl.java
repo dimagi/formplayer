@@ -1,5 +1,6 @@
 package services.impl;
 
+import annotations.MethodMetrics;
 import com.timgroup.statsd.StatsDClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,26 +28,18 @@ public class SyncRequesterImpl implements SyncRequester {
     private final Log log = LogFactory.getLog(SyncRequesterImpl.class);
 
     @Override
+    @MethodMetrics(action = "case-claim")
     public ResponseEntity<String> makeSyncRequest(String url, String params, HttpHeaders headers) {
         log.info(String.format("SyncRequester with url %s and  params %s and headers %s", url, params, headers));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED));
         HttpEntity<String> entity = new HttpEntity<>(params, headers);
         RestTemplate restTemplate = new RestTemplate();
-        long start = System.currentTimeMillis();
         ResponseEntity<String> response =
                 restTemplate.exchange(url,
                         HttpMethod.POST,
                         entity, String.class);
         log.info(String.format("SyncRequest gave response %s", response));
-        long taken = System.currentTimeMillis() - start;
-        datadogStatsDClient.recordExecutionTime(
-                Constants.DATADOG_TIMINGS,
-                taken,
-                "domain:" + restoreFactory.getDomain(),
-                "username" + restoreFactory.getWrappedUsername(),
-                "request:" + "case-claim"
-        );
         return response;
     }
 }

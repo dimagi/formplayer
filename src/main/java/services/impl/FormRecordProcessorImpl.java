@@ -1,5 +1,6 @@
 package services.impl;
 
+import annotations.MethodMetrics;
 import com.timgroup.statsd.StatsDClient;
 import database.models.FormplayerCaseIndexTable;
 import engine.FormplayerTransactionParserFactory;
@@ -80,6 +81,7 @@ public class FormRecordProcessorImpl extends XmlFormRecordProcessor implements R
      * TODO They should be unified
      *
      */
+    @MethodMetrics(action = "case-purge")
     public void purgeCases(UserSqlSandbox sandbox) {
         long start = System.currentTimeMillis();
         //We need to determine if we're using ownership for purging. For right now, only in sync mode
@@ -139,13 +141,5 @@ public class FormRecordProcessorImpl extends XmlFormRecordProcessor implements R
         log.info(String.format(
                 "Purged [%d Case, %d Ledger] records in %dms",
                 removedCaseCount, removedLedgers, taken));
-        datadogStatsDClient.recordExecutionTime(
-                Constants.DATADOG_TIMINGS,
-                taken,
-                "domain:" + restoreFactory.getDomain(),
-                "username" + restoreFactory.getWrappedUsername(),
-                "request:" + "case-purge",
-                "case-count" + removedCaseCount
-        );
     }
 }

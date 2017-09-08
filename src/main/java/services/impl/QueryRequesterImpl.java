@@ -1,5 +1,6 @@
 package services.impl;
 
+import annotations.MethodMetrics;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpEntity;
@@ -20,6 +21,7 @@ public class QueryRequesterImpl implements QueryRequester {
     private final Log log = LogFactory.getLog(QueryRequesterImpl.class);
 
     @Override
+    @MethodMetrics(action = "case-query")
     public String makeQueryRequest(String uri, HttpHeaders headers) {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =

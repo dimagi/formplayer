@@ -1,5 +1,6 @@
 package services.impl;
 
+import annotations.MethodMetrics;
 import com.timgroup.statsd.StatsDClient;
 import services.RestoreFactory;
 import services.SubmitService;
@@ -38,13 +39,13 @@ public class InstallServiceImpl implements InstallService {
     private final Log log = LogFactory.getLog(InstallServiceImpl.class);
 
     @Override
+    @MethodMetrics(action = "install-app")
     public FormplayerConfigEngine configureApplication(String reference) throws Exception {
         SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
         log.info("Configuring application with reference " + reference +
                 " and dbPath: " + sqliteDB.getDatabaseFileForDebugPurposes() + " \n" +
                 "and storage factory \" + storageFactory");
         try {
-            long start = System.currentTimeMillis();
             if(sqliteDB.databaseFileExists()) {
                 // Try reusing old install, fail quietly
                 try {
@@ -68,14 +69,6 @@ public class InstallServiceImpl implements InstallService {
                 engine.initFromArchive(reference);
             }
             engine.initEnvironment();
-            long taken = System.currentTimeMillis() - start;
-            datadogStatsDClient.recordExecutionTime(
-                    Constants.DATADOG_TIMINGS,
-                    taken,
-                    "domain:" + storageFactory.getDomain(),
-                    "username" + storageFactory.getWrappedUsername(),
-                    "request:" + "submit-form"
-            );
             return engine;
         } catch (UnresolvedResourceException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());

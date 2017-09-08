@@ -1,5 +1,6 @@
 package services.impl;
 
+import annotations.MethodMetrics;
 import auth.HqAuth;
 import com.timgroup.statsd.StatsDClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,22 +24,14 @@ public class SubmitServiceImpl implements SubmitService {
     protected RestoreFactory restoreFactory;
 
     @Override
+    @MethodMetrics(action = "submit-form")
     public ResponseEntity<String> submitForm(String formXml, String submitUrl, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<?> entity = new HttpEntity<Object>(formXml, auth.getAuthHeaders());
-        long start = System.currentTimeMillis();
         ResponseEntity<String> response =
                 restTemplate.exchange(submitUrl,
                         HttpMethod.POST,
                         entity, String.class);
-        long taken = System.currentTimeMillis() - start;
-        datadogStatsDClient.recordExecutionTime(
-                Constants.DATADOG_TIMINGS,
-                taken,
-                "domain:" + restoreFactory.getDomain(),
-                "username" + restoreFactory.getWrappedUsername(),
-                "request:" + "submit-form"
-        );
         return response;
     }
 }
