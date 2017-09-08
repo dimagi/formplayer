@@ -2,6 +2,7 @@ package aspects;
 
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import util.FormplayerRaven;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Aspect to log the inputs and return of each API method
@@ -46,16 +45,15 @@ public class LoggingAspect {
 
         if (requestBean != null && requestBean instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean) requestBean;
-            Map<String, String> data = new HashMap<String, String>();
-            data.put("path", requestPath);
-            data.put("domain", authenticatedRequestBean.getDomain());
-            data.put("username", authenticatedRequestBean.getUsername());
-            data.put("restoreAs", authenticatedRequestBean.getRestoreAs());
-            data.put("bean", authenticatedRequestBean.toString());
-
-            BreadcrumbBuilder builder = new BreadcrumbBuilder();
-            builder.setData(data);
-            raven.recordBreadcrumb(builder.build());
+            raven.recordBreadcrumb(new BreadcrumbBuilder()
+                    .setData(ImmutableMap.<String, String>builder()
+                            .put("path", requestPath)
+                            .put("domain", authenticatedRequestBean.getDomain())
+                            .put("username", authenticatedRequestBean.getUsername())
+                            .put("restoreAs", authenticatedRequestBean.getRestoreAs())
+                            .put("bean", authenticatedRequestBean.toString())
+                            .build())
+                    .build());
         }
 
         Object result = joinPoint.proceed();
