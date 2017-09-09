@@ -3,7 +3,6 @@ package aspects;
 import beans.InstallFromSessionRequestBean;
 import beans.InstallRequestBean;
 import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.google.common.collect.ImmutableMap;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -13,6 +12,8 @@ import services.FormplayerStorageFactory;
 import util.FormplayerRaven;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Aspect to configure the FormplayerStorageManager
@@ -33,16 +34,18 @@ public class AppInstallAspect {
         if (!(args[0] instanceof InstallRequestBean)) {
             throw new RuntimeException("Could not configure StorageFactory with args " + Arrays.toString(args));
         }
-        final InstallRequestBean requestBean = (InstallRequestBean) args[0];
+        InstallRequestBean requestBean = (InstallRequestBean) args[0];
         storageFactory.configure(requestBean);
 
-        raven.recordBreadcrumb(new BreadcrumbBuilder()
-                .setData(ImmutableMap.of(
-                        "appId", requestBean.getAppId(),
-                        "installReference", requestBean.getInstallReference(),
-                        "locale", requestBean.getLocale()))
-                        .setCategory("application_install")
-                .build());
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("appId", requestBean.getAppId());
+        data.put("installReference", requestBean.getInstallReference());
+        data.put("locale", requestBean.getLocale());
+
+        BreadcrumbBuilder builder = new BreadcrumbBuilder();
+        builder.setData(data);
+        builder.setCategory("application_install");
+        raven.recordBreadcrumb(builder.build());
         raven.setAppId(requestBean.getAppId());
     }
 
