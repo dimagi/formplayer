@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
@@ -177,14 +176,12 @@ public class RestoreFactory {
         return restoreStream;
     }
 
-    private void recordSentryData(String restoreUrl) {
-        Map<String, String> data = new HashMap<String, String>();
-        data.put("restoreUrl", restoreUrl);
-        BreadcrumbBuilder builder = new BreadcrumbBuilder();
-        builder.setData(data);
-        builder.setCategory("restore");
-        builder.setMessage("Restoring from URL " + restoreUrl);
-        raven.recordBreadcrumb(builder.build());
+    private void recordSentryData(final String restoreUrl) {
+        raven.recordBreadcrumb(new BreadcrumbBuilder()
+                .setData(new HashMap<String, String>() {{ put("restoreUrl", restoreUrl); }})
+                .setCategory("restore")
+                .setMessage("Restoring from URL " + restoreUrl)
+                .build());
     }
 
     private void setLastSyncTime() {

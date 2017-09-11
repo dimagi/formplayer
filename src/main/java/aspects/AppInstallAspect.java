@@ -13,7 +13,6 @@ import util.FormplayerRaven;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Aspect to configure the FormplayerStorageManager
@@ -34,18 +33,17 @@ public class AppInstallAspect {
         if (!(args[0] instanceof InstallRequestBean)) {
             throw new RuntimeException("Could not configure StorageFactory with args " + Arrays.toString(args));
         }
-        InstallRequestBean requestBean = (InstallRequestBean) args[0];
+        final InstallRequestBean requestBean = (InstallRequestBean) args[0];
         storageFactory.configure(requestBean);
 
-        Map<String, String> data = new HashMap<String, String>();
-        data.put("appId", requestBean.getAppId());
-        data.put("installReference", requestBean.getInstallReference());
-        data.put("locale", requestBean.getLocale());
-
-        BreadcrumbBuilder builder = new BreadcrumbBuilder();
-        builder.setData(data);
-        builder.setCategory("application_install");
-        raven.recordBreadcrumb(builder.build());
+        raven.recordBreadcrumb(new BreadcrumbBuilder()
+                .setData(new HashMap<String, String>() {{
+                    put("appId", requestBean.getAppId());
+                    put("installReference", requestBean.getInstallReference());
+                    put("locale", requestBean.getLocale());
+                }})
+                .setCategory("application_install")
+                .build());
         raven.setAppId(requestBean.getAppId());
     }
 

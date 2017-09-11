@@ -71,13 +71,11 @@ public class MetricsAspect {
     }
 
     private void sendTimingWarningToSentry(final long timeInMs) {
-        raven.recordBreadcrumb(new BreadcrumbBuilder() {{
-            setCategory("long_request");
-            setLevel(Breadcrumb.Level.WARNING);
-            setData(new HashMap<String, String>() {{
-                put("duration", String.format("%.3fs", timeInMs / 1000.));
-            }});
-        }}.build());
+        raven.recordBreadcrumb(new BreadcrumbBuilder()
+                .setCategory("long_request")
+                .setLevel(Breadcrumb.Level.WARNING)
+                .setData(new HashMap<String, String>() {{ put("duration", String.format("%.3fs", timeInMs / 1000.)); }})
+                .build());
         raven.sendRavenException(new Exception("This request took a long time"), Event.Level.WARNING);
     }
 

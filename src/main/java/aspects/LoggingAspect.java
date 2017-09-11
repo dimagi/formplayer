@@ -15,7 +15,6 @@ import util.FormplayerRaven;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Aspect to log the inputs and return of each API method
@@ -35,7 +34,7 @@ public class LoggingAspect {
         MethodSignature ms = (MethodSignature) joinPoint.getSignature();
         Method m = ms.getMethod();
         Object requestBean = null;
-        String requestPath = m.getAnnotation(RequestMapping.class).value()[0]; //Should be only one
+        final String requestPath = m.getAnnotation(RequestMapping.class).value()[0]; //Should be only one
         try {
             requestBean = joinPoint.getArgs()[0];
             log.info("Request to " + requestPath + " with bean " + requestBean);
@@ -45,17 +44,16 @@ public class LoggingAspect {
         }
 
         if (requestBean != null && requestBean instanceof AuthenticatedRequestBean) {
-            AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean) requestBean;
-            Map<String, String> data = new HashMap<String, String>();
-            data.put("path", requestPath);
-            data.put("domain", authenticatedRequestBean.getDomain());
-            data.put("username", authenticatedRequestBean.getUsername());
-            data.put("restoreAs", authenticatedRequestBean.getRestoreAs());
-            data.put("bean", authenticatedRequestBean.toString());
-
-            BreadcrumbBuilder builder = new BreadcrumbBuilder();
-            builder.setData(data);
-            raven.recordBreadcrumb(builder.build());
+            final AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean) requestBean;
+            raven.recordBreadcrumb(new BreadcrumbBuilder()
+                    .setData(new HashMap<String, String> () {{
+                        put("path", requestPath);
+                        put("domain", authenticatedRequestBean.getDomain());
+                        put("username", authenticatedRequestBean.getUsername());
+                        put("restoreAs", authenticatedRequestBean.getRestoreAs());
+                        put("bean", authenticatedRequestBean.toString());
+                    }})
+                    .build());
         }
 
         Object result = joinPoint.proceed();
