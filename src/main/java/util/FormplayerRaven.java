@@ -1,10 +1,7 @@
 package util;
 
 import com.getsentry.raven.Raven;
-import com.getsentry.raven.event.Breadcrumb;
-import com.getsentry.raven.event.Event;
-import com.getsentry.raven.event.EventBuilder;
-import com.getsentry.raven.event.User;
+import com.getsentry.raven.event.*;
 import com.getsentry.raven.event.interfaces.ExceptionInterface;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import services.RestoreFactory;
 
 import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by benrudolph on 4/27/17.
@@ -60,6 +59,57 @@ public class FormplayerRaven {
         } catch (Exception e) {
             log.info("Error recording breadcrumb. Ensure that raven is configured. ", e);
         }
+    }
+
+    public class BreadcrumbRecorder extends BreadcrumbBuilder {
+        FormplayerRaven parent;
+
+        public BreadcrumbRecorder(FormplayerRaven parent) {
+            this.parent = parent;
+        }
+
+        public BreadcrumbRecorder setData(String... dataPairs) {
+            HashMap<String, String> data = new HashMap<>();
+            // ignores last element if odd number of elements
+            int length = dataPairs.length / 2;
+            for (int i = 0; i < length; i++) {
+                data.put(dataPairs[2 * i], dataPairs[2 * i + 1]);
+            }
+            setData(data);
+            return this;
+        }
+
+        @Override
+        public BreadcrumbRecorder setType(Breadcrumb.Type newType) {
+            return (BreadcrumbRecorder) super.setType(newType);
+        }
+
+        @Override
+        public BreadcrumbRecorder setTimestamp(Date newTimestamp) {
+            return (BreadcrumbRecorder) super.setTimestamp(newTimestamp);
+        }
+
+        @Override
+        public BreadcrumbRecorder setLevel(Breadcrumb.Level newLevel) {
+            return (BreadcrumbRecorder) super.setLevel(newLevel);
+        }
+
+        @Override
+        public BreadcrumbRecorder setMessage(String newMessage) {
+            return (BreadcrumbRecorder) super.setMessage(newMessage);
+        }
+
+        @Override
+        public BreadcrumbRecorder setCategory(String newCategory) {
+            return (BreadcrumbRecorder) super.setCategory(newCategory);
+        }
+
+        public void record() {
+            parent.recordBreadcrumb(super.build());
+        }
+    }
+    public BreadcrumbRecorder newBreadcrumb() {
+        return new BreadcrumbRecorder(this);
     }
 
     public void setUserContext(String userId, String username, String ipAddress) {
