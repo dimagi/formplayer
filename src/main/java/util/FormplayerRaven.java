@@ -13,6 +13,7 @@ import services.RestoreFactory;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by benrudolph on 4/27/17.
@@ -50,7 +51,7 @@ public class FormplayerRaven {
         this.raven = raven;
     }
 
-    public void recordBreadcrumb(Breadcrumb breadcrumb) {
+    private void recordBreadcrumb(Breadcrumb breadcrumb) {
         if (raven == null) {
             return;
         }
@@ -77,6 +78,11 @@ public class FormplayerRaven {
             }
             setData(data);
             return this;
+        }
+
+        @Override
+        public BreadcrumbRecorder setData(Map<String, String> newData) {
+            return (BreadcrumbRecorder) super.setData(newData);
         }
 
         @Override
