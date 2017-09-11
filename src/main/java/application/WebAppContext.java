@@ -3,7 +3,6 @@ package application;
 import aspects.*;
 import com.getsentry.raven.RavenFactory;
 import com.getsentry.raven.dsn.InvalidDsnException;
-import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
@@ -41,7 +40,6 @@ import services.impl.*;
 import util.Constants;
 import util.FormplayerRaven;
 
-import java.util.HashMap;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -247,9 +245,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         } catch (InvalidDsnException e) {
             raven = new FormplayerRaven(null);
         }
-        raven.recordBreadcrumb(new BreadcrumbBuilder()
-                .setData(new HashMap<String, String>() {{ put("environment", environment); }})
-                .build());
+        raven.newBreadcrumb()
+                .setData("environment", environment)
+                .record();
         return raven;
     }
 

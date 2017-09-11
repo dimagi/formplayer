@@ -2,7 +2,6 @@ package aspects;
 
 import beans.InstallFromSessionRequestBean;
 import beans.InstallRequestBean;
-import com.getsentry.raven.event.BreadcrumbBuilder;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -12,7 +11,6 @@ import services.FormplayerStorageFactory;
 import util.FormplayerRaven;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 /**
  * Aspect to configure the FormplayerStorageManager
@@ -36,14 +34,14 @@ public class AppInstallAspect {
         final InstallRequestBean requestBean = (InstallRequestBean) args[0];
         storageFactory.configure(requestBean);
 
-        raven.recordBreadcrumb(new BreadcrumbBuilder()
-                .setData(new HashMap<String, String>() {{
-                    put("appId", requestBean.getAppId());
-                    put("installReference", requestBean.getInstallReference());
-                    put("locale", requestBean.getLocale());
-                }})
+        raven.newBreadcrumb()
+                .setData(
+                        "appId", requestBean.getAppId(),
+                        "installReference", requestBean.getInstallReference(),
+                        "locale", requestBean.getLocale()
+                )
                 .setCategory("application_install")
-                .build());
+                .record();
         raven.setAppId(requestBean.getAppId());
     }
 
