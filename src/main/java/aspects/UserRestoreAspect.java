@@ -14,7 +14,9 @@ import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import repo.impl.PostgresUserRepo;
+import services.RecordProcessorService;
 import services.RestoreFactory;
+import services.impl.FormRecordProcessorImpl;
 import util.UserUtils;
 
 import java.util.Arrays;
@@ -34,6 +36,9 @@ public class UserRestoreAspect {
     @Autowired
     protected PostgresUserRepo postgresUserRepo;
 
+    @Autowired
+    protected RecordProcessorService recordProcessorService;
+
     @Before(value = "@annotation(annotations.UserRestore)")
     public void configureRestoreFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
@@ -45,7 +50,7 @@ public class UserRestoreAspect {
         HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
         restoreFactory.configure((AuthenticatedRequestBean)args[0], auth, requestBean.getUseLiveQuery());
         if (requestBean.isMustRestore()) {
-            CaseAPIs.performSync(restoreFactory);
+            recordProcessorService.performSync(restoreFactory);
         }
     }
 

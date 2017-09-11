@@ -1,7 +1,10 @@
-package api.process;
+package services.impl;
 
+import annotations.MethodMetrics;
+import com.timgroup.statsd.StatsDClient;
 import database.models.FormplayerCaseIndexTable;
 import engine.FormplayerTransactionParserFactory;
+import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.ledger.Ledger;
@@ -19,9 +22,13 @@ import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.model.xform.XPathReference;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.xmlpull.v1.XmlPullParserException;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
+import services.RecordProcessorService;
+import services.RestoreFactory;
+import util.Constants;
 import util.PropertyUtils;
 
 import java.io.ByteArrayInputStream;
@@ -35,11 +42,32 @@ import java.util.Vector;
  * <p>
  * Created by wpride1 on 8/20/15.
  */
-public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
+public class FormRecordProcessorImpl extends XmlFormRecordProcessor implements RecordProcessorService {
 
-    private static final Log log = LogFactory.getLog(FormRecordProcessorHelper.class);
+    @Autowired
+    protected StatsDClient datadogStatsDClient;
 
-    public static void processXML(FormplayerTransactionParserFactory factory, String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
+    @Autowired
+    protected RestoreFactory restoreFactory;
+
+    private final Log log = LogFactory.getLog(FormRecordProcessorImpl.class);
+
+    // This function will only wipe user DBs when they have expired, otherwise will incremental sync
+    public UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
+        if (restoreFactory.isRestoreXmlExpired()) {
+            restoreFactory.getSQLiteDB().deleteDatabaseFile();
+        }
+        // Create parent dirs if needed
+        if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
+            restoreFactory.getSQLiteDB().createDatabaseFolder();
+        }
+        UserSqlSandbox sandbox = CaseAPIs.restoreUser(restoreFactory, restoreFactory.getRestoreXml());
+        purgeCases(sandbox);
+        return sandbox;
+    }
+
+    public void processXML(FormplayerTransactionParserFactory factory, String fileText)
+            throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
         InputStream stream = new ByteArrayInputStream(fileText.getBytes("UTF-8"));
         process(stream, factory);
         if (factory.wereCaseIndexesDisrupted() && PropertyUtils.isAutoPurgeEnabled()) {
@@ -53,7 +81,8 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
      * TODO They should be unified
      *
      */
-    public static void purgeCases(UserSqlSandbox sandbox) {
+    @MethodMetrics
+    public void purgeCases(UserSqlSandbox sandbox) {
         long start = System.currentTimeMillis();
         //We need to determine if we're using ownership for purging. For right now, only in sync mode
         Vector<String> owners = new Vector<>();
@@ -112,6 +141,5 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         log.info(String.format(
                 "Purged [%d Case, %d Ledger] records in %dms",
                 removedCaseCount, removedLedgers, taken));
-
     }
 }

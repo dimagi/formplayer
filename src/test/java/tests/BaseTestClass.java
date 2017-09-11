@@ -103,6 +103,9 @@ public class BaseTestClass {
     @Autowired
     protected SyncRequester syncRequester;
 
+    @Autowired
+    protected RecordProcessorService formRecordProcessor;
+
     @InjectMocks
     protected FormController formController;
 
@@ -114,6 +117,7 @@ public class BaseTestClass {
 
     @InjectMocks
     protected DebuggerController debuggerController;
+
 
     @Mock
     private ListOperations<String, XPathQueryItem> listOperations;
@@ -131,6 +135,7 @@ public class BaseTestClass {
         Mockito.reset(restoreFactoryMock);
         Mockito.reset(submitServiceMock);
         Mockito.reset(installService);
+        Mockito.reset(formRecordProcessor);
         Mockito.reset(userLockRegistry);
         Mockito.reset(newFormResponseFactoryMock);
         Mockito.reset(storageFactoryMock);

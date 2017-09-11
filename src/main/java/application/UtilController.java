@@ -13,6 +13,7 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import services.impl.FormRecordProcessorImpl;
 import sqlitedb.UserDB;
 import util.Constants;
 
@@ -37,7 +38,7 @@ public class UtilController extends AbstractBaseController {
     @UserRestore
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        CaseAPIs.performSync(restoreFactory);
+        recordProcessorService.performSync(restoreFactory);
         return new SyncDbResponseBean();
     }
 

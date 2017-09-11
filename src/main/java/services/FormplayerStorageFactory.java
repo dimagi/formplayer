@@ -64,6 +64,10 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         return new SqliteIndexedStorageUtility(this.sqLiteDB, type, name);
     }
 
+    public String getWrappedUsername() {
+        return asUsername == null ? username : asUsername;
+    }
+
     public String getUsername() {
         return username;
     }

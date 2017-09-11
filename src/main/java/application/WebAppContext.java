@@ -1,5 +1,6 @@
 package application;
 
+import annotations.MethodMetrics;
 import aspects.*;
 import com.getsentry.raven.Raven;
 import com.getsentry.raven.RavenFactory;
@@ -317,6 +318,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    public MethodMetricsAspect methodMetricsAspect() {
+        return new MethodMetricsAspect();
+    }
+
+    @Bean
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return new FormplayerArchiveFileRoot();
     }
@@ -337,5 +343,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public RestTemplateBuilder restTemplateBuilder() {
         return new RestTemplateBuilder();
+    }
+
+    @Bean
+    public RecordProcessorService formRecordProcessor() {
+        return new FormRecordProcessorImpl();
     }
 }
