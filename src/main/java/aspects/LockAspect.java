@@ -86,34 +86,36 @@ public class LockAspect {
 
     private Lock getLockAndBlock(String username, ProceedingJoinPoint joinPoint)
             throws LockError {
-        long startTime = System.nanoTime();
         Lock lock = userLockRegistry.obtain(username);
-        long timeInMs = (System.nanoTime() - startTime) / 1000000;
-        raven.newBreadcrumb()
-                .setCategory(Constants.TimingCategories.WAIT_ON_LOCK)
-                .setMessage(timeInMs > 5 ? "Had to wait to obtain the lock"
-                        : "Didn't have to wait for the lock")
-                .setData("duration", String.format("%.3fs", timeInMs / 1000.))
-                .record();
-
-        datadogStatsDClient.recordExecutionTime(
-                Constants.DATADOG_GRANULAR_TIMINGS,
-                timeInMs,
-                "category:" + Constants.TimingCategories.WAIT_ON_LOCK,
-                "request:" + MetricsAspect.getRequestPath(joinPoint)
-        );
-        if (obtainLock(lock)) {
+        if (obtainLock(lock, joinPoint)) {
             return lock;
         } else {
             throw new LockError();
         }
     }
 
-    private boolean obtainLock(Lock lock) {
+    private boolean obtainLock(Lock lock, ProceedingJoinPoint joinPoint) {
+        long startTime = System.nanoTime();
         try {
             return lock.tryLock(Constants.USER_LOCK_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e){
-            return obtainLock(lock);
+            return obtainLock(lock, joinPoint);
+        } finally {
+            // log timing information
+            long timeInMs = (System.nanoTime() - startTime) / 1000000;
+            raven.newBreadcrumb()
+                    .setCategory(Constants.TimingCategories.WAIT_ON_LOCK)
+                    .setMessage(timeInMs > 5 ? "Had to wait to obtain the lock"
+                            : "Didn't have to wait for the lock")
+                    .setData("duration", String.format("%.3fs", timeInMs / 1000.))
+                    .record();
+
+            datadogStatsDClient.recordExecutionTime(
+                    Constants.DATADOG_GRANULAR_TIMINGS,
+                    timeInMs,
+                    "category:" + Constants.TimingCategories.WAIT_ON_LOCK,
+                    "request:" + MetricsAspect.getRequestPath(joinPoint)
+            );
         }
     }
 }
