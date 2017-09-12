@@ -20,11 +20,11 @@ Download submodule dependencies
 
 To make properties file:
 
-    $ cp config/application.example.properties config/application.properties // Update properties as necessary
+    $ cp config/application.example.properties config/application.properties  # Update properties as necessary
 
 Make sure you have the formplayer database created
 
-    $ createdb formplayer -U commcarehq -h localhost  // Update connection info as necessary
+    $ createdb formplayer -U commcarehq -h localhost  # Update connection info as necessary
 
 To run (with tests):
 
