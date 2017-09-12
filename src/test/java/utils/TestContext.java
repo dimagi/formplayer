@@ -1,6 +1,5 @@
 package utils;
 
-import com.getsentry.raven.Raven;
 import installers.FormplayerInstallerFactory;
 import mocks.MockFormSessionRepo;
 import mocks.MockLockRegistry;
@@ -20,8 +19,6 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
-import services.impl.QueryRequesterImpl;
-import services.impl.SubmitServiceImpl;
 import util.FormplayerRaven;
 
 @Configuration
@@ -91,7 +88,7 @@ public class TestContext {
 
     @Bean
     public SubmitService submitService() {
-        return Mockito.mock(SubmitServiceImpl.class);
+        return Mockito.mock(SubmitService.class);
     }
 
     @Bean
@@ -121,7 +118,7 @@ public class TestContext {
 
     @Bean
     public QueryRequester queryRequester() {
-        return Mockito.mock(QueryRequesterImpl.class);
+        return Mockito.mock(QueryRequester.class);
     }
 
     @Bean
