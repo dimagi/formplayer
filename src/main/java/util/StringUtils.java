@@ -8,6 +8,10 @@ public class StringUtils {
         return user + "@" + domain + "." + host;
     }
 
+    public static String getFullUsername(String user, String domain){
+        return getFullUsername(user, domain, Constants.COMMCARE_USER_SUFFIX);
+    }
+
     public static String getPostUrl(String host, String domain, String appId) {
         return host + "/a/" + domain + "/receiver/" + appId + "/";
     }
