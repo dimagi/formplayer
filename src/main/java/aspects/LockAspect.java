@@ -10,9 +10,9 @@ import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.integration.support.locks.LockRegistry;
+import services.CategoryTimingHelper;
 import util.Constants;
 import util.FormplayerRaven;
-import util.SimpleTimer;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -32,6 +32,9 @@ public class LockAspect {
 
     @Autowired
     private FormplayerRaven raven;
+
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
 
     // needs to be accessible from WebAppContext.exceptionResolver
     public class LockError extends Exception {}
@@ -54,7 +57,7 @@ public class LockAspect {
         Lock lock;
 
         try {
-            lock = getLockAndBlock(username, joinPoint);
+            lock = getLockAndBlock(username);
         } catch (LockError e) {
             logLockError(bean, joinPoint, "_timed_out");
             throw e;
@@ -85,39 +88,27 @@ public class LockAspect {
         );
     }
 
-    private Lock getLockAndBlock(String username, ProceedingJoinPoint joinPoint)
-            throws LockError {
+    private Lock getLockAndBlock(String username) throws LockError {
         Lock lock = userLockRegistry.obtain(username);
-        if (obtainLock(lock, joinPoint)) {
+        if (obtainLock(lock)) {
             return lock;
         } else {
             throw new LockError();
         }
     }
 
-    private boolean obtainLock(Lock lock, ProceedingJoinPoint joinPoint) {
-        SimpleTimer timer = new SimpleTimer();
+    private boolean obtainLock(Lock lock) {
+        CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.WAIT_ON_LOCK);
         timer.start();
         try {
             return lock.tryLock(Constants.USER_LOCK_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e){
-            return obtainLock(lock, joinPoint);
+            return obtainLock(lock);
         } finally {
-            // log timing information
-            timer.end();
-            raven.newBreadcrumb()
-                    .setCategory(Constants.TimingCategories.WAIT_ON_LOCK)
+            timer.end()
                     .setMessage(timer.durationInMs() > 5 ? "Had to wait to obtain the lock"
                             : "Didn't have to wait for the lock")
-                    .setData("duration", timer.formatDuration())
                     .record();
-
-            datadogStatsDClient.recordExecutionTime(
-                    Constants.DATADOG_GRANULAR_TIMINGS,
-                    timer.durationInMs(),
-                    "category:" + Constants.TimingCategories.WAIT_ON_LOCK,
-                    "request:" + MetricsAspect.getRequestPath(joinPoint)
-            );
         }
     }
 }

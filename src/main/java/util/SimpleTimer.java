@@ -8,8 +8,9 @@ public class SimpleTimer {
         startTimeInNs = System.nanoTime();
     }
 
-    public void end() {
+    public SimpleTimer end() {
         endTimeInNs = System.nanoTime();
+        return this;
     }
 
     public long durationInMs() {
