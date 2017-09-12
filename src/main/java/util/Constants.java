@@ -104,6 +104,7 @@ public class Constants {
 
     public static final class TimingCategories {
         public static final String WAIT_ON_LOCK = "wait_on_lock";
+        public static final String SUBMIT_FORM_TO_HQ = "submit_form_to_hq";
     }
 
     // Errors
