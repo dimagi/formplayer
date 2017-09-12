@@ -16,9 +16,19 @@ public class UserUtils {
     }
 
     // If given a domained username, return the un-domained username, otherwise return @param username
-    public static String unwrapUsername(String wrappedUsername) {
+    public static String getUsernameBeforeAtSymbol(String wrappedUsername) {
         return wrappedUsername.contains("@")
                 ? wrappedUsername.substring(0, wrappedUsername.indexOf("@"))
                 : wrappedUsername;
+    }
+
+    public static String getShortUsername(String username, String domain) {
+        String usernameBeforeAtSymbol = getUsernameBeforeAtSymbol(username);
+        String wouldBeFullUsername = StringUtils.getFullUsername(usernameBeforeAtSymbol, domain);
+        if (wouldBeFullUsername.equals(username)) {
+            return usernameBeforeAtSymbol;
+        } else {
+            return username;
+        }
     }
 }
