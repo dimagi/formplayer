@@ -47,14 +47,13 @@ public class MetricsAspect {
         timer.start();
         Object result = joinPoint.proceed();
         timer.end();
-        String durationBucket = timer.getDurationBucket();
 
         datadogStatsDClient.increment(
                 Constants.DATADOG_REQUESTS,
                 "domain:" + domain,
                 "user:" + user,
                 "request:" + requestPath,
-                "duration:" + durationBucket
+                "duration:" + timer.getDurationBucket()
         );
 
         datadogStatsDClient.recordExecutionTime(
@@ -64,7 +63,7 @@ public class MetricsAspect {
                 "user:" + user,
                 "request:" + requestPath
         );
-        if (durationBucket.equals("lt_120s") || durationBucket.equals("over_120s")) {
+        if (timer.durationInMs() >= 60 * 1000) {
             sendTimingWarningToSentry(timer);
         }
         return result;
