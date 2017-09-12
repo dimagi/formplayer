@@ -100,6 +100,11 @@ public class Constants {
     // Datadog metrics
     public static final String DATADOG_REQUESTS = "requests";
     public static final String DATADOG_TIMINGS = "timings";
+    public static final String DATADOG_GRANULAR_TIMINGS = "granular.timings";
+
+    public static final class TimingCategories {
+        public static final String WAIT_ON_LOCK = "wait_on_lock";
+    }
 
     // Errors
     public static final String DATADOG_ERRORS_APP_CONFIG = "errors.app_config";
