@@ -217,7 +217,7 @@ public class MenuSession {
             return queryScreen;
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
             String username = asUser != null ?
-                    StringUtils.getFullUsername(asUser, domain, Constants.COMMCARE_USER_SUFFIX) : null;
+                    StringUtils.getFullUsername(asUser, domain) : null;
             FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
             syncScreen.init(sessionWrapper);
             return syncScreen;

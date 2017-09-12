@@ -163,7 +163,7 @@ public class FormplayerRaven {
                 .withEnvironment(environment)
                 .withTag(HQ_HOST_TAG, host)
                 .withTag(DOMAIN_TAG, domain)
-                .withTag(AS_USER, restoreFactory.getAsUsername())
+                .withTag(AS_USER, restoreFactory.getEffectiveUsername())
                 .withTag(URI, request == null ? null : request.getRequestURI())
                 .withExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL())
                 .withExtra(APP_URL_EXTRA, getAppURL())
