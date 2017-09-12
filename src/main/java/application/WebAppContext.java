@@ -36,7 +36,6 @@ import repo.impl.PostgresMenuSessionRepo;
 import repo.impl.PostgresMigratedFormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import services.*;
-import services.impl.*;
 import util.Constants;
 import util.FormplayerRaven;
 
@@ -233,7 +232,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public XFormService xFormService(){
-        return new XFormServiceImpl();
+        return new XFormService();
     }
 
     @Bean
@@ -265,16 +264,16 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public InstallService installService(){
-        return new InstallServiceImpl();
+        return new InstallService();
     }
 
     @Bean FormattedQuestionsService formattedQuestionsService() {
-        return new FormattedQuestionsServiceImpl();
+        return new FormattedQuestionsService();
     }
 
     @Bean
     public SubmitService submitService(){
-        return new SubmitServiceImpl();
+        return new SubmitService();
     }
 
     @Bean
@@ -319,16 +318,16 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public QueryRequester queryRequester() {
-        return new QueryRequesterImpl();
+        return new QueryRequester();
     }
 
     @Bean
     public SyncRequester syncRequester() {
-        return new SyncRequesterImpl();
+        return new SyncRequester();
     }
 
     @Bean
-    public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsServiceImpl(builder); }
+    public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsService(builder); }
 
     @Bean
     public RestTemplateBuilder restTemplateBuilder() {
