@@ -50,6 +50,18 @@ When building on Linux it is sometimes necessary to run:
     
 Finally, turn on the "Use the new formplayer frontend" feature flag on your CommCareHQ domain
 
+#### Keeping your application.properties up to date
+
+Properties are occasionally added to application.example.properties that will be required to run on the latest version.
+
+If you experience an error after updating, try running
+
+```bash
+diff -u config/application{.example,}.properties
+```
+
+Lines your file is missing will begin with a `-`.
+
 ### Contributing
 
 For PRs that just modify code in the Formplayer repo, submit a PR to Formplayer on a separate branch.
