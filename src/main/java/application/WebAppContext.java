@@ -1,17 +1,14 @@
 package application;
 
 import aspects.*;
-import com.getsentry.raven.Raven;
 import com.getsentry.raven.RavenFactory;
 import com.getsentry.raven.dsn.InvalidDsnException;
-import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.commcare.modern.reference.ArchiveFileRoot;
-import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -34,14 +31,15 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
-import repo.impl.*;
+import repo.impl.PostgresFormSessionRepo;
+import repo.impl.PostgresMenuSessionRepo;
+import repo.impl.PostgresMigratedFormSessionRepo;
+import repo.impl.PostgresUserRepo;
 import services.*;
 import services.impl.*;
 import util.Constants;
 import util.FormplayerRaven;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -241,17 +239,15 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerRaven raven() {
-        Map<String, String> data = new HashMap<String, String>();
-        data.put("environment", environment);
-        BreadcrumbBuilder builder = new BreadcrumbBuilder();
-        builder.setData(data);
         FormplayerRaven raven;
         try {
             raven = new FormplayerRaven(RavenFactory.ravenInstance(ravenDsn));
         } catch (InvalidDsnException e) {
             raven = new FormplayerRaven(null);
         }
-        raven.recordBreadcrumb(builder.build());
+        raven.newBreadcrumb()
+                .setData("environment", environment)
+                .record();
         return raven;
     }
 
