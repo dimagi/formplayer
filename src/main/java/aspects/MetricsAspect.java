@@ -2,7 +2,6 @@ package aspects;
 
 import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.Breadcrumb;
-import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.getsentry.raven.event.Event;
 import com.timgroup.statsd.StatsDClient;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -16,7 +15,6 @@ import util.Constants;
 import util.FormplayerRaven;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 
 /**
  * This aspect records various metrics for every request.
@@ -71,13 +69,11 @@ public class MetricsAspect {
     }
 
     private void sendTimingWarningToSentry(final long timeInMs) {
-        raven.recordBreadcrumb(new BreadcrumbBuilder() {{
-            setCategory("long_request");
-            setLevel(Breadcrumb.Level.WARNING);
-            setData(new HashMap<String, String>() {{
-                put("duration", String.format("%.3fs", timeInMs / 1000.));
-            }});
-        }}.build());
+        raven.newBreadcrumb()
+                .setCategory("long_request")
+                .setLevel(Breadcrumb.Level.WARNING)
+                .setData("duration", String.format("%.3fs", timeInMs / 1000.))
+                .record();
         raven.sendRavenException(new Exception("This request took a long time"), Event.Level.WARNING);
     }
 
