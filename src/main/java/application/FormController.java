@@ -2,6 +2,9 @@ package application;
 
 import annotations.UserLock;
 import annotations.UserRestore;
+import api.json.JsonActionUtils;
+import api.process.FormRecordProcessorHelper;
+import api.util.ApiConstants;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.*;
@@ -13,9 +16,6 @@ import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import api.json.JsonActionUtils;
-import api.process.FormRecordProcessorHelper;
-import api.util.ApiConstants;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -28,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
+import services.CategoryTimingHelper;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -57,6 +58,10 @@ public class FormController extends AbstractBaseController{
     @Autowired
     @Qualifier(value = "migrated")
     protected FormSessionRepo migratedFormSessionRepo;
+
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
+
 
     @Value("${commcarehq.host}")
     private String host;
@@ -140,12 +145,18 @@ public class FormController extends AbstractBaseController{
                 log.error("Submission failed with structure exception " + e);
                 return submitResponseBean;
             }
-
-            ResponseEntity<String> submitResponse = submitService.submitForm(
-                    formEntrySession.getInstanceXml(),
-                    formEntrySession.getPostUrl(),
-                    auth
-            );
+            ResponseEntity<String> submitResponse;
+            CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ);
+            timer.start();
+            try {
+                 submitResponse = submitService.submitForm(
+                        formEntrySession.getInstanceXml(),
+                        formEntrySession.getPostUrl(),
+                        auth
+                );
+            } finally {
+                timer.end().record();
+            }
 
             if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                 submitResponseBean.setStatus("error");
