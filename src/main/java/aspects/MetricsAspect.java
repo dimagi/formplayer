@@ -13,6 +13,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.RequestMapping;
 import util.Constants;
 import util.FormplayerRaven;
+import util.SimpleTimer;
 
 import java.lang.reflect.Method;
 
@@ -42,10 +43,11 @@ public class MetricsAspect {
             user = bean.getUsernameDetail();
         }
 
-        long startTime = System.nanoTime();
+        SimpleTimer timer = new SimpleTimer();
+        timer.start();
         Object result = joinPoint.proceed();
-        long timeInMs = (System.nanoTime() - startTime) / 1000000;
-        String durationBucket = getDurationBucket(timeInMs);
+        timer.end();
+        String durationBucket = timer.getDurationBucket();
 
         datadogStatsDClient.increment(
                 Constants.DATADOG_REQUESTS,
@@ -57,41 +59,24 @@ public class MetricsAspect {
 
         datadogStatsDClient.recordExecutionTime(
                 Constants.DATADOG_TIMINGS,
-                timeInMs,
+                timer.durationInMs(),
                 "domain:" + domain,
                 "user:" + user,
                 "request:" + requestPath
         );
         if (durationBucket.equals("lt_120s") || durationBucket.equals("over_120s")) {
-            sendTimingWarningToSentry(timeInMs);
+            sendTimingWarningToSentry(timer);
         }
         return result;
     }
 
-    private void sendTimingWarningToSentry(final long timeInMs) {
+    private void sendTimingWarningToSentry(SimpleTimer timer) {
         raven.newBreadcrumb()
                 .setCategory("long_request")
                 .setLevel(Breadcrumb.Level.WARNING)
-                .setData("duration", String.format("%.3fs", timeInMs / 1000.))
+                .setData("duration", timer.formatDuration())
                 .record();
         raven.sendRavenException(new Exception("This request took a long time"), Event.Level.WARNING);
-    }
-
-    private static String getDurationBucket(long timeInMs) {
-        long timeInS = timeInMs / 1000;
-        if (timeInS < 1) {
-            return "lt_001s";
-        } else if (timeInS < 5) {
-            return "lt_005s";
-        } else if (timeInS < 20) {
-            return "lt_020s";
-        } else if (timeInS < 60) {
-            return "lt_060s";
-        } else if (timeInS < 120) {
-            return "lt_120s";
-        } else {
-            return "over_120s";
-        }
     }
 
     static String getRequestPath(ProceedingJoinPoint joinPoint) {

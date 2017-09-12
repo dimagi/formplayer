@@ -12,6 +12,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.integration.support.locks.LockRegistry;
 import util.Constants;
 import util.FormplayerRaven;
+import util.SimpleTimer;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -95,24 +96,25 @@ public class LockAspect {
     }
 
     private boolean obtainLock(Lock lock, ProceedingJoinPoint joinPoint) {
-        long startTime = System.nanoTime();
+        SimpleTimer timer = new SimpleTimer();
+        timer.start();
         try {
             return lock.tryLock(Constants.USER_LOCK_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e){
             return obtainLock(lock, joinPoint);
         } finally {
             // log timing information
-            long timeInMs = (System.nanoTime() - startTime) / 1000000;
+            timer.end();
             raven.newBreadcrumb()
                     .setCategory(Constants.TimingCategories.WAIT_ON_LOCK)
-                    .setMessage(timeInMs > 5 ? "Had to wait to obtain the lock"
+                    .setMessage(timer.durationInMs() > 5 ? "Had to wait to obtain the lock"
                             : "Didn't have to wait for the lock")
-                    .setData("duration", String.format("%.3fs", timeInMs / 1000.))
+                    .setData("duration", timer.formatDuration())
                     .record();
 
             datadogStatsDClient.recordExecutionTime(
                     Constants.DATADOG_GRANULAR_TIMINGS,
-                    timeInMs,
+                    timer.durationInMs(),
                     "category:" + Constants.TimingCategories.WAIT_ON_LOCK,
                     "request:" + MetricsAspect.getRequestPath(joinPoint)
             );
