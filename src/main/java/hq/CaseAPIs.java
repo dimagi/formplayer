@@ -69,7 +69,7 @@ public class CaseAPIs {
         // initialize our sandbox's logged in user
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
-            String unwrappedUsername = UserUtils.unwrapUsername(restoreFactory.getWrappedUsername());
+            String unwrappedUsername = UserUtils.getUsernameBeforeAtSymbol(restoreFactory.getWrappedUsername());
             if (unwrappedUsername.equalsIgnoreCase(u.getUsername())) {
                 // set last sync token
                 u.setLastSyncToken(sandbox.getSyncToken());

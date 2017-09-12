@@ -119,6 +119,10 @@ public class RestoreFactory {
         return asUsername == null ? username : asUsername;
     }
 
+    public String getEffectiveUsername() {
+        return UserUtils.getShortUsername(getWrappedUsername(), domain);
+    }
+
     private void ensureValidParameters() {
         if (domain == null || (username == null && asUsername == null)) {
             throw new RuntimeException("Domain and one of username or asUsername must be non-null. " +
@@ -292,7 +296,7 @@ public class RestoreFactory {
             return null;
         }
 
-        username = UserUtils.unwrapUsername(username);
+        username = UserUtils.getUsernameBeforeAtSymbol(username);
 
         SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
         Vector<Integer> users = storage.getIDsForValue(User.META_USERNAME, username);
