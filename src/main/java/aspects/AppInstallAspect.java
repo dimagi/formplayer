@@ -40,7 +40,7 @@ public class AppInstallAspect {
                         "installReference", requestBean.getInstallReference(),
                         "locale", requestBean.getLocale()
                 )
-                .setCategory("application_install")
+                .setCategory("app_info")
                 .record();
         raven.setAppId(requestBean.getAppId());
     }
