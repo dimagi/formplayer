@@ -53,7 +53,7 @@ public class LockAspect {
         Lock lock;
 
         try {
-            lock = getLockAndBlock(username);
+            lock = getLockAndBlock(username, joinPoint);
         } catch (LockError e) {
             logLockError(bean, joinPoint, "_timed_out");
             throw e;
@@ -84,8 +84,24 @@ public class LockAspect {
         );
     }
 
-    private Lock getLockAndBlock(String username) throws LockError {
+    private Lock getLockAndBlock(String username, ProceedingJoinPoint joinPoint)
+            throws LockError {
+        long startTime = System.nanoTime();
         Lock lock = userLockRegistry.obtain(username);
+        long timeInMs = (System.nanoTime() - startTime) / 1000000;
+        raven.newBreadcrumb()
+                .setCategory(Constants.TimingCategories.WAIT_ON_LOCK)
+                .setMessage(timeInMs > 5 ? "Had to wait to obtain the lock"
+                        : "Didn't have to wait for the lock")
+                .setData("duration", String.format("%.3fs", timeInMs / 1000.))
+                .record();
+
+        datadogStatsDClient.recordExecutionTime(
+                Constants.DATADOG_GRANULAR_TIMINGS,
+                timeInMs,
+                "category:" + Constants.TimingCategories.WAIT_ON_LOCK,
+                "request:" + MetricsAspect.getRequestPath(joinPoint)
+        );
         if (obtainLock(lock)) {
             return lock;
         } else {
