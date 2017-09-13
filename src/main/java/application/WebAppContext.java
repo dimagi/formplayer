@@ -252,6 +252,12 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public CategoryTimingHelper categoryTimingHelper() {
+        return new CategoryTimingHelper();
+    }
+
+    @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public RestoreFactory restoreFactory() {
         return new RestoreFactory();
     }
