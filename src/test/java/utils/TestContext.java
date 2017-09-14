@@ -1,5 +1,6 @@
 package utils;
 
+import com.timgroup.statsd.StatsDClient;
 import installers.FormplayerInstallerFactory;
 import mocks.MockFormSessionRepo;
 import mocks.MockLockRegistry;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
+import util.FormplayerHttpRequest;
 import util.FormplayerRaven;
 
 @Configuration
@@ -93,7 +95,7 @@ public class TestContext {
 
     @Bean
     public FormplayerRaven raven() {
-        return Mockito.mock(FormplayerRaven.class);
+        return Mockito.spy(new FormplayerRaven(null));
     }
 
     @Bean
@@ -124,5 +126,19 @@ public class TestContext {
     @Bean
     public SyncRequester syncRequester() {
         return Mockito.mock(SyncRequester.class);
+    }
+
+    @Bean
+    public CategoryTimingHelper categoryTimingHelper() {
+        return Mockito.spy(CategoryTimingHelper.class);
+    }
+
+    @Bean
+    public FormplayerHttpRequest request() {
+        return Mockito.mock(FormplayerHttpRequest.class);
+    }
+    @Bean
+    public StatsDClient datadogStatsDClient() {
+        return Mockito.mock(StatsDClient.class);
     }
 }
