@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
-import org.commcare.suite.model.EntityDatum;
+import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
@@ -40,7 +40,7 @@ public class EntityDetailResponse {
         this.title = title;
         this.details = entityScreen.getData();
         this.headers = entityScreen.getHeaders();
-        this.styles = processStyles(entityScreen.getDetail());
+        this.styles = entityScreen.getStyles();
     }
 
     // Constructor used for persistent case tile
