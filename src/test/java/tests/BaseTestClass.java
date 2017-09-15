@@ -83,6 +83,9 @@ public class BaseTestClass {
     SubmitService submitServiceMock;
 
     @Autowired
+    CategoryTimingHelper categoryTimingHelper;
+
+    @Autowired
     private InstallService installService;
 
     @Autowired
@@ -130,6 +133,7 @@ public class BaseTestClass {
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreFactoryMock);
         Mockito.reset(submitServiceMock);
+        Mockito.reset(categoryTimingHelper);
         Mockito.reset(installService);
         Mockito.reset(userLockRegistry);
         Mockito.reset(newFormResponseFactoryMock);

@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
+import services.CategoryTimingHelper;
 import services.QueryRequester;
 import services.SyncRequester;
 import session.FormSession;
@@ -56,6 +57,9 @@ public class MenuController extends AbstractBaseController {
 
     @Autowired
     private SyncRequester syncRequester;
+
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -189,7 +193,16 @@ public class MenuController extends AbstractBaseController {
                 authToken
         );
         String[] selections = sessionNavigationBean.getSelections();
-        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
+        MenuSession menuSession;
+        CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL);
+        timer.start();
+        try {
+            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
+        } finally {
+            timer.end()
+                    .setMessage(timer.durationInMs() < 50 ? "Seems like nothing to install" : "This took some time")
+                    .record();
+        }
         BaseResponseBean response = advanceSessionWithSelections(
                 menuSession,
                 selections,
