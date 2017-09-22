@@ -181,7 +181,7 @@ public class MenuController extends AbstractBaseController {
      * @return A MenuBean or a NewFormResponse
      * @throws Exception
      */
-    @RequestMapping(value = Constants.URL_MENU_NAVIGATION, method = RequestMethod.POST)
+    @RequestMapping(value = {Constants.URL_MENU_NAVIGATION, Constants.URL_INITIAL_MENU_NAVIGATION}, method = RequestMethod.POST)
     @UserLock
     @UserRestore
     @AppInstall
