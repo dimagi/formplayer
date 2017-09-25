@@ -61,7 +61,8 @@ public class MetricsAspect {
                 timer.durationInMs(),
                 "domain:" + domain,
                 "user:" + user,
-                "request:" + requestPath
+                "request:" + requestPath,
+                "duration:" + timer.getDurationBucket()
         );
         if (timer.durationInMs() >= 60 * 1000) {
             sendTimingWarningToSentry(timer);
