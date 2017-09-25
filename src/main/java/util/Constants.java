@@ -25,6 +25,7 @@ public class Constants {
     public final static String URL_GET_SESSION = "get_session";
     public static final String URL_INSTALL = "install";
     public static final String URL_UPDATE = "update";
+    public static final String URL_INITIAL_MENU_NAVIGATION = "navigate_menu_start";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
     public static final String URL_GET_DETAILS = "get_details";
     public static final String URL_GET_SESSIONS = "get_sessions";
@@ -104,6 +105,8 @@ public class Constants {
 
     public static final class TimingCategories {
         public static final String WAIT_ON_LOCK = "wait_on_lock";
+        public static final String SUBMIT_FORM_TO_HQ = "submit_form_to_hq";
+        public static final String APP_INSTALL = "app_install";
     }
 
     // Errors
