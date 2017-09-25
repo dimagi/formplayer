@@ -107,6 +107,7 @@ public class Constants {
         public static final String WAIT_ON_LOCK = "wait_on_lock";
         public static final String SUBMIT_FORM_TO_HQ = "submit_form_to_hq";
         public static final String APP_INSTALL = "app_install";
+        public static final String PURGE_CASES = "purge_cases";
     }
 
     // Errors
