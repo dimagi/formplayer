@@ -35,6 +35,7 @@ import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 import util.PropertyUtils;
+import util.SimpleTimer;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -136,9 +137,14 @@ public class FormController extends AbstractBaseController{
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
             try {
-                FormRecordProcessorHelper.processXML(new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox(),
+                SimpleTimer purgeCasesTimer = FormRecordProcessorHelper.processXML(
+                        new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox(),
                                 PropertyUtils.isBulkPerformanceEnabled()),
-                        formEntrySession.submitGetXml());
+                        formEntrySession.submitGetXml()
+                ).getPurgeCasesTimer();
+                categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
+                        purgeCasesTimer.durationInMs() > 2 ?
+                                "Puring cases took some time" : "Probably didn't have to purge cases");
             } catch(InvalidStructureException e) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 submitResponseBean.setNotification(new NotificationMessage(e.getMessage(), true));
