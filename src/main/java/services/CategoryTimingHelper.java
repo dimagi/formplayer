@@ -49,7 +49,7 @@ public class CategoryTimingHelper {
         return new RecordingTimer(this, category);
     }
 
-    private void recordCategoryTiming(SimpleTimer timer, String category, String sentryMessage) {
+    public void recordCategoryTiming(SimpleTimer timer, String category, String sentryMessage) {
         raven.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)
