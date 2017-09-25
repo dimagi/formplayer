@@ -27,7 +27,7 @@ public class InlineCaseTilesTest extends BaseTestClass{
     }
 
     @Test
-    public void testHasInline() throws Exception {
+    public void testInlineDetails() throws Exception {
         EntityDetailListResponse response =
                 getDetailsInline(new String[] {"3", "1d59d16b-c52c-49d6-889e-801736962281"},
                         "inlinecasetiles",
@@ -42,6 +42,15 @@ public class InlineCaseTilesTest extends BaseTestClass{
                 sessionNavigate(new String[] {"1", "1d59d16b-c52c-49d6-889e-801736962281"},
                         "inlinecasetiles",
                         CommandListResponseBean.class);
-        assert response.getPersistentCaseTile().hasInlineTile() == false;
+        assert !response.getPersistentCaseTile().getHasInlineTile();
+    }
+
+    @Test
+    public void testHasInline() throws Exception {
+        CommandListResponseBean response =
+                sessionNavigate(new String[] {"3", "1d59d16b-c52c-49d6-889e-801736962281"},
+                        "inlinecasetiles",
+                        CommandListResponseBean.class);
+        assert response.getPersistentCaseTile().getHasInlineTile();
     }
 }
