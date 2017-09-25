@@ -201,7 +201,7 @@ public class EntityDetailResponse {
         this.entities = entities;
     }
 
-    public boolean hasInlineTile() {
+    public boolean getHasInlineTile() {
         return hasInlineTile;
     }
 
