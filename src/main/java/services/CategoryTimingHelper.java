@@ -4,10 +4,7 @@ import com.timgroup.statsd.StatsDClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import util.Constants;
-import util.FormplayerHttpRequest;
-import util.FormplayerRaven;
-import util.SimpleTimer;
+import util.*;
 
 @Component
 public class CategoryTimingHelper {
@@ -60,11 +57,7 @@ public class CategoryTimingHelper {
                 Constants.DATADOG_GRANULAR_TIMINGS,
                 timer.durationInMs(),
                 "category:" + category,
-                "request:" + getRequestEndpoint()
+                "request:" + RequestUtils.getRequestEndpoint(request)
         );
-    }
-
-    private String getRequestEndpoint() {
-        return StringUtils.strip(request.getRequestURI(), "/");
     }
 }

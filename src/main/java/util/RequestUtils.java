@@ -1,5 +1,6 @@
 package util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -59,4 +60,7 @@ public class RequestUtils {
         return data;
     }
 
+    public static String getRequestEndpoint(FormplayerHttpRequest request) {
+        return StringUtils.strip(request.getRequestURI(), "/");
+    }
 }

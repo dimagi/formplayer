@@ -4,6 +4,7 @@ import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.Breadcrumb;
 import com.getsentry.raven.event.Event;
 import com.timgroup.statsd.StatsDClient;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -11,9 +12,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.RequestMapping;
-import util.Constants;
-import util.FormplayerRaven;
-import util.SimpleTimer;
+import util.*;
 
 import java.lang.reflect.Method;
 
@@ -30,13 +29,16 @@ public class MetricsAspect {
     @Autowired
     private FormplayerRaven raven;
 
+    @Autowired
+    private FormplayerHttpRequest request;
+
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         String domain = "<unknown>";
         String user = "<unknown>";
 
-        String requestPath = getRequestPath(joinPoint);
+        String requestPath = RequestUtils.getRequestEndpoint(request);
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
@@ -77,11 +79,5 @@ public class MetricsAspect {
                 .setData("duration", timer.formatDuration())
                 .record();
         raven.sendRavenException(new Exception("This request took a long time"), Event.Level.WARNING);
-    }
-
-    static String getRequestPath(ProceedingJoinPoint joinPoint) {
-        MethodSignature ms = (MethodSignature) joinPoint.getSignature();
-        Method m = ms.getMethod();
-        return m.getAnnotation(RequestMapping.class).value()[0];
     }
 }
