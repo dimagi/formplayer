@@ -12,7 +12,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.integration.support.locks.LockRegistry;
 import services.CategoryTimingHelper;
 import util.Constants;
+import util.FormplayerHttpRequest;
 import util.FormplayerRaven;
+import util.RequestUtils;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -35,6 +37,9 @@ public class LockAspect {
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
+
+    @Autowired
+    private FormplayerHttpRequest request;
 
     // needs to be accessible from WebAppContext.exceptionResolver
     public class LockError extends Exception {}
@@ -83,7 +88,7 @@ public class LockAspect {
                 Constants.DATADOG_ERRORS_LOCK,
                 "domain:" + bean.getDomain(),
                 "user:" + bean.getUsernameDetail(),
-                "request:" + MetricsAspect.getRequestPath(joinPoint),
+                "request:" + RequestUtils.getRequestEndpoint(request),
                 "lock_issue:" + lockIssue
         );
     }
