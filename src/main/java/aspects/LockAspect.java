@@ -16,6 +16,7 @@ import util.FormplayerHttpRequest;
 import util.FormplayerRaven;
 import util.RequestUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
@@ -39,7 +40,7 @@ public class LockAspect {
     private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
-    private FormplayerHttpRequest request;
+    private HttpServletRequest request;
 
     // needs to be accessible from WebAppContext.exceptionResolver
     public class LockError extends Exception {}

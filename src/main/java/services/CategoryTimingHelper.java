@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import util.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Component
 public class CategoryTimingHelper {
     @Autowired
-    private FormplayerHttpRequest request;
+    private HttpServletRequest request;
 
     @Autowired
     private StatsDClient datadogStatsDClient;
