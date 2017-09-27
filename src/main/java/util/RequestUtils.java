@@ -3,7 +3,6 @@ package util;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -61,12 +60,7 @@ public class RequestUtils {
         return data;
     }
 
-    public static String getRequestEndpoint(FormplayerHttpRequest request) {
-        if (request != null) {
-            return StringUtils.strip(((FormplayerHttpRequest) request).getRequestURI(), "/");
-        } else {
-            // this is for tests, see comment on autowired request in MetricsAspect
-            return "";
-        }
+    public static String getRequestEndpoint(HttpServletRequest request) {
+        return StringUtils.strip(request.getRequestURI(), "/");
     }
 }
