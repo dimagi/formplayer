@@ -31,10 +31,7 @@ public class MetricsAspect {
     @Autowired
     private FormplayerRaven raven;
 
-    @Autowired(required = false)
-    // not present in the mock server during tests
-    // I believe this is related to it being @Around @RequestMapping, as if you change that then it's present.
-    // Since it's only during tests, I'm letting this go.
+    @Autowired
     private HttpServletRequest request;
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
