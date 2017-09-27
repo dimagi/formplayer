@@ -61,11 +61,6 @@ public class RequestUtils {
     }
 
     public static String getRequestEndpoint(HttpServletRequest request) {
-        if (request != null) {
-            return StringUtils.strip(request.getRequestURI(), "/");
-        } else {
-            // this is for tests, see comment on autowired request in MetricsAspect
-            return "_";
-        }
+        return StringUtils.strip(request.getRequestURI(), "/");
     }
 }
