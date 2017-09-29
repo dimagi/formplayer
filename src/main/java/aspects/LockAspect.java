@@ -12,7 +12,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.integration.support.locks.LockRegistry;
 import services.CategoryTimingHelper;
 import util.Constants;
-import util.FormplayerHttpRequest;
 import util.FormplayerRaven;
 import util.RequestUtils;
 
