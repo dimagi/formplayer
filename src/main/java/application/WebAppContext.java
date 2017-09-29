@@ -294,7 +294,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public LockAspect lockAspect() {
         return new LockAspect();
     }
@@ -304,7 +303,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public MetricsAspect metricsAspect() {
         return new MetricsAspect();
     }
