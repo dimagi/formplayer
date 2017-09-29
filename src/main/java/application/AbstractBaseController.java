@@ -208,7 +208,13 @@ public abstract class AbstractBaseController {
     protected TreeReference getReference(SessionWrapper session, EntityDatum entityDatum) {
         EvaluationContext ec = session.getEvaluationContext();
         StackFrameStep stepToFrame = getStepToFrame(session);
-        return entityDatum.getEntityFromID(ec, stepToFrame.getValue());
+        String caseId = stepToFrame.getValue();
+        TreeReference reference = entityDatum.getEntityFromID(ec, caseId);
+        if (reference == null) {
+            throw new ApplicationConfigException(String.format("Could not create tile for case with ID %s " +
+                    "because this case does not meet the criteria for the case list with ID %s.", caseId, entityDatum.getShortDetail()));
+        }
+        return reference;
     }
 
     protected EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
