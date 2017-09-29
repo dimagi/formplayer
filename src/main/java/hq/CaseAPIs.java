@@ -67,6 +67,7 @@ public class CaseAPIs {
         ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
         restoreFactory.commit();
         restoreFactory.setAutoCommit(true);
+        sandbox.writeSyncToken();
         return sandbox;
     }
 }
