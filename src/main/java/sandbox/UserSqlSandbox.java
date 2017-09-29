@@ -192,4 +192,12 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     public Connection getConnection() {
         return handler.getConnection();
     }
+
+    @Override
+    public void setSyncToken(String syncToken) {
+        super.setSyncToken(syncToken);
+        User user = getLoggedInUser();
+        user.setLastSyncToken(syncToken);
+        getUserStorage().update(user.getID(), user);
+    }
 }
