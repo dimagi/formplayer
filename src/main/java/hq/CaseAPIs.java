@@ -5,6 +5,7 @@ import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.core.parse.ParseUtils;
+import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
 import org.javarosa.core.services.storage.IStorageIterator;
@@ -70,7 +71,8 @@ public class CaseAPIs {
         for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
             User u = iterator.nextRecord();
             String unwrappedUsername = UserUtils.getUsernameBeforeAtSymbol(restoreFactory.getWrappedUsername());
-            if (unwrappedUsername.equalsIgnoreCase(u.getUsername())) {
+            // Need to scrub username as the wrapped username will have been scrubbed
+            if (unwrappedUsername.equalsIgnoreCase(TableBuilder.scrubName(u.getUsername()))) {
                 // set last sync token
                 u.setLastSyncToken(sandbox.getSyncToken());
                 sandbox.getUserStorage().write(u);
