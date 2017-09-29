@@ -4,19 +4,14 @@ import beans.AuthenticatedRequestBean;
 import com.getsentry.raven.event.Breadcrumb;
 import com.getsentry.raven.event.Event;
 import com.timgroup.statsd.StatsDClient;
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
-import org.springframework.web.bind.annotation.RequestMapping;
 import util.*;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Method;
 
 /**
  * This aspect records various metrics for every request.
