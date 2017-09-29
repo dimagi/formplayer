@@ -67,18 +67,6 @@ public class CaseAPIs {
         ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
         restoreFactory.commit();
         restoreFactory.setAutoCommit(true);
-        // initialize our sandbox's logged in user
-        for (IStorageIterator<User> iterator = sandbox.getUserStorage().iterate(); iterator.hasMore(); ) {
-            User u = iterator.nextRecord();
-            String unwrappedUsername = UserUtils.getUsernameBeforeAtSymbol(restoreFactory.getWrappedUsername());
-            // Need to scrub username as the wrapped username will have been scrubbed
-            if (unwrappedUsername.equalsIgnoreCase(TableBuilder.scrubName(u.getUsername()))) {
-                // set last sync token
-                u.setLastSyncToken(sandbox.getSyncToken());
-                sandbox.getUserStorage().write(u);
-                sandbox.setLoggedInUser(u);
-            }
-        }
         return sandbox;
     }
 }
