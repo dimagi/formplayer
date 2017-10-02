@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
@@ -83,12 +84,9 @@ public class MenuSession {
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
         this.auth = auth;
-
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference);
-
+        this.engine = installService.configureApplication(this.installReference).first;
         this.sandbox = CaseAPIs.getSandbox(restoreFactory);
-
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
@@ -101,14 +99,20 @@ public class MenuSession {
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
                        InstallService installService, RestoreFactory restoreFactory, HqAuth auth, String host,
-                       boolean oneQuestionPerScreen, String asUser) throws Exception {
+                       boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
         this.auth = auth;
         this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference);
+        this.engine = install.first;
+        if (install.second && !preview) {
+            this.sandbox = CaseAPIs.performSync(restoreFactory);
+        } else {
+            this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        }
         this.sandbox = CaseAPIs.getSandbox(restoreFactory);
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
