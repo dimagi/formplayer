@@ -157,35 +157,6 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
     }
 
     @Override
-    public List<Integer> getIDsForValues(String[] fieldNames, Object[] values) {
-        return getIDsForValues(fieldNames, values, null);
-    }
-
-    @Override
-    public List<Integer> getIDsForValues(String[] fieldNames, Object[] values, LinkedHashSet<Integer> returnSet) {
-        Connection connection;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet;
-        try {
-            connection = this.getConnection();
-            preparedStatement =
-                    SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values);
-            resultSet = preparedStatement.executeQuery();
-            return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
-        } catch (SQLException | NullPointerException e) {
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
     public T getRecordForValue(String fieldName, Object value)
             throws NoSuchElementException, InvalidIndexException {
         Connection connection;
