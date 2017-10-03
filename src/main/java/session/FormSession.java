@@ -222,7 +222,7 @@ public class FormSession {
             }
         });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
+        formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
     }
 
     public String getInstanceXml() throws IOException {
