@@ -64,7 +64,7 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory);
+        return new FormSession(serializableFormSession, restoreFactory, true);
     }
 
     private String getFormXml(String formUrl, HqAuth auth) {

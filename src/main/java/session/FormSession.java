@@ -92,7 +92,13 @@ public class FormSession {
         initLocale();
     }
 
-    public FormSession(SerializableFormSession session, RestoreFactory restoreFactory) throws Exception{
+    public FormSession(SerializableFormSession session, RestoreFactory restoreFactory) throws Exception {
+        this(session, restoreFactory, false);
+    }
+
+    public FormSession(SerializableFormSession session,
+                       RestoreFactory restoreFactory,
+                       boolean reloadingIncompleteForm) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();
@@ -113,7 +119,7 @@ public class FormSession {
         this.functionContext = session.getFunctionContext();
         setupJavaRosaObjects();
         setupFunctionContext();
-        initialize(false, session.getSessionData());
+        initialize(false, session.getSessionData(), reloadingIncompleteForm);
         this.postUrl = session.getPostUrl();
     }
 
@@ -151,9 +157,9 @@ public class FormSession {
         setupFunctionContext();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData);
+            initialize(false, sessionData, false);
         } else {
-            initialize(true, sessionData);
+            initialize(true, sessionData, false);
         }
 
         if (this.oneQuestionPerScreen) {
@@ -214,7 +220,7 @@ public class FormSession {
         }
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData) {
+    private void initialize(boolean newInstance, Map<String, String> sessionData, boolean reloadingIncomplete) {
         CommCarePlatform platform = new CommCarePlatform(2, 36, new IStorageIndexedFactory() {
             @Override
             public IStorageUtilityIndexed newStorage(String name, Class type) {
@@ -222,7 +228,7 @@ public class FormSession {
             }
         });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        formDef.initialize(newInstance, sessionWrapper.getIIF(), locale);
+        formDef.initialize(newInstance, false, sessionWrapper.getIIF(), locale, reloadingIncomplete);
     }
 
     public String getInstanceXml() throws IOException {
@@ -463,9 +469,9 @@ public class FormSession {
     public void reload(FormDef formDef, String postUrl) throws IOException {
         if(getInstanceXml() != null){
             loadInstanceXml(formDef, getInstanceXml());
-            initialize(false, sessionData);
+            initialize(false, sessionData, false);
         } else {
-            initialize(true, sessionData);
+            initialize(true, sessionData, false);
         }
         if (this.oneQuestionPerScreen) {
             FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
