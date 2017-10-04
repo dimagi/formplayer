@@ -63,7 +63,21 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         queryPlanner.addQueryHandler(new ModelQueryLookupHandler(matcher));
     }
 
-
+    @Override
+    protected int getNumberOfBatchableKeysInProfileSet(Vector<PredicateProfile> profiles) {
+        int keysToBatch = 0;
+        //Otherwise see how many of these we can bulk process
+        for (int i = 0; i < profiles.size(); ++i) {
+            //If the current key is an index fetch, we actually can't do it in bulk,
+            //so we need to stop
+            if (profiles.elementAt(i).getKey().startsWith(Case.INDEX_CASE_INDEX_PRE) ||
+                    !(profiles.elementAt(i) instanceof IndexedValueLookup)) {
+                break;
+            }
+            keysToBatch++;
+        }
+        return keysToBatch;
+    }
 
     @Override
     protected synchronized void loadElements() {
@@ -100,62 +114,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         if (firstKey.startsWith(Case.INDEX_CASE_INDEX_PRE)) {
             return performCaseIndexQuery(firstKey, profiles);
         }
-
-        //Otherwise see how many of these we can bulk process
-        int numKeys;
-        for (numKeys = 0; numKeys < profiles.size(); ++numKeys) {
-            //If the current key is an index fetch, we actually can't do it in bulk,
-            //so we need to stop
-            if (profiles.elementAt(numKeys).getKey().startsWith(Case.INDEX_CASE_INDEX_PRE) ||
-                    !(profiles.elementAt(numKeys) instanceof IndexedValueLookup)) {
-                break;
-            }
-            //otherwise, it's now in our queue
-        }
-
-        SqliteIndexedStorageUtility<Case> sqlStorage = ((SqliteIndexedStorageUtility<Case>)storage);
-
-        String[] namesToMatch = new String[numKeys];
-        String[] valuesToMatch = new String[numKeys];
-
-        String cacheKey = "";
-        String keyDescription ="";
-
-        for (int i = numKeys - 1; i >= 0; i--) {
-            namesToMatch[i] = profiles.elementAt(i).getKey();
-            valuesToMatch[i] = (String)
-                    (((IndexedValueLookup)profiles.elementAt(i)).value);
-
-            cacheKey += "|" + namesToMatch[i] + "=" + valuesToMatch[i];
-            keyDescription += namesToMatch[i] + "|";
-        }
-        mMostRecentBatchFetch = new String[2][];
-        mMostRecentBatchFetch[0] = namesToMatch;
-        mMostRecentBatchFetch[1] = valuesToMatch;
-
-        LinkedHashSet<Integer> ids;
-        if(mPairedIndexCache.containsKey(cacheKey)) {
-            ids = mPairedIndexCache.get(cacheKey);
-        } else {
-            EvaluationTrace trace = new EvaluationTrace("Case Storage Lookup" + "["+keyDescription + "]");
-            ids = new LinkedHashSet<>();
-            sqlStorage.getIDsForValues(namesToMatch, valuesToMatch, ids);
-            trace.setOutcome("Results: " + ids.size());
-            currentQueryContext.reportTrace(trace);
-
-            mPairedIndexCache.put(cacheKey, ids);
-        }
-
-        if(ids.size() > 50 && ids.size() < PerformanceTuningUtil.getMaxPrefetchCaseBlock()) {
-            RecordSetResultCache cue = currentQueryContext.getQueryCache(RecordSetResultCache.class);
-            cue.reportBulkRecordSet(cacheKey, getStorageCacheName(), ids);
-        }
-
-        //Ok, we matched! Remove all of the keys that we matched
-        for (int i = 0; i < numKeys; ++i) {
-            profiles.removeElementAt(0);
-        }
-        return ids;
+        return super.getNextIndexMatch(profiles, storage, currentQueryContext);
     }
 
     private LinkedHashSet<Integer> performCaseIndexQuery(String firstKey, Vector<PredicateProfile> optimizations) {

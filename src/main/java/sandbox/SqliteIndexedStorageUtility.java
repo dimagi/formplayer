@@ -3,6 +3,8 @@ package sandbox;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.util.Pair;
+import org.javarosa.core.model.condition.LifecycleSignaler;
+import org.javarosa.core.model.condition.RequestAbandonedException;
 import org.javarosa.core.services.Logger;
 import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.storage.EntityFilter;
@@ -12,6 +14,7 @@ import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import services.ConnectionHandler;
+import org.javarosa.core.model.condition.Abandonable;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -149,6 +152,35 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             try {
                 if (resultSet != null) {
                     resultSet.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public List<Integer> getIDsForValues(String[] fieldNames, Object[] values) {
+        return getIDsForValues(fieldNames, values, null);
+    }
+
+    @Override
+    public List<Integer> getIDsForValues(String[] fieldNames, Object[] values, LinkedHashSet<Integer> returnSet) {
+        Connection connection;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet;
+        try {
+            connection = this.getConnection();
+            preparedStatement =
+                    SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values);
+            resultSet = preparedStatement.executeQuery();
+            return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
+        } catch (SQLException | NullPointerException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -500,8 +532,13 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         return newObject(new ByteArrayInputStream(serializedObjectAsBytes), dbEntryId);
     }
 
-    public void bulkRead(LinkedHashSet<Integer> body, HashMap<Integer, T> recordMap) {
-        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(body);
+    public void bulkRead(LinkedHashSet<Integer> cuedCases, HashMap<Integer, T> recordMap) {
+        bulkRead(cuedCases, recordMap, null);
+    }
+
+    @Override
+    public void bulkRead(LinkedHashSet<Integer> cuedCases, HashMap<Integer, T> recordMap, Abandonable abandonable) throws RequestAbandonedException {
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases);
         PreparedStatement preparedStatement = null;
         Connection connection;
         ResultSet resultSet = null;
@@ -516,6 +553,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                                 querySet.second);
                 resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
+                    LifecycleSignaler.AssertNotAbandoned(abandonable);
                     int index = resultSet.findColumn(DatabaseHelper.DATA_COL);
                     byte[] data = resultSet.getBytes(index);
                     recordMap.put(resultSet.getInt(DatabaseHelper.ID_COL),
@@ -533,14 +571,15 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                 e.printStackTrace();
             }
             try {
-            if (resultSet != null) {
-                resultSet.close();
+                if (resultSet != null) {
+                    resultSet.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
+
 
     /**
      * Retrieves a set of the models in storage based on a list of values matching one if the
