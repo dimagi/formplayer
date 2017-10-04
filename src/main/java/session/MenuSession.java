@@ -15,6 +15,7 @@ import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.OrderedHashtable;
@@ -253,7 +254,7 @@ public class MenuSession {
         return ret;
     }
 
-    public FormSession getFormEntrySession() throws Exception {
+    public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
@@ -261,7 +262,7 @@ public class MenuSession {
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen,
-                asUser, appId, null);
+                asUser, appId, null, formSendCalloutHandler);
     }
 
     public void reloadSession(FormSession formSession) throws Exception {
