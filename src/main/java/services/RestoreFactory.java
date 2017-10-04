@@ -305,7 +305,7 @@ public class RestoreFactory {
         if (asUsername == null) {
             return DEVICE_ID_SLUG;
         }
-        return String.format("%s|%s|as|%s", DEVICE_ID_SLUG, username, asUsername);
+        return String.format("%s*%s*as*%s", DEVICE_ID_SLUG, username, asUsername);
     }
 
     public String getRestoreUrl() {
