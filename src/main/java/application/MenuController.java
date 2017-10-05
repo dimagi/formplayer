@@ -3,7 +3,6 @@ package application;
 import annotations.AppInstall;
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.HqAuth;
 import beans.InstallRequestBean;
 import beans.NewFormResponse;
 import beans.NotificationMessage;
@@ -212,10 +211,7 @@ public class MenuController extends AbstractBaseController {
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             menuSession = getMenuSession(
-                    sessionNavigationBean.getDomain(),
-                    sessionNavigationBean.getUsername(),
-                    menuSessionId,
-                    authToken
+                    menuSessionId
             );
         } else {
             // If we have a preview command, load that up
