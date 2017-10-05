@@ -84,7 +84,9 @@ public class MenuController extends AbstractBaseController {
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
             try {
-                FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()), restoreFactory);
+                FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()),
+                        restoreFactory,
+                        formSendCalloutHandler);
                 updatedSession.reloadSession(oldSession);
                 return new NewFormResponse(oldSession);
             } catch (FormNotFoundException e) {
