@@ -289,10 +289,8 @@ public abstract class AbstractBaseController {
         return response;
     }
 
-    protected MenuSession getMenuSession(String domain, String username, String menuSessionId, String authToken) throws Exception {
-        MenuSession menuSession = null;
-
-        menuSession = new MenuSession(
+    protected MenuSession getMenuSession(String menuSessionId) throws Exception {
+        MenuSession menuSession = new MenuSession(
                 menuSessionRepo.findOneWrapped(menuSessionId),
                 installService,
                 restoreFactory,
