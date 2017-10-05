@@ -12,6 +12,7 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
     private String appId;
     private String locale;
     private boolean oneQuestionPerScreen;
+    private boolean preview;
 
     public String getInstallReference() {
         return installReference;
@@ -59,5 +60,13 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
 
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    public boolean getPreview() {
+        return preview;
+    }
+
+    public void setPreview(boolean preview) {
+        this.preview = preview;
     }
 }

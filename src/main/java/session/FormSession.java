@@ -11,6 +11,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import api.json.JsonActionUtils;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import org.commcare.core.interfaces.UserSandbox;
@@ -92,13 +93,16 @@ public class FormSession {
         initLocale();
     }
 
-    public FormSession(SerializableFormSession session, RestoreFactory restoreFactory) throws Exception {
-        this(session, restoreFactory, false);
+    public FormSession(SerializableFormSession session,
+                       RestoreFactory restoreFactory,
+                       FormSendCalloutHandler formSendCalloutHandler) throws Exception {
+        this(session, restoreFactory, false, formSendCalloutHandler);
     }
 
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
-                       boolean reloadingIncompleteForm) throws Exception{
+                       boolean reloadingIncompleteForm,
+                       FormSendCalloutHandler formSendCalloutHandler) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();
@@ -116,6 +120,7 @@ public class FormSession {
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
+        formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.functionContext = session.getFunctionContext();
         setupJavaRosaObjects();
         setupFunctionContext();
@@ -136,9 +141,11 @@ public class FormSession {
                        boolean oneQuestionPerScreen,
                        String asUser,
                        String appId,
-                       Map<String, FunctionHandler[]> functionContext) throws Exception {
+                       Map<String, FunctionHandler[]> functionContext,
+                       FormSendCalloutHandler formSendCalloutHandler) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
+        formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
         this.sessionData = sessionData;
         this.domain = domain;
@@ -228,7 +235,7 @@ public class FormSession {
             }
         });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        formDef.initialize(newInstance, false, sessionWrapper.getIIF(), locale, reloadingIncomplete);
+        formDef.initialize(newInstance, false, sessionWrapper.getIIF(), locale, reloadingIncomplete, false);
     }
 
     public String getInstanceXml() throws IOException {

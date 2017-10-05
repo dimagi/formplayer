@@ -6,6 +6,7 @@ import beans.NewSessionRequestBean;
 import hq.CaseAPIs;
 import objects.SerializableFormSession;
 import org.apache.commons.io.IOUtils;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import sandbox.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.xform.util.XFormUtils;
@@ -33,6 +34,9 @@ public class NewFormResponseFactory {
     @Autowired
     private FormSessionRepo formSessionRepo;
 
+    @Autowired
+    private FormSendCalloutHandler formSendCalloutHandler;
+
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl, HqAuth auth) throws Exception {
 
         String formXml = getFormXml(bean.getFormUrl(), auth);
@@ -51,7 +55,8 @@ public class NewFormResponseFactory {
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs(),
                 bean.getSessionData().getAppId(),
-                bean.getSessionData().getFunctionContext()
+                bean.getSessionData().getFunctionContext(),
+                formSendCalloutHandler
         );
 
         formSessionRepo.save(formSession.serialize());
@@ -64,7 +69,7 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, true);
+        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler);
     }
 
     private String getFormXml(String formUrl, HqAuth auth) {

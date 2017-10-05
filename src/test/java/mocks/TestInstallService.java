@@ -1,6 +1,7 @@
 package mocks;
 
 import engine.FormplayerConfigEngine;
+import org.commcare.modern.util.Pair;
 import services.InstallService;
 
 import java.io.File;
@@ -12,7 +13,7 @@ import java.net.URL;
 public class TestInstallService extends InstallService {
 
     @Override
-    public FormplayerConfigEngine configureApplication(String reference) throws Exception {
+    public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference) throws Exception {
         return super.configureApplication(getTestResourcePath(reference));
     }
 
