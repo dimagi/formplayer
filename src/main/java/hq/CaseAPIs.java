@@ -84,6 +84,8 @@ public class CaseAPIs {
                 if (++counter >= maxRetries) {
                     throw e;
                 } else {
+                    restoreFactory.getSQLiteDB().deleteDatabaseFile();
+                    restoreFactory.getSQLiteDB().createDatabaseFolder();
                     log.info(String.format("Retrying restore for user %s after receiving exception.",
                             restoreFactory.getEffectiveUsername()),
                             e);
