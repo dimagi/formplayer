@@ -3,6 +3,7 @@ package hq;
 import api.process.FormRecordProcessorHelper;
 import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
+import exceptions.SQLiteRuntimeException;
 import org.commcare.cases.model.Case;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
@@ -12,6 +13,7 @@ import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.sqlite.SQLiteException;
 import org.xmlpull.v1.XmlPullParserException;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
@@ -20,6 +22,7 @@ import util.UserUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 
 /**
  * Created by willpride on 1/7/16.
@@ -61,13 +64,23 @@ public class CaseAPIs {
     private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, InputStream restorePayload) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
-        UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
-        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
-        restoreFactory.setAutoCommit(false);
-        ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
-        restoreFactory.commit();
-        restoreFactory.setAutoCommit(true);
-        sandbox.writeSyncToken();
-        return sandbox;
+        int maxRetries = 2;
+        int counter = 0;
+        while (true) {
+            try {
+                UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
+                FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
+                restoreFactory.setAutoCommit(false);
+                ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
+                restoreFactory.commit();
+                restoreFactory.setAutoCommit(true);
+                sandbox.writeSyncToken();
+                return sandbox;
+            } catch (SQLiteRuntimeException e) {
+                if (++counter >= maxRetries) {
+                    throw e;
+                }
+            }
+        }
     }
 }
