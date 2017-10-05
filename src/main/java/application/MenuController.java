@@ -462,7 +462,8 @@ public class MenuController extends AbstractBaseController {
                 auth,
                 host,
                 bean.getOneQuestionPerScreen(),
-                bean.getRestoreAs()
+                bean.getRestoreAs(),
+                bean.getPreview()
         );
     }
 
