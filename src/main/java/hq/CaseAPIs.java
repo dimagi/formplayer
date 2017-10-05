@@ -4,6 +4,8 @@ import api.process.FormRecordProcessorHelper;
 import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
 import exceptions.SQLiteRuntimeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
@@ -28,6 +30,8 @@ import java.sql.SQLException;
  * Created by willpride on 1/7/16.
  */
 public class CaseAPIs {
+
+    private static final Log log = LogFactory.getLog(CaseAPIs.class);
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public static UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
@@ -79,6 +83,10 @@ public class CaseAPIs {
             } catch (SQLiteRuntimeException e) {
                 if (++counter >= maxRetries) {
                     throw e;
+                } else {
+                    log.info(String.format("Retrying restore for user %s after receiving exception.",
+                            restoreFactory.getEffectiveUsername()),
+                            e);
                 }
             }
         }
