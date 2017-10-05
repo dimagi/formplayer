@@ -111,17 +111,6 @@ public abstract class AbstractBaseController {
         return getNextMenu(menuSession, 0, "", 0);
     }
 
-    protected HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
-        HqAuth auth;
-        if (UserUtils.isAnonymous(domain, username)) {
-            PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
-            auth = new TokenAuth(postgresUser.getAuthToken());
-        } else {
-            auth = new DjangoAuth(sessionToken);
-        }
-        return auth;
-    }
-
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
                                            int offset,
                                            String searchText,
@@ -302,17 +291,11 @@ public abstract class AbstractBaseController {
 
     protected MenuSession getMenuSession(String domain, String username, String menuSessionId, String authToken) throws Exception {
         MenuSession menuSession = null;
-        HqAuth auth = getAuthHeaders(
-                domain,
-                username,
-                authToken
-        );
 
         menuSession = new MenuSession(
                 menuSessionRepo.findOneWrapped(menuSessionId),
                 installService,
                 restoreFactory,
-                auth,
                 host
         );
         menuSession.getSessionWrapper().syncState();
