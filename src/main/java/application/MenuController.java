@@ -104,11 +104,6 @@ public class MenuController extends AbstractBaseController {
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession;
-        HqAuth auth = getAuthHeaders(
-                sessionNavigationBean.getDomain(),
-                sessionNavigationBean.getUsername(),
-                authToken
-        );
         try {
             menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         } catch (MenuNotFoundException e) {
@@ -118,7 +113,6 @@ public class MenuController extends AbstractBaseController {
         if (sessionNavigationBean.getIsPersistent()) {
             advanceSessionWithSelections(menuSession,
                     sessionNavigationBean.getSelections(),
-                    auth,
                     null,
                     sessionNavigationBean.getQueryDictionary(),
                     sessionNavigationBean.getOffset(),
@@ -142,7 +136,6 @@ public class MenuController extends AbstractBaseController {
         advanceSessionWithSelections(
                 menuSession,
                 commitSelections,
-                auth,
                 detailSelection,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
@@ -187,11 +180,6 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        HqAuth auth = getAuthHeaders(
-                sessionNavigationBean.getDomain(),
-                sessionNavigationBean.getUsername(),
-                authToken
-        );
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
         CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL);
@@ -206,7 +194,6 @@ public class MenuController extends AbstractBaseController {
         BaseResponseBean response = advanceSessionWithSelections(
                 menuSession,
                 selections,
-                auth,
                 null,
                 sessionNavigationBean.getQueryDictionary(),
                 sessionNavigationBean.getOffset(),
@@ -251,7 +238,6 @@ public class MenuController extends AbstractBaseController {
      *                        An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
      *                        <p>
      *                        This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
-     * @param auth
      * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
      *                        it is used to short circuit the normal TreeReference calculation by inserting a predicate that
      *                        is [@case_id = <detailSelection>].
@@ -261,7 +247,6 @@ public class MenuController extends AbstractBaseController {
      */
     private BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                           String[] selections,
-                                                          HqAuth auth,
                                                           String detailSelection,
                                                           Hashtable<String, String> queryDictionary,
                                                           int offset,
@@ -302,8 +287,7 @@ public class MenuController extends AbstractBaseController {
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
                         (FormplayerSyncScreen) nextScreen,
-                        menuSession,
-                        auth);
+                        menuSession);
                 if (syncResponse != null) {
                     syncResponse.setSelections(overrideSelections);
                     return syncResponse;
@@ -390,11 +374,9 @@ public class MenuController extends AbstractBaseController {
      * or just return to the app menu.
      */
     private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
-                                           MenuSession menuSession,
-                                           HqAuth auth) throws Exception {
+                                           MenuSession menuSession) throws Exception {
         NotificationMessage notificationMessage = doSync(
-                nextScreen,
-                auth
+                nextScreen
         );
 
         BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
@@ -410,10 +392,10 @@ public class MenuController extends AbstractBaseController {
         }
     }
 
-    private NotificationMessage doSync(FormplayerSyncScreen screen, HqAuth auth) throws Exception {
+    private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
         ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
                 screen.getBuiltQuery(),
-                auth.getAuthHeaders());
+                restoreFactory.getHqAuth().getAuthHeaders());
         if (responseEntity == null) {
             return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
         }
@@ -441,11 +423,6 @@ public class MenuController extends AbstractBaseController {
     }
 
     private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
-        HqAuth auth = getAuthHeaders(
-                bean.getDomain(),
-                bean.getUsername(),
-                authToken
-        );
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");
@@ -459,7 +436,6 @@ public class MenuController extends AbstractBaseController {
                 bean.getLocale(),
                 installService,
                 restoreFactory,
-                auth,
                 host,
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs()

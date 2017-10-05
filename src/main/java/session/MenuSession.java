@@ -75,14 +75,14 @@ public class MenuSession {
     ArrayList<String> titles;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreFactory restoreFactory, HqAuth auth, String host) throws Exception {
+                       RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
         this.domain = session.getDomain();
         this.asUser = session.getAsUser();
         this.locale = session.getLocale();
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
-        this.auth = auth;
+        this.auth = restoreFactory.getHqAuth();
 
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference);
@@ -100,11 +100,11 @@ public class MenuSession {
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
-                       InstallService installService, RestoreFactory restoreFactory, HqAuth auth, String host,
+                       InstallService installService, RestoreFactory restoreFactory, String host,
                        boolean oneQuestionPerScreen, String asUser) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
-        this.auth = auth;
+        this.auth = restoreFactory.getHqAuth();
         this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
