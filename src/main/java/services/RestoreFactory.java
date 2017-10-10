@@ -112,6 +112,14 @@ public class RestoreFactory {
         }
     }
 
+    public void rollback() {
+        try {
+            sqLiteDB.getConnection().rollback();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public SQLiteDB getSQLiteDB() {
         return sqLiteDB;
     }
