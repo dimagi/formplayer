@@ -76,7 +76,7 @@ public class CaseAPIs {
                 sandbox.writeSyncToken();
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
-                if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
+                if (++counter >= maxRetries) {
                     // Before throwing exception, rollback any changes to relinquish SQLite lock
                     restoreFactory.rollback();
                     restoreFactory.setAutoCommit(true);
