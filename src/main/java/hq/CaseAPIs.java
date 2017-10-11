@@ -75,8 +75,11 @@ public class CaseAPIs {
                 restoreFactory.setAutoCommit(true);
                 sandbox.writeSyncToken();
                 return sandbox;
-            } catch (SQLiteRuntimeException e) {
-                if (++counter >= maxRetries) {
+            } catch (InvalidStructureException | SQLiteRuntimeException e) {
+                if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
+                    // Before throwing exception, rollback any changes to relinquish SQLite lock
+                    restoreFactory.rollback();
+                    restoreFactory.setAutoCommit(true);
                     throw e;
                 } else {
                     restoreFactory.getSQLiteDB().deleteDatabaseFile();
