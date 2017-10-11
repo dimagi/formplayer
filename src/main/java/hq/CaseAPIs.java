@@ -39,7 +39,7 @@ public class CaseAPIs {
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             restoreFactory.getSQLiteDB().createDatabaseFolder();
         }
-        UserSqlSandbox sandbox = restoreUser(restoreFactory, restoreFactory.getRestoreXml());
+        UserSqlSandbox sandbox = restoreUser(restoreFactory);
         FormRecordProcessorHelper.purgeCases(sandbox);
         return sandbox;
     }
@@ -51,7 +51,7 @@ public class CaseAPIs {
             return restoreFactory.getSqlSandbox();
         } else {
             restoreFactory.getSQLiteDB().createDatabaseFolder();
-            return restoreUser(restoreFactory, restoreFactory.getRestoreXml());
+            return restoreUser(restoreFactory);
         }
     }
 
@@ -60,7 +60,7 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, InputStream restorePayload) throws
+    private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         int maxRetries = 2;
@@ -70,7 +70,7 @@ public class CaseAPIs {
                 UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
                 FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
                 restoreFactory.setAutoCommit(false);
-                ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
+                ParseUtils.parseIntoSandbox(restoreFactory.getRestoreXml(), factory, true, true);
                 restoreFactory.commit();
                 restoreFactory.setAutoCommit(true);
                 sandbox.writeSyncToken();
@@ -80,10 +80,10 @@ public class CaseAPIs {
                     // Before throwing exception, rollback any changes to relinquish SQLite lock
                     restoreFactory.rollback();
                     restoreFactory.setAutoCommit(true);
-                    throw e;
-                } else {
                     restoreFactory.getSQLiteDB().deleteDatabaseFile();
                     restoreFactory.getSQLiteDB().createDatabaseFolder();
+                    throw e;
+                } else {
                     log.info(String.format("Retrying restore for user %s after receiving exception.",
                             restoreFactory.getEffectiveUsername()),
                             e);
