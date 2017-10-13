@@ -1,8 +1,8 @@
 package aspects;
 
 import beans.AuthenticatedRequestBean;
-import com.getsentry.raven.event.Event;
 import com.timgroup.statsd.StatsDClient;
+import io.sentry.event.Event;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,7 +12,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.integration.support.locks.LockRegistry;
 import services.CategoryTimingHelper;
 import util.Constants;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 import util.RequestUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +33,7 @@ public class LockAspect {
     private StatsDClient datadogStatsDClient;
 
     @Autowired
-    private FormplayerRaven raven;
+    private FormplayerSentry raven;
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;

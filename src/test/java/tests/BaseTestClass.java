@@ -2,7 +2,6 @@ package tests;
 
 import application.*;
 import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
@@ -31,7 +30,7 @@ import repo.SerializableMenuSession;
 import sandbox.SqlSandboxUtils;
 import services.*;
 import util.Constants;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 import util.PrototypeUtils;
 import utils.FileUtils;
 import utils.TestContext;
@@ -92,7 +91,7 @@ public class BaseTestClass {
     private NewFormResponseFactory newFormResponseFactoryMock;
 
     @Autowired
-    protected FormplayerRaven ravenMock;
+    protected FormplayerSentry ravenMock;
 
     @Autowired
     protected LockRegistry userLockRegistry;
