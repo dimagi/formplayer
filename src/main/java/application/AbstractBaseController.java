@@ -23,6 +23,7 @@ import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.*;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -85,6 +86,9 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected FormplayerRaven raven;
+
+    @Autowired
+    protected FormSendCalloutHandler formSendCalloutHandler;
 
     @Autowired
     PostgresUserRepo postgresUserRepo;
@@ -282,7 +286,7 @@ public abstract class AbstractBaseController {
     }
 
     private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
-        FormSession formEntrySession = menuSession.getFormEntrySession();
+        FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler);
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         NewFormResponse response = new NewFormResponse(formEntrySession);
         formSessionRepo.save(formEntrySession.serialize());

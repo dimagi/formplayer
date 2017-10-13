@@ -16,6 +16,7 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.QuestionDef;
 import org.javarosa.core.model.SubmissionProfile;
+import org.javarosa.core.model.actions.SendAction;
 import org.javarosa.core.model.actions.SetValueAction;
 import org.javarosa.core.model.data.*;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -93,7 +94,8 @@ public class PrototypeUtils {
                 SeriesData.class.getName(),
                 Graph.class.getName(),
                 XYSeries.class.getName(),
-                BubbleSeries.class.getName()
+                BubbleSeries.class.getName(),
+                SendAction.class.getName(),
         };
 
         for(Class clazz: FunctionUtils.getXPathFuncListMap().values()){

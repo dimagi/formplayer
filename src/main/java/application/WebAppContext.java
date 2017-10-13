@@ -339,4 +339,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     public RestTemplateBuilder restTemplateBuilder() {
         return new RestTemplateBuilder();
     }
+
+    @Bean
+    public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
+        return new FormplayerFormSendCalloutHandler();
+    }
 }
