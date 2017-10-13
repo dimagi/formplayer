@@ -316,6 +316,14 @@ public class RestoreFactory {
         return String.format("%s*%s*as*%s", DEVICE_ID_SLUG, username, asUsername);
     }
 
+    public HttpHeaders getUserHeaders() {
+        HttpHeaders headers = getHqAuth().getAuthHeaders();
+        headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
+        headers.set("X-OpenRosa-Version", "3.0");
+        headers.set("X-OpenRosa-DeviceId", getSyncDeviceId());
+        return headers;
+    }
+
     public String getRestoreUrl() {
         StringBuilder builder = new StringBuilder();
         builder.append(host);

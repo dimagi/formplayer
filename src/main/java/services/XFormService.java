@@ -1,6 +1,6 @@
 package services;
 
-import auth.HqAuth;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -8,12 +8,15 @@ import org.springframework.web.client.RestTemplate;
 
 public class XFormService {
 
-    public String getFormXml(String formUrl, HqAuth hqAuth) {
+    @Autowired
+    RestoreFactory restoreFactory;
+
+    public String getFormXml(String formUrl) {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
                 restTemplate.exchange(formUrl,
                         HttpMethod.GET,
-                        new HttpEntity<String>(hqAuth.getAuthHeaders()), String.class);
+                        new HttpEntity<String>(restoreFactory.getUserHeaders()), String.class);
         return response.getBody();
     }
 }

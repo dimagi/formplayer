@@ -78,8 +78,7 @@ public class FormController extends AbstractBaseController{
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String postUrl = host + newSessionBean.getPostUrl();
         return newFormResponseFactory.getResponse(newSessionBean,
-                postUrl,
-                new DjangoAuth(authToken));
+                postUrl);
     }
 
     @ApiOperation(value = "Answer the question at the given index")
@@ -151,8 +150,7 @@ public class FormController extends AbstractBaseController{
             try {
                  submitResponse = submitService.submitForm(
                         formEntrySession.getInstanceXml(),
-                        formEntrySession.getPostUrl(),
-                        restoreFactory.getHqAuth()
+                        formEntrySession.getPostUrl()
                 );
             } finally {
                 timer.end().record();
