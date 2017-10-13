@@ -72,7 +72,6 @@ public class MenuSession {
 
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
-    private HqAuth auth;
     private boolean oneQuestionPerScreen;
     ArrayList<String> titles;
 
@@ -84,7 +83,6 @@ public class MenuSession {
         this.locale = session.getLocale();
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
-        this.auth = restoreFactory.getHqAuth();
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference).first;
         this.sandbox = CaseAPIs.getSandbox(restoreFactory);
@@ -103,7 +101,6 @@ public class MenuSession {
                        boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
-        this.auth = restoreFactory.getHqAuth();
         this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
@@ -217,7 +214,7 @@ public class MenuSession {
             computeDatum();
             return getNextScreen();
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
-            QueryScreen queryScreen = new FormplayerQueryScreen(auth);
+            QueryScreen queryScreen = new FormplayerQueryScreen();
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {

@@ -351,7 +351,7 @@ public class MenuController extends AbstractBaseController {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
         NotificationMessage notificationMessage = null;
         screen.answerPrompts(queryDictionary);
-        String responseString = queryRequester.makeQueryRequest(screen.getUriString(), screen.getAuthHeaders());
+        String responseString = queryRequester.makeQueryRequest(screen.getUriString(), restoreFactory.getUserHeaders());
         boolean success = screen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
             if (screen.getCurrentMessage() != null) {
@@ -393,7 +393,7 @@ public class MenuController extends AbstractBaseController {
     private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
         ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
                 screen.getBuiltQuery(),
-                restoreFactory.getHqAuth().getAuthHeaders());
+                restoreFactory.getUserHeaders());
         if (responseEntity == null) {
             return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
         }
