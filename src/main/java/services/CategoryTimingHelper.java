@@ -1,7 +1,6 @@
 package services;
 
 import com.timgroup.statsd.StatsDClient;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import util.*;
@@ -17,7 +16,7 @@ public class CategoryTimingHelper {
     private StatsDClient datadogStatsDClient;
 
     @Autowired
-    private FormplayerRaven raven;
+    private FormplayerSentry raven;
 
     public class RecordingTimer extends SimpleTimer {
         private CategoryTimingHelper parent;

@@ -1,8 +1,8 @@
 package aspects;
 
 import beans.AuthenticatedRequestBean;
-import com.getsentry.raven.event.Breadcrumb;
-import com.getsentry.raven.event.Event;
+import io.sentry.event.Breadcrumb;
+import io.sentry.event.Event;
 import com.timgroup.statsd.StatsDClient;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -24,7 +24,7 @@ public class MetricsAspect {
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
-    private FormplayerRaven raven;
+    private FormplayerSentry raven;
 
     @Autowired
     private HttpServletRequest request;

@@ -8,7 +8,7 @@ import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import services.FormplayerStorageFactory;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 
 import java.util.Arrays;
 
@@ -23,7 +23,7 @@ public class AppInstallAspect {
     protected FormplayerStorageFactory storageFactory;
 
     @Autowired
-    private FormplayerRaven raven;
+    private FormplayerSentry raven;
 
     @Before(value = "@annotation(annotations.AppInstall)")
     public void configureStorageFactory(JoinPoint joinPoint) throws Throwable {
