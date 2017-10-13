@@ -20,11 +20,8 @@ import java.util.Hashtable;
  */
 public class FormplayerQueryScreen extends QueryScreen {
 
-    HqAuth auth;
-
-    public FormplayerQueryScreen(HqAuth auth){
+    public FormplayerQueryScreen(){
         super();
-        this.auth = auth;
     }
 
     public String getUriString() {
@@ -35,9 +32,5 @@ public class FormplayerQueryScreen extends QueryScreen {
             builder.queryParam(key, params.get(key));
         }
         return builder.toUriString();
-    }
-
-    public HttpHeaders getAuthHeaders() {
-        return auth.getAuthHeaders();
     }
 }

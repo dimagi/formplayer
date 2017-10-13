@@ -34,7 +34,6 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
         builder.buildAndExpand(paramMap);
-        HqAuth auth = restoreFactory.getHqAuth();
 
         try {
             response = restTemplate.exchange(
@@ -42,7 +41,7 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
                     // encoded url.
                     URLDecoder.decode(builder.toUriString(), "UTF-8"),
                     HttpMethod.GET,
-                    new HttpEntity<String>(auth.getAuthHeaders()),
+                    new HttpEntity<String>(restoreFactory.getUserHeaders()),
                     String.class
             );
         } catch (UnsupportedEncodingException e) {

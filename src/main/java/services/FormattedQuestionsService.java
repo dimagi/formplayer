@@ -3,6 +3,7 @@ package services;
 import auth.HqAuth;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -16,6 +17,9 @@ import org.springframework.web.client.RestTemplate;
  * Implemented by by requesting HQ to generate template
  */
 public class FormattedQuestionsService {
+
+    @Autowired
+    RestoreFactory restoreFactory;
 
     public class QuestionResponse {
         private String formattedQuestions;
@@ -36,7 +40,7 @@ public class FormattedQuestionsService {
     @Value("${commcarehq.host}")
     private String host;
 
-    public QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml, HqAuth auth) {
+    public QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml) {
         RestTemplate restTemplate = new RestTemplate();
         MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
 
@@ -44,7 +48,7 @@ public class FormattedQuestionsService {
         body.add("xmlns", xmlns);
         body.add("appId", appId);
 
-        HttpEntity<?> entity = new HttpEntity<Object>(body, auth.getAuthHeaders());
+        HttpEntity<?> entity = new HttpEntity<Object>(body, restoreFactory.getUserHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
                 getFormattedQuestionsUrl(host, domain),
                 HttpMethod.POST,
