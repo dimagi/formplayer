@@ -59,8 +59,7 @@ public class DebuggerController extends AbstractBaseController {
                 debuggerRequest.getDomain(),
                 serializableMenuSession.getAppId(),
                 formSession.getXmlns(),
-                formSession.getInstanceXml(),
-                new DjangoAuth(authToken)
+                formSession.getInstanceXml()
         );
         return new DebuggerFormattedQuestionsResponseBean(
                 serializableMenuSession.getAppId(),
