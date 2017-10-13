@@ -1,6 +1,5 @@
 package application;
 
-import annotations.AppInstall;
 import annotations.AppInstallFromSession;
 import annotations.UserLock;
 import annotations.UserRestore;
@@ -80,14 +79,10 @@ public class DebuggerController extends AbstractBaseController {
     @UserRestore
     @AppInstallFromSession
     public MenuDebuggerContentResponseBean menuDebuggerContent(
-            @RequestBody MenuDebuggerRequestBean debuggerMenuRequest,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+            @RequestBody MenuDebuggerRequestBean debuggerMenuRequest) throws Exception {
 
         MenuSession menuSession = getMenuSession(
-                debuggerMenuRequest.getDomain(),
-                debuggerMenuRequest.getUsername(),
-                debuggerMenuRequest.getMenuSessionId(),
-                authToken
+                debuggerMenuRequest.getMenuSessionId()
         );
 
         return new MenuDebuggerContentResponseBean(
@@ -129,13 +124,9 @@ public class DebuggerController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @AppInstallFromSession
-    public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
-                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+    public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean) throws Exception {
         MenuSession menuSession = getMenuSession(
-                evaluateXPathRequestBean.getDomain(),
-                evaluateXPathRequestBean.getUsername(),
-                evaluateXPathRequestBean.getMenuSessionId(),
-                authToken
+                evaluateXPathRequestBean.getMenuSessionId()
         );
 
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
