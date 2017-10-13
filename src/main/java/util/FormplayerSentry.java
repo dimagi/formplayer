@@ -1,8 +1,8 @@
 package util;
 
-import com.getsentry.raven.Raven;
-import com.getsentry.raven.event.*;
-import com.getsentry.raven.event.interfaces.ExceptionInterface;
+import io.sentry.SentryClient;
+import io.sentry.event.*;
+import io.sentry.event.interfaces.ExceptionInterface;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import services.RestoreFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,9 +18,9 @@ import java.util.Map;
 /**
  * Created by benrudolph on 4/27/17.
  */
-public class FormplayerRaven {
+public class FormplayerSentry {
 
-    private static final Log log = LogFactory.getLog(FormplayerRaven.class);
+    private static final Log log = LogFactory.getLog(FormplayerSentry.class);
 
     private final String HQ_HOST_TAG = "HQHost";
     private final String DOMAIN_TAG = "domain";
@@ -32,7 +31,7 @@ public class FormplayerRaven {
     private final String USER_SYNC_TOKEN = "sync_token";
     private final String USER_SANDBOX_PATH = "sandbox_path";
 
-    private Raven raven;
+    private SentryClient sentryClient;
 
     @Value("${commcarehq.environment}")
     private String environment;
@@ -49,25 +48,25 @@ public class FormplayerRaven {
     @Autowired(required = false)
     private FormplayerHttpRequest request;
 
-    public FormplayerRaven(Raven raven) {
-        this.raven = raven;
+    public FormplayerSentry(SentryClient sentryClient) {
+        this.sentryClient = sentryClient;
     }
 
     private void recordBreadcrumb(Breadcrumb breadcrumb) {
-        if (raven == null) {
+        if (sentryClient == null) {
             return;
         }
         try {
-            raven.getContext().recordBreadcrumb(breadcrumb);
+            sentryClient.getContext().recordBreadcrumb(breadcrumb);
         } catch (Exception e) {
-            log.info("Error recording breadcrumb. Ensure that raven is configured. ", e);
+            log.info("Error recording breadcrumb. Ensure that sentryClient is configured. ", e);
         }
     }
 
     public class BreadcrumbRecorder extends BreadcrumbBuilder {
-        FormplayerRaven parent;
+        FormplayerSentry parent;
 
-        public BreadcrumbRecorder(FormplayerRaven parent) {
+        public BreadcrumbRecorder(FormplayerSentry parent) {
             this.parent = parent;
         }
 
@@ -128,9 +127,9 @@ public class FormplayerRaven {
                 null
         );
         try {
-            raven.getContext().setUser(user);
+            sentryClient.getContext().setUser(user);
         } catch (Exception e) {
-            log.info("Error setting user context. Ensure that raven is configured. ", e);
+            log.info("Error setting user context. Ensure that sentryClient is configured. ", e);
         }
     }
 
@@ -199,13 +198,13 @@ public class FormplayerRaven {
     }
 
     private void sendRavenEvent(EventBuilder event) {
-        if (raven == null) {
+        if (sentryClient == null) {
             return;
         }
         try {
-            raven.sendEvent(event);
+            sentryClient.sendEvent(event);
         } catch (Exception e) {
-            log.info("Error sending event to Sentry. Ensure that raven is configured. ", e);
+            log.info("Error sending event to Sentry. Ensure that sentryClient is configured. ", e);
         }
     }
 

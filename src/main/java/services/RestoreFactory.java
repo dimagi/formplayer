@@ -29,7 +29,7 @@ import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 import util.UserUtils;
 
 import javax.annotation.Resource;
@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
-import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,7 +67,7 @@ public class RestoreFactory {
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
     @Autowired
-    private FormplayerRaven raven;
+    private FormplayerSentry raven;
 
     @Autowired
     private RedisTemplate redisTemplateLong;

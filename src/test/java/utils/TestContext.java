@@ -22,7 +22,7 @@ import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
 import util.FormplayerHttpRequest;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 
 @Configuration
 public class TestContext {
@@ -95,8 +95,8 @@ public class TestContext {
     }
 
     @Bean
-    public FormplayerRaven raven() {
-        return Mockito.spy(new FormplayerRaven(null));
+    public FormplayerSentry raven() {
+        return Mockito.spy(new FormplayerSentry(null));
     }
 
     @Bean

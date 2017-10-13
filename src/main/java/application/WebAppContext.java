@@ -1,8 +1,8 @@
 package application;
 
 import aspects.*;
-import com.getsentry.raven.RavenFactory;
-import com.getsentry.raven.dsn.InvalidDsnException;
+import io.sentry.SentryClientFactory;
+import io.sentry.dsn.InvalidDsnException;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
@@ -37,7 +37,7 @@ import repo.impl.PostgresMigratedFormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import services.*;
 import util.Constants;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 
 import java.util.Properties;
 
@@ -237,12 +237,12 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public FormplayerRaven raven() {
-        FormplayerRaven raven;
+    public FormplayerSentry raven() {
+        FormplayerSentry raven;
         try {
-            raven = new FormplayerRaven(RavenFactory.ravenInstance(ravenDsn));
+            raven = new FormplayerSentry(SentryClientFactory.sentryClient(ravenDsn));
         } catch (InvalidDsnException e) {
-            raven = new FormplayerRaven(null);
+            raven = new FormplayerSentry(null);
         }
         raven.newBreadcrumb()
                 .setData("environment", environment)

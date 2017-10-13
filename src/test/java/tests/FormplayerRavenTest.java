@@ -1,15 +1,15 @@
 package tests;
 
-import com.getsentry.raven.Raven;
-import com.getsentry.raven.context.Context;
-import com.getsentry.raven.event.Breadcrumb;
+import io.sentry.SentryClient;
+import io.sentry.context.Context;
+import io.sentry.event.Breadcrumb;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 import utils.TestContext;
 
 import static org.junit.Assert.assertEquals;
@@ -18,15 +18,15 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
 public class FormplayerRavenTest {
-    FormplayerRaven raven;
+    FormplayerSentry raven;
     Context contextMock;
 
     @Before
     public void setUp() throws Exception {
-        Raven ravenMock = mock(Raven.class);
+        SentryClient sentryMock = mock(SentryClient.class);
         contextMock = mock(Context.class);
-        when(ravenMock.getContext()).thenReturn(contextMock);
-        raven = new FormplayerRaven(ravenMock);
+        when(sentryMock.getContext()).thenReturn(contextMock);
+        raven = new FormplayerSentry(sentryMock);
     }
 
     @Test
