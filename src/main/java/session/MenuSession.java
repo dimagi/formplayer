@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
@@ -15,6 +16,7 @@ import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.OrderedHashtable;
@@ -83,12 +85,9 @@ public class MenuSession {
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
         this.auth = restoreFactory.getHqAuth();
-
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference);
-
+        this.engine = installService.configureApplication(this.installReference).first;
         this.sandbox = CaseAPIs.getSandbox(restoreFactory);
-
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
@@ -101,14 +100,20 @@ public class MenuSession {
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
                        InstallService installService, RestoreFactory restoreFactory, String host,
-                       boolean oneQuestionPerScreen, String asUser) throws Exception {
+                       boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
         this.auth = restoreFactory.getHqAuth();
         this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference);
+        this.engine = install.first;
+        if (install.second && !preview) {
+            this.sandbox = CaseAPIs.performSync(restoreFactory);
+        } else {
+            this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        }
         this.sandbox = CaseAPIs.getSandbox(restoreFactory);
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
@@ -253,7 +258,7 @@ public class MenuSession {
         return ret;
     }
 
-    public FormSession getFormEntrySession() throws Exception {
+    public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
@@ -261,7 +266,7 @@ public class MenuSession {
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen,
-                asUser, appId, null);
+                asUser, appId, null, formSendCalloutHandler);
     }
 
     public void reloadSession(FormSession formSession) throws Exception {

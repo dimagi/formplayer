@@ -1,5 +1,6 @@
 package sandbox;
 
+import exceptions.SQLiteRuntimeException;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.util.Pair;
@@ -13,6 +14,7 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
 import org.javarosa.core.util.externalizable.DeserializationException;
+import org.sqlite.SQLiteException;
 import services.ConnectionHandler;
 import org.javarosa.core.model.condition.Abandonable;
 
@@ -81,7 +83,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                 c.prepareStatement(statement).execute();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         }
     }
 
@@ -140,7 +142,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             resultSet = preparedStatement.executeQuery();
             return fillIdWindow(resultSet, DatabaseHelper.ID_COL, new LinkedHashSet<Integer>());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -175,8 +177,8 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                     SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values);
             resultSet = preparedStatement.executeQuery();
             return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
-        } catch (SQLException | NullPointerException e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -205,8 +207,8 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             }
             byte[] mBytes = resultSet.getBytes(DatabaseHelper.DATA_COL);
             return newObject(mBytes, resultSet.getInt(DatabaseHelper.ID_COL));
-        } catch (SQLException | NullPointerException e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -245,8 +247,8 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             if (resultSet.next()) {
                 return true;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }  catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -342,7 +344,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             try {
                 if (resultSet != null) {
@@ -476,7 +478,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                 ids.add(resultSet.getInt(DatabaseHelper.ID_COL));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -561,7 +563,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             try {
                 if (preparedStatement != null) {
@@ -603,7 +605,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
             }
             return returnSet;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         }
     }
 
@@ -624,7 +626,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
                 throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (resultSet != null) {
                 try {

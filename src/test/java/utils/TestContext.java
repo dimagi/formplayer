@@ -7,6 +7,7 @@ import mocks.MockLockRegistry;
 import mocks.MockMenuSessionRepo;
 import mocks.TestInstallService;
 import org.commcare.modern.reference.ArchiveFileRoot;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.MessageSource;
@@ -140,5 +141,10 @@ public class TestContext {
     @Bean
     public StatsDClient datadogStatsDClient() {
         return Mockito.mock(StatsDClient.class);
+    }
+
+    @Bean
+    public FormSendCalloutHandler formSendCalloutHandler() {
+        return Mockito.mock(FormplayerFormSendCalloutHandler.class);
     }
 }
