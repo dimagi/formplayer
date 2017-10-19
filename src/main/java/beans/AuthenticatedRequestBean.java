@@ -1,16 +1,5 @@
 package beans;
 
-import auth.DjangoAuth;
-import auth.HqAuth;
-import auth.TokenAuth;
-import hq.models.PostgresUser;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
-import repo.impl.PostgresUserRepo;
-import util.Constants;
-import util.UserUtils;
-
 /**
  * The AuthenticatedRequestBean should be used for requests that
  * need to be authenticated with HQ. This Bean will ensure the
@@ -21,6 +10,8 @@ public class AuthenticatedRequestBean {
     protected String domain;
     protected String username;
     protected String restoreAs;
+    protected boolean mustRestore;
+    private boolean useLiveQuery;
 
     public String getUsername() {
         return username;
@@ -58,5 +49,21 @@ public class AuthenticatedRequestBean {
         return "Authenticated request bean wih username=" + username +
                 ", domain=" + domain +
                 ", restoreAs=" + restoreAs;
+    }
+
+    public boolean isMustRestore() {
+        return mustRestore;
+    }
+
+    public void setMustRestore(boolean mustRestore) {
+        this.mustRestore = mustRestore;
+    }
+
+    public boolean getUseLiveQuery() {
+        return useLiveQuery;
+    }
+
+    public void setUseLiveQuery(boolean useLiveQuery) {
+        this.useLiveQuery = useLiveQuery;
     }
 }

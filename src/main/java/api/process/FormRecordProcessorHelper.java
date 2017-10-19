@@ -23,6 +23,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import util.PropertyUtils;
+import util.SimpleTimer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,15 +37,29 @@ import java.util.Vector;
  * Created by wpride1 on 8/20/15.
  */
 public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
-
     private static final Log log = LogFactory.getLog(FormRecordProcessorHelper.class);
 
-    public static void processXML(FormplayerTransactionParserFactory factory, String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
+    public static class TimingResult {
+        private SimpleTimer purgeCasesTimer;
+        private TimingResult(SimpleTimer purgeCasesTimer) {
+            this.purgeCasesTimer = purgeCasesTimer;
+        }
+
+        public SimpleTimer getPurgeCasesTimer() {
+            return purgeCasesTimer;
+        }
+    }
+
+    public static TimingResult processXML(FormplayerTransactionParserFactory factory, String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
         InputStream stream = new ByteArrayInputStream(fileText.getBytes("UTF-8"));
         process(stream, factory);
+        SimpleTimer timer = new SimpleTimer();
+        timer.start();
         if (factory.wereCaseIndexesDisrupted() && PropertyUtils.isAutoPurgeEnabled()) {
             purgeCases(factory.getSqlSandbox());
         }
+        timer.end();
+        return new TimingResult(timer);
     }
 
     /**

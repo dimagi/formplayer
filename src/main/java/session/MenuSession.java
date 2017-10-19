@@ -6,9 +6,9 @@ import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
-import sandbox.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
@@ -16,11 +16,11 @@ import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
@@ -28,6 +28,7 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
 import repo.SerializableMenuSession;
+import sandbox.UserSqlSandbox;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
@@ -41,7 +42,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
@@ -69,49 +72,54 @@ public class MenuSession {
 
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
-    private HqAuth auth;
     private boolean oneQuestionPerScreen;
+    ArrayList<String> titles;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreFactory restoreFactory, HqAuth auth, String host) throws Exception {
+                       RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
         this.domain = session.getDomain();
         this.asUser = session.getAsUser();
         this.locale = session.getLocale();
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
-        this.auth = auth;
-
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference);
-
-        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
-
+        this.engine = installService.configureApplication(this.installReference).first;
+        this.sandbox = CaseAPIs.getSandbox(restoreFactory);
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
         this.screen = getNextScreen();
         this.appId = session.getAppId();
+        this.titles = new ArrayList<>();
+        titles.add(SessionUtils.getAppTitle());
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
-                       InstallService installService, RestoreFactory restoreFactory, HqAuth auth, String host,
-                       boolean oneQuestionPerScreen, String asUser) throws Exception {
+                       InstallService installService, RestoreFactory restoreFactory, String host,
+                       boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
-        this.auth = auth;
         this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference);
-        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference);
+        this.engine = install.first;
+        if (install.second && !preview) {
+            this.sandbox = CaseAPIs.performSync(restoreFactory);
+        } else {
+            this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        }
+        this.sandbox = CaseAPIs.getSandbox(restoreFactory);
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
         this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+        this.titles = new ArrayList<>();
+        this.titles.add(SessionUtils.getAppTitle());
     }
     
     public void updateApp(String updateMode) {
@@ -158,14 +166,31 @@ public class MenuSession {
         }
         try {
             boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
+            Screen previousScreen = screen;
             screen = getNextScreen();
             log.info("Screen " + screen + " set to " + ret);
+            addTitle(input, previousScreen);
             return true;
         } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
                     " threw exception " + e.getMessage() + ". Please try reloading this application" +
                     " and if the problem persists please report a bug.", e);
         }
+    }
+
+    private void addTitle(String input, Screen previousScreen) {
+        if (previousScreen instanceof EntityScreen) {
+            try {
+                String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), input);
+                if (caseName != null) {
+                    titles.add(caseName);
+                    return;
+                }
+            } catch (NoSuchElementException e) {
+                // That's ok, just fallback quietly
+            }
+        }
+        titles.add(SessionUtils.getBestTitle(getSessionWrapper()));
     }
 
     public Screen getNextScreen() throws CommCareSessionException {
@@ -189,12 +214,12 @@ public class MenuSession {
             computeDatum();
             return getNextScreen();
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
-            QueryScreen queryScreen = new FormplayerQueryScreen(auth);
+            QueryScreen queryScreen = new FormplayerQueryScreen();
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
             String username = asUser != null ?
-                    StringUtils.getFullUsername(asUser, domain, Constants.COMMCARE_USER_SUFFIX) : null;
+                    StringUtils.getFullUsername(asUser, domain) : null;
             FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
             syncScreen.init(sessionWrapper);
             return syncScreen;
@@ -230,7 +255,7 @@ public class MenuSession {
         return ret;
     }
 
-    public FormSession getFormEntrySession() throws Exception {
+    public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
@@ -238,7 +263,7 @@ public class MenuSession {
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen,
-                asUser, appId, null);
+                asUser, appId, null, formSendCalloutHandler);
     }
 
     public void reloadSession(FormSession formSession) throws Exception {
@@ -327,5 +352,11 @@ public class MenuSession {
 
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    public String[] getTitles() {
+        String[] ret = new String[titles.size()];
+        titles.toArray(ret);
+        return ret;
     }
 }

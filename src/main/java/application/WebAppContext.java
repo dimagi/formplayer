@@ -1,21 +1,18 @@
 package application;
 
 import aspects.*;
-import com.getsentry.raven.Raven;
-import com.getsentry.raven.RavenFactory;
-import com.getsentry.raven.event.BreadcrumbBuilder;
+import io.sentry.SentryClientFactory;
+import io.sentry.dsn.InvalidDsnException;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.HtmlEmail;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.commcare.modern.reference.ArchiveFileRoot;
-import org.lightcouch.CouchDbClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -34,14 +31,14 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
-import repo.TokenRepo;
-import repo.impl.*;
+import repo.impl.PostgresFormSessionRepo;
+import repo.impl.PostgresMenuSessionRepo;
+import repo.impl.PostgresMigratedFormSessionRepo;
+import repo.impl.PostgresUserRepo;
 import services.*;
-import services.impl.*;
 import util.Constants;
+import util.FormplayerSentry;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -82,44 +79,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${datasource.formplayer.driverClassName}")
     private String formplayerPostgresDriverName;
 
-    @Value("${smtp.host}")
-    private String smtpHost;
-
-    @Value("${smtp.port}")
-    private int smtpPort;
-
-    @Value("${smtp.username:}")
-    private String smtpUsername;
-
-    @Value("${smtp.password:}")
-    private String smtpPassword;
-
-    @Value("${smtp.from.address}")
-    private String smtpFromAddress;
-
-    @Value("${smtp.to.address}")
-    private String smtpToAddress;
-
     @Value("${redis.hostname}")
     private String redisHostName;
-
-    @Value("${couch.protocol}")
-    private String couchProtocol;
-
-    @Value("${couch.host}")
-    private String couchHost;
-
-    @Value("${couch.port}")
-    private int couchPort;
-
-    @Value("${couch.username}")
-    private String couchUsername;
-
-    @Value("${couch.password}")
-    private String couchPassword;
-
-    @Value("${couch.databaseName}")
-    private String couchDatabaseName;
 
     @Value("${sentry.dsn:}")
     private String ravenDsn;
@@ -201,6 +162,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         ds.setUrl(formplayerPostgresUrl);
         ds.setUsername(formplayerPostgresUsername);
         ds.setPassword(formplayerPostgresPassword);
+        ds.setRemoveAbandoned(true);
+        ds.setTestOnBorrow(true);
+        ds.setValidationQuery("select 1");
         return ds;
     }
     @Bean
@@ -210,6 +174,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         ds.setUrl(hqPostgresUrl);
         ds.setUsername(hqPostgresUsername);
         ds.setPassword(hqPostgresPassword);
+        ds.setRemoveAbandoned(true);
+        ds.setTestOnBorrow(true);
+        ds.setValidationQuery("select 1");
         return ds;
     }
 
@@ -219,19 +186,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         jedisConnectionFactory.setUsePool(true);
         jedisConnectionFactory.setHostName(redisHostName);
         return jedisConnectionFactory;
-    }
-
-    @Bean
-    public CouchDbClient userCouchDbClient() {
-        return new CouchDbClient(
-                couchDatabaseName + Constants.COUCH_USERS_DB,
-                false,
-                couchProtocol,
-                couchHost,
-                couchPort,
-                couchUsername,
-                couchPassword
-        );
     }
 
     @Bean
@@ -256,31 +210,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public HtmlEmail exceptionMessage() throws EmailException {
-        HtmlEmail message = new HtmlEmail();
-        message.setFrom(smtpFromAddress);
-        message.addTo(smtpToAddress);
-        if (smtpUsername != null &&  smtpPassword != null) {
-            message.setAuthentication(smtpUsername, smtpPassword);
-        }
-        message.setHostName(smtpHost);
-        message.setSmtpPort(smtpPort);
-        return message;
-    }
-
-    @Bean
     public PostgresUserRepo postgresUserRepo(){
         return new PostgresUserRepo();
-    }
-
-    @Bean
-    public CouchUserRepo couchUserRepo(){
-        return new CouchUserRepo();
-    }
-
-    @Bean
-    public TokenRepo tokenRepo(){
-        return new PostgresTokenRepo();
     }
 
     @Bean
@@ -301,17 +232,28 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public XFormService xFormService(){
-        return new XFormServiceImpl();
+        return new XFormService();
     }
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public Raven raven() {
-        Map<String, String> data = new HashMap<String, String>();
-        data.put("environment", environment);
-        BreadcrumbBuilder builder = new BreadcrumbBuilder();
-        builder.setData(data);
-        return RavenFactory.ravenInstance(ravenDsn);
+    public FormplayerSentry raven() {
+        FormplayerSentry raven;
+        try {
+            raven = new FormplayerSentry(SentryClientFactory.sentryClient(ravenDsn));
+        } catch (InvalidDsnException e) {
+            raven = new FormplayerSentry(null);
+        }
+        raven.newBreadcrumb()
+                .setData("environment", environment)
+                .record();
+        return raven;
+    }
+
+    @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public CategoryTimingHelper categoryTimingHelper() {
+        return new CategoryTimingHelper();
     }
 
     @Bean
@@ -328,16 +270,16 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public InstallService installService(){
-        return new InstallServiceImpl();
+        return new InstallService();
     }
 
     @Bean FormattedQuestionsService formattedQuestionsService() {
-        return new FormattedQuestionsServiceImpl();
+        return new FormattedQuestionsService();
     }
 
     @Bean
     public SubmitService submitService(){
-        return new SubmitServiceImpl();
+        return new SubmitService();
     }
 
     @Bean
@@ -382,11 +324,24 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public QueryRequester queryRequester() {
-        return new QueryRequesterImpl();
+        return new QueryRequester();
     }
 
     @Bean
     public SyncRequester syncRequester() {
-        return new SyncRequesterImpl();
+        return new SyncRequester();
+    }
+
+    @Bean
+    public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsService(builder); }
+
+    @Bean
+    public RestTemplateBuilder restTemplateBuilder() {
+        return new RestTemplateBuilder();
+    }
+
+    @Bean
+    public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
+        return new FormplayerFormSendCalloutHandler();
     }
 }

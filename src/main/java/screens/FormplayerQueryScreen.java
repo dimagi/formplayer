@@ -1,20 +1,9 @@
 package screens;
 
-import auth.HqAuth;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.commcare.util.screen.QueryScreen;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 
 /**
@@ -22,13 +11,8 @@ import java.util.Hashtable;
  */
 public class FormplayerQueryScreen extends QueryScreen {
 
-    HqAuth auth;
-
-    private final Log log = LogFactory.getLog(FormplayerQueryScreen.class);
-
-    public FormplayerQueryScreen(HqAuth auth){
+    public FormplayerQueryScreen(){
         super();
-        this.auth = auth;
     }
 
     public String getUriString() {
@@ -39,9 +23,5 @@ public class FormplayerQueryScreen extends QueryScreen {
             builder.queryParam(key, params.get(key));
         }
         return builder.toUriString();
-    }
-
-    public HttpHeaders getAuthHeaders() {
-        return auth.getAuthHeaders();
     }
 }

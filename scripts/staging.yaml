@@ -45,8 +45,9 @@
 trunk: master
 name: autostaging
 branches:
-  - wsp/query-planner
+  - collapse-interface-and-implementation  # Danny 9/11
+  - clean-up-breadcrumbs-builder-syntax-try-2  # Danny 9/11
 submodules:
   libs/commcare:
-    branches:
-      - wsp/query-planner
+    trunk: formplayer
+    branches: []

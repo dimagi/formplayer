@@ -1,11 +1,13 @@
 package utils;
 
+import com.timgroup.statsd.StatsDClient;
 import installers.FormplayerInstallerFactory;
 import mocks.MockFormSessionRepo;
 import mocks.MockLockRegistry;
 import mocks.MockMenuSessionRepo;
 import mocks.TestInstallService;
 import org.commcare.modern.reference.ArchiveFileRoot;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.MessageSource;
@@ -19,8 +21,8 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.*;
-import services.impl.QueryRequesterImpl;
-import services.impl.SubmitServiceImpl;
+import util.FormplayerHttpRequest;
+import util.FormplayerSentry;
 
 @Configuration
 public class TestContext {
@@ -89,7 +91,12 @@ public class TestContext {
 
     @Bean
     public SubmitService submitService() {
-        return Mockito.mock(SubmitServiceImpl.class);
+        return Mockito.mock(SubmitService.class);
+    }
+
+    @Bean
+    public FormplayerSentry raven() {
+        return Mockito.spy(new FormplayerSentry(null));
     }
 
     @Bean
@@ -114,11 +121,30 @@ public class TestContext {
 
     @Bean
     public QueryRequester queryRequester() {
-        return Mockito.mock(QueryRequesterImpl.class);
+        return Mockito.mock(QueryRequester.class);
     }
 
     @Bean
     public SyncRequester syncRequester() {
         return Mockito.mock(SyncRequester.class);
+    }
+
+    @Bean
+    public CategoryTimingHelper categoryTimingHelper() {
+        return Mockito.spy(CategoryTimingHelper.class);
+    }
+
+    @Bean
+    public FormplayerHttpRequest request() {
+        return Mockito.mock(FormplayerHttpRequest.class);
+    }
+    @Bean
+    public StatsDClient datadogStatsDClient() {
+        return Mockito.mock(StatsDClient.class);
+    }
+
+    @Bean
+    public FormSendCalloutHandler formSendCalloutHandler() {
+        return Mockito.mock(FormplayerFormSendCalloutHandler.class);
     }
 }

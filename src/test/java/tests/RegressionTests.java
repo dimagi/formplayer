@@ -40,18 +40,7 @@ public class RegressionTests extends BaseTestClass{
             assert e.getCause() instanceof CommCareSessionException;
         }
     }
-
-    @Test
-    public void testBadModuleFilter() {
-        try {
-            sessionNavigate(new String[]{"0"}, "badmodulefilter", NewFormResponse.class);
-        } catch(Exception e) {
-            assert e.getMessage().contains("Cannot evaluate the reference");
-            assert e.getMessage().contains("/next_supervision_visit");
-            assert e.getCause() instanceof CommCareSessionException;
-        }
-    }
-
+    
     @Test
     public void testReportModule() throws Exception {
         configureRestoreFactory("modulerelevancydomain", "modulerelevancyusername");

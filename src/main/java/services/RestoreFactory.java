@@ -1,15 +1,13 @@
 package services;
 
-import application.SQLiteProperties;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
-import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumbs;
 import exceptions.AsyncRetryException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.model.User;
 import org.javarosa.core.services.PropertyManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,19 +19,20 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.sqlite.SQLiteConnection;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sandbox.SqlSandboxUtils;
+import sandbox.AbstractSqlIterator;
+import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
-import util.SentryUtils;
+import sqlitedb.SQLiteDB;
+import sqlitedb.UserDB;
+import util.FormplayerSentry;
+import util.UserUtils;
 
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,10 +40,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,7 +48,7 @@ import java.util.concurrent.TimeUnit;
  * then retrieves and returns the restore XML.
  */
 @Component
-public class RestoreFactory implements ConnectionHandler{
+public class RestoreFactory {
     @Value("${commcarehq.host}")
     private String host;
 
@@ -68,6 +64,11 @@ public class RestoreFactory implements ConnectionHandler{
     public static final Long ONE_DAY_IN_MILLISECONDS = 86400000l;
     public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
 
+    private static final String DEVICE_ID_SLUG = "WebAppsLogin";
+
+    @Autowired
+    private FormplayerSentry raven;
+
     @Autowired
     private RedisTemplate redisTemplateLong;
 
@@ -76,66 +77,27 @@ public class RestoreFactory implements ConnectionHandler{
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    private Connection connection;
+    private SQLiteDB sqLiteDB = new SQLiteDB(null);
+    private boolean useLiveQuery;
 
-    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
-        log.info(String.format("configuring RestoreFactory with arguments " +
-                "username = %s, asUsername = %s, domain = %s", username, asUsername, domain));
+    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
+        this.setUseLiveQuery(useLiveQuery);
+        sqLiteDB = new UserDB(domain, username, asUsername);
+        log.info(String.format("configuring RestoreFactory with arguments " +
+                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
 
     public UserSqlSandbox getSqlSandbox() {
-        return new UserSqlSandbox(this);
-    }
-
-    public String getUsernameDetail() {
-        if (asUsername != null) {
-            return username + "_" + asUsername;
-        }
-        return username;
-    }
-
-    @Override
-    public Connection getConnection() {
-        try {
-            if (connection == null || connection.isClosed()) {
-                DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
-                connection = dataSource.getConnection();
-            } else {
-                if (connection instanceof SQLiteConnection) {
-                    SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
-                    if (!sqLiteConnection.url().contains(getDbPath())) {
-                        log.error(String.format("Had connection with path %s in StorageFactory %s",
-                                sqLiteConnection.url(),
-                                toString()));
-                        DataSource dataSource = SqlSandboxUtils.getDataSource("user", getDbPath());
-                        connection = dataSource.getConnection();
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return connection;
-    }
-
-    public void closeConnection() {
-        try {
-            if(connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        connection = null;
+        return new UserSqlSandbox(this.sqLiteDB);
     }
 
     public void setAutoCommit(boolean autoCommit) {
         try {
-            getConnection().setAutoCommit(autoCommit);
+            sqLiteDB.getConnection().setAutoCommit(autoCommit);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -143,21 +105,30 @@ public class RestoreFactory implements ConnectionHandler{
 
     public void commit() {
         try {
-            getConnection().commit();
+            sqLiteDB.getConnection().commit();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-    public String getDbFile() {
-        return getDbPath() + "/user.db";
+
+    public void rollback() {
+        try {
+            sqLiteDB.getConnection().rollback();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private String getDbPath() {
-        return SQLiteProperties.getDataDir() + domain + "/" + getUsernameDetail();
+    public SQLiteDB getSQLiteDB() {
+        return sqLiteDB;
     }
 
     public String getWrappedUsername() {
         return asUsername == null ? username : asUsername;
+    }
+
+    public String getEffectiveUsername() {
+        return UserUtils.getShortUsername(getWrappedUsername(), domain);
     }
 
     private void ensureValidParameters() {
@@ -206,32 +177,21 @@ public class RestoreFactory implements ConnectionHandler{
     }
 
     public InputStream getRestoreXml() {
-        return getRestoreXml(false);
-    }
-
-    public InputStream getRestoreXml(boolean overwriteCache) {
         ensureValidParameters();
-
-        String restoreUrl;
-        if (asUsername == null) {
-            restoreUrl = getRestoreUrl(host, domain, overwriteCache);
-        } else {
-            restoreUrl = getRestoreUrl(host, domain, asUsername, overwriteCache);
-        }
-
-        Map<String, String> data = new HashMap<String, String>();
-        data.put("restoreUrl", restoreUrl);
-
-        BreadcrumbBuilder builder = new BreadcrumbBuilder();
-        builder.setData(data);
-        builder.setCategory("restore");
-        builder.setMessage("Restoring from URL " + restoreUrl);
-        SentryUtils.recordBreadcrumb(builder.build());
-
+        String restoreUrl = getRestoreUrl();
+        recordSentryData(restoreUrl);
         log.info("Restoring from URL " + restoreUrl);
         InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
         setLastSyncTime();
         return restoreStream;
+    }
+
+    private void recordSentryData(final String restoreUrl) {
+        raven.newBreadcrumb()
+                .setData("restoreUrl", restoreUrl)
+                .setCategory("restore")
+                .setMessage("Restoring from URL " + restoreUrl)
+                .record();
     }
 
     private void setLastSyncTime() {
@@ -307,7 +267,7 @@ public class RestoreFactory implements ConnectionHandler{
 
     private InputStream getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
         RestTemplate restTemplate = new RestTemplate();
-        log.info("Restoring at domain: " + domain + " with auth: " + auth);
+        log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
@@ -337,22 +297,52 @@ public class RestoreFactory implements ConnectionHandler{
         return stream;
     }
 
-    public static String getRestoreUrl(String host, String domain, boolean overwriteCache){
-        String url = host + "/a/" + domain + "/phone/restore/?version=2.0";
-        if (overwriteCache) {
-            url += "&overwrite_cache=true";
+    public String getSyncToken() {
+        SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
+        AbstractSqlIterator<User> iterator = storage.iterate();
+        //should be exactly one user
+        if (!iterator.hasNext()) {
+            return null;
         }
-        return url;
+        return iterator.next().getLastSyncToken();
     }
 
-    public String getRestoreUrl(String host, String domain, String username, boolean overwriteCache) {
-        String url = host + "/a/" + domain + "/phone/restore/?as=" + username + "@" +
-                domain + ".commcarehq.org&version=2.0";
-
-        if (overwriteCache) {
-            url += "&overwrite_cache=true";
+    // Device ID for tracking usage in the same way Android uses IMEI
+    private String getSyncDeviceId() {
+        if (asUsername == null) {
+            return DEVICE_ID_SLUG;
         }
-        return url;
+        return String.format("%s*%s*as*%s", DEVICE_ID_SLUG, username, asUsername);
+    }
+
+    public HttpHeaders getUserHeaders() {
+        HttpHeaders headers = getHqAuth().getAuthHeaders();
+        headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
+        headers.set("X-OpenRosa-Version", "3.0");
+        headers.set("X-OpenRosa-DeviceId", getSyncDeviceId());
+        return headers;
+    }
+
+    public String getRestoreUrl() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(host);
+        builder.append("/a/");
+        builder.append(domain);
+        builder.append("/phone/restore/?version=2.0");
+        String syncToken = getSyncToken();
+        if (syncToken != null && !"".equals(syncToken)) {
+            builder.append("&since=").append(syncToken);
+        }
+        builder.append("&device_id=").append(getSyncDeviceId());
+
+        if (useLiveQuery) {
+            builder.append("&case_sync=livequery");
+        }
+
+        if( asUsername != null) {
+            builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
+        }
+        return builder.toString();
     }
 
     public String getUsername() {
@@ -385,5 +375,13 @@ public class RestoreFactory implements ConnectionHandler{
 
     public void setAsUsername(String asUsername) {
         this.asUsername = asUsername;
+    }
+
+    public boolean isUseLiveQuery() {
+        return useLiveQuery;
+    }
+
+    public void setUseLiveQuery(boolean useLiveQuery) {
+        this.useLiveQuery = useLiveQuery;
     }
 }

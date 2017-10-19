@@ -8,7 +8,6 @@ import java.util.Arrays;
 public class EntityBean {
     private String id;
     private Object[] data;
-    private EntityDetailResponse[] details;
 
     public EntityBean(){}
 
@@ -30,14 +29,6 @@ public class EntityBean {
 
     public void setData(Object[] data) {
         this.data = data;
-    }
-
-    public EntityDetailResponse[] getDetails() {
-        return details;
-    }
-
-    public void setDetails(EntityDetailResponse[] detail) {
-        this.details = detail;
     }
 
     @Override

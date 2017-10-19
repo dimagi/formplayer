@@ -6,6 +6,7 @@ import beans.NewSessionRequestBean;
 import hq.CaseAPIs;
 import objects.SerializableFormSession;
 import org.apache.commons.io.IOUtils;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import sandbox.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.xform.util.XFormUtils;
@@ -33,10 +34,13 @@ public class NewFormResponseFactory {
     @Autowired
     private FormSessionRepo formSessionRepo;
 
-    public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl, HqAuth auth) throws Exception {
+    @Autowired
+    private FormSendCalloutHandler formSendCalloutHandler;
 
-        String formXml = getFormXml(bean.getFormUrl(), auth);
-        UserSqlSandbox sandbox = CaseAPIs.forceRestore(restoreFactory);
+    public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
+
+        String formXml = getFormXml(bean.getFormUrl());
+        UserSqlSandbox sandbox = CaseAPIs.performSync(restoreFactory);
 
         FormSession formSession = new FormSession(
                 sandbox,
@@ -51,7 +55,8 @@ public class NewFormResponseFactory {
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs(),
                 bean.getSessionData().getAppId(),
-                bean.getSessionData().getFunctionContext()
+                bean.getSessionData().getFunctionContext(),
+                formSendCalloutHandler
         );
 
         formSessionRepo.save(formSession.serialize());
@@ -64,11 +69,11 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory);
+        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler);
     }
 
-    private String getFormXml(String formUrl, HqAuth auth) {
-        return xFormService.getFormXml(formUrl, auth);
+    private String getFormXml(String formUrl) {
+        return xFormService.getFormXml(formUrl);
     }
 
     private static FormDef parseFormDef(String formXml) throws IOException {

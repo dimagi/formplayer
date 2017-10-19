@@ -2,7 +2,6 @@ package tests;
 
 import application.*;
 import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
@@ -31,6 +30,7 @@ import repo.SerializableMenuSession;
 import sandbox.SqlSandboxUtils;
 import services.*;
 import util.Constants;
+import util.FormplayerSentry;
 import util.PrototypeUtils;
 import utils.FileUtils;
 import utils.TestContext;
@@ -82,10 +82,16 @@ public class BaseTestClass {
     SubmitService submitServiceMock;
 
     @Autowired
+    CategoryTimingHelper categoryTimingHelper;
+
+    @Autowired
     private InstallService installService;
 
     @Autowired
     private NewFormResponseFactory newFormResponseFactoryMock;
+
+    @Autowired
+    protected FormplayerSentry ravenMock;
 
     @Autowired
     protected LockRegistry userLockRegistry;
@@ -126,6 +132,7 @@ public class BaseTestClass {
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreFactoryMock);
         Mockito.reset(submitServiceMock);
+        Mockito.reset(categoryTimingHelper);
         Mockito.reset(installService);
         Mockito.reset(userLockRegistry);
         Mockito.reset(newFormResponseFactoryMock);
@@ -133,20 +140,21 @@ public class BaseTestClass {
         Mockito.reset(formplayerInstallerFactory);
         Mockito.reset(queryRequester);
         Mockito.reset(syncRequester);
+        Mockito.reset(ravenMock);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
-                .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
+                .when(submitServiceMock).submitForm(anyString(), anyString());
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
-        storageFactoryMock.closeConnection();
-        restoreFactoryMock.closeConnection();
+        storageFactoryMock.getSQLiteDB().closeConnection();
+        restoreFactoryMock.getSQLiteDB().closeConnection();
         PrototypeUtils.setupPrototypes();
         new SQLiteProperties().setDataDir("testdbs/");
     }
@@ -218,7 +226,7 @@ public class BaseTestClass {
     }
 
     NewFormResponse startNewForm(String requestPath, String formPath) throws Exception {
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
+        when(xFormServiceMock.getFormXml(anyString()))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
@@ -339,6 +347,24 @@ public class BaseTestClass {
         );
     }
 
+    EvaluateXPathResponseBean evaluateMenuXPath(String menuSessionId, String xpath) throws Exception {
+        SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(menuSessionId);
+
+        EvaluateXPathMenuRequestBean evaluateXPathRequestBean = new EvaluateXPathMenuRequestBean();
+        evaluateXPathRequestBean.setUsername(menuSession.getUsername());
+        evaluateXPathRequestBean.setDomain(menuSession.getDomain());
+        evaluateXPathRequestBean.setRestoreAs(menuSession.getAsUser());
+        evaluateXPathRequestBean.setMenuSessionId(menuSessionId);
+        evaluateXPathRequestBean.setXpath(xpath);
+        return generateMockQuery(
+                ControllerType.DEBUGGER,
+                RequestType.POST,
+                Constants.URL_EVALUATE_MENU_XPATH,
+                evaluateXPathRequestBean,
+                EvaluateXPathResponseBean.class
+        );
+    }
+
     <T> T getDetails(String requestPath, Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);
@@ -350,16 +376,21 @@ public class BaseTestClass {
     }
 
     <T> T getDetails(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, clazz);
+        return getDetails(selections, testName, null, clazz, false);
     }
 
-    <T> T getDetails(String[] selections, String testName, String locale, Class<T> clazz) throws Exception {
+    <T> T getDetailsInline(String[] selections, String testName, Class<T> clazz) throws Exception {
+        return getDetails(selections, testName, null, clazz, true);
+    }
+
+    <T> T getDetails(String[] selections, String testName, String locale, Class<T> clazz, boolean inline) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
         sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setIsPersistent(inline);
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
@@ -453,6 +484,23 @@ public class BaseTestClass {
                 clazz);
     }
 
+    <T> T sessionNavigateWithId(String[] selections, String sessionId, int sortIndex, Class<T> clazz) throws Exception {
+        SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(sessionId);
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(menuSession.getDomain());
+        sessionNavigationBean.setAppId(menuSession.getAppId());
+        sessionNavigationBean.setUsername(menuSession.getUsername());
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setMenuSessionId(sessionId);
+        sessionNavigationBean.setInstallReference(menuSession.getInstallReference());
+        sessionNavigationBean.setSortIndex(sortIndex);
+        return generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
     CommandListResponseBean doInstall(String requestPath) throws Exception {
         InstallRequestBean installRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
@@ -487,10 +535,10 @@ public class BaseTestClass {
                                     Object bean,
                                     Class<T> clazz) throws Exception {
         MockMvc controller = null;
-        ResultActions evaluateXpathResult = null;
+        ResultActions result = null;
 
         if (bean instanceof AuthenticatedRequestBean) {
-            restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"));
+            restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"), false);
         }
 
         if (bean instanceof InstallRequestBean) {
@@ -516,7 +564,7 @@ public class BaseTestClass {
         }
         switch (requestType) {
             case POST:
-                evaluateXpathResult = controller.perform(
+                result = controller.perform(
                         post(urlPrepend(urlPath))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
@@ -524,7 +572,7 @@ public class BaseTestClass {
                 break;
 
             case GET:
-                evaluateXpathResult = controller.perform(
+                result = controller.perform(
                         get(urlPrepend(urlPath))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
@@ -532,7 +580,7 @@ public class BaseTestClass {
                 break;
         }
         return mapper.readValue(
-                evaluateXpathResult.andReturn().getResponse().getContentAsString(),
+                result.andReturn().getResponse().getContentAsString(),
                 clazz
         );
     }

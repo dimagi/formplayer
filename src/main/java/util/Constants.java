@@ -17,24 +17,32 @@ public class Constants {
     public final static String URL_CURRENT = "current";
     public final static String URL_SUBMIT_FORM = "submit-all";
     public final static String URL_EVALUATE_XPATH = "evaluate-xpath";
+    public final static String URL_EVALUATE_MENU_XPATH = "evaluate-menu-xpath";
     public final static String URL_NEW_REPEAT = "new-repeat";
     public final static String URL_DELETE_REPEAT = "delete-repeat";
     public final static String URL_SYNC_DB = "sync-db";
     public final static String URL_LIST_SESSIONS = "sessions";
     public final static String URL_GET_SESSION = "get_session";
     public static final String URL_INSTALL = "install";
-    public static final String URL_REPLAY = "update";
+    public static final String URL_UPDATE = "update";
+    public static final String URL_INITIAL_MENU_NAVIGATION = "navigate_menu_start";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
     public static final String URL_GET_DETAILS = "get_details";
     public static final String URL_GET_SESSIONS = "get_sessions";
     public static final String URL_SERVER_UP = "serverup";
     public static final String URL_PREVIEW_FORM = "preview_form";
     public static final String URL_DELETE_APPLICATION_DBS = "delete_application_dbs";
+    public static final String URL_CLEAR_USER_DATA = "clear_user_data";
     public static final String URL_NEXT_INDEX = "next_index";
     public static final String URL_PREV_INDEX = "prev_index";
     public static final String URL_VALIDATE_FORM = "validate_form";
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
+    public static final String URL_DEBUGGER_MENU_CONTENT = "menu_debugger_content";
+
+    // Change this version when a backwards incompatible change is made to the
+    // mobile sqlite dbs.
+    public static final String SQLITE_DB_VERSION = "V1";
 
     //Menus
     public static final String MENU_MODULE = "modules";
@@ -67,6 +75,8 @@ public class Constants {
     public static final String POSTGRES_USER_TABLE_NAME = "auth_user";
     public static final String POSTGRES_MENU_SESSION_TABLE_NAME = "menu_sessions";
 
+    public static final String SESSION_DETAILS_VIEW = "/hq/admin/session_details/";
+
     // Couch databases
     public static final String COUCH_USERS_DB = "__users";
 
@@ -84,18 +94,28 @@ public class Constants {
             Pattern.compile("v2/.*")
     ));
 
-    public static final int USER_LOCK_TIMEOUT = 120;
+    public static final int USER_LOCK_TIMEOUT = 21;
     // 15 minutes in milliseconds
     public static final int LOCK_DURATION = 60 * 15 * 1000;
 
     // Datadog metrics
     public static final String DATADOG_REQUESTS = "requests";
     public static final String DATADOG_TIMINGS = "timings";
+    public static final String DATADOG_GRANULAR_TIMINGS = "granular.timings";
+
+    public static final class TimingCategories {
+        public static final String WAIT_ON_LOCK = "wait_on_lock";
+        public static final String SUBMIT_FORM_TO_HQ = "submit_form_to_hq";
+        public static final String APP_INSTALL = "app_install";
+        public static final String PURGE_CASES = "purge_cases";
+    }
 
     // Errors
     public static final String DATADOG_ERRORS_APP_CONFIG = "errors.app_config";
     public static final String DATADOG_ERRORS_EXTERNAL_REQUEST = "errors.external_request";
     public static final String DATADOG_ERRORS_CRASH = "errors.crash";
+    public static final String DATADOG_ERRORS_LOCK = "errors.lock";
+
     // End Datadog metrics
 
 

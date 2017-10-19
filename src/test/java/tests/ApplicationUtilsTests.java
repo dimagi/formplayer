@@ -1,11 +1,11 @@
 package tests;
 
-import beans.menus.CommandListResponseBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import util.ApplicationUtils;
+import sqlitedb.ApplicationDB;
+import sqlitedb.SQLiteDB;
 import utils.TestContext;
 
 import java.io.File;
@@ -16,20 +16,17 @@ import java.io.File;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-public class ApplicationUtilsTests extends BaseTestClass {
+public class ApplicationUtilsTests {
 
     @Test
     public void testDeleteApplicationDbs() throws Exception {
-        String dbPath = ApplicationUtils.getApplicationDBPath("dummy-domain", "dummy-username", "dummy-app-id");
-        File file = new File(dbPath);
-        file.mkdirs();
+        SQLiteDB db = new ApplicationDB("dummy-domain", "dummy-username", null, "dummy-app-id");
+        db.createDatabaseFolder();
 
-        assert file.exists();
+        assert new File(db.getDatabaseFileForDebugPurposes()).getParentFile().exists();
 
-        Boolean success = ApplicationUtils.deleteApplicationDbs("dummy-domain", "dummy-username", null, "dummy-app-id");
+        db.deleteDatabaseFolder();
 
-        file = new File(dbPath);
-        assert !file.exists();
-        assert success;
+        assert !new File(db.getDatabaseFileForDebugPurposes()).getParentFile().exists();
     }
 }

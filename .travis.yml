@@ -7,8 +7,8 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 before_script:
-  - gradle wrapper
-  - cp .travis/application.properties.example config/application.properties
+  - cp .travis/application.example.properties config/application.properties
+  - cp .travis/travis.gradle.properties gradle.properties
   - psql -c 'create database commcarehq;' -U postgres
   - psql -c 'create database formplayer;' -U postgres
   - curl -X PUT localhost:5984/commcarehq
@@ -20,3 +20,9 @@ services:
   - postgresql
   - redis-server
   - couchdb
+addons:
+  postgresql: "9.4"
+env:
+  global:
+  - MALLOC_ARENA_MAX=1
+  - GRADLE_OPTS="-Xmx512m"

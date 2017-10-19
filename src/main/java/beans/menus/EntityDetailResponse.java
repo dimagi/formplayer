@@ -1,22 +1,29 @@
 package beans.menus;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
+import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityDetailSubscreen;
-import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.TreeReference;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * Represents one detail tab in a case details page.
  */
-    public class EntityDetailResponse {
-    private Object[] details;
-    private Style[] styles;
-    private String[] headers;
-    private String title;
+@JsonIgnoreProperties
+public class EntityDetailResponse {
+    protected Object[] details;
+    private EntityBean[] entities;
+    protected Style[] styles;
+    protected String[] headers;
+    protected String title;
+    protected boolean isUseNodeset;
 
     private boolean usesCaseTiles;
     private int maxWidth;
@@ -24,21 +31,38 @@ import java.util.Arrays;
     private int numEntitiesPerRow;
     private Tile[] tiles;
     private boolean useUniformUnits;
+    private boolean hasInlineTile;
 
-    public EntityDetailResponse(){}
-
-    public EntityDetailResponse(EntityDetailSubscreen entityScreen){
-        //TODO Get correct details title?
-        this.setTitle("Details");
-        this.details = entityScreen.getData();
-        this.headers = entityScreen.getHeaders();
-        processStyles(entityScreen.getDetail());
+    public EntityDetailResponse() {
     }
 
+    public EntityDetailResponse(EntityDetailSubscreen entityScreen, String title) {
+        this.title = title;
+        this.details = entityScreen.getData();
+        this.headers = entityScreen.getHeaders();
+        this.styles = entityScreen.getStyles();
+    }
+
+    // Constructor used for persistent case tile
     public EntityDetailResponse(Detail detail, EvaluationContext ec) {
-        this(new EntityDetailSubscreen(0, detail, ec, new String[] {}));
+        this(new EntityDetailSubscreen(0, detail, ec, new String[]{}), "Details");
         processCaseTiles(detail);
         processStyles(detail);
+    }
+
+    // Constructor used for detail with nodeset
+    public EntityDetailResponse(Detail detail,
+                                Vector<TreeReference> references,
+                                EvaluationContext ec,
+                                String title) {
+        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, null, 0);
+        this.entities = new EntityBean[entityList.size()];
+        entityList.toArray(this.entities);
+        this.title = title;
+        this.styles = processStyles(detail);
+        Pair<String[], int[]> pair = EntityListResponse.processHeader(detail, ec, 0);
+        setHeaders(pair.first);
+        setUseNodeset(true);
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -62,15 +86,16 @@ import java.util.Arrays;
         useUniformUnits = shortDetail.useUniformUnitsInCaseTile();
     }
 
-    private void processStyles(Detail detail) {
+    protected static Style[] processStyles(Detail detail) {
         DetailField[] fields = detail.getFields();
-        styles = new Style[fields.length];
+        Style[] styles = new Style[fields.length];
         int i = 0;
         for (DetailField field : fields) {
             Style style = new Style(field);
             styles[i] = style;
             i++;
         }
+        return styles;
     }
 
     public Object[] getDetails() {
@@ -98,7 +123,7 @@ import java.util.Arrays;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "EntityDetailResponse [details=" + Arrays.toString(details)
                 + ", styles=" + Arrays.toString(styles)
                 + ", headers=" + Arrays.toString(headers) + "]";
@@ -158,5 +183,29 @@ import java.util.Arrays;
 
     public void setUseUniformUnits(boolean useUniformUnits) {
         this.useUniformUnits = useUniformUnits;
+    }
+
+    public boolean isUseNodeset() {
+        return isUseNodeset;
+    }
+
+    public void setUseNodeset(boolean useNodeset) {
+        isUseNodeset = useNodeset;
+    }
+
+    public EntityBean[] getEntities() {
+        return entities;
+    }
+
+    public void setEntities(EntityBean[] entities) {
+        this.entities = entities;
+    }
+
+    public boolean getHasInlineTile() {
+        return hasInlineTile;
+    }
+
+    public void setHasInlineTile(boolean hasInlineTile) {
+        this.hasInlineTile = hasInlineTile;
     }
 }

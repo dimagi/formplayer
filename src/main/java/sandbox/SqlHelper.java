@@ -1,5 +1,6 @@
 package sandbox;
 
+import exceptions.SQLiteRuntimeException;
 import org.commcare.modern.util.Pair;
 import org.commcare.modern.database.*;
 import org.javarosa.core.services.Logger;
@@ -121,7 +122,7 @@ public class SqlHelper {
                 preparedStatement.execute();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -141,7 +142,7 @@ public class SqlHelper {
             preparedStatement.setInt(1, id);
             return preparedStatement;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         }
     }
 
@@ -152,7 +153,7 @@ public class SqlHelper {
     public static PreparedStatement prepareTableSelectStatement(Connection c,
                                                                 String storageKey,
                                                                 String[] fields,
-                                                                String[] values) {
+                                                                Object[] values) {
         Pair<String, String[]> pair = DatabaseHelper.createWhere(fields, values, null);
         try {
             String queryString =
@@ -163,7 +164,7 @@ public class SqlHelper {
             }
             return preparedStatement;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         }
     }
 
@@ -185,7 +186,7 @@ public class SqlHelper {
             }
             return preparedStatement;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         }
     }
 
@@ -202,7 +203,7 @@ public class SqlHelper {
             }
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -274,7 +275,7 @@ public class SqlHelper {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -309,7 +310,7 @@ public class SqlHelper {
             setPreparedStatementArgs(preparedStatement, p, where.second);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -351,7 +352,7 @@ public class SqlHelper {
             preparedStatement.setInt(lastArgIndex, id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -406,13 +407,13 @@ public class SqlHelper {
             preparedStatement.setString(1, arg);
             preparedStatement.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    throw new SQLiteRuntimeException(e);
                 }
             }
         }
@@ -429,13 +430,13 @@ public class SqlHelper {
             }
             preparedStatement.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    // ignore
                 }
             }
         }
@@ -457,7 +458,7 @@ public class SqlHelper {
             preparedStatement.setInt(1, id);
             preparedStatement.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -483,7 +484,7 @@ public class SqlHelper {
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {

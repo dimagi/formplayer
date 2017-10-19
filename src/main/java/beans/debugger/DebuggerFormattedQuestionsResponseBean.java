@@ -24,6 +24,7 @@ public class DebuggerFormattedQuestionsResponseBean {
             String formattedQuestions,
             JSONArray questionList,
             List<String> functionList,
+            List<String> instanceIds,
             List<XPathQueryItem> recentXPathQueries) {
         this.xmlns = xmlns;
         this.appId = appId;
@@ -35,6 +36,9 @@ public class DebuggerFormattedQuestionsResponseBean {
         }
         for (String function: functionList) {
             autoCompletable.add(new FunctionAutocompletable(function));
+        }
+        for (String instanceId: instanceIds) {
+            autoCompletable.add(new InstanceAutocompletableItem(instanceId));
         }
         this.questionList = autoCompletable.toArray(new AutoCompletableItem[autoCompletable.size()]);
         this.recentXPathQueries = recentXPathQueries.toArray(new XPathQueryItem[recentXPathQueries.size()]);
