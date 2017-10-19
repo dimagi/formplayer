@@ -31,6 +31,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     private static final String COL_INDEX_NAME = "name";
     private static final String COL_INDEX_TYPE = "type";
     private static final String COL_INDEX_TARGET = "target";
+    private static final String COL_INDEX_RELATIONSHIP = "relationship";
 
     ConnectionHandler connectionHandler;
 
@@ -120,6 +121,43 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                     TABLE_NAME,
                     COL_CASE_RECORD_ID + " IN " + whereParams.first,
                     whereParams.second);
+        }
+    }
+
+
+    public HashMap<Integer,Vector<Pair<String, String>>> getCaseIndexMap() {
+        String[] projection = new String[] {COL_CASE_RECORD_ID, COL_INDEX_TARGET, COL_INDEX_RELATIONSHIP};
+        HashMap<Integer,Vector<Pair<String, String>>> caseIndexMap = new HashMap<>();
+        Cursor c = db.query(TABLE_NAME, projection, null ,null, null, null, null);
+
+        int recordColumn = c.getColumnIndexOrThrow(COL_CASE_RECORD_ID);
+        int targetColumn = c.getColumnIndexOrThrow(COL_INDEX_TARGET);
+        int relationshipColumn = c.getColumnIndexOrThrow(COL_INDEX_RELATIONSHIP);
+
+        try {
+            c.moveToFirst();
+            while (!c.isAfterLast()) {
+                int caseRecordId = c.getInt(recordColumn);
+                String targetCase = c.getString(targetColumn);
+                String relationship = c.getString(relationshipColumn);
+
+                c.moveToNext();
+
+                Pair<String, String> index  = new Pair<> (targetCase, relationship);
+
+                Vector<Pair<String, String>> indexList;
+                if (!caseIndexMap.containsKey(caseRecordId)) {
+                    indexList = new Vector<>();
+                } else {
+                    indexList = caseIndexMap.get(caseRecordId);
+                }
+                indexList.add(index);
+                caseIndexMap.put(caseRecordId, indexList);
+            }
+
+            return caseIndexMap;
+        } finally {
+            c.close();
         }
     }
 

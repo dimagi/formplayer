@@ -6,6 +6,8 @@ import io.sentry.event.interfaces.ExceptionInterface;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.log4j.spi.LoggerFactory;
+import org.slf4j.ILoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import services.RestoreFactory;
@@ -14,6 +16,8 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.slf4j.LoggerFactory.getILoggerFactory;
 
 /**
  * Created by benrudolph on 4/27/17.
@@ -50,6 +54,7 @@ public class FormplayerSentry {
 
     public FormplayerSentry(SentryClient sentryClient) {
         this.sentryClient = sentryClient;
+        ILoggerFactory loggerFactory = getILoggerFactory();
     }
 
     private void recordBreadcrumb(Breadcrumb breadcrumb) {
