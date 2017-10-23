@@ -1,6 +1,5 @@
 package services;
 
-import auth.HqAuth;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -33,7 +32,9 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
         ResponseEntity<String> response = null;
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-        builder.buildAndExpand(paramMap);
+        for (String key: paramMap.keySet()) {
+            builder.queryParam(key, paramMap.get(key));
+        }
 
         try {
             response = restTemplate.exchange(
