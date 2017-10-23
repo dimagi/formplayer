@@ -74,7 +74,7 @@ public class MenuController extends AbstractBaseController {
 
     // Note: This function currently wipes and re-installs the database until real updating can be implemented
     @ApiOperation(value = "Update the application to latest, then replay the given session")
-    @RequestMapping(value = Constants.URL_REPLAY, method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
     @UserLock
     @UserRestore
     @AppInstall
