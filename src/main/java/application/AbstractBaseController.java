@@ -1,18 +1,14 @@
 package application;
 
 import aspects.LockAspect;
-import auth.DjangoAuth;
-import auth.HqAuth;
-import auth.TokenAuth;
 import beans.NewFormResponse;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import beans.menus.*;
-import com.getsentry.raven.event.Event;
 import com.timgroup.statsd.StatsDClient;
 import exceptions.*;
-import hq.models.PostgresUser;
+import io.sentry.event.Event;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.process.CommCareInstanceInitializer;
@@ -23,6 +19,8 @@ import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.*;
+import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
@@ -49,8 +47,7 @@ import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 import util.FormplayerHttpRequest;
-import util.FormplayerRaven;
-import util.UserUtils;
+import util.FormplayerSentry;
 
 import java.util.Vector;
 
@@ -85,7 +82,7 @@ public abstract class AbstractBaseController {
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
-    protected FormplayerRaven raven;
+    protected FormplayerSentry raven;
 
     @Autowired
     protected FormSendCalloutHandler formSendCalloutHandler;
@@ -113,17 +110,6 @@ public abstract class AbstractBaseController {
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
         return getNextMenu(menuSession, 0, "", 0);
-    }
-
-    protected HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
-        HqAuth auth;
-        if (UserUtils.isAnonymous(domain, username)) {
-            PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
-            auth = new TokenAuth(postgresUser.getAuthToken());
-        } else {
-            auth = new DjangoAuth(sessionToken);
-        }
-        return auth;
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
@@ -304,19 +290,11 @@ public abstract class AbstractBaseController {
         return response;
     }
 
-    protected MenuSession getMenuSession(String domain, String username, String menuSessionId, String authToken) throws Exception {
-        MenuSession menuSession = null;
-        HqAuth auth = getAuthHeaders(
-                domain,
-                username,
-                authToken
-        );
-
-        menuSession = new MenuSession(
+    protected MenuSession getMenuSession(String menuSessionId) throws Exception {
+        MenuSession menuSession = new MenuSession(
                 menuSessionRepo.findOneWrapped(menuSessionId),
                 installService,
                 restoreFactory,
-                auth,
                 host
         );
         menuSession.getSessionWrapper().syncState();

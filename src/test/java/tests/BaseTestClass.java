@@ -2,7 +2,6 @@ package tests;
 
 import application.*;
 import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
@@ -31,7 +30,7 @@ import repo.SerializableMenuSession;
 import sandbox.SqlSandboxUtils;
 import services.*;
 import util.Constants;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 import util.PrototypeUtils;
 import utils.FileUtils;
 import utils.TestContext;
@@ -92,7 +91,7 @@ public class BaseTestClass {
     private NewFormResponseFactory newFormResponseFactoryMock;
 
     @Autowired
-    protected FormplayerRaven ravenMock;
+    protected FormplayerSentry ravenMock;
 
     @Autowired
     protected LockRegistry userLockRegistry;
@@ -150,7 +149,7 @@ public class BaseTestClass {
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
-                .when(submitServiceMock).submitForm(anyString(), anyString(), any(HqAuth.class));
+                .when(submitServiceMock).submitForm(anyString(), anyString());
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
@@ -227,7 +226,7 @@ public class BaseTestClass {
     }
 
     NewFormResponse startNewForm(String requestPath, String formPath) throws Exception {
-        when(xFormServiceMock.getFormXml(anyString(), any(HqAuth.class)))
+        when(xFormServiceMock.getFormXml(anyString()))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,

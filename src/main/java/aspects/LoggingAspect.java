@@ -10,7 +10,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.RequestMapping;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 
 import java.lang.reflect.Method;
 
@@ -24,7 +24,7 @@ public class LoggingAspect {
     private final Log log = LogFactory.getLog(LoggingAspect.class);
 
     @Autowired
-    private FormplayerRaven raven;
+    private FormplayerSentry raven;
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping) " +
             "&& !@annotation(annotations.NoLogging)")

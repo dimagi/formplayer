@@ -78,8 +78,7 @@ public class FormController extends AbstractBaseController{
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String postUrl = host + newSessionBean.getPostUrl();
         return newFormResponseFactory.getResponse(newSessionBean,
-                postUrl,
-                new DjangoAuth(authToken));
+                postUrl);
     }
 
     @ApiOperation(value = "Answer the question at the given index")
@@ -107,12 +106,6 @@ public class FormController extends AbstractBaseController{
     @UserRestore
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-
-        HqAuth auth = getAuthHeaders(
-                submitRequestBean.getDomain(),
-                submitRequestBean.getUsername(),
-                authToken
-        );
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         storageFactory.configure(serializableFormSession.getUsername(),
                 serializableFormSession.getDomain(),
@@ -157,8 +150,7 @@ public class FormController extends AbstractBaseController{
             try {
                  submitResponse = submitService.submitForm(
                         formEntrySession.getInstanceXml(),
-                        formEntrySession.getPostUrl(),
-                        auth
+                        formEntrySession.getPostUrl()
                 );
             } finally {
                 timer.end().record();
@@ -174,7 +166,7 @@ public class FormController extends AbstractBaseController{
 
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()), auth);
+                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
                 if (nav != null) {
                     submitResponseBean.setNextScreen(nav);
                 }
@@ -189,9 +181,9 @@ public class FormController extends AbstractBaseController{
         migratedFormSessionRepo.delete(id);
     }
 
-    private Object doEndOfFormNav(SerializableMenuSession serializedSession, HqAuth auth) throws Exception {
+    private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
-        MenuSession menuSession = new MenuSession(serializedSession, installService, restoreFactory, auth, host);
+        MenuSession menuSession = new MenuSession(serializedSession, installService, restoreFactory, host);
         Object nextScreen = resolveFormGetNext(menuSession);
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         return nextScreen;

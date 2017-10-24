@@ -72,19 +72,17 @@ public class MenuSession {
 
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
-    private HqAuth auth;
     private boolean oneQuestionPerScreen;
     ArrayList<String> titles;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreFactory restoreFactory, HqAuth auth, String host) throws Exception {
+                       RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
         this.domain = session.getDomain();
         this.asUser = session.getAsUser();
         this.locale = session.getLocale();
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
-        this.auth = auth;
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference).first;
         this.sandbox = CaseAPIs.getSandbox(restoreFactory);
@@ -99,11 +97,10 @@ public class MenuSession {
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
-                       InstallService installService, RestoreFactory restoreFactory, HqAuth auth, String host,
+                       InstallService installService, RestoreFactory restoreFactory, String host,
                        boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
-        this.auth = auth;
         this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
@@ -217,7 +214,7 @@ public class MenuSession {
             computeDatum();
             return getNextScreen();
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
-            QueryScreen queryScreen = new FormplayerQueryScreen(auth);
+            QueryScreen queryScreen = new FormplayerQueryScreen();
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {

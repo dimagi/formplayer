@@ -3,6 +3,9 @@ package hq;
 import api.process.FormRecordProcessorHelper;
 import beans.CaseBean;
 import engine.FormplayerTransactionParserFactory;
+import exceptions.SQLiteRuntimeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
@@ -12,6 +15,7 @@ import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.sqlite.SQLiteException;
 import org.xmlpull.v1.XmlPullParserException;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
@@ -20,11 +24,14 @@ import util.UserUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 
 /**
  * Created by willpride on 1/7/16.
  */
 public class CaseAPIs {
+
+    private static final Log log = LogFactory.getLog(CaseAPIs.class);
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public static UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
@@ -32,7 +39,7 @@ public class CaseAPIs {
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             restoreFactory.getSQLiteDB().createDatabaseFolder();
         }
-        UserSqlSandbox sandbox = restoreUser(restoreFactory, restoreFactory.getRestoreXml());
+        UserSqlSandbox sandbox = restoreUser(restoreFactory);
         FormRecordProcessorHelper.purgeCases(sandbox);
         return sandbox;
     }
@@ -44,7 +51,7 @@ public class CaseAPIs {
             return restoreFactory.getSqlSandbox();
         } else {
             restoreFactory.getSQLiteDB().createDatabaseFolder();
-            return restoreUser(restoreFactory, restoreFactory.getRestoreXml());
+            return restoreUser(restoreFactory);
         }
     }
 
@@ -53,16 +60,35 @@ public class CaseAPIs {
         return new CaseBean(cCase);
     }
 
-    private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory, InputStream restorePayload) throws
+    private static UserSqlSandbox restoreUser(RestoreFactory restoreFactory) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
-        UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
-        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
-        restoreFactory.setAutoCommit(false);
-        ParseUtils.parseIntoSandbox(restorePayload, factory, true, true);
-        restoreFactory.commit();
-        restoreFactory.setAutoCommit(true);
-        sandbox.writeSyncToken();
-        return sandbox;
+        int maxRetries = 2;
+        int counter = 0;
+        while (true) {
+            try {
+                UserSqlSandbox sandbox = restoreFactory.getSqlSandbox();
+                FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
+                restoreFactory.setAutoCommit(false);
+                ParseUtils.parseIntoSandbox(restoreFactory.getRestoreXml(), factory, true, true);
+                restoreFactory.commit();
+                restoreFactory.setAutoCommit(true);
+                sandbox.writeSyncToken();
+                return sandbox;
+            } catch (InvalidStructureException | SQLiteRuntimeException e) {
+                if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
+                    // Before throwing exception, rollback any changes to relinquish SQLite lock
+                    restoreFactory.rollback();
+                    restoreFactory.setAutoCommit(true);
+                    restoreFactory.getSQLiteDB().deleteDatabaseFile();
+                    restoreFactory.getSQLiteDB().createDatabaseFolder();
+                    throw e;
+                } else {
+                    log.info(String.format("Retrying restore for user %s after receiving exception.",
+                            restoreFactory.getEffectiveUsername()),
+                            e);
+                }
+            }
+        }
     }
 }

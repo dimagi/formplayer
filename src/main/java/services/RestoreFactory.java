@@ -29,7 +29,7 @@ import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
-import util.FormplayerRaven;
+import util.FormplayerSentry;
 import util.UserUtils;
 
 import javax.annotation.Resource;
@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
-import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,7 +67,7 @@ public class RestoreFactory {
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
     @Autowired
-    private FormplayerRaven raven;
+    private FormplayerSentry raven;
 
     @Autowired
     private RedisTemplate redisTemplateLong;
@@ -107,6 +106,14 @@ public class RestoreFactory {
     public void commit() {
         try {
             sqLiteDB.getConnection().commit();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void rollback() {
+        try {
+            sqLiteDB.getConnection().rollback();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -306,6 +313,14 @@ public class RestoreFactory {
             return DEVICE_ID_SLUG;
         }
         return String.format("%s*%s*as*%s", DEVICE_ID_SLUG, username, asUsername);
+    }
+
+    public HttpHeaders getUserHeaders() {
+        HttpHeaders headers = getHqAuth().getAuthHeaders();
+        headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
+        headers.set("X-OpenRosa-Version", "3.0");
+        headers.set("X-OpenRosa-DeviceId", getSyncDeviceId());
+        return headers;
     }
 
     public String getRestoreUrl() {
