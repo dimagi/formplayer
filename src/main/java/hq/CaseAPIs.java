@@ -20,6 +20,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import services.RestoreFactory;
+import util.SimpleTimer;
 import util.UserUtils;
 
 import java.io.IOException;
@@ -33,15 +34,40 @@ public class CaseAPIs {
 
     private static final Log log = LogFactory.getLog(CaseAPIs.class);
 
-    // This function will only wipe user DBs when they have expired, otherwise will incremental sync
+    public static class TimedSyncResult {
+        private UserSqlSandbox sandbox;
+        private SimpleTimer purgeCasesTimer;
+
+        private TimedSyncResult(UserSqlSandbox sandbox, SimpleTimer purgeCasesTimer) {
+            this.sandbox = sandbox;
+            this.purgeCasesTimer = purgeCasesTimer;
+        }
+
+        public UserSqlSandbox getSandbox() {
+            return sandbox;
+        }
+
+        public SimpleTimer getPurgeCasesTimer() {
+            return purgeCasesTimer;
+        }
+    }
+
     public static UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
+        return performTimedSync(restoreFactory).getSandbox();
+    }
+
+    // This function will only wipe user DBs when they have expired, otherwise will incremental sync
+    public static TimedSyncResult performTimedSync(RestoreFactory restoreFactory) throws Exception {
         // Create parent dirs if needed
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             restoreFactory.getSQLiteDB().createDatabaseFolder();
         }
         UserSqlSandbox sandbox = restoreUser(restoreFactory);
+        SimpleTimer timer = new SimpleTimer();
+        timer.start();
         FormRecordProcessorHelper.purgeCases(sandbox);
-        return sandbox;
+        timer.end();
+        return new TimedSyncResult(sandbox, timer);
     }
 
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
