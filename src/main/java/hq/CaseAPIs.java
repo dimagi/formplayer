@@ -102,15 +102,17 @@ public class CaseAPIs {
                 sandbox.writeSyncToken();
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
-                if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
-                    // Before throwing exception, rollback any changes to relinquish SQLite lock
-                    restoreFactory.rollback();
-                    restoreFactory.setAutoCommit(true);
-                    restoreFactory.getSQLiteDB().deleteDatabaseFile();
-                    restoreFactory.getSQLiteDB().createDatabaseFolder();
+
+                // Before throwing exception, rollback any changes to relinquish SQLite lock
+                restoreFactory.rollback();
+                restoreFactory.setAutoCommit(true);
+                restoreFactory.getSQLiteDB().deleteDatabaseFile();
+                restoreFactory.getSQLiteDB().createDatabaseFolder();
+                
+                if (++counter >= maxRetries) {
                     throw e;
                 } else {
-                    log.info(String.format("Retrying restore for user %s after receiving exception.",
+                    log.error(String.format("Retrying restore for user %s after receiving exception.",
                             restoreFactory.getEffectiveUsername()),
                             e);
                 }
