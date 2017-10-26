@@ -211,6 +211,7 @@ public class FormSession {
     private void initLocale(){
         if(locale == null){
             this.locale = this.langs[0];
+            log.info("Null locale, setting locale to default lang " + this.locale);
         }
         try {
             formEntryController.setLanguage(this.locale);

@@ -14,6 +14,7 @@ import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
 import sandbox.SqliteIndexedStorageUtility;
 
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
@@ -70,7 +71,7 @@ public class SessionUtils {
             return;
         }
         Localizer localizer = Localization.getGlobalLocalizerAdvanced();
-        log.info("Setting locale to : " + locale + " available: " + localizer.getAvailableLocales());
+        log.info("Setting locale to : " + locale + " available: " + Arrays.toString(localizer.getAvailableLocales()));
         for (String availabile : localizer.getAvailableLocales()) {
             if (locale.equals(availabile)) {
                 localizer.setLocale(locale);
