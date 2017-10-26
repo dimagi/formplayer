@@ -7,14 +7,18 @@ import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.JSONReporter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import services.CategoryTimingHelper;
 import sqlitedb.UserDB;
 import util.Constants;
+import util.Timing;
 
 import java.io.StringReader;
 
@@ -31,13 +35,17 @@ import java.io.StringReader;
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
 
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
+
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
     @UserRestore
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        CaseAPIs.performSync(restoreFactory);
+        Timing purgeCasesTiming = CaseAPIs.performTimedSync(restoreFactory).getPurgeCasesTimer();
+        categoryTimingHelper.recordCategoryTiming(purgeCasesTiming, Constants.TimingCategories.PURGE_CASES);
         return new SyncDbResponseBean();
     }
 

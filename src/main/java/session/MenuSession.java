@@ -1,6 +1,5 @@
 package session;
 
-import auth.HqAuth;
 import engine.FormplayerConfigEngine;
 import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
@@ -36,6 +35,7 @@ import services.RestoreFactory;
 import util.Constants;
 import util.SessionUtils;
 import util.StringUtils;
+import util.Timing;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -75,6 +75,8 @@ public class MenuSession {
     private boolean oneQuestionPerScreen;
     ArrayList<String> titles;
 
+    private Timing purgeCasesTiming = Timing.constant(0);
+
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
@@ -107,9 +109,9 @@ public class MenuSession {
         Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference);
         this.engine = install.first;
         if (install.second && !preview) {
-            this.sandbox = CaseAPIs.performSync(restoreFactory);
-        } else {
-            this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+            CaseAPIs.TimedSyncResult timedSyncResult = CaseAPIs.performTimedSync(restoreFactory);
+            this.sandbox = timedSyncResult.getSandbox();
+            this.purgeCasesTiming = timedSyncResult.getPurgeCasesTimer();
         }
         this.sandbox = CaseAPIs.getSandbox(restoreFactory);
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
@@ -358,5 +360,9 @@ public class MenuSession {
         String[] ret = new String[titles.size()];
         titles.toArray(ret);
         return ret;
+    }
+
+    public Timing getPurgeCasesTiming() {
+        return purgeCasesTiming;
     }
 }
