@@ -36,6 +36,8 @@ import session.FormSession;
 import session.MenuSession;
 import sqlitedb.ApplicationDB;
 import util.Constants;
+import util.SimpleTimer;
+import util.Timing;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -183,15 +185,15 @@ public class MenuController extends AbstractBaseController {
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
-        CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL);
+        SimpleTimer timer = new SimpleTimer();
         timer.start();
-        try {
-            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
-        } finally {
-            timer.end()
-                    .setMessage(timer.durationInMs() < 50 ? "Seems like nothing to install" : "This took some time")
-                    .record();
-        }
+        menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
+        timer.end();
+
+        Timing appInstallTiming = Timing.constant(timer.durationInMs() - menuSession.getPurgeCasesTiming().durationInMs());
+
+        categoryTimingHelper.recordCategoryTiming(appInstallTiming, Constants.TimingCategories.APP_INSTALL);
+        categoryTimingHelper.recordCategoryTiming(menuSession.getPurgeCasesTiming(), Constants.TimingCategories.PURGE_CASES);
         BaseResponseBean response = advanceSessionWithSelections(
                 menuSession,
                 selections,
@@ -373,9 +375,7 @@ public class MenuController extends AbstractBaseController {
      */
     private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
                                            MenuSession menuSession) throws Exception {
-        NotificationMessage notificationMessage = doSync(
-                nextScreen
-        );
+        NotificationMessage notificationMessage = doSync(nextScreen);
 
         BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
         if (postSyncResponse != null) {
