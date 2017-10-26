@@ -363,6 +363,38 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         }
     }
 
+    public AbstractSqlIterator<T> iterate(boolean includeData, String[] metaDataToInclude) {
+        String[] projection = getProjectedFieldsWithId(includeData, scrubMetadataNames(metaDataToInclude));
+        Cursor c = helper.getHandle().query(table, projection, null, null, null, null, DatabaseHelper.ID_COL);
+        return new JdbcSqlStorageIterator<T>(c, this, metaDataToInclude) {
+        };
+        return iterate(true);
+    }
+
+    private String[] scrubMetadataNames(String[] metaDataNames) {
+        String[] scrubbedNames = new String[metaDataNames.length];
+
+        for(int i = 0 ; i < metaDataNames.length; ++i ){
+            scrubbedNames[i] = TableBuilder.scrubName(metaDataNames[i]);
+        }
+        return scrubbedNames;
+    }
+
+    private String[] getProjectedFieldsWithId(boolean includeData, String[] columnNamesToInclude) {
+        String[] projection = new String[columnNamesToInclude.length + (includeData ? 2 : 1)];
+        int firstIndex = 0;
+        projection[firstIndex] = DatabaseHelper.ID_COL;
+        firstIndex++;
+        if (includeData) {
+            projection[firstIndex] = DatabaseHelper.DATA_COL;
+            firstIndex++;
+        }
+        for (int i = 0; i < columnNamesToInclude.length ; ++i) {
+            projection[i + firstIndex] = columnNamesToInclude[i];
+        }
+        return projection;
+    }
+
     @Override
     public boolean isEmpty() {
         return this.getNumRecords() <= 0;
@@ -424,37 +456,41 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         SqlHelper.deleteAllFromTable(connection, tableName);
     }
 
-    // not yet implemented
-    @Override
-    public Vector<Integer> removeAll(EntityFilter ef) {
-        Vector<Integer> removed = new Vector<>();
-        for (IStorageIterator iterator = this.iterate(); iterator.hasMore(); ) {
-            int id = iterator.nextID();
-            switch (ef.preFilter(id, null)) {
-                case EntityFilter.PREFILTER_INCLUDE:
-                    removed.add(id);
-                    continue;
-                case EntityFilter.PREFILTER_EXCLUDE:
-                    continue;
-                case EntityFilter.PREFILTER_FILTER:
-                    if (ef.matches(read(id))) {
-                        removed.add(id);
-                    }
-            }
+
+    public Vector<Integer> removeAll(Vector<Integer> toRemove) {
+        if (toRemove.size() == 0) {
+            return toRemove;
         }
 
-        if (removed.size() == 0) {
-            return removed;
-        }
-
-        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(removed);
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(toRemove);
 
         for (Pair<String, String[]> whereParams : whereParamList) {
             SqlHelper.deleteFromTableWhere(getConnection(), tableName,
                     DatabaseHelper.ID_COL + " IN " + whereParams.first, whereParams.second);
         }
 
-        return removed;
+        return toRemove;
+    }
+
+    // not yet implemented
+    @Override
+    public Vector<Integer> removeAll(EntityFilter ef) {
+        Vector<Integer> toRemove = new Vector<>();
+        for (IStorageIterator iterator = this.iterate(); iterator.hasMore(); ) {
+            int id = iterator.nextID();
+            switch (ef.preFilter(id, null)) {
+                case EntityFilter.PREFILTER_INCLUDE:
+                    toRemove.add(id);
+                    continue;
+                case EntityFilter.PREFILTER_EXCLUDE:
+                    continue;
+                case EntityFilter.PREFILTER_FILTER:
+                    if (ef.matches(read(id))) {
+                        toRemove.add(id);
+                    }
+            }
+        }
+        return removeAll(toRemove);
     }
 
     @Override

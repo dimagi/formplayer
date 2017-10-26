@@ -1,10 +1,10 @@
 package sandbox;
 
+import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.Persistable;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Abstract implementation for IStorageIterator that uses a backing ArrayList of a generic type
@@ -16,10 +16,14 @@ public abstract class AbstractSqlIterator <E extends Persistable> implements ISt
     protected int index;
     protected boolean hasMore;
 
+    private final Set<String> metaDataIndexSet;
+    private HashMap<String, Integer> metaDataColumnMap = new HashMap<>();
+
     public AbstractSqlIterator(ArrayList<?> backingList) {
         this.backingList = backingList;
         index = 0;
         hasMore = index < this.backingList.size();
+        metaDataIndexSet = new HashSet<>();
     }
 
     abstract E getCurrentRecord();
@@ -52,6 +56,29 @@ public abstract class AbstractSqlIterator <E extends Persistable> implements ISt
         index++;
         hasMore = index < backingList.size();
         return id;
+    }
+
+    /**
+     * Retrieves the indexed metadata for the current record _without_ advancing
+     * the iterator, so this needs to be called _before_ next() or nextId()
+     *
+     * @param metadataKey The metadata key for this Serializable record. Would be
+     *                    the same key used with T.getMetaData()
+     * @throws RuntimeException If this iterator was not intialized with metadata
+     */
+    public String peekIncludedMetadata(String metadataKey) {
+        if (!metaDataIndexSet.contains(metadataKey)) {
+            throw new RuntimeException("Invalid iterator metadata request for key: " + metadataKey);
+        }
+        int columnIndex;
+        if (metaDataColumnMap.containsKey(metadataKey)) {
+            columnIndex = metaDataColumnMap.get(metadataKey);
+        } else {
+            String columnName = TableBuilder.scrubName(metadataKey);
+            columnIndex = c.getColumnIndexOrThrow(columnName);
+            metaDataColumnMap.put(metadataKey, columnIndex);
+        }
+        return c.getString(columnIndex);
     }
 
     @Override
