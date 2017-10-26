@@ -43,7 +43,8 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
     public String toString() {
         return "InstallRequestBean: [installReference=" + installReference +
                 ", username=" + username + ", domain=" + domain + ", appId=" + appId +
-                ", oneQuestionPerScreen: " + oneQuestionPerScreen + "]";
+                ", oneQuestionPerScreen: " + oneQuestionPerScreen +
+                ", locale: " + locale + "]";
     }
 
     public String getLocale() {
