@@ -164,7 +164,8 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         // Pass 1: Create a DAG which contains all of the cases on the phone as nodes, and has a
         // directed edge for each index (from the 'child' case pointing to the 'parent' case) with
         // the appropriate relationship tagged
-        for (AbstractSqlIterator<Case> i = caseStorage.iterate(true); i.hasMore(); ) {
+        for (AbstractSqlIterator<Case> i = caseStorage.iterate(true,
+                new String[]{Case.INDEX_OWNER_ID, Case.INDEX_CASE_STATUS, Case.INDEX_CASE_ID}); i.hasMore(); ) {
 
             String ownerId = i.peekIncludedMetadata(Case.INDEX_OWNER_ID);
             boolean closed = i.peekIncludedMetadata(Case.INDEX_CASE_STATUS).equals("closed");
