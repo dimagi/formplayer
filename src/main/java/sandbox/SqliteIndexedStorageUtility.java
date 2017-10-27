@@ -310,21 +310,14 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         return iterate(true);
     }
 
-    @Override
-    public AbstractSqlIterator<T> iterate(boolean includeData) {
+    public AbstractSqlIterator<T> iterate(boolean includeData, String[] metaDataToInclude) {
         Connection connection;
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         try {
             connection = this.getConnection();
-            String sqlQuery;
-            if (includeData) {
-                sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL + " , " +
-                    org.commcare.modern.database.DatabaseHelper.DATA_COL + " FROM " + this.tableName + ";";
-            } else {
-                sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL +" FROM " + this.tableName + ";";
-            }
-            preparedStatement = connection.prepareStatement(sqlQuery);
+            String[] projection = getProjectedFieldsWithId(includeData, scrubMetadataNames(metaDataToInclude));
+            preparedStatement = SqlHelper.prepareTableSelectStatement(connection, tableName, projection);
             resultSet = preparedStatement.executeQuery();
 
             ArrayList<T> backingList = new ArrayList<>();
@@ -363,12 +356,9 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         }
     }
 
-    public AbstractSqlIterator<T> iterate(boolean includeData, String[] metaDataToInclude) {
-        String[] projection = getProjectedFieldsWithId(includeData, scrubMetadataNames(metaDataToInclude));
-        Cursor c = helper.getHandle().query(table, projection, null, null, null, null, DatabaseHelper.ID_COL);
-        return new JdbcSqlStorageIterator<T>(c, this, metaDataToInclude) {
-        };
-        return iterate(true);
+    @Override
+    public AbstractSqlIterator<T> iterate(boolean includeData) {
+        return iterate(includeData, null);
     }
 
     private String[] scrubMetadataNames(String[] metaDataNames) {
