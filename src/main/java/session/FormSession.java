@@ -221,7 +221,7 @@ public class FormSession {
     }
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
-        CommCarePlatform platform = new CommCarePlatform(2, 36, new IStorageIndexedFactory() {
+        CommCarePlatform platform = new CommCarePlatform(2, 39, new IStorageIndexedFactory() {
             @Override
             public IStorageUtilityIndexed newStorage(String name, Class type) {
                 return new SqliteIndexedStorageUtility(sandbox, type, name);
