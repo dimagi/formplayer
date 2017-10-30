@@ -11,7 +11,6 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import api.json.JsonActionUtils;
-import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
@@ -47,6 +46,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
+ *
  * OK this (and MenuSession) is a total god object that basically mananges everything about the state of
  * a form entry session. We turn this into a SerializableFormSession to persist it. Within that we also
  * serialize the formDef to persist the session, in addition to a bunch of other information.
@@ -95,7 +95,7 @@ public class FormSession {
 
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
-                       FormSendCalloutHandler formSendCalloutHandler) throws Exception {
+                       FormSendCalloutHandler formSendCalloutHandler) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();
@@ -155,7 +155,7 @@ public class FormSession {
         this.functionContext = functionContext;
         setupJavaRosaObjects();
         setupFunctionContext();
-        if (instanceContent != null) {
+        if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
             initialize(false, sessionData);
         } else {
@@ -166,7 +166,7 @@ public class FormSession {
             FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
             IFormElement element = formEntryController.getModel().getForm().getChild(firstIndex);
             while (element instanceof GroupDef && !formEntryController.isFieldListHost(firstIndex)) {
-                firstIndex = formController.getNextFormIndex(firstIndex, false, true);
+                firstIndex =  formController.getNextFormIndex(firstIndex, false, true);
                 element = formEntryController.getModel().getForm().getChild(firstIndex);
             }
             this.currentIndex = firstIndex.toString();
@@ -181,10 +181,10 @@ public class FormSession {
         if (functionContext == null || functionContext.size() < 1) {
             return;
         }
-        for (String outerKey : functionContext.keySet()) {
+        for (String outerKey: functionContext.keySet()) {
             FunctionHandler[] functionHandlers = functionContext.get(outerKey);
-            if (outerKey.equals("static-date")) {
-                for (FunctionHandler functionHandler : functionHandlers) {
+            if(outerKey.equals("static-date")) {
+                for (FunctionHandler functionHandler: functionHandlers) {
                     String funcName = functionHandler.getName();
                     Date funcValue;
                     if (funcName.contains("now")) {
@@ -193,9 +193,9 @@ public class FormSession {
                         funcValue = DateUtils.parseDate(functionHandler.getValue());
                     }
                     formDef.exprEvalContext.addFunctionHandler(
-                            new FunctionExtensions.TodayFunc(
-                                    funcName,
-                                    funcValue)
+                        new FunctionExtensions.TodayFunc(
+                                funcName,
+                                funcValue)
                     );
                 }
             }
@@ -208,8 +208,8 @@ public class FormSession {
         xFormParser.loadXmlInstance(formDef, stringReader);
     }
 
-    private void initLocale() {
-        if (locale == null) {
+    private void initLocale(){
+        if(locale == null){
             this.locale = this.langs[0];
         }
         try {
@@ -221,14 +221,12 @@ public class FormSession {
     }
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
-        CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
-                CommCareConfigEngine.MINOR_VERSION,
-                new IStorageIndexedFactory() {
-                    @Override
-                    public IStorageUtilityIndexed newStorage(String name, Class type) {
-                        return new SqliteIndexedStorageUtility(sandbox, type, name);
-                    }
-                });
+        CommCarePlatform platform = new CommCarePlatform(2, 39, new IStorageIndexedFactory() {
+            @Override
+            public IStorageUtilityIndexed newStorage(String name, Class type) {
+                return new SqliteIndexedStorageUtility(sandbox, type, name);
+            }
+        });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
     }
@@ -238,19 +236,19 @@ public class FormSession {
         return new String(bytes, "US-ASCII");
     }
 
-    public FormEntryModel getFormEntryModel() {
+    public FormEntryModel getFormEntryModel(){
         return formEntryModel;
     }
 
-    public FormEntryController getFormEntryController() {
+    public FormEntryController getFormEntryController(){
         return formEntryController;
     }
 
-    public String getTitle() {
+    public String getTitle(){
         return title;
     }
 
-    public String[] getLanguages() {
+    public String[] getLanguages(){
         return langs;
     }
 
@@ -264,13 +262,13 @@ public class FormSession {
     }
 
 
-    public String getSessionId() {
+    public String getSessionId(){
         return uuid;
     }
 
-    public String getXmlns() {
+    public String getXmlns(){
         Object metaData = getFormEntryModel().getForm().getMainInstance().getMetaData(FormInstance.META_XMLNS);
-        if (metaData == null) {
+        if(metaData == null){
             return null;
         }
         return metaData.toString();
@@ -292,7 +290,7 @@ public class FormSession {
         this.locale = locale;
     }
 
-    public UserSandbox getSandbox() {
+    public UserSandbox getSandbox(){
         return this.sandbox;
     }
 
@@ -303,7 +301,7 @@ public class FormSession {
         return getInstanceXml();
     }
 
-    public Map<String, String> getSessionData() {
+    public Map<String, String> getSessionData(){
         return sessionData;
     }
 
@@ -315,7 +313,7 @@ public class FormSession {
     }
 
     private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
-        byte[] sessionBytes = Base64.decodeBase64(serializedFormDef);
+        byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
         DataInputStream inputStream =
                 new DataInputStream(new ByteArrayInputStream(sessionBytes));
         formDef.readExternal(inputStream, PrototypeManager.getDefault());
@@ -353,7 +351,7 @@ public class FormSession {
         return postUrl;
     }
 
-    public String getUsername() {
+    public String getUsername(){
         return username;
     }
 
@@ -377,9 +375,7 @@ public class FormSession {
         return isAtLastIndex;
     }
 
-    public FormDef getFormDef() {
-        return formDef;
-    }
+    public FormDef getFormDef() { return formDef; }
 
     public void stepToNextIndex() {
         this.formEntryController.jumpToIndex(JsonActionUtils.indexFromString(currentIndex, formDef));
@@ -389,7 +385,7 @@ public class FormSession {
         // check if this index is the beginning of a group that is not a question list.
         IFormElement element = formEntryController.getModel().getForm().getChild(newIndex);
         while (element instanceof GroupDef && !formEntryController.isFieldListHost(newIndex)) {
-            newIndex = formController.getNextFormIndex(newIndex, false, true);
+            newIndex =  formController.getNextFormIndex(newIndex, false, true);
             element = formEntryController.getModel().getForm().getChild(newIndex);
         }
 
@@ -421,8 +417,7 @@ public class FormSession {
     }
 
     private boolean checkFirstQuestion() {
-        FormIndex previousIndex = formController.getPreviousFormIndex();
-        ;
+        FormIndex previousIndex = formController.getPreviousFormIndex();;
         IFormElement element = formEntryController.getModel().getForm().getChild(previousIndex);
         while (element instanceof GroupDef && !formEntryController.isFieldListHost(previousIndex)) {
             previousIndex = formController.getPreviousFormIndex();
@@ -472,7 +467,7 @@ public class FormSession {
     }
 
     public void reload(FormDef formDef, String postUrl) throws IOException {
-        if (getInstanceXml() != null) {
+        if(getInstanceXml() != null){
             loadInstanceXml(formDef, getInstanceXml());
             initialize(false, sessionData);
         } else {
@@ -482,7 +477,7 @@ public class FormSession {
             FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
             IFormElement element = formEntryController.getModel().getForm().getChild(firstIndex);
             while (element instanceof GroupDef && !formEntryController.isFieldListHost(firstIndex)) {
-                firstIndex = formController.getNextFormIndex(firstIndex, false, true);
+                firstIndex =  formController.getNextFormIndex(firstIndex, false, true);
                 element = formEntryController.getModel().getForm().getChild(firstIndex);
             }
             this.currentIndex = firstIndex.toString();
