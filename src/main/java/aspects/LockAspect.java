@@ -3,6 +3,8 @@ package aspects;
 import beans.AuthenticatedRequestBean;
 import com.timgroup.statsd.StatsDClient;
 import io.sentry.event.Event;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -50,6 +52,8 @@ public class LockAspect {
     @Autowired
     private RedisTemplate<String, RedisLock> redisLockTemplate;
 
+    private final Log log = LogFactory.getLog(LockAspect.class);
+
     // needs to be accessible from WebAppContext.exceptionResolver
     public class LockError extends Exception {}
 
@@ -83,6 +87,7 @@ public class LockAspect {
             if (lock != null) {
                 try {
                     lock.unlock();
+                    log.info("Relinquished lock for key " + username);
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
                     logLockError(bean, joinPoint, "_expired");
@@ -104,12 +109,14 @@ public class LockAspect {
 
     private Lock getLockAndBlock(String username) throws LockError {
         Lock lock = userLockRegistry.obtain(username);
-        if (obtainLock(lock, username)) {
+        if (obtainLock(lock)) {
+            log.info("Obtained lock for key " + username);
             return lock;
         } else {
             String holdingThreadName = getHoldingThread(username);
             boolean threadLives = threadLives(holdingThreadName);
             if (!threadLives) {
+                log.error("Evicting thread " + holdingThreadName + " from lock with key " + username);
                 evictLock(username);
                 return getLockAndBlock(username);
             }
@@ -129,8 +136,7 @@ public class LockAspect {
     }
 
     private String getHoldingThread(String username) {
-        System.out.println("Getting lock for username " + String.format("formplayer-user:%s", username));
-        RedisLock redisLock = (RedisLock) redisLockTemplate.boundValueOps(String.format("formplayer-user:%s", username)).get();
+        RedisLock redisLock = redisLockTemplate.boundValueOps(String.format("formplayer-user:%s", username)).get();
         if (redisLock != null) {
             return redisLock.threadName;
         }
@@ -141,14 +147,13 @@ public class LockAspect {
         redisLockTemplate.delete(String.format("formplayer-user:%s", username));
     }
 
-    private boolean obtainLock(Lock lock, String username) {
+    private boolean obtainLock(Lock lock) {
         CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.WAIT_ON_LOCK);
         timer.start();
         try {
-            getHoldingThread(username);
             return lock.tryLock(Constants.USER_LOCK_TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException e){
-            return obtainLock(lock, username);
+            return obtainLock(lock);
         } finally {
             timer.end()
                     .setMessage(timer.durationInMs() > 5 ? "Had to wait to obtain the lock"
