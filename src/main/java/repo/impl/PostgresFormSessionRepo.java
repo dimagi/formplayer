@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
 import util.Constants;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.LockModeType;
 import java.io.*;
 import java.sql.ResultSet;
@@ -32,6 +33,14 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
+
+    @PostConstruct
+    public void purgeFormSessions() {
+        String query = replaceTableName(
+                "delete from %s where dateopened::timestamptz < now() - interval '7 days'"
+        );
+        this.jdbcTemplate.execute(query);
+    }
 
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
