@@ -19,6 +19,7 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.ViewResolver;
@@ -38,6 +39,8 @@ import repo.impl.PostgresUserRepo;
 import services.*;
 import util.Constants;
 import util.FormplayerSentry;
+import util.LockSerializer;
+import util.RedisLock;
 
 import java.util.Properties;
 
@@ -207,6 +210,16 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         template.setConnectionFactory(jedisConnFactory());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, RedisLock> redisLockTemplate() {
+        RedisTemplate redisTemplate = new RedisTemplate<String, RedisLock>();
+        redisTemplate.setConnectionFactory(jedisConnFactory());
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new LockSerializer());
+        redisTemplate.afterPropertiesSet();
+        return redisTemplate;
     }
 
     @Bean
