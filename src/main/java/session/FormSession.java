@@ -11,6 +11,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import api.json.JsonActionUtils;
+import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
@@ -221,7 +222,8 @@ public class FormSession {
     }
 
     private void initialize(boolean newInstance, Map<String, String> sessionData) {
-        CommCarePlatform platform = new CommCarePlatform(2, 39, new IStorageIndexedFactory() {
+        CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
+                CommCareConfigEngine.MINOR_VERSION, new IStorageIndexedFactory() {
             @Override
             public IStorageUtilityIndexed newStorage(String name, Class type) {
                 return new SqliteIndexedStorageUtility(sandbox, type, name);
