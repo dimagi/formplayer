@@ -57,20 +57,6 @@ public class PostgresMigratedFormSessionRepo implements FormSessionRepo {
     public static final String POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME = "formplayer_entrysession";
     public static final String POSTGRES_AUTH_USER_TABLE_NAME = "auth_user";
 
-    @PostConstruct
-    public void purgeFormSessions() {
-        String query = String.format(
-                "delete from %s where last_activity_date::timestamptz < now() - interval '7 days'",
-                POSTGRES_MIGRATED_ENTRYSESSION_TABLE_NAME
-        );
-        this.jdbcTemplate.execute(query);
-        query = String.format(
-                "delete from %s where last_modified::timestamptz < now() - interval '7 days'",
-                POSTGRES_MIGRATED_SESSION_TABLE_NAME
-        );
-        this.jdbcTemplate.execute(query);
-    }
-
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
 
