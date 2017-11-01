@@ -114,8 +114,7 @@ public class LockAspect {
             return lock;
         } else {
             String holdingThreadName = getHoldingThread(username);
-            boolean threadLives = threadLives(holdingThreadName);
-            if (!threadLives) {
+            if (!threadLives(holdingThreadName)) {
                 log.error("Evicting thread " + holdingThreadName + " from lock with key " + username);
                 evictLock(username);
                 return getLockAndBlock(username);
