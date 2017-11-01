@@ -1,5 +1,6 @@
 package beans.menus;
 
+import exceptions.ApplicationConfigException;
 import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
 import org.commcare.core.graph.model.GraphData;
@@ -61,6 +62,10 @@ public class EntityListResponse extends MenuBean {
         // We will shortcircuit the computation to just get the relevant detailSelection.
         if (detailSelection != null) {
             TreeReference reference = neededDatum.getEntityFromID(ec, detailSelection);
+            if (reference == null) {
+                throw new ApplicationConfigException(String.format("Could not create detail %s for case with ID %s " +
+                        " either because the case filter matched zero or multiple cases.", detailSelection, detail));
+            }
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
             Vector<TreeReference> references = ec.expandReference(neededDatum.getNodeset());
@@ -294,8 +299,11 @@ public class EntityListResponse extends MenuBean {
 
     @Override
     public String toString() {
-        return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
-                ", action=" + Arrays.toString(actions) + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) +
+        return "EntityListResponse [Title= " + getTitle() +
+                ", styles=" + Arrays.toString(styles) +
+                ", action=" + Arrays.toString(actions) +
+                ", parent=" + super.toString() +
+                ", headers=" + Arrays.toString(headers) +
                 ", locales=" + Arrays.toString(getLocales()) + "]";
     }
 
