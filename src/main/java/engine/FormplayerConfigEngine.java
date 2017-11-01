@@ -63,18 +63,22 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
     @Override
     public void initFromArchive(String archiveURL) throws InstallCancelledException,
             UnresolvedResourceException, UnfullfilledRequirementsException {
-        String appId = parseAppId(archiveURL);
-
-        try {
-            mArchiveRoot.derive("jr://archive/" + appId + "/");
-            init("jr://archive/" + appId + "/profile.ccpr");
-            log.info(String.format("Successfully re-used installation CCZ for appId %s", appId));
-            return;
-        } catch (InvalidReferenceException e) {
-            // Expected in many cases, pass
+        String fileName;
+        String appId = null;
+        if (archiveURL.startsWith("http")) {
+            appId = parseAppId(archiveURL);
+            try {
+                mArchiveRoot.derive("jr://archive/" + appId + "/");
+                init("jr://archive/" + appId + "/profile.ccpr");
+                log.info(String.format("Successfully re-used installation CCZ for appId %s", appId));
+                return;
+            } catch (InvalidReferenceException e) {
+                // Expected in many cases, pass
+            }
+            fileName = downloadToTemp(archiveURL);
+        } else {
+            fileName = archiveURL;
         }
-
-        String fileName = downloadToTemp(archiveURL);
         ZipFile zip;
         try {
             zip = new ZipFile(fileName);
