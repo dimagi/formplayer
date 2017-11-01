@@ -299,8 +299,11 @@ public class EntityListResponse extends MenuBean {
 
     @Override
     public String toString() {
-        return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
-                ", action=" + Arrays.toString(actions) + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) +
+        return "EntityListResponse [Title= " + getTitle() +
+                ", styles=" + Arrays.toString(styles) +
+                ", action=" + Arrays.toString(actions) +
+                ", parent=" + super.toString() +
+                ", headers=" + Arrays.toString(headers) +
                 ", locales=" + Arrays.toString(getLocales()) + "]";
     }
 

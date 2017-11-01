@@ -70,7 +70,6 @@ public class SessionUtils {
             return;
         }
         Localizer localizer = Localization.getGlobalLocalizerAdvanced();
-        log.info("Setting locale to : " + locale + " available: " + localizer.getAvailableLocales());
         for (String availabile : localizer.getAvailableLocales()) {
             if (locale.equals(availabile)) {
                 localizer.setLocale(locale);
