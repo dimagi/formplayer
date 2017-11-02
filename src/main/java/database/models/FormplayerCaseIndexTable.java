@@ -70,6 +70,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 COL_CASE_RECORD_ID + ", " +
                 COL_INDEX_NAME + ", " +
                 COL_INDEX_TYPE + ", " +
+                COL_INDEX_RELATIONSHIP + ", " +
                 COL_INDEX_TARGET +
                 ")";
     }
@@ -95,6 +96,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
             contentValues.put(COL_INDEX_NAME, ci.getName());
             contentValues.put(COL_INDEX_TYPE, ci.getTargetType());
             contentValues.put(COL_INDEX_TARGET, ci.getTarget());
+            contentValues.put(COL_INDEX_RELATIONSHIP, ci.getRelationship());
             SqlHelper.basicInsert(connectionHandler.getConnection(), TABLE_NAME, contentValues);
         }
     }
@@ -131,7 +133,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
         PreparedStatement selectStatement = null;
         try {
-            selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
+            selectStatement = SqlHelper.prepareTableSelectProjectionStatement(connectionHandler.getConnection(),
                     TABLE_NAME,
                     projection);
             ResultSet resultSet = selectStatement.executeQuery();

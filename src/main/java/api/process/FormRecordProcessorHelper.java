@@ -25,7 +25,6 @@ import org.javarosa.model.xform.XPathReference;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
-import sandbox.AbstractSqlIterator;
 import sandbox.JdbcSqlStorageIterator;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
@@ -164,7 +163,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         // Pass 1: Create a DAG which contains all of the cases on the phone as nodes, and has a
         // directed edge for each index (from the 'child' case pointing to the 'parent' case) with
         // the appropriate relationship tagged
-        for (AbstractSqlIterator<Case> i = caseStorage.iterate(true,
+        for (JdbcSqlStorageIterator<Case> i = caseStorage.iterate(true,
                 new String[]{Case.INDEX_OWNER_ID, Case.INDEX_CASE_STATUS, Case.INDEX_CASE_ID}); i.hasMore(); ) {
 
             String ownerId = i.peekIncludedMetadata(Case.INDEX_OWNER_ID);
