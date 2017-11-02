@@ -179,6 +179,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
             } else {
                 user = null;
             }
+            iterator.close();
         }
         return user;
     }
