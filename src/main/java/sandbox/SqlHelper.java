@@ -146,6 +146,24 @@ public class SqlHelper {
         }
     }
 
+    public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
+                                                                          String storageKey,
+                                                                          String[] projections) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < projections.length; i++) {
+            builder.append(projections[i]);
+            if (i + 1 < projections.length) {
+                builder.append(", ");
+            }
+        }
+        String queryString = "SELECT " + builder.toString() + " FROM " + storageKey + ";";
+        try {
+            return c.prepareStatement(queryString);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static PreparedStatement prepareTableSelectStatement(Connection c,
                                                                 String storageKey,
                                                                 String[] projection) {

@@ -306,59 +306,24 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         return -1;
     }
     @Override
-    public AbstractSqlIterator<T> iterate() {
+    public JdbcSqlStorageIterator<T> iterate() {
         return iterate(true);
     }
 
-    public AbstractSqlIterator<T> iterate(boolean includeData, String[] metaDataToInclude) {
-        Connection connection;
-        ResultSet resultSet = null;
-        PreparedStatement preparedStatement = null;
-        try {
-            connection = this.getConnection();
-            String[] projection = getProjectedFieldsWithId(includeData, scrubMetadataNames(metaDataToInclude));
-            preparedStatement = SqlHelper.prepareTableSelectStatement(connection, tableName, projection);
-            resultSet = preparedStatement.executeQuery();
-
-            ArrayList<T> backingList = new ArrayList<>();
-            ArrayList<Integer> idSet = new ArrayList<>();
-            while (resultSet.next()) {
-                if (includeData) {
-                    T t = newObject(resultSet.getBytes(DatabaseHelper.DATA_COL), resultSet.getInt(DatabaseHelper.ID_COL));
-                    backingList.add(t);
-                } else {
-                    idSet.add(resultSet.getInt(DatabaseHelper.ID_COL));
-                }
-            }
-            if (includeData) {
-                return new JdbcSqlStorageIterator<>(backingList);
-            } else {
-                return new JdbcSqlIndexIterator(idSet);
-            }
-
-        } catch (SQLException e) {
-            throw new SQLiteRuntimeException(e);
-        } finally {
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+    @Override
+    public JdbcSqlStorageIterator<T> iterate(boolean includeData) {
+        return iterate(includeData, new String[]{});
     }
 
-    @Override
-    public AbstractSqlIterator<T> iterate(boolean includeData) {
-        return iterate(includeData, null);
+    public JdbcSqlStorageIterator<T> iterate(boolean includeData, String[] metaDataToInclude) {
+        try {
+            String[] projection = getProjectedFieldsWithId(includeData, scrubMetadataNames(metaDataToInclude));
+            PreparedStatement preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(this.getConnection(), tableName, projection);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return new JdbcSqlStorageIterator<>(preparedStatement, resultSet, this, metaDataToInclude);
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        }
     }
 
     private String[] scrubMetadataNames(String[] metaDataNames) {
@@ -485,7 +450,7 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     @Override
     public Iterator<T> iterator() {
-        return (Iterator<T>) iterate();
+        return iterate();
     }
 
     public void getIDsForValues(String[] namesToMatch, String[] valuesToMatch, LinkedHashSet<Integer> ids) {

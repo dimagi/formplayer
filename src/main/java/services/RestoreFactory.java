@@ -24,7 +24,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sandbox.AbstractSqlIterator;
+import sandbox.JdbcSqlStorageIterator;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
@@ -299,12 +299,13 @@ public class RestoreFactory {
 
     public String getSyncToken() {
         SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
-        AbstractSqlIterator<User> iterator = storage.iterate();
-        //should be exactly one user
+        JdbcSqlStorageIterator<User> iterator = storage.iterate();
         if (!iterator.hasNext()) {
             return null;
         }
-        return iterator.next().getLastSyncToken();
+        String syncToken = iterator.next().getLastSyncToken();
+        iterator.close();
+        return syncToken;
     }
 
     // Device ID for tracking usage in the same way Android uses IMEI
