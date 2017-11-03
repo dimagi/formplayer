@@ -183,7 +183,6 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        Thread.sleep(10000);
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
         SimpleTimer timer = new SimpleTimer();
