@@ -383,6 +383,7 @@ public abstract class AbstractBaseController {
         if (exception instanceof ClientAbortException) {
             // We can't actually return anything since the client has bailed. To avoid errors return null
             // https://mtyurt.net/2016/04/18/spring-how-to-handle-ioexception-broken-pipe/
+            log.error("Client Aborted! Returning null");
             return null;
         }
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
