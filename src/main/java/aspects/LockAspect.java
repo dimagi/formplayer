@@ -11,11 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.integration.support.locks.LockRegistry;
 import services.CategoryTimingHelper;
+import services.FormplayerLockRegistry;
+import services.FormplayerLockRegistry.FormplayerReentrantLock;
 import util.Constants;
 import util.FormplayerSentry;
 import util.RequestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
@@ -27,7 +30,7 @@ import java.util.concurrent.locks.Lock;
 public class LockAspect {
 
     @Autowired
-    private LockRegistry userLockRegistry;
+    private FormplayerLockRegistry userLockRegistry;
 
     @Autowired
     private StatsDClient datadogStatsDClient;
@@ -94,7 +97,7 @@ public class LockAspect {
     }
 
     private Lock getLockAndBlock(String username) throws LockError {
-        Lock lock = userLockRegistry.obtain(username);
+        FormplayerReentrantLock lock = userLockRegistry.obtain(username);
         if (obtainLock(lock)) {
             return lock;
         } else {
@@ -102,7 +105,7 @@ public class LockAspect {
         }
     }
 
-    private boolean obtainLock(Lock lock) {
+    private boolean obtainLock(FormplayerReentrantLock lock) {
         CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.WAIT_ON_LOCK);
         timer.start();
         try {
