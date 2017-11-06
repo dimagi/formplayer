@@ -9,7 +9,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
-import org.springframework.integration.support.locks.LockRegistry;
 import services.CategoryTimingHelper;
 import services.FormplayerLockRegistry;
 import services.FormplayerLockRegistry.FormplayerReentrantLock;
@@ -18,7 +17,6 @@ import util.FormplayerSentry;
 import util.RequestUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
