@@ -3,6 +3,8 @@ package aspects;
 import beans.AuthenticatedRequestBean;
 import com.timgroup.statsd.StatsDClient;
 import io.sentry.event.Event;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -44,6 +46,8 @@ public class LockAspect {
     // needs to be accessible from WebAppContext.exceptionResolver
     public class LockError extends Exception {}
 
+    private final Log log = LogFactory.getLog(LockAspect.class);
+
     @Around(value = "@annotation(annotations.UserLock)")
     public Object aroundLock(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
@@ -63,6 +67,7 @@ public class LockAspect {
 
         try {
             lock = getLockAndBlock(username);
+            log.info(String.format("Obtained lock for username %s", username));
         } catch (LockError e) {
             logLockError(bean, joinPoint, "_timed_out");
             throw e;
@@ -74,6 +79,7 @@ public class LockAspect {
             if (lock != null) {
                 try {
                     lock.unlock();
+                    log.info(String.format("Relinquished lock for username %s", username));
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
                     logLockError(bean, joinPoint, "_expired");
@@ -98,6 +104,7 @@ public class LockAspect {
         if (obtainLock(lock)) {
             return lock;
         } else {
+            log.info(String.format("Unable to obtain lock for username %s", username));
             throw new LockError();
         }
     }
