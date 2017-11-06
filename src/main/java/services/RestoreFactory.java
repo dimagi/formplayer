@@ -299,13 +299,18 @@ public class RestoreFactory {
 
     public String getSyncToken() {
         SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
-        JdbcSqlStorageIterator<User> iterator = storage.iterate();
-        if (!iterator.hasNext()) {
-            return null;
+        JdbcSqlStorageIterator<User> iterator = null;
+        try {
+            iterator = storage.iterate();
+            if (!iterator.hasNext()) {
+                return null;
+            }
+            return iterator.next().getLastSyncToken();
+        } finally {
+            if (iterator != null) {
+                iterator.close();
+            }
         }
-        String syncToken = iterator.next().getLastSyncToken();
-        iterator.close();
-        return syncToken;
     }
 
     // Device ID for tracking usage in the same way Android uses IMEI

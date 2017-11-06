@@ -171,15 +171,21 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     @Override
     public User getLoggedInUser() {
         if (user == null) {
-            SqliteIndexedStorageUtility<User> userStorage = getUserStorage();
-            JdbcSqlStorageIterator<User> iterator = userStorage.iterate();
-            if (iterator.hasMore()) {
-                // should be only one user here
-                user = iterator.nextRecord();
-            } else {
-                user = null;
+            JdbcSqlStorageIterator<User> iterator = null;
+            try {
+                SqliteIndexedStorageUtility<User> userStorage = getUserStorage();
+                iterator = userStorage.iterate();
+                if (iterator.hasMore()) {
+                    // should be only one user here
+                    user = iterator.nextRecord();
+                } else {
+                    user = null;
+                }
+            } finally {
+                if (iterator != null) {
+                    iterator.close();
+                }
             }
-            iterator.close();
         }
         return user;
     }

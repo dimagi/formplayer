@@ -164,23 +164,6 @@ public class SqlHelper {
         }
     }
 
-    public static PreparedStatement prepareTableSelectStatement(Connection c,
-                                                                String storageKey,
-                                                                String[] projection) {
-        Pair<String, String[]> pair = DatabaseHelper.createWhere(projection, projection, null);
-        try {
-            String queryString =
-                    "SELECT " + pair.first + " FROM " + storageKey + ";";
-            PreparedStatement preparedStatement = c.prepareStatement(queryString);
-            for (int i = 0; i < pair.second.length; i++) {
-                preparedStatement.setString(i + 1, pair.second[i]);
-            }
-            return preparedStatement;
-        } catch (SQLException e) {
-            throw new SQLiteRuntimeException(e);
-        }
-    }
-
     /**
      * @throws IllegalArgumentException when one or more of the fields we're selecting on
      *                                  is not a valid key to select on for this object
