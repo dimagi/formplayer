@@ -136,7 +136,7 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
 
     @Override
     public void remove() {
-        throw new RuntimeException("Tried to use undefined remove() function in AbstractSqlIterator");
+        throw new RuntimeException("Tried to use undefined remove() function in JdbcSqlStorageIterator");
     }
 
     public void close() {
