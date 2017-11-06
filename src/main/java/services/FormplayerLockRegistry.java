@@ -1,5 +1,7 @@
 package services;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.util.Assert;
@@ -17,6 +19,8 @@ public class FormplayerLockRegistry implements LockRegistry {
     private final FormplayerReentrantLock[] lockTable;
 
     private final int mask;
+
+    private final Log log = LogFactory.getLog(FormplayerLockRegistry.class);
 
     public FormplayerLockRegistry() {
         this(0xFF);
@@ -52,9 +56,11 @@ public class FormplayerLockRegistry implements LockRegistry {
         Thread ownerThread = lock.getOwner();
 
         if (!threadLives(ownerThread)) {
+            log.error(String.format("Evicted dead thread %s owning lockkey %s.", ownerThread, lockKey));
             lock = setNewLock(lockIndex);
         }
         if (lock.isExpired()) {
+            log.error(String.format("Evicted thread %s owning expired lock with lockkey %s.", ownerThread, lockKey));
             lock = setNewLock(lockIndex);
         }
         return lock;
