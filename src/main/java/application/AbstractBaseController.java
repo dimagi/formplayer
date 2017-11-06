@@ -9,6 +9,7 @@ import beans.menus.*;
 import com.timgroup.statsd.StatsDClient;
 import exceptions.*;
 import io.sentry.event.Event;
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.process.CommCareInstanceInitializer;
@@ -379,6 +380,11 @@ public abstract class AbstractBaseController {
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
         raven.sendRavenException(exception);
+        if (exception instanceof ClientAbortException) {
+            // We can't actually return anything since the client has bailed. To avoid errors return null
+            // https://mtyurt.net/2016/04/18/spring-how-to-handle-ioexception-broken-pipe/
+            return null;
+        }
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
