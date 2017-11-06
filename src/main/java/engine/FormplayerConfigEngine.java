@@ -67,6 +67,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         String appId = null;
         if (archiveURL.startsWith("http")) {
             appId = parseAppId(archiveURL);
+            // Comment out for now - this breaks Live Preview updates :/
+            /*
             try {
                 mArchiveRoot.derive("jr://archive/" + appId + "/");
                 init("jr://archive/" + appId + "/profile.ccpr");
@@ -74,7 +76,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
                 return;
             } catch (InvalidReferenceException e) {
                 // Expected in many cases, pass
-            }
+            }*/
             fileName = downloadToTemp(archiveURL);
         } else {
             fileName = archiveURL;
