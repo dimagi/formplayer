@@ -25,8 +25,8 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
     private int MAX_RECENT = 5;
 
     @Override
-    public String addArchiveFile(ZipFile zip) {
-        String mGUID = super.addArchiveFile(zip);
+    public String addArchiveFile(ZipFile zip, String appId) {
+        String mGUID = super.addArchiveFile(zip, appId);
         redisTemplate.opsForValue().set(
                 String.format("formplayer:archive:%s", mGUID),
                 zip.getName()
@@ -37,15 +37,16 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
     // Given an encoded path (IE jr://archive/ABC123) return a Reference to be used to access the actual filesystem
     @Override
     public Reference derive(String guidPath) throws InvalidReferenceException {
-        if (guidToFolderMap.containsKey(getGUID(guidPath))) {
-            return new ArchiveFileReference(guidToFolderMap.get(getGUID(guidPath)), getGUID(guidPath), getPath(guidPath));
+        String GUID = getGUID(guidPath);
+        if (guidToFolderMap.containsKey(GUID)) {
+            return new ArchiveFileReference(guidToFolderMap.get(GUID), GUID, getPath(guidPath));
         }
         try {
-            String zipName = redisTemplate.opsForValue().get(String.format("formplayer:archive:%s", getGUID(guidPath)));
-            return new ArchiveFileReference(new ZipFile(zipName), getGUID(guidPath), getPath(guidPath));
+            String zipName = redisTemplate.opsForValue().get(String.format("formplayer:archive:%s", GUID));
+            return new ArchiveFileReference(new ZipFile(zipName), GUID, getPath(guidPath));
         } catch (IOException e) {
             e.printStackTrace();
-            throw new InvalidReferenceException(String.format("Error deriving reference with exception %s."), guidPath);
+            throw new InvalidReferenceException(String.format("Error deriving reference with exception %s.", guidPath), guidPath);
         }
     }
 }
