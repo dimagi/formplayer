@@ -43,6 +43,9 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
         }
         try {
             String zipName = redisTemplate.opsForValue().get(String.format("formplayer:archive:%s", GUID));
+            if (zipName == null) {
+                throw new InvalidReferenceException(String.format("No zip file saved for key %s.", guidPath), guidPath);
+            }
             return new ArchiveFileReference(new ZipFile(zipName), GUID, getPath(guidPath));
         } catch (IOException e) {
             e.printStackTrace();
