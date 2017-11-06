@@ -6,20 +6,29 @@ import installers.FormplayerInstallerFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.reference.JavaHttpRoot;
+import org.commcare.resources.model.InstallCancelledException;
+import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.io.BufferedInputStream;
 import org.javarosa.core.io.StreamsUtil;
+import org.javarosa.core.reference.InvalidReferenceException;
 import org.javarosa.core.reference.ReferenceManager;
 import org.javarosa.core.reference.ResourceReferenceFactory;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.json.JSONObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
+import java.util.zip.ZipFile;
 
 /**
  * Created by willpride on 11/22/16.
@@ -34,6 +43,52 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         super(storageFactory, formplayerInstallerFactory);
         this.mArchiveRoot = formplayerArchiveFileRoot;
         ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
+    }
+    
+    private String parseAppId(String url) {
+        String appId = null;
+        try {
+            List<NameValuePair> params = new URIBuilder(url).getQueryParams();
+            for (NameValuePair param: params) {
+                if (param.getName().equals("app_id")) {
+                    appId = param.getValue();
+                }
+            }
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return appId;
+    }
+
+    @Override
+    public void initFromArchive(String archiveURL) throws InstallCancelledException,
+            UnresolvedResourceException, UnfullfilledRequirementsException {
+        String fileName;
+        String appId = null;
+        if (archiveURL.startsWith("http")) {
+            appId = parseAppId(archiveURL);
+            try {
+                mArchiveRoot.derive("jr://archive/" + appId + "/");
+                init("jr://archive/" + appId + "/profile.ccpr");
+                log.info(String.format("Successfully re-used installation CCZ for appId %s", appId));
+                return;
+            } catch (InvalidReferenceException e) {
+                // Expected in many cases, pass
+            }
+            fileName = downloadToTemp(archiveURL);
+        } else {
+            fileName = archiveURL;
+        }
+        ZipFile zip;
+        try {
+            zip = new ZipFile(fileName);
+        } catch (IOException e) {
+            print.println("File at " + archiveURL + ": is not a valid CommCare Package. Downloaded to: " + fileName);
+            e.printStackTrace(print);
+            return;
+        }
+        String archiveGUID = this.mArchiveRoot.addArchiveFile(zip, appId);
+        init("jr://archive/" + archiveGUID + "/profile.ccpr");
     }
 
     @Override
