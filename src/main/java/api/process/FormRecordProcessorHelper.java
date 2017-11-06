@@ -135,12 +135,17 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
             removedLedgers = stockStorage.removeAll(stockFilter).size();
             sandbox.getConnection().commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            try {
+                sandbox.getConnection().rollback();
+            } catch (SQLException e1) {
+                throw new RuntimeException(e1);
+            }
+            throw new RuntimeException(e);
         } finally {
             try {
                 sandbox.getConnection().setAutoCommit(true);
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
 
