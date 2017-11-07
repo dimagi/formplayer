@@ -45,13 +45,7 @@ public class NewFormResponseFactory {
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
         String formXml = getFormXml(bean.getFormUrl());
-        CaseAPIs.TimedSyncResult timedSyncResult = CaseAPIs.performTimedSync(restoreFactory);
-        UserSqlSandbox sandbox = timedSyncResult.getSandbox();
-        SimpleTimer purgeCasesTimer = timedSyncResult.getPurgeCasesTimer();
-        SimpleTimer parseRestoreTimer = timedSyncResult.getParseRestoreTimer();
-
-        categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES);
-        categoryTimingHelper.recordCategoryTiming(parseRestoreTimer, Constants.TimingCategories.PARSE_RESTORE);
+        UserSqlSandbox sandbox = restoreFactory.performTimedSync();
 
         FormSession formSession = new FormSession(
                 sandbox,
