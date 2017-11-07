@@ -185,16 +185,7 @@ public class MenuController extends AbstractBaseController {
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
-        SimpleTimer timer = new SimpleTimer();
-        timer.start();
         menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
-        timer.end();
-
-        Timing appInstallTiming = Timing.constant(timer.durationInMs() - menuSession.getPurgeCasesTiming().durationInMs());
-
-        categoryTimingHelper.recordCategoryTiming(appInstallTiming, Constants.TimingCategories.APP_INSTALL);
-        categoryTimingHelper.recordCategoryTiming(menuSession.getPurgeCasesTiming(), Constants.TimingCategories.PURGE_CASES);
-        categoryTimingHelper.recordCategoryTiming(menuSession.getParseRestoreTiming(), Constants.TimingCategories.PARSE_RESTORE);
         BaseResponseBean response = advanceSessionWithSelections(
                 menuSession,
                 selections,
