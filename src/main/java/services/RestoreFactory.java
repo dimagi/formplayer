@@ -107,10 +107,6 @@ public class RestoreFactory {
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
 
-    public UserSqlSandbox performSync() throws Exception {
-        return performTimedSync();
-    }
-
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public UserSqlSandbox performTimedSync() throws Exception {
         // Create parent dirs if needed
