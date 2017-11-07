@@ -72,9 +72,6 @@ public class MenuSession {
     private boolean oneQuestionPerScreen;
     ArrayList<String> titles;
 
-    private Timing purgeCasesTiming = Timing.constant(0);
-    private Timing parseRestoreTiming = Timing.constant(0);
-
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
@@ -356,13 +353,5 @@ public class MenuSession {
         String[] ret = new String[titles.size()];
         titles.toArray(ret);
         return ret;
-    }
-
-    public Timing getPurgeCasesTiming() {
-        return purgeCasesTiming;
-    }
-
-    public Timing getParseRestoreTiming() {
-        return parseRestoreTiming;
     }
 }
