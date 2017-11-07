@@ -37,10 +37,12 @@ public class CaseAPIs {
     public static class TimedSyncResult {
         private UserSqlSandbox sandbox;
         private SimpleTimer purgeCasesTimer;
+        private SimpleTimer parseRestoreTimer;
 
-        private TimedSyncResult(UserSqlSandbox sandbox, SimpleTimer purgeCasesTimer) {
+        private TimedSyncResult(UserSqlSandbox sandbox, SimpleTimer parseRestoreTimer, SimpleTimer purgeCasesTimer) {
             this.sandbox = sandbox;
             this.purgeCasesTimer = purgeCasesTimer;
+            this.parseRestoreTimer = parseRestoreTimer;
         }
 
         public UserSqlSandbox getSandbox() {
@@ -50,6 +52,8 @@ public class CaseAPIs {
         public SimpleTimer getPurgeCasesTimer() {
             return purgeCasesTimer;
         }
+
+        public SimpleTimer getParseRestoreTimer() {return parseRestoreTimer;}
     }
 
     public static UserSqlSandbox performSync(RestoreFactory restoreFactory) throws Exception {
@@ -62,12 +66,15 @@ public class CaseAPIs {
         if(restoreFactory.getSqlSandbox().getLoggedInUser() != null){
             restoreFactory.getSQLiteDB().createDatabaseFolder();
         }
+        SimpleTimer parseTimer = new SimpleTimer();
+        parseTimer.start();
         UserSqlSandbox sandbox = restoreUser(restoreFactory);
-        SimpleTimer timer = new SimpleTimer();
-        timer.start();
+        parseTimer.end();
+        SimpleTimer purgeTimer = new SimpleTimer();
+        purgeTimer.start();
         FormRecordProcessorHelper.purgeCases(sandbox);
-        timer.end();
-        return new TimedSyncResult(sandbox, timer);
+        purgeTimer.end();
+        return new TimedSyncResult(sandbox, parseTimer, purgeTimer);
     }
 
     // This function will attempt to get the user DBs without syncing if they exist, sync if not

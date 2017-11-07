@@ -29,7 +29,9 @@ import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
+import util.Constants;
 import util.FormplayerSentry;
+import util.SimpleTimer;
 import util.UserUtils;
 
 import javax.annotation.Resource;
@@ -71,6 +73,9 @@ public class RestoreFactory {
 
     @Autowired
     private RedisTemplate redisTemplateLong;
+
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
 
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
@@ -270,12 +275,15 @@ public class RestoreFactory {
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
+        SimpleTimer timer = new SimpleTimer();
+        timer.start();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
                 org.springframework.core.io.Resource.class
         );
+        timer.end();
 
         // Handle Async restore
         if (response.getStatusCode().value() == 202) {
@@ -291,6 +299,7 @@ public class RestoreFactory {
         InputStream stream = null;
         try {
             stream = response.getBody().getInputStream();
+            categoryTimingHelper.recordCategoryTiming(timer, Constants.TimingCategories.DOWNLOAD_RESTORE);
         } catch (IOException e) {
             throw new RuntimeException("Unable to read restore response", e);
         }
