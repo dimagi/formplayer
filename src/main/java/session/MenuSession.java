@@ -32,10 +32,7 @@ import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
 import services.RestoreFactory;
-import util.Constants;
-import util.SessionUtils;
-import util.StringUtils;
-import util.Timing;
+import util.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -76,6 +73,7 @@ public class MenuSession {
     ArrayList<String> titles;
 
     private Timing purgeCasesTiming = Timing.constant(0);
+    private Timing parseRestoreTiming = Timing.constant(0);
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
@@ -112,6 +110,7 @@ public class MenuSession {
             CaseAPIs.TimedSyncResult timedSyncResult = CaseAPIs.performTimedSync(restoreFactory);
             this.sandbox = timedSyncResult.getSandbox();
             this.purgeCasesTiming = timedSyncResult.getPurgeCasesTimer();
+            this.parseRestoreTiming = timedSyncResult.getParseRestoreTimer();
         }
         this.sandbox = CaseAPIs.getSandbox(restoreFactory);
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
@@ -364,5 +363,9 @@ public class MenuSession {
 
     public Timing getPurgeCasesTiming() {
         return purgeCasesTiming;
+    }
+
+    public Timing getParseRestoreTiming() {
+        return parseRestoreTiming;
     }
 }

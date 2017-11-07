@@ -52,12 +52,17 @@ public class UserRestoreAspect {
         restoreFactory.configure((AuthenticatedRequestBean)args[0], auth, requestBean.getUseLiveQuery());
 
         Timing purgeCasesTiming;
+        Timing parseRestoreTiming;
         if (requestBean.isMustRestore()) {
-            purgeCasesTiming = CaseAPIs.performTimedSync(restoreFactory).getPurgeCasesTimer();
+            CaseAPIs.TimedSyncResult syncResult = CaseAPIs.performTimedSync(restoreFactory);
+            purgeCasesTiming = syncResult.getPurgeCasesTimer();
+            parseRestoreTiming = syncResult.getParseRestoreTimer();
         } else {
             purgeCasesTiming = Timing.constant(0);
+            parseRestoreTiming = Timing.constant(0);
         }
         categoryTimingHelper.recordCategoryTiming(purgeCasesTiming, Constants.TimingCategories.PURGE_CASES);
+        categoryTimingHelper.recordCategoryTiming(parseRestoreTiming, Constants.TimingCategories.PARSE_RESTORE);
     }
 
     private HqAuth getAuthHeaders(String domain, String username, String sessionToken) {

@@ -48,8 +48,10 @@ public class NewFormResponseFactory {
         CaseAPIs.TimedSyncResult timedSyncResult = CaseAPIs.performTimedSync(restoreFactory);
         UserSqlSandbox sandbox = timedSyncResult.getSandbox();
         SimpleTimer purgeCasesTimer = timedSyncResult.getPurgeCasesTimer();
+        SimpleTimer parseRestoreTimer = timedSyncResult.getParseRestoreTimer();
 
         categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES);
+        categoryTimingHelper.recordCategoryTiming(parseRestoreTimer, Constants.TimingCategories.PARSE_RESTORE);
 
         FormSession formSession = new FormSession(
                 sandbox,

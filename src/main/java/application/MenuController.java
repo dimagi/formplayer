@@ -194,6 +194,7 @@ public class MenuController extends AbstractBaseController {
 
         categoryTimingHelper.recordCategoryTiming(appInstallTiming, Constants.TimingCategories.APP_INSTALL);
         categoryTimingHelper.recordCategoryTiming(menuSession.getPurgeCasesTiming(), Constants.TimingCategories.PURGE_CASES);
+        categoryTimingHelper.recordCategoryTiming(menuSession.getParseRestoreTiming(), Constants.TimingCategories.PARSE_RESTORE);
         BaseResponseBean response = advanceSessionWithSelections(
                 menuSession,
                 selections,
