@@ -85,7 +85,7 @@ public class MenuSession {
         this.installReference = session.getInstallReference();
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference).first;
-        this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
@@ -107,12 +107,9 @@ public class MenuSession {
         Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference);
         this.engine = install.first;
         if (install.second && !preview) {
-            CaseAPIs.TimedSyncResult timedSyncResult = CaseAPIs.performTimedSync(restoreFactory);
-            this.sandbox = timedSyncResult.getSandbox();
-            this.purgeCasesTiming = timedSyncResult.getPurgeCasesTimer();
-            this.parseRestoreTiming = timedSyncResult.getParseRestoreTimer();
+            this.sandbox = restoreFactory.performTimedSync();
         }
-        this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
