@@ -1,14 +1,24 @@
 package services;
 
+import api.process.FormRecordProcessorHelper;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
+import beans.CaseBean;
+import engine.FormplayerTransactionParserFactory;
 import exceptions.AsyncRetryException;
+import exceptions.SQLiteRuntimeException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.model.Case;
+import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
 import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.util.externalizable.PrototypeFactory;
+import org.javarosa.xml.util.InvalidStructureException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,12 +34,15 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.xmlpull.v1.XmlPullParserException;
 import sandbox.AbstractSqlIterator;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
+import util.Constants;
 import util.FormplayerSentry;
+import util.SimpleTimer;
 import util.UserUtils;
 
 import javax.annotation.Resource;
@@ -72,6 +85,9 @@ public class RestoreFactory {
     @Autowired
     private RedisTemplate redisTemplateLong;
 
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
+
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
 
@@ -89,6 +105,68 @@ public class RestoreFactory {
         sqLiteDB = new UserDB(domain, username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
+    }
+
+    // This function will only wipe user DBs when they have expired, otherwise will incremental sync
+    public UserSqlSandbox performTimedSync() throws Exception {
+        // Create parent dirs if needed
+        if(getSqlSandbox().getLoggedInUser() != null){
+            getSQLiteDB().createDatabaseFolder();
+        }
+        UserSqlSandbox sandbox = restoreUser();
+        SimpleTimer purgeTimer = new SimpleTimer();
+        purgeTimer.start();
+        FormRecordProcessorHelper.purgeCases(sandbox);
+        purgeTimer.end();
+        categoryTimingHelper.recordCategoryTiming(purgeTimer, Constants.TimingCategories.PURGE_CASES);
+        return sandbox;
+    }
+
+    // This function will attempt to get the user DBs without syncing if they exist, sync if not
+    public UserSqlSandbox getSandbox() throws Exception {
+        if(getSqlSandbox().getLoggedInUser() != null
+                && !isRestoreXmlExpired()){
+            return getSqlSandbox();
+        } else {
+            getSQLiteDB().createDatabaseFolder();
+            return restoreUser();
+        }
+    }
+
+    private UserSqlSandbox restoreUser() throws
+            UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
+        PrototypeFactory.setStaticHasher(new ClassNameHasher());
+        int maxRetries = 2;
+        int counter = 0;
+        while (true) {
+            try {
+                UserSqlSandbox sandbox = getSqlSandbox();
+                SimpleTimer parseTimer = new SimpleTimer();
+                parseTimer.start();
+                FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
+                setAutoCommit(false);
+                ParseUtils.parseIntoSandbox(getRestoreXml(), factory, true, true);
+                commit();
+                setAutoCommit(true);
+                parseTimer.end();
+                categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
+                sandbox.writeSyncToken();
+                return sandbox;
+            } catch (InvalidStructureException | SQLiteRuntimeException e) {
+                if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
+                    // Before throwing exception, rollback any changes to relinquish SQLite lock
+                    rollback();
+                    setAutoCommit(true);
+                    getSQLiteDB().deleteDatabaseFile();
+                    getSQLiteDB().createDatabaseFolder();
+                    throw e;
+                } else {
+                    log.info(String.format("Retrying restore for user %s after receiving exception.",
+                            getEffectiveUsername()),
+                            e);
+                }
+            }
+        }
     }
 
     public UserSqlSandbox getSqlSandbox() {
@@ -270,12 +348,15 @@ public class RestoreFactory {
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
+        SimpleTimer timer = new SimpleTimer();
+        timer.start();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
                 org.springframework.core.io.Resource.class
         );
+        timer.end();
 
         // Handle Async restore
         if (response.getStatusCode().value() == 202) {
@@ -291,6 +372,7 @@ public class RestoreFactory {
         InputStream stream = null;
         try {
             stream = response.getBody().getInputStream();
+            categoryTimingHelper.recordCategoryTiming(timer, Constants.TimingCategories.DOWNLOAD_RESTORE);
         } catch (IOException e) {
             throw new RuntimeException("Unable to read restore response", e);
         }
@@ -344,6 +426,7 @@ public class RestoreFactory {
         }
         return builder.toString();
     }
+
 
     public String getUsername() {
         return username;
