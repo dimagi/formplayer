@@ -77,7 +77,7 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Ob
      * @param xml - Async restore response
      * @param headers - HttpHeaders from the restore response
      */
-    private void handleAsyncRestoreResponse(String xml, HttpHeaders headers) {
+    public static void handleAsyncRestoreResponse(String xml, HttpHeaders headers) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
         ByteArrayInputStream input;
