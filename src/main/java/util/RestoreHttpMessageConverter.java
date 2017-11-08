@@ -2,6 +2,7 @@ package util;
 
 import engine.FormplayerTransactionParserFactory;
 import exceptions.AsyncRetryException;
+import exceptions.InvalidStructureRuntimeException;
 import org.apache.commons.io.IOUtils;
 import org.commcare.core.parse.ParseUtils;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -69,8 +70,10 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Vo
 
         try {
             ParseUtils.parseIntoSandbox(inputMessage.getBody(), factory, true, true);
-        } catch (InvalidStructureException | UnfullfilledRequirementsException | XmlPullParserException e) {
+        } catch (UnfullfilledRequirementsException | XmlPullParserException e) {
             throw new RuntimeException(e);
+        } catch (InvalidStructureException e) {
+            throw new InvalidStructureRuntimeException(e.getMessage());
         }
         return null;
     }

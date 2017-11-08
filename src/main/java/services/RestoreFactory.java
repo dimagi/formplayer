@@ -4,6 +4,7 @@ import api.process.FormRecordProcessorHelper;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import engine.FormplayerTransactionParserFactory;
+import exceptions.InvalidStructureRuntimeException;
 import exceptions.SQLiteRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -134,8 +135,8 @@ public class RestoreFactory {
                 parseTimer.end();
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
                 return getSqlSandbox();
-            } catch (SQLiteRuntimeException e) {
-                if (++counter >= maxRetries) {
+            } catch (SQLiteRuntimeException | InvalidStructureRuntimeException e) {
+                if (++counter >= maxRetries || e instanceof InvalidStructureRuntimeException) {
                     // Before throwing exception, rollback any changes to relinquish SQLite lock
                     rollback();
                     getSQLiteDB().deleteDatabaseFile();
