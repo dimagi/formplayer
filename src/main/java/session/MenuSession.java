@@ -103,7 +103,7 @@ public class MenuSession {
         resolveInstallReference(installReference, appId, host);
         Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference);
         this.engine = install.first;
-        if (install.second && !preview) {
+        if (install.second && !preview && !restoreFactory.getHasRestored()) {
             this.sandbox = restoreFactory.performTimedSync();
         }
         this.sandbox = restoreFactory.getSandbox();
