@@ -1,6 +1,8 @@
 
 package sandbox;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.services.storage.IStorageIterator;
@@ -15,7 +17,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * Iterator that only processes id indexes, and not real data.
+ * Iterator over JDBC ResultSet
  *
  * @author ctsims
  * @author wspride
@@ -27,6 +29,8 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
     private final Set<String> metaDataIndexSet;
     SqliteIndexedStorageUtility<T> storage;
     private HashMap<String, Integer> metaDataColumnMap = new HashMap<>();
+
+    private static final Log log = LogFactory.getLog(JdbcSqlStorageIterator.class);
 
     public JdbcSqlStorageIterator(PreparedStatement preparedStatement,
                                   ResultSet resultSet,
@@ -144,7 +148,7 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
             preparedStatement.close();
             resultSet.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Unable to close JdbcSqlStorageIterator resources", e);
         }
     }
 }
