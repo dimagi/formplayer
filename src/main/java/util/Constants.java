@@ -108,6 +108,8 @@ public class Constants {
         public static final String SUBMIT_FORM_TO_HQ = "submit_form_to_hq";
         public static final String APP_INSTALL = "app_install";
         public static final String PURGE_CASES = "purge_cases";
+        public static final String PARSE_RESTORE = "parse_restore";
+        public static final String DOWNLOAD_RESTORE = "download_restore";
     }
 
     // Errors
