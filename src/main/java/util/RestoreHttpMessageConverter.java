@@ -31,9 +31,14 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Created by willpride on 11/8/17.
+ * HttpMessageConverter subclass specifically for parsing UserSandboxes from restore payload.
+ * This class allows us to parse the stream directly from HQ rather than copying the stream to an intermediary.
+ * Instead of returning an object, we parse the information into the passed-in factory class.
+ * In the event of an async restore being triggered, throws an AsyncRetryException
+ *
+ * @author wpride
  */
-public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Object> {
+public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Void> {
 
     FormplayerTransactionParserFactory factory;
 
@@ -44,11 +49,11 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 
     @Override
     protected boolean supports(Class<?> clazz) {
-        return Object.class == clazz;
+        return Void.class == clazz;
     }
 
     @Override
-    protected InputStream readInternal(Class<? extends Object> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+    protected Void readInternal(Class<? extends Void> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
 
         if (inputMessage instanceof ClientHttpResponse) {
             if (((ClientHttpResponse) inputMessage).getRawStatusCode() == 202) {
@@ -67,7 +72,7 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Ob
         } catch (InvalidStructureException | UnfullfilledRequirementsException | XmlPullParserException e) {
             e.printStackTrace();
         }
-        return inputMessage.getBody();
+        return null;
     }
 
     /**
@@ -125,7 +130,7 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Ob
     }
 
     @Override
-    protected void writeInternal(Object object, HttpOutputMessage outputMessage)
+    protected void writeInternal(Void object, HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
         throw new RuntimeException("Can't write a SqlSandbox");
     }

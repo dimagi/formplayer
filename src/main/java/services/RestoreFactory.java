@@ -1,11 +1,9 @@
 package services;
 
 import api.process.FormRecordProcessorHelper;
-import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import engine.FormplayerTransactionParserFactory;
-import exceptions.AsyncRetryException;
 import exceptions.SQLiteRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,11 +24,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 import sandbox.AbstractSqlIterator;
 import sandbox.SqliteIndexedStorageUtility;
@@ -40,13 +33,7 @@ import sqlitedb.UserDB;
 import util.*;
 
 import javax.annotation.Resource;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,11 +126,8 @@ public class RestoreFactory {
                 SimpleTimer parseTimer = new SimpleTimer();
                 parseTimer.start();
                 setAutoCommit(false);
-
                 performRestore();
                 commit();
-                setAutoCommit(true);
-
                 parseTimer.end();
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
                 return getSqlSandbox();
@@ -151,7 +135,6 @@ public class RestoreFactory {
                 if (++counter >= maxRetries) {
                     // Before throwing exception, rollback any changes to relinquish SQLite lock
                     rollback();
-                    setAutoCommit(true);
                     getSQLiteDB().deleteDatabaseFile();
                     getSQLiteDB().createDatabaseFolder();
                     throw e;
@@ -276,16 +259,20 @@ public class RestoreFactory {
         return "last-sync-time:" + domain + ":" + username + ":" + asUsername;
     }
 
+    private RestTemplate buildRestoreRestTemplate(UserSqlSandbox sandbox) {
+        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
+        List<HttpMessageConverter<?>> converters = new ArrayList<>();
+        converters.add(new RestoreHttpMessageConverter(factory));
+        return new RestTemplate(converters);
+    }
+
     public void performRestore() {
         ensureValidParameters();
         String restoreUrl = getRestoreUrl();
         recordSentryData(restoreUrl);
         log.info("Restoring from URL " + restoreUrl);
         UserSqlSandbox sandbox = getSqlSandbox();
-        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
-        List<HttpMessageConverter<?>> converters = new ArrayList<>();
-        converters.add(new RestoreHttpMessageConverter(factory));
-        RestTemplate restTemplate = new RestTemplate(converters);
+        RestTemplate restTemplate = buildRestoreRestTemplate(sandbox);
         log.info("Restoring at domain: " + domain + " with auth: " + hqAuth + " with url: " + restoreUrl);
         HttpHeaders headers = hqAuth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
@@ -295,7 +282,7 @@ public class RestoreFactory {
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
-                Object.class
+                Void.class
         );
         timer.end();
         setLastSyncTime();
