@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import api.json.JsonActionUtils;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.xpath.XPathException;
 import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import org.commcare.core.interfaces.UserSandbox;
@@ -101,7 +102,7 @@ public class FormSession {
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();
         this.domain = session.getDomain();
-        this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        this.sandbox = restoreFactory.getSandbox();
         this.postUrl = session.getPostUrl();
         this.sessionData = session.getSessionData();
         this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
@@ -117,6 +118,8 @@ public class FormSession {
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.functionContext = session.getFunctionContext();
         setupJavaRosaObjects();
+        FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
+        formController.jumpToIndex(formIndex);
         setupFunctionContext();
         initialize(false, session.getSessionData());
         this.postUrl = session.getPostUrl();
@@ -164,13 +167,8 @@ public class FormSession {
         }
 
         if (this.oneQuestionPerScreen) {
-            FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
-            IFormElement element = formEntryController.getModel().getForm().getChild(firstIndex);
-            while (element instanceof GroupDef && !formEntryController.isFieldListHost(firstIndex)) {
-                firstIndex =  formController.getNextFormIndex(firstIndex, false, true);
-                element = formEntryController.getModel().getForm().getChild(firstIndex);
-            }
-            this.currentIndex = firstIndex.toString();
+            stepToNextIndex();
+            this.currentIndex = formController.getFormIndex().toString();
         }
     }
 
@@ -256,9 +254,9 @@ public class FormSession {
 
     public JSONArray getFormTree() {
         if (oneQuestionPerScreen) {
-            return JsonActionUtils.getOneQuestionPerScreenJSON(getFormEntryModel(),
-                    getFormEntryController(),
-                    JsonActionUtils.indexFromString(currentIndex, formDef));
+            return JsonActionUtils.getOneQuestionPerScreenJSON(formController.getFormEntryController().getModel(),
+                    formController.getFormEntryController(),
+                    formController.getFormIndex());
         }
         return JsonActionUtils.getFullFormJSON(getFormEntryModel(), getFormEntryController());
     }
@@ -379,53 +377,100 @@ public class FormSession {
 
     public FormDef getFormDef() { return formDef; }
 
+    private void moveToNextView() {
+        if (formController.getEvent() != FormEntryController.EVENT_END_OF_FORM) {
+            int event;
+
+            try {
+                group_skip:
+                do {
+                    event = formController.stepToNextEvent(FormEntryController.STEP_OVER_GROUP);
+                    switch (event) {
+                        case FormEntryController.EVENT_QUESTION:
+                            break group_skip;
+                        case FormEntryController.EVENT_END_OF_FORM:
+                            break group_skip;
+                        case FormEntryController.EVENT_PROMPT_NEW_REPEAT:
+                            break group_skip;
+                        case FormEntryController.EVENT_GROUP:
+                            //We only hit this event if we're at the _opening_ of a field
+                            //list, so it seems totally fine to do it this way, technically
+                            //though this should test whether the index is the field list
+                            //host.
+                            if (formController.indexIsInFieldList()
+                                    && formController.getQuestionPrompts().length != 0) {
+                                break group_skip;
+                            }
+                            // otherwise it's not a field-list group, so just skip it
+                            break;
+                        case FormEntryController.EVENT_REPEAT:
+                            // skip repeats
+                            break;
+                        case FormEntryController.EVENT_REPEAT_JUNCTURE:
+                            // skip repeat junctures until we implement them
+                            break;
+                        default:
+                            break;
+                    }
+                } while (event != FormEntryController.EVENT_END_OF_FORM);
+            } catch (XPathException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Determines what should be displayed between a question, or the start screen and displays the
+     * appropriate view. Also saves answers to the data model without checking constraints.
+     */
+    protected void moveToPreviousView() {
+
+        FormIndex startIndex = formController.getFormIndex();
+        FormIndex lastValidIndex = startIndex;
+
+        if (formController.getEvent() != FormEntryController.EVENT_BEGINNING_OF_FORM) {
+            int event = formController.stepToPreviousEvent();
+
+            //Step backwards until we either find a question, the beginning of the form,
+            //or a field list with valid questions inside
+            while (event != FormEntryController.EVENT_BEGINNING_OF_FORM
+                    && event != FormEntryController.EVENT_QUESTION
+                    && !(event == FormEntryController.EVENT_GROUP
+                    && formController.indexIsInFieldList() && formController.getQuestionPrompts().length != 0)) {
+                event = formController.stepToPreviousEvent();
+                lastValidIndex = formController.getFormIndex();
+            }
+
+            if (event == FormEntryController.EVENT_BEGINNING_OF_FORM) {
+                // we can't go all the way back to the beginning, so we've
+                // gotta hit the last index that was valid
+                formController.jumpToIndex(lastValidIndex);
+
+                if (lastValidIndex.isBeginningOfFormIndex()) {
+                    //We might have walked all the way back still, which isn't great,
+                    //so keep moving forward again until we find it
+                    //there must be a repeat between where we started and the beginning of hte form, walk back up to it
+                    moveToNextView();
+                }
+            }
+        }
+    }
+
     public void stepToNextIndex() {
-        this.formEntryController.jumpToIndex(JsonActionUtils.indexFromString(currentIndex, formDef));
-        FormController formController = new FormController(formEntryController, false);
-        FormIndex newIndex = formController.getNextFormIndex(formEntryModel.getFormIndex(), true, true);
-
-        // check if this index is the beginning of a group that is not a question list.
-        IFormElement element = formEntryController.getModel().getForm().getChild(newIndex);
-        while (element instanceof GroupDef && !formEntryController.isFieldListHost(newIndex)) {
-            newIndex =  formController.getNextFormIndex(newIndex, false, true);
-            element = formEntryController.getModel().getForm().getChild(newIndex);
-        }
-
-        formEntryController.jumpToIndex(newIndex);
-
-        boolean isEndOfForm = newIndex.isEndOfFormIndex();
+        moveToNextView();
+        int event = formController.getEvent();
+        boolean isEndOfForm = event == FormEntryController.EVENT_END_OF_FORM;
         setIsAtLastIndex(isEndOfForm);
-
         if (!isEndOfForm) {
-            setCurrentIndex(newIndex.toString());
+            setCurrentIndex(formController.getFormIndex().toString());
         }
-
     }
 
     public void stepToPreviousIndex() {
-        this.formEntryController.jumpToIndex(JsonActionUtils.indexFromString(currentIndex, formDef));
-        FormController formController = new FormController(formEntryController, false);
-        FormIndex newIndex = formController.getPreviousFormIndex();
-
-        // check if this index is the beginning of a group that is not a question list.
-        IFormElement element = formEntryController.getModel().getForm().getChild(newIndex);
-        while (element instanceof GroupDef && !formEntryController.isFieldListHost(newIndex)) {
-            newIndex = formController.getPreviousFormIndex();
-            element = formEntryController.getModel().getForm().getChild(newIndex);
-        }
-        setIsAtFirstIndex(checkFirstQuestion());
-        formEntryController.jumpToIndex(newIndex);
-        setCurrentIndex(newIndex.toString());
-    }
-
-    private boolean checkFirstQuestion() {
-        FormIndex previousIndex = formController.getPreviousFormIndex();;
-        IFormElement element = formEntryController.getModel().getForm().getChild(previousIndex);
-        while (element instanceof GroupDef && !formEntryController.isFieldListHost(previousIndex)) {
-            previousIndex = formController.getPreviousFormIndex();
-            element = formEntryController.getModel().getForm().getChild(previousIndex);
-        }
-        return formController.getEvent() == FormEntryController.EVENT_BEGINNING_OF_FORM;
+        moveToPreviousView();
+        int event = formController.getEvent();
+        setIsAtFirstIndex(event == FormEntryController.EVENT_BEGINNING_OF_FORM);
+        setCurrentIndex(formController.getFormIndex().toString());
     }
 
     public JSONObject answerQuestionToJSON(Object answer, String answerIndex) {
