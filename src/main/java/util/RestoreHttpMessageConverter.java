@@ -33,7 +33,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * Created by willpride on 11/8/17.
  */
-public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<InputStream> {
+public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Object> {
 
     FormplayerTransactionParserFactory factory;
 
@@ -48,7 +48,7 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<In
     }
 
     @Override
-    protected InputStream readInternal(Class<? extends InputStream> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+    protected InputStream readInternal(Class<? extends Object> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
 
         if (inputMessage instanceof ClientHttpResponse) {
             if (((ClientHttpResponse) inputMessage).getRawStatusCode() == 202) {
@@ -125,24 +125,9 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<In
     }
 
     @Override
-    protected void writeInternal(InputStream inputStream, HttpOutputMessage outputMessage)
+    protected void writeInternal(Object object, HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
-
-        writeContent(inputStream, outputMessage);
+        throw new RuntimeException("Can't write a SqlSandbox");
     }
 
-    protected void writeContent(InputStream inputStream, HttpOutputMessage outputMessage)
-            throws IOException, HttpMessageNotWritableException {
-        try {
-            StreamUtils.copy(inputStream, outputMessage.getBody());
-        } catch (NullPointerException ex) {
-            // ignore, see SPR-13620
-        } finally {
-            try {
-                inputStream.close();
-            } catch (Throwable ex) {
-                // ignore, see SPR-12999
-            }
-        }
-    }
 }
