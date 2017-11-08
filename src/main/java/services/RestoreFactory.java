@@ -146,9 +146,7 @@ public class RestoreFactory {
 
                 parseTimer.end();
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
-                UserSqlSandbox sandbox = getSqlSandbox();
-                sandbox.writeSyncToken();
-                return sandbox;
+                return getSqlSandbox();
             } catch (SQLiteRuntimeException e) {
                 if (++counter >= maxRetries) {
                     // Before throwing exception, rollback any changes to relinquish SQLite lock
@@ -278,7 +276,7 @@ public class RestoreFactory {
         return "last-sync-time:" + domain + ":" + username + ":" + asUsername;
     }
 
-    private void performRestore() {
+    public void performRestore() {
         ensureValidParameters();
         String restoreUrl = getRestoreUrl();
         recordSentryData(restoreUrl);
@@ -301,6 +299,7 @@ public class RestoreFactory {
         );
         timer.end();
         setLastSyncTime();
+        sandbox.writeSyncToken();
         categoryTimingHelper.recordCategoryTiming(timer, Constants.TimingCategories.DOWNLOAD_RESTORE);
     }
 
