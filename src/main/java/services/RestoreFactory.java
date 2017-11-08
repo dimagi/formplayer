@@ -93,6 +93,7 @@ public class RestoreFactory {
 
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
     private boolean useLiveQuery;
+    private boolean hasRestored;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
         this.setUsername(authenticatedRequestBean.getUsername());
@@ -100,6 +101,7 @@ public class RestoreFactory {
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
+        this.hasRestored = false;
         sqLiteDB = new UserDB(domain, username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
@@ -145,6 +147,7 @@ public class RestoreFactory {
                 InputStream restoreStream = getRestoreXml();
                 setAutoCommit(false);
                 ParseUtils.parseIntoSandbox(restoreStream, factory, true, true);
+                hasRestored = true;
                 commit();
                 setAutoCommit(true);
                 parseTimer.end();
@@ -465,5 +468,9 @@ public class RestoreFactory {
 
     public void setUseLiveQuery(boolean useLiveQuery) {
         this.useLiveQuery = useLiveQuery;
+    }
+
+    public boolean getHasRestored() {
+        return hasRestored;
     }
 }
