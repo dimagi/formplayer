@@ -1,15 +1,14 @@
 package services;
 
 import api.process.FormRecordProcessorHelper;
+import auth.DjangoAuth;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import engine.FormplayerTransactionParserFactory;
 import exceptions.AsyncRetryException;
 import exceptions.SQLiteRuntimeException;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
@@ -24,7 +23,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
@@ -38,10 +37,7 @@ import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
-import util.Constants;
-import util.FormplayerSentry;
-import util.SimpleTimer;
-import util.UserUtils;
+import util.*;
 
 import javax.annotation.Resource;
 import javax.xml.parsers.DocumentBuilder;
@@ -52,6 +48,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -138,24 +136,24 @@ public class RestoreFactory {
         int counter = 0;
         while (true) {
             try {
-                UserSqlSandbox sandbox = getSqlSandbox();
                 SimpleTimer parseTimer = new SimpleTimer();
                 parseTimer.start();
-                FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
-                InputStream restoreStream = getRestoreXml();
                 setAutoCommit(false);
-                ParseUtils.parseIntoSandbox(restoreStream, factory, true, true);
-                // commit() automatically re-enables autocommit
+
+                performRestore();
                 commit();
+                setAutoCommit(true);
+
                 parseTimer.end();
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
+                UserSqlSandbox sandbox = getSqlSandbox();
                 sandbox.writeSyncToken();
                 return sandbox;
-            } catch (InvalidStructureException | SQLiteRuntimeException e) {
-                if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
+            } catch (SQLiteRuntimeException e) {
+                if (++counter >= maxRetries) {
                     // Before throwing exception, rollback any changes to relinquish SQLite lock
-                    // rollback() automatically re-enables autocommit
                     rollback();
+                    setAutoCommit(true);
                     getSQLiteDB().deleteDatabaseFile();
                     getSQLiteDB().createDatabaseFolder();
                     throw e;
@@ -165,7 +163,6 @@ public class RestoreFactory {
                             e);
                 }
             } finally {
-                // No-op if autocommit was already enabled
                 setAutoCommit(true);
             }
         }
@@ -256,16 +253,6 @@ public class RestoreFactory {
         }
     }
 
-    public InputStream getRestoreXml() {
-        ensureValidParameters();
-        String restoreUrl = getRestoreUrl();
-        recordSentryData(restoreUrl);
-        log.info("Restoring from URL " + restoreUrl);
-        InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
-        setLastSyncTime();
-        return restoreStream;
-    }
-
     private void recordSentryData(final String restoreUrl) {
         raven.newBreadcrumb()
                 .setData("restoreUrl", restoreUrl)
@@ -291,94 +278,30 @@ public class RestoreFactory {
         return "last-sync-time:" + domain + ":" + username + ":" + asUsername;
     }
 
-    /**
-     * Given an async restore xml response, this function throws an AsyncRetryException
-     * with meta data about the async restore.
-     *
-     * @param xml - Async restore response
-     * @param headers - HttpHeaders from the restore response
-     */
-    private void handleAsyncRestoreResponse(String xml, HttpHeaders headers) {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder;
-        ByteArrayInputStream input;
-        Document doc;
-
-        // Create the XML Document builder
-        try {
-            builder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Unable to instantiate document builder");
-        }
-
-        // Parse the xml into a utf-8 byte array
-        try {
-            input = new ByteArrayInputStream(xml.getBytes("utf-8") );
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Unable to parse async restore response.");
-        }
-
-        // Build an XML document
-        try {
-            doc = builder.parse(input);
-        } catch (SAXException e) {
-            throw new RuntimeException("Unable to parse into XML Document");
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to parse into XML Document");
-        }
-
-        NodeList messageNodes = doc.getElementsByTagName("message");
-        NodeList progressNodes = doc.getElementsByTagName("progress");
-
-        assert messageNodes.getLength() == 1;
-        assert progressNodes.getLength() == 1;
-
-        String message = messageNodes.item(0).getTextContent();
-        Node progressNode = progressNodes.item(0);
-        NamedNodeMap attributes = progressNode.getAttributes();
-
-        throw new AsyncRetryException(
-                message,
-                Integer.parseInt(attributes.getNamedItem("done").getTextContent()),
-                Integer.parseInt(attributes.getNamedItem("total").getTextContent()),
-                Integer.parseInt(headers.get("retry-after").get(0))
-        );
-    }
-
-    private InputStream getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
-        RestTemplate restTemplate = new RestTemplate();
-        log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
-        HttpHeaders headers = auth.getAuthHeaders();
+    private void performRestore() {
+        ensureValidParameters();
+        String restoreUrl = getRestoreUrl();
+        recordSentryData(restoreUrl);
+        log.info("Restoring from URL " + restoreUrl);
+        UserSqlSandbox sandbox = getSqlSandbox();
+        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
+        List<HttpMessageConverter<?>> converters = new ArrayList<>();
+        converters.add(new RestoreHttpMessageConverter(factory));
+        RestTemplate restTemplate = new RestTemplate(converters);
+        log.info("Restoring at domain: " + domain + " with auth: " + hqAuth + " with url: " + restoreUrl);
+        HttpHeaders headers = hqAuth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
         SimpleTimer timer = new SimpleTimer();
         timer.start();
-        ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
+        restTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
-                org.springframework.core.io.Resource.class
+                InputStream.class
         );
         timer.end();
-
-        // Handle Async restore
-        if (response.getStatusCode().value() == 202) {
-            String responseBody = null;
-            try {
-                responseBody = IOUtils.toString(response.getBody().getInputStream(), "utf-8");
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to read async restore response", e);
-            }
-            handleAsyncRestoreResponse(responseBody, response.getHeaders());
-        }
-
-        InputStream stream = null;
-        try {
-            stream = response.getBody().getInputStream();
-            categoryTimingHelper.recordCategoryTiming(timer, Constants.TimingCategories.DOWNLOAD_RESTORE);
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to read restore response", e);
-        }
-        return stream;
+        setLastSyncTime();
+        categoryTimingHelper.recordCategoryTiming(timer, Constants.TimingCategories.DOWNLOAD_RESTORE);
     }
 
     public String getSyncToken() {
@@ -423,9 +346,10 @@ public class RestoreFactory {
             builder.append("&case_sync=livequery");
         }
 
-        if( asUsername != null) {
+        if (asUsername != null) {
             builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
         }
+
         return builder.toString();
     }
 
