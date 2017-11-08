@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import services.RestoreFactory;
+import util.RestoreHttpMessageConverter;
 import utils.FileUtils;
 import utils.TestContext;
 
@@ -24,17 +25,13 @@ public class AsyncRestoreTest {
     @Test
     public void testHandleAsyncResponse() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         boolean failure = false;
-        RestoreFactory restoreFactory = new RestoreFactory();
         String asyncResponse = FileUtils.getFile(this.getClass(), "restores/async_restore_response.xml");
         HttpHeaders headers = new HttpHeaders();
         headers.add("Retry-After", "30");
-        Method method = restoreFactory.getClass().getDeclaredMethod("handleAsyncRestoreResponse", String.class, HttpHeaders.class);
-        method.setAccessible(true);
 
         try {
-            method.invoke(restoreFactory, asyncResponse, headers);
-        } catch (InvocationTargetException invocationException) {
-            AsyncRetryException e = (AsyncRetryException) invocationException.getTargetException();
+            RestoreHttpMessageConverter.handleAsyncRestoreResponse(asyncResponse, headers);
+        } catch (AsyncRetryException e) {
             Assert.assertEquals(143, e.getDone());
             Assert.assertEquals(23311, e.getTotal());
             Assert.assertEquals(30, e.getRetryAfter());
