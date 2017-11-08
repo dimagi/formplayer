@@ -70,7 +70,7 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Vo
         try {
             ParseUtils.parseIntoSandbox(inputMessage.getBody(), factory, true, true);
         } catch (InvalidStructureException | UnfullfilledRequirementsException | XmlPullParserException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return null;
     }
