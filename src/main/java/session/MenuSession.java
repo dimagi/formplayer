@@ -32,10 +32,7 @@ import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
 import services.RestoreFactory;
-import util.Constants;
-import util.SessionUtils;
-import util.StringUtils;
-import util.Timing;
+import util.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -75,8 +72,6 @@ public class MenuSession {
     private boolean oneQuestionPerScreen;
     ArrayList<String> titles;
 
-    private Timing purgeCasesTiming = Timing.constant(0);
-
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
@@ -87,7 +82,7 @@ public class MenuSession {
         this.installReference = session.getInstallReference();
         resolveInstallReference(installReference, appId, host);
         this.engine = installService.configureApplication(this.installReference).first;
-        this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
@@ -109,11 +104,9 @@ public class MenuSession {
         Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference);
         this.engine = install.first;
         if (install.second && !preview) {
-            CaseAPIs.TimedSyncResult timedSyncResult = CaseAPIs.performTimedSync(restoreFactory);
-            this.sandbox = timedSyncResult.getSandbox();
-            this.purgeCasesTiming = timedSyncResult.getPurgeCasesTimer();
+            this.sandbox = restoreFactory.performTimedSync();
         }
-        this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
@@ -360,9 +353,5 @@ public class MenuSession {
         String[] ret = new String[titles.size()];
         titles.toArray(ret);
         return ret;
-    }
-
-    public Timing getPurgeCasesTiming() {
-        return purgeCasesTiming;
     }
 }
