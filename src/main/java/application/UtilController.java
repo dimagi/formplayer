@@ -44,8 +44,7 @@ public class UtilController extends AbstractBaseController {
     @UserRestore
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        Timing purgeCasesTiming = CaseAPIs.performTimedSync(restoreFactory).getPurgeCasesTimer();
-        categoryTimingHelper.recordCategoryTiming(purgeCasesTiming, Constants.TimingCategories.PURGE_CASES);
+        restoreFactory.performTimedSync();
         return new SyncDbResponseBean();
     }
 

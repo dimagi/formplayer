@@ -185,15 +185,7 @@ public class MenuController extends AbstractBaseController {
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
-        SimpleTimer timer = new SimpleTimer();
-        timer.start();
         menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
-        timer.end();
-
-        Timing appInstallTiming = Timing.constant(timer.durationInMs() - menuSession.getPurgeCasesTiming().durationInMs());
-
-        categoryTimingHelper.recordCategoryTiming(appInstallTiming, Constants.TimingCategories.APP_INSTALL);
-        categoryTimingHelper.recordCategoryTiming(menuSession.getPurgeCasesTiming(), Constants.TimingCategories.PURGE_CASES);
         BaseResponseBean response = advanceSessionWithSelections(
                 menuSession,
                 selections,
@@ -398,7 +390,7 @@ public class MenuController extends AbstractBaseController {
             return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
         }
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            CaseAPIs.performSync(restoreFactory);
+            restoreFactory.performTimedSync();
             return new NotificationMessage("Case claim successful.", false);
         } else {
             return new NotificationMessage(

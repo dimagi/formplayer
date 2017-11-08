@@ -13,6 +13,9 @@ These files will often be hosted by a [CommCareHQ](https://www.github.com/dimagi
 
 Building and Running
 ------------
+Clone formplayer repository
+    
+    $ git clone https://github.com/dimagi/formplayer.git`
 
 Download submodule dependencies
 
@@ -20,11 +23,11 @@ Download submodule dependencies
 
 To make properties file:
 
-    $ cp config/application.example.properties config/application.properties  # Update properties as necessary
+    $ cp config/application.example.properties config/application.properties  # Update properties as necessary (the defaults are fine for running locally)
 
-Make sure you have the formplayer database created
+Make sure you have the formplayer database created. You will be asked to provide a password after running this command; assuming you are running formplayer locally, you should use the password for the postgres user associated with the locally-running instance of commcare hq (which can be found in the `DATABASES` section of your `localsettings.py` file).
 
-    $ createdb formplayer -U commcarehq -h localhost  # Update connection info as necessary
+    $ createdb formplayer -U commcarehq -h localhost  # Update connection info as necessary (the defaults are fine for running locally)
 
 To run (with tests):
 
