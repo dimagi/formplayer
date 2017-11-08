@@ -58,6 +58,8 @@ In order to set breakpoints, step through code, and link the runtime with source
 4. De-select "Use auto-import" and "Create directories for empty content roots automatically" and *select* "Use gradle wrapper"
 5. Click "OK"
 
+After following these steps IntelliJ may need further configuration to work smoothly with Gradle.
+
 #### Keeping your application.properties up to date
 
 Properties are occasionally added to application.example.properties that will be required to run on the latest version.
