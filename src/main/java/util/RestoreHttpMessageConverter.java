@@ -44,7 +44,7 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Ob
 
     @Override
     protected boolean supports(Class<?> clazz) {
-        return InputStream.class == clazz;
+        return Object.class == clazz;
     }
 
     @Override
