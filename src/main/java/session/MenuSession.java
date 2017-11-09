@@ -81,7 +81,7 @@ public class MenuSession {
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference).first;
+        this.engine = installService.configureApplication(this.installReference, false).first;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
@@ -101,7 +101,7 @@ public class MenuSession {
         this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
-        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference, preview);
         this.engine = install.first;
         if (install.second && !preview && !restoreFactory.getHasRestored()) {
             this.sandbox = restoreFactory.performTimedSync();
