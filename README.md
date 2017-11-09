@@ -51,7 +51,17 @@ When building on Linux it is sometimes necessary to run:
 
     $ gradle wrapper
     
-Finally, turn on the "Use the new formplayer frontend" feature flag on your CommCareHQ domain
+### Running in IntelliJ
+
+In order to set breakpoints, step through code, and link the runtime with source you'll need to run the code in an IDE. We use IntelliJ. To setup
+
+1. Download [IntelliJ IDE](https://www.jetbrains.com/idea/download/#section=mac)
+2. Open IntelliJ and select "Import Project"
+3. Navigate to the cloned `formplayer` repository and select `build.gradle` at the root
+4. De-select "Use auto-import" and "Create directories for empty content roots automatically" and *select* "Use gradle wrapper"
+5. Click "OK"
+
+After following these steps IntelliJ may need further configuration to work smoothly with Gradle.
 
 #### Keeping your application.properties up to date
 
