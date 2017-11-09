@@ -70,6 +70,7 @@ public class MenuSession {
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
     private boolean oneQuestionPerScreen;
+    private boolean preview;
     ArrayList<String> titles;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
@@ -81,7 +82,7 @@ public class MenuSession {
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference, false).first;
+        this.engine = installService.configureApplication(this.installReference, session.getPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
@@ -115,6 +116,7 @@ public class MenuSession {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.titles = new ArrayList<>();
         this.titles.add(SessionUtils.getAppTitle());
+        this.preview = preview;
     }
     
     public void updateApp(String updateMode) {
@@ -353,5 +355,13 @@ public class MenuSession {
         String[] ret = new String[titles.size()];
         titles.toArray(ret);
         return ret;
+    }
+
+    public boolean getPreview() {
+        return preview;
+    }
+
+    public void setPreview(boolean preview) {
+        this.preview = preview;
     }
 }
