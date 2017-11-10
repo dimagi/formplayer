@@ -36,7 +36,7 @@ public class InstallService {
 
     private final Log log = LogFactory.getLog(InstallService.class);
 
-    public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference) throws Exception {
+    public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference, boolean preview) throws Exception {
         boolean newInstall = true;
         SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
         log.info("Configuring application with reference " + reference +
@@ -68,7 +68,7 @@ public class InstallService {
             if (reference.endsWith(".ccpr")) {
                 engine.initFromLocalFileResource(reference);
             } else {
-                engine.initFromArchive(reference);
+                engine.initFromArchive(reference, preview);
             }
             engine.initEnvironment();
             timer.end();
