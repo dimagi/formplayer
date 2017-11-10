@@ -165,7 +165,6 @@ public class MenuSession {
             boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
             Screen previousScreen = screen;
             screen = getNextScreen();
-            log.info("Screen " + screen + " set to " + ret);
             addTitle(input, previousScreen);
             return true;
         } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
