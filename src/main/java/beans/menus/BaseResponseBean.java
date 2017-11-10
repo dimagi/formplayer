@@ -57,8 +57,10 @@ public class BaseResponseBean {
 
     @Override
     public String toString(){
-        return "BaseResponseBean title=" + title + ", notificaiton=" + notification + ", " +
-                "clearSession=" + clearSession;
+        return "BaseResponseBean [title=" + title + ", " +
+                "notification=" + notification + ", " +
+                "clearSession=" + clearSession + ", " +
+                "selections=" + selections + "]";
     }
 
     public String getAppId() {
