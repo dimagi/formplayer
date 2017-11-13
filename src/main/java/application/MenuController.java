@@ -71,7 +71,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        return getNextMenu(performInstall(installRequestBean, authToken));
+        return getNextMenu(performInstall(installRequestBean));
     }
 
     @ApiOperation(value = "Update the application at the given reference")
@@ -81,7 +81,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
+        MenuSession updatedSession = performUpdate(updateRequestBean);
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
             try {
@@ -214,7 +214,7 @@ public class MenuController extends AbstractBaseController {
             if (sessionNavigationBean.getPreviewCommand() != null) {
                 menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
             } else {
-                menuSession = performInstall(sessionNavigationBean, authToken);
+                menuSession = performInstall(sessionNavigationBean);
             }
         }
         return menuSession;
@@ -321,7 +321,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getRestoreAs(),
                 sessionNavigationBean.getAppId()
         ).deleteDatabaseFolder();
-        menuSession = performInstall(sessionNavigationBean, authToken);
+        menuSession = performInstall(sessionNavigationBean);
         try {
             menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
             menuSession.updateScreen();
@@ -412,7 +412,7 @@ public class MenuController extends AbstractBaseController {
         return newSelections;
     }
 
-    private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
+    private MenuSession performInstall(InstallRequestBean bean) throws Exception {
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");
@@ -433,8 +433,8 @@ public class MenuController extends AbstractBaseController {
         );
     }
 
-    private MenuSession performUpdate(UpdateRequestBean updateRequestBean, String authToken) throws Exception {
-        MenuSession currentSession = performInstall(updateRequestBean, authToken);
+    private MenuSession performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
+        MenuSession currentSession = performInstall(updateRequestBean);
         currentSession.updateApp(updateRequestBean.getUpdateMode());
         return currentSession;
     }
