@@ -44,9 +44,7 @@
 
 trunk: master
 name: autostaging
-branches:
-  - collapse-interface-and-implementation  # Danny 9/11
-  - clean-up-breadcrumbs-builder-syntax-try-2  # Danny 9/11
+branches: []
 submodules:
   libs/commcare:
     trunk: formplayer
