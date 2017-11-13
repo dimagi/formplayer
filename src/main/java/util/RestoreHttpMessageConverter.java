@@ -4,6 +4,7 @@ import engine.FormplayerTransactionParserFactory;
 import exceptions.AsyncRetryException;
 import exceptions.InvalidStructureRuntimeException;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.commcare.core.parse.ParseUtils;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -26,10 +27,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 
 /**
  * HttpMessageConverter subclass specifically for parsing UserSandboxes from restore payload.
@@ -69,7 +67,9 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Ob
         }
 
         try {
-            ParseUtils.parseIntoSandbox(inputMessage.getBody(), factory, true, true);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputMessage.getBody(), "UTF-8");
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            ParseUtils.parseIntoSandbox(new ReaderInputStream(bufferedReader, "UTF-8"), factory, true, true);
         } catch (UnfullfilledRequirementsException | XmlPullParserException e) {
             throw new RuntimeException(e);
         } catch (InvalidStructureException e) {
