@@ -39,7 +39,7 @@ import java.io.UnsupportedEncodingException;
  *
  * @author wpride
  */
-public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Void> {
+public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Object> {
 
     FormplayerTransactionParserFactory factory;
 
@@ -50,11 +50,11 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Vo
 
     @Override
     protected boolean supports(Class<?> clazz) {
-        return Void.class == clazz;
+        return Object.class == clazz;
     }
 
     @Override
-    protected Void readInternal(Class<? extends Void> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+    protected Object readInternal(Class<? extends Object> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
 
         if (inputMessage instanceof ClientHttpResponse) {
             if (((ClientHttpResponse) inputMessage).getRawStatusCode() == 202) {
@@ -133,7 +133,7 @@ public class RestoreHttpMessageConverter extends AbstractHttpMessageConverter<Vo
     }
 
     @Override
-    protected void writeInternal(Void object, HttpOutputMessage outputMessage)
+    protected void writeInternal(Object object, HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
         throw new RuntimeException("Can't write a SqlSandbox");
     }

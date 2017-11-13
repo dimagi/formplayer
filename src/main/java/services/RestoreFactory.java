@@ -286,7 +286,7 @@ public class RestoreFactory {
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
-                Void.class
+                Object.class
         );
         timer.end();
         setLastSyncTime();
