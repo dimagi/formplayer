@@ -135,8 +135,8 @@ public class RestoreFactory {
                 parseTimer.end();
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
                 return getSqlSandbox();
-            } catch (SQLiteRuntimeException | InvalidStructureRuntimeException e) {
-                if (++counter >= maxRetries || e instanceof InvalidStructureRuntimeException) {
+            } catch (SQLiteRuntimeException e) {
+                if (++counter >= maxRetries) {
                     // Before throwing exception, rollback any changes to relinquish SQLite lock
                     rollback();
                     getSQLiteDB().deleteDatabaseFile();
@@ -147,6 +147,14 @@ public class RestoreFactory {
                             getEffectiveUsername()),
                             e);
                 }
+            } catch (RuntimeException e) {
+                rollback();
+                if (getSyncToken() == null) {
+                    // Just roll back, don't blow away databases if we're incremental syncing
+                    getSQLiteDB().deleteDatabaseFile();
+                    getSQLiteDB().createDatabaseFolder();
+                }
+                throw e;
             } finally {
                 setAutoCommit(true);
             }
