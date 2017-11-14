@@ -373,6 +373,12 @@ public abstract class AbstractBaseController {
         return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
     }
 
+    @ExceptionHandler({InterruptedRuntimeException.class})
+    @ResponseBody
+    public ExceptionResponseBean handleInterruptException(FormplayerHttpRequest req, Exception exception) {
+        return new ExceptionResponseBean("Request interrupted, please try again.", req.getRequestURL().toString());
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ExceptionResponseBean handleError(FormplayerHttpRequest req, Exception exception) {

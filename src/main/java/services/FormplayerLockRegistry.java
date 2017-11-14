@@ -1,11 +1,15 @@
 package services;
 
+import exceptions.InterruptedRuntimeException;
+import io.sentry.event.Event;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.util.Assert;
 import util.Constants;
+import util.FormplayerSentry;
 
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +19,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * Created by willpride on 11/6/17.
  */
 public class FormplayerLockRegistry implements LockRegistry {
+
+    @Autowired
+    private FormplayerSentry raven;
 
     private final FormplayerReentrantLock[] lockTable;
     // Lock objects for accessing the FormplayerReentrantLock table above
@@ -47,11 +54,6 @@ public class FormplayerLockRegistry implements LockRegistry {
         return this.lockTable[lockIndex];
     }
 
-    private boolean threadLives(Thread thread) {
-        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-        return threadSet.contains(thread);
-    }
-
     @Override
     public FormplayerReentrantLock obtain(Object lockKey) {
         Assert.notNull(lockKey, "'lockKey' must not be null");
@@ -62,22 +64,24 @@ public class FormplayerLockRegistry implements LockRegistry {
 
             Thread ownerThread = lock.getOwner();
 
-            if (!threadLives(ownerThread)) {
+            if (!ownerThread.isAlive()) {
                 log.error(String.format("Evicted dead thread %s owning lockkey %s.", ownerThread, lockKey));
                 lock = setNewLock(lockIndex);
             }
             if (lock.isExpired()) {
-                log.error(String.format("Evicting thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
+                log.error(String.format("Thread %s owns expired lock with lock key %s.", ownerThread, lockKey));
                 ownerThread.interrupt();
                 try {
                     ownerThread.join(5000);
                 } catch (InterruptedException e) {
-                    // TODO WSP can I ignore this?
-                    throw new RuntimeException(e);
+                    throw new InterruptedRuntimeException(e);
                 }
-                ownerThread.stop();
-                log.error(String.format("Evicted thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
-                lock = setNewLock(lockIndex);
+                if (ownerThread.isAlive()) {
+                    log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
+                    Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
+                    e.setStackTrace(ownerThread.getStackTrace());
+                    raven.sendRavenException(new Exception(e), Event.Level.WARNING);
+                }
             }
             return lock;
         }
