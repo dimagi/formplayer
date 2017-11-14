@@ -96,6 +96,7 @@ public class PrototypeUtils {
                 XYSeries.class.getName(),
                 BubbleSeries.class.getName(),
                 SendAction.class.getName(),
+                XPathDistinctValuesFunc.class.getName(),
         };
 
         for(Class clazz: FunctionUtils.getXPathFuncListMap().values()){
