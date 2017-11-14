@@ -33,7 +33,7 @@ public class QueryRequester {
             throw new RuntimeException(e);
         }
         String responseBody = response.getBody();
-        log.info(String.format("Query request to URL %s returned result %s", uri, responseBody));
+        log.info(String.format("Query request to URL %s successful", uri));
         return responseBody;
     }
 }

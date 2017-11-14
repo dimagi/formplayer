@@ -36,6 +36,8 @@ import session.FormSession;
 import session.MenuSession;
 import sqlitedb.ApplicationDB;
 import util.Constants;
+import util.SimpleTimer;
+import util.Timing;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -69,7 +71,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        return getNextMenu(performInstall(installRequestBean, authToken));
+        return getNextMenu(performInstall(installRequestBean));
     }
 
     @ApiOperation(value = "Update the application at the given reference")
@@ -79,7 +81,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        MenuSession updatedSession = performUpdate(updateRequestBean, authToken);
+        MenuSession updatedSession = performUpdate(updateRequestBean);
         if (updateRequestBean.getSessionId() != null) {
             // Try restoring the old session, fail gracefully.
             try {
@@ -183,15 +185,7 @@ public class MenuController extends AbstractBaseController {
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
-        CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL);
-        timer.start();
-        try {
-            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
-        } finally {
-            timer.end()
-                    .setMessage(timer.durationInMs() < 50 ? "Seems like nothing to install" : "This took some time")
-                    .record();
-        }
+        menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         BaseResponseBean response = advanceSessionWithSelections(
                 menuSession,
                 selections,
@@ -220,7 +214,7 @@ public class MenuController extends AbstractBaseController {
             if (sessionNavigationBean.getPreviewCommand() != null) {
                 menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
             } else {
-                menuSession = performInstall(sessionNavigationBean, authToken);
+                menuSession = performInstall(sessionNavigationBean);
             }
         }
         return menuSession;
@@ -327,7 +321,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getRestoreAs(),
                 sessionNavigationBean.getAppId()
         ).deleteDatabaseFolder();
-        menuSession = performInstall(sessionNavigationBean, authToken);
+        menuSession = performInstall(sessionNavigationBean);
         try {
             menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
             menuSession.updateScreen();
@@ -373,9 +367,7 @@ public class MenuController extends AbstractBaseController {
      */
     private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
                                            MenuSession menuSession) throws Exception {
-        NotificationMessage notificationMessage = doSync(
-                nextScreen
-        );
+        NotificationMessage notificationMessage = doSync(nextScreen);
 
         BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
         if (postSyncResponse != null) {
@@ -398,7 +390,7 @@ public class MenuController extends AbstractBaseController {
             return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
         }
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            CaseAPIs.performSync(restoreFactory);
+            restoreFactory.performTimedSync();
             return new NotificationMessage("Case claim successful.", false);
         } else {
             return new NotificationMessage(
@@ -420,7 +412,7 @@ public class MenuController extends AbstractBaseController {
         return newSelections;
     }
 
-    private MenuSession performInstall(InstallRequestBean bean, String authToken) throws Exception {
+    private MenuSession performInstall(InstallRequestBean bean) throws Exception {
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
             throw new RuntimeException("Either app_id or installReference must be non-null.");
@@ -441,8 +433,8 @@ public class MenuController extends AbstractBaseController {
         );
     }
 
-    private MenuSession performUpdate(UpdateRequestBean updateRequestBean, String authToken) throws Exception {
-        MenuSession currentSession = performInstall(updateRequestBean, authToken);
+    private MenuSession performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
+        MenuSession currentSession = performInstall(updateRequestBean);
         currentSession.updateApp(updateRequestBean.getUpdateMode());
         return currentSession;
     }

@@ -38,8 +38,7 @@ public class NewFormResponse extends SessionResponseBean {
     public String getSession_id(){return sessionId;}
 
     public String toString(){
-        return "NewFormResponse [sessionId=" + sessionId + ", title=" + title + " tree=" + Arrays.toString(tree) +
-                " sequenceId=" + sequenceId + " ]";
+        return "NewFormResponse [sessionId=" + sessionId + ", title=" + title + "]";
     }
 
     public String[] getBreadcrumbs() {

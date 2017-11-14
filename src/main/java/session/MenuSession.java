@@ -1,6 +1,5 @@
 package session;
 
-import auth.HqAuth;
 import engine.FormplayerConfigEngine;
 import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
@@ -33,9 +32,7 @@ import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import services.InstallService;
 import services.RestoreFactory;
-import util.Constants;
-import util.SessionUtils;
-import util.StringUtils;
+import util.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -73,6 +70,7 @@ public class MenuSession {
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
     private boolean oneQuestionPerScreen;
+    private boolean preview;
     ArrayList<String> titles;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
@@ -84,8 +82,8 @@ public class MenuSession {
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference).first;
-        this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        this.engine = installService.configureApplication(this.installReference, session.getPreview()).first;
+        this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
@@ -104,14 +102,12 @@ public class MenuSession {
         this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
-        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference, preview);
         this.engine = install.first;
-        if (install.second && !preview) {
-            this.sandbox = CaseAPIs.performSync(restoreFactory);
-        } else {
-            this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        if (install.second && !preview && !restoreFactory.getHasRestored()) {
+            this.sandbox = restoreFactory.performTimedSync();
         }
-        this.sandbox = CaseAPIs.getSandbox(restoreFactory);
+        this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
@@ -120,6 +116,7 @@ public class MenuSession {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.titles = new ArrayList<>();
         this.titles.add(SessionUtils.getAppTitle());
+        this.preview = preview;
     }
     
     public void updateApp(String updateMode) {
@@ -168,7 +165,6 @@ public class MenuSession {
             boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
             Screen previousScreen = screen;
             screen = getNextScreen();
-            log.info("Screen " + screen + " set to " + ret);
             addTitle(input, previousScreen);
             return true;
         } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
@@ -358,5 +354,13 @@ public class MenuSession {
         String[] ret = new String[titles.size()];
         titles.toArray(ret);
         return ret;
+    }
+
+    public boolean getPreview() {
+        return preview;
+    }
+
+    public void setPreview(boolean preview) {
+        this.preview = preview;
     }
 }

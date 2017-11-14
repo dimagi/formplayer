@@ -47,16 +47,19 @@ public class CategoryTimingHelper {
         return new RecordingTimer(this, category);
     }
 
-    public void recordCategoryTiming(SimpleTimer timer, String category, String sentryMessage) {
+    public void recordCategoryTiming(Timing timing, String category) {
+        recordCategoryTiming(timing, category, null);
+    }
+    public void recordCategoryTiming(Timing timing, String category, String sentryMessage) {
         raven.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)
-                .setData("duration", timer.formatDuration())
+                .setData("duration", timing.formatDuration())
                 .record();
 
         datadogStatsDClient.recordExecutionTime(
                 Constants.DATADOG_GRANULAR_TIMINGS,
-                timer.durationInMs(),
+                timing.durationInMs(),
                 "category:" + category,
                 "request:" + RequestUtils.getRequestEndpoint(request)
         );

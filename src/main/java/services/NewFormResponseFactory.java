@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
 import session.FormSession;
+import util.Constants;
+import util.SimpleTimer;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,10 +39,13 @@ public class NewFormResponseFactory {
     @Autowired
     private FormSendCalloutHandler formSendCalloutHandler;
 
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
+
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
         String formXml = getFormXml(bean.getFormUrl());
-        UserSqlSandbox sandbox = CaseAPIs.performSync(restoreFactory);
+        UserSqlSandbox sandbox = restoreFactory.performTimedSync();
 
         FormSession formSession = new FormSession(
                 sandbox,

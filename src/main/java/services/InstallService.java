@@ -11,6 +11,8 @@ import org.commcare.resources.model.UnresolvedResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sqlitedb.SQLiteDB;
+import util.Constants;
+import util.SimpleTimer;
 
 /**
  * The InstallService handles configuring the application,
@@ -29,9 +31,12 @@ public class InstallService {
     @Autowired
     ArchiveFileRoot formplayerArchiveFileRoot;
 
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
+
     private final Log log = LogFactory.getLog(InstallService.class);
 
-    public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference) throws Exception {
+    public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference, boolean preview) throws Exception {
         boolean newInstall = true;
         SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
         log.info("Configuring application with reference " + reference +
@@ -54,6 +59,8 @@ public class InstallService {
             // Wipe out folder and attempt install
             sqliteDB.closeConnection();
             sqliteDB.deleteDatabaseFile();
+            SimpleTimer timer = new SimpleTimer();
+            timer.start();
             if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiating folder " + sqliteDB.getDatabaseFileForDebugPurposes());
             }
@@ -61,9 +68,11 @@ public class InstallService {
             if (reference.endsWith(".ccpr")) {
                 engine.initFromLocalFileResource(reference);
             } else {
-                engine.initFromArchive(reference);
+                engine.initFromArchive(reference, preview);
             }
             engine.initEnvironment();
+            timer.end();
+            categoryTimingHelper.recordCategoryTiming(timer, Constants.TimingCategories.APP_INSTALL);
             return new Pair<>(engine, newInstall);
         } catch (UnresolvedResourceException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());

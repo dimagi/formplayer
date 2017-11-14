@@ -14,7 +14,10 @@ import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import repo.impl.PostgresUserRepo;
+import services.CategoryTimingHelper;
 import services.RestoreFactory;
+import util.Constants;
+import util.Timing;
 import util.UserUtils;
 
 import java.util.Arrays;
@@ -34,6 +37,9 @@ public class UserRestoreAspect {
     @Autowired
     protected PostgresUserRepo postgresUserRepo;
 
+    @Autowired
+    CategoryTimingHelper categoryTimingHelper;
+
     @Before(value = "@annotation(annotations.UserRestore)")
     public void configureRestoreFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
@@ -44,8 +50,9 @@ public class UserRestoreAspect {
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
         HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
         restoreFactory.configure((AuthenticatedRequestBean)args[0], auth, requestBean.getUseLiveQuery());
+
         if (requestBean.isMustRestore()) {
-            CaseAPIs.performSync(restoreFactory);
+            restoreFactory.performTimedSync();
         }
     }
 

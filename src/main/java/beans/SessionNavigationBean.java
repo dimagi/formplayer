@@ -34,7 +34,8 @@ public class SessionNavigationBean extends InstallRequestBean {
         return "SessionNavigationBean [id= " + menuSessionId +
                 ", preview=" + previewCommand +
                 ", selections=" + Arrays.toString(selections) +
-                ", parent="  + super.toString() + "]";
+                ", parent="  + super.toString() +
+                ", queryDict" + queryDictionary + "]";
     }
 
     public int getOffset() {
