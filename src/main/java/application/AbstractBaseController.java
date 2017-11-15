@@ -376,7 +376,8 @@ public abstract class AbstractBaseController {
     @ExceptionHandler({InterruptedRuntimeException.class})
     @ResponseBody
     public ExceptionResponseBean handleInterruptException(FormplayerHttpRequest req, Exception exception) {
-        return new ExceptionResponseBean("Request interrupted, please try again.", req.getRequestURL().toString());
+        return new ExceptionResponseBean("An issue prevented us from processing your previous action, please try again",
+                req.getRequestURL().toString());
     }
 
     @ExceptionHandler(Exception.class)
