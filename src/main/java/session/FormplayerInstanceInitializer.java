@@ -2,10 +2,9 @@ package session;
 
 import database.models.FormplayerCaseIndexTable;
 import engine.FormplayerCaseInstanceTreeElement;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
-import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.session.SessionInstanceBuilder;
 import org.commcare.util.CommCarePlatform;
@@ -38,7 +37,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     @Override
     protected AbstractTreeElement setupCaseData(ExternalDataInstance instance) {
         if (casebase == null) {
-            SqliteIndexedStorageUtility<Case> storage = (SqliteIndexedStorageUtility<Case>) mSandbox.getCaseStorage();
+            SqlStorage<Case> storage = (SqlStorage<Case>) mSandbox.getCaseStorage();
             FormplayerCaseIndexTable formplayerCaseIndexTable;
             formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox) mSandbox);
             casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);

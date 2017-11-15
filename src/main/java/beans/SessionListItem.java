@@ -2,7 +2,7 @@ package beans;
 
 import objects.SerializableFormSession;
 import org.commcare.cases.model.Case;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import util.FormplayerDateUtils;
 import util.SessionUtils;
 
@@ -18,14 +18,14 @@ public class SessionListItem {
     private String sessionId;
     private String caseName;
 
-    public SessionListItem(SqliteIndexedStorageUtility<Case> caseStorage, SerializableFormSession session){
+    public SessionListItem(SqlStorage<Case> caseStorage, SerializableFormSession session){
         this.title = session.getTitle();
         this.dateOpened = FormplayerDateUtils.convertJavaDateStringToISO(session.getDateOpened());
         this.sessionId = session.getId();
         this.caseName = loadCaseName(caseStorage, session);
     }
 
-    private String loadCaseName(SqliteIndexedStorageUtility<Case> caseStorage, SerializableFormSession session) {
+    private String loadCaseName(SqlStorage<Case> caseStorage, SerializableFormSession session) {
         String caseId = session.getSessionData().get("case_id");
         try {
             return SessionUtils.tryLoadCaseName(caseStorage, caseId);

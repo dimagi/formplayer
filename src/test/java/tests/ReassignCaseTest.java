@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import sqlitedb.UserDB;
 import utils.TestContext;
@@ -36,7 +36,7 @@ public class ReassignCaseTest extends BaseTestClass {
     public void testCaseReassign() throws Exception {
 
         UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("reassigndomain", "reassignusername", null));
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
 
         assert caseStorage.getNumRecords() == 0;
 

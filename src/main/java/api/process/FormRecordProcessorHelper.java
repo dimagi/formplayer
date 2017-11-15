@@ -26,7 +26,7 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
 import sandbox.JdbcSqlStorageIterator;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import util.PropertyUtils;
 import util.SimpleTimer;
@@ -107,7 +107,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         int removedLedgers = -1;
         try {
             sandbox.getConnection().setAutoCommit(false);
-            SqliteIndexedStorageUtility<Case> storage = sandbox.getCaseStorage();
+            SqlStorage<Case> storage = sandbox.getCaseStorage();
             DAG<String, int[], String> fullCaseGraph = getFullCaseGraph(storage, new FormplayerCaseIndexTable(sandbox), owners);
 
             CasePurgeFilter filter = new CasePurgeFilter(fullCaseGraph);
@@ -130,7 +130,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
             }
 
 
-            SqliteIndexedStorageUtility<Ledger> stockStorage = sandbox.getLedgerStorage();
+            SqlStorage<Ledger> stockStorage = sandbox.getLedgerStorage();
             LedgerPurgeFilter stockFilter = new LedgerPurgeFilter(stockStorage, storage);
             removedLedgers = stockStorage.removeAll(stockFilter).size();
             sandbox.getConnection().commit();
@@ -157,7 +157,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
 
     }
 
-    public static DAG<String, int[], String> getFullCaseGraph(SqliteIndexedStorageUtility<Case> caseStorage,
+    public static DAG<String, int[], String> getFullCaseGraph(SqlStorage<Case> caseStorage,
                                                               FormplayerCaseIndexTable indexTable,
                                                               Vector<String> owners) {
         DAG<String, int[], String> caseGraph = new DAG<>();
