@@ -11,9 +11,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.integration.support.locks.LockRegistry;
 import services.CategoryTimingHelper;
-import services.FormplayerLockRegistry;
-import services.FormplayerLockRegistry.FormplayerReentrantLock;
 import util.Constants;
 import util.FormplayerSentry;
 import util.RequestUtils;
@@ -30,7 +29,7 @@ import java.util.concurrent.locks.Lock;
 public class LockAspect {
 
     @Autowired
-    private FormplayerLockRegistry userLockRegistry;
+    private LockRegistry userLockRegistry;
 
     @Autowired
     private StatsDClient datadogStatsDClient;
@@ -101,7 +100,7 @@ public class LockAspect {
     }
 
     private Lock getLockAndBlock(String username) throws LockError {
-        FormplayerReentrantLock lock = userLockRegistry.obtain(username);
+        Lock lock = userLockRegistry.obtain(username);
         if (obtainLock(lock)) {
             return lock;
         } else {
@@ -110,7 +109,7 @@ public class LockAspect {
         }
     }
 
-    private boolean obtainLock(FormplayerReentrantLock lock) {
+    private boolean obtainLock(Lock lock) {
         CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.WAIT_ON_LOCK);
         timer.start();
         try {
