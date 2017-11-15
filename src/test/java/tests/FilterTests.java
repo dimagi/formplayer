@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import sandbox.SqlSandboxUtils;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import sqlitedb.UserDB;
 import util.Constants;
@@ -30,7 +30,7 @@ public class FilterTests extends BaseTestClass {
 
         UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("synctestdomain","synctestuser", null));
 
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
 
         assert (15 == caseStorage.getNumRecords());
 

@@ -14,7 +14,6 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
 import org.javarosa.core.util.externalizable.DeserializationException;
-import org.sqlite.SQLiteException;
 import services.ConnectionHandler;
 import org.javarosa.core.model.condition.Abandonable;
 
@@ -34,7 +33,7 @@ import java.util.*;
  *
  * @author wspride
  */
-public class SqliteIndexedStorageUtility<T extends Persistable>
+public class SqlStorage<T extends Persistable>
         implements IStorageUtilityIndexed<T>, Iterable<T> {
 
     private Class<T> prototype;
@@ -42,16 +41,16 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     private ConnectionHandler connectionHandler;
 
-    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, T prototype, String tableName) {
+    public SqlStorage(ConnectionHandler connectionHandler, T prototype, String tableName) {
         this(connectionHandler, (Class<T>) prototype.getClass(), tableName);
     }
 
-    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, Class<T> prototype, String tableName) {
+    public SqlStorage(ConnectionHandler connectionHandler, Class<T> prototype, String tableName) {
         this(connectionHandler, prototype, tableName, true);
     }
 
-    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, Class<T> prototype,
-                                       String tableName, boolean initialize) {
+    public SqlStorage(ConnectionHandler connectionHandler, Class<T> prototype,
+                      String tableName, boolean initialize) {
         this.tableName = tableName;
         this.prototype = prototype;
         this.connectionHandler = connectionHandler;

@@ -7,10 +7,8 @@ import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.Persistable;
-import org.javarosa.core.services.storage.StorageModifiedException;
 import org.javarosa.core.util.ArrayUtilities;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,14 +25,14 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
     protected PreparedStatement preparedStatement;
     protected ResultSet resultSet;
     private final Set<String> metaDataIndexSet;
-    SqliteIndexedStorageUtility<T> storage;
+    SqlStorage<T> storage;
     private HashMap<String, Integer> metaDataColumnMap = new HashMap<>();
 
     private static final Log log = LogFactory.getLog(JdbcSqlStorageIterator.class);
 
     public JdbcSqlStorageIterator(PreparedStatement preparedStatement,
                                   ResultSet resultSet,
-                                  SqliteIndexedStorageUtility<T> storage,
+                                  SqlStorage<T> storage,
                                   String[] metaDataIndexSet) {
         this.resultSet = resultSet;
         this.storage = storage;
