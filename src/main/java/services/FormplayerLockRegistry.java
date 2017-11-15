@@ -63,12 +63,11 @@ public class FormplayerLockRegistry implements LockRegistry {
 
         synchronized (this.lockTableLocks[lockIndex]) {
             FormplayerReentrantLock lock = this.lockTable[lockIndex];
-
             Thread ownerThread = lock.getOwner();
-
-            if (!ownerThread.isAlive()) {
+            if (ownerThread == null || !ownerThread.isAlive()) {
                 log.error(String.format("Evicted dead thread %s owning lockkey %s.", ownerThread, lockKey));
                 lock = setNewLock(lockIndex);
+                return lock;
             }
             if (lock.isExpired()) {
                 log.error(String.format("Thread %s owns expired lock with lock key %s.", ownerThread, lockKey));
