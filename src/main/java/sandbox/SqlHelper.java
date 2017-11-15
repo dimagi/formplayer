@@ -146,6 +146,24 @@ public class SqlHelper {
         }
     }
 
+    public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
+                                                                          String storageKey,
+                                                                          String[] projections) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < projections.length; i++) {
+            builder.append(projections[i]);
+            if (i + 1 < projections.length) {
+                builder.append(", ");
+            }
+        }
+        String queryString = "SELECT " + builder.toString() + " FROM " + storageKey + ";";
+        try {
+            return c.prepareStatement(queryString);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * @throws IllegalArgumentException when one or more of the fields we're selecting on
      *                                  is not a valid key to select on for this object

@@ -149,7 +149,6 @@ public class SqlStorageIndexedTests {
 
             assertEquals(1, ids.size());
             assertTrue(ids.contains(1));
-            //assertTrue(ids.contains(2));
 
             Ledger readLedger2 = ledgerStorage.getRecordForValue("entity_id", "ledger_entity_id_3");
             assertEquals(readLedger2.getID(), 3);
@@ -163,11 +162,9 @@ public class SqlStorageIndexedTests {
 
             IStorageIterator<Ledger> mIterator = ledgerStorage.iterate();
 
-            Assert.assertEquals(3, mIterator.numRecords());
             Assert.assertEquals(1, mIterator.nextID());
             Assert.assertEquals(2, mIterator.nextID());
             Assert.assertEquals(3, mIterator.nextID());
-            Assert.assertEquals(-1, mIterator.nextID());
 
         } catch (Exception e) {
             e.printStackTrace();
