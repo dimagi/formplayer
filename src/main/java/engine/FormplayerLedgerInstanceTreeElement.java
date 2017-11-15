@@ -1,7 +1,7 @@
 package engine.cases;
 
 import sandbox.JdbcSqlStorageIterator;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.instance.LedgerInstanceTreeElement;
 import org.commcare.cases.query.PredicateProfile;
@@ -25,7 +25,7 @@ public class FormplayerLedgerInstanceTreeElement extends LedgerInstanceTreeEleme
 
     private Hashtable<String, Integer> primaryIdMapping;
 
-    public FormplayerLedgerInstanceTreeElement(AbstractTreeElement instanceRoot, SqliteIndexedStorageUtility<Ledger> storage) {
+    public FormplayerLedgerInstanceTreeElement(AbstractTreeElement instanceRoot, SqlStorage<Ledger> storage) {
         super(instanceRoot, storage);
         primaryIdMapping = null;
         addStaticQueryHandler();
@@ -58,7 +58,7 @@ public class FormplayerLedgerInstanceTreeElement extends LedgerInstanceTreeEleme
         elements = new Vector<>();
         primaryIdMapping = new Hashtable<>();
         int mult = 0;
-        for (IStorageIterator i = ((SqliteIndexedStorageUtility<Ledger>)getStorage()).iterate(); i.hasMore(); ) {
+        for (IStorageIterator i = ((SqlStorage<Ledger>)getStorage()).iterate(); i.hasMore(); ) {
             int id = i.peekID();
             elements.addElement(buildElement(this, id, null, mult));
             objectIdMapping.put(DataUtil.integer(id), DataUtil.integer(mult));
