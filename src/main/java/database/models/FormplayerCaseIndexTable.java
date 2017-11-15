@@ -11,7 +11,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.engine.cases.CaseIndexTable;
 import org.commcare.modern.util.Pair;
 import sandbox.SqlHelper;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import services.ConnectionHandler;
 
@@ -189,7 +189,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                     args);
             ResultSet resultSet = selectStatement.executeQuery();
             LinkedHashSet<Integer> ret = new LinkedHashSet<>();
-            SqliteIndexedStorageUtility.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
+            SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
             return ret;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -228,7 +228,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                     args);
             ResultSet resultSet = selectStatement.executeQuery();
             LinkedHashSet<Integer> ret = new LinkedHashSet<>();
-            SqliteIndexedStorageUtility.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
+            SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
             return ret;
         } catch (SQLException e) {
             throw new RuntimeException(e);

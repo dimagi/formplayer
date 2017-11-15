@@ -4,11 +4,9 @@ import database.models.FormplayerCaseIndexTable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.engine.cases.CaseIndexQuerySetTransform;
-import org.commcare.modern.engine.cases.RecordSetResultCache;
 import org.commcare.modern.engine.cases.query.CaseIndexPrefetchHandler;
-import org.commcare.modern.util.PerformanceTuningUtil;
 import sandbox.SqlHelper;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.query.*;
@@ -16,7 +14,6 @@ import org.commcare.cases.query.handlers.ModelQueryLookupHandler;
 import org.commcare.cases.query.queryset.CaseModelQuerySetMatcher;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.model.trace.EvaluationTrace;
 import org.javarosa.core.model.utils.CacheHost;
 import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
@@ -48,7 +45,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
     private static final Log log = LogFactory.getLog(FormplayerCaseInstanceTreeElement.class);
 
     public FormplayerCaseInstanceTreeElement(AbstractTreeElement instanceRoot,
-                                             SqliteIndexedStorageUtility<Case> storage,
+                                             SqlStorage<Case> storage,
                                              FormplayerCaseIndexTable formplayerCaseIndexTable) {
         super(instanceRoot, storage);
         this.formplayerCaseIndexTable = formplayerCaseIndexTable;
@@ -90,7 +87,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
 
         int mult = 0;
 
-        for (IStorageIterator i = ((SqliteIndexedStorageUtility<Case>)storage).iterate(false); i.hasMore(); ) {
+        for (IStorageIterator i = ((SqlStorage<Case>)storage).iterate(false); i.hasMore(); ) {
             int id = i.nextID();
             elements.add(buildElement(this, id, null, mult));
             objectIdMapping.put(DataUtil.integer(id), DataUtil.integer(mult));

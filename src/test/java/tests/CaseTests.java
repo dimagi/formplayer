@@ -3,7 +3,7 @@ package tests;
 import application.SQLiteProperties;
 import beans.*;
 import sandbox.SqlSandboxUtils;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.util.CasePurgeFilter;
@@ -34,7 +34,7 @@ public class CaseTests extends BaseTestClass {
 
         UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
 
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
 
         assert(caseStorage.getNumRecords() == 15);
         sandbox.getConnection().close();
@@ -76,7 +76,7 @@ public class CaseTests extends BaseTestClass {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
         UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
         assert(caseStorage.getNumRecords() == 15);
 
         String sessionId = newSessionResponse.getSessionId();
