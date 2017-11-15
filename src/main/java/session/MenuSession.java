@@ -1,7 +1,6 @@
 package session;
 
 import engine.FormplayerConfigEngine;
-import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
@@ -11,9 +10,12 @@ import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
+import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.SessionDatum;
+import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.screen.*;
+import org.commcare.util.screen.MenuScreen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -39,10 +41,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 
 /**
@@ -117,6 +116,36 @@ public class MenuSession {
         this.titles = new ArrayList<>();
         this.titles.add(SessionUtils.getAppTitle());
         this.preview = preview;
+    }
+
+    public MenuSession rebuildSessionFromFrame(SessionFrame frame,
+                                               InstallService installService,
+                                               RestoreFactory restoreFactory,
+                                               String host) throws Exception {
+        MenuSession menuSession = new MenuSession(username, domain, appId, installReference, locale,
+                installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
+        Screen screen = menuSession.getNextScreen();
+        ArrayList<String> commands = new ArrayList<>();
+        Vector<StackFrameStep> steps = frame.getSteps();
+        for (StackFrameStep step: steps) {
+            String command = null;
+            if (step.getElementType().equals(SessionFrame.STATE_COMMAND_ID)) {
+                String stepId = step.getId();
+                MenuScreen menuScreen = (MenuScreen)screen;
+                for (int i = 0; i < menuScreen.getMenuDisplayables().length; i++) {
+                    MenuDisplayable menuDisplayable = menuScreen.getMenuDisplayables()[i];
+                    if (menuDisplayable.getCommandID().equals(stepId)) {
+                        command = String.valueOf(i);
+                    }
+                }
+            } else if (step.getElementType().equals(SessionFrame.STATE_DATUM_VAL)) {
+                command = step.getValue();
+            }
+            commands.add(command);
+            menuSession.handleInput(command);
+        }
+        System.out.println("Screen : " + screen);
+        return menuSession;
     }
     
     public void updateApp(String updateMode) {
