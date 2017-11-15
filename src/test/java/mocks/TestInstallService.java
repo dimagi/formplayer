@@ -13,8 +13,8 @@ import java.net.URL;
 public class TestInstallService extends InstallService {
 
     @Override
-    public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference) throws Exception {
-        return super.configureApplication(getTestResourcePath(reference));
+    public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference, boolean preview) throws Exception {
+        return super.configureApplication(getTestResourcePath(reference), preview);
     }
 
     private String getTestResourcePath(String resourcePath){

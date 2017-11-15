@@ -445,6 +445,7 @@ public class FormSession {
                 // we can't go all the way back to the beginning, so we've
                 // gotta hit the last index that was valid
                 formController.jumpToIndex(lastValidIndex);
+                setIsAtFirstIndex(true);
 
                 if (lastValidIndex.isBeginningOfFormIndex()) {
                     //We might have walked all the way back still, which isn't great,
@@ -469,7 +470,6 @@ public class FormSession {
     public void stepToPreviousIndex() {
         moveToPreviousView();
         int event = formController.getEvent();
-        setIsAtFirstIndex(event == FormEntryController.EVENT_BEGINNING_OF_FORM);
         setCurrentIndex(formController.getFormIndex().toString());
     }
 

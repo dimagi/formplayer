@@ -78,7 +78,8 @@ public class DebuggerController extends AbstractBaseController {
     @UserRestore
     @AppInstallFromSession
     public MenuDebuggerContentResponseBean menuDebuggerContent(
-            @RequestBody MenuDebuggerRequestBean debuggerMenuRequest) throws Exception {
+            @RequestBody MenuDebuggerRequestBean debuggerMenuRequest,
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
 
         MenuSession menuSession = getMenuSession(
                 debuggerMenuRequest.getMenuSessionId()
@@ -123,7 +124,8 @@ public class DebuggerController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @AppInstallFromSession
-    public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean) throws Exception {
+    public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
+                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession = getMenuSession(
                 evaluateXPathRequestBean.getMenuSessionId()
         );
