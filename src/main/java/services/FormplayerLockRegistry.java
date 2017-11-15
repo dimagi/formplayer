@@ -50,8 +50,10 @@ public class FormplayerLockRegistry implements LockRegistry {
     }
 
     private FormplayerReentrantLock setNewLock(Integer lockIndex) {
-        this.lockTable[lockIndex] = new FormplayerReentrantLock();
-        return this.lockTable[lockIndex];
+        synchronized (this.lockTableLocks[lockIndex]) {
+            this.lockTable[lockIndex] = new FormplayerReentrantLock();
+            return this.lockTable[lockIndex];
+        }
     }
 
     @Override
