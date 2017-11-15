@@ -184,9 +184,7 @@ public class FormController extends AbstractBaseController{
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
         MenuSession menuSession = new MenuSession(serializedSession, installService, restoreFactory, host);
-        Object nextScreen = resolveFormGetNext(menuSession);
-        menuSessionRepo.save(new SerializableMenuSession(menuSession));
-        return nextScreen;
+        return resolveFormGetNext(menuSession);
     }
 
     /**

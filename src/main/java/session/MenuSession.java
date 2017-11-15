@@ -71,6 +71,7 @@ public class MenuSession {
     private boolean oneQuestionPerScreen;
     private boolean preview;
     ArrayList<String> titles;
+    private ArrayList<String> steps = new ArrayList<>();
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
@@ -125,24 +126,23 @@ public class MenuSession {
         MenuSession menuSession = new MenuSession(username, domain, appId, installReference, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
         Screen screen = menuSession.getNextScreen();
-        ArrayList<String> commands = new ArrayList<>();
         Vector<StackFrameStep> steps = frame.getSteps();
         for (StackFrameStep step: steps) {
-            String command = null;
+            String currentStep = null;
             if (step.getElementType().equals(SessionFrame.STATE_COMMAND_ID)) {
                 String stepId = step.getId();
                 MenuScreen menuScreen = (MenuScreen)screen;
                 for (int i = 0; i < menuScreen.getMenuDisplayables().length; i++) {
                     MenuDisplayable menuDisplayable = menuScreen.getMenuDisplayables()[i];
                     if (menuDisplayable.getCommandID().equals(stepId)) {
-                        command = String.valueOf(i);
+                        currentStep = String.valueOf(i);
                     }
                 }
             } else if (step.getElementType().equals(SessionFrame.STATE_DATUM_VAL)) {
-                command = step.getValue();
+                currentStep = step.getValue();
             }
-            commands.add(command);
-            menuSession.handleInput(command);
+            this.steps.add(currentStep);
+            menuSession.handleInput(currentStep);
         }
         System.out.println("Screen : " + screen);
         return menuSession;
@@ -391,5 +391,11 @@ public class MenuSession {
 
     public void setPreview(boolean preview) {
         this.preview = preview;
+    }
+
+    public String[] getSteps() {
+        String[] ret = new String[steps.size()];
+        steps.toArray(ret);
+        return ret;
     }
 }

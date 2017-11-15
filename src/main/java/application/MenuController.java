@@ -106,13 +106,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        MenuSession menuSession;
-        try {
-            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
-        } catch (MenuNotFoundException e) {
-            return null;
-        }
-
+        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
         if (sessionNavigationBean.getIsPersistent()) {
             advanceSessionWithSelections(menuSession,
                     sessionNavigationBean.getSelections(),
@@ -195,27 +189,16 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex()
         );
-        // Don't update the menu session if we're using it already for navigation
-        if (sessionNavigationBean.getMenuSessionId() == null || "".equals(sessionNavigationBean.getMenuSessionId())) {
-            menuSessionRepo.save(new SerializableMenuSession(menuSession));
-        }
         return response;
     }
 
     private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
         MenuSession menuSession = null;
-        String menuSessionId = sessionNavigationBean.getMenuSessionId();
-        if (menuSessionId != null && !"".equals(menuSessionId)) {
-            menuSession = getMenuSession(
-                    menuSessionId
-            );
+        // If we have a preview command, load that up
+        if (sessionNavigationBean.getPreviewCommand() != null) {
+            menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
         } else {
-            // If we have a preview command, load that up
-            if (sessionNavigationBean.getPreviewCommand() != null) {
-                menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
-            } else {
-                menuSession = performInstall(sessionNavigationBean);
-            }
+            menuSession = performInstall(sessionNavigationBean);
         }
         return menuSession;
     }
