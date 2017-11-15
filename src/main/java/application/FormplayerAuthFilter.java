@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import services.FormplayerLockRegistry;
 import services.HqUserDetailsService;
 import util.Constants;
 import util.FormplayerHttpRequest;
@@ -38,7 +37,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     HqUserDetailsService userDetailsService;
 
     @Autowired
-    FormplayerLockRegistry userLockRegistry;
+    RedisLockRegistry userLockRegistry;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
