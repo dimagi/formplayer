@@ -382,18 +382,14 @@ public class RestoreFactory {
     }
 
     public String getSyncToken() {
-        SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
-        JdbcSqlStorageIterator<User> iterator = null;
+        JdbcSqlStorageIterator<User> iterator = getSqlSandbox().getUserStorage().iterate();
         try {
-            iterator = storage.iterate();
             if (!iterator.hasNext()) {
                 return null;
             }
             return iterator.next().getLastSyncToken();
         } finally {
-            if (iterator != null) {
-                iterator.close();
-            }
+            iterator.close();
         }
     }
 
