@@ -115,35 +115,6 @@ public class MenuSession {
         this.titles.add(SessionUtils.getAppTitle());
         this.preview = preview;
     }
-
-    public MenuSession rebuildSessionFromFrame(SessionFrame frame,
-                                               InstallService installService,
-                                               RestoreFactory restoreFactory,
-                                               String host) throws Exception {
-        MenuSession menuSession = new MenuSession(username, domain, appId, installReference, locale,
-                installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
-        Screen screen = menuSession.getNextScreen();
-        Vector<StackFrameStep> steps = frame.getSteps();
-        for (StackFrameStep step: steps) {
-            String currentStep = null;
-            if (step.getElementType().equals(SessionFrame.STATE_COMMAND_ID)) {
-                String stepId = step.getId();
-                MenuScreen menuScreen = (MenuScreen)screen;
-                for (int i = 0; i < menuScreen.getMenuDisplayables().length; i++) {
-                    MenuDisplayable menuDisplayable = menuScreen.getMenuDisplayables()[i];
-                    if (menuDisplayable.getCommandID().equals(stepId)) {
-                        currentStep = String.valueOf(i);
-                    }
-                }
-            } else if (step.getElementType().equals(SessionFrame.STATE_DATUM_VAL)) {
-                currentStep = step.getValue();
-            }
-            this.selections.add(currentStep);
-            menuSession.handleInput(currentStep);
-        }
-        System.out.println("Screen : " + screen);
-        return menuSession;
-    }
     
     public void updateApp(String updateMode) {
         this.engine.attemptAppUpdate(updateMode);
@@ -391,5 +362,9 @@ public class MenuSession {
         String[] ret = new String[selections.size()];
         selections.toArray(ret);
         return ret;
+    }
+
+    public void addSelection(String currentStep) {
+        selections.add(currentStep);
     }
 }

@@ -100,6 +100,12 @@ public class BaseTestClass {
     protected FormplayerInstallerFactory formplayerInstallerFactory;
 
     @Autowired
+    protected MenuSessionFactory menuSessionFactory;
+
+    @Autowired
+    protected MenuSessionRunnerService menuSessionRunnerService;
+
+    @Autowired
     protected QueryRequester queryRequester;
 
     @Autowired
@@ -141,6 +147,8 @@ public class BaseTestClass {
         Mockito.reset(queryRequester);
         Mockito.reset(syncRequester);
         Mockito.reset(ravenMock);
+        Mockito.reset(menuSessionFactory);
+        Mockito.reset(menuSessionRunnerService);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
@@ -343,6 +351,18 @@ public class BaseTestClass {
                 RequestType.POST,
                 Constants.URL_EVALUATE_XPATH,
                 evaluateXPathRequestBean,
+                EvaluateXPathResponseBean.class
+        );
+    }
+
+    EvaluateXPathResponseBean evaluateMenuXPath(String requestPath) throws Exception {
+        EvaluateXPathMenuRequestBean sessionNavigationBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), EvaluateXPathMenuRequestBean.class);
+        return generateMockQuery(
+                ControllerType.DEBUGGER,
+                RequestType.POST,
+                Constants.URL_EVALUATE_MENU_XPATH,
+                sessionNavigationBean,
                 EvaluateXPathResponseBean.class
         );
     }
