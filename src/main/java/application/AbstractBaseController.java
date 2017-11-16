@@ -1,7 +1,10 @@
 package application;
 
 import aspects.LockAspect;
+import beans.InstallRequestBean;
 import beans.NewFormResponse;
+import beans.NotificationMessage;
+import beans.SessionNavigationBean;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
@@ -31,6 +34,7 @@ import org.javarosa.xpath.XPathTypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -40,16 +44,18 @@ import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import repo.impl.PostgresUserRepo;
 import screens.FormplayerQueryScreen;
-import services.FormplayerStorageFactory;
-import services.InstallService;
-import services.NewFormResponseFactory;
-import services.RestoreFactory;
+import screens.FormplayerSyncScreen;
+import services.*;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 import util.FormplayerHttpRequest;
 import util.FormplayerSentry;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.Vector;
 
 /**
@@ -60,6 +66,12 @@ public abstract class AbstractBaseController {
 
     @Value("${commcarehq.host}")
     protected String host;
+
+    @Autowired
+    private QueryRequester queryRequester;
+
+    @Autowired
+    private SyncRequester syncRequester;
 
     @Autowired
     protected FormSessionRepo formSessionRepo;
@@ -415,4 +427,201 @@ public abstract class AbstractBaseController {
                 "request:" + req.getRequestURI()
         );
     }
+
+    protected BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
+                                                            String[] selections) throws Exception {
+        return advanceSessionWithSelections(menuSession, selections, null, null, 0, null, 0);
+    }
+
+    /**
+     * Advances the session based on the selections.
+     *
+     * @param menuSession
+     * @param selections      - Selections are either an integer index into a list of modules
+     *                        or a case id indicating the case selected for a case detail.
+     *                        <p>
+     *                        An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
+     *                        <p>
+     *                        This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
+     * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
+     *                        it is used to short circuit the normal TreeReference calculation by inserting a predicate that
+     *                        is [@case_id = <detailSelection>].
+     * @param queryDictionary
+     * @param offset
+     * @param searchText
+     */
+    protected BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
+                                                          String[] selections,
+                                                          String detailSelection,
+                                                          Hashtable<String, String> queryDictionary,
+                                                          int offset,
+                                                          String searchText,
+                                                          int sortIndex) throws Exception {
+        BaseResponseBean nextMenu;
+        // If we have no selections, we're are the root screen.
+        if (selections == null) {
+            nextMenu = getNextMenu(
+                    menuSession,
+                    offset,
+                    searchText,
+                    sortIndex
+            );
+            return nextMenu;
+        }
+
+        String[] overrideSelections = null;
+        NotificationMessage notificationMessage = new NotificationMessage();
+        for (int i = 1; i <= selections.length; i++) {
+            String selection = selections[i - 1];
+            boolean gotNextScreen = menuSession.handleInput(selection);
+            if (!gotNextScreen) {
+                notificationMessage = new NotificationMessage(
+                        "Overflowed selections with selection " + selection + " at index " + i, (true));
+                break;
+            }
+            Screen nextScreen = menuSession.getNextScreen();
+
+            if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
+                notificationMessage = doQuery(
+                        (FormplayerQueryScreen) nextScreen,
+                        menuSession,
+                        queryDictionary
+                );
+                overrideSelections = trimCaseClaimSelections(selections);
+            }
+            if (nextScreen instanceof FormplayerSyncScreen) {
+                BaseResponseBean syncResponse = doSyncGetNext(
+                        (FormplayerSyncScreen) nextScreen,
+                        menuSession);
+                if (syncResponse != null) {
+                    syncResponse.setSelections(overrideSelections);
+                    return syncResponse;
+                }
+            }
+        }
+        nextMenu = getNextMenu(
+                menuSession,
+                detailSelection,
+                offset,
+                searchText,
+                sortIndex
+        );
+        if (nextMenu != null) {
+            nextMenu.setNotification(notificationMessage);
+            nextMenu.setSelections(overrideSelections);
+            log.info("Returning menu: " + nextMenu);
+            return nextMenu;
+        } else {
+            BaseResponseBean responseBean = resolveFormGetNext(menuSession);
+            if (responseBean == null) {
+                responseBean = new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
+            }
+            responseBean.setSelections(overrideSelections);
+            return responseBean;
+        }
+    }
+
+    /**
+     * Perform the sync and update the notification and screen accordingly.
+     * After a sync, we can either pop another menu/form to begin
+     * or just return to the app menu.
+     */
+    private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
+                                           MenuSession menuSession) throws Exception {
+        NotificationMessage notificationMessage = doSync(nextScreen);
+
+        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
+        if (postSyncResponse != null) {
+            // If not null, we have a form or menu to redirect to
+            postSyncResponse.setNotification(notificationMessage);
+            return postSyncResponse;
+        } else {
+            // Otherwise, return use to the app root
+            postSyncResponse = new BaseResponseBean(null, "Redirecting after sync", false, true);
+            postSyncResponse.setNotification(notificationMessage);
+            return postSyncResponse;
+        }
+    }
+
+    private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
+        ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
+                screen.getBuiltQuery(),
+                restoreFactory.getUserHeaders());
+        if (responseEntity == null) {
+            return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
+        }
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            restoreFactory.performTimedSync();
+            return new NotificationMessage("Case claim successful.", false);
+        } else {
+            return new NotificationMessage(
+                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true);
+        }
+    }
+
+    private String[] trimCaseClaimSelections(String[] selections) {
+        String actionSelections = selections[selections.length - 2];
+        if (!actionSelections.contains("action")) {
+            log.error(String.format("Selections %s did not contain expected action at position %s.",
+                    Arrays.toString(selections),
+                    selections[selections.length - 2]));
+            return selections;
+        }
+        String[] newSelections = new String[selections.length - 1];
+        System.arraycopy(selections, 0, newSelections, 0, selections.length - 2);
+        newSelections[selections.length - 2] = selections[selections.length - 1];
+        return newSelections;
+    }
+
+    /**
+     * If we've encountered a QueryScreen and have a QueryDictionary, do the query
+     * and update the session, screen, and notification message accordingly.
+     * <p>
+     * Will do nothing if this wasn't a query screen.
+     */
+    private NotificationMessage doQuery(FormplayerQueryScreen screen,
+                                        MenuSession menuSession,
+                                        Hashtable<String, String> queryDictionary) throws CommCareSessionException {
+        log.info("Formplayer doing query with dictionary " + queryDictionary);
+        NotificationMessage notificationMessage = null;
+        screen.answerPrompts(queryDictionary);
+        String responseString = queryRequester.makeQueryRequest(screen.getUriString(), restoreFactory.getUserHeaders());
+        boolean success = screen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
+        if (success) {
+            if (screen.getCurrentMessage() != null) {
+                notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false);
+            }
+        } else {
+            notificationMessage = new NotificationMessage("Query failed with message " + screen.getCurrentMessage(), true);
+        }
+        Screen nextScreen = menuSession.getNextScreen();
+        log.info("Next screen after query: " + nextScreen);
+        return notificationMessage;
+    }
+
+    protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
+        return performInstall(sessionNavigationBean);
+    }
+
+    protected MenuSession performInstall(InstallRequestBean bean) throws Exception {
+        if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
+                bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
+            throw new RuntimeException("Either app_id or installReference must be non-null.");
+        }
+
+        return new MenuSession(
+                bean.getUsername(),
+                bean.getDomain(),
+                bean.getAppId(),
+                bean.getInstallReference(),
+                bean.getLocale(),
+                installService,
+                restoreFactory,
+                host,
+                bean.getOneQuestionPerScreen(),
+                bean.getRestoreAs(),
+                bean.getPreview()
+        );
+    }
+
 }
