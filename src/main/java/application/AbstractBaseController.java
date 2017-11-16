@@ -118,7 +118,7 @@ public abstract class AbstractBaseController {
             menuSession.getSessionWrapper().clearVolatiles();
             MenuSession newMenuSession = menuSession.rebuildSessionFromFrame(menuSession.getSessionWrapper().getFrame(), installService, restoreFactory, host);
             BaseResponseBean response = getNextMenu(newMenuSession);
-            response.setSelections(menuSession.getSteps());
+            response.setSelections(menuSession.getSelections());
             return response;
         }
         return null;

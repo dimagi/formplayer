@@ -70,7 +70,7 @@ public class MenuSession {
     private boolean oneQuestionPerScreen;
     private boolean preview;
     ArrayList<String> titles;
-    private ArrayList<String> steps = new ArrayList<>();
+    private ArrayList<String> selections = new ArrayList<>();
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
@@ -138,7 +138,7 @@ public class MenuSession {
             } else if (step.getElementType().equals(SessionFrame.STATE_DATUM_VAL)) {
                 currentStep = step.getValue();
             }
-            this.steps.add(currentStep);
+            this.selections.add(currentStep);
             menuSession.handleInput(currentStep);
         }
         System.out.println("Screen : " + screen);
@@ -387,9 +387,9 @@ public class MenuSession {
         this.preview = preview;
     }
 
-    public String[] getSteps() {
-        String[] ret = new String[steps.size()];
-        steps.toArray(ret);
+    public String[] getSelections() {
+        String[] ret = new String[selections.size()];
+        selections.toArray(ret);
         return ret;
     }
 }
