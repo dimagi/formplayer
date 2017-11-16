@@ -1,8 +1,5 @@
 package beans;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-
 /**
  * Created by benrudolph on 2/4/16.
  *
