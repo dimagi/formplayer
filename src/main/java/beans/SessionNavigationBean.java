@@ -17,7 +17,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     private String searchText;
     private String menuSessionId;
     private Hashtable<String, String> queryDictionary;
-    private String previewCommand;
     private boolean isPersistent;
     private int sortIndex;
 
@@ -32,7 +31,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     @Override
     public String toString() {
         return "SessionNavigationBean [id= " + menuSessionId +
-                ", preview=" + previewCommand +
                 ", selections=" + Arrays.toString(selections) +
                 ", parent="  + super.toString() +
                 ", queryDict" + queryDictionary + "]";
@@ -69,14 +67,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "query_dictionary")
     public void setQueryDictionary(Hashtable<String, String> queryDictionary) {
         this.queryDictionary = queryDictionary;
-    }
-
-    public String getPreviewCommand() {
-        return previewCommand;
-    }
-
-    public void setPreviewCommand(String previewCommand) {
-        this.previewCommand = previewCommand;
     }
 
     public boolean getIsPersistent() {
