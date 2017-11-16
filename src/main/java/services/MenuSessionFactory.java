@@ -1,5 +1,7 @@
 package services;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.StackFrameStep;
@@ -31,6 +33,8 @@ public class MenuSessionFactory {
     @Value("${commcarehq.host}")
     private String host;
 
+    private static final Log log = LogFactory.getLog(MenuSessionFactory.class);
+
     public MenuSession rebuildSessionFromFrame(SessionFrame frame,
                                                String username,
                                                String domain,
@@ -49,20 +53,28 @@ public class MenuSessionFactory {
         Vector<StackFrameStep> steps = frame.getSteps();
         for (StackFrameStep step: steps) {
             String currentStep = null;
-            if (step.getElementType().equals(SessionFrame.STATE_COMMAND_ID)) {
-                String stepId = step.getId();
-                MenuScreen menuScreen = (MenuScreen)screen;
-                for (int i = 0; i < menuScreen.getMenuDisplayables().length; i++) {
-                    MenuDisplayable menuDisplayable = menuScreen.getMenuDisplayables()[i];
-                    if (menuDisplayable.getCommandID().equals(stepId)) {
-                        currentStep = String.valueOf(i);
+            switch (step.getElementType()) {
+                case SessionFrame.STATE_COMMAND_ID:
+                    String stepId = step.getId();
+                    MenuScreen menuScreen = (MenuScreen) screen;
+                    for (int i = 0; i < menuScreen.getMenuDisplayables().length; i++) {
+                        MenuDisplayable menuDisplayable = menuScreen.getMenuDisplayables()[i];
+                        if (menuDisplayable.getCommandID().equals(stepId)) {
+                            currentStep = String.valueOf(i);
+                        }
                     }
-                }
-            } else if (step.getElementType().equals(SessionFrame.STATE_DATUM_VAL)) {
-                currentStep = step.getValue();
+                    break;
+                case SessionFrame.STATE_DATUM_VAL:
+                    currentStep = step.getValue();
+                    break;
+                default:
+                    log.info(String.format("Could not get command for step %s on screen %s", step, screen));
+                    break;
             }
-            menuSession.addSelection(currentStep);
-            menuSession.handleInput(currentStep);
+            if (currentStep != null) {
+                menuSession.addSelection(currentStep);
+                menuSession.handleInput(currentStep);
+            }
         }
         return menuSession;
     }
