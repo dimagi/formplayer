@@ -49,14 +49,14 @@ public class Enikshay2bTests extends BaseTestClass {
         String jsonString = new JSONObject(commandsRaw).toString();
         CommandListResponseBean commandResponse = mapper.readValue(jsonString, CommandListResponseBean.class);
         EntityListResponse sortedEntityResponse = sessionNavigateWithId(new String[] {"10"},
-                commandResponse.getMenuSessionId(),
+                "derp",
                 4,
                 EntityListResponse.class);
         EntityListResponse entityResponse = sessionNavigateWithId(new String[] {"10"},
-                commandResponse.getMenuSessionId(),
+                "derp",
                 EntityListResponse.class);
         NewFormResponse newFormResponse2 = sessionNavigateWithId(new String[] {"10", "4edc7248-bfef-4f47-95e0-6b1704981a3f"},
-                commandResponse.getMenuSessionId(),
+                "derp",
                 NewFormResponse.class);
     }
 

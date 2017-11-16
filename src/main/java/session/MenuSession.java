@@ -62,7 +62,6 @@ public class MenuSession {
     private final String domain;
 
     private String locale;
-    private Screen screen;
     private String uuid;
     private String asUser;
 
@@ -88,7 +87,6 @@ public class MenuSession {
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
-        this.screen = getNextScreen();
         this.appId = session.getAppId();
         this.titles = new ArrayList<>();
         titles.add(SessionUtils.getAppTitle());
@@ -111,7 +109,6 @@ public class MenuSession {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
-        this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.titles = new ArrayList<>();
@@ -186,6 +183,7 @@ public class MenuSession {
      * @return Whether or not we were able to evaluate to a new screen.
      */
     public boolean handleInput(String input) throws CommCareSessionException {
+        Screen screen = getNextScreen();
         log.info("Screen " + screen + " handling input " + input);
         if(screen == null) {
             return false;
@@ -357,10 +355,6 @@ public class MenuSession {
 
     public String getLocale() {
         return locale;
-    }
-
-    public void updateScreen() throws CommCareSessionException {
-        this.screen = getNextScreen();
     }
 
     public String getAsUser() {
