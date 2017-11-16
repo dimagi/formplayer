@@ -306,17 +306,6 @@ public abstract class AbstractBaseController {
         return response;
     }
 
-    protected MenuSession getMenuSession(String menuSessionId) throws Exception {
-        MenuSession menuSession = new MenuSession(
-                menuSessionRepo.findOneWrapped(menuSessionId),
-                installService,
-                restoreFactory,
-                host
-        );
-        menuSession.getSessionWrapper().syncState();
-        return menuSession;
-    }
-
     /**
      * Catch all the exceptions that we *do not* want emailed here
      */
