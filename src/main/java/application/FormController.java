@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
 import services.CategoryTimingHelper;
+import services.MenuSessionRunnerService;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
@@ -62,7 +63,6 @@ public class FormController extends AbstractBaseController{
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
-
 
     @Value("${commcarehq.host}")
     private String host;
@@ -183,8 +183,8 @@ public class FormController extends AbstractBaseController{
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
-        MenuSession menuSession = new MenuSession(serializedSession, installService, restoreFactory, host);
-        return resolveFormGetNext(menuSession);
+        MenuSession menuSession = menuSessionFactory.buildSession(serializedSession);
+        return runnerService.resolveFormGetNext(menuSession);
     }
 
     /**

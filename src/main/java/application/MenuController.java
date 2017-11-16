@@ -71,7 +71,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        return getNextMenu(performInstall(installRequestBean));
+        return runnerService.getNextMenu(performInstall(installRequestBean));
     }
 
     @ApiOperation(value = "Update the application at the given reference")
@@ -97,7 +97,7 @@ public class MenuController extends AbstractBaseController {
                         + " failed to load with exception " + e);
             }
         }
-        return getNextMenu(updatedSession);
+        return runnerService.getNextMenu(updatedSession);
     }
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
@@ -108,7 +108,7 @@ public class MenuController extends AbstractBaseController {
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
         if (sessionNavigationBean.getIsPersistent()) {
-            advanceSessionWithSelections(menuSession,
+            runnerService.advanceSessionWithSelections(menuSession,
                     sessionNavigationBean.getSelections(),
                     null,
                     sessionNavigationBean.getQueryDictionary(),
@@ -118,7 +118,7 @@ public class MenuController extends AbstractBaseController {
             );
 
             // See if we have a persistent case tile to expand
-            EntityDetailListResponse detail = getInlineDetail(menuSession);
+            EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession);
             if (detail == null) {
                 throw new RuntimeException("Could not get inline details");
             }
@@ -130,7 +130,7 @@ public class MenuController extends AbstractBaseController {
         String detailSelection = selections[selections.length - 1];
         System.arraycopy(selections, 0, commitSelections, 0, selections.length - 1);
 
-        advanceSessionWithSelections(
+        runnerService.advanceSessionWithSelections(
                 menuSession,
                 commitSelections,
                 detailSelection,
@@ -143,7 +143,7 @@ public class MenuController extends AbstractBaseController {
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
-            EntityDetailResponse detail = getPersistentDetail(menuSession);
+            EntityDetailResponse detail = runnerService.getPersistentDetail(menuSession);
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
@@ -180,7 +180,7 @@ public class MenuController extends AbstractBaseController {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
         menuSession = getMenuSessionFromBean(sessionNavigationBean);
-        BaseResponseBean response = advanceSessionWithSelections(
+        BaseResponseBean response = runnerService.advanceSessionWithSelections(
                 menuSession,
                 selections,
                 null,

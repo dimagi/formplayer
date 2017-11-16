@@ -22,20 +22,12 @@ public class MenuDebuggerTests extends BaseTestClass{
 
     @Test
     public void testMenuDebugger() throws Exception {
-        // Navigate to case list
-        EntityListResponse entityListResponse = sessionNavigate(
-                "requests/navigators/pagination_navigator.json",
-                EntityListResponse.class
-        );
-
         // Menu session should be saved so let's run some menu xpath queries against it
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateMenuXPath(
-                "derp",
-                "count(instance('casedb')/casedb/case)"
+               "requests/evaluate_xpath/evaluate_xpath_menu.json"
         );
         Assert.assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXPathResponseBean.getStatus());
         // Hack to not have to parse the XML returned
         Assert.assertTrue(evaluateXPathResponseBean.getOutput().contains("15"));
     }
-
 }

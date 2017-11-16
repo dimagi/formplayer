@@ -343,4 +343,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
         return new FormplayerFormSendCalloutHandler();
     }
+
+    @Bean
+    public MenuSessionRunnerService menuSessionRunnerService() {return new MenuSessionRunnerService();}
+
+    @Bean
+    public MenuSessionFactory menuSessionFactory() {return new MenuSessionFactory();}
 }
