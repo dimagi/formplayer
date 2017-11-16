@@ -193,14 +193,7 @@ public class MenuController extends AbstractBaseController {
     }
 
     private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
-        MenuSession menuSession = null;
-        // If we have a preview command, load that up
-        if (sessionNavigationBean.getPreviewCommand() != null) {
-            menuSession = handlePreviewCommand(sessionNavigationBean, authToken);
-        } else {
-            menuSession = performInstall(sessionNavigationBean);
-        }
-        return menuSession;
+        return performInstall(sessionNavigationBean);
     }
 
     /**
@@ -294,28 +287,6 @@ public class MenuController extends AbstractBaseController {
         }
     }
 
-    private MenuSession handlePreviewCommand(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
-        MenuSession menuSession;
-        // When previewing, clear and reinstall DBs to get newest version
-        // Big TODO: app updates
-        new ApplicationDB(
-                sessionNavigationBean.getDomain(),
-                sessionNavigationBean.getUsername(),
-                sessionNavigationBean.getRestoreAs(),
-                sessionNavigationBean.getAppId()
-        ).deleteDatabaseFolder();
-        menuSession = performInstall(sessionNavigationBean);
-        try {
-            menuSession.getSessionWrapper().setCommand(sessionNavigationBean.getPreviewCommand());
-            menuSession.updateScreen();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new RuntimeException("Couldn't get entries from preview command "
-                    + sessionNavigationBean.getPreviewCommand() + ". If this error persists" +
-                    " please report a bug to the CommCareHQ Team.");
-        }
-        return menuSession;
-    }
-
     /**
      * If we've encountered a QueryScreen and have a QueryDictionary, do the query
      * and update the session, screen, and notification message accordingly.
@@ -337,7 +308,6 @@ public class MenuController extends AbstractBaseController {
         } else {
             notificationMessage = new NotificationMessage("Query failed with message " + screen.getCurrentMessage(), true);
         }
-        menuSession.updateScreen();
         Screen nextScreen = menuSession.getNextScreen();
         log.info("Next screen after query: " + nextScreen);
         return notificationMessage;

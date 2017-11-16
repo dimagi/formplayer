@@ -30,7 +30,7 @@ public class MenuDebuggerTests extends BaseTestClass{
 
         // Menu session should be saved so let's run some menu xpath queries against it
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateMenuXPath(
-                entityListResponse.getMenuSessionId(),
+                "derp",
                 "count(instance('casedb')/casedb/case)"
         );
         Assert.assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXPathResponseBean.getStatus());
