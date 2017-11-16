@@ -106,7 +106,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
+        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
         if (sessionNavigationBean.getIsPersistent()) {
             advanceSessionWithSelections(menuSession,
                     sessionNavigationBean.getSelections(),
@@ -179,7 +179,7 @@ public class MenuController extends AbstractBaseController {
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
-        menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
+        menuSession = getMenuSessionFromBean(sessionNavigationBean);
         BaseResponseBean response = advanceSessionWithSelections(
                 menuSession,
                 selections,
@@ -192,7 +192,7 @@ public class MenuController extends AbstractBaseController {
         return response;
     }
 
-    private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
+    private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
         return performInstall(sessionNavigationBean);
     }
 
