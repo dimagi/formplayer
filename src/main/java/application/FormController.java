@@ -5,8 +5,6 @@ import annotations.UserRestore;
 import api.json.JsonActionUtils;
 import api.process.FormRecordProcessorHelper;
 import api.util.ApiConstants;
-import auth.DjangoAuth;
-import auth.HqAuth;
 import beans.*;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -160,12 +158,12 @@ public class FormController extends AbstractBaseController{
                 submitResponseBean.setStatus("error");
                 submitResponseBean.setNotification(new NotificationMessage(
                         "Form submission failed with error response" + submitResponse, true));
-                log.info("Submit response bean: " + submitResponseBean);
+                log.error("Submit response bean: " + submitResponseBean);
                 return submitResponseBean;
             }
 
             deleteSession(submitRequestBean.getSessionId());
-            
+
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
                 Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
