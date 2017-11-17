@@ -164,6 +164,8 @@ public class FormController extends AbstractBaseController{
                 return submitResponseBean;
             }
 
+            deleteSession(submitRequestBean.getSessionId());
+            
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
                 Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
@@ -171,7 +173,6 @@ public class FormController extends AbstractBaseController{
                     submitResponseBean.setNextScreen(nav);
                 }
             }
-            deleteSession(submitRequestBean.getSessionId());
         }
         return submitResponseBean;
     }
