@@ -20,21 +20,16 @@ public class SubmitService extends DefaultResponseErrorHandler {
     RestoreFactory restoreFactory;
 
     public ResponseEntity<String> submitForm(String formXml, String submitUrl) {
-        restoreFactory.setAutoCommit(false);
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(this);
         HttpEntity<?> entity = new HttpEntity<Object>(formXml, restoreFactory.getUserHeaders());
-        ResponseEntity<String> response = restTemplate.exchange(submitUrl,
+        return restTemplate.exchange(submitUrl,
                 HttpMethod.POST,
                 entity, String.class);
-        restoreFactory.commit();
-        restoreFactory.setAutoCommit(true);
-        return response;
     }
 
     @Override
     public void handleError(ClientHttpResponse response) throws IOException {
         restoreFactory.rollback();
-        restoreFactory.setAutoCommit(true);
     }
 }
