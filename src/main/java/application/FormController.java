@@ -128,41 +128,51 @@ public class FormController extends AbstractBaseController{
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
             try {
+                restoreFactory.setAutoCommit(false);
+
                 SimpleTimer purgeCasesTimer = FormRecordProcessorHelper.processXML(
                         new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox(),
                                 PropertyUtils.isBulkPerformanceEnabled()),
                         formEntrySession.submitGetXml()
                 ).getPurgeCasesTimer();
+
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
                                 "Puring cases took some time" : "Probably didn't have to purge cases");
-            } catch(InvalidStructureException e) {
+
+                CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(
+                        Constants.TimingCategories.SUBMIT_FORM_TO_HQ
+                );
+
+                timer.start();
+                ResponseEntity<String> submitResponse = submitService.submitForm(
+                        formEntrySession.getInstanceXml(),
+                        formEntrySession.getPostUrl()
+                );
+                timer.end().record();
+
+                if (!submitResponse.getStatusCode().is2xxSuccessful()) {
+                    restoreFactory.rollback();
+                    submitResponseBean.setStatus("error");
+                    submitResponseBean.setNotification(new NotificationMessage(
+                            "Form submission failed with error response" + submitResponse, true));
+                    log.error("Submit response bean: " + submitResponseBean);
+                    return submitResponseBean;
+                }
+                // Only delete session immediately after successful submit
+                deleteSession(submitRequestBean.getSessionId());
+
+            }
+            catch (InvalidStructureException e) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 submitResponseBean.setNotification(new NotificationMessage(e.getMessage(), true));
                 log.error("Submission failed with structure exception " + e);
                 return submitResponseBean;
             }
-            ResponseEntity<String> submitResponse;
-            CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ);
-            timer.start();
-            try {
-                 submitResponse = submitService.submitForm(
-                        formEntrySession.getInstanceXml(),
-                        formEntrySession.getPostUrl()
-                );
-            } finally {
-                timer.end().record();
+            finally {
+                // Make sure we reset this to auto-commit mode
+                restoreFactory.setAutoCommit(true);
             }
-
-            if (!submitResponse.getStatusCode().is2xxSuccessful()) {
-                submitResponseBean.setStatus("error");
-                submitResponseBean.setNotification(new NotificationMessage(
-                        "Form submission failed with error response" + submitResponse, true));
-                log.error("Submit response bean: " + submitResponseBean);
-                return submitResponseBean;
-            }
-
-            deleteSession(submitRequestBean.getSessionId());
 
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
