@@ -338,6 +338,7 @@ public class BaseTestClass {
         evaluateXPathRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
+        evaluateXPathRequestBean.setDebugOutputLevel(Constants.BASIC_NO_TRACE);
         return generateMockQuery(
                 ControllerType.DEBUGGER,
                 RequestType.POST,
