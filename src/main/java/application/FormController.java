@@ -161,9 +161,11 @@ public class FormController extends AbstractBaseController{
                 }
                 // Only delete session immediately after successful submit
                 deleteSession(submitRequestBean.getSessionId());
+                restoreFactory.commit();
 
             }
             catch (InvalidStructureException e) {
+                restoreFactory.rollback();
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 submitResponseBean.setNotification(new NotificationMessage(e.getMessage(), true));
                 log.error("Submission failed with structure exception " + e);

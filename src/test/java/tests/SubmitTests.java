@@ -7,6 +7,7 @@ import beans.SubmitResponseBean;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
 import org.commcare.cases.model.Case;
+import org.javarosa.xml.util.InvalidStructureException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
