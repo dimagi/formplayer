@@ -1,0 +1,58 @@
+
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    <h:head>
+        <h:title>Survey</h:title>
+        <model>
+            <instance>
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/88B1C59A-0ED9-4B40-90D5-E7DF3235F102" uiVersion="1" version="113" name="Survey">
+                    <question1>
+                        <number/>
+                        <number_2/>
+                        <number_3/>
+                    </question1>
+                    <orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/><cc:location/></orx:meta></data>
+            </instance><instance id="commcaresession" src="jr://instance/session"/>
+            <bind nodeset="/data/question1"/>
+            <bind nodeset="/data/question1/number" type="xsd:int"/>
+            <bind nodeset="/data/question1/number_2" type="xsd:int" relevant="/data/question1/number = '1'"/>
+            <bind nodeset="/data/question1/number_3" type="xsd:string" relevant="/data/question1/number_2 = '2'"/>
+            <itext>
+                <translation lang="en" default="">
+                    <text id="question1/number-label">
+                        <value>Number</value>
+                    </text>
+                    <text id="question1/number_2-label">
+                        <value>Number 2</value>
+                    </text>
+                    <text id="question1/number_3-label">
+                        <value>Number 3</value>
+                    </text>
+                </translation>
+                <translation lang="hin">
+                    <text id="question1/number-label">
+                        <value>Number</value>
+                    </text>
+                    <text id="question1/number_2-label">
+                        <value>Number 2</value>
+                    </text>
+                    <text id="question1/number_3-label">
+                        <value>Number 3</value>
+                    </text>
+                </translation>
+            </itext>
+            <setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/><orx:pollsensor event="xforms-ready" ref="/data/meta/location"/><bind nodeset="/data/meta/location" type="geopoint"/></model>
+    </h:head>
+    <h:body>
+        <group ref="/data/question1" appearance="field-list">
+            <input ref="/data/question1/number">
+                <label ref="jr:itext('question1/number-label')"/>
+            </input>
+            <input ref="/data/question1/number_2">
+                <label ref="jr:itext('question1/number_2-label')"/>
+            </input>
+            <input ref="/data/question1/number_3">
+                <label ref="jr:itext('question1/number_3-label')"/>
+            </input>
+        </group>
+    </h:body>
+</h:html>
