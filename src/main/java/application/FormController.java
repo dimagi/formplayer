@@ -152,7 +152,6 @@ public class FormController extends AbstractBaseController{
                 timer.end().record();
 
                 if (!submitResponse.getStatusCode().is2xxSuccessful()) {
-                    restoreFactory.rollback();
                     submitResponseBean.setStatus("error");
                     submitResponseBean.setNotification(new NotificationMessage(
                             "Form submission failed with error response" + submitResponse, true));
@@ -165,15 +164,17 @@ public class FormController extends AbstractBaseController{
 
             }
             catch (InvalidStructureException e) {
-                restoreFactory.rollback();
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 submitResponseBean.setNotification(new NotificationMessage(e.getMessage(), true));
                 log.error("Submission failed with structure exception " + e);
                 return submitResponseBean;
             }
             finally {
-                // Make sure we reset this to auto-commit mode
-                restoreFactory.setAutoCommit(true);
+                // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
+                if (!restoreFactory.getAutoCommit()) {
+                    // rollback sets autoCommit back to `true`
+                    restoreFactory.rollback();
+                }
             }
 
             if (formEntrySession.getMenuSessionId() != null &&

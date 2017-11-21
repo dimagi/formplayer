@@ -182,6 +182,14 @@ public class RestoreFactory {
         }
     }
 
+    public boolean getAutoCommit() {
+        try {
+            return sqLiteDB.getConnection().getAutoCommit();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void commit() {
         try {
             sqLiteDB.getConnection().commit();
