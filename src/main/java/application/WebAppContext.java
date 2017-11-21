@@ -189,9 +189,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public RedisLockRegistry userLockRegistry() {
-        JedisConnectionFactory jedisConnectionFactory = jedisConnFactory();
-        return new RedisLockRegistry(jedisConnectionFactory, "formplayer-user", Constants.LOCK_DURATION);
+    public FormplayerLockRegistry userLockRegistry() {
+        return new FormplayerLockRegistry();
     }
 
     @Bean

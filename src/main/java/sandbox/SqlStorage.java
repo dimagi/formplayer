@@ -14,7 +14,6 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
 import org.javarosa.core.util.externalizable.DeserializationException;
-import org.sqlite.SQLiteException;
 import services.ConnectionHandler;
 import org.javarosa.core.model.condition.Abandonable;
 
@@ -34,7 +33,7 @@ import java.util.*;
  *
  * @author wspride
  */
-public class SqliteIndexedStorageUtility<T extends Persistable>
+public class SqlStorage<T extends Persistable>
         implements IStorageUtilityIndexed<T>, Iterable<T> {
 
     private Class<T> prototype;
@@ -42,16 +41,16 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
 
     private ConnectionHandler connectionHandler;
 
-    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, T prototype, String tableName) {
+    public SqlStorage(ConnectionHandler connectionHandler, T prototype, String tableName) {
         this(connectionHandler, (Class<T>) prototype.getClass(), tableName);
     }
 
-    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, Class<T> prototype, String tableName) {
+    public SqlStorage(ConnectionHandler connectionHandler, Class<T> prototype, String tableName) {
         this(connectionHandler, prototype, tableName, true);
     }
 
-    public SqliteIndexedStorageUtility(ConnectionHandler connectionHandler, Class<T> prototype,
-                                       String tableName, boolean initialize) {
+    public SqlStorage(ConnectionHandler connectionHandler, Class<T> prototype,
+                      String tableName, boolean initialize) {
         this.tableName = tableName;
         this.prototype = prototype;
         this.connectionHandler = connectionHandler;
@@ -306,61 +305,48 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         return -1;
     }
     @Override
-    public AbstractSqlIterator<T> iterate() {
+    public JdbcSqlStorageIterator<T> iterate() {
         return iterate(true);
     }
 
     @Override
-    public AbstractSqlIterator<T> iterate(boolean includeData) {
-        Connection connection;
-        ResultSet resultSet = null;
-        PreparedStatement preparedStatement = null;
+    public JdbcSqlStorageIterator<T> iterate(boolean includeData) {
+        return iterate(includeData, new String[]{});
+    }
+
+    public JdbcSqlStorageIterator<T> iterate(boolean includeData, String[] metaDataToInclude) {
         try {
-            connection = this.getConnection();
-            String sqlQuery;
-            if (includeData) {
-                sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL + " , " +
-                    org.commcare.modern.database.DatabaseHelper.DATA_COL + " FROM " + this.tableName + ";";
-            } else {
-                sqlQuery = "SELECT " + org.commcare.modern.database.DatabaseHelper.ID_COL +" FROM " + this.tableName + ";";
-            }
-            preparedStatement = connection.prepareStatement(sqlQuery);
-            resultSet = preparedStatement.executeQuery();
-
-            ArrayList<T> backingList = new ArrayList<>();
-            ArrayList<Integer> idSet = new ArrayList<>();
-            while (resultSet.next()) {
-                if (includeData) {
-                    T t = newObject(resultSet.getBytes(DatabaseHelper.DATA_COL), resultSet.getInt(DatabaseHelper.ID_COL));
-                    backingList.add(t);
-                } else {
-                    idSet.add(resultSet.getInt(DatabaseHelper.ID_COL));
-                }
-            }
-            if (includeData) {
-                return new JdbcSqlStorageIterator<>(backingList);
-            } else {
-                return new JdbcSqlIndexIterator(idSet);
-            }
-
+            String[] projection = getProjectedFieldsWithId(includeData, scrubMetadataNames(metaDataToInclude));
+            PreparedStatement preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(this.getConnection(), tableName, projection);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return new JdbcSqlStorageIterator<>(preparedStatement, resultSet, this, metaDataToInclude);
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
+    }
+
+    private String[] scrubMetadataNames(String[] metaDataNames) {
+        String[] scrubbedNames = new String[metaDataNames.length];
+
+        for(int i = 0 ; i < metaDataNames.length; ++i ){
+            scrubbedNames[i] = TableBuilder.scrubName(metaDataNames[i]);
+        }
+        return scrubbedNames;
+    }
+
+    private String[] getProjectedFieldsWithId(boolean includeData, String[] columnNamesToInclude) {
+        String[] projection = new String[columnNamesToInclude.length + (includeData ? 2 : 1)];
+        int firstIndex = 0;
+        projection[firstIndex] = DatabaseHelper.ID_COL;
+        firstIndex++;
+        if (includeData) {
+            projection[firstIndex] = DatabaseHelper.DATA_COL;
+            firstIndex++;
+        }
+        for (int i = 0; i < columnNamesToInclude.length ; ++i) {
+            projection[i + firstIndex] = columnNamesToInclude[i];
+        }
+        return projection;
     }
 
     @Override
@@ -424,42 +410,46 @@ public class SqliteIndexedStorageUtility<T extends Persistable>
         SqlHelper.deleteAllFromTable(connection, tableName);
     }
 
-    // not yet implemented
-    @Override
-    public Vector<Integer> removeAll(EntityFilter ef) {
-        Vector<Integer> removed = new Vector<>();
-        for (IStorageIterator iterator = this.iterate(); iterator.hasMore(); ) {
-            int id = iterator.nextID();
-            switch (ef.preFilter(id, null)) {
-                case EntityFilter.PREFILTER_INCLUDE:
-                    removed.add(id);
-                    continue;
-                case EntityFilter.PREFILTER_EXCLUDE:
-                    continue;
-                case EntityFilter.PREFILTER_FILTER:
-                    if (ef.matches(read(id))) {
-                        removed.add(id);
-                    }
-            }
+
+    public Vector<Integer> removeAll(Vector<Integer> toRemove) {
+        if (toRemove.size() == 0) {
+            return toRemove;
         }
 
-        if (removed.size() == 0) {
-            return removed;
-        }
-
-        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(removed);
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(toRemove);
 
         for (Pair<String, String[]> whereParams : whereParamList) {
             SqlHelper.deleteFromTableWhere(getConnection(), tableName,
                     DatabaseHelper.ID_COL + " IN " + whereParams.first, whereParams.second);
         }
 
-        return removed;
+        return toRemove;
+    }
+
+    // not yet implemented
+    @Override
+    public Vector<Integer> removeAll(EntityFilter ef) {
+        Vector<Integer> toRemove = new Vector<>();
+        for (IStorageIterator iterator = this.iterate(); iterator.hasMore(); ) {
+            int id = iterator.nextID();
+            switch (ef.preFilter(id, null)) {
+                case EntityFilter.PREFILTER_INCLUDE:
+                    toRemove.add(id);
+                    continue;
+                case EntityFilter.PREFILTER_EXCLUDE:
+                    continue;
+                case EntityFilter.PREFILTER_FILTER:
+                    if (ef.matches(read(id))) {
+                        toRemove.add(id);
+                    }
+            }
+        }
+        return removeAll(toRemove);
     }
 
     @Override
     public Iterator<T> iterator() {
-        return (Iterator<T>) iterate();
+        return iterate();
     }
 
     public void getIDsForValues(String[] namesToMatch, String[] valuesToMatch, LinkedHashSet<Integer> ids) {

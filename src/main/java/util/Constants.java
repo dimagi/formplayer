@@ -42,7 +42,7 @@ public class Constants {
 
     // Change this version when a backwards incompatible change is made to the
     // mobile sqlite dbs.
-    public static final String SQLITE_DB_VERSION = "V1";
+    public static final String SQLITE_DB_VERSION = "V2";
 
     //Menus
     public static final String MENU_MODULE = "modules";
@@ -52,6 +52,12 @@ public class Constants {
     public static final String ANSWER_RESPONSE_STATUS_POSITIVE = "accepted";
     public static final String ANSWER_RESPONSE_STATUS_NEGATIVE = "validation-error";
     public static final String SYNC_RESPONSE_STATUS_POSITIVE = "success";
+
+    //Debug output request types
+    public static final String BASIC_NO_TRACE = "basic";
+    public static final String TRACE_REDUCE = "reduce";
+    public static final String TRACE_FULL = "deep";
+
 
     // Error return types
     public static final String ERROR_TYPE_TEXT = "text";
