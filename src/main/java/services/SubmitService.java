@@ -1,5 +1,7 @@
 package services;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -19,6 +21,8 @@ public class SubmitService extends DefaultResponseErrorHandler {
     @Autowired
     RestoreFactory restoreFactory;
 
+    private final Log log = LogFactory.getLog(SubmitService.class);
+
     public ResponseEntity<String> submitForm(String formXml, String submitUrl) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(this);
@@ -28,8 +32,10 @@ public class SubmitService extends DefaultResponseErrorHandler {
                 entity, String.class);
     }
 
+    // Overriding the default error handler allows us to perform error handling in FormController
+    // rather than at the Spring level
     @Override
     public void handleError(ClientHttpResponse response) throws IOException {
-        restoreFactory.rollback();
+        log.error("Error submitting form: " + response);
     }
 }
