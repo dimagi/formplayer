@@ -105,8 +105,6 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
 
         int removedCaseCount = -1;
         int removedLedgers = -1;
-        try {
-            sandbox.getConnection().setAutoCommit(false);
             SqlStorage<Case> storage = sandbox.getCaseStorage();
             DAG<String, int[], String> fullCaseGraph = getFullCaseGraph(storage, new FormplayerCaseIndexTable(sandbox), owners);
 
@@ -133,21 +131,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
             SqlStorage<Ledger> stockStorage = sandbox.getLedgerStorage();
             LedgerPurgeFilter stockFilter = new LedgerPurgeFilter(stockStorage, storage);
             removedLedgers = stockStorage.removeAll(stockFilter).size();
-            sandbox.getConnection().commit();
-        } catch (SQLException e) {
-            try {
-                sandbox.getConnection().rollback();
-            } catch (SQLException e1) {
-                throw new RuntimeException(e1);
-            }
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                sandbox.getConnection().setAutoCommit(true);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
+
 
         long taken = System.currentTimeMillis() - start;
 
