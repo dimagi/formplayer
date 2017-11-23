@@ -11,7 +11,6 @@ import org.springframework.util.Assert;
 import util.Constants;
 import util.FormplayerSentry;
 
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -81,7 +80,7 @@ public class FormplayerLockRegistry implements LockRegistry {
                     log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
                     Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
                     e.setStackTrace(ownerThread.getStackTrace());
-                    raven.sendRavenException(new Exception(e), Event.Level.WARNING);
+                    raven.sendSentryException(new Exception(e), Event.Level.WARNING);
                 }
             }
             return lock;
