@@ -90,6 +90,9 @@ public class RestoreFactory {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
+    CategoryTimingHelper.RecordingTimer downloadRestoreTimer
+            = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
+
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
     private boolean useLiveQuery;
     private boolean hasRestored;
@@ -349,15 +352,14 @@ public class RestoreFactory {
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
-        SimpleTimer timer = new SimpleTimer();
-        timer.start();
+        downloadRestoreTimer.start();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
                 org.springframework.core.io.Resource.class
         );
-        timer.end();
+        downloadRestoreTimer.end();
 
         // Handle Async restore
         if (response.getStatusCode().value() == 202) {
@@ -373,7 +375,7 @@ public class RestoreFactory {
         InputStream stream = null;
         try {
             stream = response.getBody().getInputStream();
-            categoryTimingHelper.recordCategoryTiming(timer, Constants.TimingCategories.DOWNLOAD_RESTORE);
+            downloadRestoreTimer.record();
         } catch (IOException e) {
             throw new RuntimeException("Unable to read restore response", e);
         }
@@ -473,5 +475,9 @@ public class RestoreFactory {
 
     public boolean getHasRestored() {
         return hasRestored;
+    }
+
+    public SimpleTimer getDownloadRestoreTimer() {
+        return downloadRestoreTimer;
     }
 }
