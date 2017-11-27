@@ -9,6 +9,9 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import services.InstallService;
+import services.RestoreFactory;
+import services.SubmitService;
 import util.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +31,15 @@ public class MetricsAspect {
 
     @Autowired
     private HttpServletRequest request;
+
+    @Autowired
+    private RestoreFactory restoreFactory;
+
+    @Autowired
+    private SubmitService submitService;
+
+    @Autowired
+    private InstallService installService;
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -61,12 +73,35 @@ public class MetricsAspect {
                 "domain:" + domain,
                 "user:" + user,
                 "request:" + requestPath,
-                "duration:" + timer.getDurationBucket()
+                "duration:" + timer.getDurationBucket(),
+                "blocked_time:" + getBlockedTime(),
+                "restore_blocked_time:" + getRestoreBlockedTime(),
+                "install_blocked_time:" + getInstallBlockedTime(),
+                "submit_blocked_time:" + getSubmitBlockedTime()
         );
         if (timer.durationInMs() >= 60 * 1000) {
             sendTimingWarningToSentry(timer);
         }
         return result;
+    }
+
+    private String getBlockedTime() {
+        long blockedDuration = restoreFactory.getDownloadRestoreTimer().durationInMs() +
+                installService.getInstallTimer().durationInMs() +
+                submitService.getSubmitTimer().durationInMs();
+        return "blocked_total:" + blockedDuration;
+    }
+
+    private String getRestoreBlockedTime() {
+        return "restore_blocked:" + restoreFactory.getDownloadRestoreTimer().durationInMs();
+    }
+
+    private String getInstallBlockedTime() {
+        return "install_blocked" + installService.getInstallTimer().durationInMs();
+    }
+
+    private String getSubmitBlockedTime() {
+        return "submit_blocked" + submitService.getSubmitTimer().durationInMs();
     }
 
     private void sendTimingWarningToSentry(SimpleTimer timer) {

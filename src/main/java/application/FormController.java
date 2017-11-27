@@ -144,17 +144,10 @@ public class FormController extends AbstractBaseController{
                 log.error("Submission failed with structure exception " + e);
                 return submitResponseBean;
             }
-            ResponseEntity<String> submitResponse;
-            CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ);
-            timer.start();
-            try {
-                 submitResponse = submitService.submitForm(
-                        formEntrySession.getInstanceXml(),
-                        formEntrySession.getPostUrl()
-                );
-            } finally {
-                timer.end().record();
-            }
+            ResponseEntity<String> submitResponse = submitService.submitForm(
+                    formEntrySession.getInstanceXml(),
+                    formEntrySession.getPostUrl()
+            );
 
             if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                 submitResponseBean.setStatus("error");
