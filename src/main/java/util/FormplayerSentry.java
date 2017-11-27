@@ -172,11 +172,11 @@ public class FormplayerSentry {
         );
     }
 
-    public void sendSentryException(Exception exception) {
-        sendSentryException(exception, Event.Level.ERROR);
+    public void sendRavenException(Exception exception) {
+        sendRavenException(exception, Event.Level.ERROR);
     }
 
-    public void sendSentryException(Exception exception, Event.Level level) {
+    public void sendRavenException(Exception exception, Event.Level level) {
         if (request != null) {
             setDomain(request.getDomain());
 
@@ -194,10 +194,10 @@ public class FormplayerSentry {
                 .withLevel(level)
                 .withSentryInterface(new ExceptionInterface(exception));
 
-        sendSentryEvent(eventBuilder);
+        sendRavenEvent(eventBuilder);
     }
 
-    private void sendSentryEvent(EventBuilder event) {
+    private void sendRavenEvent(EventBuilder event) {
         if (sentryClient == null) {
             return;
         }
