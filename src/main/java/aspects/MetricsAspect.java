@@ -75,6 +75,6 @@ public class MetricsAspect {
                 .setLevel(Breadcrumb.Level.WARNING)
                 .setData("duration", timer.formatDuration())
                 .record();
-        raven.sendRavenException(new Exception("This request took a long time"), Event.Level.WARNING);
+        raven.sendSentryException(new Exception("This request took a long time"), Event.Level.WARNING);
     }
 }

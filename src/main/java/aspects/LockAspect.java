@@ -84,7 +84,7 @@ public class LockAspect {
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
                     logLockError(bean, joinPoint, "_expired");
-                    raven.sendRavenException(e, Event.Level.WARNING);
+                    raven.sendSentryException(e, Event.Level.WARNING);
                 }
             }
         }

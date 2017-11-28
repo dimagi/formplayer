@@ -11,6 +11,7 @@ import session.MenuSession;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EvaluateXPathMenuRequestBean extends  InstallFromSessionRequestBean {
     private String xpath;
+    private String debugOutput;
 
     // default constructor for Jackson
     public EvaluateXPathMenuRequestBean(){}
@@ -24,8 +25,19 @@ public class EvaluateXPathMenuRequestBean extends  InstallFromSessionRequestBean
         this.xpath = xpath;
     }
 
+
+    @JsonGetter(value = "debugOutput")
+    public String getDebugOutputLevel() {
+        return debugOutput;
+    }
+    @JsonSetter(value = "debugOutput")
+    public void setDebugOutputLevel(String debugOutput) {
+        this.debugOutput = debugOutput;
+    }
+
     public String toString(){
-        return "EvaluateXPathRequestBean [xpath: " + xpath + ", menuSessionId: " + menuSessionId + "]";
+        return "EvaluateXPathRequestBean [xpath: " + xpath + ", menuSessionId: " + menuSessionId  +
+                ", debugOutput: " + debugOutput + "]";
     }
 
     @JsonSetter(value = "session_id")

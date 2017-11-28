@@ -100,6 +100,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     @Override
     protected String downloadToTemp(String resource) {
+        FileOutputStream fos = null;
+        BufferedInputStream bis = null;
         try {
             URL url = new URL(resource);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -129,13 +131,29 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
 
             File file = File.createTempFile("commcare_", ".ccz");
 
-            FileOutputStream fos = new FileOutputStream(file);
-            StreamsUtil.writeFromInputToOutput(new BufferedInputStream(result), fos);
+            fos = new FileOutputStream(file);
+            bis = new BufferedInputStream(result);
+            StreamsUtil.writeFromInputToOutput(bis, fos);
             return file.getAbsolutePath();
         } catch (IOException e) {
             log.error("Issue downloading or create stream for " + resource);
             e.printStackTrace();
             return null;
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (IOException e) {
+                log.error("Exception closing output stream " + fos, e);
+            }
+            try {
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (IOException e) {
+                log.error("Exception closing input stream " + bis, e);
+            }
         }
     }
 
