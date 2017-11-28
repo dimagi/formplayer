@@ -96,6 +96,13 @@ public class FormSession {
 
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
+                       FormSendCalloutHandler formSendCalloutHandler) throws Exception {
+        this(session, restoreFactory, false, formSendCalloutHandler);
+    }
+
+    public FormSession(SerializableFormSession session,
+                       RestoreFactory restoreFactory,
+                       boolean reloadingIncompleteForm,
                        FormSendCalloutHandler formSendCalloutHandler) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
@@ -120,7 +127,7 @@ public class FormSession {
         FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
         formController.jumpToIndex(formIndex);
         setupFunctionContext();
-        initialize(false, session.getSessionData());
+        initialize(false, session.getSessionData(), reloadingIncompleteForm);
         this.postUrl = session.getPostUrl();
     }
 
@@ -160,9 +167,9 @@ public class FormSession {
         setupFunctionContext();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData);
+            initialize(false, sessionData, false);
         } else {
-            initialize(true, sessionData);
+            initialize(true, sessionData, false);
         }
 
         if (this.oneQuestionPerScreen) {
@@ -218,7 +225,7 @@ public class FormSession {
         }
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData) {
+    private void initialize(boolean newInstance, Map<String, String> sessionData, boolean reloadingIncomplete) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, new IStorageIndexedFactory() {
             @Override
@@ -227,7 +234,7 @@ public class FormSession {
             }
         });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
+        formDef.initialize(newInstance, false, sessionWrapper.getIIF(), locale, false, reloadingIncomplete);
     }
 
     public String getInstanceXml() throws IOException {
@@ -515,9 +522,9 @@ public class FormSession {
     public void reload(FormDef formDef, String postUrl) throws IOException {
         if(getInstanceXml() != null){
             loadInstanceXml(formDef, getInstanceXml());
-            initialize(false, sessionData);
+            initialize(false, sessionData, false);
         } else {
-            initialize(true, sessionData);
+            initialize(true, sessionData, false);
         }
         if (this.oneQuestionPerScreen) {
             FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
