@@ -74,6 +74,7 @@ public class MetricsAspect {
                 "user:" + user,
                 "request:" + requestPath,
                 "duration:" + timer.getDurationBucket(),
+                "unblocked_time:" + getUnblockedTime(timer),
                 "blocked_time:" + getBlockedTime(),
                 "restore_blocked_time:" + getRestoreBlockedTime(),
                 "install_blocked_time:" + getInstallBlockedTime(),
@@ -85,23 +86,26 @@ public class MetricsAspect {
         return result;
     }
 
-    private String getBlockedTime() {
-        long blockedDuration = restoreFactory.getDownloadRestoreTimer().durationInMs() +
+    private long getUnblockedTime(SimpleTimer timer) {
+        return timer.durationInMs() - getBlockedTime();
+    }
+
+    private long getBlockedTime() {
+        return restoreFactory.getDownloadRestoreTimer().durationInMs() +
                 installService.getInstallTimer().durationInMs() +
                 submitService.getSubmitTimer().durationInMs();
-        return "blocked_total:" + blockedDuration;
     }
 
-    private String getRestoreBlockedTime() {
-        return "restore_blocked:" + restoreFactory.getDownloadRestoreTimer().durationInMs();
+    private long getRestoreBlockedTime() {
+        return restoreFactory.getDownloadRestoreTimer().durationInMs();
     }
 
-    private String getInstallBlockedTime() {
-        return "install_blocked" + installService.getInstallTimer().durationInMs();
+    private long getInstallBlockedTime() {
+        return installService.getInstallTimer().durationInMs();
     }
 
-    private String getSubmitBlockedTime() {
-        return "submit_blocked" + submitService.getSubmitTimer().durationInMs();
+    private long getSubmitBlockedTime() {
+        return submitService.getSubmitTimer().durationInMs();
     }
 
     private void sendTimingWarningToSentry(SimpleTimer timer) {

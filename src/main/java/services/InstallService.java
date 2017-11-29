@@ -36,8 +36,7 @@ public class InstallService {
 
     private final Log log = LogFactory.getLog(InstallService.class);
 
-    CategoryTimingHelper.RecordingTimer installTimer
-            = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL);
+    CategoryTimingHelper.RecordingTimer installTimer;
 
     public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference, boolean preview) throws Exception {
         boolean newInstall = true;
@@ -62,6 +61,7 @@ public class InstallService {
             // Wipe out folder and attempt install
             sqliteDB.closeConnection();
             sqliteDB.deleteDatabaseFile();
+            installTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL);
             installTimer.start();
             if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiating folder " + sqliteDB.getDatabaseFileForDebugPurposes());

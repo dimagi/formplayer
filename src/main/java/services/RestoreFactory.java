@@ -90,8 +90,7 @@ public class RestoreFactory {
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
-    CategoryTimingHelper.RecordingTimer downloadRestoreTimer
-            = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
+    CategoryTimingHelper.RecordingTimer downloadRestoreTimer;
 
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
     private boolean useLiveQuery;
@@ -352,6 +351,7 @@ public class RestoreFactory {
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
+        downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
                 restoreUrl,
