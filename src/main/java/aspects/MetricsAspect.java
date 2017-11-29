@@ -91,20 +91,29 @@ public class MetricsAspect {
     }
 
     private long getBlockedTime() {
-        return restoreFactory.getDownloadRestoreTimer().durationInMs() +
-                installService.getInstallTimer().durationInMs() +
-                submitService.getSubmitTimer().durationInMs();
+        return getRestoreBlockedTime() +
+                getInstallBlockedTime() +
+                getSubmitBlockedTime();
     }
 
     private long getRestoreBlockedTime() {
+        if (restoreFactory.getDownloadRestoreTimer() == null) {
+            return 0;
+        }
         return restoreFactory.getDownloadRestoreTimer().durationInMs();
     }
 
     private long getInstallBlockedTime() {
+        if (installService.getInstallTimer() == null) {
+            return 0;
+        }
         return installService.getInstallTimer().durationInMs();
     }
 
     private long getSubmitBlockedTime() {
+        if (submitService.getSubmitTimer() == null) {
+            return 0;
+        }
         return submitService.getSubmitTimer().durationInMs();
     }
 
