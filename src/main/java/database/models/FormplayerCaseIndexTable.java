@@ -11,7 +11,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.engine.cases.CaseIndexTable;
 import org.commcare.modern.util.Pair;
 import sandbox.SqlHelper;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import services.ConnectionHandler;
 
@@ -31,6 +31,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     private static final String COL_INDEX_NAME = "name";
     private static final String COL_INDEX_TYPE = "type";
     private static final String COL_INDEX_TARGET = "target";
+    private static final String COL_INDEX_RELATIONSHIP = "relationship";
 
     ConnectionHandler connectionHandler;
 
@@ -69,6 +70,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 COL_CASE_RECORD_ID + ", " +
                 COL_INDEX_NAME + ", " +
                 COL_INDEX_TYPE + ", " +
+                COL_INDEX_RELATIONSHIP + ", " +
                 COL_INDEX_TARGET +
                 ")";
     }
@@ -94,6 +96,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
             contentValues.put(COL_INDEX_NAME, ci.getName());
             contentValues.put(COL_INDEX_TYPE, ci.getTargetType());
             contentValues.put(COL_INDEX_TARGET, ci.getTarget());
+            contentValues.put(COL_INDEX_RELATIONSHIP, ci.getRelationship());
             SqlHelper.basicInsert(connectionHandler.getConnection(), TABLE_NAME, contentValues);
         }
     }
@@ -123,6 +126,46 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         }
     }
 
+
+    public HashMap<Integer,Vector<Pair<String, String>>> getCaseIndexMap() {
+        String[] projection = new String[] {COL_CASE_RECORD_ID, COL_INDEX_TARGET, COL_INDEX_RELATIONSHIP};
+        HashMap<Integer,Vector<Pair<String, String>>> caseIndexMap = new HashMap<>();
+
+        PreparedStatement selectStatement = null;
+        try {
+            selectStatement = SqlHelper.prepareTableSelectProjectionStatement(connectionHandler.getConnection(),
+                    TABLE_NAME,
+                    projection);
+            ResultSet resultSet = selectStatement.executeQuery();
+            while (resultSet.next()) {
+                int caseRecordId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
+                String targetCase = resultSet.getString(resultSet.findColumn(COL_INDEX_TARGET));
+                String relationship = resultSet.getString(COL_INDEX_RELATIONSHIP);
+                Pair<String, String> index  = new Pair<> (targetCase, relationship);
+
+                Vector<Pair<String, String>> indexList;
+                if (!caseIndexMap.containsKey(caseRecordId)) {
+                    indexList = new Vector<>();
+                } else {
+                    indexList = caseIndexMap.get(caseRecordId);
+                }
+                indexList.add(index);
+                caseIndexMap.put(caseRecordId, indexList);
+            }
+            return caseIndexMap;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (selectStatement != null) {
+                try {
+                    selectStatement.close();
+                } catch (SQLException e) {
+                    log.debug("Exception prepared statement connection ", e);
+                }
+            }
+        }
+    }
+
     /**
      * Get a list of Case Record id's for cases which index a provided value.
      *
@@ -146,7 +189,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                     args);
             ResultSet resultSet = selectStatement.executeQuery();
             LinkedHashSet<Integer> ret = new LinkedHashSet<>();
-            SqliteIndexedStorageUtility.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
+            SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
             return ret;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -185,7 +228,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                     args);
             ResultSet resultSet = selectStatement.executeQuery();
             LinkedHashSet<Integer> ret = new LinkedHashSet<>();
-            SqliteIndexedStorageUtility.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
+            SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
             return ret;
         } catch (SQLException e) {
             throw new RuntimeException(e);

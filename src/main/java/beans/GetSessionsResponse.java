@@ -1,7 +1,7 @@
 package beans;
 
 import objects.SerializableFormSession;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import org.commcare.cases.model.Case;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class GetSessionsResponse {
 
     public GetSessionsResponse(){}
 
-    public GetSessionsResponse(SqliteIndexedStorageUtility<Case> caseStorage, ArrayList<SerializableFormSession> sessionList){
+    public GetSessionsResponse(SqlStorage<Case> caseStorage, ArrayList<SerializableFormSession> sessionList){
         sessions = new SessionListItem[sessionList.size()];
         for (int i = 0; i < sessionList.size(); i++){
             sessions[i] = new SessionListItem(caseStorage, sessionList.get(i));

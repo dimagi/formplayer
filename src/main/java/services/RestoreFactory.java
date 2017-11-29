@@ -4,7 +4,6 @@ import api.process.FormRecordProcessorHelper;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import engine.FormplayerTransactionParserFactory;
-import exceptions.InvalidStructureRuntimeException;
 import exceptions.SQLiteRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,9 +24,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import sandbox.JdbcSqlStorageIterator;
 import org.xmlpull.v1.XmlPullParserException;
-import sandbox.AbstractSqlIterator;
-import sandbox.SqliteIndexedStorageUtility;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
@@ -303,13 +301,15 @@ public class RestoreFactory {
     }
 
     public String getSyncToken() {
-        SqliteIndexedStorageUtility<User> storage = getSqlSandbox().getUserStorage();
-        AbstractSqlIterator<User> iterator = storage.iterate();
-        //should be exactly one user
-        if (!iterator.hasNext()) {
-            return null;
+        JdbcSqlStorageIterator<User> iterator = getSqlSandbox().getUserStorage().iterate();
+        try {
+            if (!iterator.hasNext()) {
+                return null;
+            }
+            return iterator.next().getLastSyncToken();
+        } finally {
+            iterator.close();
         }
-        return iterator.next().getLastSyncToken();
     }
 
     // Device ID for tracking usage in the same way Android uses IMEI

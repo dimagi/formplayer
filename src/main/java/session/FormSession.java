@@ -2,7 +2,6 @@ package session;
 
 import beans.FormEntryNavigationResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hq.CaseAPIs;
 import objects.FunctionHandler;
 import objects.SerializableFormSession;
 import org.apache.commons.codec.binary.Base64;
@@ -14,7 +13,7 @@ import api.json.JsonActionUtils;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xpath.XPathException;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
@@ -224,7 +223,7 @@ public class FormSession {
                 CommCareConfigEngine.MINOR_VERSION, new IStorageIndexedFactory() {
             @Override
             public IStorageUtilityIndexed newStorage(String name, Class type) {
-                return new SqliteIndexedStorageUtility(sandbox, type, name);
+                return new SqlStorage(sandbox, type, name);
             }
         });
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
@@ -445,6 +444,7 @@ public class FormSession {
                 // we can't go all the way back to the beginning, so we've
                 // gotta hit the last index that was valid
                 formController.jumpToIndex(lastValidIndex);
+                setIsAtFirstIndex(true);
 
                 if (lastValidIndex.isBeginningOfFormIndex()) {
                     //We might have walked all the way back still, which isn't great,
@@ -469,7 +469,6 @@ public class FormSession {
     public void stepToPreviousIndex() {
         moveToPreviousView();
         int event = formController.getEvent();
-        setIsAtFirstIndex(event == FormEntryController.EVENT_BEGINNING_OF_FORM);
         setCurrentIndex(formController.getFormIndex().toString());
     }
 

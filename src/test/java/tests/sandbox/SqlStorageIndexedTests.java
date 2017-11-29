@@ -10,7 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import sandbox.SqlSandboxUtils;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import sqlitedb.UserDB;
 
@@ -26,8 +26,8 @@ public class SqlStorageIndexedTests {
 
     private Ledger l, l2, l3;
 
-    private SqliteIndexedStorageUtility<Case> caseStorage;
-    private SqliteIndexedStorageUtility<Ledger> ledgerStorage;
+    private SqlStorage<Case> caseStorage;
+    private SqlStorage<Ledger> ledgerStorage;
     private String owner;
     private String groupOwner;
     private String otherOwner;
@@ -87,7 +87,7 @@ public class SqlStorageIndexedTests {
         String username = "sql-storage-test";
 
         UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
-        caseStorage = new SqliteIndexedStorageUtility<>(sandbox, Case.class, storageKey);
+        caseStorage = new SqlStorage<>(sandbox, Case.class, storageKey);
 
         caseStorage.write(a);
 
@@ -139,7 +139,7 @@ public class SqlStorageIndexedTests {
             String username = "wspride";
 
             UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
-            ledgerStorage = new SqliteIndexedStorageUtility<>(sandbox, Ledger.class, storageKey);
+            ledgerStorage = new SqlStorage<>(sandbox, Ledger.class, storageKey);
 
             ledgerStorage.write(l);
             ledgerStorage.write(l2);
@@ -149,7 +149,6 @@ public class SqlStorageIndexedTests {
 
             assertEquals(1, ids.size());
             assertTrue(ids.contains(1));
-            //assertTrue(ids.contains(2));
 
             Ledger readLedger2 = ledgerStorage.getRecordForValue("entity_id", "ledger_entity_id_3");
             assertEquals(readLedger2.getID(), 3);
@@ -163,11 +162,9 @@ public class SqlStorageIndexedTests {
 
             IStorageIterator<Ledger> mIterator = ledgerStorage.iterate();
 
-            Assert.assertEquals(3, mIterator.numRecords());
             Assert.assertEquals(1, mIterator.nextID());
             Assert.assertEquals(2, mIterator.nextID());
             Assert.assertEquals(3, mIterator.nextID());
-            Assert.assertEquals(-1, mIterator.nextID());
 
         } catch (Exception e) {
             e.printStackTrace();

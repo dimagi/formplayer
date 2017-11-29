@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sqlitedb.ApplicationDB;
 import sqlitedb.SQLiteDB;
 
@@ -61,7 +61,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqliteIndexedStorageUtility(this.sqLiteDB, type, name);
+        return new SqlStorage(this.sqLiteDB, type, name);
     }
 
     public String getUsername() {

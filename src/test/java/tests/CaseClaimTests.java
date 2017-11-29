@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import sqlitedb.UserDB;
 import utils.FileUtils;
@@ -45,7 +45,7 @@ public class CaseClaimTests extends BaseTestClass {
     public void testQueryScreen() throws Exception {
 
         UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("caseclaimdomain", "caseclaimusername", null));
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
 
         configureQueryMock();
         configureSyncMock();
@@ -77,7 +77,7 @@ public class CaseClaimTests extends BaseTestClass {
     public void testAlreadyOwnCase() throws Exception {
 
         UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("caseclaimdomain", "caseclaimusername", null));
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
         Hashtable<String, String> queryDictionary = new Hashtable<>();
         queryDictionary.put("name", "Burt");
 

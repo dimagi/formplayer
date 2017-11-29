@@ -7,7 +7,7 @@ import org.commcare.xml.bulk.BulkProcessingCaseXmlParser;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParserException;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 
 import java.io.IOException;
@@ -22,7 +22,7 @@ import java.util.*;
 public class FormplayerBulkCaseXmlParser extends BulkProcessingCaseXmlParser {
     private final EntityStorageCache mEntityCache;
     private final FormplayerCaseIndexTable mCaseIndexTable;
-    private final SqliteIndexedStorageUtility<Case> storage;
+    private final SqlStorage<Case> storage;
 
     public FormplayerBulkCaseXmlParser(KXmlParser parser,
                                     UserSqlSandbox sandbox) {
