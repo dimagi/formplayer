@@ -19,10 +19,10 @@ public class SubmitService {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
-    private CategoryTimingHelper.RecordingTimer submitTimer
-            = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ);
+    private CategoryTimingHelper.RecordingTimer submitTimer;
 
     public ResponseEntity<String> submitForm(String formXml, String submitUrl) {
+        submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ);
         submitTimer.start();
         try {
             RestTemplate restTemplate = new RestTemplate();
