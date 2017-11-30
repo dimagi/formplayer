@@ -6,7 +6,9 @@ import beans.*;
 import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import engine.FormplayerTransactionParserFactory;
 import installers.FormplayerInstallerFactory;
+import org.commcare.core.parse.ParseUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.*;
@@ -147,7 +149,7 @@ public class BaseTestClass {
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
+        Mockito.doAnswer(answer).when(restoreFactoryMock).performRestore();
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
                 .when(submitServiceMock).submitForm(anyString(), anyString());
         Mockito.doReturn(false)
@@ -172,8 +174,10 @@ public class BaseTestClass {
         }
 
         @Override
-        public InputStream answer(InvocationOnMock invocation) throws Throwable {
-            return new FileInputStream("src/test/resources/" + mRestoreFile);
+        public Object answer(InvocationOnMock invocation) throws Throwable {
+            InputStream restoreStream = new FileInputStream("src/test/resources/" + mRestoreFile);
+            ParseUtils.parseIntoSandbox(restoreStream, new FormplayerTransactionParserFactory(restoreFactoryMock.getSqlSandbox(), true), true, true);
+            return null;
         }
     }
 
