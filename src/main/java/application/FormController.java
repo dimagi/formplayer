@@ -139,17 +139,10 @@ public class FormController extends AbstractBaseController{
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
                                 "Puring cases took some time" : "Probably didn't have to purge cases");
-
-                CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(
-                        Constants.TimingCategories.SUBMIT_FORM_TO_HQ
-                );
-
-                timer.start();
                 ResponseEntity<String> submitResponse = submitService.submitForm(
                         formEntrySession.getInstanceXml(),
                         formEntrySession.getPostUrl()
                 );
-                timer.end().record();
 
                 if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                     submitResponseBean.setStatus("error");
