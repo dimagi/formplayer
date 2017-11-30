@@ -19,6 +19,6 @@ RUN wget -c -O formplayer.jar \
 COPY config/application.docker.properties /formplayer/application.properties
 COPY config/set_webhost /formplayer/
 
-EXPOSE 8080
+EXPOSE 8010
 
 CMD ./set_webhost $WEB_HOST && java -jar formplayer.jar
