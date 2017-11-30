@@ -10,6 +10,8 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
+import util.Constants;
+import util.SimpleTimer;
 
 import java.io.IOException;
 
@@ -21,15 +23,29 @@ public class SubmitService extends DefaultResponseErrorHandler {
     @Autowired
     RestoreFactory restoreFactory;
 
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
+
     private final Log log = LogFactory.getLog(SubmitService.class);
 
+    private CategoryTimingHelper.RecordingTimer submitTimer;
+
     public ResponseEntity<String> submitForm(String formXml, String submitUrl) {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(this);
-        HttpEntity<?> entity = new HttpEntity<Object>(formXml, restoreFactory.getUserHeaders());
-        return restTemplate.exchange(submitUrl,
-                HttpMethod.POST,
-                entity, String.class);
+        submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ);
+        submitTimer.start();
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpEntity<?> entity = new HttpEntity<Object>(formXml, restoreFactory.getUserHeaders());
+            return restTemplate.exchange(submitUrl,
+                    HttpMethod.POST,
+                    entity, String.class);
+        } finally {
+            submitTimer.end().record();
+        }
+    }
+
+    public SimpleTimer getSubmitTimer() {
+        return submitTimer;
     }
 
     // Overriding the default error handler allows us to perform error handling in FormController
