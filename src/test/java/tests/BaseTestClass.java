@@ -580,6 +580,8 @@ public class BaseTestClass {
                                 .content((String) bean));
                 break;
         }
+        restoreFactoryMock.getSQLiteDB().closeConnection();
+        storageFactoryMock.getSQLiteDB().closeConnection();
         return mapper.readValue(
                 result.andReturn().getResponse().getContentAsString(),
                 clazz
