@@ -13,6 +13,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EvaluateXPathRequestBean extends SessionRequestBean {
     private String xpath;
+    private String debugOutput;
 
     // default constructor for Jackson
     public EvaluateXPathRequestBean(){}
@@ -26,7 +27,17 @@ public class EvaluateXPathRequestBean extends SessionRequestBean {
         this.xpath = xpath;
     }
 
+    @JsonGetter(value = "debugOutput")
+    public String getDebugOutputLevel() {
+        return debugOutput;
+    }
+    @JsonSetter(value = "debugOutput")
+    public void setDebugOutputLevel(String debugOutput) {
+        this.debugOutput = debugOutput;
+    }
+
     public String toString(){
-        return "EvaluateXPathRequestBean [xpath: " + xpath + ", sessionId: " + sessionId + "]";
+        return "EvaluateXPathRequestBean [xpath: " + xpath + ", sessionId: " + sessionId +
+                ", debugOutput: " + debugOutput + "]";
     }
 }

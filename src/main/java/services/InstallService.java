@@ -36,6 +36,8 @@ public class InstallService {
 
     private final Log log = LogFactory.getLog(InstallService.class);
 
+    CategoryTimingHelper.RecordingTimer installTimer;
+
     public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference, boolean preview) throws Exception {
         boolean newInstall = true;
         SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
@@ -59,8 +61,8 @@ public class InstallService {
             // Wipe out folder and attempt install
             sqliteDB.closeConnection();
             sqliteDB.deleteDatabaseFile();
-            SimpleTimer timer = new SimpleTimer();
-            timer.start();
+            installTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL);
+            installTimer.start();
             if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiating folder " + sqliteDB.getDatabaseFileForDebugPurposes());
             }
@@ -71,8 +73,8 @@ public class InstallService {
                 engine.initFromArchive(reference, preview);
             }
             engine.initEnvironment();
-            timer.end();
-            categoryTimingHelper.recordCategoryTiming(timer, Constants.TimingCategories.APP_INSTALL);
+            installTimer.end();
+            installTimer.record();
             return new Pair<>(engine, newInstall);
         } catch (UnresolvedResourceException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
@@ -82,5 +84,9 @@ public class InstallService {
             sqliteDB.deleteDatabaseFile();
             throw e;
         }
+    }
+
+    public SimpleTimer getInstallTimer() {
+        return installTimer;
     }
 }

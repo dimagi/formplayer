@@ -189,9 +189,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public RedisLockRegistry userLockRegistry() {
-        JedisConnectionFactory jedisConnectionFactory = jedisConnFactory();
-        return new RedisLockRegistry(jedisConnectionFactory, "formplayer-user", Constants.LOCK_DURATION);
+    public FormplayerLockRegistry userLockRegistry() {
+        return new FormplayerLockRegistry();
     }
 
     @Bean
@@ -269,6 +268,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public InstallService installService(){
         return new InstallService();
     }
@@ -278,6 +278,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public SubmitService submitService(){
         return new SubmitService();
     }
