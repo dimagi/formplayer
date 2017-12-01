@@ -9,6 +9,7 @@ import hq.models.PostgresUser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,11 @@ public class UserRestoreAspect {
         if (requestBean.isMustRestore()) {
             restoreFactory.performTimedSync();
         }
+    }
+
+    @After(value = "@annotation(annotations.UserRestore)")
+    public void closeRestoreFactory(JoinPoint joinPoint) throws Throwable {
+        restoreFactory.getSQLiteDB().closeConnection();
     }
 
     private HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
