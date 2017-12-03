@@ -5,6 +5,8 @@ import annotations.UserRestore;
 import api.json.JsonActionUtils;
 import api.process.FormRecordProcessorHelper;
 import api.util.ApiConstants;
+import auth.DjangoAuth;
+import auth.HqAuth;
 import beans.*;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -128,46 +130,31 @@ public class FormController extends AbstractBaseController{
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         } else {
             try {
-                restoreFactory.setAutoCommit(false);
-
                 SimpleTimer purgeCasesTimer = FormRecordProcessorHelper.processXML(
                         new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox(),
                                 PropertyUtils.isBulkPerformanceEnabled()),
                         formEntrySession.submitGetXml()
                 ).getPurgeCasesTimer();
-
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
                                 "Puring cases took some time" : "Probably didn't have to purge cases");
-                ResponseEntity<String> submitResponse = submitService.submitForm(
-                        formEntrySession.getInstanceXml(),
-                        formEntrySession.getPostUrl()
-                );
-
-                if (!submitResponse.getStatusCode().is2xxSuccessful()) {
-                    submitResponseBean.setStatus("error");
-                    submitResponseBean.setNotification(new NotificationMessage(
-                            "Form submission failed with error response" + submitResponse, true));
-                    log.error("Submit response bean: " + submitResponseBean);
-                    return submitResponseBean;
-                }
-                // Only delete session immediately after successful submit
-                deleteSession(submitRequestBean.getSessionId());
-                restoreFactory.commit();
-
-            }
-            catch (InvalidStructureException e) {
+            } catch(InvalidStructureException e) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 submitResponseBean.setNotification(new NotificationMessage(e.getMessage(), true));
                 log.error("Submission failed with structure exception " + e);
                 return submitResponseBean;
             }
-            finally {
-                // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
-                if (!restoreFactory.getAutoCommit()) {
-                    // rollback sets autoCommit back to `true`
-                    restoreFactory.rollback();
-                }
+            ResponseEntity<String> submitResponse = submitService.submitForm(
+                    formEntrySession.getInstanceXml(),
+                    formEntrySession.getPostUrl()
+            );
+
+            if (!submitResponse.getStatusCode().is2xxSuccessful()) {
+                submitResponseBean.setStatus("error");
+                submitResponseBean.setNotification(new NotificationMessage(
+                        "Form submission failed with error response" + submitResponse, true));
+                log.info("Submit response bean: " + submitResponseBean);
+                return submitResponseBean;
             }
 
             if (formEntrySession.getMenuSessionId() != null &&
@@ -177,6 +164,7 @@ public class FormController extends AbstractBaseController{
                     submitResponseBean.setNextScreen(nav);
                 }
             }
+            deleteSession(submitRequestBean.getSessionId());
         }
         return submitResponseBean;
     }
