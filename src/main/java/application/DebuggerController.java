@@ -107,7 +107,8 @@ public class DebuggerController extends AbstractBaseController {
 
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 menuSession.getSessionWrapper().getEvaluationContext(),
-                evaluateXPathRequestBean.getXpath()
+                evaluateXPathRequestBean.getXpath(),
+                evaluateXPathRequestBean.getDebugOutputLevel()
         );
 
         cacheMenuXPathQuery(
@@ -132,7 +133,8 @@ public class DebuggerController extends AbstractBaseController {
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
-                evaluateXPathRequestBean.getXpath()
+                evaluateXPathRequestBean.getXpath(),
+                evaluateXPathRequestBean.getDebugOutputLevel()
         );
 
         cacheFormXPathQuery(

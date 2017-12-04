@@ -284,12 +284,18 @@ public class SqlHelper {
             }
 
             try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    int id = generatedKeys.getInt(1);
-                    p.setID(id);
-                    return id;
-                } else {
-                    throw new SQLException("Creating user failed, no ID obtained.");
+                try {
+                    if (generatedKeys.next()) {
+                        int id = generatedKeys.getInt(1);
+                        p.setID(id);
+                        return id;
+                    } else {
+                        throw new SQLException("Creating user failed, no ID obtained.");
+                    }
+                } finally {
+                    if (generatedKeys != null) {
+                        generatedKeys.close();
+                    }
                 }
             }
         } catch (SQLException e) {
