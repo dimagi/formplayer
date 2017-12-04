@@ -43,10 +43,11 @@ public class EnikshayEndOfFormTests extends BaseTestClass{
                     "requests/submit/submit_enikshay_private_0.json",
                     response.getSessionId()
                 );
-        restoreFactoryMock.getSqlSandbox().getCaseStorage().getNumRecords();
+
         LinkedHashMap commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
         String jsonString = new JSONObject(commandsRaw).toString();
         CommandListResponseBean commandResponse = mapper.readValue(jsonString, CommandListResponseBean.class);
+
         assert commandResponse.getCommands().length == 2;
         assert commandResponse.getCommands()[0].getDisplayText().equals("Manage Beneficiary");
         assert commandResponse.getCommands()[1].getDisplayText().equals("Investigations");
@@ -69,5 +70,25 @@ public class EnikshayEndOfFormTests extends BaseTestClass{
         assert commandResponse.getBreadcrumbs()[2].equals("NIKITA VERMA");
         assert entityResponse.getBreadcrumbs()[3].equals("Investigations");
 
+        selections.add("action 0");
+        newSelections = new String[selections.size()];
+        selections.toArray(newSelections);
+
+        NewFormResponse formResponse = sessionNavigate(
+                newSelections,
+                "enikshay_private",
+                NewFormResponse.class);
+        assert formResponse.getTitle().equals("Order Investigation");
+        assert formResponse.getBreadcrumbs().length == 5;
+
+        submitResponse = submitForm(
+                "requests/submit/submit_enikshay_private_1.json",
+                formResponse.getSessionId()
+        );
+
+        commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
+        jsonString = new JSONObject(commandsRaw).toString();
+        entityResponse = mapper.readValue(jsonString, EntityListResponse.class);
+        assert entityResponse.getTitle().equals("Investigations");
     }
 }
