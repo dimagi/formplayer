@@ -346,6 +346,7 @@ public class BaseTestClass {
         evaluateXPathRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
+        evaluateXPathRequestBean.setDebugOutputLevel(Constants.BASIC_NO_TRACE);
         return generateMockQuery(
                 ControllerType.DEBUGGER,
                 RequestType.POST,
@@ -581,6 +582,8 @@ public class BaseTestClass {
                                 .content((String) bean));
                 break;
         }
+        restoreFactoryMock.getSQLiteDB().closeConnection();
+        storageFactoryMock.getSQLiteDB().closeConnection();
         return mapper.readValue(
                 result.andReturn().getResponse().getContentAsString(),
                 clazz

@@ -53,6 +53,12 @@ public class Constants {
     public static final String ANSWER_RESPONSE_STATUS_NEGATIVE = "validation-error";
     public static final String SYNC_RESPONSE_STATUS_POSITIVE = "success";
 
+    //Debug output request types
+    public static final String BASIC_NO_TRACE = "basic";
+    public static final String TRACE_REDUCE = "reduce";
+    public static final String TRACE_FULL = "deep";
+
+
     // Error return types
     public static final String ERROR_TYPE_TEXT = "text";
     public static final String ERROR_TYPE_HTML = "html";

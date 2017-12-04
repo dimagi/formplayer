@@ -105,52 +105,37 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
 
         int removedCaseCount = -1;
         int removedLedgers = -1;
-        try {
-            sandbox.getConnection().setAutoCommit(false);
-            SqlStorage<Case> storage = sandbox.getCaseStorage();
-            DAG<String, int[], String> fullCaseGraph = getFullCaseGraph(storage, new FormplayerCaseIndexTable(sandbox), owners);
 
-            CasePurgeFilter filter = new CasePurgeFilter(fullCaseGraph);
-            if (filter.invalidEdgesWereRemoved()) {
-                Logger.log(LogTypes.SOFT_ASSERT, "An invalid edge was created in the internal " +
-                        "case DAG of a case purge filter, meaning that at least 1 case on the " +
-                        "device had an index into another case that no longer exists on the device");
-                Logger.log(LogTypes.TYPE_ERROR_ASSERTION, "Case lists on the server and device" +
-                        " were out of sync. The following cases were expected to be on the device, " +
-                        "but were missing: " + filter.getMissingCasesString() + ". As a result, the " +
-                        "following cases were also removed from the device: " + filter.getRemovedCasesString());
-            }
+        SqlStorage<Case> storage = sandbox.getCaseStorage();
+        DAG<String, int[], String> fullCaseGraph = getFullCaseGraph(storage, new FormplayerCaseIndexTable(sandbox), owners);
 
-            Vector<Integer> casesRemoved = storage.removeAll(filter.getCasesToRemove());
-            removedCaseCount = casesRemoved.size();
-
-            FormplayerCaseIndexTable indexTable = new FormplayerCaseIndexTable(sandbox);
-            for (int recordId : casesRemoved) {
-                indexTable.clearCaseIndices(recordId);
-            }
-
-
-            SqlStorage<Ledger> stockStorage = sandbox.getLedgerStorage();
-            LedgerPurgeFilter stockFilter = new LedgerPurgeFilter(stockStorage, storage);
-            removedLedgers = stockStorage.removeAll(stockFilter).size();
-            sandbox.getConnection().commit();
-        } catch (SQLException e) {
-            try {
-                sandbox.getConnection().rollback();
-            } catch (SQLException e1) {
-                throw new RuntimeException(e1);
-            }
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                sandbox.getConnection().setAutoCommit(true);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+        CasePurgeFilter filter = new CasePurgeFilter(fullCaseGraph);
+        if (filter.invalidEdgesWereRemoved()) {
+            Logger.log(LogTypes.SOFT_ASSERT, "An invalid edge was created in the internal " +
+                    "case DAG of a case purge filter, meaning that at least 1 case on the " +
+                    "device had an index into another case that no longer exists on the device");
+            Logger.log(LogTypes.TYPE_ERROR_ASSERTION, "Case lists on the server and device" +
+                    " were out of sync. The following cases were expected to be on the device, " +
+                    "but were missing: " + filter.getMissingCasesString() + ". As a result, the " +
+                    "following cases were also removed from the device: " + filter.getRemovedCasesString());
         }
 
-        long taken = System.currentTimeMillis() - start;
+        Vector<Integer> casesRemoved = storage.removeAll(filter.getCasesToRemove());
+        removedCaseCount = casesRemoved.size();
 
+        FormplayerCaseIndexTable indexTable = new FormplayerCaseIndexTable(sandbox);
+        for (int recordId : casesRemoved) {
+            indexTable.clearCaseIndices(recordId);
+        }
+
+
+        SqlStorage<Ledger> stockStorage = sandbox.getLedgerStorage();
+        LedgerPurgeFilter stockFilter = new LedgerPurgeFilter(stockStorage, storage);
+        removedLedgers = stockStorage.removeAll(stockFilter).size();
+
+
+        long taken = System.currentTimeMillis() - start;
+        System.out.println("Purged.");
         log.info(String.format(
                 "Purged [%d Case, %d Ledger] records in %dms",
                 removedCaseCount, removedLedgers, taken));
