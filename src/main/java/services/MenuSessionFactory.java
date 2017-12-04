@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.StackFrameStep;
+import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -63,18 +64,27 @@ public class MenuSessionFactory {
                             currentStep = String.valueOf(i);
                         }
                     }
+                    if (currentStep == null) {
+                        log.error("Could not get command for step " + step);
+                    } else {
+                        menuSession.handleInput(currentStep);
+                        menuSession.addSelection(currentStep);
+                    }
                     break;
                 case SessionFrame.STATE_DATUM_VAL:
                     currentStep = step.getValue();
+                    try {
+                        menuSession.handleInput(currentStep);
+                        menuSession.addSelection(currentStep);
+                    } catch (CommCareSessionException e) {
+                        System.out.println("No case for step " + currentStep);
+                    }
                     break;
                 default:
                     log.info(String.format("Could not get command for step %s on screen %s", step, screen));
                     break;
             }
-            if (currentStep != null) {
-                menuSession.addSelection(currentStep);
-                menuSession.handleInput(currentStep);
-            }
+            screen = menuSession.getNextScreen();
         }
         return menuSession;
     }

@@ -87,7 +87,8 @@ public class EnikshayEndOfFormTests extends BaseTestClass{
         );
 
         commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
-        jsonString = new JSONObject(commandsRaw).toString();
+        JSONObject jsonObject = new JSONObject(commandsRaw);
+        jsonString = jsonObject.toString();
         entityResponse = mapper.readValue(jsonString, EntityListResponse.class);
         assert entityResponse.getTitle().equals("Investigations");
     }
