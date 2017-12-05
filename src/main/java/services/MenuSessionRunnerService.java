@@ -184,8 +184,6 @@ public class MenuSessionRunnerService {
                     sortIndex
             );
         }
-
-        String[] overrideSelections = null;
         NotificationMessage notificationMessage = new NotificationMessage();
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
@@ -203,14 +201,12 @@ public class MenuSessionRunnerService {
                         menuSession,
                         queryDictionary
                 );
-                overrideSelections = trimCaseClaimSelections(selections);
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
                         (FormplayerSyncScreen) nextScreen,
                         menuSession);
                 if (syncResponse != null) {
-                    syncResponse.setSelections(overrideSelections);
                     return syncResponse;
                 }
             }
@@ -224,7 +220,6 @@ public class MenuSessionRunnerService {
         );
         if (nextMenu != null) {
             nextMenu.setNotification(notificationMessage);
-            nextMenu.setSelections(overrideSelections);
             log.info("Returning menu: " + nextMenu);
             return nextMenu;
         } else {
@@ -232,7 +227,6 @@ public class MenuSessionRunnerService {
             if (responseBean == null) {
                 responseBean = new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
             }
-            responseBean.setSelections(overrideSelections);
             return responseBean;
         }
     }
@@ -274,20 +268,6 @@ public class MenuSessionRunnerService {
             return new NotificationMessage(
                     String.format("Case claim failed. Message: %s", responseEntity.getBody()), true);
         }
-    }
-
-    private static String[] trimCaseClaimSelections(String[] selections) {
-        String actionSelections = selections[selections.length - 2];
-        if (!actionSelections.contains("action")) {
-            log.error(String.format("Selections %s did not contain expected action at position %s.",
-                    Arrays.toString(selections),
-                    selections[selections.length - 2]));
-            return selections;
-        }
-        String[] newSelections = new String[selections.length - 1];
-        System.arraycopy(selections, 0, newSelections, 0, selections.length - 2);
-        newSelections[selections.length - 2] = selections[selections.length - 1];
-        return newSelections;
     }
 
     /**
