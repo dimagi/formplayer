@@ -54,6 +54,13 @@ public class MenuSessionFactory {
         Vector<StackFrameStep> steps = frame.getSteps();
         for (StackFrameStep step: steps) {
             String currentStep = null;
+
+            if (menuSession.getSessionWrapper().getFrame().getSteps().contains(step)) {
+                // If the new frame already contains this step then it was a `computed` type
+                // that we don't need to re-add and process
+                break;
+            }
+
             switch (step.getElementType()) {
                 case SessionFrame.STATE_COMMAND_ID:
                     String stepId = step.getId();
@@ -64,25 +71,18 @@ public class MenuSessionFactory {
                             currentStep = String.valueOf(i);
                         }
                     }
-                    if (currentStep == null) {
-                        log.error("Could not get command for step " + step);
-                    } else {
-                        menuSession.handleInput(currentStep);
-                        menuSession.addSelection(currentStep);
-                    }
                     break;
                 case SessionFrame.STATE_DATUM_VAL:
                     currentStep = step.getValue();
-                    try {
-                        menuSession.handleInput(currentStep);
-                        menuSession.addSelection(currentStep);
-                    } catch (CommCareSessionException e) {
-                        System.out.println("No case for step " + currentStep);
-                    }
                     break;
                 default:
-                    log.info(String.format("Could not get command for step %s on screen %s", step, screen));
                     break;
+            }
+            if (currentStep == null) {
+                log.error(String.format("Could not get command for step %s on screen %s", step, screen));
+            } else {
+                menuSession.handleInput(currentStep);
+                menuSession.addSelection(currentStep);
             }
             screen = menuSession.getNextScreen();
         }
