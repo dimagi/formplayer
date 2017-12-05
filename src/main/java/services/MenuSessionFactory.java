@@ -36,20 +36,22 @@ public class MenuSessionFactory {
 
     private static final Log log = LogFactory.getLog(MenuSessionFactory.class);
 
-    // Rebuild
-    public MenuSession rebuildSessionFromFrame(MenuSession menuSession) throws Exception {
+    /**
+     * Rebuild the MenuSession from its stack frame. This is used after end of form navigation.
+     * By re-walking the frame, we establish the set of selections the user 'would' have made to get
+     * to this state without doing end of form navigation. Such a path must always exist in a valid app.
+     */
+    public void rebuildSessionFromFrame(MenuSession menuSession) {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
         Screen screen = menuSession.getNextScreen();
         for (StackFrameStep step: steps) {
             String currentStep = null;
-
             if (menuSession.getSessionWrapper().getFrame().getSteps().contains(step)) {
                 // If the new frame already contains this step then it was a `computed` type
                 // that we don't need to re-add and process
                 break;
             }
-
             switch (step.getElementType()) {
                 case SessionFrame.STATE_COMMAND_ID:
                     String stepId = step.getId();
@@ -75,7 +77,6 @@ public class MenuSessionFactory {
             }
             screen = menuSession.getNextScreen();
         }
-        return menuSession;
     }
 
     public MenuSession buildSession(String username,
