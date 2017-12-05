@@ -301,21 +301,9 @@ public class MenuSessionRunnerService {
         menuSession.getSessionWrapper().syncState();
         if(menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
             menuSession.getSessionWrapper().clearVolatiles();
-
-            MenuSession newMenuSession = menuSessionFactory.rebuildSessionFromFrame(
-                    menuSession.getSessionWrapper().getFrame(),
-                    menuSession.getUsername(),
-                    menuSession.getDomain(),
-                    menuSession.getAppId(),
-                    menuSession.getInstallReference(),
-                    menuSession.getLocale(),
-                    menuSession.isOneQuestionPerScreen(),
-                    menuSession.getAsUser(),
-                    menuSession.getPreview()
-            );
-
-            BaseResponseBean response = getNextMenu(newMenuSession);
-            response.setSelections(newMenuSession.getSelections());
+            menuSessionFactory.rebuildSessionFromFrame(menuSession);
+            BaseResponseBean response = getNextMenu(menuSession);
+            response.setSelections(menuSession.getSelections());
             return response;
         }
         return null;
