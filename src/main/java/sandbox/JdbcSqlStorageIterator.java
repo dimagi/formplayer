@@ -40,7 +40,8 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
         this.preparedStatement = preparedStatement;
         try {
             if(!resultSet.next()) {
-                close();
+                resultSet.close();
+                preparedStatement.close();
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -116,11 +117,7 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
     public boolean hasMore() {
         try {
             if (!resultSet.isClosed()) {
-                if (resultSet.isAfterLast()) {
-                    close();
-                    return false;
-                }
-                return true;
+                return !resultSet.isAfterLast();
             } else {
                 return false;
             }
