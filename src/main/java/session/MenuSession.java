@@ -115,6 +115,10 @@ public class MenuSession {
         this.titles.add(SessionUtils.getAppTitle());
         this.preview = preview;
     }
+
+    public void resetSession() {
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
+    }
     
     public void updateApp(String updateMode) {
         this.engine.attemptAppUpdate(updateMode);

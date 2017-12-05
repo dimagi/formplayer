@@ -36,22 +36,11 @@ public class MenuSessionFactory {
 
     private static final Log log = LogFactory.getLog(MenuSessionFactory.class);
 
-    public MenuSession rebuildSessionFromFrame(SessionFrame frame,
-                                               String username,
-                                               String domain,
-                                               String appId,
-                                               String installReference,
-                                               String locale,
-                                               boolean oneQuestionPerScreen,
-                                               String asUser,
-                                               boolean preview) throws Exception {
-
-        MenuSession menuSession = buildSession(username,
-                domain, appId, installReference, locale,
-                oneQuestionPerScreen, asUser, preview);
-
+    // Rebuild
+    public MenuSession rebuildSessionFromFrame(MenuSession menuSession) throws Exception {
+        Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
+        menuSession.resetSession();
         Screen screen = menuSession.getNextScreen();
-        Vector<StackFrameStep> steps = frame.getSteps();
         for (StackFrameStep step: steps) {
             String currentStep = null;
 
