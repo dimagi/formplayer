@@ -219,12 +219,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    @Qualifier(value = "migrated")
-    public FormSessionRepo migratedFormSessionRepo(){
-        return new PostgresMigratedFormSessionRepo();
-    }
-
-    @Bean
     public MenuSessionRepo menuSessionRepo(){
         return new PostgresMenuSessionRepo();
     }

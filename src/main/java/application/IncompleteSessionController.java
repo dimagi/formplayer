@@ -37,25 +37,13 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     private final Log log = LogFactory.getLog(IncompleteSessionController.class);
 
-    @Autowired
-    @Qualifier(value = "migrated")
-    protected FormSessionRepo migratedFormSessionRepo;
-
     @ApiOperation(value = "Open an incomplete form session")
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
     @UserLock
     @UserRestore
     public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        SerializableFormSession session;
-        try {
-            session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
-        } catch(FormNotFoundException e) {
-            session = migratedFormSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
-            // Move over to formplayer db
-            formSessionRepo.save(session);
-            migratedFormSessionRepo.delete(incompleteSessionRequestBean.getSessionId());
-        }
+        SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
         return newFormResponseFactory.getResponse(session);
     }
 
@@ -66,10 +54,6 @@ public class IncompleteSessionController extends AbstractBaseController{
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
-        // Old CloudCare doesn't use scrubbed usernames
-        List<SerializableFormSession> migratedSessions = migratedFormSessionRepo.findUserSessions(
-                getSessionRequest.getUsername());
-
         List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(scrubbedUsername);
 
         ArrayList<SerializableFormSession> sessions = new ArrayList<>();
@@ -78,17 +62,6 @@ public class IncompleteSessionController extends AbstractBaseController{
         for (SerializableFormSession serializableFormSession : formplayerSessions) {
             sessions.add(serializableFormSession);
             formplayerSessionIds.add(serializableFormSession.getId());
-        }
-
-        if (migratedSessions.size() > 0) {
-            for (SerializableFormSession migratedSession : migratedSessions) {
-                // If we already have this session in the formplayer repo, skip it
-                if (formplayerSessionIds.contains(migratedSession.getId())) {
-                    continue;
-                }
-                SerializableFormSession serialSession = migratedSession;
-                sessions.add(serialSession);
-            }
         }
 
         return new GetSessionsResponse(restoreFactory.getSqlSandbox().getCaseStorage(), sessions);
@@ -105,7 +78,6 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     protected void deleteSession(String id) {
         formSessionRepo.delete(id);
-        migratedFormSessionRepo.delete(id);
     }
 
 }
