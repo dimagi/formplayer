@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -27,18 +28,28 @@ import java.util.Map;
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
-public class PostgresFormSessionRepo implements FormSessionRepo {
+public class PostgresFormSessionRepo implements CrudRepository<SerializableFormSession, String> {
 
     @Autowired
     @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
 
-    @Override
     public List<SerializableFormSession> findUserSessions(String username) {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
                 replaceTableName(
                         "SELECT *, dateopened::timestamptz as dateopened_timestamp " +
                         "FROM %s WHERE username = ? ORDER BY dateopened_timestamp DESC"
+                ),
+                new Object[] {username},
+                new SessionMapper());
+        return sessions;
+    }
+
+    public List<SerializableFormSession> findCompletedUserSessions(String username) {
+        List<SerializableFormSession> sessions = this.jdbcTemplate.query(
+                replaceTableName(
+                        "SELECT *, dateopened::timestamptz as dateopened_timestamp " +
+                                "FROM %s WHERE username = ? AND completed ORDER BY dateopened_timestamp DESC"
                 ),
                 new Object[] {username},
                 new SessionMapper());
@@ -78,7 +89,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
 
         if(sessionCount > 0){
             String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, " +
-                    "sequenceId = ?, currentIndex = ?, postUrl = ? WHERE id = ?");
+                    "sequenceId = ?, currentIndex = ?, postUrl = ?, completed = ? WHERE id = ?");
             this.jdbcTemplate.update(query,
                     new Object[] {
                             session.getInstanceXml(),
@@ -86,6 +97,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                             session.getSequenceId(),
                             session.getCurrentIndex(),
                             session.getPostUrl(),
+                            session.getCompleted(),
                             session.getId()
                     },
                     new int[] {
@@ -94,6 +106,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                             Types.VARCHAR,
                             Types.VARCHAR,
                             Types.VARCHAR,
+                            Types.BOOLEAN,
                             Types.VARCHAR
                     }
             );
@@ -104,8 +117,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 "(id, instanceXml, formXml, " +
                 "username, initLang, sequenceId, " +
                 "domain, postUrl, sessionData, menu_session_id," +
-                "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid, functioncontext) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid, functioncontext, completed) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(
                 query,
                 new Object[] {
@@ -125,7 +138,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                         session.getCurrentIndex(),
                         session.getAsUser(),
                         session.getAppId(),
-                        functionContextBytes
+                        functionContextBytes,
+                        session.getCompleted()
                 },
                 new int[] {
                         Types.VARCHAR,
@@ -144,7 +158,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                         Types.VARCHAR,
                         Types.VARCHAR,
                         Types.VARCHAR,
-                        Types.BINARY
+                        Types.BINARY,
+                        Types.BOOLEAN
                 }
         );
         return session;
@@ -240,6 +255,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setCurrentIndex(rs.getString("currentIndex"));
             session.setAsUser(rs.getString("asUser"));
             session.setAppId(rs.getString("appid"));
+            session.setCompleted(rs.getBoolean("completed"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if (st != null) {
