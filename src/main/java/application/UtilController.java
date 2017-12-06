@@ -48,6 +48,10 @@ public class UtilController extends AbstractBaseController {
         return new SyncDbResponseBean();
     }
 
+    private void submitUserForms(String username) {
+        formSessionRepo.findCompletedUserSessions(username);
+    }
+
     @ApiOperation(value = "Wipe the applications databases")
     @RequestMapping(value = Constants.URL_DELETE_APPLICATION_DBS, method = RequestMethod.POST)
     @UserLock

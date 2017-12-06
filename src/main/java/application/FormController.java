@@ -55,10 +55,6 @@ public class FormController extends AbstractBaseController{
     private SubmitService submitService;
 
     @Autowired
-    @Qualifier(value = "migrated")
-    protected FormSessionRepo migratedFormSessionRepo;
-
-    @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
 
@@ -144,15 +140,13 @@ public class FormController extends AbstractBaseController{
                         formEntrySession.getPostUrl()
                 );
 
-                if (!submitResponse.getStatusCode().is2xxSuccessful()) {
-                    submitResponseBean.setStatus("error");
-                    submitResponseBean.setNotification(new NotificationMessage(
-                            "Form submission failed with error response" + submitResponse, true));
+                if (submitResponse.getStatusCode().is2xxSuccessful()) {
                     log.error("Submit response bean: " + submitResponseBean);
-                    return submitResponseBean;
+                    deleteSession(submitRequestBean.getSessionId());
+                } else {
+                    formEntrySession.setCompleted(true);
                 }
                 // Only delete session immediately after successful submit
-                deleteSession(submitRequestBean.getSessionId());
                 restoreFactory.commit();
 
             }
@@ -183,7 +177,6 @@ public class FormController extends AbstractBaseController{
 
     protected void deleteSession(String id) {
         formSessionRepo.delete(id);
-        migratedFormSessionRepo.delete(id);
     }
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
