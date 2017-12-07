@@ -11,6 +11,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import repo.FormSessionRepo;
 import util.Constants;
 
 import javax.persistence.LockModeType;
@@ -27,12 +28,13 @@ import java.util.Map;
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
-public class PostgresFormSessionRepo implements CrudRepository<SerializableFormSession, String> {
+public class PostgresFormSessionRepo implements FormSessionRepo{
 
     @Autowired
     @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
 
+    @Override
     public List<SerializableFormSession> findUserSessions(String username) {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
                 replaceTableName(

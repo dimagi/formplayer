@@ -9,6 +9,7 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import repo.FormSessionRepo;
 import repo.impl.PostgresFormSessionRepo;
 import sandbox.UserSqlSandbox;
 import session.FormSession;
@@ -30,7 +31,7 @@ public class NewFormResponseFactory {
     private RestoreFactory restoreFactory;
 
     @Autowired
-    private PostgresFormSessionRepo formSessionRepo;
+    private FormSessionRepo formSessionRepo;
 
     @Autowired
     private FormSendCalloutHandler formSendCalloutHandler;
