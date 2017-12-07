@@ -117,12 +117,6 @@ public abstract class AbstractBaseController {
                                            int offset,
                                            String searchText,
                                            int sortIndex) throws Exception {
-        Screen nextScreen = menuSession.getNextScreen();
-        // If the nextScreen is null, that means we are heading into
-        // form entry and there isn't a screen title
-        if (nextScreen == null) {
-            return getNextMenu(menuSession, null, offset, searchText, sortIndex);
-        }
         return getNextMenu(menuSession, null, offset, searchText, sortIndex);
     }
 
