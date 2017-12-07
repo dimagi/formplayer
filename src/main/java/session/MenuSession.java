@@ -73,6 +73,9 @@ public class MenuSession {
     private boolean preview;
     ArrayList<String> titles;
 
+    private static final FormplayerHereFunctionHandler hereFunctionHandler = new FormplayerHereFunctionHandler();
+
+
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
@@ -203,7 +206,7 @@ public class MenuSession {
             EntityScreen entityScreen = new EntityScreen();
             entityScreen.init(sessionWrapper);
             // this will override the dummy here function handler that is added in EntityScreen
-            entityScreen.getEvalContext().addFunctionHandler(new FormplayerHereFunctionHandler());
+            entityScreen.getEvalContext().addFunctionHandler(hereFunctionHandler);
             if (entityScreen.shouldBeSkipped()) {
                 return getNextScreen();
             }
@@ -211,11 +214,11 @@ public class MenuSession {
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
             return getNextScreen();
-        } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
             QueryScreen queryScreen = new FormplayerQueryScreen();
             queryScreen.init(sessionWrapper);
             return queryScreen;
-        } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
             String username = asUser != null ?
                     StringUtils.getFullUsername(asUser, domain) : null;
             FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);

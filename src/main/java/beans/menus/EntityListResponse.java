@@ -1,6 +1,7 @@
 package beans.menus;
 
 import exceptions.ApplicationConfigException;
+import exceptions.BrowserLocationNeededException;
 import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
 import org.commcare.core.graph.model.GraphData;
@@ -13,6 +14,8 @@ import org.commcare.suite.model.*;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.condition.HereFunctionHandler;
+import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.TreeReference;
 
 import java.util.ArrayList;
@@ -24,7 +27,7 @@ import java.util.Vector;
  * Created by willpride on 4/13/16.
  */
 @ApiModel("EntityBean List Response")
-public class EntityListResponse extends MenuBean {
+public class EntityListResponse extends MenuBean implements HereFunctionHandlerListener {
     private EntityBean[] entities;
     private DisplayElement[] actions;
     private Style[] styles;
@@ -45,6 +48,9 @@ public class EntityListResponse extends MenuBean {
     private int maxWidth;
     private int maxHeight;
 
+    private String browserLocation;
+    private boolean browserLocationNeeded = false;
+
     public EntityListResponse() {}
 
     public EntityListResponse(EntityScreen nextScreen,
@@ -52,11 +58,12 @@ public class EntityListResponse extends MenuBean {
                               int offset,
                               String searchText,
                               String id,
-                              int sortIndex) {
+                              int sortIndex,
+                              String browserLocation) throws BrowserLocationNeededException {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EvaluationContext ec = nextScreen.getEvalContext();
-        EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
+        EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
         // We will shortcircuit the computation to just get the relevant detailSelection.
@@ -80,6 +87,10 @@ public class EntityListResponse extends MenuBean {
             entityList.toArray(entities);
         }
 
+        if (browserLocationNeeded && browserLocation == null) {
+            throw new BrowserLocationNeededException();
+        }
+
         processTitle(session);
         processCaseTiles(detail);
         this.styles = processStyles(detail);
@@ -89,6 +100,7 @@ public class EntityListResponse extends MenuBean {
         this.widthHints = pair.second;
         setMenuSessionId(id);
         this.sortIndices = detail.getOrderedFieldIndicesForSorting();
+        this.browserLocation = browserLocation;
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -231,7 +243,7 @@ public class EntityListResponse extends MenuBean {
         for (DetailField field : fields) {
             Object o;
             o = field.getTemplate().evaluate(context);
-            if(o instanceof GraphData) {
+            if (o instanceof GraphData) {
                 try {
                     data[i] = GraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
                 } catch (GraphException e) {
@@ -385,5 +397,20 @@ public class EntityListResponse extends MenuBean {
 
     public void setUseUniformUnits(boolean useUniformUnits) {
         this.useUniformUnits = useUniformUnits;
+    }
+
+    @Override
+    public void onEvalLocationChanged() {
+
+    }
+
+    @Override
+    public void onHereFunctionEvaluated() {
+        browserLocationNeeded = true;
+    }
+
+    @Override
+    public String getLocation() {
+        return browserLocation;
     }
 }

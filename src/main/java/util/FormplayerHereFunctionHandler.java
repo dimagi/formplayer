@@ -12,7 +12,14 @@ public class FormplayerHereFunctionHandler extends HereFunctionHandler {
 
     @Override
     public Object eval(Object[] args, EvaluationContext ec) throws XPathArityException {
-        return (new GeoPointData(new double[]{0, 0, 0 ,0})).getDisplayText();
+        alertOnEval();
+        if (listener.getLocation() == null) {
+            return "";
+        }
+        String[] locationData = listener.getLocation().split(",");
+        double lat = Double.parseDouble(locationData[0]);
+        double lon = Double.parseDouble(locationData[1]);
+        return (new GeoPointData(new double[]{lat, lon})).getDisplayText();
     }
 
 }
