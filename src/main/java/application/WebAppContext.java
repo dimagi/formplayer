@@ -1,15 +1,14 @@
 package application;
 
 import aspects.*;
-import io.sentry.SentryClientFactory;
-import io.sentry.dsn.InvalidDsnException;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
+import io.sentry.SentryClientFactory;
+import io.sentry.dsn.InvalidDsnException;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.commcare.modern.reference.ArchiveFileRoot;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -19,7 +18,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -29,14 +27,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
-import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.impl.PostgresFormSessionRepo;
 import repo.impl.PostgresMenuSessionRepo;
-import repo.impl.PostgresMigratedFormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import services.*;
-import util.Constants;
 import util.FormplayerSentry;
 
 import java.util.Properties;
@@ -214,14 +209,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public FormSessionRepo formSessionRepo(){
+    public PostgresFormSessionRepo formSessionRepo(){
         return new PostgresFormSessionRepo();
-    }
-
-    @Bean
-    @Qualifier(value = "migrated")
-    public FormSessionRepo migratedFormSessionRepo(){
-        return new PostgresMigratedFormSessionRepo();
     }
 
     @Bean

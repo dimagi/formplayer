@@ -28,6 +28,7 @@ public class SerializableFormSession implements Serializable{
     private String currentIndex = "0";
     private String appId;
     private Map<String, FunctionHandler[]> functionContext;
+    private boolean completed;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -179,5 +180,13 @@ public class SerializableFormSession implements Serializable{
 
     public void setFunctionContext(Map<String, FunctionHandler[]> functionContext) {
         this.functionContext = functionContext;
+    }
+
+    public boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 }

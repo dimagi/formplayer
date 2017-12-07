@@ -8,19 +8,23 @@ import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
+import objects.SerializableFormSession;
 import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import services.CategoryTimingHelper;
+import services.SubmitService;
 import sqlitedb.UserDB;
 import util.Constants;
 import util.Timing;
 
 import java.io.StringReader;
+import java.util.List;
 
 /**
  * Controller class (API endpoint) containing all all logic that isn't associated with
@@ -38,6 +42,9 @@ public class UtilController extends AbstractBaseController {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
+    @Autowired
+    private SubmitService submitService;
+
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
@@ -45,7 +52,20 @@ public class UtilController extends AbstractBaseController {
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         restoreFactory.performTimedSync();
+        submitUserForms(restoreFactory.getUsername());
         return new SyncDbResponseBean();
+    }
+
+    private void submitUserForms(String username) {
+        List<SerializableFormSession> completedForms = formSessionRepo.findCompletedUserSessions(username);
+        for (SerializableFormSession form: completedForms) {
+            ResponseEntity<String> submitResponse = submitService.submitForm(form.getFormXml(), form.getPostUrl());
+            if (submitResponse.getStatusCode().is2xxSuccessful()) {
+                formSessionRepo.delete(form.getId());
+            } else {
+                break;
+            }
+        }
     }
 
     @ApiOperation(value = "Wipe the applications databases")

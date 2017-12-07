@@ -19,12 +19,10 @@ import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
 import services.CategoryTimingHelper;
 import services.SubmitService;
@@ -53,10 +51,6 @@ public class FormController extends AbstractBaseController{
 
     @Autowired
     private SubmitService submitService;
-
-    @Autowired
-    @Qualifier(value = "migrated")
-    protected FormSessionRepo migratedFormSessionRepo;
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
@@ -144,15 +138,14 @@ public class FormController extends AbstractBaseController{
                         formEntrySession.getPostUrl()
                 );
 
-                if (!submitResponse.getStatusCode().is2xxSuccessful()) {
-                    submitResponseBean.setStatus("error");
-                    submitResponseBean.setNotification(new NotificationMessage(
-                            "Form submission failed with error response" + submitResponse, true));
+                if (submitResponse.getStatusCode().is2xxSuccessful()) {
+                    deleteSession(submitRequestBean.getSessionId());
+                } else {
                     log.error("Submit response bean: " + submitResponseBean);
-                    return submitResponseBean;
+                    formEntrySession.setCompleted(true);
+                    formSessionRepo.save(formEntrySession.serialize());
                 }
                 // Only delete session immediately after successful submit
-                deleteSession(submitRequestBean.getSessionId());
                 restoreFactory.commit();
 
             }
@@ -183,7 +176,6 @@ public class FormController extends AbstractBaseController{
 
     protected void deleteSession(String id) {
         formSessionRepo.delete(id);
-        migratedFormSessionRepo.delete(id);
     }
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {

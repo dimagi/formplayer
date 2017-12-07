@@ -35,6 +35,7 @@ public class SubmitService extends DefaultResponseErrorHandler {
         submitTimer.start();
         try {
             RestTemplate restTemplate = new RestTemplate();
+            restTemplate.setErrorHandler(this);
             HttpEntity<?> entity = new HttpEntity<Object>(formXml, restoreFactory.getUserHeaders());
             return restTemplate.exchange(submitUrl,
                     HttpMethod.POST,

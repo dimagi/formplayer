@@ -84,6 +84,7 @@ public class FormSession {
     private String appId;
     private Map<String, FunctionHandler[]> functionContext;
     private boolean isAtFirstIndex;
+    private boolean completed;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -339,6 +340,7 @@ public class FormSession {
         serializableFormSession.setAsUser(asUser);
         serializableFormSession.setAppId(appId);
         serializableFormSession.setFunctionContext(functionContext);
+        serializableFormSession.setCompleted(completed);
         return serializableFormSession;
     }
 
@@ -533,5 +535,9 @@ public class FormSession {
 
     public void setIsAtFirstIndex(boolean isAtFirstIndex) {
         this.isAtFirstIndex = isAtFirstIndex;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 }
