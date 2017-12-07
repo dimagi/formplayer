@@ -7,13 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
 import util.Constants;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.LockModeType;
 import java.io.*;
 import java.sql.ResultSet;
@@ -28,19 +28,11 @@ import java.util.Map;
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
-public class PostgresFormSessionRepo implements FormSessionRepo {
+public class PostgresFormSessionRepo implements FormSessionRepo{
 
     @Autowired
     @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
-
-    @PostConstruct
-    public void purgeFormSessions() {
-        String query = replaceTableName(
-                "delete from %s where dateopened::timestamptz < now() - interval '7 days'"
-        );
-        this.jdbcTemplate.execute(query);
-    }
 
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
