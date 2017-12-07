@@ -202,6 +202,8 @@ public class MenuSession {
         } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
             EntityScreen entityScreen = new EntityScreen();
             entityScreen.init(sessionWrapper);
+            // this will override the dummy here function handler that is added in EntityScreen
+            //entityScreen.getEvalContext().addFunctionHandler(new FormplayerHereFunctionHandler());
             if (entityScreen.shouldBeSkipped()) {
                 return getNextScreen();
             }
