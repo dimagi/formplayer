@@ -20,8 +20,6 @@ import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.*;
-import org.commcare.util.screen.MenuScreen;
-import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
@@ -35,9 +33,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
-import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
+import repo.impl.PostgresFormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import screens.FormplayerQueryScreen;
 import services.FormplayerStorageFactory;
@@ -62,7 +60,7 @@ public abstract class AbstractBaseController {
     protected String host;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    protected PostgresFormSessionRepo formSessionRepo;
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
