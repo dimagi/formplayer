@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -27,7 +28,7 @@ import java.util.Map;
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
-public class PostgresFormSessionRepo implements FormSessionRepo {
+public class PostgresFormSessionRepo implements FormSessionRepo{
 
     @Autowired
     @Qualifier("formplayerTemplate")

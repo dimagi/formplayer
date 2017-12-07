@@ -2,6 +2,7 @@ package mocks;
 
 import objects.SerializableFormSession;
 import repo.FormSessionRepo;
+import repo.impl.PostgresFormSessionRepo;
 
 /**
  * Created by willpride on 12/7/16.
