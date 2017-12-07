@@ -1,21 +1,17 @@
 package services;
 
-import auth.HqAuth;
 import beans.NewFormResponse;
 import beans.NewSessionRequestBean;
-import hq.CaseAPIs;
 import objects.SerializableFormSession;
 import org.apache.commons.io.IOUtils;
-import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import sandbox.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import repo.FormSessionRepo;
+import repo.impl.PostgresFormSessionRepo;
+import sandbox.UserSqlSandbox;
 import session.FormSession;
-import util.Constants;
-import util.SimpleTimer;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,7 +30,7 @@ public class NewFormResponseFactory {
     private RestoreFactory restoreFactory;
 
     @Autowired
-    private FormSessionRepo formSessionRepo;
+    private PostgresFormSessionRepo formSessionRepo;
 
     @Autowired
     private FormSendCalloutHandler formSendCalloutHandler;
