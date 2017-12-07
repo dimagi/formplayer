@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
 import repo.impl.PostgresFormSessionRepo;
@@ -60,7 +61,7 @@ public abstract class AbstractBaseController {
     protected String host;
 
     @Autowired
-    protected PostgresFormSessionRepo formSessionRepo;
+    protected FormSessionRepo formSessionRepo;
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
