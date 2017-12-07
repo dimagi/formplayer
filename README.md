@@ -82,8 +82,8 @@ If you want to run FormPlayer in Docker as a service of CommCare HQ, follow thes
 1. Start Docker for CommCare HQ as usual, either with `scripts/docker up` (services only) or `scripts/docker runserver` (HQ and services).
 2. Run `scripts/get_webhost` and append its output to `/etc/hosts`. (Or if you run Linux, `scripts/get_webhost | sudo tee -a /etc/hosts`.)
 3. If you run CommCare HQ in Django locally:
-3.1. Update localsettings.py with `FORMPLAYER_URL = 'http://localhost:8010'`
-3.2. Start Django with `./manage.py runserver 0.0.0.0:8000`.
+   1. Update localsettings.py with `FORMPLAYER_URL = 'http://localhost:8010'`
+   2. Start Django with `./manage.py runserver 0.0.0.0:8000`.
 4. From now on, open your local HQ instance at [http://webhost:8000/](http://webhost:8000/) (This is so that FormPlayer can use the same URL from inside its Docker container.)
 
 
