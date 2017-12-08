@@ -104,10 +104,7 @@ public class BasicEndOfFormTests extends BaseTestClass{
         NewFormResponse response =
                 sessionNavigate(new String[]{"15", "4", "17967331-5ef3-40a7-bcb4-ee36fb9091c2"},
                         "basic", NewFormResponse.class);
-        SubmitResponseBean submitResponse = submitForm(
-                new HashMap<>(),
-                response.getSessionId()
-        );
+        SubmitResponseBean submitResponse = submitForm(response.getSessionId());
         NewFormResponse formResponse = getNextScreen(submitResponse, NewFormResponse.class);
         assert formResponse.getTitle().equals("Home Screen");
         assert formResponse.getTree().length == 1;
