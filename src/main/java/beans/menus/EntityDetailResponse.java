@@ -1,6 +1,9 @@
 package beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.commcare.core.graph.model.GraphData;
+import org.commcare.core.graph.util.GraphException;
+import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
@@ -38,9 +41,26 @@ public class EntityDetailResponse {
 
     public EntityDetailResponse(EntityDetailSubscreen entityScreen, String title) {
         this.title = title;
-        this.details = entityScreen.getData();
+        this.details = processDetails(entityScreen.getData());
         this.headers = entityScreen.getHeaders();
         this.styles = entityScreen.getStyles();
+
+    }
+
+    private static Object[] processDetails(Object[] data) {
+        Object[] ret = new Object[data.length];
+        for (int i = 0; i < data.length; i++) {
+            Object datum = data[i];
+            if (datum instanceof GraphData) {
+                try {
+                    datum = GraphUtil.getHTML((GraphData) datum, "").replace("\"", "'");
+                } catch (GraphException e) {
+                    datum = "Error loading graph " + e;
+                }
+            }
+            ret[i] = datum;
+        }
+        return ret;
     }
 
     // Constructor used for persistent case tile
