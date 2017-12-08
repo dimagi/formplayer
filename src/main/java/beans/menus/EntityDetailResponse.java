@@ -11,6 +11,7 @@ import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
+import util.FormplayerGraphUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +54,7 @@ public class EntityDetailResponse {
             Object datum = data[i];
             if (datum instanceof GraphData) {
                 try {
-                    datum = GraphUtil.getHTML((GraphData) datum, "").replace("\"", "'");
+                    datum = FormplayerGraphUtil.getHTML((GraphData) datum, "").replace("\"", "'");
                 } catch (GraphException e) {
                     datum = "Error loading graph " + e;
                 }
