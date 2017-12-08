@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ import utils.TestContext;
 import javax.servlet.http.Cookie;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -251,6 +253,10 @@ public class BaseTestClass {
                 NewFormResponse.class);
     }
 
+    SubmitResponseBean submitForm(String sessionId) throws Exception {
+        return submitForm(new HashMap<String, Object>(), sessionId);
+    }
+
     SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
@@ -261,6 +267,7 @@ public class BaseTestClass {
                 submitRequestBean,
                 SubmitResponseBean.class);
     }
+
 
     SubmitResponseBean submitForm(Map<String, Object> answers, String sessionId) throws Exception {
         SubmitRequestBean submitRequestBean = new SubmitRequestBean();
