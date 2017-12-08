@@ -28,6 +28,6 @@ public class GeoTests extends BaseTestClass{
     // validate that we don't crash on here() function
     @Test
     public void testHereOverride() throws Exception {
-        sessionNavigate(new String[]{"5", "1"}, "basic", EntityListResponse.class);
+        sessionNavigate(new String[]{"6", "1"}, "basic", EntityListResponse.class);
     }
 }
