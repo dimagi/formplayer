@@ -168,12 +168,11 @@ public class EntityListResponse extends MenuBean {
                                                                String searchText,
                                                                int sortIndex) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
-        nodeEntityFactory.prepareEntities();
         List<Entity<TreeReference>> full = new ArrayList<>();
         for (TreeReference reference: references) {
             full.add(nodeEntityFactory.getEntity(reference));
         }
-
+        nodeEntityFactory.prepareEntities(full);
         List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
         sort(matched, shortDetail, sortIndex);
         return matched;
