@@ -572,6 +572,16 @@ public class SqlStorage<T extends Persistable>
         }
     }
 
+    @Override
+    public String[] getMetaDataForRecord(int recordId, String[] metaFieldNames) {
+        return new String[0];
+    }
+
+    @Override
+    public void bulkReadMetadata(LinkedHashSet<Integer> recordIds, String[] metaFieldNames, HashMap<Integer, String[]> metadataMap) {
+        
+    }
+
 
     /**
      * Retrieves a set of the models in storage based on a list of values matching one if the
