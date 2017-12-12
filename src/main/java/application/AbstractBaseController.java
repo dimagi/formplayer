@@ -36,7 +36,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
-import repo.impl.PostgresFormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import screens.FormplayerQueryScreen;
 import services.FormplayerStorageFactory;
@@ -149,7 +148,7 @@ public abstract class AbstractBaseController {
             }
             else if (nextScreen instanceof EntityScreen) {
                 // We're looking at a case list or detail screen
-                menuResponseBean = generateEntityScreen(
+                menuResponseBean = generateEntityResponse(
                         (EntityScreen)nextScreen,
                         detailSelection,
                         offset,
@@ -273,13 +272,9 @@ public abstract class AbstractBaseController {
         return new CommandListResponseBean(nextScreen, session, menuSessionId);
     }
 
-    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
-                                                    String menuSessionId, int sortIndex, String browserLocation) {
-        try {
-            return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSessionId, sortIndex, browserLocation);
-        } catch (BrowserLocationNeededException e) {
-            return new LocationRequestBean();
-        }
+    private MenuBean generateEntityResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
+                                            String menuSessionId, int sortIndex, String browserLocation) {
+        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSessionId, sortIndex, browserLocation);
     }
 
     private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {

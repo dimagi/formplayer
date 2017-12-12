@@ -1,12 +1,10 @@
 package beans.menus;
 
 import exceptions.ApplicationConfigException;
-import exceptions.BrowserLocationNeededException;
 import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
@@ -14,10 +12,10 @@ import org.commcare.suite.model.*;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.core.model.condition.HereFunctionHandler;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.TreeReference;
 import util.FormplayerGraphUtil;
+import util.FormplayerHereFunctionHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +48,8 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
     private int maxHeight;
 
     private String browserLocation;
-    private boolean browserLocationNeeded = false;
+    private boolean hereFunctionPresent;
+    private boolean shouldRequestLocation;
 
     public EntityListResponse() {}
 
@@ -60,11 +59,16 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
                               String searchText,
                               String id,
                               int sortIndex,
-                              String browserLocation) throws BrowserLocationNeededException {
+                              String browserLocation) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EvaluationContext ec = nextScreen.getEvalContext();
+
+        // this will override the dummy here function handler that was added in EntityScreen
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(this));
+
         EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
+        this.browserLocation = browserLocation;
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
         // We will shortcircuit the computation to just get the relevant detailSelection.
@@ -88,10 +92,6 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
             entityList.toArray(entities);
         }
 
-        if (browserLocationNeeded && browserLocation == null) {
-            throw new BrowserLocationNeededException();
-        }
-
         processTitle(session);
         processCaseTiles(detail);
         this.styles = processStyles(detail);
@@ -101,7 +101,7 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
         this.widthHints = pair.second;
         setMenuSessionId(id);
         this.sortIndices = detail.getOrderedFieldIndicesForSorting();
-        this.browserLocation = browserLocation;
+        this.shouldRequestLocation = hereFunctionPresent && browserLocation == null;
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -255,6 +255,7 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
             }
             i++;
         }
+
         ret.setData(data);
         return ret;
     }
@@ -400,6 +401,14 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
         this.useUniformUnits = useUniformUnits;
     }
 
+    public boolean getShouldRequestLocation() {
+        return this.shouldRequestLocation;
+    }
+
+    public boolean getShouldWatchLocation() {
+        return this.hereFunctionPresent;
+    }
+
     @Override
     public void onEvalLocationChanged() {
 
@@ -407,7 +416,7 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
 
     @Override
     public void onHereFunctionEvaluated() {
-        browserLocationNeeded = true;
+        hereFunctionPresent = true;
     }
 
     @Override

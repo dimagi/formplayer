@@ -73,9 +73,6 @@ public class MenuSession {
     private boolean preview;
     ArrayList<String> titles;
 
-    private static final FormplayerHereFunctionHandler hereFunctionHandler = new FormplayerHereFunctionHandler();
-
-
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
@@ -205,8 +202,6 @@ public class MenuSession {
         } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
             EntityScreen entityScreen = new EntityScreen();
             entityScreen.init(sessionWrapper);
-            // this will override the dummy here function handler that is added in EntityScreen
-            entityScreen.getEvalContext().addFunctionHandler(hereFunctionHandler);
             if (entityScreen.shouldBeSkipped()) {
                 return getNextScreen();
             }
