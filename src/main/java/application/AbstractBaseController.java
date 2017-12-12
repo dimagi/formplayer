@@ -108,14 +108,15 @@ public abstract class AbstractBaseController {
     }
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, 0, "", 0);
+        return getNextMenu(menuSession, 0, "", 0, null);
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
                                            int offset,
                                            String searchText,
-                                           int sortIndex) throws Exception {
-        return getNextMenu(menuSession, null, offset, searchText, sortIndex, null);
+                                           int sortIndex,
+                                           String browserLocation) throws Exception {
+        return getNextMenu(menuSession, null, offset, searchText, sortIndex, browserLocation);
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
@@ -272,7 +273,7 @@ public abstract class AbstractBaseController {
         return new CommandListResponseBean(nextScreen, session, menuSessionId);
     }
 
-    private MenuBean generateEntityResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
+    private EntityListResponse generateEntityResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
                                             String menuSessionId, int sortIndex, String browserLocation) {
         return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSessionId, sortIndex, browserLocation);
     }

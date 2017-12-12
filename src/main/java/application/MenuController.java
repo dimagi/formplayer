@@ -243,16 +243,17 @@ public class MenuController extends AbstractBaseController {
                                                           String searchText,
                                                           int sortIndex,
                                                           String browserLocation) throws Exception {
-        BaseResponseBean nexResponse;
+        BaseResponseBean nextResponse;
         // If we have no selections, we're are the root screen.
         if (selections == null) {
-            nexResponse = getNextMenu(
+            nextResponse = getNextMenu(
                     menuSession,
                     offset,
                     searchText,
-                    sortIndex
+                    sortIndex,
+                    browserLocation
             );
-            return nexResponse;
+            return nextResponse;
         }
 
         String[] overrideSelections = null;
@@ -286,7 +287,7 @@ public class MenuController extends AbstractBaseController {
             }
         }
 
-        nexResponse = getNextMenu(
+        nextResponse = getNextMenu(
                 menuSession,
                 detailSelection,
                 offset,
@@ -294,11 +295,11 @@ public class MenuController extends AbstractBaseController {
                 sortIndex,
                 browserLocation
         );
-        if (nexResponse != null) {
-            nexResponse.setNotification(notificationMessage);
-            nexResponse.setSelections(overrideSelections);
-            log.info("Returning menu: " + nexResponse);
-            return nexResponse;
+        if (nextResponse != null) {
+            nextResponse.setNotification(notificationMessage);
+            nextResponse.setSelections(overrideSelections);
+            log.info("Returning menu: " + nextResponse);
+            return nextResponse;
         } else {
             BaseResponseBean responseBean = resolveFormGetNext(menuSession);
             if (responseBean == null) {
