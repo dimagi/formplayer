@@ -3,9 +3,12 @@ package services;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.MenuDisplayable;
+import org.commcare.suite.model.SessionDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -16,6 +19,9 @@ import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
 import session.MenuSession;
 
+import java.util.Hashtable;
+import java.util.Set;
+import java.util.Stack;
 import java.util.Vector;
 
 /**
@@ -40,42 +46,41 @@ public class MenuSessionFactory {
      * Rebuild the MenuSession from its stack frame. This is used after end of form navigation.
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
-     */
+    */
     public void rebuildSessionFromFrame(MenuSession menuSession) {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
         Screen screen = menuSession.getNextScreen();
-        for (StackFrameStep step: steps) {
+        while (screen != null) {
             String currentStep = null;
-            if (menuSession.getSessionWrapper().getFrame().getSteps().contains(step)) {
-                // If the new frame already contains this step then it was a `computed` type
-                // that we don't need to re-add and process
-                break;
-            }
-            switch (step.getElementType()) {
-                case SessionFrame.STATE_COMMAND_ID:
-                    String stepId = step.getId();
-                    MenuScreen menuScreen = (MenuScreen) screen;
-                    for (int i = 0; i < menuScreen.getMenuDisplayables().length; i++) {
-                        MenuDisplayable menuDisplayable = menuScreen.getMenuDisplayables()[i];
-                        if (menuDisplayable.getCommandID().equals(stepId)) {
+            if (screen instanceof MenuScreen) {
+                MenuDisplayable[] options = ((MenuScreen) screen).getMenuDisplayables();
+                for (int i = 0; i < options.length; i++) {
+                    for (StackFrameStep step : steps) {
+                        if (step.getId().equals(options[i].getCommandID())) {
                             currentStep = String.valueOf(i);
                         }
                     }
-                    break;
-                case SessionFrame.STATE_DATUM_VAL:
-                    currentStep = step.getValue();
-                    break;
-                default:
-                    break;
+                }
+            } else if (screen instanceof EntityScreen) {
+                EntityScreen entityScreen = (EntityScreen) screen;
+                SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
+                Set<String> caseIds = entityScreen.getReferenceMap().keySet();
+                for (StackFrameStep step: steps) {
+                    if (step.getId().equals(neededDatum.getDataId())) {
+                        if (caseIds.contains(step.getValue())) {
+                            currentStep = step.getValue();
+                        }
+                    }
+                }
             }
             if (currentStep == null) {
-                log.error(String.format("Could not get command for step %s on screen %s", step, screen));
+                break;
             } else {
                 menuSession.handleInput(currentStep);
                 menuSession.addSelection(currentStep);
+                screen = menuSession.getNextScreen();
             }
-            screen = menuSession.getNextScreen();
         }
     }
 
