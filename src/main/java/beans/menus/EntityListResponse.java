@@ -58,9 +58,8 @@ public class EntityListResponse extends MenuBean {
                               int sortIndex) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
-        EvaluationContext ec = nextScreen.getEvalContext();
 
-        // this will override the dummy here function handler that was added in EntityScreen
+        EvaluationContext ec = nextScreen.getEvalContext();
         ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession));
 
         EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();

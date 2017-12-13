@@ -45,6 +45,7 @@ public class EntityDetailResponse {
         this.details = processDetails(entityScreen.getData());
         this.headers = entityScreen.getHeaders();
         this.styles = entityScreen.getStyles();
+        
     }
 
     private static Object[] processDetails(Object[] data) {
