@@ -3,21 +3,19 @@ package beans.menus;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Detail;
-import org.commcare.suite.model.EntityDatum;
-import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.screen.EntityDetailSubscreen;
-import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
-import org.commcare.util.screen.Subscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
+import session.MenuSession;
+import util.FormplayerHereFunctionHandler;
 
 import java.util.ArrayList;
 
 /**
  * Created by willpride on 1/4/17.
  */
-public class EntityDetailListResponse {
+public class EntityDetailListResponse extends LocationRequestBean {
 
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
@@ -29,12 +27,15 @@ public class EntityDetailListResponse {
         this.isPersistentDetail = true;
     }
 
-    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference) {
+    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference,
+                                    MenuSession menuSession) {
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession));
         entityDetailList = processDetails(screen, ec, treeReference);
     }
 
-    public EntityDetailListResponse(Detail[] detailList,
-                                    EvaluationContext ec, TreeReference treeReference) {
+    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference,
+                                    MenuSession menuSession) {
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession));
         entityDetailList = processDetails(detailList, ec, treeReference);
     }
 
@@ -98,4 +99,5 @@ public class EntityDetailListResponse {
     public void setPersistentDetail(boolean persistentDetail) {
         this.isPersistentDetail = persistentDetail;
     }
+
 }

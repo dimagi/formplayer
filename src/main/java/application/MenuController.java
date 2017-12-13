@@ -7,13 +7,9 @@ import beans.InstallRequestBean;
 import beans.NewFormResponse;
 import beans.NotificationMessage;
 import beans.SessionNavigationBean;
-import beans.menus.BaseResponseBean;
-import beans.menus.EntityDetailListResponse;
-import beans.menus.EntityDetailResponse;
-import beans.menus.UpdateRequestBean;
+import beans.menus.*;
 import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
-import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
@@ -34,10 +30,7 @@ import services.QueryRequester;
 import services.SyncRequester;
 import session.FormSession;
 import session.MenuSession;
-import sqlitedb.ApplicationDB;
 import util.Constants;
-import util.SimpleTimer;
-import util.Timing;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -128,7 +121,7 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Could not get inline details");
             }
-            return detail;
+            return LocationRequestBean.setLocationNeeds(detail, menuSession);
         }
 
         String[] selections = sessionNavigationBean.getSelections();
@@ -153,19 +146,18 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
-            return new EntityDetailListResponse(detail);
+            return LocationRequestBean.setLocationNeeds(new EntityDetailListResponse(detail), menuSession);
         }
-        EntityScreen entityScreen = (EntityScreen) currentScreen;
+        EntityScreen entityScreen = (EntityScreen)currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
 
         if (reference == null) {
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        return new EntityDetailListResponse(
-                entityScreen,
-                menuSession.getSessionWrapper().getEvaluationContext(),
-                reference
+        return LocationRequestBean.setLocationNeeds(
+                new EntityDetailListResponse(entityScreen, menuSession.getSessionWrapper().getEvaluationContext(), reference, menuSession),
+                menuSession
         );
     }
 
@@ -199,11 +191,12 @@ public class MenuController extends AbstractBaseController {
         if (sessionNavigationBean.getMenuSessionId() == null || "".equals(sessionNavigationBean.getMenuSessionId())) {
             menuSessionRepo.save(new SerializableMenuSession(menuSession));
         }
-        return response;
+
+        return LocationRequestBean.setLocationNeeds(response, menuSession);
     }
 
     private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
-        MenuSession menuSession = null;
+        MenuSession menuSession;
         String menuSessionId = sessionNavigationBean.getMenuSessionId();
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             menuSession = getMenuSession(
@@ -212,6 +205,7 @@ public class MenuController extends AbstractBaseController {
         } else {
             menuSession = performInstall(sessionNavigationBean);
         }
+        menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
         return menuSession;
     }
 
@@ -239,16 +233,16 @@ public class MenuController extends AbstractBaseController {
                                                           int offset,
                                                           String searchText,
                                                           int sortIndex) throws Exception {
-        BaseResponseBean nextMenu;
+        BaseResponseBean nextResponse;
         // If we have no selections, we're are the root screen.
         if (selections == null) {
-            nextMenu = getNextMenu(
+            nextResponse = getNextMenu(
                     menuSession,
                     offset,
                     searchText,
                     sortIndex
             );
-            return nextMenu;
+            return nextResponse;
         }
 
         String[] overrideSelections = null;
@@ -282,20 +276,18 @@ public class MenuController extends AbstractBaseController {
             }
         }
 
-
-
-        nextMenu = getNextMenu(
+        nextResponse = getNextMenu(
                 menuSession,
                 detailSelection,
                 offset,
                 searchText,
                 sortIndex
         );
-        if (nextMenu != null) {
-            nextMenu.setNotification(notificationMessage);
-            nextMenu.setSelections(overrideSelections);
-            log.info("Returning menu: " + nextMenu);
-            return nextMenu;
+        if (nextResponse != null) {
+            nextResponse.setNotification(notificationMessage);
+            nextResponse.setSelections(overrideSelections);
+            log.info("Returning menu: " + nextResponse);
+            return nextResponse;
         } else {
             BaseResponseBean responseBean = resolveFormGetNext(menuSession);
             if (responseBean == null) {

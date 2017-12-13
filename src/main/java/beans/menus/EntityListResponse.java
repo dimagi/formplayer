@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
@@ -13,8 +12,11 @@ import org.commcare.suite.model.*;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.TreeReference;
+import session.MenuSession;
 import util.FormplayerGraphUtil;
+import util.FormplayerHereFunctionHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,12 +54,15 @@ public class EntityListResponse extends MenuBean {
                               String detailSelection,
                               int offset,
                               String searchText,
-                              String id,
+                              MenuSession menuSession,
                               int sortIndex) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
+
         EvaluationContext ec = nextScreen.getEvalContext();
-        EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession));
+
+        EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
         // We will shortcircuit the computation to just get the relevant detailSelection.
@@ -88,7 +93,7 @@ public class EntityListResponse extends MenuBean {
         Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
         this.headers = pair.first;
         this.widthHints = pair.second;
-        setMenuSessionId(id);
+        setMenuSessionId(menuSession.getId());
         this.sortIndices = detail.getOrderedFieldIndicesForSorting();
     }
 
@@ -232,7 +237,7 @@ public class EntityListResponse extends MenuBean {
         for (DetailField field : fields) {
             Object o;
             o = field.getTemplate().evaluate(context);
-            if(o instanceof GraphData) {
+            if (o instanceof GraphData) {
                 try {
                     data[i] = FormplayerGraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
                 } catch (GraphException e) {
@@ -243,6 +248,7 @@ public class EntityListResponse extends MenuBean {
             }
             i++;
         }
+
         ret.setData(data);
         return ret;
     }
@@ -387,4 +393,5 @@ public class EntityListResponse extends MenuBean {
     public void setUseUniformUnits(boolean useUniformUnits) {
         this.useUniformUnits = useUniformUnits;
     }
+
 }

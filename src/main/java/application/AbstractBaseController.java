@@ -36,7 +36,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
-import repo.impl.PostgresFormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import screens.FormplayerQueryScreen;
 import services.FormplayerStorageFactory;
@@ -46,6 +45,7 @@ import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
+import util.FormplayerHereFunctionHandler;
 import util.FormplayerHttpRequest;
 import util.FormplayerSentry;
 
@@ -101,7 +101,7 @@ public abstract class AbstractBaseController {
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         menuSession.getSessionWrapper().syncState();
-        if(menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
+        if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
             menuSession.getSessionWrapper().clearVolatiles();
             return getNextMenu(menuSession);
         }
@@ -116,12 +116,6 @@ public abstract class AbstractBaseController {
                                            int offset,
                                            String searchText,
                                            int sortIndex) throws Exception {
-        Screen nextScreen = menuSession.getNextScreen();
-        // If the nextScreen is null, that means we are heading into
-        // form entry and there isn't a screen title
-        if (nextScreen == null) {
-            return getNextMenu(menuSession, null, offset, searchText, sortIndex);
-        }
         return getNextMenu(menuSession, null, offset, searchText, sortIndex);
     }
 
@@ -136,12 +130,12 @@ public abstract class AbstractBaseController {
         nextScreen = menuSession.getNextScreen();
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
-            if(menuSession.getSessionWrapper().getForm() != null) {
+            if (menuSession.getSessionWrapper().getForm() != null) {
                 NewFormResponse formResponseBean = generateFormEntryScreen(menuSession);
-                setPersistentCaseTile(menuSession, formResponseBean);
+                formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
                 formResponseBean.setBreadcrumbs(menuSession.getTitles());
                 return formResponseBean;
-            } else{
+            } else {
                 return null;
             }
         } else {
@@ -152,18 +146,18 @@ public abstract class AbstractBaseController {
                 menuResponseBean = generateMenuScreen((MenuScreen) nextScreen, menuSession.getSessionWrapper(),
                         menuSession.getId());
             }
-            // We're looking at a case list or detail screen
             else if (nextScreen instanceof EntityScreen) {
-                menuResponseBean = generateEntityScreen(
-                        (EntityScreen) nextScreen,
+                // We're looking at a case list or detail screen
+                menuResponseBean = generateEntityResponse(
+                        (EntityScreen)nextScreen,
                         detailSelection,
                         offset,
                         searchText,
-                        menuSession.getId(),
+                        menuSession,
                         sortIndex
                 );
-            } else if(nextScreen instanceof FormplayerQueryScreen){
-                    menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
+            } else if (nextScreen instanceof FormplayerQueryScreen){
+                menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
             } else {
                 throw new Exception("Unable to recognize next screen: " + nextScreen);
             }
@@ -171,7 +165,7 @@ public abstract class AbstractBaseController {
             menuResponseBean.setAppId(menuSession.getAppId());
             menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
                     ", App Version: " + menuSession.getAppVersion());
-            setPersistentCaseTile(menuSession, menuResponseBean);
+            menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
             return menuResponseBean;
         }
     }
@@ -248,24 +242,15 @@ public abstract class AbstractBaseController {
         EvaluationContext ec;
         if (inline) {
             ec = session.getEvaluationContext();
-            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(),
-                    ec,
-                    reference);
+            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(), ec, reference, menuSession);
         } else {
             ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), reference);
+            ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession));
             EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
             detailResponse.setHasInlineTile(entityDatum.getInlineDetail() != null);
             return new EntityDetailListResponse(detailResponse);
         }
 
-    }
-
-    private void setPersistentCaseTile(MenuSession menuSession, NewFormResponse formResponse) {
-        formResponse.setPersistentCaseTile(getPersistentDetail(menuSession));
-    }
-
-    private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
-        menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
@@ -277,9 +262,9 @@ public abstract class AbstractBaseController {
         return new CommandListResponseBean(nextScreen, session, menuSessionId);
     }
 
-    private EntityListResponse generateEntityScreen(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
-                                                    String menuSessionId, int sortIndex) {
-        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSessionId, sortIndex);
+    private EntityListResponse generateEntityResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
+                                            MenuSession menuSession, int sortIndex) {
+        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSession, sortIndex);
     }
 
     private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {

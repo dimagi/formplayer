@@ -1,7 +1,6 @@
 package session;
 
 import engine.FormplayerConfigEngine;
-import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
@@ -17,6 +16,7 @@ import org.commcare.util.screen.*;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
@@ -54,7 +54,7 @@ import java.util.UUID;
  */
 @EnableAutoConfiguration
 @Component
-public class MenuSession {
+public class MenuSession implements HereFunctionHandlerListener {
     private FormplayerConfigEngine engine;
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
@@ -72,6 +72,9 @@ public class MenuSession {
     private boolean oneQuestionPerScreen;
     private boolean preview;
     ArrayList<String> titles;
+
+    private String currentBrowserLocation;
+    private boolean hereFunctionEvaluated;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
@@ -209,11 +212,11 @@ public class MenuSession {
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
             return getNextScreen();
-        } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
             QueryScreen queryScreen = new FormplayerQueryScreen();
             queryScreen.init(sessionWrapper);
             return queryScreen;
-        } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
             String username = asUser != null ?
                     StringUtils.getFullUsername(asUser, domain) : null;
             FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
@@ -286,7 +289,7 @@ public class MenuSession {
         return CommCareSession.restoreSessionFromStream(platform, in);
     }
 
-    public SessionWrapper getSessionWrapper(){
+    public SessionWrapper getSessionWrapper() {
         return sessionWrapper;
     }
 
@@ -362,5 +365,32 @@ public class MenuSession {
 
     public void setPreview(boolean preview) {
         this.preview = preview;
+    }
+
+    public void setCurrentBrowserLocation(String location) {
+        this.currentBrowserLocation = location;
+    }
+
+    @Override
+    public void onEvalLocationChanged() {
+
+    }
+
+    @Override
+    public void onHereFunctionEvaluated() {
+        this.hereFunctionEvaluated = true;
+    }
+
+    @Override
+    public String getLocation() {
+        return this.currentBrowserLocation;
+    }
+
+    public boolean locationRequestNeeded() {
+        return this.hereFunctionEvaluated && this.currentBrowserLocation == null;
+    }
+
+    public boolean hereFunctionEvaluated() {
+        return hereFunctionEvaluated;
     }
 }
