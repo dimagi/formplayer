@@ -55,8 +55,7 @@ public class EntityListResponse extends MenuBean {
                               int offset,
                               String searchText,
                               MenuSession menuSession,
-                              int sortIndex,
-                              String browserLocation) {
+                              int sortIndex) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EvaluationContext ec = nextScreen.getEvalContext();

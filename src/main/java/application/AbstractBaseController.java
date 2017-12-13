@@ -109,23 +109,21 @@ public abstract class AbstractBaseController {
     }
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, 0, "", 0, null);
+        return getNextMenu(menuSession, 0, "", 0);
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
                                            int offset,
                                            String searchText,
-                                           int sortIndex,
-                                           String browserLocation) throws Exception {
-        return getNextMenu(menuSession, null, offset, searchText, sortIndex, browserLocation);
+                                           int sortIndex) throws Exception {
+        return getNextMenu(menuSession, null, offset, searchText, sortIndex);
     }
 
     protected BaseResponseBean getNextMenu(MenuSession menuSession,
                                            String detailSelection,
                                            int offset,
                                            String searchText,
-                                           int sortIndex,
-                                           String browserLocation) throws Exception {
+                                           int sortIndex) throws Exception {
         Screen nextScreen;
 
         // If we were redrawing, remain on the current screen. Otherwise, advance to the next.
@@ -156,8 +154,7 @@ public abstract class AbstractBaseController {
                         offset,
                         searchText,
                         menuSession,
-                        sortIndex,
-                        browserLocation
+                        sortIndex
                 );
             } else if (nextScreen instanceof FormplayerQueryScreen){
                 menuResponseBean = generateQueryScreen((QueryScreen) nextScreen, menuSession.getSessionWrapper());
@@ -266,8 +263,8 @@ public abstract class AbstractBaseController {
     }
 
     private EntityListResponse generateEntityResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
-                                            MenuSession menuSession, int sortIndex, String browserLocation) {
-        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSession, sortIndex, browserLocation);
+                                            MenuSession menuSession, int sortIndex) {
+        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSession, sortIndex);
     }
 
     private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
