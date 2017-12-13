@@ -133,7 +133,7 @@ public abstract class AbstractBaseController {
         if (nextScreen == null) {
             if (menuSession.getSessionWrapper().getForm() != null) {
                 NewFormResponse formResponseBean = generateFormEntryScreen(menuSession);
-                setPersistentCaseTile(menuSession, formResponseBean);
+                formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
                 formResponseBean.setBreadcrumbs(menuSession.getTitles());
                 return formResponseBean;
             } else {
@@ -167,7 +167,7 @@ public abstract class AbstractBaseController {
             menuResponseBean.setAppId(menuSession.getAppId());
             menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
                     ", App Version: " + menuSession.getAppVersion());
-            setPersistentCaseTile(menuSession, menuResponseBean);
+            menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
             return menuResponseBean;
         }
     }
@@ -254,14 +254,6 @@ public abstract class AbstractBaseController {
             return new EntityDetailListResponse(detailResponse);
         }
 
-    }
-
-    private void setPersistentCaseTile(MenuSession menuSession, NewFormResponse formResponse) {
-        formResponse.setPersistentCaseTile(getPersistentDetail(menuSession));
-    }
-
-    private void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
-        menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
     }
 
     private QueryResponseBean generateQueryScreen(QueryScreen nextScreen, SessionWrapper sessionWrapper) {
