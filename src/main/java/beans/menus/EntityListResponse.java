@@ -14,6 +14,7 @@ import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.TreeReference;
+import session.MenuSession;
 import util.FormplayerGraphUtil;
 import util.FormplayerHereFunctionHandler;
 
@@ -26,7 +27,7 @@ import java.util.Vector;
  * Created by willpride on 4/13/16.
  */
 @ApiModel("EntityBean List Response")
-public class EntityListResponse extends MenuBean implements HereFunctionHandlerListener {
+public class EntityListResponse extends MenuBean {
     private EntityBean[] entities;
     private DisplayElement[] actions;
     private Style[] styles;
@@ -47,17 +48,13 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
     private int maxWidth;
     private int maxHeight;
 
-    private String browserLocation;
-    private boolean hereFunctionPresent;
-    private boolean shouldRequestLocation;
-
     public EntityListResponse() {}
 
     public EntityListResponse(EntityScreen nextScreen,
                               String detailSelection,
                               int offset,
                               String searchText,
-                              String id,
+                              MenuSession menuSession,
                               int sortIndex,
                               String browserLocation) {
         SessionWrapper session = nextScreen.getSession();
@@ -65,10 +62,9 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
         EvaluationContext ec = nextScreen.getEvalContext();
 
         // this will override the dummy here function handler that was added in EntityScreen
-        ec.addFunctionHandler(new FormplayerHereFunctionHandler(this));
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession));
 
         EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
-        this.browserLocation = browserLocation;
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
         // We will shortcircuit the computation to just get the relevant detailSelection.
@@ -99,9 +95,8 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
         Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
         this.headers = pair.first;
         this.widthHints = pair.second;
-        setMenuSessionId(id);
+        setMenuSessionId(menuSession.getId());
         this.sortIndices = detail.getOrderedFieldIndicesForSorting();
-        this.shouldRequestLocation = hereFunctionPresent && browserLocation == null;
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -401,26 +396,4 @@ public class EntityListResponse extends MenuBean implements HereFunctionHandlerL
         this.useUniformUnits = useUniformUnits;
     }
 
-    public boolean getShouldRequestLocation() {
-        return this.shouldRequestLocation;
-    }
-
-    public boolean getShouldWatchLocation() {
-        return this.hereFunctionPresent;
-    }
-
-    @Override
-    public void onEvalLocationChanged() {
-
-    }
-
-    @Override
-    public void onHereFunctionEvaluated() {
-        hereFunctionPresent = true;
-    }
-
-    @Override
-    public String getLocation() {
-        return browserLocation;
-    }
 }

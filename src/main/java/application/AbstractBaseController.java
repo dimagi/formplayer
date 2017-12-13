@@ -45,6 +45,7 @@ import services.RestoreFactory;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
+import util.FormplayerHereFunctionHandler;
 import util.FormplayerHttpRequest;
 import util.FormplayerSentry;
 
@@ -154,7 +155,7 @@ public abstract class AbstractBaseController {
                         detailSelection,
                         offset,
                         searchText,
-                        menuSession.getId(),
+                        menuSession,
                         sortIndex,
                         browserLocation
                 );
@@ -244,11 +245,10 @@ public abstract class AbstractBaseController {
         EvaluationContext ec;
         if (inline) {
             ec = session.getEvaluationContext();
-            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(),
-                    ec,
-                    reference);
+            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(), ec, reference, menuSession);
         } else {
             ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), reference);
+            ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession));
             EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
             detailResponse.setHasInlineTile(entityDatum.getInlineDetail() != null);
             return new EntityDetailListResponse(detailResponse);
@@ -266,8 +266,8 @@ public abstract class AbstractBaseController {
     }
 
     private EntityListResponse generateEntityResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText,
-                                            String menuSessionId, int sortIndex, String browserLocation) {
-        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSessionId, sortIndex, browserLocation);
+                                            MenuSession menuSession, int sortIndex, String browserLocation) {
+        return new EntityListResponse(nextScreen, detailSelection, offset, searchText, menuSession, sortIndex, browserLocation);
     }
 
     private NewFormResponse generateFormEntryScreen(MenuSession menuSession) throws Exception {
