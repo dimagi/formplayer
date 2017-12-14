@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 /**
- * Regression tests for fixed behaviors
+ * Test that end of form navigations used by Enikshay Private application work
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
@@ -35,7 +35,7 @@ public class EnikshayEndOfFormTests extends BaseTestClass{
     }
 
     @Test
-    public void testBadModuleFilter() throws Exception {
+    public void testEnikshayEndOfFormNavigation() throws Exception {
         NewFormResponse response =
                 sessionNavigate(new String[]{"0", "action 0"},
                 "enikshay_private", NewFormResponse.class);
