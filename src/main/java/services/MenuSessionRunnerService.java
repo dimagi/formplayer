@@ -124,26 +124,6 @@ public class MenuSessionRunnerService {
         return menuResponseBean;
     }
 
-    private static StackFrameStep getStepToFrame(SessionWrapper session) {
-        StackFrameStep stepToFrame = null;
-        Vector<StackFrameStep> v = session.getFrame().getSteps();
-        //So we need to work our way backwards through each "step" we've taken, since our RelativeLayout
-        //displays the Z-Order b insertion (so items added later are always "on top" of items added earlier
-        for (int i = v.size() - 1; i >= 0; i--) {
-            StackFrameStep step = v.elementAt(i);
-
-            if (SessionFrame.STATE_DATUM_VAL.equals(step.getType())) {
-                //Only add steps which have a tile.
-                EntityDatum entityDatum = session.findDatumDefinition(step.getId());
-                if (entityDatum != null && entityDatum.getPersistentDetail() != null) {
-                    stepToFrame = step;
-                }
-            }
-        }
-        return stepToFrame;
-    }
-
-
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null, 0, null, 0);
@@ -299,7 +279,7 @@ public class MenuSessionRunnerService {
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         menuSession.getSessionWrapper().syncState();
-        if(menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())){
+        if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
             menuSession.getSessionWrapper().clearVolatiles();
             menuSessionFactory.rebuildSessionFromFrame(menuSession);
             BaseResponseBean response = getNextMenu(menuSession);
@@ -371,7 +351,25 @@ public class MenuSessionRunnerService {
             detailResponse.setHasInlineTile(entityDatum.getInlineDetail() != null);
             return new EntityDetailListResponse(detailResponse);
         }
+    }
 
+    private static StackFrameStep getStepToFrame(SessionWrapper session) {
+        StackFrameStep stepToFrame = null;
+        Vector<StackFrameStep> v = session.getFrame().getSteps();
+        //So we need to work our way backwards through each "step" we've taken, since our RelativeLayout
+        //displays the Z-Order b insertion (so items added later are always "on top" of items added earlier
+        for (int i = v.size() - 1; i >= 0; i--) {
+            StackFrameStep step = v.elementAt(i);
+
+            if (SessionFrame.STATE_DATUM_VAL.equals(step.getType())) {
+                //Only add steps which have a tile.
+                EntityDatum entityDatum = session.findDatumDefinition(step.getId());
+                if (entityDatum != null && entityDatum.getPersistentDetail() != null) {
+                    stepToFrame = step;
+                }
+            }
+        }
+        return stepToFrame;
     }
 
     private static void setPersistentCaseTile(MenuSession menuSession, NewFormResponse formResponse) {
