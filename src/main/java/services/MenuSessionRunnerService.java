@@ -29,7 +29,6 @@ import session.MenuSession;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -115,7 +114,7 @@ public class MenuSessionRunnerService {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
         }
 
-        menuResponseBean.setBreadcrumbs(menuSession.getTitles());
+        menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
         menuResponseBean.setAppId(menuSession.getAppId());
         menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
                 ", App Version: " + menuSession.getAppVersion());
@@ -384,7 +383,7 @@ public class MenuSessionRunnerService {
         if(menuSession.getSessionWrapper().getForm() != null) {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             setPersistentCaseTile(menuSession, formResponseBean);
-            formResponseBean.setBreadcrumbs(menuSession.getTitles());
+            formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
             return formResponseBean;
         } else{
             return null;

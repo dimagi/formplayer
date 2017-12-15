@@ -10,9 +10,7 @@ import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
-import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.SessionDatum;
-import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.screen.*;
 import org.commcare.util.screen.MenuScreen;
@@ -69,7 +67,7 @@ public class MenuSession {
     private String appId;
     private boolean oneQuestionPerScreen;
     private boolean preview;
-    ArrayList<String> titles;
+    ArrayList<String> breadcrumbs;
     private ArrayList<String> selections = new ArrayList<>();
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
@@ -88,8 +86,7 @@ public class MenuSession {
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
         this.appId = session.getAppId();
-        this.titles = new ArrayList<>();
-        titles.add(SessionUtils.getAppTitle());
+        initializeBreadcrumbs();
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -111,15 +108,18 @@ public class MenuSession {
         SessionUtils.setLocale(this.locale);
         this.uuid = UUID.randomUUID().toString();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
-        this.titles = new ArrayList<>();
-        this.titles.add(SessionUtils.getAppTitle());
+        initializeBreadcrumbs();
         this.preview = preview;
     }
 
     public void resetSession() {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
-        this.titles = new ArrayList<>();
-        this.titles.add(SessionUtils.getAppTitle());
+        initializeBreadcrumbs();
+    }
+
+    private void initializeBreadcrumbs() {
+        this.breadcrumbs = new ArrayList<>();
+        this.breadcrumbs.add(SessionUtils.getAppTitle());
     }
     
     public void updateApp(String updateMode) {
@@ -183,14 +183,14 @@ public class MenuSession {
             try {
                 String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), input);
                 if (caseName != null) {
-                    titles.add(caseName);
+                    breadcrumbs.add(caseName);
                     return;
                 }
             } catch (NoSuchElementException e) {
                 // That's ok, just fallback quietly
             }
         }
-        titles.add(SessionUtils.getBestTitle(getSessionWrapper()));
+        breadcrumbs.add(SessionUtils.getBestTitle(getSessionWrapper()));
     }
 
     public Screen getNextScreen() throws CommCareSessionException {
@@ -350,9 +350,9 @@ public class MenuSession {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 
-    public String[] getTitles() {
-        String[] ret = new String[titles.size()];
-        titles.toArray(ret);
+    public String[] getBreadcrumbs() {
+        String[] ret = new String[breadcrumbs.size()];
+        breadcrumbs.toArray(ret);
         return ret;
     }
 
