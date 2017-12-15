@@ -1,6 +1,7 @@
 package session;
 
 import engine.FormplayerConfigEngine;
+import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
@@ -13,7 +14,6 @@ import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.screen.*;
-import org.commcare.util.screen.MenuScreen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -39,7 +39,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 
 /**
@@ -60,6 +63,7 @@ public class MenuSession {
     private final String domain;
 
     private String locale;
+    private Screen screen;
     private String uuid;
     private String asUser;
 
@@ -67,8 +71,7 @@ public class MenuSession {
     private String appId;
     private boolean oneQuestionPerScreen;
     private boolean preview;
-    ArrayList<String> breadcrumbs;
-    private ArrayList<String> selections = new ArrayList<>();
+    ArrayList<String> titles;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
@@ -85,8 +88,10 @@ public class MenuSession {
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
+        this.screen = getNextScreen();
         this.appId = session.getAppId();
-        initializeBreadcrumbs();
+        this.titles = new ArrayList<>();
+        titles.add(SessionUtils.getAppTitle());
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
@@ -106,20 +111,12 @@ public class MenuSession {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
+        this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
-        initializeBreadcrumbs();
+        this.titles = new ArrayList<>();
+        this.titles.add(SessionUtils.getAppTitle());
         this.preview = preview;
-    }
-
-    public void resetSession() {
-        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
-        initializeBreadcrumbs();
-    }
-
-    private void initializeBreadcrumbs() {
-        this.breadcrumbs = new ArrayList<>();
-        this.breadcrumbs.add(SessionUtils.getAppTitle());
     }
     
     public void updateApp(String updateMode) {
@@ -160,7 +157,6 @@ public class MenuSession {
      * @return Whether or not we were able to evaluate to a new screen.
      */
     public boolean handleInput(String input) throws CommCareSessionException {
-        Screen screen = getNextScreen();
         log.info("Screen " + screen + " handling input " + input);
         if(screen == null) {
             return false;
@@ -183,14 +179,14 @@ public class MenuSession {
             try {
                 String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), input);
                 if (caseName != null) {
-                    breadcrumbs.add(caseName);
+                    titles.add(caseName);
                     return;
                 }
             } catch (NoSuchElementException e) {
                 // That's ok, just fallback quietly
             }
         }
-        breadcrumbs.add(SessionUtils.getBestTitle(getSessionWrapper()));
+        titles.add(SessionUtils.getBestTitle(getSessionWrapper()));
     }
 
     public Screen getNextScreen() throws CommCareSessionException {
@@ -334,6 +330,10 @@ public class MenuSession {
         return locale;
     }
 
+    public void updateScreen() throws CommCareSessionException {
+        this.screen = getNextScreen();
+    }
+
     public String getAsUser() {
         return asUser;
     }
@@ -350,9 +350,9 @@ public class MenuSession {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
     }
 
-    public String[] getBreadcrumbs() {
-        String[] ret = new String[breadcrumbs.size()];
-        breadcrumbs.toArray(ret);
+    public String[] getTitles() {
+        String[] ret = new String[titles.size()];
+        titles.toArray(ret);
         return ret;
     }
 
@@ -362,15 +362,5 @@ public class MenuSession {
 
     public void setPreview(boolean preview) {
         this.preview = preview;
-    }
-
-    public String[] getSelections() {
-        String[] ret = new String[selections.size()];
-        selections.toArray(ret);
-        return ret;
-    }
-
-    public void addSelection(String currentStep) {
-        selections.add(currentStep);
     }
 }

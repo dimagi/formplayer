@@ -10,6 +10,7 @@ import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
+import repo.impl.PostgresFormSessionRepo;
 import sandbox.UserSqlSandbox;
 import session.FormSession;
 
