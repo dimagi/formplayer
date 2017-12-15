@@ -191,6 +191,35 @@ public class SqlHelper {
      * @throws IllegalArgumentException when one or more of the fields we're selecting on
      *                                  is not a valid key to select on for this object
      */
+    public static PreparedStatement prepareTableSelectStatementProjection(Connection c,
+                                                                String storageKey,
+                                                                String where,
+                                                                String values[],
+                                                                String[] projections) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < projections.length; i++) {
+            builder.append(projections[i]);
+            if (i + 1 < projections.length) {
+                builder.append(", ");
+            }
+        }
+        try {
+            String queryString =
+                    "SELECT " + builder.toString() + " FROM " + storageKey + " WHERE " + where + ";";
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
+            for (int i = 0; i < values.length; i++) {
+                preparedStatement.setString(i + 1, values[i]);
+            }
+            return preparedStatement;
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        }
+    }
+
+    /**
+     * @throws IllegalArgumentException when one or more of the fields we're selecting on
+     *                                  is not a valid key to select on for this object
+     */
     public static PreparedStatement prepareTableSelectStatement(Connection c,
                                                                 String storageKey,
                                                                 String[] fields,
