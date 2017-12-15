@@ -15,6 +15,7 @@ import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.TreeReference;
+import session.MenuSession;
 import util.FormplayerGraphUtil;
 import util.FormplayerHereFunctionHandler;
 
@@ -55,11 +56,11 @@ public class EntityListResponse extends MenuBean {
                               int offset,
                               String searchText,
                               int sortIndex,
-                              HereFunctionHandlerListener hereFuncListener) {
+                              MenuSession menuSession) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EvaluationContext ec = nextScreen.getEvalContext();
-        ec.addFunctionHandler(new FormplayerHereFunctionHandler(hereFuncListener));
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
