@@ -577,12 +577,103 @@ public class SqlStorage<T extends Persistable>
 
     @Override
     public String[] getMetaDataForRecord(int recordId, String[] metaFieldNames) {
-        return new String[0];
+        String rid = String.valueOf(recordId);
+        String[] scrubbedNames = scrubMetadataNames(metaFieldNames);
+        String[] projection = getProjectedFieldsWithId(false, scrubbedNames);
+        PreparedStatement preparedStatement;
+        ResultSet resultSet = null;
+        preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(
+                getConnection(),
+                tableName,
+                rid,
+                projection
+                );
+        try {
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return readMetaDataFromResultSet(resultSet, scrubbedNames);
+            } else {
+                throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
+            }
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * Reads out the metadata columns from the provided cursor.
+     *
+     * NOTE: The column names _must be scrubbed here_ before the method is called
+     */
+    private String[] readMetaDataFromResultSet(ResultSet resultSet, String[] columnNames) throws SQLException {
+        String[] results = new String[columnNames.length];
+        int i = 0;
+        for(String columnName : columnNames) {
+            results[i] = resultSet.getString(columnName);
+            i++;
+        }
+        return results;
     }
 
     @Override
     public void bulkReadMetadata(LinkedHashSet<Integer> recordIds, String[] metaFieldNames, HashMap<Integer, String[]> metadataMap) {
-        
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(recordIds);
+        String [] scrubbedNames = scrubMetadataNames(metaFieldNames);
+        String[] projection = getProjectedFieldsWithId(false, scrubbedNames);
+        PreparedStatement preparedStatement = null;
+        Connection connection;
+        ResultSet resultSet = null;
+        try {
+            connection = getConnection();
+            for (Pair<String, String[]> querySet : whereParamList) {
+
+                preparedStatement =
+                        SqlHelper.prepareTableSelectProjectionStatement(connection,
+                                this.tableName,
+                                DatabaseHelper.ID_COL + " IN " + querySet.first,
+                                querySet.second);
+                resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    if(Thread.interrupted()) {
+                        throw new RequestAbandonedException();
+                    }
+                    String[] metaRead = readMetaDataFromResultSet(resultSet, scrubbedNames);
+                    metadataMap.put(resultSet.getInt(DatabaseHelper.ID_COL), metaRead);
+                }
+            }
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        } finally {
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

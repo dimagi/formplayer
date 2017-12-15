@@ -164,6 +164,29 @@ public class SqlHelper {
         }
     }
 
+    public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
+                                                                          String storageKey,
+                                                                          String recordId,
+                                                                          String[] projections) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < projections.length; i++) {
+            builder.append(projections[i]);
+            if (i + 1 < projections.length) {
+                builder.append(", ");
+            }
+        }
+        String queryString = "SELECT " + builder.toString() +
+                " FROM " + storageKey +
+                " WHERE " + DatabaseHelper.ID_COL + " = ?;";
+        try {
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
+            preparedStatement.setString(1, recordId);
+            return preparedStatement;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * @throws IllegalArgumentException when one or more of the fields we're selecting on
      *                                  is not a valid key to select on for this object
@@ -194,11 +217,10 @@ public class SqlHelper {
                                                                 String storageKey,
                                                                 String where,
                                                                 String values[]) {
-        PreparedStatement preparedStatement = null;
         try {
             String queryString =
                     "SELECT * FROM " + storageKey + " WHERE " + where + ";";
-            preparedStatement = c.prepareStatement(queryString);
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
             for (int i = 0; i < values.length; i++) {
                 preparedStatement.setString(i + 1, values[i]);
             }
