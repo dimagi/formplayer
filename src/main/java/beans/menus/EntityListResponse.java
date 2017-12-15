@@ -14,6 +14,7 @@ import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
+import util.FormplayerGraphUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -232,7 +233,7 @@ public class EntityListResponse extends MenuBean {
             o = field.getTemplate().evaluate(context);
             if(o instanceof GraphData) {
                 try {
-                    data[i] = GraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
+                    data[i] = FormplayerGraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
                 } catch (GraphException e) {
                     data[i] = "<html><body>Error loading graph " + e + "</body></html>";
                 }

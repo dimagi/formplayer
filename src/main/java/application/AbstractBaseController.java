@@ -90,9 +90,6 @@ public abstract class AbstractBaseController {
     @Autowired
     PostgresUserRepo postgresUserRepo;
 
-    @Value("${commcarehq.host}")
-    private String hqHost;
-
     @Value("${commcarehq.environment}")
     private String hqEnvironment;
 
