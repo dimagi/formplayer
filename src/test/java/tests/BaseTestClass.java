@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ import utils.TestContext;
 import javax.servlet.http.Cookie;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -101,6 +103,12 @@ public class BaseTestClass {
     protected FormplayerInstallerFactory formplayerInstallerFactory;
 
     @Autowired
+    protected MenuSessionFactory menuSessionFactory;
+
+    @Autowired
+    protected MenuSessionRunnerService menuSessionRunnerService;
+
+    @Autowired
     protected QueryRequester queryRequester;
 
     @Autowired
@@ -142,6 +150,8 @@ public class BaseTestClass {
         Mockito.reset(queryRequester);
         Mockito.reset(syncRequester);
         Mockito.reset(ravenMock);
+        Mockito.reset(menuSessionFactory);
+        Mockito.reset(menuSessionRunnerService);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
@@ -243,6 +253,10 @@ public class BaseTestClass {
                 NewFormResponse.class);
     }
 
+    SubmitResponseBean submitForm(String sessionId) throws Exception {
+        return submitForm(new HashMap<String, Object>(), sessionId);
+    }
+
     SubmitResponseBean submitForm(String requestPath, String sessionId) throws Exception {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
@@ -253,6 +267,7 @@ public class BaseTestClass {
                 submitRequestBean,
                 SubmitResponseBean.class);
     }
+
 
     SubmitResponseBean submitForm(Map<String, Object> answers, String sessionId) throws Exception {
         SubmitRequestBean submitRequestBean = new SubmitRequestBean();
@@ -349,6 +364,18 @@ public class BaseTestClass {
         );
     }
 
+    EvaluateXPathResponseBean evaluateMenuXPath(String requestPath) throws Exception {
+        EvaluateXPathMenuRequestBean sessionNavigationBean = mapper.readValue
+                (FileUtils.getFile(this.getClass(), requestPath), EvaluateXPathMenuRequestBean.class);
+        return generateMockQuery(
+                ControllerType.DEBUGGER,
+                RequestType.POST,
+                Constants.URL_EVALUATE_MENU_XPATH,
+                sessionNavigationBean,
+                EvaluateXPathResponseBean.class
+        );
+    }
+
     EvaluateXPathResponseBean evaluateMenuXPath(String menuSessionId, String xpath) throws Exception {
         SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(menuSessionId);
 
@@ -434,6 +461,21 @@ public class BaseTestClass {
                 clazz);
     }
 
+    <T> T sessionNavigate(String[] selections, String testName, int sortIndex, Class<T> clazz) throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setSortIndex(sortIndex);
+        return generateMockQuery(ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
     <T> T sessionNavigate(String[] selections, String testName, String locale, Class<T> clazz, String restoreAs) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
@@ -463,39 +505,6 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
         sessionNavigationBean.setQueryDictionary(queryDictionary);
-        return generateMockQuery(ControllerType.MENU,
-                RequestType.POST,
-                Constants.URL_MENU_NAVIGATION,
-                sessionNavigationBean,
-                clazz);
-    }
-
-    <T> T sessionNavigateWithId(String[] selections, String sessionId, Class<T> clazz) throws Exception {
-        SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(sessionId);
-        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
-        sessionNavigationBean.setDomain(menuSession.getDomain());
-        sessionNavigationBean.setAppId(menuSession.getAppId());
-        sessionNavigationBean.setUsername(menuSession.getUsername());
-        sessionNavigationBean.setSelections(selections);
-        sessionNavigationBean.setMenuSessionId(sessionId);
-        sessionNavigationBean.setInstallReference(menuSession.getInstallReference());
-        return generateMockQuery(ControllerType.MENU,
-                RequestType.POST,
-                Constants.URL_MENU_NAVIGATION,
-                sessionNavigationBean,
-                clazz);
-    }
-
-    <T> T sessionNavigateWithId(String[] selections, String sessionId, int sortIndex, Class<T> clazz) throws Exception {
-        SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(sessionId);
-        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
-        sessionNavigationBean.setDomain(menuSession.getDomain());
-        sessionNavigationBean.setAppId(menuSession.getAppId());
-        sessionNavigationBean.setUsername(menuSession.getUsername());
-        sessionNavigationBean.setSelections(selections);
-        sessionNavigationBean.setMenuSessionId(sessionId);
-        sessionNavigationBean.setInstallReference(menuSession.getInstallReference());
-        sessionNavigationBean.setSortIndex(sortIndex);
         return generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,

@@ -11,7 +11,6 @@ public class MenuBean extends BaseResponseBean {
 
     private String[] locales;
     private String[] breadcrumbs;
-    private String menuSessionId;
     private EntityDetailResponse persistentCaseTile;
 
     @Override
@@ -34,13 +33,6 @@ public class MenuBean extends BaseResponseBean {
 
     public void setBreadcrumbs(String[] breadcrumbs) {
         this.breadcrumbs = breadcrumbs;
-    }
-    public String getMenuSessionId() {
-        return menuSessionId;
-    }
-
-    public void setMenuSessionId(String menuSessionId) {
-        this.menuSessionId = menuSessionId;
     }
 
     public EntityDetailResponse getPersistentCaseTile() {

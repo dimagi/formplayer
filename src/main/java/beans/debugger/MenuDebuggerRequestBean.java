@@ -1,23 +1,19 @@
 package beans.debugger;
 
-import beans.InstallFromSessionRequestBean;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import beans.SessionNavigationBean;
 
 /**
  * Created by benrudolph on 6/15/17.
  */
-public class MenuDebuggerRequestBean extends InstallFromSessionRequestBean {
+public class MenuDebuggerRequestBean extends SessionNavigationBean {
 
-    @Override
-    @JsonGetter("session_id")
-    public String getMenuSessionId() {
-        return super.getMenuSessionId();
+    private String[] steps;
+
+    public String[] getSteps() {
+        return steps;
     }
 
-    @Override
-    @JsonSetter("session_id")
-    public void setMenuSessionId(String menuSessionId) {
-        this.menuSessionId = menuSessionId;
+    public void setSteps(String[] steps) {
+        this.steps = steps;
     }
 }

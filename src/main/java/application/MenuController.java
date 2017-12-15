@@ -71,7 +71,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        return getNextMenu(performInstall(installRequestBean));
+        return runnerService.getNextMenu(performInstall(installRequestBean));
     }
 
     @ApiOperation(value = "Update the application at the given reference")
@@ -97,7 +97,7 @@ public class MenuController extends AbstractBaseController {
                         + " failed to load with exception " + e);
             }
         }
-        return getNextMenu(updatedSession);
+        return runnerService.getNextMenu(updatedSession);
     }
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
@@ -106,15 +106,9 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        MenuSession menuSession;
-        try {
-            menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
-        } catch (MenuNotFoundException e) {
-            return null;
-        }
-
+        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
         if (sessionNavigationBean.getIsPersistent()) {
-            advanceSessionWithSelections(menuSession,
+            runnerService.advanceSessionWithSelections(menuSession,
                     sessionNavigationBean.getSelections(),
                     null,
                     sessionNavigationBean.getQueryDictionary(),
@@ -124,7 +118,7 @@ public class MenuController extends AbstractBaseController {
             );
 
             // See if we have a persistent case tile to expand
-            EntityDetailListResponse detail = getInlineDetail(menuSession);
+            EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession);
             if (detail == null) {
                 throw new RuntimeException("Could not get inline details");
             }
@@ -136,7 +130,7 @@ public class MenuController extends AbstractBaseController {
         String detailSelection = selections[selections.length - 1];
         System.arraycopy(selections, 0, commitSelections, 0, selections.length - 1);
 
-        advanceSessionWithSelections(
+        runnerService.advanceSessionWithSelections(
                 menuSession,
                 commitSelections,
                 detailSelection,
@@ -149,7 +143,7 @@ public class MenuController extends AbstractBaseController {
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
-            EntityDetailResponse detail = getPersistentDetail(menuSession);
+            EntityDetailResponse detail = runnerService.getPersistentDetail(menuSession);
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
@@ -185,8 +179,8 @@ public class MenuController extends AbstractBaseController {
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
-        menuSession = getMenuSessionFromBean(sessionNavigationBean, authToken);
-        BaseResponseBean response = advanceSessionWithSelections(
+        menuSession = getMenuSessionFromBean(sessionNavigationBean);
+        BaseResponseBean response = runnerService.advanceSessionWithSelections(
                 menuSession,
                 selections,
                 null,
@@ -195,215 +189,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex()
         );
-        // Don't update the menu session if we're using it already for navigation
-        if (sessionNavigationBean.getMenuSessionId() == null || "".equals(sessionNavigationBean.getMenuSessionId())) {
-            menuSessionRepo.save(new SerializableMenuSession(menuSession));
-        }
         return response;
-    }
-
-    private MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean, String authToken) throws Exception {
-        MenuSession menuSession = null;
-        String menuSessionId = sessionNavigationBean.getMenuSessionId();
-        if (menuSessionId != null && !"".equals(menuSessionId)) {
-            menuSession = getMenuSession(
-                    menuSessionId
-            );
-        } else {
-            menuSession = performInstall(sessionNavigationBean);
-        }
-        return menuSession;
-    }
-
-    /**
-     * Advances the session based on the selections.
-     *
-     * @param menuSession
-     * @param selections      - Selections are either an integer index into a list of modules
-     *                        or a case id indicating the case selected for a case detail.
-     *                        <p>
-     *                        An example selection would be ["0", "2", "6c5d91e9-61a2-4264-97f3-5d68636ff316"]
-     *                        <p>
-     *                        This would mean select the 0th menu, then the 2nd menu, then the case with the id 6c5d91e9-61a2-4264-97f3-5d68636ff316.
-     * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
-     *                        it is used to short circuit the normal TreeReference calculation by inserting a predicate that
-     *                        is [@case_id = <detailSelection>].
-     * @param queryDictionary
-     * @param offset
-     * @param searchText
-     */
-    private BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
-                                                          String[] selections,
-                                                          String detailSelection,
-                                                          Hashtable<String, String> queryDictionary,
-                                                          int offset,
-                                                          String searchText,
-                                                          int sortIndex) throws Exception {
-        BaseResponseBean nextMenu;
-        // If we have no selections, we're are the root screen.
-        if (selections == null) {
-            nextMenu = getNextMenu(
-                    menuSession,
-                    offset,
-                    searchText,
-                    sortIndex
-            );
-            return nextMenu;
-        }
-
-        String[] overrideSelections = null;
-        NotificationMessage notificationMessage = new NotificationMessage();
-        for (int i = 1; i <= selections.length; i++) {
-            String selection = selections[i - 1];
-            boolean gotNextScreen = menuSession.handleInput(selection);
-            if (!gotNextScreen) {
-                notificationMessage = new NotificationMessage(
-                        "Overflowed selections with selection " + selection + " at index " + i, (true));
-                break;
-            }
-            Screen nextScreen = menuSession.getNextScreen();
-
-            if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
-                notificationMessage = doQuery(
-                        (FormplayerQueryScreen) nextScreen,
-                        menuSession,
-                        queryDictionary
-                );
-                overrideSelections = trimCaseClaimSelections(selections);
-            }
-            if (nextScreen instanceof FormplayerSyncScreen) {
-                BaseResponseBean syncResponse = doSyncGetNext(
-                        (FormplayerSyncScreen) nextScreen,
-                        menuSession);
-                if (syncResponse != null) {
-                    syncResponse.setSelections(overrideSelections);
-                    return syncResponse;
-                }
-            }
-        }
-
-
-
-        nextMenu = getNextMenu(
-                menuSession,
-                detailSelection,
-                offset,
-                searchText,
-                sortIndex
-        );
-        if (nextMenu != null) {
-            nextMenu.setNotification(notificationMessage);
-            nextMenu.setSelections(overrideSelections);
-            log.info("Returning menu: " + nextMenu);
-            return nextMenu;
-        } else {
-            BaseResponseBean responseBean = resolveFormGetNext(menuSession);
-            if (responseBean == null) {
-                responseBean = new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
-            }
-            responseBean.setSelections(overrideSelections);
-            return responseBean;
-        }
-    }
-
-    /**
-     * If we've encountered a QueryScreen and have a QueryDictionary, do the query
-     * and update the session, screen, and notification message accordingly.
-     * <p>
-     * Will do nothing if this wasn't a query screen.
-     */
-    private NotificationMessage doQuery(FormplayerQueryScreen screen,
-                                        MenuSession menuSession,
-                                        Hashtable<String, String> queryDictionary) throws CommCareSessionException {
-        log.info("Formplayer doing query with dictionary " + queryDictionary);
-        NotificationMessage notificationMessage = null;
-        screen.answerPrompts(queryDictionary);
-        String responseString = queryRequester.makeQueryRequest(screen.getUriString(), restoreFactory.getUserHeaders());
-        boolean success = screen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
-        if (success) {
-            if (screen.getCurrentMessage() != null) {
-                notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false);
-            }
-        } else {
-            notificationMessage = new NotificationMessage("Query failed with message " + screen.getCurrentMessage(), true);
-        }
-        menuSession.updateScreen();
-        Screen nextScreen = menuSession.getNextScreen();
-        log.info("Next screen after query: " + nextScreen);
-        return notificationMessage;
-    }
-
-    /**
-     * Perform the sync and update the notification and screen accordingly.
-     * After a sync, we can either pop another menu/form to begin
-     * or just return to the app menu.
-     */
-    private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
-                                           MenuSession menuSession) throws Exception {
-        NotificationMessage notificationMessage = doSync(nextScreen);
-
-        BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
-        if (postSyncResponse != null) {
-            // If not null, we have a form or menu to redirect to
-            postSyncResponse.setNotification(notificationMessage);
-            return postSyncResponse;
-        } else {
-            // Otherwise, return use to the app root
-            postSyncResponse = new BaseResponseBean(null, "Redirecting after sync", false, true);
-            postSyncResponse.setNotification(notificationMessage);
-            return postSyncResponse;
-        }
-    }
-
-    private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
-        ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
-                screen.getBuiltQuery(),
-                restoreFactory.getUserHeaders());
-        if (responseEntity == null) {
-            return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
-        }
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            restoreFactory.performTimedSync();
-            return new NotificationMessage("Case claim successful.", false);
-        } else {
-            return new NotificationMessage(
-                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true);
-        }
-    }
-
-    private String[] trimCaseClaimSelections(String[] selections) {
-        String actionSelections = selections[selections.length - 2];
-        if (!actionSelections.contains("action")) {
-            log.error(String.format("Selections %s did not contain expected action at position %s.",
-                    Arrays.toString(selections),
-                    selections[selections.length - 2]));
-            return selections;
-        }
-        String[] newSelections = new String[selections.length - 1];
-        System.arraycopy(selections, 0, newSelections, 0, selections.length - 2);
-        newSelections[selections.length - 2] = selections[selections.length - 1];
-        return newSelections;
-    }
-
-    private MenuSession performInstall(InstallRequestBean bean) throws Exception {
-        if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
-                bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
-            throw new RuntimeException("Either app_id or installReference must be non-null.");
-        }
-
-        return new MenuSession(
-                bean.getUsername(),
-                bean.getDomain(),
-                bean.getAppId(),
-                bean.getInstallReference(),
-                bean.getLocale(),
-                installService,
-                restoreFactory,
-                host,
-                bean.getOneQuestionPerScreen(),
-                bean.getRestoreAs(),
-                bean.getPreview()
-        );
     }
 
     private MenuSession performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
