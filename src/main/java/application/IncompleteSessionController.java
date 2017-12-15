@@ -28,9 +28,6 @@ import java.util.Set;
 @EnableAutoConfiguration
 public class IncompleteSessionController extends AbstractBaseController{
 
-    @Value("${commcarehq.host}")
-    private String host;
-
     private final Log log = LogFactory.getLog(IncompleteSessionController.class);
 
     @ApiOperation(value = "Open an incomplete form session")
