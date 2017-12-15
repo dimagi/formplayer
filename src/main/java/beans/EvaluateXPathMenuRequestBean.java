@@ -9,7 +9,7 @@ import session.MenuSession;
  * Bean used for evaluating xpath against a given menu session.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EvaluateXPathMenuRequestBean extends  InstallFromSessionRequestBean {
+public class EvaluateXPathMenuRequestBean extends SessionNavigationBean {
     private String xpath;
     private String debugOutput;
 
@@ -36,17 +36,7 @@ public class EvaluateXPathMenuRequestBean extends  InstallFromSessionRequestBean
     }
 
     public String toString(){
-        return "EvaluateXPathRequestBean [xpath: " + xpath + ", menuSessionId: " + menuSessionId  +
+        return "EvaluateXPathRequestBean [xpath: " + xpath +
                 ", debugOutput: " + debugOutput + "]";
-    }
-
-    @JsonSetter(value = "session_id")
-    public void setMenuSessionId(String menuSessionId) {
-        this.menuSessionId = menuSessionId;
-    }
-
-    @JsonGetter(value = "session_id")
-    public String getMenuSessionId() {
-        return menuSessionId;
     }
 }

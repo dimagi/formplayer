@@ -149,4 +149,10 @@ public class TestContext {
     public FormSendCalloutHandler formSendCalloutHandler() {
         return Mockito.mock(FormplayerFormSendCalloutHandler.class);
     }
+
+    @Bean
+    public MenuSessionRunnerService menuSessionRunnerService() {return Mockito.spy(MenuSessionRunnerService.class);}
+
+    @Bean
+    public MenuSessionFactory menuSessionFactory() {return Mockito.spy(MenuSessionFactory.class);}
 }
