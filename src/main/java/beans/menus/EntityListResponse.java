@@ -13,8 +13,10 @@ import org.commcare.suite.model.*;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.TreeReference;
 import util.FormplayerGraphUtil;
+import util.FormplayerHereFunctionHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,11 +54,12 @@ public class EntityListResponse extends MenuBean {
                               String detailSelection,
                               int offset,
                               String searchText,
-                              String id,
-                              int sortIndex) {
+                              int sortIndex,
+                              HereFunctionHandlerListener hereFuncListener) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EvaluationContext ec = nextScreen.getEvalContext();
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(hereFuncListener));
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
@@ -231,7 +234,7 @@ public class EntityListResponse extends MenuBean {
         for (DetailField field : fields) {
             Object o;
             o = field.getTemplate().evaluate(context);
-            if(o instanceof GraphData) {
+            if (o instanceof GraphData) {
                 try {
                     data[i] = FormplayerGraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
                 } catch (GraphException e) {

@@ -15,6 +15,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private String[] selections;
     private int offset;
     private String searchText;
+    private String geoLocation;
     private String menuSessionId;
     private Hashtable<String, String> queryDictionary;
     private boolean isPersistent;
@@ -67,6 +68,15 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "query_dictionary")
     public void setQueryDictionary(Hashtable<String, String> queryDictionary) {
         this.queryDictionary = queryDictionary;
+    }
+
+    @JsonGetter(value = "geo_location")
+    public String getGeoLocation() {
+        return geoLocation;
+    }
+    @JsonSetter(value = "geo_location")
+    public void setGeoLocation(String geoLocation) {
+        this.geoLocation = geoLocation;
     }
 
     public boolean getIsPersistent() {
