@@ -6,9 +6,9 @@ import org.commcare.suite.model.Detail;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.core.model.condition.HereFunctionHandler;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.TreeReference;
+import session.MenuSession;
 import util.FormplayerHereFunctionHandler;
 
 import java.util.ArrayList;
@@ -29,14 +29,14 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     }
 
     public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference,
-                                    HereFunctionHandlerListener hereFunctionListener) {
-        ec.addFunctionHandler(new FormplayerHereFunctionHandler(hereFunctionListener));
+                                    MenuSession menuSession) {
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
         entityDetailList = processDetails(screen, ec, treeReference);
     }
 
     public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference,
-                                    HereFunctionHandlerListener hereFunctionListener) {
-        ec.addFunctionHandler(new FormplayerHereFunctionHandler(hereFunctionListener));
+                                    MenuSession menuSession) {
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
         entityDetailList = processDetails(detailList, ec, treeReference);
     }
 

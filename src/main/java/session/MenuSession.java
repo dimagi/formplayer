@@ -382,6 +382,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.currentBrowserLocation = location;
     }
 
+    public String getCurrentBrowserLocation() {
+        return this.currentBrowserLocation;
+    }
+
     @Override
     public void onEvalLocationChanged() {
 
@@ -390,11 +394,6 @@ public class MenuSession implements HereFunctionHandlerListener {
     @Override
     public void onHereFunctionEvaluated() {
         this.hereFunctionEvaluated = true;
-    }
-
-    @Override
-    public String getLocation() {
-        return this.currentBrowserLocation;
     }
 
     public boolean locationRequestNeeded() {

@@ -344,7 +344,7 @@ public class MenuSessionRunnerService {
             return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(), ec, reference, menuSession);
         } else {
             ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), reference);
-            ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession));
+            ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
             EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
             detailResponse.setHasInlineTile(entityDatum.getInlineDetail() != null);
             return new EntityDetailListResponse(detailResponse);

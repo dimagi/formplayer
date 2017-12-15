@@ -11,18 +11,21 @@ import org.javarosa.xpath.XPathArityException;
  */
 public class FormplayerHereFunctionHandler extends HereFunctionHandler {
 
-    public FormplayerHereFunctionHandler(HereFunctionHandlerListener listener) {
+    private final String browserLocation;
+
+    public FormplayerHereFunctionHandler(HereFunctionHandlerListener listener, String browserLocation) {
         super();
         registerListener(listener);
+        this.browserLocation = browserLocation;
     }
 
     @Override
     public Object eval(Object[] args, EvaluationContext ec) throws XPathArityException {
         alertOnEval();
-        if (listener.getLocation() == null) {
+        if (browserLocation == null) {
             return "";
         }
-        String[] locationData = listener.getLocation().split(",");
+        String[] locationData = browserLocation.split(",");
         double lat = Double.parseDouble(locationData[0]);
         double lon = Double.parseDouble(locationData[1]);
 
