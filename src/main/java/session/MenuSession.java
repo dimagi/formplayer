@@ -118,6 +118,8 @@ public class MenuSession {
 
     public void resetSession() {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
+        this.titles = new ArrayList<>();
+        this.titles.add(SessionUtils.getAppTitle());
     }
     
     public void updateApp(String updateMode) {
