@@ -3,7 +3,6 @@ package beans.menus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
