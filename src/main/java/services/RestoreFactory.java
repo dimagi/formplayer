@@ -150,16 +150,16 @@ public class RestoreFactory {
                 ParseUtils.parseIntoSandbox(restoreStream, factory, true, true);
                 hasRestored = true;
                 commit();
-                setAutoCommit(true);
                 parseTimer.end();
+                setAutoCommit(true);
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
                 sandbox.writeSyncToken();
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
                 if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
                     // Before throwing exception, rollback any changes to relinquish SQLite lock
+                    // rollback() automatically re-enables autocommit
                     rollback();
-                    setAutoCommit(true);
                     getSQLiteDB().deleteDatabaseFile();
                     getSQLiteDB().createDatabaseFolder();
                     throw e;
@@ -168,6 +168,9 @@ public class RestoreFactory {
                             getEffectiveUsername()),
                             e);
                 }
+            } finally {
+                // No-op if autocommit was already enabled
+                setAutoCommit(true);
             }
         }
     }
