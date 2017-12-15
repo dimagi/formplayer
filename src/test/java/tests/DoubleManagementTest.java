@@ -10,8 +10,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.FileUtils;
 import utils.TestContext;
 
-import java.util.ArrayList;
-
 import static org.mockito.Mockito.when;
 
 /**
@@ -65,12 +63,8 @@ public class DoubleManagementTest  extends BaseTestClass{
                 CommandListResponseBean.class);
         assert commandListResponseBean.getCommands().length == 2;
         assert commandListResponseBean.getCommands()[0].getDisplayText().equals("Update Parent");
-        assert commandListResponseBean.getSelections().length == 2;
-        String[] selections = commandListResponseBean.getSelections();
-        String firstCommand = selections[0];
-        String secondCommand = selections[1];
-        String[] newSteps = new String[] {firstCommand, secondCommand, "0"};
-        NewFormResponse followupFormResponse = sessionNavigate(newSteps, "doublemgmt", NewFormResponse.class);
+        NewFormResponse followupFormResponse =
+                sessionNavigateWithId(new String[] {"0"}, "derp", NewFormResponse.class);
         assert followupFormResponse.getTree().length == 2;
         assert followupFormResponse.getTree()[0].getAnswer().equals("David Ortiz");
         assert followupFormResponse.getTree()[1].getAnswer().equals(40);

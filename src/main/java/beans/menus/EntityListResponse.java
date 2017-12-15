@@ -88,6 +88,7 @@ public class EntityListResponse extends MenuBean {
         Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
         this.headers = pair.first;
         this.widthHints = pair.second;
+        setMenuSessionId(id);
         this.sortIndices = detail.getOrderedFieldIndicesForSorting();
     }
 
