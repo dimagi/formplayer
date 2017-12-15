@@ -3,7 +3,8 @@ package beans.menus;
 import session.MenuSession;
 
 /**
- * Extended by response beans that may need to convey to the browser that the browser location is needed by formplayer
+ * Extended by response beans that may need to convey to the browser that the browser location is needed for a
+ * function evaluation.
  *
  * Created by amstone326 on 12/13/17.
  */

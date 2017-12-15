@@ -1,15 +1,13 @@
 package application;
 
 import annotations.AppInstall;
-import annotations.AppInstallFromSession;
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.DjangoAuth;
 import beans.*;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import beans.debugger.MenuDebuggerContentResponseBean;
-import beans.debugger.MenuDebuggerRequestBean;
 import beans.debugger.XPathQueryItem;
+import beans.menus.LocationRelevantResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -85,12 +83,12 @@ public class DebuggerController extends AbstractBaseController {
         MenuSession menuSession = getMenuSessionFromBean(debuggerMenuRequest);
         runnerService.advanceSessionWithSelections(menuSession, debuggerMenuRequest.getSelections());
 
-        return new MenuDebuggerContentResponseBean(
+        return LocationRelevantResponseBean.setLocationNeeds(new MenuDebuggerContentResponseBean(
                 menuSession.getAppId(),
                 FunctionUtils.xPathFuncList(),
                 menuSession.getSessionWrapper().getEvaluationContext().getInstanceIds(),
                 fetchRecentMenuXPathQueries(debuggerMenuRequest.getDomain(), debuggerMenuRequest.getUsername())
-        );
+        ), menuSession);
     }
 
     @ApiOperation(value = "Evaluate the given XPath under the current context")
@@ -119,7 +117,7 @@ public class DebuggerController extends AbstractBaseController {
                 evaluateXPathResponseBean.getStatus()
         );
 
-        return evaluateXPathResponseBean;
+        return LocationRelevantResponseBean.setLocationNeeds(evaluateXPathResponseBean, menuSession);
     }
 
     @ApiOperation(value = "Evaluate the given XPath under the current context")
