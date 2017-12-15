@@ -643,10 +643,11 @@ public class SqlStorage<T extends Persistable>
             for (Pair<String, String[]> querySet : whereParamList) {
 
                 preparedStatement =
-                        SqlHelper.prepareTableSelectProjectionStatement(connection,
+                        SqlHelper.prepareTableSelectStatementProjection(connection,
                                 this.tableName,
                                 DatabaseHelper.ID_COL + " IN " + querySet.first,
-                                querySet.second);
+                                querySet.second,
+                                projection);
                 resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
                     if(Thread.interrupted()) {
