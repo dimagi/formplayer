@@ -6,7 +6,6 @@ import org.commcare.suite.model.Detail;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.TreeReference;
 import session.MenuSession;
 import util.FormplayerHereFunctionHandler;
