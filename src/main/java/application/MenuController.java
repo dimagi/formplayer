@@ -7,10 +7,7 @@ import beans.InstallRequestBean;
 import beans.NewFormResponse;
 import beans.NotificationMessage;
 import beans.SessionNavigationBean;
-import beans.menus.BaseResponseBean;
-import beans.menus.EntityDetailListResponse;
-import beans.menus.EntityDetailResponse;
-import beans.menus.UpdateRequestBean;
+import beans.menus.*;
 import exceptions.FormNotFoundException;
 import exceptions.MenuNotFoundException;
 import hq.CaseAPIs;
@@ -122,7 +119,7 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Could not get inline details");
             }
-            return detail;
+            return LocationRelevantResponseBean.setLocationNeeds(detail, menuSession);
         }
 
         String[] selections = sessionNavigationBean.getSelections();
@@ -147,7 +144,7 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
-            return new EntityDetailListResponse(detail);
+            return LocationRelevantResponseBean.setLocationNeeds(new EntityDetailListResponse(detail), menuSession);
         }
         EntityScreen entityScreen = (EntityScreen) currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
@@ -156,10 +153,10 @@ public class MenuController extends AbstractBaseController {
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        return new EntityDetailListResponse(
-                entityScreen,
-                menuSession.getSessionWrapper().getEvaluationContext(),
-                reference
+        return LocationRelevantResponseBean.setLocationNeeds(
+                new EntityDetailListResponse(entityScreen, menuSession.getSessionWrapper().getEvaluationContext(),
+                        reference, menuSession),
+                menuSession
         );
     }
 
@@ -189,7 +186,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex()
         );
-        return response;
+        return LocationRelevantResponseBean.setLocationNeeds(response, menuSession);
     }
 
     private MenuSession performUpdate(UpdateRequestBean updateRequestBean) throws Exception {

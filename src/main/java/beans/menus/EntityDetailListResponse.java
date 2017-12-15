@@ -3,21 +3,20 @@ package beans.menus;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Detail;
-import org.commcare.suite.model.EntityDatum;
-import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.screen.EntityDetailSubscreen;
-import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
-import org.commcare.util.screen.Subscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.condition.HereFunctionHandler;
+import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.model.instance.TreeReference;
+import util.FormplayerHereFunctionHandler;
 
 import java.util.ArrayList;
 
 /**
  * Created by willpride on 1/4/17.
  */
-public class EntityDetailListResponse {
+public class EntityDetailListResponse extends LocationRelevantResponseBean {
 
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
@@ -29,12 +28,15 @@ public class EntityDetailListResponse {
         this.isPersistentDetail = true;
     }
 
-    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference) {
+    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference,
+                                    HereFunctionHandlerListener hereFunctionListener) {
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(hereFunctionListener));
         entityDetailList = processDetails(screen, ec, treeReference);
     }
 
-    public EntityDetailListResponse(Detail[] detailList,
-                                    EvaluationContext ec, TreeReference treeReference) {
+    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference,
+                                    HereFunctionHandlerListener hereFunctionListener) {
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(hereFunctionListener));
         entityDetailList = processDetails(detailList, ec, treeReference);
     }
 
