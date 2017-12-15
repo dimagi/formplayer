@@ -65,10 +65,10 @@ public class MenuSessionFactory {
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen) screen;
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
-                Set<String> caseIds = entityScreen.getReferenceMap().keySet();
+                Set<String> entityIds = entityScreen.getReferenceMap().keySet();
                 for (StackFrameStep step: steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
-                        if (caseIds.contains(step.getValue())) {
+                        if (entityIds.contains(step.getValue())) {
                             currentStep = step.getValue();
                         }
                     }
