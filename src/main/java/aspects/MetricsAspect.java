@@ -64,7 +64,12 @@ public class MetricsAspect {
                 "domain:" + domain,
                 "user:" + user,
                 "request:" + requestPath,
-                "duration:" + timer.getDurationBucket()
+                "duration:" + timer.getDurationBucket(),
+                "unblocked_time:" + getUnblockedTime(timer),
+                "blocked_time:" + getBlockedTime(),
+                "restore_blocked_time:" + getRestoreBlockedTime(),
+                "install_blocked_time:" + getInstallBlockedTime(),
+                "submit_blocked_time:" + getSubmitBlockedTime()
         );
 
         datadogStatsDClient.recordExecutionTime(
