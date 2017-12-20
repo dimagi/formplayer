@@ -388,7 +388,6 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     @Override
     public void onEvalLocationChanged() {
-
     }
 
     @Override
@@ -401,6 +400,6 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     public boolean hereFunctionEvaluated() {
-        return hereFunctionEvaluated;
+        return this.hereFunctionEvaluated;
     }
 }
