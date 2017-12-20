@@ -16,6 +16,7 @@ import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.util.screen.CommCareSessionException;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.util.NoLocalizedTextException;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathTypeMismatchException;
@@ -101,7 +102,8 @@ public abstract class AbstractBaseController {
             FormNotFoundException.class,
             RecordTooLargeException.class,
             InvalidStructureException.class,
-            UnresolvedResourceRuntimeException.class})
+            UnresolvedResourceRuntimeException.class,
+            NoLocalizedTextException.class})
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
