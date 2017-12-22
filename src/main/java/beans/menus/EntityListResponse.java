@@ -50,15 +50,13 @@ public class EntityListResponse extends MenuBean {
     public EntityListResponse() {}
 
     public EntityListResponse(EntityScreen nextScreen,
+                              EvaluationContext ec,
                               String detailSelection,
                               int offset,
                               String searchText,
-                              int sortIndex,
-                              MenuSession menuSession) {
+                              int sortIndex) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
-        EvaluationContext ec = nextScreen.getEvalContext();
-        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.

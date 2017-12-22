@@ -402,4 +402,10 @@ public class MenuSession implements HereFunctionHandlerListener {
     public boolean hereFunctionEvaluated() {
         return this.hereFunctionEvaluated;
     }
+
+    public EvaluationContext getEvalContextWithHereFuncHandler() {
+        EvaluationContext ec = sessionWrapper.getEvaluationContext();
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(this, currentBrowserLocation));
+        return ec;
+    }
 }

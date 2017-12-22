@@ -7,8 +7,6 @@ import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
-import session.MenuSession;
-import util.FormplayerHereFunctionHandler;
 
 import java.util.ArrayList;
 
@@ -27,15 +25,11 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
         this.isPersistentDetail = true;
     }
 
-    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference,
-                                    MenuSession menuSession) {
-        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
+    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference) {
         entityDetailList = processDetails(screen, ec, treeReference);
     }
 
-    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference,
-                                    MenuSession menuSession) {
-        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
+    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference) {
         entityDetailList = processDetails(detailList, ec, treeReference);
     }
 
