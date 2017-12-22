@@ -13,9 +13,7 @@ import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
-import session.MenuSession;
 import util.FormplayerGraphUtil;
-import util.FormplayerHereFunctionHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
