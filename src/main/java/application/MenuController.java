@@ -107,7 +107,7 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Could not get inline details");
             }
-            return LocationRelevantResponseBean.setLocationNeeds(detail, menuSession);
+            return setLocationNeeds(detail, menuSession);
         }
 
         String[] selections = sessionNavigationBean.getSelections();
@@ -132,7 +132,7 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
-            return LocationRelevantResponseBean.setLocationNeeds(new EntityDetailListResponse(detail), menuSession);
+            return setLocationNeeds(new EntityDetailListResponse(detail), menuSession);
         }
         EntityScreen entityScreen = (EntityScreen) currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
@@ -141,7 +141,7 @@ public class MenuController extends AbstractBaseController {
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        return LocationRelevantResponseBean.setLocationNeeds(
+        return setLocationNeeds(
                 new EntityDetailListResponse(entityScreen, menuSession.getEvalContextWithHereFuncHandler(), reference),
                 menuSession
         );
@@ -173,7 +173,13 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex()
         );
-        return LocationRelevantResponseBean.setLocationNeeds(response, menuSession);
+        return setLocationNeeds(response, menuSession);
+    }
+
+    static <T extends LocationRelevantResponseBean> T setLocationNeeds(T responseBean, MenuSession menuSession) {
+        responseBean.setShouldRequestLocation(menuSession.locationRequestNeeded());
+        responseBean.setShouldWatchLocation(menuSession.hereFunctionEvaluated());
+        return responseBean;
     }
 
     private MenuSession performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
