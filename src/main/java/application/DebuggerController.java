@@ -83,7 +83,7 @@ public class DebuggerController extends AbstractBaseController {
         MenuSession menuSession = getMenuSessionFromBean(debuggerMenuRequest);
         runnerService.advanceSessionWithSelections(menuSession, debuggerMenuRequest.getSelections());
 
-        return LocationRelevantResponseBean.setLocationNeeds(new MenuDebuggerContentResponseBean(
+        return MenuController.setLocationNeeds(new MenuDebuggerContentResponseBean(
                 menuSession.getAppId(),
                 FunctionUtils.xPathFuncList(),
                 menuSession.getSessionWrapper().getEvaluationContext().getInstanceIds(),
@@ -117,7 +117,7 @@ public class DebuggerController extends AbstractBaseController {
                 evaluateXPathResponseBean.getStatus()
         );
 
-        return LocationRelevantResponseBean.setLocationNeeds(evaluateXPathResponseBean, menuSession);
+        return MenuController.setLocationNeeds(evaluateXPathResponseBean, menuSession);
     }
 
     @ApiOperation(value = "Evaluate the given XPath under the current context")

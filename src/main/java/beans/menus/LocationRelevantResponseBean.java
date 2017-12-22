@@ -21,10 +21,12 @@ public abstract class LocationRelevantResponseBean {
         return this.shouldWatchLocation;
     }
 
-    public static <T extends LocationRelevantResponseBean> T setLocationNeeds(T responseBean, MenuSession menuSession) {
-        responseBean.shouldRequestLocation = menuSession.locationRequestNeeded();
-        responseBean.shouldWatchLocation = menuSession.hereFunctionEvaluated();
-        return responseBean;
+    public void setShouldRequestLocation(boolean b) {
+        this.shouldRequestLocation = b;
+    }
+
+    public void setShouldWatchLocation(boolean b) {
+        this.shouldWatchLocation = b;
     }
 
 }
