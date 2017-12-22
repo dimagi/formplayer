@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import api.json.JsonActionUtils;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.model.xform.SerializationContext;
 import org.javarosa.xpath.XPathException;
 import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
@@ -231,7 +232,7 @@ public class FormSession {
     }
 
     public String getInstanceXml() throws IOException {
-        byte[] bytes = new XFormSerializingVisitor().serializeInstance(formDef.getInstance());
+        byte[] bytes = new XFormSerializingVisitor(new SerializationContext()).serializeInstance(formDef.getInstance());
         return new String(bytes, "US-ASCII");
     }
 
