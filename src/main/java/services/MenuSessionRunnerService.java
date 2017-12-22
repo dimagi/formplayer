@@ -95,16 +95,15 @@ public class MenuSessionRunnerService {
                     menuSession.getSessionWrapper(),
                     menuSession.getId()
             );
-        }
-        else if (nextScreen instanceof EntityScreen) {
+        } else if (nextScreen instanceof EntityScreen) {
             // We're looking at a case list or detail screen
             menuResponseBean = new EntityListResponse(
                     (EntityScreen)nextScreen,
+                    menuSession.getEvalContextWithHereFuncHandler(),
                     detailSelection,
                     offset,
                     searchText,
-                    sortIndex,
-                    menuSession
+                    sortIndex
             );
         } else if (nextScreen instanceof FormplayerQueryScreen){
             menuResponseBean = new QueryResponseBean(
@@ -340,11 +339,10 @@ public class MenuSessionRunnerService {
 
         EvaluationContext ec;
         if (inline) {
-            ec = session.getEvaluationContext();
-            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(), ec, reference, menuSession);
+            ec = menuSession.getEvalContextWithHereFuncHandler();
+            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(), ec, reference);
         } else {
-            ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), reference);
-            ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
+            ec = new EvaluationContext(menuSession.getEvalContextWithHereFuncHandler(), reference);
             EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
             detailResponse.setHasInlineTile(entityDatum.getInlineDetail() != null);
             return new EntityDetailListResponse(detailResponse);

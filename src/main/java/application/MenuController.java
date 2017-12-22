@@ -142,8 +142,7 @@ public class MenuController extends AbstractBaseController {
         }
 
         return LocationRelevantResponseBean.setLocationNeeds(
-                new EntityDetailListResponse(entityScreen, menuSession.getSessionWrapper().getEvaluationContext(),
-                        reference, menuSession),
+                new EntityDetailListResponse(entityScreen, menuSession.getEvalContextWithHereFuncHandler(), reference),
                 menuSession
         );
     }
