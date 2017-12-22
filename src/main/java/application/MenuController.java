@@ -5,41 +5,29 @@ import annotations.UserLock;
 import annotations.UserRestore;
 import beans.InstallRequestBean;
 import beans.NewFormResponse;
-import beans.NotificationMessage;
 import beans.SessionNavigationBean;
-import beans.menus.*;
+import beans.menus.BaseResponseBean;
+import beans.menus.EntityDetailListResponse;
+import beans.menus.EntityDetailResponse;
+import beans.menus.LocationRelevantResponseBean;
+import beans.menus.UpdateRequestBean;
 import exceptions.FormNotFoundException;
-import exceptions.MenuNotFoundException;
-import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import repo.SerializableMenuSession;
-import screens.FormplayerQueryScreen;
-import screens.FormplayerSyncScreen;
 import services.CategoryTimingHelper;
 import services.QueryRequester;
 import services.SyncRequester;
 import session.FormSession;
 import session.MenuSession;
-import sqlitedb.ApplicationDB;
 import util.Constants;
-import util.SimpleTimer;
-import util.Timing;
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Hashtable;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
