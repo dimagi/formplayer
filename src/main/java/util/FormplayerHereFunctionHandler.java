@@ -32,7 +32,7 @@ public class FormplayerHereFunctionHandler extends HereFunctionHandler {
             double lon = Double.parseDouble(locationData[1]);
             return (new GeoPointData(new double[]{lat, lon})).getDisplayText();
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            throw new XPathTypeMismatchException("The browser location provided for evaluation of here() was of an unexpected format");
+            throw new XPathTypeMismatchException("The browser location provided for evaluation of here() was of an unexpected format: " + browserLocation);
         }
     }
 
