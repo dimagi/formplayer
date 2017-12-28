@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
@@ -49,14 +48,13 @@ public class EntityListResponse extends MenuBean {
     public EntityListResponse() {}
 
     public EntityListResponse(EntityScreen nextScreen,
+                              EvaluationContext ec,
                               String detailSelection,
                               int offset,
                               String searchText,
-                              String id,
                               int sortIndex) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
-        EvaluationContext ec = nextScreen.getEvalContext();
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
@@ -231,7 +229,7 @@ public class EntityListResponse extends MenuBean {
         for (DetailField field : fields) {
             Object o;
             o = field.getTemplate().evaluate(context);
-            if(o instanceof GraphData) {
+            if (o instanceof GraphData) {
                 try {
                     data[i] = FormplayerGraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
                 } catch (GraphException e) {

@@ -5,44 +5,29 @@ import annotations.UserLock;
 import annotations.UserRestore;
 import beans.InstallRequestBean;
 import beans.NewFormResponse;
-import beans.NotificationMessage;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import beans.menus.EntityDetailListResponse;
 import beans.menus.EntityDetailResponse;
+import beans.menus.LocationRelevantResponseBean;
 import beans.menus.UpdateRequestBean;
 import exceptions.FormNotFoundException;
-import exceptions.MenuNotFoundException;
-import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import repo.SerializableMenuSession;
-import screens.FormplayerQueryScreen;
-import screens.FormplayerSyncScreen;
 import services.CategoryTimingHelper;
 import services.QueryRequester;
 import services.SyncRequester;
 import session.FormSession;
 import session.MenuSession;
-import sqlitedb.ApplicationDB;
 import util.Constants;
-import util.SimpleTimer;
-import util.Timing;
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Hashtable;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -122,7 +107,7 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Could not get inline details");
             }
-            return detail;
+            return setLocationNeeds(detail, menuSession);
         }
 
         String[] selections = sessionNavigationBean.getSelections();
@@ -147,7 +132,7 @@ public class MenuController extends AbstractBaseController {
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
-            return new EntityDetailListResponse(detail);
+            return setLocationNeeds(new EntityDetailListResponse(detail), menuSession);
         }
         EntityScreen entityScreen = (EntityScreen) currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
@@ -156,10 +141,9 @@ public class MenuController extends AbstractBaseController {
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        return new EntityDetailListResponse(
-                entityScreen,
-                menuSession.getSessionWrapper().getEvaluationContext(),
-                reference
+        return setLocationNeeds(
+                new EntityDetailListResponse(entityScreen, menuSession.getEvalContextWithHereFuncHandler(), reference),
+                menuSession
         );
     }
 
@@ -189,7 +173,13 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex()
         );
-        return response;
+        return setLocationNeeds(response, menuSession);
+    }
+
+    private static <T extends LocationRelevantResponseBean> T setLocationNeeds(T responseBean, MenuSession menuSession) {
+        responseBean.setShouldRequestLocation(menuSession.locationRequestNeeded());
+        responseBean.setShouldWatchLocation(menuSession.hereFunctionEvaluated());
+        return responseBean;
     }
 
     private MenuSession performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
