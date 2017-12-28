@@ -176,7 +176,7 @@ public class MenuController extends AbstractBaseController {
         return setLocationNeeds(response, menuSession);
     }
 
-    static <T extends LocationRelevantResponseBean> T setLocationNeeds(T responseBean, MenuSession menuSession) {
+    private static <T extends LocationRelevantResponseBean> T setLocationNeeds(T responseBean, MenuSession menuSession) {
         responseBean.setShouldRequestLocation(menuSession.locationRequestNeeded());
         responseBean.setShouldWatchLocation(menuSession.hereFunctionEvaluated());
         return responseBean;
