@@ -1,15 +1,13 @@
 package application;
 
 import annotations.AppInstall;
-import annotations.AppInstallFromSession;
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.DjangoAuth;
 import beans.*;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import beans.debugger.MenuDebuggerContentResponseBean;
-import beans.debugger.MenuDebuggerRequestBean;
 import beans.debugger.XPathQueryItem;
+import beans.menus.LocationRelevantResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
