@@ -57,6 +57,7 @@ public class NewFormResponseFactory {
                 bean.getRestoreAs(),
                 bean.getSessionData().getAppId(),
                 bean.getSessionData().getFunctionContext(),
+                bean.getTzOffset(),
                 formSendCalloutHandler
         );
 
@@ -70,7 +71,7 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler);
+        return new FormSession(serializableFormSession, restoreFactory, -1, formSendCalloutHandler);
     }
 
     private String getFormXml(String formUrl) {

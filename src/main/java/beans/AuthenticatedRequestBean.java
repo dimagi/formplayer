@@ -1,5 +1,8 @@
 package beans;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 /**
  * The AuthenticatedRequestBean should be used for requests that
  * need to be authenticated with HQ. This Bean will ensure the
@@ -12,6 +15,7 @@ public class AuthenticatedRequestBean {
     protected String restoreAs;
     protected boolean mustRestore;
     private boolean useLiveQuery;
+    private int timezoneOffsetMillis;
 
     public String getUsername() {
         return username;
@@ -65,5 +69,15 @@ public class AuthenticatedRequestBean {
 
     public void setUseLiveQuery(boolean useLiveQuery) {
         this.useLiveQuery = useLiveQuery;
+    }
+
+    @JsonGetter(value = "tz_offset_millis")
+    public int getTzOffset() {
+        return this.timezoneOffsetMillis;
+    }
+
+    @JsonSetter(value = "tz_offset_millis")
+    public void setTzOffset(int offset) {
+        this.timezoneOffsetMillis = offset;
     }
 }
