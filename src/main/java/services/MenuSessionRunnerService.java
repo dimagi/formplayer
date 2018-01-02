@@ -26,6 +26,7 @@ import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
 import session.FormSession;
 import session.MenuSession;
+import util.FormplayerHereFunctionHandler;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -94,18 +95,17 @@ public class MenuSessionRunnerService {
                     menuSession.getSessionWrapper(),
                     menuSession.getId()
             );
-        }
-        // We're looking at a case list or detail screen
-        else if (nextScreen instanceof EntityScreen) {
+        } else if (nextScreen instanceof EntityScreen) {
+            // We're looking at a case list or detail screen
             menuResponseBean = new EntityListResponse(
-                    (EntityScreen) nextScreen,
+                    (EntityScreen)nextScreen,
+                    menuSession.getEvalContextWithHereFuncHandler(),
                     detailSelection,
                     offset,
                     searchText,
-                    menuSession.getId(),
                     sortIndex
             );
-        } else if(nextScreen instanceof FormplayerQueryScreen){
+        } else if (nextScreen instanceof FormplayerQueryScreen){
             menuResponseBean = new QueryResponseBean(
                     (QueryScreen) nextScreen,
                     menuSession.getSessionWrapper()
@@ -118,8 +118,7 @@ public class MenuSessionRunnerService {
         menuResponseBean.setAppId(menuSession.getAppId());
         menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
                 ", App Version: " + menuSession.getAppVersion());
-        setPersistentCaseTile(menuSession, menuResponseBean);
-
+        menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
         return menuResponseBean;
     }
 
@@ -152,7 +151,7 @@ public class MenuSessionRunnerService {
                                                          int offset,
                                                          String searchText,
                                                          int sortIndex) throws Exception {
-        BaseResponseBean nextMenu;
+        BaseResponseBean nextResponse;
         // If we have no selections, we're are the root screen.
         if (selections == null) {
             return getNextMenu(
@@ -190,17 +189,17 @@ public class MenuSessionRunnerService {
                 }
             }
         }
-        nextMenu = getNextMenu(
+        nextResponse = getNextMenu(
                 menuSession,
                 detailSelection,
                 offset,
                 searchText,
                 sortIndex
         );
-        if (nextMenu != null) {
-            nextMenu.setNotification(notificationMessage);
-            log.info("Returning menu: " + nextMenu);
-            return nextMenu;
+        if (nextResponse != null) {
+            nextResponse.setNotification(notificationMessage);
+            log.info("Returning menu: " + nextResponse);
+            return nextResponse;
         } else {
             BaseResponseBean responseBean = resolveFormGetNext(menuSession);
             if (responseBean == null) {
@@ -340,12 +339,10 @@ public class MenuSessionRunnerService {
 
         EvaluationContext ec;
         if (inline) {
-            ec = session.getEvaluationContext();
-            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(),
-                    ec,
-                    reference);
+            ec = menuSession.getEvalContextWithHereFuncHandler();
+            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(), ec, reference);
         } else {
-            ec = new EvaluationContext(menuSession.getSessionWrapper().getEvaluationContext(), reference);
+            ec = new EvaluationContext(menuSession.getEvalContextWithHereFuncHandler(), reference);
             EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
             detailResponse.setHasInlineTile(entityDatum.getInlineDetail() != null);
             return new EntityDetailListResponse(detailResponse);
@@ -371,21 +368,13 @@ public class MenuSessionRunnerService {
         return stepToFrame;
     }
 
-    private static void setPersistentCaseTile(MenuSession menuSession, NewFormResponse formResponse) {
-        formResponse.setPersistentCaseTile(getPersistentDetail(menuSession));
-    }
-
-    private static void setPersistentCaseTile(MenuSession menuSession, MenuBean menuResponseBean) {
-        menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
-    }
-
     private NewFormResponse startFormEntry(MenuSession menuSession) throws Exception {
-        if(menuSession.getSessionWrapper().getForm() != null) {
+        if (menuSession.getSessionWrapper().getForm() != null) {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
-            setPersistentCaseTile(menuSession, formResponseBean);
+            formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
             return formResponseBean;
-        } else{
+        } else {
             return null;
         }
     }

@@ -205,7 +205,9 @@ public abstract class AbstractBaseController {
     }
 
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
-        return performInstall(sessionNavigationBean);
+        MenuSession menuSession = performInstall(sessionNavigationBean);
+        menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
+        return menuSession;
     }
 
     protected MenuSession performInstall(InstallRequestBean bean) throws Exception {

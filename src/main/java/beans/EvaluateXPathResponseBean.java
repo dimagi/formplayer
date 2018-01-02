@@ -1,5 +1,6 @@
 package beans;
 
+import beans.menus.LocationRelevantResponseBean;
 import org.commcare.cases.instance.CaseChildElement;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.AbstractTreeElement;
@@ -30,7 +31,7 @@ import java.util.Vector;
 /**
  * Created by willpride on 1/20/16.
  */
-public class EvaluateXPathResponseBean {
+public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
     private String output;
     private String status;
     private String contentType;
