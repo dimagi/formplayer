@@ -3,12 +3,8 @@ package beans.menus;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Detail;
-import org.commcare.suite.model.EntityDatum;
-import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.screen.EntityDetailSubscreen;
-import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
-import org.commcare.util.screen.Subscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 
@@ -17,7 +13,7 @@ import java.util.ArrayList;
 /**
  * Created by willpride on 1/4/17.
  */
-public class EntityDetailListResponse {
+public class EntityDetailListResponse extends LocationRelevantResponseBean {
 
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
@@ -33,8 +29,7 @@ public class EntityDetailListResponse {
         entityDetailList = processDetails(screen, ec, treeReference);
     }
 
-    public EntityDetailListResponse(Detail[] detailList,
-                                    EvaluationContext ec, TreeReference treeReference) {
+    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference) {
         entityDetailList = processDetails(detailList, ec, treeReference);
     }
 

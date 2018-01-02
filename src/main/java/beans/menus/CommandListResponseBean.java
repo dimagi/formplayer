@@ -35,8 +35,6 @@ public class CommandListResponseBean extends MenuBean {
             commands[i] = command;
         }
         this.setCommands(commands);
-        this.setMenuSessionId(menuSessionId);
-
         String menuId = "root";
         if (session.getCommand() != null) {
             menuId = session.getCommand();
