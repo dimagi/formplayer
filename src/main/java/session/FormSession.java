@@ -488,7 +488,8 @@ public class FormSession {
                 answer != null ? answer.toString() : null,
                 answerIndex,
                 oneQuestionPerScreen,
-                currentIndex);
+                currentIndex,
+                browserTimezoneOffset);
     }
 
     public FormEntryNavigationResponseBean getFormNavigation() throws IOException {

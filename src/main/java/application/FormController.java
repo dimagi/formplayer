@@ -80,7 +80,6 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
                                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
-        System.out.println("calling FormSession construct from answerQuestion with offset: " + answerQuestionBean.getTzOffset());
         FormSession formEntrySession = new FormSession(session, restoreFactory, answerQuestionBean.getTzOffset(), formSendCalloutHandler);
         JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
@@ -115,7 +114,7 @@ public class FormController extends AbstractBaseController{
         } else {
             submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-                submitRequestBean.getAnswers());
+                submitRequestBean.getAnswers(), submitRequestBean.getTzOffset());
         }
 
         if (!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
@@ -191,8 +190,8 @@ public class FormController extends AbstractBaseController{
      * Submit the complete XML instance to HQ if valid.
      */
     private SubmitResponseBean validateSubmitAnswers(FormEntryController formEntryController,
-                                       FormEntryModel formEntryModel,
-                                       Map<String, Object> answers) {
+                                                     FormEntryModel formEntryModel, Map<String, Object> answers,
+                                                     int timezoneOffset) {
         SubmitResponseBean submitResponseBean = new SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
         HashMap<String, ErrorBean> errors = new HashMap<>();
         for(String key: answers.keySet()){
@@ -207,7 +206,7 @@ public class FormController extends AbstractBaseController{
                             answer,
                             key,
                             false,
-                            null);
+                            null, timezoneOffset);
             if(!answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 ErrorBean error = new ErrorBean();
