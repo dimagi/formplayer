@@ -37,7 +37,7 @@ public class IncompleteSessionController extends AbstractBaseController{
     public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
-        return newFormResponseFactory.getResponse(session);
+        return newFormResponseFactory.getResponse(session, incompleteSessionRequestBean.getTzOffset());
     }
 
     @ApiOperation(value = "Get a list of the current user's sessions")

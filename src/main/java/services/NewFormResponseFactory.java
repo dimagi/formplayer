@@ -65,8 +65,9 @@ public class NewFormResponseFactory {
         return new NewFormResponse(formSession);
     }
 
-    public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
+    public NewFormResponse getResponse(SerializableFormSession session, int timezoneOffset) throws Exception {
         FormSession formSession = getFormSession(session);
+        formSession.setOffset(timezoneOffset);
         return new NewFormResponse(formSession);
     }
 

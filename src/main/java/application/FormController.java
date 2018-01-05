@@ -69,8 +69,7 @@ public class FormController extends AbstractBaseController{
         public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String postUrl = host + newSessionBean.getPostUrl();
-        return newFormResponseFactory.getResponse(newSessionBean,
-                postUrl);
+        return newFormResponseFactory.getResponse(newSessionBean, postUrl);
     }
 
     @ApiOperation(value = "Answer the question at the given index")

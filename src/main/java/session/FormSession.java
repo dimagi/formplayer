@@ -542,4 +542,8 @@ public class FormSession {
     public void setIsAtFirstIndex(boolean isAtFirstIndex) {
         this.isAtFirstIndex = isAtFirstIndex;
     }
+
+    public void setOffset(int browserTimezoneOffset) {
+        this.browserTimezoneOffset = browserTimezoneOffset;
+    }
 }

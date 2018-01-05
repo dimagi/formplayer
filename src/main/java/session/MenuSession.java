@@ -74,8 +74,6 @@ public class MenuSession implements HereFunctionHandlerListener {
     private String currentBrowserLocation;
     private boolean hereFunctionEvaluated;
 
-    private int browserTimezoneOffset;
-
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
@@ -97,7 +95,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
                        InstallService installService, RestoreFactory restoreFactory, String host,
-                       boolean oneQuestionPerScreen, String asUser, boolean preview, int browserTimezoneOffset)
+                       boolean oneQuestionPerScreen, String asUser, boolean preview)
             throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
@@ -117,7 +115,6 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         initializeBreadcrumbs();
         this.preview = preview;
-        this.browserTimezoneOffset = browserTimezoneOffset;
     }
 
     public void resetSession() {
@@ -271,7 +268,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen,
-                asUser, appId, null, this.browserTimezoneOffset, formSendCalloutHandler);
+                asUser, appId, null, -1, formSendCalloutHandler);
     }
 
     public void reloadSession(FormSession formSession) throws Exception {
