@@ -15,7 +15,7 @@ public class AuthenticatedRequestBean {
     protected String restoreAs;
     protected boolean mustRestore;
     private boolean useLiveQuery;
-    private int timezoneOffsetMillis;
+    private int timezoneOffsetMillis = -1;
 
     public String getUsername() {
         return username;

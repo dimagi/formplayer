@@ -87,15 +87,6 @@ public class FormSession {
     private boolean isAtFirstIndex;
     private int browserTimezoneOffset = -1;
 
-    private void setupJavaRosaObjects() {
-        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
-        formEntryController = new FormEntryController(formEntryModel);
-        formController = new FormController(formEntryController, false);
-        title = formDef.getTitle();
-        langs = formEntryModel.getLanguages();
-        initLocale();
-    }
-
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
                        int timezoneOffset,
@@ -115,7 +106,6 @@ public class FormSession {
         this.menuSessionId = session.getMenuSessionId();
         this.dateOpened = session.getDateOpened();
         this.browserTimezoneOffset = timezoneOffset;
-        System.out.println("setting tz offset to " + browserTimezoneOffset + " in constructor 1");
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
@@ -163,7 +153,6 @@ public class FormSession {
         this.currentIndex = "0";
         this.functionContext = functionContext;
         this.browserTimezoneOffset = browserTimezoneOffset;
-        System.out.println("setting tz offset to " + browserTimezoneOffset + " in constructor 2");
         setupJavaRosaObjects();
         setupFunctionContext();
         if(instanceContent != null){
@@ -177,6 +166,15 @@ public class FormSession {
             stepToNextIndex();
             this.currentIndex = formController.getFormIndex().toString();
         }
+    }
+
+    private void setupJavaRosaObjects() {
+        formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
+        formEntryController = new FormEntryController(formEntryModel);
+        formController = new FormController(formEntryController, false);
+        title = formDef.getTitle();
+        langs = formEntryModel.getLanguages();
+        initLocale();
     }
 
     /**
