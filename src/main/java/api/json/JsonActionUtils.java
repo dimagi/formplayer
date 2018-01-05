@@ -7,7 +7,7 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.*;
-import org.javarosa.core.model.data.helper.CastingContext;
+import org.javarosa.core.model.data.helper.ValueResolutionContext;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.form.api.FormEntryController;
@@ -177,7 +177,7 @@ public class JsonActionUtils {
                         new UncastData(convertTouchFormsGeoPointString(data)));
         }
         return data.equals("") ? null : AnswerDataFactory.template(formEntryPrompt.getControlType(),
-                formEntryPrompt.getDataType()).cast(new UncastData(data, new CastingContext(timezoneOffset)));
+                formEntryPrompt.getDataType()).cast(new UncastData(data, new ValueResolutionContext(timezoneOffset)));
     }
 
     // we need to remove the brackets Touchforms includes and replace the commas with spaces
