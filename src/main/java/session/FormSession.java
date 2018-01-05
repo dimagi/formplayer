@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import api.json.JsonActionUtils;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.data.helper.ValueResolutionContext;
 import org.javarosa.xpath.XPathException;
 import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
@@ -84,6 +85,7 @@ public class FormSession {
     private String appId;
     private Map<String, FunctionHandler[]> functionContext;
     private boolean isAtFirstIndex;
+    private int browserTimezoneOffset = -1;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -96,6 +98,7 @@ public class FormSession {
 
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
+                       int timezoneOffset,
                        FormSendCalloutHandler formSendCalloutHandler) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
@@ -111,6 +114,8 @@ public class FormSession {
         this.sequenceId = session.getSequenceId();
         this.menuSessionId = session.getMenuSessionId();
         this.dateOpened = session.getDateOpened();
+        this.browserTimezoneOffset = timezoneOffset;
+        System.out.println("setting tz offset to " + browserTimezoneOffset + " in constructor 1");
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
@@ -138,6 +143,7 @@ public class FormSession {
                        String asUser,
                        String appId,
                        Map<String, FunctionHandler[]> functionContext,
+                       int browserTimezoneOffset,
                        FormSendCalloutHandler formSendCalloutHandler) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
@@ -156,6 +162,8 @@ public class FormSession {
         this.appId = appId;
         this.currentIndex = "0";
         this.functionContext = functionContext;
+        this.browserTimezoneOffset = browserTimezoneOffset;
+        System.out.println("setting tz offset to " + browserTimezoneOffset + " in constructor 2");
         setupJavaRosaObjects();
         setupFunctionContext();
         if(instanceContent != null){
@@ -231,7 +239,8 @@ public class FormSession {
     }
 
     public String getInstanceXml() throws IOException {
-        byte[] bytes = new XFormSerializingVisitor().serializeInstance(formDef.getInstance());
+        byte[] bytes = new XFormSerializingVisitor(new ValueResolutionContext(browserTimezoneOffset))
+                .serializeInstance(formDef.getInstance());
         return new String(bytes, "US-ASCII");
     }
 
@@ -478,7 +487,8 @@ public class FormSession {
                 answer != null ? answer.toString() : null,
                 answerIndex,
                 oneQuestionPerScreen,
-                currentIndex);
+                currentIndex,
+                browserTimezoneOffset);
     }
 
     public FormEntryNavigationResponseBean getFormNavigation() throws IOException {

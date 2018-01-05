@@ -91,9 +91,10 @@ public class MenuSessionFactory {
                                     String locale,
                                     boolean oneQuestionPerScreen,
                                     String asUser,
-                                    boolean preview) throws Exception {
+                                    boolean preview,
+                                    int timezoneOffset) throws Exception {
         return new MenuSession(username, domain, appId, installReference, locale,
-                installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
+                installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview, timezoneOffset);
     }
 
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {

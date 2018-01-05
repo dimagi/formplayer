@@ -72,6 +72,7 @@ public class MenuController extends AbstractBaseController {
             try {
                 FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()),
                         restoreFactory,
+                        updateRequestBean.getTzOffset(),
                         formSendCalloutHandler);
                 updatedSession.reloadSession(oldSession);
                 return new NewFormResponse(oldSession);

@@ -7,6 +7,7 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.*;
+import org.javarosa.core.model.data.helper.ValueResolutionContext;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.form.api.FormEntryController;
@@ -88,11 +89,9 @@ public class JsonActionUtils {
      * @param prompt     the question to be answered
      * @return The JSON representation of the updated question tree
      */
-    private static JSONObject questionAnswerToJson(FormEntryController controller,
-                                                  FormEntryModel model, String answer,
-                                                  FormEntryPrompt prompt,
-                                                  boolean oneQuestionPerScreen,
-                                                  FormIndex navIndex) {
+    private static JSONObject questionAnswerToJson(FormEntryController controller, FormEntryModel model, String answer,
+                                                   FormEntryPrompt prompt, boolean oneQuestionPerScreen,
+                                                   FormIndex navIndex, int timezoneOffset) {
         JSONObject ret = new JSONObject();
         IAnswerData answerData;
 
@@ -100,7 +99,7 @@ public class JsonActionUtils {
             answerData = null;
         } else {
             try {
-                answerData = getAnswerData(prompt, answer);
+                answerData = getAnswerData(prompt, answer, timezoneOffset);
             } catch (IllegalArgumentException e) {
                 ret.put(ApiConstants.RESPONSE_STATUS_KEY, "error");
                 ret.put(ApiConstants.ERROR_TYPE_KEY, "illegal-argument");
@@ -142,11 +141,12 @@ public class JsonActionUtils {
                                                   FormEntryModel model, String answer,
                                                   String ansIndex,
                                                   boolean oneQuestionPerScreen,
-                                                  String navIndex) {
+                                                  String navIndex,
+                                                  int timezoneOffset) {
         FormIndex answerIndex = indexFromString(ansIndex, model.getForm());
         FormEntryPrompt prompt = model.getQuestionPrompt(answerIndex);
         FormIndex navigationIndex = indexFromString(navIndex, model.getForm());
-        return questionAnswerToJson(controller, model, answer, prompt, oneQuestionPerScreen, navigationIndex);
+        return questionAnswerToJson(controller, model, answer, prompt, oneQuestionPerScreen, navigationIndex, timezoneOffset);
     }
 
     /**
@@ -156,7 +156,7 @@ public class JsonActionUtils {
      * @param data            the String answer
      * @return the IAnswerData version of @data above
      */
-    private static IAnswerData getAnswerData(FormEntryPrompt formEntryPrompt, String data) {
+    private static IAnswerData getAnswerData(FormEntryPrompt formEntryPrompt, String data, int timezoneOffset) {
         int index;
         switch(formEntryPrompt.getDataType()){
             case Constants.DATATYPE_CHOICE:
@@ -176,7 +176,8 @@ public class JsonActionUtils {
                 return AnswerDataFactory.template(formEntryPrompt.getControlType(), formEntryPrompt.getDataType()).cast(
                         new UncastData(convertTouchFormsGeoPointString(data)));
         }
-        return data.equals("") ? null : AnswerDataFactory.template(formEntryPrompt.getControlType(), formEntryPrompt.getDataType()).cast(new UncastData(data));
+        return data.equals("") ? null : AnswerDataFactory.template(formEntryPrompt.getControlType(),
+                formEntryPrompt.getDataType()).cast(new UncastData(data, new ValueResolutionContext(timezoneOffset)));
     }
 
     // we need to remove the brackets Touchforms includes and replace the commas with spaces

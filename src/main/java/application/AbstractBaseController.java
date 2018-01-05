@@ -224,7 +224,8 @@ public abstract class AbstractBaseController {
                 bean.getLocale(),
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs(),
-                bean.getPreview()
+                bean.getPreview(),
+                bean.getTzOffset()
         );
     }
 
