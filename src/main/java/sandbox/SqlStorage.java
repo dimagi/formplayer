@@ -4,7 +4,6 @@ import exceptions.SQLiteRuntimeException;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.util.Pair;
-import org.javarosa.core.model.condition.LifecycleSignaler;
 import org.javarosa.core.model.condition.RequestAbandonedException;
 import org.javarosa.core.services.Logger;
 import org.javarosa.core.services.PrototypeManager;
@@ -15,7 +14,6 @@ import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import services.ConnectionHandler;
-import org.javarosa.core.model.condition.Abandonable;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -25,7 +23,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Vector;
 
 /**
  * IStorageIndexedUtility implemented on SQLite using JDBC. Contains all the functionality
@@ -524,12 +530,7 @@ public class SqlStorage<T extends Persistable>
         return newObject(new ByteArrayInputStream(serializedObjectAsBytes), dbEntryId);
     }
 
-    public void bulkRead(LinkedHashSet<Integer> cuedCases, HashMap<Integer, T> recordMap) {
-        bulkRead(cuedCases, recordMap, null);
-    }
-
-    @Override
-    public void bulkRead(LinkedHashSet<Integer> cuedCases, HashMap<Integer, T> recordMap, Abandonable abandonable) throws RequestAbandonedException {
+    public void bulkRead(LinkedHashSet<Integer> cuedCases, HashMap<Integer, T> recordMap) throws RequestAbandonedException {
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases);
         PreparedStatement preparedStatement = null;
         Connection connection;
@@ -545,11 +546,115 @@ public class SqlStorage<T extends Persistable>
                                 querySet.second);
                 resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
-                    LifecycleSignaler.AssertNotAbandoned(abandonable);
+                    if(Thread.interrupted()) {
+                        throw new RequestAbandonedException();
+                    }
                     int index = resultSet.findColumn(DatabaseHelper.DATA_COL);
                     byte[] data = resultSet.getBytes(index);
                     recordMap.put(resultSet.getInt(DatabaseHelper.ID_COL),
                             newObject(data, resultSet.getInt(DatabaseHelper.ID_COL)));
+                }
+            }
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        } finally {
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public String[] getMetaDataForRecord(int recordId, String[] metaFieldNames) {
+        String rid = String.valueOf(recordId);
+        String[] scrubbedNames = scrubMetadataNames(metaFieldNames);
+        String[] projection = getProjectedFieldsWithId(false, scrubbedNames);
+        PreparedStatement preparedStatement;
+        ResultSet resultSet = null;
+        preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(
+                getConnection(),
+                tableName,
+                rid,
+                projection
+                );
+        try {
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return readMetaDataFromResultSet(resultSet, scrubbedNames);
+            } else {
+                throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
+            }
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * Reads out the metadata columns from the provided cursor.
+     *
+     * NOTE: The column names _must be scrubbed here_ before the method is called
+     */
+    private String[] readMetaDataFromResultSet(ResultSet resultSet, String[] columnNames) throws SQLException {
+        String[] results = new String[columnNames.length];
+        int i = 0;
+        for(String columnName : columnNames) {
+            results[i] = resultSet.getString(columnName);
+            i++;
+        }
+        return results;
+    }
+
+    @Override
+    public void bulkReadMetadata(LinkedHashSet<Integer> recordIds, String[] metaFieldNames, HashMap<Integer, String[]> metadataMap) {
+        List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(recordIds);
+        String [] scrubbedNames = scrubMetadataNames(metaFieldNames);
+        String[] projection = getProjectedFieldsWithId(false, scrubbedNames);
+        PreparedStatement preparedStatement = null;
+        Connection connection;
+        ResultSet resultSet = null;
+        try {
+            connection = getConnection();
+            for (Pair<String, String[]> querySet : whereParamList) {
+
+                preparedStatement =
+                        SqlHelper.prepareTableSelectStatementProjection(connection,
+                                this.tableName,
+                                DatabaseHelper.ID_COL + " IN " + querySet.first,
+                                querySet.second,
+                                projection);
+                resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    if(Thread.interrupted()) {
+                        throw new RequestAbandonedException();
+                    }
+                    String[] metaRead = readMetaDataFromResultSet(resultSet, scrubbedNames);
+                    metadataMap.put(resultSet.getInt(DatabaseHelper.ID_COL), metaRead);
                 }
             }
         } catch (SQLException e) {
