@@ -99,7 +99,7 @@ public class PrototypeUtils {
                 XPathDistinctValuesFunc.class.getName(),
         };
 
-        for(Class clazz: FunctionUtils.getXPathFuncListMap().values()){
+        for (Class clazz: FunctionUtils.getXPathFuncListMap().values()) {
             PrototypeManager.registerPrototype(clazz.getName());
         }
         PrototypeManager.registerPrototypes(prototypes);

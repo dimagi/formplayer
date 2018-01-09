@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
  * This aspect records various metrics for every request.
  */
 @Aspect
-@Order(1)
+@Order(2)
 public class MetricsAspect {
 
     @Autowired

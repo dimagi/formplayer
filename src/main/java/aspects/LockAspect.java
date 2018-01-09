@@ -26,7 +26,7 @@ import java.util.concurrent.locks.Lock;
  * Aspect for weaving locking for classes that require it
  */
 @Aspect
-@Order(2)
+@Order(3)
 public class LockAspect {
 
     @Autowired
