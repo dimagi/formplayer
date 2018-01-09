@@ -1,6 +1,0 @@
-{
-  "action": "sync-db",
-  "username": "synctestuser",
-  "domain": "synctestdomain",
-  "app_id": "synctestappid"
-}
