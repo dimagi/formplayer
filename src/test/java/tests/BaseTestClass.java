@@ -284,9 +284,10 @@ public class BaseTestClass {
     }
 
     SyncDbResponseBean syncDb() throws Exception {
-        String syncDbRequestPayload = FileUtils.getFile(this.getClass(), "requests/sync_db/sync_db.json");
-        SyncDbRequestBean syncDbRequestBean = mapper.readValue(syncDbRequestPayload,
-                SyncDbRequestBean.class);
+        SyncDbRequestBean syncDbRequestBean = new SyncDbRequestBean();
+        syncDbRequestBean.setDomain(restoreFactoryMock.getDomain());
+        syncDbRequestBean.setUsername(restoreFactoryMock.getUsername());
+        syncDbRequestBean.setRestoreAs(restoreFactoryMock.getAsUsername());
         return generateMockQuery(ControllerType.UTIL,
                 RequestType.POST,
                 Constants.URL_SYNC_DB,
