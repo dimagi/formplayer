@@ -259,7 +259,7 @@ public class SqlHelper {
         }
     }
 
-    public static void performInsert(Connection c,
+    private static void performInsert(Connection c,
                                      Pair<List<String>, String> valsAndInsertStatement) {
         PreparedStatement preparedStatement = null;
         try {
