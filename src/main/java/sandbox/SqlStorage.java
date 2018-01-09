@@ -97,6 +97,11 @@ public class SqlStorage<T extends Persistable>
         SqlHelper.basicInsert(connection, tableName, contentVals);
     }
 
+    public void insertOrReplace(Map<String, String> contentVals) {
+        Connection connection = getConnection();
+        SqlHelper.insertOrReplace(connection, tableName, contentVals);
+    }
+
     private void buildTableFromInstance(T instance) throws ClassNotFoundException {
         Connection connection = getConnection();
         SqlHelper.createTable(connection, tableName, instance);
