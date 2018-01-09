@@ -23,12 +23,7 @@ public class SetBrowserValuesAspect {
     @Before(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
     public void setValues(JoinPoint joinPoint) throws Throwable {
         Object beanArg = joinPoint.getArgs()[0];
-        if (beanArg instanceof SessionNavigationBean) {
-            System.out.println("Setting location in BrowserValuesProvider");
-            browserValuesProvider.setLocation((SessionNavigationBean)beanArg);
-        }
         if (beanArg instanceof AuthenticatedRequestBean) {
-            System.out.println("Setting tz offset in BrowserValuesProvider");
             browserValuesProvider.setTimezoneOffset((AuthenticatedRequestBean)beanArg);
         }
         DateUtils.setTimezoneProvider(browserValuesProvider);
