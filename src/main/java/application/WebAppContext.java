@@ -285,6 +285,18 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    BrowserValuesProvider browserValuesProvider() {
+        return new BrowserValuesProvider();
+    }
+
+    @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    FormplayerTimezoneSource formplayerTimezoneSource() {
+        return new FormplayerTimezoneSource();
+    }
+
+    @Bean
     public LockAspect lockAspect() {
         return new LockAspect();
     }
@@ -306,6 +318,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public AppInstallAspect appInstallAspect() {
         return new AppInstallAspect();
+    }
+
+    @Bean
+    public SetBrowserValuesAspect setBrowserValuesAspect() {
+        return new SetBrowserValuesAspect();
     }
 
     @Bean
