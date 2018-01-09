@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.TestContext;
@@ -76,5 +77,7 @@ public class Enikshay2bTests extends BaseTestClass {
                         NewFormResponse.class);
         assert newFormResponse.getPersistentCaseTile() != null;
         assert newFormResponse.getPersistentCaseTile().getDetails().length == 5;
+        // Sync again to confirm whether we can update indexed fixtures
+        syncDb();
     }
 }
