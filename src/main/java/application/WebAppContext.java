@@ -291,12 +291,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    FormplayerTimezoneSource formplayerTimezoneSource() {
-        return new FormplayerTimezoneSource();
-    }
-
-    @Bean
     public LockAspect lockAspect() {
         return new LockAspect();
     }

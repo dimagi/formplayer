@@ -10,7 +10,7 @@ import org.javarosa.core.model.utils.TimezoneProvider;
 public class BrowserValuesProvider extends TimezoneProvider {
 
     private String browserLocation;
-    private int timezoneOffsetMillis;
+    private int timezoneOffsetMillis = -1;
 
     public void setLocation(SessionNavigationBean bean) {
         browserLocation = bean.getGeoLocation();
