@@ -284,10 +284,37 @@ public class SqlHelper {
         }
     }
 
+    public static void insertOrReplace(Connection c,
+                                       String storageKey,
+                                       Map<String, String> contentValues) {
+        PreparedStatement preparedStatement = null;
+        Pair<List<String>, String> valsAndInsertStatement =
+                buildInsertOrReplaceStatement(storageKey, contentValues);
+        try {
+            preparedStatement = c.prepareStatement(valsAndInsertStatement.second);
+            int i = 1;
+            for (String val : valsAndInsertStatement.first) {
+                preparedStatement.setString(i++, val);
+            }
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     private static Pair<List<String>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, String> contentVals) {
+                                                                   Map<String, String> contentVals,
+                                                                   String insertStatement) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("INSERT INTO ").append(storageKey).append(" (");
+        stringBuilder.append(insertStatement).append(storageKey).append(" (");
         List<String> values = new ArrayList<>();
         String prefix = "";
         for (String key : contentVals.keySet()) {
@@ -305,6 +332,16 @@ public class SqlHelper {
         }
         stringBuilder.append(");");
         return Pair.create(values, stringBuilder.toString());
+    }
+
+    private static Pair<List<String>, String> buildInsertStatement(String storageKey,
+                                                                   Map<String, String> contentVals) {
+        return buildInsertStatement(storageKey, contentVals, "INSERT INTO ");
+    }
+
+    private static Pair<List<String>, String> buildInsertOrReplaceStatement(String storageKey,
+                                                                   Map<String, String> contentVals) {
+        return buildInsertStatement(storageKey, contentVals, "INSERT OR REPLACE INTO ");
     }
 
     public static int insertToTable(Connection c, String storageKey, Persistable p) {
