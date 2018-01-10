@@ -259,11 +259,9 @@ public class SqlHelper {
         }
     }
 
-    public static void basicInsert(Connection c, String storageKey,
-                                   Map<String, String> contentVals) {
+    private static void performInsert(Connection c,
+                                     Pair<List<String>, String> valsAndInsertStatement) {
         PreparedStatement preparedStatement = null;
-        Pair<List<String>, String> valsAndInsertStatement =
-                buildInsertStatement(storageKey, contentVals);
         try {
             preparedStatement = c.prepareStatement(valsAndInsertStatement.second);
             int i = 1;
@@ -284,10 +282,27 @@ public class SqlHelper {
         }
     }
 
+    public static void basicInsert(Connection c,
+                                   String storageKey,
+                                   Map<String, String> contentVals) {
+        Pair<List<String>, String> valsAndInsertStatement =
+                buildInsertStatement(storageKey, contentVals);
+        performInsert(c, valsAndInsertStatement);
+    }
+
+    public static void insertOrReplace(Connection c,
+                                       String storageKey,
+                                       Map<String, String> contentValues) {
+        Pair<List<String>, String> valsAndInsertStatement =
+                buildInsertOrReplaceStatement(storageKey, contentValues);
+        performInsert(c, valsAndInsertStatement);
+    }
+
     private static Pair<List<String>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, String> contentVals) {
+                                                                   Map<String, String> contentVals,
+                                                                   String insertStatement) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("INSERT INTO ").append(storageKey).append(" (");
+        stringBuilder.append(insertStatement).append(storageKey).append(" (");
         List<String> values = new ArrayList<>();
         String prefix = "";
         for (String key : contentVals.keySet()) {
@@ -305,6 +320,16 @@ public class SqlHelper {
         }
         stringBuilder.append(");");
         return Pair.create(values, stringBuilder.toString());
+    }
+
+    private static Pair<List<String>, String> buildInsertStatement(String storageKey,
+                                                                   Map<String, String> contentVals) {
+        return buildInsertStatement(storageKey, contentVals, "INSERT INTO ");
+    }
+
+    private static Pair<List<String>, String> buildInsertOrReplaceStatement(String storageKey,
+                                                                   Map<String, String> contentVals) {
+        return buildInsertStatement(storageKey, contentVals, "INSERT OR REPLACE INTO ");
     }
 
     public static int insertToTable(Connection c, String storageKey, Persistable p) {
