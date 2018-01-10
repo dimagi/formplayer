@@ -14,7 +14,7 @@ import services.BrowserValuesProvider;
  * Created by amstone326 on 1/8/18.
  */
 @Aspect
-@Order(1)
+@Order(3)
 public class SetBrowserValuesAspect {
 
     @Autowired
