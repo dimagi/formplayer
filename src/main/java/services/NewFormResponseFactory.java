@@ -40,7 +40,16 @@ public class NewFormResponseFactory {
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
-        String formXml = getFormXml(bean.getFormUrl());
+        String formXml = null;
+
+        if (bean.getFormUrl() != null) {
+            formXml = getFormXml(bean.getFormUrl());
+        }
+        else if (bean.getFormContent() != null) {
+            formXml = bean.getFormContent();
+        } else {
+            throw new RuntimeException("No FormURL or FormContent");
+        }
         UserSqlSandbox sandbox = restoreFactory.performTimedSync();
 
         FormSession formSession = new FormSession(

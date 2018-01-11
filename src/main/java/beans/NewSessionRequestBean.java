@@ -20,6 +20,7 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     private Map<String, Object> formContext;
     private String instanceContent;
     private String postUrl;
+    private String formContent;
     private boolean oneQuestionPerScreen;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
@@ -32,6 +33,16 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     public void setLang(String lang) {
         this.lang = lang;
     }
+
+    @JsonGetter(value = "form-content")
+    public String getFormContent() {
+        return formContent;
+    }
+    @JsonSetter(value = "form-content")
+    public void setFormContent(String formContent) {
+        this.formContent = formContent;
+    }
+
     @JsonGetter(value = "form-url")
     public String getFormUrl() {
         return formUrl;
@@ -40,6 +51,8 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     public void setFormUrl(String formUrl) {
         this.formUrl = formUrl;
     }
+
+
     @JsonGetter(value = "hq_auth")
     public Map<String, String> getHqAuth() {
         return hqAuth;
