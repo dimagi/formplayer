@@ -2,6 +2,7 @@ package installers;
 
 import org.commcare.resources.model.installers.ProfileInstaller;
 import org.commcare.suite.model.Profile;
+import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
@@ -27,7 +28,7 @@ public class FormplayerProfileInstaller extends ProfileInstaller {
     }
 
     @Override
-    protected IStorageUtilityIndexed<Profile> storage() {
+    protected IStorageUtilityIndexed<Profile> storage(CommCarePlatform platform) {
         if (cacheStorage == null) {
             cacheStorage = storageFactory.newStorage(Profile.STORAGE_KEY, Profile.class);
         }
