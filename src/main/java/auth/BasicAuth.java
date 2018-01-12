@@ -26,7 +26,7 @@ public class BasicAuth implements HqAuth {
     public HttpHeaders getAuthHeaders() {
         return new HttpHeaders(){
             {
-                String auth = StringUtils.getFullUsername(username, domain, host) + ":" + password;
+                String auth = username + ":" + password;
                 byte[] encodedAuth = Base64.encodeBase64(
                         auth.getBytes(Charset.forName("US-ASCII")) );
                 String authHeader = "Basic " + new String( encodedAuth );
@@ -37,6 +37,9 @@ public class BasicAuth implements HqAuth {
 
     @Override
     public String toString(){
-        return "BasicAuth [username=" + username + "]";
+        return "BasicAuth [username=" + username +
+                ", password=" + password +
+                ", host=" + host +
+                ", domain=" + domain + "]";
     }
 }

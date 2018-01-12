@@ -1,5 +1,10 @@
 package beans;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
+import java.util.Map;
+
 /**
  * The AuthenticatedRequestBean should be used for requests that
  * need to be authenticated with HQ. This Bean will ensure the
@@ -12,6 +17,16 @@ public class AuthenticatedRequestBean {
     protected String restoreAs;
     protected boolean mustRestore;
     private boolean useLiveQuery;
+    private Map<String, String> hqAuth;
+
+    @JsonGetter(value = "hq_auth")
+    public Map<String, String> getHqAuth() {
+        return hqAuth;
+    }
+    @JsonSetter(value = "hq_auth")
+    public void setHqAuth(Map<String, String> hqAuth) {
+        this.hqAuth = hqAuth;
+    }
 
     public String getUsername() {
         return username;
@@ -48,6 +63,7 @@ public class AuthenticatedRequestBean {
     public String toString() {
         return "Authenticated request bean wih username=" + username +
                 ", domain=" + domain +
+                ", auth=" + hqAuth +
                 ", restoreAs=" + restoreAs;
     }
 

@@ -105,15 +105,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
      * @return request needs to be authorized
      */
     private boolean isAuthorizationRequired(HttpServletRequest request){
-        String uri = StringUtils.strip(request.getRequestURI(), "/");
-        for (Pattern pattern : Constants.AUTH_WHITELIST) {
-            Matcher matcher = pattern.matcher(uri);
-            if (matcher.matches()) {
-                return false;
-            }
-        }
-
-        return (request.getMethod().equals("POST") || request.getMethod().equals("GET"));
+        return false;
     }
 
     /**
