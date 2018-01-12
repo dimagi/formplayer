@@ -9,8 +9,6 @@ import io.sentry.SentryClientFactory;
 import io.sentry.dsn.InvalidDsnException;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.commcare.modern.reference.ArchiveFileRoot;
-import org.javarosa.core.services.PropertyManager;
-import org.javarosa.core.services.properties.Property;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -35,7 +33,6 @@ import repo.impl.PostgresFormSessionRepo;
 import repo.impl.PostgresMenuSessionRepo;
 import repo.impl.PostgresUserRepo;
 import services.*;
-import util.FormplayerPropertyManager;
 import util.FormplayerSentry;
 
 import java.util.Properties;
