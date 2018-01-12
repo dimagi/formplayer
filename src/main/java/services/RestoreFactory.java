@@ -38,6 +38,7 @@ import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
 import util.Constants;
+import util.FormplayerPropertyManager;
 import util.FormplayerSentry;
 import util.SimpleTimer;
 import util.UserUtils;
@@ -84,6 +85,9 @@ public class RestoreFactory {
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
+
+    @Autowired
+    private FormplayerStorageFactory storageFactory;
 
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
@@ -231,7 +235,7 @@ public class RestoreFactory {
 
     public String getSyncFreqency() {
         try {
-            return (String) PropertyManager.instance().getProperty("cc-autosync-freq").get(0);
+            return (String)storageFactory.getPropertyManager().getProperty("cc-autosync-freq").get(0);
         } catch (RuntimeException e) {
             // In cases where we don't have access to the PropertyManager, such sync-db, this call
             // throws a RuntimeException
