@@ -1,5 +1,6 @@
 package aspects;
 
+import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import auth.TokenAuth;
@@ -22,6 +23,7 @@ import util.Timing;
 import util.UserUtils;
 
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Aspect to configure the RestoreFactory
@@ -49,7 +51,7 @@ public class UserRestoreAspect {
         }
 
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
-        HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
+        HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1], requestBean.getHqAuth());
         restoreFactory.configure((AuthenticatedRequestBean)args[0], auth, requestBean.getUseLiveQuery());
 
         if (requestBean.isMustRestore()) {
@@ -62,9 +64,11 @@ public class UserRestoreAspect {
         restoreFactory.getSQLiteDB().closeConnection();
     }
 
-    private HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
+    private HqAuth getAuthHeaders(String domain, String username, String sessionToken, Map<String, String> hqAuth) {
         HqAuth auth;
-        if (UserUtils.isAnonymous(domain, username)) {
+        if (hqAuth != null) {
+            auth = new BasicAuth(hqAuth.get("username"), domain, Constants.COMMCARE_USER_SUFFIX, hqAuth.get("key"));
+        } else if (UserUtils.isAnonymous(domain, username)) {
             PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
             auth = new TokenAuth(postgresUser.getAuthToken());
         } else {

@@ -15,7 +15,6 @@ import java.util.Map;
 public class NewSessionRequestBean extends AuthenticatedRequestBean {
     private String formUrl;
     private String lang;
-    private Map<String, String> hqAuth;
     private SessionData sessionData;
     private Map<String, Object> formContext;
     private String instanceContent;
@@ -52,15 +51,6 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
         this.formUrl = formUrl;
     }
 
-
-    @JsonGetter(value = "hq_auth")
-    public Map<String, String> getHqAuth() {
-        return hqAuth;
-    }
-    @JsonSetter(value = "hq_auth")
-    public void setHqAuth(Map<String, String> hqAuth) {
-        this.hqAuth = hqAuth;
-    }
     @JsonGetter(value = "session-data")
     public SessionData getSessionData() {
         return sessionData;
@@ -90,7 +80,6 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     public String toString(){
         return "New Session Request Bean [form-url=" + formUrl +
                 ", postUrl= " + postUrl +
-                ", auth=" + hqAuth +
                 ", sessionData= " + sessionData +
                 ", instanceContent=" + instanceContent +"]";
     }
