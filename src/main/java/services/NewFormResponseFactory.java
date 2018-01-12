@@ -38,6 +38,9 @@ public class NewFormResponseFactory {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
+    @Autowired
+    private FormplayerStorageFactory storageFactory;
+
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
         String formXml = getFormXml(bean.getFormUrl());
@@ -57,7 +60,8 @@ public class NewFormResponseFactory {
                 bean.getRestoreAs(),
                 bean.getSessionData().getAppId(),
                 bean.getSessionData().getFunctionContext(),
-                formSendCalloutHandler
+                formSendCalloutHandler,
+                storageFactory
         );
 
         formSessionRepo.save(formSession.serialize());
@@ -70,7 +74,7 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler);
+        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
     }
 
     private String getFormXml(String formUrl) {
