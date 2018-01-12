@@ -8,6 +8,8 @@ import mocks.MockMenuSessionRepo;
 import mocks.TestInstallService;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.properties.Property;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.MessageSource;
@@ -24,6 +26,7 @@ import repo.impl.PostgresFormSessionRepo;
 import services.*;
 import session.FormSession;
 import util.FormplayerHttpRequest;
+import util.FormplayerPropertyManager;
 import util.FormplayerSentry;
 
 @Configuration
