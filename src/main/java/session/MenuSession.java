@@ -19,6 +19,7 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.xpath.XPathParseTool;
@@ -31,6 +32,7 @@ import repo.SerializableMenuSession;
 import sandbox.UserSqlSandbox;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
+import services.FormplayerStorageFactory;
 import services.InstallService;
 import services.RestoreFactory;
 import util.*;
@@ -259,7 +261,8 @@ public class MenuSession implements HereFunctionHandlerListener {
         return ret;
     }
 
-    public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler) throws Exception {
+    public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
+                                           FormplayerStorageFactory storageFactory) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
@@ -267,14 +270,14 @@ public class MenuSession implements HereFunctionHandlerListener {
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen,
-                asUser, appId, null, formSendCalloutHandler);
+                asUser, appId, null, formSendCalloutHandler, storageFactory);
     }
 
     public void reloadSession(FormSession formSession) throws Exception {
         String formXmlns = formSession.getXmlns();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
-        formSession.reload(formDef, postUrl);
+        formSession.reload(formDef, postUrl, engine.getPlatform().getStorageManager());
     }
 
     private byte[] serializeSession(CommCareSession session){

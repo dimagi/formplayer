@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import api.json.JsonActionUtils;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.xpath.XPathException;
 import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
@@ -39,6 +40,7 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import services.FormplayerStorageFactory;
 import services.RestoreFactory;
 
 import java.io.*;
@@ -96,7 +98,8 @@ public class FormSession {
 
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
-                       FormSendCalloutHandler formSendCalloutHandler) throws Exception{
+                       FormSendCalloutHandler formSendCalloutHandler,
+                       FormplayerStorageFactory storageFactory) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();
@@ -120,7 +123,7 @@ public class FormSession {
         FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
         formController.jumpToIndex(formIndex);
         setupFunctionContext();
-        initialize(false, session.getSessionData());
+        initialize(false, session.getSessionData(), storageFactory.getStorageManager());
         this.postUrl = session.getPostUrl();
     }
 
@@ -138,7 +141,8 @@ public class FormSession {
                        String asUser,
                        String appId,
                        Map<String, FunctionHandler[]> functionContext,
-                       FormSendCalloutHandler formSendCalloutHandler) throws Exception {
+                       FormSendCalloutHandler formSendCalloutHandler,
+                       FormplayerStorageFactory storageFactory) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         formDef.setSendCalloutHandler(formSendCalloutHandler);
@@ -160,9 +164,9 @@ public class FormSession {
         setupFunctionContext();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData);
+            initialize(false, sessionData, storageFactory.getStorageManager());
         } else {
-            initialize(true, sessionData);
+            initialize(true, sessionData, storageFactory.getStorageManager());
         }
 
         if (this.oneQuestionPerScreen) {
@@ -218,14 +222,9 @@ public class FormSession {
         }
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData) {
+    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
-                CommCareConfigEngine.MINOR_VERSION, new IStorageIndexedFactory() {
-            @Override
-            public IStorageUtilityIndexed newStorage(String name, Class type) {
-                return new SqlStorage(sandbox, type, name);
-            }
-        });
+                CommCareConfigEngine.MINOR_VERSION, storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
     }
@@ -512,12 +511,12 @@ public class FormSession {
         return oneQuestionPerScreen;
     }
 
-    public void reload(FormDef formDef, String postUrl) throws IOException {
+    public void reload(FormDef formDef, String postUrl, StorageManager storageManager) throws IOException {
         if(getInstanceXml() != null){
             loadInstanceXml(formDef, getInstanceXml());
-            initialize(false, sessionData);
+            initialize(false, sessionData, storageManager);
         } else {
-            initialize(true, sessionData);
+            initialize(true, sessionData, storageManager);
         }
         if (this.oneQuestionPerScreen) {
             FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
