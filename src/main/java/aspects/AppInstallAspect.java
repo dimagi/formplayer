@@ -16,7 +16,7 @@ import java.util.Arrays;
  * Aspect to configure the FormplayerStorageManager
  */
 @Aspect
-@Order(5)
+@Order(6)
 public class AppInstallAspect {
 
     @Autowired
