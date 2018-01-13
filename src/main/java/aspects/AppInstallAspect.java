@@ -44,15 +44,4 @@ public class AppInstallAspect {
                 .record();
         raven.setAppId(requestBean.getAppId());
     }
-
-    @Before(value = "@annotation(annotations.AppInstallFromSession)")
-    public void configureStorageFactoryFromSession(JoinPoint joinPoint) throws Throwable {
-        Object[] args = joinPoint.getArgs();
-        if (!(args[0] instanceof InstallFromSessionRequestBean)) {
-            throw new RuntimeException("Could not configure StorageFactory with args " + Arrays.toString(args));
-        }
-        InstallFromSessionRequestBean requestBean = (InstallFromSessionRequestBean) args[0];
-        storageFactory.configure(requestBean.getMenuSessionId());
-    }
-
 }
