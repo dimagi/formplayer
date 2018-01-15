@@ -65,7 +65,7 @@ public class MetricsAspect {
                 "user:" + user,
                 "request:" + requestPath,
                 "duration:" + timer.getDurationBucket(),
-                "unblocked_time:" + getUnblockedTime(timer),
+                "unblocked_time:" + getUnblockedTimeBucket(timer),
                 "blocked_time:" + getBlockedTime(),
                 "restore_blocked_time:" + getRestoreBlockedTime(),
                 "install_blocked_time:" + getInstallBlockedTime(),
@@ -79,11 +79,11 @@ public class MetricsAspect {
                 "user:" + user,
                 "request:" + requestPath,
                 "duration:" + timer.getDurationBucket(),
-                "unblocked_time:" + getUnblockedTime(timer),
-                "blocked_time:" + getBlockedTime(),
-                "restore_blocked_time:" + getRestoreBlockedTime(),
-                "install_blocked_time:" + getInstallBlockedTime(),
-                "submit_blocked_time:" + getSubmitBlockedTime()
+                "unblocked_time:" + getUnblockedTimeBucket(timer),
+                "blocked_time:" + getBlockedTimeBucket(),
+                "restore_blocked_time:" + getRestoreBlockedTimeBucket(),
+                "install_blocked_time:" + getInstallBlockedTimeBucket(),
+                "submit_blocked_time:" + getSubmitBlockedTimeBucket()
         );
         if (timer.durationInMs() >= 60 * 1000) {
             sendTimingWarningToSentry(timer);
@@ -91,14 +91,24 @@ public class MetricsAspect {
         return result;
     }
 
-    private long getUnblockedTime(SimpleTimer timer) {
-        return timer.durationInMs() - getBlockedTime();
+    private String getUnblockedTimeBucket(SimpleTimer timer) {
+        return Timing.getDurationBucket(timer.durationInMs() - getBlockedTime());
+    }
+
+    private String getBlockedTimeBucket() {
+        return Timing.getDurationBucket(getRestoreBlockedTime() +
+                getInstallBlockedTime() +
+                getSubmitBlockedTime());
     }
 
     private long getBlockedTime() {
         return getRestoreBlockedTime() +
                 getInstallBlockedTime() +
                 getSubmitBlockedTime();
+    }
+
+    private String getRestoreBlockedTimeBucket() {
+        return Timing.getDurationBucket(getRestoreBlockedTime());
     }
 
     private long getRestoreBlockedTime() {
@@ -108,11 +118,19 @@ public class MetricsAspect {
         return restoreFactory.getDownloadRestoreTimer().durationInMs();
     }
 
+    private String getInstallBlockedTimeBucket() {
+        return Timing.getDurationBucket(getInstallBlockedTime());
+    }
+
     private long getInstallBlockedTime() {
         if (installService.getInstallTimer() == null) {
             return 0;
         }
         return installService.getInstallTimer().durationInMs();
+    }
+
+    private String getSubmitBlockedTimeBucket() {
+        return Timing.getDurationBucket(getSubmitBlockedTime());
     }
 
     private long getSubmitBlockedTime() {
