@@ -1,12 +1,9 @@
 package tests;
 
 import beans.NewFormResponse;
-import beans.SubmitRequestBean;
 import beans.SubmitResponseBean;
 import beans.menus.CommandListResponseBean;
-import beans.menus.EntityDetailListResponse;
 import beans.menus.EntityListResponse;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +12,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import utils.TestContext;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 
 /**
  * Tests specific to Enikshay
@@ -76,5 +72,7 @@ public class Enikshay2bTests extends BaseTestClass {
                         NewFormResponse.class);
         assert newFormResponse.getPersistentCaseTile() != null;
         assert newFormResponse.getPersistentCaseTile().getDetails().length == 5;
+        // Sync again to confirm whether we can update indexed fixtures
+        syncDb();
     }
 }

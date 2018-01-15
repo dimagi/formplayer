@@ -164,6 +164,58 @@ public class SqlHelper {
         }
     }
 
+    public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
+                                                                          String storageKey,
+                                                                          String recordId,
+                                                                          String[] projections) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < projections.length; i++) {
+            builder.append(projections[i]);
+            if (i + 1 < projections.length) {
+                builder.append(", ");
+            }
+        }
+        String queryString = "SELECT " + builder.toString() +
+                " FROM " + storageKey +
+                " WHERE " + DatabaseHelper.ID_COL + " = ?;";
+        try {
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
+            preparedStatement.setString(1, recordId);
+            return preparedStatement;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * @throws IllegalArgumentException when one or more of the fields we're selecting on
+     *                                  is not a valid key to select on for this object
+     */
+    public static PreparedStatement prepareTableSelectStatementProjection(Connection c,
+                                                                String storageKey,
+                                                                String where,
+                                                                String values[],
+                                                                String[] projections) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < projections.length; i++) {
+            builder.append(projections[i]);
+            if (i + 1 < projections.length) {
+                builder.append(", ");
+            }
+        }
+        try {
+            String queryString =
+                    "SELECT " + builder.toString() + " FROM " + storageKey + " WHERE " + where + ";";
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
+            for (int i = 0; i < values.length; i++) {
+                preparedStatement.setString(i + 1, values[i]);
+            }
+            return preparedStatement;
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        }
+    }
+
     /**
      * @throws IllegalArgumentException when one or more of the fields we're selecting on
      *                                  is not a valid key to select on for this object
@@ -194,11 +246,10 @@ public class SqlHelper {
                                                                 String storageKey,
                                                                 String where,
                                                                 String values[]) {
-        PreparedStatement preparedStatement = null;
         try {
             String queryString =
                     "SELECT * FROM " + storageKey + " WHERE " + where + ";";
-            preparedStatement = c.prepareStatement(queryString);
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
             for (int i = 0; i < values.length; i++) {
                 preparedStatement.setString(i + 1, values[i]);
             }
@@ -208,11 +259,9 @@ public class SqlHelper {
         }
     }
 
-    public static void basicInsert(Connection c, String storageKey,
-                                   Map<String, String> contentVals) {
+    private static void performInsert(Connection c,
+                                     Pair<List<String>, String> valsAndInsertStatement) {
         PreparedStatement preparedStatement = null;
-        Pair<List<String>, String> valsAndInsertStatement =
-                buildInsertStatement(storageKey, contentVals);
         try {
             preparedStatement = c.prepareStatement(valsAndInsertStatement.second);
             int i = 1;
@@ -233,10 +282,27 @@ public class SqlHelper {
         }
     }
 
+    public static void basicInsert(Connection c,
+                                   String storageKey,
+                                   Map<String, String> contentVals) {
+        Pair<List<String>, String> valsAndInsertStatement =
+                buildInsertStatement(storageKey, contentVals);
+        performInsert(c, valsAndInsertStatement);
+    }
+
+    public static void insertOrReplace(Connection c,
+                                       String storageKey,
+                                       Map<String, String> contentValues) {
+        Pair<List<String>, String> valsAndInsertStatement =
+                buildInsertOrReplaceStatement(storageKey, contentValues);
+        performInsert(c, valsAndInsertStatement);
+    }
+
     private static Pair<List<String>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, String> contentVals) {
+                                                                   Map<String, String> contentVals,
+                                                                   String insertStatement) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("INSERT INTO ").append(storageKey).append(" (");
+        stringBuilder.append(insertStatement).append(storageKey).append(" (");
         List<String> values = new ArrayList<>();
         String prefix = "";
         for (String key : contentVals.keySet()) {
@@ -254,6 +320,16 @@ public class SqlHelper {
         }
         stringBuilder.append(");");
         return Pair.create(values, stringBuilder.toString());
+    }
+
+    private static Pair<List<String>, String> buildInsertStatement(String storageKey,
+                                                                   Map<String, String> contentVals) {
+        return buildInsertStatement(storageKey, contentVals, "INSERT INTO ");
+    }
+
+    private static Pair<List<String>, String> buildInsertOrReplaceStatement(String storageKey,
+                                                                   Map<String, String> contentVals) {
+        return buildInsertStatement(storageKey, contentVals, "INSERT OR REPLACE INTO ");
     }
 
     public static int insertToTable(Connection c, String storageKey, Persistable p) {

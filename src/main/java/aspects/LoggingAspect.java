@@ -18,7 +18,7 @@ import java.lang.reflect.Method;
  * Aspect to log the inputs and return of each API method
  */
 @Aspect
-@Order(3)
+@Order(4)
 public class LoggingAspect {
 
     private final Log log = LogFactory.getLog(LoggingAspect.class);
