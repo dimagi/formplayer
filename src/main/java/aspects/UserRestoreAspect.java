@@ -27,7 +27,7 @@ import java.util.Arrays;
  * Aspect to configure the RestoreFactory
  */
 @Aspect
-@Order(4)
+@Order(5)
 public class UserRestoreAspect {
 
     private final Log log = LogFactory.getLog(UserRestoreAspect.class);

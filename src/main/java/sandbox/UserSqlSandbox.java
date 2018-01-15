@@ -135,7 +135,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_BASE, baseName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_CHILD, childName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_NAME, fixtureName);
-        sqlUtil.basicInsert(contentVals);
+        sqlUtil.insertOrReplace(contentVals);
     }
 
     /**
