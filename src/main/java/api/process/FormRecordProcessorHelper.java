@@ -28,7 +28,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import sandbox.JdbcSqlStorageIterator;
 import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
-import util.FormplayerPropertyManager;
 import util.SimpleTimer;
 
 import java.io.ByteArrayInputStream;

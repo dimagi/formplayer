@@ -30,7 +30,6 @@ import services.XFormService;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
-import util.FormplayerPropertyManager;
 import util.SimpleTimer;
 
 import java.io.IOException;
