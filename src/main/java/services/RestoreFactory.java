@@ -235,7 +235,7 @@ public class RestoreFactory {
 
     public String getSyncFreqency() {
         try {
-            return (String)storageFactory.getPropertyManager().getProperty("cc-autosync-freq").get(0);
+            return storageFactory.getPropertyManager().getSingularProperty("cc-autosync-freq");
         } catch (RuntimeException e) {
             // In cases where we don't have access to the PropertyManager, such sync-db, this call
             // throws a RuntimeException
