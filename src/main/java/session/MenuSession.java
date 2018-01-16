@@ -263,7 +263,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        String postUrl = PropertyManager.instance().getSingularProperty("PostURL");
+        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen,
@@ -273,7 +273,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     public void reloadSession(FormSession formSession) throws Exception {
         String formXmlns = formSession.getXmlns();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
-        String postUrl = PropertyManager.instance().getSingularProperty("PostURL");
+        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
         formSession.reload(formDef, postUrl);
     }
 
