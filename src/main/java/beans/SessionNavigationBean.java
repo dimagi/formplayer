@@ -74,6 +74,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     public String getGeoLocation() {
         return geoLocation;
     }
+
     @JsonSetter(value = "geo_location")
     public void setGeoLocation(String geoLocation) {
         this.geoLocation = geoLocation;

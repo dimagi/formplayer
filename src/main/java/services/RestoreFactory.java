@@ -1,6 +1,7 @@
 package services;
 
 import api.process.FormRecordProcessorHelper;
+import auth.BasicAuth;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import engine.FormplayerTransactionParserFactory;
@@ -13,12 +14,12 @@ import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
-import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
@@ -32,8 +33,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sandbox.JdbcSqlStorageIterator;
 import org.xmlpull.v1.XmlPullParserException;
+import sandbox.JdbcSqlStorageIterator;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
@@ -84,6 +85,9 @@ public class RestoreFactory {
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
+
+    @Autowired
+    private FormplayerStorageFactory storageFactory;
 
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
@@ -231,7 +235,7 @@ public class RestoreFactory {
 
     public String getSyncFreqency() {
         try {
-            return (String) PropertyManager.instance().getProperty("cc-autosync-freq").get(0);
+            return storageFactory.getPropertyManager().getSingularProperty("cc-autosync-freq");
         } catch (RuntimeException e) {
             // In cases where we don't have access to the PropertyManager, such sync-db, this call
             // throws a RuntimeException
@@ -359,6 +363,7 @@ public class RestoreFactory {
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
+        restoreUrl = "http://localhost:8081/a/test-domain/phone/restore/?version=2.0&raw=true";
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(

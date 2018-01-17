@@ -12,13 +12,9 @@ import java.nio.charset.Charset;
 public class BasicAuth implements HqAuth {
     private final String username;
     private final String password;
-    private final String domain;
-    private final String host;
 
-    public BasicAuth(String username, String domain, String host, String password ){
-        this.username = username;
-        this.domain = domain;
-        this.host = host;
+    public BasicAuth(String asUsername, String password){
+        this.username = asUsername;
         this.password = password;
     }
 
@@ -38,8 +34,14 @@ public class BasicAuth implements HqAuth {
     @Override
     public String toString(){
         return "BasicAuth [username=" + username +
-                ", password=" + password +
-                ", host=" + host +
-                ", domain=" + domain + "]";
+                ", password=" + password + "]";
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

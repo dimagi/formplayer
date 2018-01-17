@@ -25,13 +25,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repo.SerializableMenuSession;
 import services.CategoryTimingHelper;
-import services.MenuSessionRunnerService;
 import services.SubmitService;
 import services.XFormService;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
-import util.PropertyUtils;
 import util.SimpleTimer;
 
 import java.io.IOException;
@@ -125,9 +123,12 @@ public class FormController extends AbstractBaseController{
                 restoreFactory.setAutoCommit(false);
 
                 SimpleTimer purgeCasesTimer = FormRecordProcessorHelper.processXML(
-                        new FormplayerTransactionParserFactory(restoreFactory.getSqlSandbox(),
-                                PropertyUtils.isBulkPerformanceEnabled()),
-                        formEntrySession.submitGetXml()
+                        new FormplayerTransactionParserFactory(
+                                restoreFactory.getSqlSandbox(),
+                                storageFactory.getPropertyManager().isBulkPerformanceEnabled()
+                        ),
+                        formEntrySession.submitGetXml(),
+                        storageFactory.getPropertyManager().isAutoPurgeEnabled()
                 ).getPurgeCasesTimer();
 
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
