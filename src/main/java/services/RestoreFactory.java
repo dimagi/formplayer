@@ -252,7 +252,7 @@ public class RestoreFactory {
     public boolean isRestoreXmlExpired() {
         String freq = getSyncFreqency();
         Long lastSyncTime = getLastSyncTime();
-        if (lastSyncTime == null) {
+        if (lastSyncTime == null || freq == null) {
             return false;
         }
         Long delta = System.currentTimeMillis() - lastSyncTime;
