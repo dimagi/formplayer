@@ -17,6 +17,7 @@ public class AuthenticatedRequestBean {
     protected String restoreAs;
     protected boolean mustRestore;
     private boolean useLiveQuery;
+
     private Map<String, String> hqAuth;
 
     @JsonGetter(value = "hq_auth")
@@ -27,6 +28,8 @@ public class AuthenticatedRequestBean {
     public void setHqAuth(Map<String, String> hqAuth) {
         this.hqAuth = hqAuth;
     }
+
+    private int timezoneOffsetMillis = -1;
 
     public String getUsername() {
         return username;
@@ -81,5 +84,15 @@ public class AuthenticatedRequestBean {
 
     public void setUseLiveQuery(boolean useLiveQuery) {
         this.useLiveQuery = useLiveQuery;
+    }
+
+    @JsonGetter(value = "tz_offset_millis")
+    public int getTzOffset() {
+        return this.timezoneOffsetMillis;
+    }
+
+    @JsonSetter(value = "tz_offset_millis")
+    public void setTzOffset(int offset) {
+        this.timezoneOffsetMillis = offset;
     }
 }
