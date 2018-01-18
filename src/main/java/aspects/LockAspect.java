@@ -1,8 +1,12 @@
 package aspects;
 
+import auth.BasicAuth;
+import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
+import beans.SessionRequestBean;
 import com.timgroup.statsd.StatsDClient;
 import io.sentry.event.Event;
+import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,6 +15,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import repo.FormSessionRepo;
 import services.CategoryTimingHelper;
 import services.FormplayerLockRegistry;
 import services.FormplayerLockRegistry.FormplayerReentrantLock;
@@ -44,6 +49,9 @@ public class LockAspect {
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private FormSessionRepo formSessionRepo;
+
     // needs to be accessible from WebAppContext.exceptionResolver
     public class LockError extends Exception {}
 
@@ -61,9 +69,30 @@ public class LockAspect {
                 throw new RuntimeException(throwable);
             }
         }
-
+        String username = null;
         AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
-        String username = TableBuilder.scrubName(bean.getUsernameDetail());
+        if (args[0] instanceof SessionRequestBean) {
+            SessionRequestBean sessionRequestBean = (SessionRequestBean) args[0];
+            SerializableFormSession formSession = formSessionRepo.findOne(sessionRequestBean.getSessionId());
+            String tempUser = formSession.getUsername();
+            String restoreAs = formSession.getAsUser();
+            if (restoreAs != null) {
+                username = tempUser + "_" + restoreAs;
+            } else {
+                username = tempUser;
+            }
+        } else if (bean.getSessionId() != null) {
+            SerializableFormSession formSession = formSessionRepo.findOne(bean.getSessionId());
+            String tempUser = formSession.getUsername();
+            String restoreAs = formSession.getAsUser();
+            if (restoreAs != null) {
+                username = tempUser + "_" + restoreAs;
+            } else {
+                username = tempUser;
+            }
+        } else {
+            username = TableBuilder.scrubName(bean.getUsernameDetail());
+        }
         Lock lock;
 
         try {

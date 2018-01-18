@@ -295,6 +295,22 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
+    @ApiOperation(value = "Get the questions for the current index in OQPS mode")
+    @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.POST)
+    @ResponseBody
+    @UserLock
+    @UserRestore
+    public FormEntryNavigationResponseBean getCurrent(@RequestBody SessionRequestBean requestBean,
+                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        FormSession formSession = new FormSession(serializableFormSession,
+                restoreFactory,
+                formSendCalloutHandler);
+        FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
+        updateSession(formSession, serializableFormSession);
+        return responseBean;
+    }
+
 
     private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
         formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
