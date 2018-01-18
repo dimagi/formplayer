@@ -7,6 +7,7 @@ import auth.TokenAuth;
 import beans.AuthenticatedRequestBean;
 import hq.CaseAPIs;
 import hq.models.PostgresUser;
+import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
@@ -15,9 +16,11 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import repo.FormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import services.CategoryTimingHelper;
 import services.RestoreFactory;
+import session.FormSession;
 import util.Constants;
 import util.Timing;
 import util.UserUtils;
@@ -41,6 +44,9 @@ public class UserRestoreAspect {
     protected PostgresUserRepo postgresUserRepo;
 
     @Autowired
+    protected FormSessionRepo formSessionRepo;
+
+    @Autowired
     CategoryTimingHelper categoryTimingHelper;
 
     @Before(value = "@annotation(annotations.UserRestore)")
@@ -51,9 +57,27 @@ public class UserRestoreAspect {
         }
 
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
-        HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1], requestBean.getHqAuth(),
-                requestBean.getRestoreAs());
-        restoreFactory.configure((AuthenticatedRequestBean)args[0], auth, requestBean.getUseLiveQuery());
+
+        if (requestBean.getSessionId() != null) {
+            SerializableFormSession formSession = formSessionRepo.findOne(requestBean.getSessionId());
+            String username = formSession.getUsername();
+            String domain = formSession.getDomain();
+            String asUsername = formSession.getAsUser();
+            HqAuth auth = null;
+            if ("abcd".equals(asUsername)) {
+                auth = new BasicAuth(asUsername, "123");
+            } else if ("efgh".equals(asUsername)) {
+                auth = new BasicAuth(asUsername, "122");
+            } else if ("xyz".equals(asUsername)) {
+                auth = new BasicAuth(asUsername, "121");
+            }
+            restoreFactory.configure(username, domain, asUsername, auth, false);
+        }
+        else {
+            HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1], requestBean.getHqAuth(),
+                    requestBean.getRestoreAs());
+            restoreFactory.configure((AuthenticatedRequestBean) args[0], auth, requestBean.getUseLiveQuery());
+        }
 
         if (requestBean.isMustRestore()) {
             restoreFactory.performTimedSync();

@@ -75,7 +75,7 @@ public class JsonActionUtils {
                                             String formIndex) {
         JSONObject ret = new JSONObject();
         ret.put(ApiConstants.QUESTION_TREE_KEY, getOneQuestionPerScreenJSON(model, controller,
-                JsonActionUtils.indexFromString("" + formIndex, model.getForm())));
+                JsonActionUtils.indexFromString(formIndex, model.getForm())));
         return ret;
     }
 

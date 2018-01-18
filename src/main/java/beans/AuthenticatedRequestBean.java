@@ -18,6 +18,8 @@ public class AuthenticatedRequestBean {
     protected boolean mustRestore;
     private boolean useLiveQuery;
 
+    private String sessionId;
+
     private Map<String, String> hqAuth;
 
     @JsonGetter(value = "hq_auth")
@@ -94,5 +96,14 @@ public class AuthenticatedRequestBean {
     @JsonSetter(value = "tz_offset_millis")
     public void setTzOffset(int offset) {
         this.timezoneOffsetMillis = offset;
+    }
+
+    @JsonGetter(value = "session-id")
+    public String getSessionId() {
+        return sessionId;
+    }
+    @JsonSetter(value = "session-id")
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }

@@ -473,6 +473,11 @@ public class FormSession {
     }
 
     public JSONObject answerQuestionToJSON(Object answer, String answerIndex) {
+
+        if (answerIndex == null) {
+            answerIndex = getCurrentIndex();
+        }
+
         return JsonActionUtils.questionAnswerToJson(formEntryController,
                 formEntryModel,
                 answer != null ? answer.toString() : null,
@@ -483,6 +488,7 @@ public class FormSession {
 
     public FormEntryNavigationResponseBean getFormNavigation() throws IOException {
         JSONObject resp = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel, currentIndex);
+        log.info("Get form navigation resp " + resp);
         FormEntryNavigationResponseBean responseBean
                 = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
         responseBean.setIsAtLastIndex(isAtLastIndex);

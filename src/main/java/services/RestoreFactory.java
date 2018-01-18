@@ -112,6 +112,22 @@ public class RestoreFactory {
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
 
+    public void configure(String username,
+                          String domain,
+                          String asUsername,
+                          HqAuth auth,
+                          boolean useLiveQuery) {
+        this.setUsername(username);
+        this.setDomain(domain);
+        this.setAsUsername(asUsername);
+        this.setHqAuth(auth);
+        this.setUseLiveQuery(useLiveQuery);
+        this.hasRestored = false;
+        sqLiteDB = new UserDB(domain, username, asUsername);
+        log.info(String.format("configuring RestoreFactory with arguments " +
+                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
+    }
+
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public UserSqlSandbox performTimedSync() throws Exception {
         // Create parent dirs if needed
