@@ -77,15 +77,21 @@ public class FormController extends AbstractBaseController{
     @UserRestore
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
                                                 @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        SerializableFormSession session = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
-        FormSession formEntrySession = new FormSession(session, restoreFactory, formSendCalloutHandler);
-        JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
+        SerializableFormSession serializableSession = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
+        FormSession formSession = new FormSession(serializableSession, restoreFactory, formSendCalloutHandler);
+        JSONObject resp = formSession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
-        updateSession(formEntrySession, session);
+        updateSession(formSession, serializableSession);
+        if ("prompt".equals(answerQuestionBean.getNavMode())) {
+            formSession.stepToNextIndex();
+            FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
+            updateSession(formSession, serializableSession);
+            return responseBean;
+        }
         FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
-        responseBean.setTitle(formEntrySession.getTitle());
-        responseBean.setSequenceId(formEntrySession.getSequenceId());
-        responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        responseBean.setTitle(formSession.getTitle());
+        responseBean.setSequenceId(formSession.getSequenceId());
+        responseBean.setInstanceXml(new InstanceXmlBean(formSession));
         return responseBean;
     }
 
