@@ -379,7 +379,7 @@ public class RestoreFactory {
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
-        restoreUrl = "http://localhost:8081/a/test-domain/phone/restore/?version=2.0&raw=true";
+        restoreUrl = "http://localhost:8000/a/test/phone/restore/?version=2.0&raw=true";
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(

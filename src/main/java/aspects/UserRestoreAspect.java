@@ -70,6 +70,8 @@ public class UserRestoreAspect {
                 auth = new BasicAuth(asUsername, "122");
             } else if ("xyz".equals(asUsername)) {
                 auth = new BasicAuth(asUsername, "121");
+            } else if ("wsp".equals(asUsername)) {
+                auth = new BasicAuth("wsp@test.commcarehq.org", "123");
             }
             restoreFactory.configure(username, domain, asUsername, auth, false);
         }
@@ -92,7 +94,7 @@ public class UserRestoreAspect {
     private HqAuth getAuthHeaders(String domain, String username, String sessionToken, Map<String, String> hqAuth, String asUsername) {
         HqAuth auth;
         if (hqAuth != null) {
-            auth = new BasicAuth(asUsername, hqAuth.get("key"));
+            auth = new BasicAuth("wsp@test.commcarehq.org", "123");
         } else if (UserUtils.isAnonymous(domain, username)) {
             PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
             auth = new TokenAuth(postgresUser.getAuthToken());

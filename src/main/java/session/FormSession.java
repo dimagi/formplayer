@@ -495,6 +495,7 @@ public class FormSession {
         responseBean.setIsAtFirstIndex(isAtFirstIndex);
         responseBean.setTitle(title);
         responseBean.setCurrentIndex(currentIndex);
+        responseBean.setEvent(responseBean.getTree()[0]);
         return responseBean;
     }
 
