@@ -1,6 +1,7 @@
 package services;
 
 import api.process.FormRecordProcessorHelper;
+import auth.BasicAuth;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import engine.FormplayerTransactionParserFactory;
@@ -13,12 +14,12 @@ import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
-import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
@@ -32,13 +33,12 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sandbox.JdbcSqlStorageIterator;
 import org.xmlpull.v1.XmlPullParserException;
+import sandbox.JdbcSqlStorageIterator;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
 import util.Constants;
-import util.FormplayerPropertyManager;
 import util.FormplayerSentry;
 import util.SimpleTimer;
 import util.UserUtils;
@@ -104,6 +104,22 @@ public class RestoreFactory {
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
+        this.setHqAuth(auth);
+        this.setUseLiveQuery(useLiveQuery);
+        this.hasRestored = false;
+        sqLiteDB = new UserDB(domain, username, asUsername);
+        log.info(String.format("configuring RestoreFactory with arguments " +
+                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
+    }
+
+    public void configure(String username,
+                          String domain,
+                          String asUsername,
+                          HqAuth auth,
+                          boolean useLiveQuery) {
+        this.setUsername(username);
+        this.setDomain(domain);
+        this.setAsUsername(asUsername);
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
         this.hasRestored = false;
