@@ -12,6 +12,7 @@ import java.util.HashMap;
  * Created by willpride on 1/27/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class QuestionBean {
     private String caption_audio;
     private String caption_video;
@@ -43,6 +44,8 @@ public class QuestionBean {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private QuestionBean[] children;
+
+    private String output;
 
     public String getCaption_audio() {
         return caption_audio;
@@ -236,5 +239,13 @@ public class QuestionBean {
 
     public void setHint(String hint) {
         this.hint = hint;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
+    }
+
+    public String getOutput() {
+        return output;
     }
 }

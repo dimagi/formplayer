@@ -296,7 +296,6 @@ public class FormSession {
 
     public String submitGetXml() throws IOException {
         formDef.postProcessInstance();
-        getFormTree();
         return getInstanceXml();
     }
 
@@ -496,6 +495,25 @@ public class FormSession {
         responseBean.setTitle(title);
         responseBean.setCurrentIndex(currentIndex);
         responseBean.setEvent(responseBean.getTree()[0]);
+        return responseBean;
+    }
+
+    public FormEntryNavigationResponseBean getNextFormNavigation() throws IOException {
+        int nextEvent = formEntryController.stepToNextEvent();
+        JSONObject resp = JsonActionUtils.getPromptJson(formEntryController, formEntryModel);
+        log.info("Get form navigation resp " + resp);
+        FormEntryNavigationResponseBean responseBean
+                = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
+        responseBean.setIsAtLastIndex(isAtLastIndex);
+        responseBean.setIsAtFirstIndex(isAtFirstIndex);
+        responseBean.setTitle(title);
+        responseBean.setCurrentIndex(currentIndex);
+        responseBean.setInstanceXml(null);
+        responseBean.setTree(null);
+        if (nextEvent == formEntryController.EVENT_END_OF_FORM) {
+            String output = submitGetXml();
+            responseBean.getEvent().setOutput(output);
+        }
         return responseBean;
     }
 
