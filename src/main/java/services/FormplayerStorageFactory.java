@@ -5,6 +5,7 @@ import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.javarosa.core.services.storage.StorageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.MenuSessionRepo;
@@ -28,6 +29,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
 
     private FormplayerPropertyManager propertyManager;
+    private StorageManager storageManager;
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
@@ -63,6 +65,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.sqLiteDB = new ApplicationDB(domain, username, asUsername, appId);
         this.sqLiteDB.closeConnection();
         this.propertyManager = new FormplayerPropertyManager(newStorage(PropertyManager.STORAGE_KEY, Property.class));
+        storageManager = new StorageManager(this);
     }
 
     public FormplayerPropertyManager getPropertyManager() {
@@ -106,4 +109,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         return asUsername;
     }
 
+    public StorageManager getStorageManager() {
+        return storageManager;
+    }
 }
