@@ -8,7 +8,7 @@ import java.util.Arrays;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FormEntryResponseBean extends SessionResponseBean{
+public class FormEntryResponseBean extends SessionResponseBean {
     private QuestionBean[] tree;
     private String status;
     private String reason;

@@ -81,7 +81,8 @@ public class PromptToJson {
                 obj.put("type", "form-start");
                 return;
             case FormEntryController.EVENT_END_OF_FORM:
-                obj.put("type", "form-entry-complete");
+                obj.put("ix", ">");
+                obj.put("type", "form-complete");
                 return;
             case FormEntryController.EVENT_QUESTION:
                 obj.put("type", "question");

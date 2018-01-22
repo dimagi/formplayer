@@ -225,6 +225,17 @@ public class BaseTestClass {
                 FormEntryNavigationResponseBean.class);
     }
 
+    FormEntryResponseBean answerQuestionGetResult(String requestPath, String sessionId) throws Exception {
+        String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
+        AnswerQuestionRequestBean answerQuestionBean = mapper.readValue(requestPayload,
+                AnswerQuestionRequestBean.class);
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_ANSWER_QUESTION,
+                answerQuestionBean,
+                FormEntryResponseBean.class);
+    }
+
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         answerQuestionBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());

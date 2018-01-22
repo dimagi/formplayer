@@ -79,6 +79,14 @@ public class JsonActionUtils {
         return ret;
     }
 
+    // Similar to above, but get the questions for only one formIndex (OQPS)
+    public static JSONObject getPromptJson(FormEntryController controller,
+                                            FormEntryModel model) {
+        JSONObject ret = new JSONObject();
+        ret.put("event", getPromptJson(model, controller));
+        return ret;
+    }
+
     /**
      * Answer the question, return the updated JSON representation of the question tree
      *
@@ -293,5 +301,11 @@ public class JsonActionUtils {
             }
         }
         return ret;
+    }
+
+    public static JSONObject getPromptJson(FormEntryModel fem, FormEntryController fec) {
+        JSONObject obj = new JSONObject();
+        PromptToJson.parseQuestionType(fem, obj);
+        return obj;
     }
 }

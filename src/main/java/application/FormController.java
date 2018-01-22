@@ -83,8 +83,7 @@ public class FormController extends AbstractBaseController{
                 answerQuestionBean.getFormIndex());
         updateSession(formSession, serializableSession);
         if ("prompt".equals(answerQuestionBean.getNavMode())) {
-            formSession.stepToNextIndex();
-            FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
+            FormEntryNavigationResponseBean responseBean = formSession.getNextFormNavigation();
             updateSession(formSession, serializableSession);
             return responseBean;
         }
