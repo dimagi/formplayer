@@ -1,10 +1,9 @@
 package application;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.redis.util.RedisLockRegistry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import services.FormplayerLockRegistry;
@@ -20,8 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Filter that determines whether a request needs to be authorized,
@@ -40,6 +37,9 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     @Autowired
     FormplayerLockRegistry userLockRegistry;
 
+    @Value("${touchforms.authkey}")
+    private String authKey;
+
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         FormplayerHttpRequest request = new FormplayerHttpRequest((HttpServletRequest) req);
@@ -49,12 +49,17 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 setResponseUnauthorized(response, "Invalid session id");
                 return;
             }
-            setDomain(request);
-            setUserDetails(request);
-            JSONObject data = RequestUtils.getPostData(request);
-            if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
-                setResponseUnauthorized(response, "Invalid user");
-                return;
+            if (authKey != null && authKey.equals(getSessionId(request))) {
+                logger.info("Logging in as touchforms_user");
+            }
+            else {
+                setDomain(request);
+                setUserDetails(request);
+                JSONObject data = RequestUtils.getPostData(request);
+                if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
+                    setResponseUnauthorized(response, "Invalid user");
+                    return;
+                }
             }
         }
         filterChain.doFilter(request, response);
@@ -105,7 +110,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
      * @return request needs to be authorized
      */
     private boolean isAuthorizationRequired(HttpServletRequest request){
-        return false;
+        return true;
     }
 
     /**

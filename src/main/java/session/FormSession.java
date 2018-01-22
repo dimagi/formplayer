@@ -119,6 +119,7 @@ public class FormSession {
         setupJavaRosaObjects();
         FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
         formController.jumpToIndex(formIndex);
+        formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(this.currentIndex, formDef));
         setupFunctionContext();
         initialize(false, session.getSessionData());
         this.postUrl = session.getPostUrl();
@@ -499,7 +500,9 @@ public class FormSession {
     }
 
     public FormEntryNavigationResponseBean getNextFormNavigation() throws IOException {
+        formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(this.currentIndex, formDef));
         int nextEvent = formEntryController.stepToNextEvent();
+        this.currentIndex = formController.getFormIndex().toString();
         JSONObject resp = JsonActionUtils.getPromptJson(formEntryController, formEntryModel);
         log.info("Get form navigation resp " + resp);
         FormEntryNavigationResponseBean responseBean

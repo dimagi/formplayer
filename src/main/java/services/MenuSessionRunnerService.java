@@ -70,6 +70,9 @@ public class MenuSessionRunnerService {
     @Autowired
     protected FormSendCalloutHandler formSendCalloutHandler;
 
+    @Autowired
+    protected FormplayerStorageFactory storageFactory;
+
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
 
@@ -380,7 +383,7 @@ public class MenuSessionRunnerService {
     }
 
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
-        FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler);
+        FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         NewFormResponse response = new NewFormResponse(formEntrySession);
         formSessionRepo.save(formEntrySession.serialize());
