@@ -46,6 +46,8 @@ public class NewFormResponseFactory {
         String formXml = getFormXml(bean.getFormUrl());
         UserSqlSandbox sandbox = restoreFactory.performTimedSync();
 
+        storageFactory.configure(bean.getUsername(), bean.getDomain(), bean.getSessionData().getAppId(), bean.getRestoreAs());
+
         FormSession formSession = new FormSession(
                 sandbox,
                 parseFormDef(formXml),
