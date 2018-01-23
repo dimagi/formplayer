@@ -26,6 +26,9 @@ public class SubmitService extends DefaultResponseErrorHandler {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
+    @Autowired
+    private RestTemplate okHttpRestTemplate;
+
     private final Log log = LogFactory.getLog(SubmitService.class);
 
     private CategoryTimingHelper.RecordingTimer submitTimer;
@@ -34,9 +37,8 @@ public class SubmitService extends DefaultResponseErrorHandler {
         submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ);
         submitTimer.start();
         try {
-            RestTemplate restTemplate = new RestTemplate();
             HttpEntity<?> entity = new HttpEntity<Object>(formXml, restoreFactory.getUserHeaders());
-            return restTemplate.exchange(submitUrl,
+            return okHttpRestTemplate.exchange(submitUrl,
                     HttpMethod.POST,
                     entity, String.class);
         } finally {

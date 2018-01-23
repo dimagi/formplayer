@@ -74,6 +74,7 @@ dependencies {
     compile group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.3'
     compile group: 'org.springframework.integration', name: 'spring-integration-redis', version: '4.3.9.RELEASE'
     compile 'org.xerial:sqlite-jdbc:3.16.1'
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.9.1'
     compile fileTree(dir: 'libs', include: '*.jar')
     compile project(path: ':commcare', configuration: 'api')
     compile project(path: ':commcare', configuration: 'translate')

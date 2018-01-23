@@ -13,7 +13,6 @@ import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
-import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -32,13 +31,12 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import sandbox.JdbcSqlStorageIterator;
 import org.xmlpull.v1.XmlPullParserException;
+import sandbox.JdbcSqlStorageIterator;
 import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
 import util.Constants;
-import util.FormplayerPropertyManager;
 import util.FormplayerSentry;
 import util.SimpleTimer;
 import util.UserUtils;
@@ -91,6 +89,9 @@ public class RestoreFactory {
 
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
+
+    @Autowired
+    private RestTemplate okHttpRestTemplate;
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
@@ -359,13 +360,12 @@ public class RestoreFactory {
     }
 
     private InputStream getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
-        RestTemplate restTemplate = new RestTemplate();
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
-        ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
+        ResponseEntity<org.springframework.core.io.Resource> response = okHttpRestTemplate.exchange(
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
