@@ -1,12 +1,14 @@
 package beans;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.Root;
 
+@Root
 public class OpenRosaResponse {
 
     OpenRosaResponse() {}
 
-    @JacksonXmlProperty(localName = "message")
+    @Element
     private String message;
 
     public String getMessage() {

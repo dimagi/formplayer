@@ -1,15 +1,24 @@
 package application;
 
-import annotations.AppInstall;
 import annotations.UserLock;
 import annotations.UserRestore;
 import api.json.JsonActionUtils;
 import api.process.FormRecordProcessorHelper;
 import api.util.ApiConstants;
-import beans.*;
+import beans.AnswerQuestionRequestBean;
+import beans.FormEntryNavigationResponseBean;
+import beans.FormEntryResponseBean;
+import beans.InstanceXmlBean;
+import beans.NewFormResponse;
+import beans.NewSessionRequestBean;
+import beans.NotificationMessage;
+import beans.OpenRosaResponse;
+import beans.RepeatRequestBean;
+import beans.SessionRequestBean;
+import beans.SubmitRequestBean;
+import beans.SubmitResponseBean;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import engine.FormplayerTransactionParserFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -20,11 +29,18 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.json.JSONObject;
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import repo.SerializableMenuSession;
 import services.CategoryTimingHelper;
 import services.FormplayerStorageFactory;
@@ -156,16 +172,7 @@ public class FormController extends AbstractBaseController{
                     log.error("Submit response bean: " + submitResponseBean);
                     return submitResponseBean;
                 } else {
-                    try {
-                        String responseBody = submitResponse.getBody();
-                        XmlMapper xmlMapper = new XmlMapper();
-                        OpenRosaResponse orResponse = xmlMapper.readValue(responseBody, OpenRosaResponse.class);
-                        if (orResponse != null && orResponse.getMessage() != null) {
-                            submitResponseBean.setNotification(new NotificationMessage(orResponse.getMessage(), false));
-                        }
-                    } catch (IOException e) {
-                        log.error("Exception parsing submission response body", e);
-                    }
+                    parseSubmitResponseMessage(submitResponse.getBody(), submitResponseBean);
                 }
                 // Only delete session immediately after successful submit
                 deleteSession(submitRequestBean.getSessionId());
@@ -195,6 +202,22 @@ public class FormController extends AbstractBaseController{
             }
         }
         return submitResponseBean;
+    }
+
+    private void parseSubmitResponseMessage(String responseBody, SubmitResponseBean submitResponseBean) {
+        if (responseBody != null) {
+            try {
+                Serializer serializer = new Persister();
+                OpenRosaResponse openRosaResponse = serializer.read(OpenRosaResponse.class, responseBody);
+                if (openRosaResponse != null && openRosaResponse.getMessage() != null) {
+                    submitResponseBean.setNotification(
+                            new NotificationMessage(openRosaResponse.getMessage(), false)
+                    );
+                }
+            } catch (Exception e) {
+                log.error("Exception parsing submission response body", e);
+            }
+        }
     }
 
     protected void deleteSession(String id) {
