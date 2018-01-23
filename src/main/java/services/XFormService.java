@@ -11,10 +11,12 @@ public class XFormService {
     @Autowired
     RestoreFactory restoreFactory;
 
+    @Autowired
+    private RestTemplate okHttpRestTemplate;
+
     public String getFormXml(String formUrl) {
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
-                restTemplate.exchange(formUrl,
+                okHttpRestTemplate.exchange(formUrl,
                         HttpMethod.GET,
                         new HttpEntity<String>(restoreFactory.getUserHeaders()), String.class);
         return response.getBody();

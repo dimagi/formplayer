@@ -26,9 +26,11 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
     @Autowired
     RestoreFactory restoreFactory;
 
+    @Autowired
+    private RestTemplate okHttpRestTemplate;
+
     @Override
     public String performHttpCalloutForResponse(String url, Map<String, String> paramMap) {
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = null;
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
@@ -37,7 +39,7 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
         }
 
         try {
-            response = restTemplate.exchange(
+            response = okHttpRestTemplate.exchange(
                     // Spring framework automatically encodes urls. This ensures we don't pass in an already
                     // encoded url.
                     URLDecoder.decode(builder.toUriString(), "UTF-8"),

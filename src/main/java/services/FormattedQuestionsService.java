@@ -21,6 +21,9 @@ public class FormattedQuestionsService {
     @Autowired
     RestoreFactory restoreFactory;
 
+    @Autowired
+    private RestTemplate okHttpRestTemplate;
+
     public class QuestionResponse {
         private String formattedQuestions;
         private JSONArray questionList;
@@ -41,7 +44,6 @@ public class FormattedQuestionsService {
     private String host;
 
     public QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml) {
-        RestTemplate restTemplate = new RestTemplate();
         MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
 
         body.add("instanceXml", instanceXml);
@@ -49,7 +51,7 @@ public class FormattedQuestionsService {
         body.add("appId", appId);
 
         HttpEntity<?> entity = new HttpEntity<Object>(body, restoreFactory.getUserHeaders());
-        ResponseEntity<String> response = restTemplate.exchange(
+        ResponseEntity<String> response = okHttpRestTemplate.exchange(
                 getFormattedQuestionsUrl(host, domain),
                 HttpMethod.POST,
                 entity,

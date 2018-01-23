@@ -2,6 +2,7 @@ package services;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -16,12 +17,13 @@ public class QueryRequester {
 
     private final Log log = LogFactory.getLog(QueryRequester.class);
 
+    @Autowired
+    private RestTemplate okHttpRestTemplate;
+
     public String makeQueryRequest(String uri, HttpHeaders headers) {
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response =
-                null;
+        ResponseEntity<String> response;
         try {
-            response = restTemplate.exchange(
+            response = okHttpRestTemplate.exchange(
                     // Spring framework automatically encodes urls. This ensures we don't pass in an already
                     // encoded url.
                     URLDecoder.decode(uri, "UTF-8"),

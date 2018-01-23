@@ -17,6 +17,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.integration.support.locks.LockRegistry;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
@@ -164,4 +165,9 @@ public class TestContext {
 
     @Bean
     public MenuSessionFactory menuSessionFactory() {return Mockito.spy(MenuSessionFactory.class);}
+
+    @Bean
+    public RestTemplate okHttpRestTemplate() {
+        return Mockito.spy(RestTemplate.class);
+    }
 }
