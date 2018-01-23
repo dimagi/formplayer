@@ -3,20 +3,8 @@ package util;
 public abstract class Timing {
     public abstract long durationInMs();
     public String getDurationBucket() {
-        long timeInS = durationInMs() / 1000;
-        if (timeInS < 1) {
-            return "lt_001s";
-        } else if (timeInS < 5) {
-            return "lt_005s";
-        } else if (timeInS < 20) {
-            return "lt_020s";
-        } else if (timeInS < 60) {
-            return "lt_060s";
-        } else if (timeInS < 120) {
-            return "lt_120s";
-        } else {
-            return "over_120s";
-        }
+        long timeInSeconds = durationInMs() / 1000;
+        return getDurationBucket(timeInSeconds);
     }
 
     public String formatDuration() {
@@ -30,5 +18,21 @@ public abstract class Timing {
                 return durationInMs;
             }
         };
+    }
+
+    public static String getDurationBucket(long timeInSeconds) {
+        if (timeInSeconds < 1) {
+            return "lt_001s";
+        } else if (timeInSeconds < 5) {
+            return "lt_005s";
+        } else if (timeInSeconds < 20) {
+            return "lt_020s";
+        } else if (timeInSeconds < 60) {
+            return "lt_060s";
+        } else if (timeInSeconds < 120) {
+            return "lt_120s";
+        } else {
+            return "over_120s";
+        }
     }
 }
