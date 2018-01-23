@@ -9,6 +9,7 @@ import api.util.ApiConstants;
 import beans.*;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import engine.FormplayerTransactionParserFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -154,6 +155,17 @@ public class FormController extends AbstractBaseController{
                             "Form submission failed with error response" + submitResponse, true));
                     log.error("Submit response bean: " + submitResponseBean);
                     return submitResponseBean;
+                } else {
+                    try {
+                        String responseBody = submitResponse.getBody();
+                        XmlMapper xmlMapper = new XmlMapper();
+                        OpenRosaResponse orResponse = xmlMapper.readValue(responseBody, OpenRosaResponse.class);
+                        if (orResponse != null && orResponse.getMessage() != null) {
+                            submitResponseBean.setNotification(new NotificationMessage(orResponse.getMessage(), false));
+                        }
+                    } catch (IOException e) {
+                        log.error("Exception parsing submission response body", e);
+                    }
                 }
                 // Only delete session immediately after successful submit
                 deleteSession(submitRequestBean.getSessionId());
