@@ -1,5 +1,6 @@
 package application;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Filter that determines whether a request needs to be authorized,
@@ -110,7 +113,15 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
      * @return request needs to be authorized
      */
     private boolean isAuthorizationRequired(HttpServletRequest request){
-        return true;
+        String uri = StringUtils.strip(request.getRequestURI(), "/");
+        for (Pattern pattern : Constants.AUTH_WHITELIST) {
+            Matcher matcher = pattern.matcher(uri);
+            if (matcher.matches()) {
+                return false;
+            }
+        }
+
+        return (request.getMethod().equals("POST") || request.getMethod().equals("GET"));
     }
 
     /**
