@@ -16,11 +16,14 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import services.CategoryTimingHelper;
+import services.SubmitService;
+import session.FormSession;
 import sqlitedb.UserDB;
 import util.Constants;
 import util.Timing;
 
 import java.io.StringReader;
+import java.util.HashMap;
 
 /**
  * Controller class (API endpoint) containing all all logic that isn't associated with
@@ -38,6 +41,9 @@ public class UtilController extends AbstractBaseController {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
+    @Autowired
+    private SubmitService submitService;
+
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
@@ -46,6 +52,33 @@ public class UtilController extends AbstractBaseController {
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         restoreFactory.performTimedSync();
         return new SyncDbResponseBean();
+    }
+
+    @ApiOperation(value = "Run the specified migrations")
+    @RequestMapping(value = Constants.URL_CASE_MIGRATION, method = RequestMethod.POST)
+    @UserLock
+    @UserRestore
+    public MigrationResponseBean migrateCases(@RequestBody MigrationRequestBean migrationRequest,
+                                         @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        String[] caseIds = migrationRequest.getCaseIds();
+        String appId = "appId";
+        String postUrl = "postUrl";
+        String formXml = migrationRequest.getFormXml();
+        for (String caseId: caseIds) {
+            restoreFactory.setCaseId(caseId);
+            HashMap<String, String> sessionData = new HashMap<>();
+            sessionData.put("case_id", caseId);
+            FormSession newForm =
+                    newFormResponseFactory.getResponse(formXml,
+                            "migration",
+                            migrationRequest.getDomain(),
+                            appId,
+                            postUrl
+                    );
+            String submissionXml = newForm.submitGetXml();
+            submitService.submitForm(submissionXml, postUrl);
+        }
+        return new MigrationResponseBean();
     }
 
     @ApiOperation(value = "Wipe the applications databases")

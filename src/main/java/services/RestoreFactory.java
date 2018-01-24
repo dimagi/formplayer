@@ -99,6 +99,7 @@ public class RestoreFactory {
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
     private boolean useLiveQuery;
     private boolean hasRestored;
+    private String caseId;
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
         this.setUsername(authenticatedRequestBean.getUsername());
@@ -423,6 +424,24 @@ public class RestoreFactory {
     }
 
     public String getRestoreUrl() {
+        if (caseId != null) {
+            return getCaseRestoreUrl();
+        }
+        return getUserRestoreUrl();
+    }
+
+    public String getCaseRestoreUrl() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(host);
+        builder.append("/a/");
+        builder.append(domain);
+        builder.append("/case_migrations/restore/");
+        builder.append(caseId);
+        builder.append("/");
+        return builder.toString();
+    }
+
+    public String getUserRestoreUrl() {
         StringBuilder builder = new StringBuilder();
         builder.append(host);
         builder.append("/a/");
@@ -491,5 +510,9 @@ public class RestoreFactory {
 
     public SimpleTimer getDownloadRestoreTimer() {
         return downloadRestoreTimer;
+    }
+
+    public void setCaseId(String caseId) {
+        this.caseId = caseId;
     }
 }

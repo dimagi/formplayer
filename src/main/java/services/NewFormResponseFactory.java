@@ -15,6 +15,7 @@ import session.FormSession;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -40,6 +41,34 @@ public class NewFormResponseFactory {
 
     @Autowired
     private FormplayerStorageFactory storageFactory;
+
+    public FormSession getResponse (String formXml,
+                                    String username,
+                                    String domain,
+                                    String appId,
+                                    String postUrl,
+                                    HashMap<String, String> sessionData) throws Exception {
+        UserSqlSandbox sandbox = restoreFactory.performTimedSync();
+        storageFactory.configure(username, domain, appId, null);
+        FormSession formSession = new FormSession(
+                sandbox,
+                parseFormDef(formXml),
+                username,
+                domain,
+                sessionData,
+                postUrl,
+                "en",
+                null,
+                null,
+                false,
+                null,
+                appId,
+                null,
+                formSendCalloutHandler,
+                storageFactory
+        );
+        return formSession;
+    }
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
