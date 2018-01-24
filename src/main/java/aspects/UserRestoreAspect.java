@@ -15,6 +15,7 @@ import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import repo.FormSessionRepo;
 import repo.impl.PostgresUserRepo;
@@ -49,38 +50,24 @@ public class UserRestoreAspect {
     @Autowired
     CategoryTimingHelper categoryTimingHelper;
 
+    @Value("${touchforms.username}")
+    private String touchformsUsername;
+
+    @Value("${touchforms.password}")
+    private String touchformsPassword;
+
+    @Value("${touchforms.authkey}")
+    private String authKey;
+
     @Before(value = "@annotation(annotations.UserRestore)")
     public void configureRestoreFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         if (!(args.length > 1 && args[0] instanceof AuthenticatedRequestBean && args[1] instanceof String)) {
             throw new RuntimeException("Could not configure RestoreFactory with args " + Arrays.toString(args));
         }
-
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
-
-        if (requestBean.getSessionId() != null) {
-            SerializableFormSession formSession = formSessionRepo.findOne(requestBean.getSessionId());
-            String username = formSession.getUsername();
-            String domain = formSession.getDomain();
-            String asUsername = formSession.getAsUser();
-            HqAuth auth = null;
-            if ("abcd".equals(asUsername)) {
-                auth = new BasicAuth(asUsername, "123");
-            } else if ("efgh".equals(asUsername)) {
-                auth = new BasicAuth(asUsername, "122");
-            } else if ("xyz".equals(asUsername)) {
-                auth = new BasicAuth(asUsername, "121");
-            } else if ("wsp".equals(asUsername)) {
-                auth = new BasicAuth("wsp@test.commcarehq.org", "123");
-            }
-            restoreFactory.configure(username, domain, asUsername, auth, false);
-        }
-        else {
-            HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1], requestBean.getHqAuth(),
-                    requestBean.getRestoreAs());
-            restoreFactory.configure((AuthenticatedRequestBean) args[0], auth, requestBean.getUseLiveQuery());
-        }
-
+        HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
+        restoreFactory.configure((AuthenticatedRequestBean) args[0], auth, requestBean.getUseLiveQuery());
         if (requestBean.isMustRestore()) {
             restoreFactory.performTimedSync();
         }
@@ -91,10 +78,10 @@ public class UserRestoreAspect {
         restoreFactory.getSQLiteDB().closeConnection();
     }
 
-    private HqAuth getAuthHeaders(String domain, String username, String sessionToken, Map<String, String> hqAuth, String asUsername) {
+    private HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
         HqAuth auth;
-        if (hqAuth != null) {
-            auth = new BasicAuth("wsp@test.commcarehq.org", "123");
+        if (sessionToken != null && sessionToken.equals(authKey)) {
+            auth = new BasicAuth(touchformsUsername, touchformsPassword);
         } else if (UserUtils.isAnonymous(domain, username)) {
             PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
             auth = new TokenAuth(postgresUser.getAuthToken());
