@@ -61,8 +61,11 @@ public class UtilController extends AbstractBaseController {
     public MigrationResponseBean migrateCases(@RequestBody MigrationRequestBean migrationRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String[] caseIds = migrationRequest.getCaseIds();
-        String appId = "appId";
-        String postUrl = "postUrl";
+        String appId = migrationRequest.getAppId();
+        String postUrl = migrationRequest.getPostUrl();
+        if (postUrl == null) {
+            postUrl = String.format("%s/a/%s/receiver/secure/%s/", host, migrationRequest.getDomain(), appId);
+        }
         String formXml = migrationRequest.getFormXml();
         for (String caseId: caseIds) {
             restoreFactory.setCaseId(caseId);
@@ -73,7 +76,8 @@ public class UtilController extends AbstractBaseController {
                             "migration",
                             migrationRequest.getDomain(),
                             appId,
-                            postUrl
+                            postUrl,
+                            sessionData
                     );
             String submissionXml = newForm.submitGetXml();
             submitService.submitForm(submissionXml, postUrl);
