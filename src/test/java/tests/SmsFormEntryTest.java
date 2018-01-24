@@ -31,4 +31,22 @@ public class SmsFormEntryTest extends BaseTestClass{
         assert formEntryResponseBean.getEvent().getType().equals("form-complete");
         assert formEntryResponseBean.getEvent().getIx().equals(">");
     }
+
+    @Test
+    public void testMultipleQuestions() throws Exception {
+        NewFormResponse newSessionResponse = startNewForm("requests/sms/session1/new_form.json", "xforms/oqps.xml");
+        assert newSessionResponse.getEvent().getType().equals("question");
+        assert newSessionResponse.getEvent().getIx().equals("0");
+        assert newSessionResponse.getEvent().getCaption().equals("Text 1");
+        FormEntryResponseBean formEntryResponseBean =
+                answerQuestionGetResult("requests/sms/session1/answer_0.json", newSessionResponse.getSessionId());
+        assert formEntryResponseBean.getEvent().getType().equals("question");
+        assert formEntryResponseBean.getEvent().getIx().equals("1");
+        assert formEntryResponseBean.getEvent().getCaption().equals("Text 2");
+        formEntryResponseBean =
+                answerQuestionGetResult("requests/sms/session1/answer_1.json", newSessionResponse.getSessionId());
+        assert formEntryResponseBean.getEvent().getType().equals("form-complete");
+        assert formEntryResponseBean.getEvent().getIx().equals(">");
+
+    }
 }
