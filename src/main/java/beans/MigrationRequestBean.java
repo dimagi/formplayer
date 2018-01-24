@@ -3,7 +3,7 @@ package beans;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * I think we can delete this now  that all information has been encapsulated in its super class
+ * Request for Formplayer to perform a case migration
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MigrationRequestBean extends AuthenticatedRequestBean {
