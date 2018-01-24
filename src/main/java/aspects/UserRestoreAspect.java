@@ -67,7 +67,11 @@ public class UserRestoreAspect {
         }
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
         HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
-        restoreFactory.configure((AuthenticatedRequestBean) args[0], auth, requestBean.getUseLiveQuery());
+        if (requestBean.getCaseId() != null) {
+            restoreFactory.configure(requestBean.getDomain(), requestBean.getCaseId(), auth);
+        } else {
+            restoreFactory.configure((AuthenticatedRequestBean) args[0], auth, requestBean.getUseLiveQuery());
+        }
         if (requestBean.isMustRestore()) {
             restoreFactory.performTimedSync();
         }

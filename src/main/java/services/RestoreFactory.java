@@ -99,27 +99,20 @@ public class RestoreFactory {
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
     private boolean useLiveQuery;
     private boolean hasRestored;
+    private String caseId;
+
+    public void configure(String domain, String caseId, HqAuth auth) {
+        this.setUsername("CASE" + caseId);
+        this.setDomain(domain);
+        this.setCaseId(caseId);
+        this.setHqAuth(auth);
+        sqLiteDB = new UserDB(domain, username, null);
+    }
 
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
-        this.setHqAuth(auth);
-        this.setUseLiveQuery(useLiveQuery);
-        this.hasRestored = false;
-        sqLiteDB = new UserDB(domain, username, asUsername);
-        log.info(String.format("configuring RestoreFactory with arguments " +
-                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
-    }
-
-    public void configure(String username,
-                          String domain,
-                          String asUsername,
-                          HqAuth auth,
-                          boolean useLiveQuery) {
-        this.setUsername(username);
-        this.setDomain(domain);
-        this.setAsUsername(asUsername);
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
         this.hasRestored = false;
@@ -439,6 +432,24 @@ public class RestoreFactory {
     }
 
     public String getRestoreUrl() {
+        if (caseId != null) {
+            return getCaseRestoreUrl();
+        }
+        return getUserRestoreUrl();
+    }
+
+    public String getCaseRestoreUrl() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(host);
+        builder.append("/a/");
+        builder.append(domain);
+        builder.append("/case_migrations/restore/");
+        builder.append(caseId);
+        builder.append("/");
+        return builder.toString();
+    }
+
+    public String getUserRestoreUrl() {
         StringBuilder builder = new StringBuilder();
         builder.append(host);
         builder.append("/a/");
@@ -507,5 +518,13 @@ public class RestoreFactory {
 
     public SimpleTimer getDownloadRestoreTimer() {
         return downloadRestoreTimer;
+    }
+
+    public void setCaseId(String caseId) {
+        this.caseId = caseId;
+    }
+
+    public String getCaseId() {
+        return caseId;
     }
 }

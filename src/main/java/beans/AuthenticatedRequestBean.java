@@ -19,6 +19,7 @@ public class AuthenticatedRequestBean {
     private boolean useLiveQuery;
 
     private String sessionId;
+    private String caseId;
 
     private Map<String, String> hqAuth;
 
@@ -105,5 +106,14 @@ public class AuthenticatedRequestBean {
     @JsonSetter(value = "session-id")
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
+    }
+
+    @JsonGetter(value = "case_id")
+    public String getCaseId() {
+        return caseId;
+    }
+    @JsonSetter(value = "case_id")
+    public void setCaseId(String caseId) {
+        this.caseId = caseId;
     }
 }
