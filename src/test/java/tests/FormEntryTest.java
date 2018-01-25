@@ -96,6 +96,7 @@ public class FormEntryTest extends BaseTestClass{
 
         //Test Submission
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request.json", sessionId);
+        assert submitResponseBean.getSubmitResponseMessage().equals("OK");
     }
 
 
