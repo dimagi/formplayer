@@ -210,9 +210,7 @@ public class FormController extends AbstractBaseController{
                 Serializer serializer = new Persister();
                 OpenRosaResponse openRosaResponse = serializer.read(OpenRosaResponse.class, responseBody);
                 if (openRosaResponse != null && openRosaResponse.getMessage() != null) {
-                    submitResponseBean.setNotification(
-                            new NotificationMessage(openRosaResponse.getMessage(), false)
-                    );
+                    submitResponseBean.setSubmitResponseMessage(openRosaResponse.getMessage());
                 }
             } catch (Exception e) {
                 log.error("Exception parsing submission response body", e);
