@@ -21,17 +21,6 @@ public class AuthenticatedRequestBean {
     private String sessionId;
     private String caseId;
 
-    private Map<String, String> hqAuth;
-
-    @JsonGetter(value = "hq_auth")
-    public Map<String, String> getHqAuth() {
-        return hqAuth;
-    }
-    @JsonSetter(value = "hq_auth")
-    public void setHqAuth(Map<String, String> hqAuth) {
-        this.hqAuth = hqAuth;
-    }
-
     private int timezoneOffsetMillis = -1;
 
     public String getUsername() {
@@ -69,7 +58,6 @@ public class AuthenticatedRequestBean {
     public String toString() {
         return "Authenticated request bean wih username=" + username +
                 ", domain=" + domain +
-                ", auth=" + hqAuth +
                 ", restoreAs=" + restoreAs;
     }
 

@@ -487,7 +487,6 @@ public class FormSession {
 
     public FormEntryNavigationResponseBean getFormNavigation() throws IOException {
         JSONObject resp = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel, currentIndex);
-        log.info("Get form navigation resp " + resp);
         FormEntryNavigationResponseBean responseBean
                 = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
         responseBean.setIsAtLastIndex(isAtLastIndex);
@@ -503,7 +502,6 @@ public class FormSession {
         int nextEvent = formEntryController.stepToNextEvent();
         this.currentIndex = formController.getFormIndex().toString();
         JSONObject resp = JsonActionUtils.getPromptJson(formEntryController, formEntryModel);
-        log.info("Get form navigation resp " + resp);
         FormEntryNavigationResponseBean responseBean
                 = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
         responseBean.setIsAtLastIndex(isAtLastIndex);

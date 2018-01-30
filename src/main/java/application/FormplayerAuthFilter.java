@@ -1,5 +1,6 @@
 package application;
 
+import beans.auth.HqUserDetailsBean;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,11 +53,12 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 setResponseUnauthorized(response, "Invalid session id");
                 return;
             }
+            setDomain(request);
             if (authKey != null && authKey.equals(getSessionId(request))) {
                 logger.info("Logging in as touchforms_user");
+                setSmsUserDetails(request);
             }
             else {
-                setDomain(request);
                 setUserDetails(request);
                 JSONObject data = RequestUtils.getPostData(request);
                 if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
@@ -75,6 +77,16 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
             // TODO: Delete when no longer using HQ to proxy requests for Edit Forms
             return data.getJSONObject("session-data").getString("username");
         }
+    }
+
+    private void setSmsUserDetails(FormplayerHttpRequest request) {
+        JSONObject body = RequestUtils.getPostData(request);
+        HqUserDetailsBean userDetailsBean = new HqUserDetailsBean(
+                new String[] {body.getString("domain")},
+                body.getString("username"),
+                false
+            );
+        request.setUserDetails(userDetailsBean);
     }
 
     private void setUserDetails(FormplayerHttpRequest request) {
