@@ -1,7 +1,6 @@
 package beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * Created by biyeun on 10/3/16.
@@ -9,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * Use this to respond to requests related to in form navigation (next / previous / etc)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormEntryNavigationResponseBean extends FormEntryResponseBean {
   private boolean isAtLastIndex = false;
   private boolean isAtFirstIndex = false;
