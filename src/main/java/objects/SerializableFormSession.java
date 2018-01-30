@@ -28,6 +28,7 @@ public class SerializableFormSession implements Serializable{
     private String currentIndex = "0";
     private String appId;
     private Map<String, FunctionHandler[]> functionContext;
+    private boolean inPromptMode;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -179,5 +180,13 @@ public class SerializableFormSession implements Serializable{
 
     public void setFunctionContext(Map<String, FunctionHandler[]> functionContext) {
         this.functionContext = functionContext;
+    }
+
+    public boolean getInPromptMode() {
+        return inPromptMode;
+    }
+
+    public void setInPromptMode(boolean inPromptMode) {
+        this.inPromptMode = inPromptMode;
     }
 }

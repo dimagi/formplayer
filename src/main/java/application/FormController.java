@@ -105,16 +105,9 @@ public class FormController extends AbstractBaseController{
                 serializableFormSession.getAsUser()
         );
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
-
-        JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
+        FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
         updateSession(formEntrySession, serializableFormSession);
-        if (Constants.NAV_MODE_PROMPT.equals(answerQuestionBean.getNavMode())) {
-            FormEntryNavigationResponseBean responseBean = formEntrySession.getNextFormNavigation();
-            updateSession(formEntrySession, serializableFormSession);
-            return responseBean;
-        }
-        FormEntryResponseBean responseBean = mapper.readValue(resp.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setSequenceId(formEntrySession.getSequenceId());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
