@@ -71,7 +71,7 @@ public class PromptToJson {
         return obj == null ? JSONObject.NULL : obj;
     }
 
-    public static void parseQuestionType(FormEntryModel model, JSONObject obj) {
+    public static JSONObject parseQuestionType(FormEntryModel model, JSONObject obj) {
         int status = model.getEvent();
         FormIndex ix = model.getFormIndex();
         obj.put("ix", ix.toString());
@@ -79,19 +79,19 @@ public class PromptToJson {
         switch (status) {
             case FormEntryController.EVENT_BEGINNING_OF_FORM:
                 obj.put("type", "form-start");
-                return;
+                return obj;
             case FormEntryController.EVENT_END_OF_FORM:
                 obj.put("ix", ">");
                 obj.put("type", "form-complete");
-                return;
+                return obj;
             case FormEntryController.EVENT_QUESTION:
                 obj.put("type", "question");
                 parseQuestion(model.getQuestionPrompt(), obj);
-                return;
+                return obj;
             case FormEntryController.EVENT_REPEAT_JUNCTURE:
                 obj.put("type", "repeat-juncture");
                 parseRepeatJuncture(model, obj, ix);
-                return;
+                return obj;
             case FormEntryController.EVENT_GROUP:
                 // we're in a subgroup
                 parseCaption(model.getCaptionPrompt(), obj);
@@ -113,6 +113,7 @@ public class PromptToJson {
                 obj.put("exists", false);
                 break;
         }
+        return obj;
     }
 
     private static void parseRepeatJuncture(FormEntryModel model, JSONObject obj, FormIndex ix) {
