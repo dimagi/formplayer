@@ -53,12 +53,12 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 setResponseUnauthorized(response, "Invalid session id");
                 return;
             }
-            setDomain(request);
+
             if (authKey != null && authKey.equals(getSessionId(request))) {
                 logger.info("Logging in as touchforms_user");
-                setSmsUserDetails(request);
             }
             else {
+                setDomain(request);
                 setUserDetails(request);
                 JSONObject data = RequestUtils.getPostData(request);
                 if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
