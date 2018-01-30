@@ -66,10 +66,10 @@ public class MetricsAspect {
                 "request:" + requestPath,
                 "duration:" + timer.getDurationBucket(),
                 "unblocked_time:" + getUnblockedTimeBucket(timer),
-                "blocked_time:" + getBlockedTime(),
-                "restore_blocked_time:" + getRestoreBlockedTime(),
-                "install_blocked_time:" + getInstallBlockedTime(),
-                "submit_blocked_time:" + getSubmitBlockedTime()
+                "blocked_time:" + getBlockedTimeBucket(),
+                "restore_blocked_time:" + getRestoreBlockedTimeBucket(),
+                "install_blocked_time:" + getInstallBlockedTimeBucket(),
+                "submit_blocked_time:" + getSubmitBlockedTimeBucket()
         );
 
         datadogStatsDClient.recordExecutionTime(
