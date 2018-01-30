@@ -35,7 +35,7 @@ To run (with tests):
 
 To run without tests:
 
-    $ ./gradlew build -x test && java -jar build/libs/formplayer.jar
+    $ ./gradlew assemble && java -jar build/libs/formplayer.jar
 
 To test:
 
