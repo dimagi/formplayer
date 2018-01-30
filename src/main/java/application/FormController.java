@@ -110,7 +110,7 @@ public class FormController extends AbstractBaseController{
         JSONObject resp = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
         updateSession(formEntrySession, serializableFormSession);
-        if ("prompt".equals(answerQuestionBean.getNavMode())) {
+        if (Constants.NAV_MODE_PROMPT.equals(answerQuestionBean.getNavMode())) {
             FormEntryNavigationResponseBean responseBean = formEntrySession.getNextFormNavigation();
             updateSession(formEntrySession, serializableFormSession);
             return responseBean;

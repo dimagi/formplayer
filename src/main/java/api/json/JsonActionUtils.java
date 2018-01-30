@@ -80,7 +80,8 @@ public class JsonActionUtils {
 
     // Similar to above, but get the questions for only one formIndex (OQPS)
     public static JSONObject getPromptJson(FormEntryModel model) {
-        return new JSONObject().put("event", PromptToJson.parseQuestionType(model, new JSONObject()));
+        return new JSONObject().put(ApiConstants.QUESTION_EVENT_KEY,
+                PromptToJson.parseQuestionType(model, new JSONObject()));
     }
 
     /**
