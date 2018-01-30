@@ -7,14 +7,15 @@ import util.StringUtils;
 import java.nio.charset.Charset;
 
 /**
- * Created by willpride on 1/13/16.
+ * Represents a Basic Authentication credential for a user
+ * Currently used for SMS requests
  */
 public class BasicAuth implements HqAuth {
     private final String username;
     private final String password;
 
-    public BasicAuth(String asUsername, String password){
-        this.username = asUsername;
+    public BasicAuth(String username, String password){
+        this.username = username;
         this.password = password;
     }
 
@@ -33,8 +34,7 @@ public class BasicAuth implements HqAuth {
 
     @Override
     public String toString(){
-        return "BasicAuth [username=" + username +
-                ", password=" + password + "]";
+        return "BasicAuth [username=" + username + "]";
     }
 
     public String getUsername() {
