@@ -1,12 +1,22 @@
 package application;
 
-import annotations.AppInstall;
 import annotations.UserLock;
 import annotations.UserRestore;
 import api.json.JsonActionUtils;
 import api.process.FormRecordProcessorHelper;
 import api.util.ApiConstants;
-import beans.*;
+import beans.AnswerQuestionRequestBean;
+import beans.FormEntryNavigationResponseBean;
+import beans.FormEntryResponseBean;
+import beans.InstanceXmlBean;
+import beans.NewFormResponse;
+import beans.NewSessionRequestBean;
+import beans.NotificationMessage;
+import beans.OpenRosaResponse;
+import beans.RepeatRequestBean;
+import beans.SessionRequestBean;
+import beans.SubmitRequestBean;
+import beans.SubmitResponseBean;
 import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import engine.FormplayerTransactionParserFactory;
@@ -19,11 +29,18 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.json.JSONObject;
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import repo.SerializableMenuSession;
 import services.CategoryTimingHelper;
 import services.FormplayerStorageFactory;
@@ -160,6 +177,8 @@ public class FormController extends AbstractBaseController{
                             "Form submission failed with error response" + submitResponse, true));
                     log.error("Submit response bean: " + submitResponseBean);
                     return submitResponseBean;
+                } else {
+                    parseSubmitResponseMessage(submitResponse.getBody(), submitResponseBean);
                 }
                 // Only delete session immediately after successful submit
                 deleteSession(submitRequestBean.getSessionId());
@@ -189,6 +208,20 @@ public class FormController extends AbstractBaseController{
             }
         }
         return submitResponseBean;
+    }
+
+    private void parseSubmitResponseMessage(String responseBody, SubmitResponseBean submitResponseBean) {
+        if (responseBody != null) {
+            try {
+                Serializer serializer = new Persister();
+                OpenRosaResponse openRosaResponse = serializer.read(OpenRosaResponse.class, responseBody);
+                if (openRosaResponse != null && openRosaResponse.getMessage() != null) {
+                    submitResponseBean.setSubmitResponseMessage(openRosaResponse.getMessage());
+                }
+            } catch (Exception e) {
+                log.error("Exception parsing submission response body", e);
+            }
+        }
     }
 
     protected void deleteSession(String id) {

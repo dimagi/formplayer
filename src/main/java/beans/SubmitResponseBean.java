@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 public class SubmitResponseBean extends SessionResponseBean {
     private String status;
-    private String message;
+    private String submitResponseMessage;
     private HashMap<String, ErrorBean> errors;
     private Object nextScreen;
 
@@ -48,5 +48,13 @@ public class SubmitResponseBean extends SessionResponseBean {
 
     public void setNextScreen(Object nextScreen) {
         this.nextScreen = nextScreen;
+    }
+
+    public String getSubmitResponseMessage() {
+        return submitResponseMessage;
+    }
+
+    public void setSubmitResponseMessage(String submitResponseMessage) {
+        this.submitResponseMessage = submitResponseMessage;
     }
 }
