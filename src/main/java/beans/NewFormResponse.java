@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import session.FormSession;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Created by willpride on 1/12/16.
@@ -25,7 +24,6 @@ public class NewFormResponse extends SessionResponseBean {
         this.sessionId = fes.getSessionId();
         this.sequenceId = fes.getSequenceId();
         this.instanceXml = new InstanceXmlBean(fes);
-        this.event = tree[0];
     }
 
     public QuestionBean[] getTree(){
@@ -64,5 +62,9 @@ public class NewFormResponse extends SessionResponseBean {
 
     public void setEvent(QuestionBean event) {
         this.event = event;
+    }
+
+    public void setTree(QuestionBean[] tree) {
+        this.tree = tree;
     }
 }

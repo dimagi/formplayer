@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
 import sandbox.UserSqlSandbox;
 import session.FormSession;
+import util.Constants;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -76,7 +77,13 @@ public class NewFormResponseFactory {
         );
 
         formSessionRepo.save(formSession.serialize());
-        return new NewFormResponse(formSession);
+        NewFormResponse response = new NewFormResponse(formSession);
+
+        if (bean.getNavMode() != null && bean.getNavMode().equals(Constants.NAV_MODE_PROMPT)) {
+            response.setEvent(response.getTree()[0]);
+            response.setTree(null);
+        }
+        return response;
     }
 
     public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
