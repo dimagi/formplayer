@@ -2,8 +2,4 @@
   "filter_expr": "[@case_type = 'coverage_basic'][@status = 'open']",
   "domain": "test",
   "username": "sql_test.user",
-  "hq_auth": {
-    "type": "django-session",
-    "key": "3fu61g0hqz1743tjejdrr40j4e98wohk"
-  }
 }
