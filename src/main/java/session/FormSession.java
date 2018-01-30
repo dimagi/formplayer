@@ -501,7 +501,7 @@ public class FormSession {
         formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(this.currentIndex, formDef));
         int nextEvent = formEntryController.stepToNextEvent();
         this.currentIndex = formController.getFormIndex().toString();
-        JSONObject resp = JsonActionUtils.getPromptJson(formEntryController, formEntryModel);
+        JSONObject resp = JsonActionUtils.getPromptJson(formEntryModel);
         FormEntryNavigationResponseBean responseBean
                 = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
         responseBean.setIsAtLastIndex(isAtLastIndex);

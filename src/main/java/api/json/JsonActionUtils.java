@@ -73,18 +73,14 @@ public class JsonActionUtils {
     public static JSONObject getCurrentJson(FormEntryController controller,
                                             FormEntryModel model,
                                             String formIndex) {
-        JSONObject ret = new JSONObject();
-        ret.put(ApiConstants.QUESTION_TREE_KEY, getOneQuestionPerScreenJSON(model, controller,
-                JsonActionUtils.indexFromString(formIndex, model.getForm())));
-        return ret;
+        return new JSONObject().put(ApiConstants.QUESTION_TREE_KEY,
+                getOneQuestionPerScreenJSON(model, controller,
+                        JsonActionUtils.indexFromString(formIndex, model.getForm())));
     }
 
     // Similar to above, but get the questions for only one formIndex (OQPS)
-    public static JSONObject getPromptJson(FormEntryController controller,
-                                            FormEntryModel model) {
-        JSONObject ret = new JSONObject();
-        ret.put("event", getPromptJson(model, controller));
-        return ret;
+    public static JSONObject getPromptJson(FormEntryModel model) {
+        return new JSONObject().put("event", PromptToJson.parseQuestionType(model, new JSONObject()));
     }
 
     /**
@@ -301,11 +297,5 @@ public class JsonActionUtils {
             }
         }
         return ret;
-    }
-
-    public static JSONObject getPromptJson(FormEntryModel fem, FormEntryController fec) {
-        JSONObject obj = new JSONObject();
-        PromptToJson.parseQuestionType(fem, obj);
-        return obj;
     }
 }
