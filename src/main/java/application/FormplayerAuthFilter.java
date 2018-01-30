@@ -87,12 +87,13 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     }
 
     private void setSmsRequestDetails(FormplayerHttpRequest request) {
-
+        // If request has username and domain in body, use that
         JSONObject body = RequestUtils.getPostData(request);
         if (body.has("username") && body.has("domain")) {
             setDomain(request);
             setSmsUserDetails(request);
         } else {
+            // Otherwise, get username and domain from FormSession
             String sessionId = body.getString("session-id");
             SerializableFormSession formSession = formSessionRepo.findOneWrapped(sessionId);
             request.setDomain(formSession.getDomain());
@@ -102,7 +103,6 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                     false
             );
             request.setUserDetails(userDetailsBean);
-
         }
     }
 
