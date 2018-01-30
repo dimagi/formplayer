@@ -112,6 +112,17 @@ public class RestoreFactory {
                 "username = %s, caseId = %s, domain = %s", username, caseId, domain));
     }
 
+    public void configure(String username, String domain, String asUsername, HqAuth auth) {
+        this.setUsername(username);
+        this.setDomain(domain);
+        this.setAsUsername(asUsername);
+        this.hqAuth = auth;
+        this.hasRestored = false;
+        sqLiteDB = new UserDB(domain, username, asUsername);
+        log.info(String.format("configuring RestoreFactory with arguments " +
+                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
+    }
+
     public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());

@@ -1,6 +1,8 @@
 package application;
 
+import beans.SessionRequestBean;
 import beans.auth.HqUserDetailsBean;
+import objects.SerializableFormSession;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import repo.FormSessionRepo;
 import services.FormplayerLockRegistry;
 import services.HqUserDetailsService;
 import util.Constants;
@@ -41,6 +44,9 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     @Autowired
     FormplayerLockRegistry userLockRegistry;
 
+    @Autowired
+    FormSessionRepo formSessionRepo;
+
     @Value("${commcarehq.formplayerAuthKey}")
     private String authKey;
 
@@ -56,6 +62,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
 
             if (authKey != null && authKey.equals(getSessionId(request))) {
                 logger.info("Logging in as touchforms_user");
+                setSmsRequestDetails(request);
             }
             else {
                 setDomain(request);
@@ -76,6 +83,26 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
         } catch (JSONException e) {
             // TODO: Delete when no longer using HQ to proxy requests for Edit Forms
             return data.getJSONObject("session-data").getString("username");
+        }
+    }
+
+    private void setSmsRequestDetails(FormplayerHttpRequest request) {
+
+        JSONObject body = RequestUtils.getPostData(request);
+        if (body.has("username") && body.has("domain")) {
+            setDomain(request);
+            setSmsUserDetails(request);
+        } else {
+            String sessionId = body.getString("session-id");
+            SerializableFormSession formSession = formSessionRepo.findOneWrapped(sessionId);
+            request.setDomain(formSession.getDomain());
+            HqUserDetailsBean userDetailsBean = new HqUserDetailsBean(
+                    new String[] {formSession.getDomain()},
+                    formSession.getDomain(),
+                    false
+            );
+            request.setUserDetails(userDetailsBean);
+
         }
     }
 

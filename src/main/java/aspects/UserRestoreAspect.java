@@ -5,7 +5,6 @@ import auth.DjangoAuth;
 import auth.HqAuth;
 import auth.TokenAuth;
 import beans.AuthenticatedRequestBean;
-import hq.CaseAPIs;
 import hq.models.PostgresUser;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
@@ -21,13 +20,9 @@ import repo.FormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import services.CategoryTimingHelper;
 import services.RestoreFactory;
-import session.FormSession;
-import util.Constants;
-import util.Timing;
 import util.UserUtils;
 
 import java.util.Arrays;
-import java.util.Map;
 
 /**
  * Aspect to configure the RestoreFactory
@@ -70,7 +65,13 @@ public class UserRestoreAspect {
         if (requestBean.getCaseId() != null) {
             restoreFactory.configure(requestBean.getDomain(), requestBean.getCaseId(), auth);
         } else {
-            restoreFactory.configure((AuthenticatedRequestBean) args[0], auth, requestBean.getUseLiveQuery());
+            AuthenticatedRequestBean request = (AuthenticatedRequestBean) args[0];
+            if (request.getSessionId() != null) {
+                SerializableFormSession formSession = formSessionRepo.findOneWrapped(request.getSessionId());
+                restoreFactory.configure(formSession.getAsUser(), formSession.getDomain(), formSession.getAsUser(), auth);
+            } else {
+                restoreFactory.configure((AuthenticatedRequestBean) args[0], auth, requestBean.getUseLiveQuery());
+            }
         }
         if (requestBean.isMustRestore()) {
             restoreFactory.performTimedSync();
