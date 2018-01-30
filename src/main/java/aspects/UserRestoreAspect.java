@@ -62,19 +62,27 @@ public class UserRestoreAspect {
         }
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
         HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
-        if (requestBean.getCaseId() != null) {
-            restoreFactory.configure(requestBean.getDomain(), requestBean.getCaseId(), auth);
-        } else {
-            AuthenticatedRequestBean request = (AuthenticatedRequestBean) args[0];
-            if (request.getSessionId() != null) {
-                SerializableFormSession formSession = formSessionRepo.findOneWrapped(request.getSessionId());
-                restoreFactory.configure(formSession.getAsUser(), formSession.getDomain(), formSession.getAsUser(), auth);
-            } else {
-                restoreFactory.configure((AuthenticatedRequestBean) args[0], auth, requestBean.getUseLiveQuery());
-            }
-        }
+
+        configureRestoreFactory(requestBean, auth);
+
         if (requestBean.isMustRestore()) {
             restoreFactory.performTimedSync();
+        }
+    }
+
+    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) {
+        if (requestBean.getCaseId() != null) {
+            // SMS user filling out a form as a case
+            restoreFactory.configure(requestBean.getDomain(), requestBean.getCaseId(), auth);
+            return;
+        }
+        if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
+            // Normal restore path
+            restoreFactory.configure(requestBean, auth, requestBean.getUseLiveQuery());
+        } else {
+            // SMS users don't submit username and domain with each request, so obtain from session
+            SerializableFormSession formSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+            restoreFactory.configure(formSession.getAsUser(), formSession.getDomain(), formSession.getAsUser(), auth);
         }
     }
 

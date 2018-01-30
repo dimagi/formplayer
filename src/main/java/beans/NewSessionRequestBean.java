@@ -21,6 +21,7 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     private String postUrl;
     private String formContent;
     private boolean oneQuestionPerScreen;
+    private String navMode;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public NewSessionRequestBean(){}
@@ -99,5 +100,14 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     @JsonSetter(value = "oneQuestionPerScreen")
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    @JsonGetter(value = "nav_mode")
+    public String getNavMode() {
+        return navMode;
+    }
+    @JsonSetter(value = "nav_mode")
+    public void setNavMode(String navMode) {
+        this.navMode = navMode;
     }
 }

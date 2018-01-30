@@ -12,7 +12,6 @@ import java.util.HashMap;
  * Created by willpride on 1/27/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class QuestionBean {
     private String caption_audio;
     private String caption_video;
