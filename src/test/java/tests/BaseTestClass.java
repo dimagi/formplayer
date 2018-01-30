@@ -159,8 +159,7 @@ public class BaseTestClass {
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
-        Mockito.doReturn(new ResponseEntity<>(HttpStatus.OK))
-                .when(submitServiceMock).submitForm(anyString(), anyString());
+        setupSubmitServiceMock();
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();
         mapper = new ObjectMapper();
@@ -168,6 +167,16 @@ public class BaseTestClass {
         restoreFactoryMock.getSQLiteDB().closeConnection();
         PrototypeUtils.setupPrototypes();
         new SQLiteProperties().setDataDir("testdbs/");
+    }
+
+    private void setupSubmitServiceMock() {
+        Mockito.doReturn(ResponseEntity.ok(
+                "<OpenRosaResponse>" +
+                        "<message nature='status'>" +
+                        "OK" +
+                        "</message>" +
+                        "</OpenRosaResponse>"))
+                .when(submitServiceMock).submitForm(anyString(), anyString());
     }
 
     @After
