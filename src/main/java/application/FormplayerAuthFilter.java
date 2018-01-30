@@ -40,7 +40,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     @Autowired
     FormplayerLockRegistry userLockRegistry;
 
-    @Value("${touchforms.authkey}")
+    @Value("${commcarehq.formplayerAuthKey}")
     private String authKey;
 
     @Override

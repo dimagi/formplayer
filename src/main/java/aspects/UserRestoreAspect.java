@@ -56,7 +56,7 @@ public class UserRestoreAspect {
     @Value("${touchforms.password}")
     private String touchformsPassword;
 
-    @Value("${touchforms.authkey}")
+    @Value("${commcarehq.formplayerAuthKey}")
     private String authKey;
 
     @Before(value = "@annotation(annotations.UserRestore)")
