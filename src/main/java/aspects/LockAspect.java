@@ -1,7 +1,5 @@
 package aspects;
 
-import auth.BasicAuth;
-import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import beans.SessionRequestBean;
 import com.timgroup.statsd.StatsDClient;
@@ -69,19 +67,14 @@ public class LockAspect {
                 throw new RuntimeException(throwable);
             }
         }
-        String username = null;
+
+        String username;
         AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
-        if (args[0] instanceof SessionRequestBean) {
-            SessionRequestBean sessionRequestBean = (SessionRequestBean) args[0];
-            SerializableFormSession formSession = formSessionRepo.findOne(sessionRequestBean.getSessionId());
-            String tempUser = formSession.getUsername();
-            String restoreAs = formSession.getAsUser();
-            if (restoreAs != null) {
-                username = tempUser + "_" + restoreAs;
-            } else {
-                username = tempUser;
-            }
-        } else if (bean.getSessionId() != null) {
+
+        if (bean.getUsernameDetail() != null) {
+            username = TableBuilder.scrubName(bean.getUsernameDetail());
+        }
+        else {
             SerializableFormSession formSession = formSessionRepo.findOne(bean.getSessionId());
             String tempUser = formSession.getUsername();
             String restoreAs = formSession.getAsUser();
@@ -90,9 +83,8 @@ public class LockAspect {
             } else {
                 username = tempUser;
             }
-        } else {
-            username = TableBuilder.scrubName(bean.getUsernameDetail());
         }
+
         Lock lock;
 
         try {
