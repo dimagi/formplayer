@@ -40,7 +40,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
     public FormplayerConfigEngine(IStorageIndexedFactory storageFactory,
                                   FormplayerInstallerFactory formplayerInstallerFactory,
                                   ArchiveFileRoot formplayerArchiveFileRoot) {
-        super(storageFactory, formplayerInstallerFactory, new DummyStream());
+        super(storageFactory, formplayerInstallerFactory, System.out);
         this.mArchiveRoot = formplayerArchiveFileRoot;
         ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
@@ -183,16 +183,5 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         super.initEnvironment();
         Localization.registerLanguageReference("default",
                 "jr://springfile/formplayer_translatable_strings.txt");
-    }
-
-    private static class DummyStream extends PrintStream {
-        public DummyStream() {
-            super(new OutputStream() {
-                @Override
-                public void write(int b) throws IOException {
-                    // NO-OP
-                }
-            });
-        }
     }
 }
