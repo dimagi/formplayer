@@ -82,7 +82,7 @@ public class UserRestoreAspect {
         } else {
             // SMS users don't submit username and domain with each request, so obtain from session
             SerializableFormSession formSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
-            restoreFactory.configure(formSession.getAsUser(), formSession.getDomain(), formSession.getAsUser(), auth);
+            restoreFactory.configure(touchformsUsername, formSession.getDomain(), formSession.getAsUser(), auth);
         }
     }
 
