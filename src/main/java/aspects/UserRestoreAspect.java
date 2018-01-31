@@ -45,13 +45,13 @@ public class UserRestoreAspect {
     @Autowired
     CategoryTimingHelper categoryTimingHelper;
 
-    @Value("${touchforms.username}")
+    @Value("${touchforms.username:#{null}}")
     private String touchformsUsername;
 
-    @Value("${touchforms.password}")
+    @Value("${touchforms.password:#{null}}")
     private String touchformsPassword;
 
-    @Value("${commcarehq.formplayerAuthKey}")
+    @Value("${commcarehq.formplayerAuthKey:#{null}}")
     private String authKey;
 
     @Before(value = "@annotation(annotations.UserRestore)")
