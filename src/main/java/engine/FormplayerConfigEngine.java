@@ -40,7 +40,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
     public FormplayerConfigEngine(IStorageIndexedFactory storageFactory,
                                   FormplayerInstallerFactory formplayerInstallerFactory,
                                   ArchiveFileRoot formplayerArchiveFileRoot) {
-        super(storageFactory, formplayerInstallerFactory);
+        super(storageFactory, formplayerInstallerFactory, System.out);
         this.mArchiveRoot = formplayerArchiveFileRoot;
         ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
