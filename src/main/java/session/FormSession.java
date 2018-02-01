@@ -490,8 +490,9 @@ public class FormSession {
                 oneQuestionPerScreen,
                 currentIndex);
 
-        if (!inPromptMode) {
-            return new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
+        FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
+        if (!inPromptMode || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {
+            return response;
         }
         return getNextFormNavigation();
     }
