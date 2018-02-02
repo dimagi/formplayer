@@ -1,14 +1,19 @@
 package util;
 
+import beans.CaseBean;
+import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.model.Case;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.StackFrameStep;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
+import sandbox.SqlStorage;
 
+import java.util.NoSuchElementException;
 import java.util.Vector;
 
 /**
@@ -17,6 +22,14 @@ import java.util.Vector;
 public class SessionUtils {
 
     private static final Log log = LogFactory.getLog(SessionUtils.class);
+
+    public static String tryLoadCaseName(SqlStorage<Case> caseStorage, String caseId) throws NoSuchElementException {
+        if (caseId == null) {
+            return null;
+        }
+        CaseBean caseBean = CaseAPIs.getFullCase(caseId, caseStorage);
+        return (String) caseBean.getProperties().get("case_name");
+    }
 
     public static String getBestTitle(SessionWrapper session) {
 
@@ -56,7 +69,6 @@ public class SessionUtils {
             return;
         }
         Localizer localizer = Localization.getGlobalLocalizerAdvanced();
-        log.info("Setting locale to : " + locale + " available: " + localizer.getAvailableLocales());
         for (String availabile : localizer.getAvailableLocales()) {
             if (locale.equals(availabile)) {
                 localizer.setLocale(locale);

@@ -1,11 +1,13 @@
 package tests;
+
 import beans.NotificationMessage;
 import beans.menus.CommandListResponseBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import util.ApplicationUtils;
+import sqlitedb.ApplicationDB;
+import sqlitedb.SQLiteDB;
 import utils.TestContext;
 
 import java.io.File;
@@ -34,16 +36,16 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
     @Test
     public void testDeleteApplicationDbsView() throws Exception {
         // Create application db by making an install request
-        String dbPath = ApplicationUtils.getApplicationDBPath("casetestdomain", "casetestuser", "casetestappid");
+        SQLiteDB db = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid");
         CommandListResponseBean menuResponseBean = doInstall("requests/install/install.json");
 
-        File file = new File(dbPath);
+        File file = new File(db.getDatabaseFileForDebugPurposes());
         assert file.exists();
 
         NotificationMessage response = deleteApplicationDbs();
         assert !response.isError();
 
-        file = new File(dbPath);
+        file = new File(db.getDatabaseFileForDebugPurposes());
         assert !file.exists();
     }
 
@@ -54,14 +56,12 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
      */
     @Test
     public void testDeleteApplicationDbsWithNoDbView() throws Exception {
-        String dbPath = ApplicationUtils.getApplicationDBPath("casetestdomain", "casetestuser", "casetestappid");
-        File file = new File(dbPath);
-        assert !file.exists();
+        SQLiteDB db = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid");
+        assert !new File(db.getDatabaseFileForDebugPurposes()).getParentFile().exists();
 
         NotificationMessage response = deleteApplicationDbs();
         assert !response.isError();
 
-        file = new File(dbPath);
-        assert !file.exists();
+        assert !new File(db.getDatabaseFileForDebugPurposes()).getParentFile().exists();
     }
 }

@@ -1,6 +1,5 @@
 package tests;
 
-import application.SQLiteProperties;
 import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
 import org.commcare.cases.model.Case;
@@ -12,15 +11,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
-import tests.sandbox.TestConnectionHandler;
+import sqlitedb.UserDB;
 import utils.FileUtils;
 import utils.TestContext;
 
 import java.util.Hashtable;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -44,8 +44,8 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testQueryScreen() throws Exception {
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(SQLiteProperties.getDataDir() + "caseclaimdomain/caseclaimusername"));
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("caseclaimdomain", "caseclaimusername", null));
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
 
         configureQueryMock();
         configureSyncMock();
@@ -61,7 +61,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         // When we sync afterwards, include new case and case-claim 
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
 
         CommandListResponseBean commandResponse = sessionNavigateWithQuery(new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
                 "caseclaim",
@@ -76,20 +76,21 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testAlreadyOwnCase() throws Exception {
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(SQLiteProperties.getDataDir() + "caseclaimdomain/caseclaimusername"));
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("caseclaimdomain", "caseclaimusername", null));
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
         Hashtable<String, String> queryDictionary = new Hashtable<>();
         queryDictionary.put("name", "Burt");
 
         configureQueryMockOwned();
         configureSyncMock();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim.xml");
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
 
         CommandListResponseBean response = sessionNavigateWithQuery(new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
                 "caseclaim",
                 queryDictionary,
                 CommandListResponseBean.class);
+        assert response.getSelections().length == 2;
     }
 
     private void configureSyncMock() {

@@ -1,10 +1,22 @@
 package services;
 
-import auth.HqAuth;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
-/**
- * Created by willpride on 1/20/16.
- */
-public interface XFormService {
-    String getFormXml(String url, HqAuth auth);
+public class XFormService {
+
+    @Autowired
+    RestoreFactory restoreFactory;
+
+    public String getFormXml(String formUrl) {
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response =
+                restTemplate.exchange(formUrl,
+                        HttpMethod.GET,
+                        new HttpEntity<String>(restoreFactory.getUserHeaders()), String.class);
+        return response.getBody();
+    }
 }

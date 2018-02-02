@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A sandbox for user data using SqliteIndexedStorageUtility. Sandbox is per-User
+ * A sandbox for user data using SqlStorage. Sandbox is per-User
  *
  * @author wspride
  */
@@ -30,12 +30,12 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     // Need a different key than the default "Case" which is reserved by SQL
     public final static String FORMPLAYER_CASE = "CCCase";
 
-    private final SqliteIndexedStorageUtility<Case> caseStorage;
-    private final SqliteIndexedStorageUtility<Ledger> ledgerStorage;
-    private final SqliteIndexedStorageUtility<User> userStorage;
-    private final SqliteIndexedStorageUtility<FormInstance> userFixtureStorage;
-    private final SqliteIndexedStorageUtility<FormInstance> appFixtureStorage;
-    private final SqliteIndexedStorageUtility<StorageIndexedTreeElementModel> sqlUtil;
+    private final SqlStorage<Case> caseStorage;
+    private final SqlStorage<Ledger> ledgerStorage;
+    private final SqlStorage<User> userStorage;
+    private final SqlStorage<FormInstance> userFixtureStorage;
+    private final SqlStorage<FormInstance> appFixtureStorage;
+    private final SqlStorage<StorageIndexedTreeElementModel> sqlUtil;
     private User user = null;
     public static final String DEFAULT_DATBASE_PATH = "dbs";
     private ConnectionHandler handler;
@@ -47,33 +47,33 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     public UserSqlSandbox(ConnectionHandler handler) {
         this.handler = handler;
         //we can't name this table "Case" becase that's reserved by sqlite
-        caseStorage = new SqliteIndexedStorageUtility<>(handler, Case.class, FORMPLAYER_CASE);
-        ledgerStorage = new SqliteIndexedStorageUtility<>(handler, Ledger.class, Ledger.STORAGE_KEY);
-        userStorage = new SqliteIndexedStorageUtility<>(handler, User.class, User.STORAGE_KEY);
-        userFixtureStorage = new SqliteIndexedStorageUtility<>(handler, FormInstance.class, "UserFixture");
-        appFixtureStorage = new SqliteIndexedStorageUtility<>(handler, FormInstance.class, "AppFixture");
+        caseStorage = new SqlStorage<>(handler, Case.class, FORMPLAYER_CASE);
+        ledgerStorage = new SqlStorage<>(handler, Ledger.class, Ledger.STORAGE_KEY);
+        userStorage = new SqlStorage<>(handler, User.class, User.STORAGE_KEY);
+        userFixtureStorage = new SqlStorage<>(handler, FormInstance.class, "UserFixture");
+        appFixtureStorage = new SqlStorage<>(handler, FormInstance.class, "AppFixture");
         sqlUtil = createFixturePathsTable(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE);
     }
 
     @Override
-    public SqliteIndexedStorageUtility<Case> getCaseStorage() {
+    public SqlStorage<Case> getCaseStorage() {
         return caseStorage;
     }
 
     @Override
-    public SqliteIndexedStorageUtility<Ledger> getLedgerStorage() {
+    public SqlStorage<Ledger> getLedgerStorage() {
         return ledgerStorage;
     }
 
     @Override
-    public SqliteIndexedStorageUtility<User> getUserStorage() {
+    public SqlStorage<User> getUserStorage() {
         return userStorage;
     }
 
     @Override
     public IStorageUtilityIndexed<StorageIndexedTreeElementModel> getIndexedFixtureStorage(String fixtureName) {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
-        return new SqliteIndexedStorageUtility<>(handler,
+        return new SqlStorage<>(handler,
                 StorageIndexedTreeElementModel.class,
                 tableName,
                 false);
@@ -84,8 +84,8 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
                                            StorageIndexedTreeElementModel exampleEntry,
                                            Set<String> indices) {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
-        SqliteIndexedStorageUtility<StorageIndexedTreeElementModel> sqlUtil
-                = new SqliteIndexedStorageUtility<>(handler, exampleEntry, tableName);
+        SqlStorage<StorageIndexedTreeElementModel> sqlUtil
+                = new SqlStorage<>(handler, exampleEntry, tableName);
         sqlUtil.rebuildTable(exampleEntry);
         sqlUtil.executeStatements(DatabaseIndexingUtils.getIndexStatements(tableName, indices));
     }
@@ -135,17 +135,17 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_BASE, baseName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_CHILD, childName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_NAME, fixtureName);
-        sqlUtil.basicInsert(contentVals);
+        sqlUtil.insertOrReplace(contentVals);
     }
 
     /**
      * create 'fixture paths' table and an index over that table
      */
-    private SqliteIndexedStorageUtility<StorageIndexedTreeElementModel> createFixturePathsTable(String tableName) {
+    private SqlStorage<StorageIndexedTreeElementModel> createFixturePathsTable(String tableName) {
         // NOTE PLM: this should maybe be done on server startup instead on
         // ever invocation
-        SqliteIndexedStorageUtility<StorageIndexedTreeElementModel> sqlUtil =
-                new SqliteIndexedStorageUtility<>(handler, null, tableName, false);
+        SqlStorage<StorageIndexedTreeElementModel> sqlUtil =
+                new SqlStorage<>(handler, null, tableName, false);
         String[] indexTableStatements = new String[]{
                 IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE_STMT,
                 // NOTE PLM: commenting out index creation below because
@@ -159,25 +159,28 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     }
 
     @Override
-    public SqliteIndexedStorageUtility<FormInstance> getUserFixtureStorage() {
+    public SqlStorage<FormInstance> getUserFixtureStorage() {
         return userFixtureStorage;
     }
 
     @Override
-    public SqliteIndexedStorageUtility<FormInstance> getAppFixtureStorage() {
+    public SqlStorage<FormInstance> getAppFixtureStorage() {
         return appFixtureStorage;
     }
 
     @Override
     public User getLoggedInUser() {
         if (user == null) {
-            SqliteIndexedStorageUtility<User> userStorage = getUserStorage();
-            AbstractSqlIterator<User> iterator = userStorage.iterate();
-            if (iterator.hasMore()) {
-                // should be only one user here
-                user = iterator.nextRecord();
-            } else {
-                user = null;
+            JdbcSqlStorageIterator<User> iterator = userStorage.iterate();
+            try {
+                if (iterator.hasMore()) {
+                    // should be only one user here
+                    user = iterator.nextRecord();
+                } else {
+                    user = null;
+                }
+            } finally {
+                iterator.close();
             }
         }
         return user;
@@ -191,5 +194,11 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     @Override
     public Connection getConnection() {
         return handler.getConnection();
+    }
+
+    public void writeSyncToken() {
+        User user = getLoggedInUser();
+        user.setLastSyncToken(getSyncToken());
+        getUserStorage().update(user.getID(), user);
     }
 }

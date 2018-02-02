@@ -75,7 +75,8 @@ public class FormEntryTest extends BaseTestClass{
         //Test Evaluate XPath
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/q_text");
         assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        assert evaluateXPathResponseBean.getOutput().equals("William Pride");
+        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>William Pride</result>\n";
+        assert evaluateXPathResponseBean.getOutput().equals(result);
 
         // We shouldn't error when a path doesn't exist
         evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/not_broken");
@@ -85,8 +86,17 @@ public class FormEntryTest extends BaseTestClass{
         evaluateXPathResponseBean = evaluateXPath(sessionId, "!data/broken");
         assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
 
+        // Should be able to evaluate functions that do not return nodesets
+        evaluateXPathResponseBean = evaluateXPath(sessionId, "true()");
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+
+        // Should be able to evaluate instance expressions
+        evaluateXPath(sessionId, "instance('commcaresession')/session/context/username");
+        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+
         //Test Submission
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request.json", sessionId);
+        assert submitResponseBean.getSubmitResponseMessage().equals("OK");
     }
 
 
@@ -106,10 +116,10 @@ public class FormEntryTest extends BaseTestClass{
         QuestionBean questionBean = response.getTree()[8];
         QuestionBean[] children = questionBean.getChildren();
 
-        assert children.length == 4;
+        assert children.length == 3;
 
-        QuestionBean red = children[1];
-        QuestionBean blue = children[2];
+        QuestionBean red = children[0];
+        QuestionBean blue = children[1];
 
         assert red.getAnswer().equals(1);
         assert blue.getAnswer().equals(2);
@@ -119,9 +129,9 @@ public class FormEntryTest extends BaseTestClass{
         questionBean = response.getTree()[8];
         children = questionBean.getChildren();
 
-        red = children[1];
-        blue = children[2];
-        QuestionBean green = children[3];
+        red = children[0];
+        blue = children[1];
+        QuestionBean green = children[2];
 
         assert red.getAnswer().equals(1);
         assert blue.getAnswer().equals(2);

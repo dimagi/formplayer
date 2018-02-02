@@ -1,30 +1,18 @@
 package tests;
 
-import application.SQLiteProperties;
 import beans.NewFormResponse;
-import beans.SubmitRequestBean;
-import beans.menus.CommandListResponseBean;
 import beans.menus.EntityListResponse;
 import org.commcare.cases.model.Case;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
-import tests.sandbox.TestConnectionHandler;
-import utils.FileUtils;
+import sqlitedb.UserDB;
 import utils.TestContext;
 
 import java.util.HashMap;
-import java.util.Hashtable;
-
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.when;
 
 /**
  * Regression tests for fixed behaviors
@@ -47,8 +35,8 @@ public class ReassignCaseTest extends BaseTestClass {
     @Test
     public void testCaseReassign() throws Exception {
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new TestConnectionHandler(SQLiteProperties.getDataDir() + "reassigndomain/reassignusername"));
-        SqliteIndexedStorageUtility<Case> caseStorage =  sandbox.getCaseStorage();
+        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("reassigndomain", "reassignusername", null));
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
 
         assert caseStorage.getNumRecords() == 0;
 

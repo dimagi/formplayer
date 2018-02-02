@@ -1,5 +1,6 @@
 package api.json;
 
+import exceptions.ApplicationConfigException;
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.SelectChoice;
@@ -44,8 +45,12 @@ public class PromptToJson {
         parseQuestionAnswer(questionJson, prompt);
         questionJson.put("ix", jsonNullIfNull(prompt.getIndex()));
 
-        if (prompt.getDataType() == Constants.DATATYPE_CHOICE || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
+        if (prompt.getDataType() == Constants.DATATYPE_CHOICE ||
+                prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
             questionJson.put("choices", parseSelect(prompt));
+            if ("label".equals(prompt.getAppearanceHint())) {
+                questionJson.put("hide", true);
+            }
         }
     }
 
@@ -186,6 +191,11 @@ public class PromptToJson {
     private static JSONArray parseSelect(FormEntryPrompt prompt) {
         JSONArray obj = new JSONArray();
         for (SelectChoice choice : prompt.getSelectChoices()) {
+            String choiceValue = prompt.getSelectChoiceText(choice);
+            if (prompt.getControlType() == Constants.CONTROL_SELECT_MULTI && choice.getValue().contains(" ")) {
+                throw new ApplicationConfigException(String.format("Select answer options cannot contain spaces. " +
+                        "Question %s with answer %s", prompt, choiceValue));
+            }
             obj.put(prompt.getSelectChoiceText(choice));
         }
         return obj;

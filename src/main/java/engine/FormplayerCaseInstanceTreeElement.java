@@ -3,11 +3,10 @@ package engine;
 import database.models.FormplayerCaseIndexTable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.modern.engine.cases.CaseGroupResultCache;
 import org.commcare.modern.engine.cases.CaseIndexQuerySetTransform;
 import org.commcare.modern.engine.cases.query.CaseIndexPrefetchHandler;
 import sandbox.SqlHelper;
-import sandbox.SqliteIndexedStorageUtility;
+import sandbox.SqlStorage;
 import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.query.*;
@@ -15,7 +14,6 @@ import org.commcare.cases.query.handlers.ModelQueryLookupHandler;
 import org.commcare.cases.query.queryset.CaseModelQuerySetMatcher;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.model.trace.EvaluationTrace;
 import org.javarosa.core.model.utils.CacheHost;
 import org.javarosa.core.services.storage.IStorageIterator;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
@@ -47,7 +45,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
     private static final Log log = LogFactory.getLog(FormplayerCaseInstanceTreeElement.class);
 
     public FormplayerCaseInstanceTreeElement(AbstractTreeElement instanceRoot,
-                                             SqliteIndexedStorageUtility<Case> storage,
+                                             SqlStorage<Case> storage,
                                              FormplayerCaseIndexTable formplayerCaseIndexTable) {
         super(instanceRoot, storage);
         this.formplayerCaseIndexTable = formplayerCaseIndexTable;
@@ -62,7 +60,21 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         queryPlanner.addQueryHandler(new ModelQueryLookupHandler(matcher));
     }
 
-
+    @Override
+    protected int getNumberOfBatchableKeysInProfileSet(Vector<PredicateProfile> profiles) {
+        int keysToBatch = 0;
+        //Otherwise see how many of these we can bulk process
+        for (int i = 0; i < profiles.size(); ++i) {
+            //If the current key is an index fetch, we actually can't do it in bulk,
+            //so we need to stop
+            if (profiles.elementAt(i).getKey().startsWith(Case.INDEX_CASE_INDEX_PRE) ||
+                    !(profiles.elementAt(i) instanceof IndexedValueLookup)) {
+                break;
+            }
+            keysToBatch++;
+        }
+        return keysToBatch;
+    }
 
     @Override
     protected synchronized void loadElements() {
@@ -75,7 +87,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
 
         int mult = 0;
 
-        for (IStorageIterator i = ((SqliteIndexedStorageUtility<Case>)storage).iterate(false); i.hasMore(); ) {
+        for (IStorageIterator i = ((SqlStorage<Case>)storage).iterate(false); i.hasMore(); ) {
             int id = i.nextID();
             elements.add(buildElement(this, id, null, mult));
             objectIdMapping.put(DataUtil.integer(id), DataUtil.integer(mult));
@@ -99,62 +111,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         if (firstKey.startsWith(Case.INDEX_CASE_INDEX_PRE)) {
             return performCaseIndexQuery(firstKey, profiles);
         }
-
-        //Otherwise see how many of these we can bulk process
-        int numKeys;
-        for (numKeys = 0; numKeys < profiles.size(); ++numKeys) {
-            //If the current key is an index fetch, we actually can't do it in bulk,
-            //so we need to stop
-            if (profiles.elementAt(numKeys).getKey().startsWith(Case.INDEX_CASE_INDEX_PRE) ||
-                    !(profiles.elementAt(numKeys) instanceof IndexedValueLookup)) {
-                break;
-            }
-            //otherwise, it's now in our queue
-        }
-
-        SqliteIndexedStorageUtility<Case> sqlStorage = ((SqliteIndexedStorageUtility<Case>)storage);
-
-        String[] namesToMatch = new String[numKeys];
-        String[] valuesToMatch = new String[numKeys];
-
-        String cacheKey = "";
-        String keyDescription ="";
-
-        for (int i = numKeys - 1; i >= 0; i--) {
-            namesToMatch[i] = profiles.elementAt(i).getKey();
-            valuesToMatch[i] = (String)
-                    (((IndexedValueLookup)profiles.elementAt(i)).value);
-
-            cacheKey += "|" + namesToMatch[i] + "=" + valuesToMatch[i];
-            keyDescription += namesToMatch[i] + "|";
-        }
-        mMostRecentBatchFetch = new String[2][];
-        mMostRecentBatchFetch[0] = namesToMatch;
-        mMostRecentBatchFetch[1] = valuesToMatch;
-
-        LinkedHashSet<Integer> ids;
-        if(mPairedIndexCache.containsKey(cacheKey)) {
-            ids = mPairedIndexCache.get(cacheKey);
-        } else {
-            EvaluationTrace trace = new EvaluationTrace("Case Storage Lookup" + "["+keyDescription + "]");
-            ids = new LinkedHashSet<>();
-            sqlStorage.getIDsForValues(namesToMatch, valuesToMatch, ids);
-            trace.setOutcome("Results: " + ids.size());
-            currentQueryContext.reportTrace(trace);
-
-            mPairedIndexCache.put(cacheKey, ids);
-        }
-
-        if(ids.size() > 50 && ids.size() < CaseGroupResultCache.MAX_PREFETCH_CASE_BLOCK) {
-            CaseGroupResultCache cue = currentQueryContext.getQueryCache(CaseGroupResultCache.class);
-            cue.reportBulkCaseBody(cacheKey, ids);
-        }
-
-        //Ok, we matched! Remove all of the keys that we matched
-        for (int i = 0; i < numKeys; ++i) {
-            profiles.removeElementAt(0);
-        }
-        return ids;
+        return super.getNextIndexMatch(profiles, storage, currentQueryContext);
     }
 
     private LinkedHashSet<Integer> performCaseIndexQuery(String firstKey, Vector<PredicateProfile> optimizations) {
@@ -271,24 +228,4 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         return mMostRecentBatchFetch;
     }
 
-
-    @Override
-    protected Case getElement(int recordId, QueryContext context) {
-        if(context == null) {
-            return super.getElement(recordId, context);
-        }
-        CaseGroupResultCache cue = context.getQueryCacheOrNull(CaseGroupResultCache.class);
-        if(cue != null && cue.hasMatchingCaseSet(recordId)) {
-            if(!cue.isLoaded(recordId)) {
-                EvaluationTrace loadTrace = new EvaluationTrace("Bulk Case Load");
-                SqliteIndexedStorageUtility<Case> sqlStorage = ((SqliteIndexedStorageUtility<Case>)storage);
-                LinkedHashSet<Integer>  body = cue.getTranche(recordId);
-                sqlStorage.bulkRead(body, cue.getLoadedCaseMap());
-                loadTrace.setOutcome("Loaded: " + body.size());
-                context.reportTrace(loadTrace);
-            }
-            return cue.getLoadedCase(recordId);
-        }
-        return super.getElement(recordId, context);
-    }
 }

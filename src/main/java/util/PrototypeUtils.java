@@ -11,12 +11,12 @@ import org.commcare.core.graph.suite.Graph;
 import org.commcare.core.graph.suite.XYSeries;
 import org.commcare.resources.model.installers.*;
 import org.commcare.suite.model.*;
-import org.commcare.xml.DummyGraphParser;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.QuestionDef;
 import org.javarosa.core.model.SubmissionProfile;
+import org.javarosa.core.model.actions.SendAction;
 import org.javarosa.core.model.actions.SetValueAction;
 import org.javarosa.core.model.data.*;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -44,7 +44,6 @@ public class PrototypeUtils {
                 PropertySetter.class.getName(),
                 XPathReference.class.getName(),
                 TableLocaleSource.class.getName(),
-                DummyGraphParser.DummyGraphDetailTemplate.class.getName(),
                 FormEntry.class.getName(),
                 CaseDataInstance.class.getName(),
                 QuestionDef.class.getName(),
@@ -95,10 +94,12 @@ public class PrototypeUtils {
                 SeriesData.class.getName(),
                 Graph.class.getName(),
                 XYSeries.class.getName(),
-                BubbleSeries.class.getName()
+                BubbleSeries.class.getName(),
+                SendAction.class.getName(),
+                XPathDistinctValuesFunc.class.getName(),
         };
 
-        for(Class clazz: FunctionUtils.getXPathFuncListMap().values()){
+        for (Class clazz: FunctionUtils.getXPathFuncListMap().values()) {
             PrototypeManager.registerPrototype(clazz.getName());
         }
         PrototypeManager.registerPrototypes(prototypes);

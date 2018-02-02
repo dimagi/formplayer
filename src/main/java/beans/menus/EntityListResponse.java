@@ -1,21 +1,19 @@
 package beans.menus;
 
+import exceptions.ApplicationConfigException;
 import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.Action;
-import org.commcare.suite.model.Detail;
-import org.commcare.suite.model.DetailField;
-import org.commcare.suite.model.EntityDatum;
+import org.commcare.suite.model.*;
 import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
+import util.FormplayerGraphUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +33,7 @@ public class EntityListResponse extends MenuBean {
     private int[] widthHints;
     private int numEntitiesPerRow;
     private boolean useUniformUnits;
+    private int[] sortIndices;
 
     private int pageCount;
     private int currentPage;
@@ -48,30 +47,46 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse() {}
 
-    public EntityListResponse(EntityScreen nextScreen, String detailSelection, int offset, String searchText, String id) {
+    public EntityListResponse(EntityScreen nextScreen,
+                              EvaluationContext ec,
+                              String detailSelection,
+                              int offset,
+                              String searchText,
+                              int sortIndex) {
         SessionWrapper session = nextScreen.getSession();
-        Detail shortDetail = nextScreen.getShortDetail();
-        nextScreen.getLongDetailList();
-
-        EvaluationContext ec = nextScreen.getEvalContext();
-        EntityDatum datum = (EntityDatum) session.getNeededDatum();
+        Detail detail = nextScreen.getShortDetail();
+        EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
         // We will shortcircuit the computation to just get the relevant detailSelection.
         if (detailSelection != null) {
-            TreeReference reference = datum.getEntityFromID(ec, detailSelection);
-            processEntitiesForCaseDetail(nextScreen, reference, ec);
+            TreeReference reference = neededDatum.getEntityFromID(ec, detailSelection);
+            if (reference == null) {
+                throw new ApplicationConfigException(String.format("Could not create detail %s for case with ID %s " +
+                        " either because the case filter matched zero or multiple cases.", detailSelection, detail));
+            }
+            entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
-            Vector<TreeReference> references = ec.expandReference(datum.getNodeset());
-            processEntitiesForCaseList(nextScreen, references, ec, offset, searchText);
+            Vector<TreeReference> references = ec.expandReference(neededDatum.getNodeset());
+            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex);
+            if (entityList.size() > CASE_LENGTH_LIMIT && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
+                // we're doing pagination
+                setCurrentPage(offset / CASE_LENGTH_LIMIT);
+                setPageCount((int) Math.ceil((double) entityList.size() / CASE_LENGTH_LIMIT));
+                entityList = paginateEntities(entityList, offset);
+            }
+            entities = new EntityBean[entityList.size()];
+            entityList.toArray(entities);
         }
 
         processTitle(session);
-        processCaseTiles(shortDetail);
-        processStyles(shortDetail);
-        processActions(nextScreen.getSession());
-        processHeader(shortDetail, ec);
-        setMenuSessionId(id);
+        processCaseTiles(detail);
+        this.styles = processStyles(detail);
+        this.actions = processActions(nextScreen.getSession());
+        Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
+        this.headers = pair.first;
+        this.widthHints = pair.second;
+        this.sortIndices = detail.getOrderedFieldIndicesForSorting();
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -95,33 +110,31 @@ public class EntityListResponse extends MenuBean {
         maxHeight = maxWidthHeight.second;
     }
 
-    private void processHeader(Detail shortDetail, EvaluationContext ec) {
-        Pair<String[], int[]> pair = EntityListSubscreen.getHeaders(shortDetail, ec);
-        headers = pair.first;
-        widthHints = pair.second;
+    public static Pair<String[], int[]> processHeader(Detail shortDetail, EvaluationContext ec, int sortIndex) {
+        return EntityListSubscreen.getHeaders(shortDetail, ec, sortIndex);
     }
 
-    private void processEntitiesForCaseDetail(EntityScreen screen, TreeReference reference, EvaluationContext ec) {
-        entities = new EntityBean[]{processEntity(reference, screen, ec)};
+    private static EntityBean[] processEntitiesForCaseDetail(Detail detail, TreeReference reference,
+                                                             EvaluationContext ec, EntityDatum neededDatum) {
+        return new EntityBean[]{processEntity(detail, reference, ec, neededDatum)};
     }
 
-    private void processEntitiesForCaseList(EntityScreen screen, Vector<TreeReference> references,
-                                 EvaluationContext ec,
-                                 int offset,
-                                 String searchText) {
-        List<Entity<TreeReference>> entityList = buildEntityList(screen.getShortDetail(), ec, references, offset, searchText);
-        entities = new EntityBean[entityList.size()];
-        int i = 0;
+    public static List<EntityBean> processEntitiesForCaseList(Detail detail, Vector<TreeReference> references,
+                                                              EvaluationContext ec,
+                                                              String searchText,
+                                                              EntityDatum neededDatum,
+                                                              int sortIndex) {
+        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText, sortIndex);
+        List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
             TreeReference treeReference = entity.getElement();
-            EntityBean newEntityBean = processEntity(treeReference, screen, ec);
-            entities[i] = newEntityBean;
-            i++;
+            entities.add(processEntity(detail, treeReference, ec, neededDatum));
         }
+        return entities;
     }
 
-    private List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
-                                                       List<Entity<TreeReference>> full) {
+    private static List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
+                                                              List<Entity<TreeReference>> full) {
         if (searchText != null && !"".equals(searchText)) {
             EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), false, false, nodeEntityFactory, full);
             full = filterer.buildMatchList();
@@ -129,7 +142,7 @@ public class EntityListResponse extends MenuBean {
         return full;
     }
 
-    private List<Entity<TreeReference>> paginateEntities(List<Entity<TreeReference>> matched,
+    private List<EntityBean> paginateEntities(List<EntityBean> matched,
                                                          int offset) {
         if(offset > matched.size()){
             throw new RuntimeException("Pagination offset " + offset +
@@ -147,66 +160,77 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
-    private List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
-                                                        EvaluationContext context,
-                                                        Vector<TreeReference> references,
-                                                        int offset,
-                                                        String searchText) {
+    private static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
+                                                               EvaluationContext context,
+                                                               Vector<TreeReference> references,
+                                                               String searchText,
+                                                               int sortIndex) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
-        nodeEntityFactory.prepareEntities();
         List<Entity<TreeReference>> full = new ArrayList<>();
         for (TreeReference reference: references) {
             full.add(nodeEntityFactory.getEntity(reference));
         }
-
+        nodeEntityFactory.prepareEntities(full);
         List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
-        sort(matched, shortDetail);
-
-        if (matched.size() > CASE_LENGTH_LIMIT && !(shortDetail.getNumEntitiesToDisplayPerRow() > 1)) {
-            // we're doing pagination
-            setCurrentPage(offset / CASE_LENGTH_LIMIT);
-            setPageCount((int) Math.ceil((double) matched.size() / CASE_LENGTH_LIMIT));
-            matched = paginateEntities(matched, offset);
-        }
+        sort(matched, shortDetail, sortIndex);
         return matched;
     }
 
-    private void sort (List<Entity<TreeReference>> entityList, Detail shortDetail) {
-        int[] order = shortDetail.getSortOrder();
-        for (int i = 0; i < shortDetail.getFields().length; ++i) {
-            String header = shortDetail.getFields()[i].getHeader().evaluate();
-            if (order.length == 0 && !"".equals(header)) {
-                order = new int[]{i};
+    private static void sort(List<Entity<TreeReference>> entityList,
+                             Detail shortDetail,
+                             int sortIndex) {
+        int[] order;
+        boolean reverse = false;
+        if (sortIndex != 0) {
+            if (sortIndex < 0) {
+                reverse = true;
+                sortIndex = Math.abs(sortIndex);
+            }
+            // sort index is one indexed so adjust for that
+            int sortFieldIndex = sortIndex - 1;
+            order = new int[]{sortFieldIndex};
+        } else {
+            order = shortDetail.getOrderedFieldIndicesForSorting();
+            for (int i = 0; i < shortDetail.getFields().length; ++i) {
+                String header = shortDetail.getFields()[i].getHeader().evaluate();
+                if (order.length == 0 && !"".equals(header)) {
+                    order = new int[]{i};
+                }
             }
         }
-        java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), false, order, new LogNotifier()));
+        java.util.Collections.sort(entityList, new EntitySorter(shortDetail.getFields(), reverse, order, new LogNotifier()));
     }
 
-    class LogNotifier implements EntitySortNotificationInterface {
+    public int[] getSortIndices() {
+        return sortIndices;
+    }
+
+    public void setSortIndices(int[] sortIndices) {
+        this.sortIndices = sortIndices;
+    }
+
+    static class LogNotifier implements EntitySortNotificationInterface {
         @Override
-        public void notifyBadfilter(String[] args) {
+        public void notifyBadFilter(String[] args) {
 
         }
     }
 
-    private EntityBean processEntity(TreeReference entity, EntityScreen screen, EvaluationContext ec) {
-        Detail detail = screen.getShortDetail();
-        EvaluationContext context = new EvaluationContext(ec, entity);
-
+    private static EntityBean processEntity(Detail detail, TreeReference treeReference,
+                                            EvaluationContext ec, EntityDatum neededDatum) {
+        EvaluationContext context = new EvaluationContext(ec, treeReference);
         detail.populateEvaluationContextVariables(context);
-
         DetailField[] fields = detail.getFields();
         Object[] data = new Object[fields.length];
-
-        String id = screen.getReturnValueFromSelection(entity, (EntityDatum)screen.getSession().getNeededDatum(), ec);
+        String id = neededDatum == null ? "" : EntityScreen.getReturnValueFromSelection(treeReference, neededDatum, ec);
         EntityBean ret = new EntityBean(id);
         int i = 0;
         for (DetailField field : fields) {
             Object o;
             o = field.getTemplate().evaluate(context);
-            if(o instanceof GraphData) {
+            if (o instanceof GraphData) {
                 try {
-                    data[i] = GraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
+                    data[i] = FormplayerGraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
                 } catch (GraphException e) {
                     data[i] = "<html><body>Error loading graph " + e + "</body></html>";
                 }
@@ -219,29 +243,31 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private void processStyles(Detail detail) {
+    private static Style[] processStyles(Detail detail) {
         DetailField[] fields = detail.getFields();
-        styles = new Style[fields.length];
+        Style[] styles = new Style[fields.length];
         int i = 0;
         for (DetailField field : fields) {
             Style style = new Style(field);
             styles[i] = style;
             i++;
         }
+        return styles;
     }
 
-    private void processActions(SessionWrapper session) {
+    private static DisplayElement[] processActions(SessionWrapper session) {
         EntityDatum datum = (EntityDatum) session.getNeededDatum();
         if (session.getFrame().getSteps().lastElement().getElementType().equals(SessionFrame.STATE_QUERY_REQUEST)) {
-            return;
+            return null;
         }
         Vector<Action> actions = session.getDetail((datum).getShortDetail()).getCustomActions(session.getEvaluationContext());
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action: actions) {
             displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
         }
-        this.actions = new DisplayElement[actions.size()];
-        displayActions.toArray(this.actions);
+        DisplayElement[] ret = new DisplayElement[actions.size()];
+        displayActions.toArray(ret);
+        return ret;
     }
 
     public EntityBean[] getEntities() {
@@ -270,8 +296,11 @@ public class EntityListResponse extends MenuBean {
 
     @Override
     public String toString() {
-        return "EntityListResponse [Entities=" + Arrays.toString(entities) + ", styles=" + Arrays.toString(styles) +
-                ", action=" + Arrays.toString(actions) + " parent=" + super.toString() + ", headers=" + Arrays.toString(headers) +
+        return "EntityListResponse [Title= " + getTitle() +
+                ", styles=" + Arrays.toString(styles) +
+                ", action=" + Arrays.toString(actions) +
+                ", parent=" + super.toString() +
+                ", headers=" + Arrays.toString(headers) +
                 ", locales=" + Arrays.toString(getLocales()) + "]";
     }
 

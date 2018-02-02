@@ -1,7 +1,5 @@
 package application;
 
-import hq.interfaces.CouchUser;
-import hq.models.PostgresUser;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,15 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import repo.TokenRepo;
-import repo.impl.CouchUserRepo;
-import repo.impl.PostgresUserRepo;
+import services.FormplayerLockRegistry;
+import services.HqUserDetailsService;
 import util.Constants;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
-import util.UserUtils;
 
-import javax.servlet.*;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,16 +35,10 @@ import java.util.regex.Pattern;
 public class FormplayerAuthFilter extends OncePerRequestFilter {
 
     @Autowired
-    TokenRepo tokenRepo;
+    HqUserDetailsService userDetailsService;
 
     @Autowired
-    PostgresUserRepo postgresUserRepo;
-
-    @Autowired
-    CouchUserRepo couchUserRepo;
-
-    @Autowired
-    RedisLockRegistry userLockRegistry;
+    FormplayerLockRegistry userLockRegistry;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -58,9 +49,8 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 setResponseUnauthorized(response, "Invalid session id");
                 return;
             }
-            setToken(request);
             setDomain(request);
-            setUser(request);
+            setUserDetails(request);
             JSONObject data = RequestUtils.getPostData(request);
             if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
                 setResponseUnauthorized(response, "Invalid user");
@@ -79,30 +69,9 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
         }
     }
 
-    private void setToken(FormplayerHttpRequest request) {
-        request.setToken(tokenRepo.getSessionToken(getSessionId(request)));
-    }
+    private void setUserDetails(FormplayerHttpRequest request) {
+        request.setUserDetails(userDetailsService.getUserDetails(request.getDomain(), getSessionId(request)));
 
-    /**
-     * Takes a request object and queries postgres and couch to get the corresponding
-     * session user's.
-     *
-     * @param request
-     */
-    private void setUser(FormplayerHttpRequest request) {
-        PostgresUser postgresUser;
-        // Need to handle anonymous user workflow
-        if (request.getToken().getUserId() == Constants.ANONYMOUS_DJANGO_USERID) {
-            postgresUser = postgresUserRepo.getUserByUsername(
-                    UserUtils.anonymousUsername(request.getDomain())
-            );
-        } else {
-            postgresUser = postgresUserRepo.getUserByDjangoId(request.getToken().getUserId());
-        }
-        CouchUser couchUser = couchUserRepo.getUserByUsername(postgresUser.getUsername());
-
-        request.setCouchUser(couchUser);
-        request.setPostgresUser(postgresUser);
     }
 
     /**
@@ -157,21 +126,10 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
      * @return true if authorized, false otherwise
      */
     private boolean authorizeRequest(FormplayerHttpRequest request, String domain, String username) {
-        if (request.getToken() == null) {
+        if (request.getUserDetails() == null) {
             return false;
         }
-        // Check session token is expired
-        if (request.getToken().getExpireDate().before(new java.util.Date())){
-            return false;
-        }
-
-        // Ensure that we actually have a couch user
-        if (request.getCouchUser() == null) {
-            return false;
-        }
-
-        // Ensure domain and username match couch user
-        return request.getCouchUser().isAuthorized(domain, username);
+        return request.getUserDetails().isAuthorized(domain, username);
     }
 
     @Override

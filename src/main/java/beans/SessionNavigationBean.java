@@ -15,9 +15,11 @@ public class SessionNavigationBean extends InstallRequestBean {
     private String[] selections;
     private int offset;
     private String searchText;
+    private String geoLocation;
     private String menuSessionId;
     private Hashtable<String, String> queryDictionary;
-    private String previewCommand;
+    private boolean isPersistent;
+    private int sortIndex;
 
     public String[] getSelections() {
         return selections;
@@ -30,9 +32,9 @@ public class SessionNavigationBean extends InstallRequestBean {
     @Override
     public String toString() {
         return "SessionNavigationBean [id= " + menuSessionId +
-                ", preview=" + previewCommand +
                 ", selections=" + Arrays.toString(selections) +
-                ", parent="  + super.toString() + "]";
+                ", parent="  + super.toString() +
+                ", queryDict" + queryDictionary + "]";
     }
 
     public int getOffset() {
@@ -68,11 +70,29 @@ public class SessionNavigationBean extends InstallRequestBean {
         this.queryDictionary = queryDictionary;
     }
 
-    public String getPreviewCommand() {
-        return previewCommand;
+    @JsonGetter(value = "geo_location")
+    public String getGeoLocation() {
+        return geoLocation;
     }
 
-    public void setPreviewCommand(String previewCommand) {
-        this.previewCommand = previewCommand;
+    @JsonSetter(value = "geo_location")
+    public void setGeoLocation(String geoLocation) {
+        this.geoLocation = geoLocation;
+    }
+
+    public boolean getIsPersistent() {
+        return isPersistent;
+    }
+
+    public void setIsPersistent(boolean persistent) {
+        isPersistent = persistent;
+    }
+
+    public int getSortIndex() {
+        return sortIndex;
+    }
+
+    public void setSortIndex(int sortIndex) {
+        this.sortIndex = sortIndex;
     }
 }

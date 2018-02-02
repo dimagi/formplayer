@@ -4,15 +4,21 @@ import auth.DjangoAuth;
 import auth.HqAuth;
 import auth.TokenAuth;
 import beans.AuthenticatedRequestBean;
+import hq.CaseAPIs;
 import hq.models.PostgresUser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import repo.impl.PostgresUserRepo;
+import services.CategoryTimingHelper;
 import services.RestoreFactory;
+import util.Constants;
+import util.Timing;
 import util.UserUtils;
 
 import java.util.Arrays;
@@ -21,6 +27,7 @@ import java.util.Arrays;
  * Aspect to configure the RestoreFactory
  */
 @Aspect
+@Order(5)
 public class UserRestoreAspect {
 
     private final Log log = LogFactory.getLog(UserRestoreAspect.class);
@@ -31,6 +38,9 @@ public class UserRestoreAspect {
     @Autowired
     protected PostgresUserRepo postgresUserRepo;
 
+    @Autowired
+    CategoryTimingHelper categoryTimingHelper;
+
     @Before(value = "@annotation(annotations.UserRestore)")
     public void configureRestoreFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
@@ -40,7 +50,16 @@ public class UserRestoreAspect {
 
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
         HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
-        restoreFactory.configure((AuthenticatedRequestBean)args[0], auth);
+        restoreFactory.configure((AuthenticatedRequestBean)args[0], auth, requestBean.getUseLiveQuery());
+
+        if (requestBean.isMustRestore()) {
+            restoreFactory.performTimedSync();
+        }
+    }
+
+    @After(value = "@annotation(annotations.UserRestore)")
+    public void closeRestoreFactory(JoinPoint joinPoint) throws Throwable {
+        restoreFactory.getSQLiteDB().closeConnection();
     }
 
     private HqAuth getAuthHeaders(String domain, String username, String sessionToken) {

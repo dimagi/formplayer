@@ -1,5 +1,6 @@
 package sandbox;
 
+import exceptions.SQLiteRuntimeException;
 import org.commcare.modern.util.Pair;
 import org.commcare.modern.database.*;
 import org.javarosa.core.services.Logger;
@@ -121,7 +122,7 @@ public class SqlHelper {
                 preparedStatement.execute();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -141,7 +142,77 @@ public class SqlHelper {
             preparedStatement.setInt(1, id);
             return preparedStatement;
         } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        }
+    }
+
+    public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
+                                                                          String storageKey,
+                                                                          String[] projections) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < projections.length; i++) {
+            builder.append(projections[i]);
+            if (i + 1 < projections.length) {
+                builder.append(", ");
+            }
+        }
+        String queryString = "SELECT " + builder.toString() + " FROM " + storageKey + ";";
+        try {
+            return c.prepareStatement(queryString);
+        } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
+                                                                          String storageKey,
+                                                                          String recordId,
+                                                                          String[] projections) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < projections.length; i++) {
+            builder.append(projections[i]);
+            if (i + 1 < projections.length) {
+                builder.append(", ");
+            }
+        }
+        String queryString = "SELECT " + builder.toString() +
+                " FROM " + storageKey +
+                " WHERE " + DatabaseHelper.ID_COL + " = ?;";
+        try {
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
+            preparedStatement.setString(1, recordId);
+            return preparedStatement;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * @throws IllegalArgumentException when one or more of the fields we're selecting on
+     *                                  is not a valid key to select on for this object
+     */
+    public static PreparedStatement prepareTableSelectStatementProjection(Connection c,
+                                                                String storageKey,
+                                                                String where,
+                                                                String values[],
+                                                                String[] projections) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < projections.length; i++) {
+            builder.append(projections[i]);
+            if (i + 1 < projections.length) {
+                builder.append(", ");
+            }
+        }
+        try {
+            String queryString =
+                    "SELECT " + builder.toString() + " FROM " + storageKey + " WHERE " + where + ";";
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
+            for (int i = 0; i < values.length; i++) {
+                preparedStatement.setString(i + 1, values[i]);
+            }
+            return preparedStatement;
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
         }
     }
 
@@ -152,7 +223,7 @@ public class SqlHelper {
     public static PreparedStatement prepareTableSelectStatement(Connection c,
                                                                 String storageKey,
                                                                 String[] fields,
-                                                                String[] values) {
+                                                                Object[] values) {
         Pair<String, String[]> pair = DatabaseHelper.createWhere(fields, values, null);
         try {
             String queryString =
@@ -163,7 +234,7 @@ public class SqlHelper {
             }
             return preparedStatement;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         }
     }
 
@@ -175,25 +246,22 @@ public class SqlHelper {
                                                                 String storageKey,
                                                                 String where,
                                                                 String values[]) {
-        PreparedStatement preparedStatement = null;
         try {
             String queryString =
                     "SELECT * FROM " + storageKey + " WHERE " + where + ";";
-            preparedStatement = c.prepareStatement(queryString);
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
             for (int i = 0; i < values.length; i++) {
                 preparedStatement.setString(i + 1, values[i]);
             }
             return preparedStatement;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         }
     }
 
-    public static void basicInsert(Connection c, String storageKey,
-                                   Map<String, String> contentVals) {
+    private static void performInsert(Connection c,
+                                     Pair<List<String>, String> valsAndInsertStatement) {
         PreparedStatement preparedStatement = null;
-        Pair<List<String>, String> valsAndInsertStatement =
-                buildInsertStatement(storageKey, contentVals);
         try {
             preparedStatement = c.prepareStatement(valsAndInsertStatement.second);
             int i = 1;
@@ -202,7 +270,7 @@ public class SqlHelper {
             }
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -214,10 +282,27 @@ public class SqlHelper {
         }
     }
 
+    public static void basicInsert(Connection c,
+                                   String storageKey,
+                                   Map<String, String> contentVals) {
+        Pair<List<String>, String> valsAndInsertStatement =
+                buildInsertStatement(storageKey, contentVals);
+        performInsert(c, valsAndInsertStatement);
+    }
+
+    public static void insertOrReplace(Connection c,
+                                       String storageKey,
+                                       Map<String, String> contentValues) {
+        Pair<List<String>, String> valsAndInsertStatement =
+                buildInsertOrReplaceStatement(storageKey, contentValues);
+        performInsert(c, valsAndInsertStatement);
+    }
+
     private static Pair<List<String>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, String> contentVals) {
+                                                                   Map<String, String> contentVals,
+                                                                   String insertStatement) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("INSERT INTO ").append(storageKey).append(" (");
+        stringBuilder.append(insertStatement).append(storageKey).append(" (");
         List<String> values = new ArrayList<>();
         String prefix = "";
         for (String key : contentVals.keySet()) {
@@ -235,6 +320,16 @@ public class SqlHelper {
         }
         stringBuilder.append(");");
         return Pair.create(values, stringBuilder.toString());
+    }
+
+    private static Pair<List<String>, String> buildInsertStatement(String storageKey,
+                                                                   Map<String, String> contentVals) {
+        return buildInsertStatement(storageKey, contentVals, "INSERT INTO ");
+    }
+
+    private static Pair<List<String>, String> buildInsertOrReplaceStatement(String storageKey,
+                                                                   Map<String, String> contentVals) {
+        return buildInsertStatement(storageKey, contentVals, "INSERT OR REPLACE INTO ");
     }
 
     public static int insertToTable(Connection c, String storageKey, Persistable p) {
@@ -265,16 +360,22 @@ public class SqlHelper {
             }
 
             try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    int id = generatedKeys.getInt(1);
-                    p.setID(id);
-                    return id;
-                } else {
-                    throw new SQLException("Creating user failed, no ID obtained.");
+                try {
+                    if (generatedKeys.next()) {
+                        int id = generatedKeys.getInt(1);
+                        p.setID(id);
+                        return id;
+                    } else {
+                        throw new SQLException("Creating user failed, no ID obtained.");
+                    }
+                } finally {
+                    if (generatedKeys != null) {
+                        generatedKeys.close();
+                    }
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -309,7 +410,7 @@ public class SqlHelper {
             setPreparedStatementArgs(preparedStatement, p, where.second);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -351,7 +452,7 @@ public class SqlHelper {
             preparedStatement.setInt(lastArgIndex, id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -406,13 +507,13 @@ public class SqlHelper {
             preparedStatement.setString(1, arg);
             preparedStatement.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    throw new SQLiteRuntimeException(e);
                 }
             }
         }
@@ -429,13 +530,13 @@ public class SqlHelper {
             }
             preparedStatement.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    // ignore
                 }
             }
         }
@@ -457,7 +558,7 @@ public class SqlHelper {
             preparedStatement.setInt(1, id);
             preparedStatement.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {
@@ -483,7 +584,7 @@ public class SqlHelper {
             preparedStatement = connection.prepareStatement(query);
             preparedStatement.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLiteRuntimeException(e);
         } finally {
             if (preparedStatement != null) {
                 try {

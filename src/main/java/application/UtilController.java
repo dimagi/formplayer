@@ -7,13 +7,18 @@ import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.JSONReporter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import services.CategoryTimingHelper;
+import sqlitedb.UserDB;
 import util.Constants;
+import util.Timing;
 
 import java.io.StringReader;
 
@@ -30,17 +35,16 @@ import java.io.StringReader;
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
 
+    @Autowired
+    private CategoryTimingHelper categoryTimingHelper;
+
     @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
     @UserRestore
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        if (syncRequest.isPreserveCache()) {
-            CaseAPIs.restoreIfNotExists(restoreFactory, false);
-        } else {
-            CaseAPIs.forceRestore(restoreFactory);
-        }
+        restoreFactory.performTimedSync();
         return new SyncDbResponseBean();
     }
 
@@ -51,11 +55,33 @@ public class UtilController extends AbstractBaseController {
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
-        boolean success = deleteRequest.clear();
+        boolean success = true;
+        try {
+            deleteRequest.clear();
+        } catch (Exception e) {
+            e.printStackTrace();
+            success = false;
+        }
+
         if (!success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
         return new NotificationMessage(message, !success);
+    }
+
+    @ApiOperation(value = "Clear the user's data")
+    @RequestMapping(value = Constants.URL_CLEAR_USER_DATA, method = RequestMethod.POST)
+    @UserLock
+    public NotificationMessage clearUserData(
+            @RequestBody AuthenticatedRequestBean requestBean) {
+
+        String message = "Successfully cleared the user data for  " + requestBean.getUsername();
+        new UserDB(
+                requestBean.getDomain(),
+                requestBean.getUsername(),
+                requestBean.getRestoreAs()
+        ).deleteDatabaseFolder();
+        return new NotificationMessage(message, true);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")

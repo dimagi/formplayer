@@ -11,7 +11,7 @@ import util.SessionUtils;
  * clearSession - True if the front end should redirect to the app home
  *  NOTE: clearSession causes all other displayables to be disregarded
  */
-public class BaseResponseBean {
+public class BaseResponseBean extends LocationRelevantResponseBean {
     protected NotificationMessage notification;
     protected String title;
     protected boolean clearSession;
@@ -57,8 +57,10 @@ public class BaseResponseBean {
 
     @Override
     public String toString(){
-        return "BaseResponseBean title=" + title + ", notificaiton=" + notification + ", " +
-                "clearSession=" + clearSession;
+        return "BaseResponseBean [title=" + title + ", " +
+                "notification=" + notification + ", " +
+                "clearSession=" + clearSession + ", " +
+                "selections=" + selections + "]";
     }
 
     public String getAppId() {

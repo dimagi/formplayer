@@ -7,9 +7,9 @@ import org.json.JSONObject;
  * FormQuestionResponse class.
  */
 public class AutoCompletableItem {
-    private String value;
-    private String label;
-    private String type;
+    protected String value;
+    protected String label;
+    protected String type;
 
     public AutoCompletableItem(String value, String label, String type) {
         this.value = value;

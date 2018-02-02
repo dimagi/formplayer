@@ -1,26 +1,27 @@
 package session;
 
-import auth.HqAuth;
 import engine.FormplayerConfigEngine;
-import hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
-import sandbox.UserSqlSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.screen.*;
+import org.commcare.util.screen.MenuScreen;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
@@ -28,21 +29,20 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
 import repo.SerializableMenuSession;
+import sandbox.UserSqlSandbox;
 import screens.FormplayerQueryScreen;
 import screens.FormplayerSyncScreen;
+import services.FormplayerStorageFactory;
 import services.InstallService;
 import services.RestoreFactory;
-import util.Constants;
-import util.SessionUtils;
-import util.StringUtils;
+import util.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 
 /**
@@ -54,7 +54,7 @@ import java.util.UUID;
  */
 @EnableAutoConfiguration
 @Component
-public class MenuSession {
+public class MenuSession implements HereFunctionHandlerListener {
     private FormplayerConfigEngine engine;
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
@@ -63,55 +63,69 @@ public class MenuSession {
     private final String domain;
 
     private String locale;
-    private Screen screen;
     private String uuid;
     private String asUser;
 
     private final Log log = LogFactory.getLog(MenuSession.class);
     private String appId;
-    private HqAuth auth;
     private boolean oneQuestionPerScreen;
+    private boolean preview;
+    ArrayList<String> breadcrumbs;
+    private ArrayList<String> selections = new ArrayList<>();
+
+    private String currentBrowserLocation;
+    private boolean hereFunctionEvaluated;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreFactory restoreFactory, HqAuth auth, String host) throws Exception {
+                       RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
         this.domain = session.getDomain();
         this.asUser = session.getAsUser();
         this.locale = session.getLocale();
         this.uuid = session.getId();
         this.installReference = session.getInstallReference();
-        this.auth = auth;
-
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference);
-
-        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
-
+        this.engine = installService.configureApplication(this.installReference, session.getPreview()).first;
+        this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(this.locale);
         sessionWrapper.syncState();
-        this.screen = getNextScreen();
         this.appId = session.getAppId();
+        initializeBreadcrumbs();
     }
 
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
-                       InstallService installService, RestoreFactory restoreFactory, HqAuth auth, String host,
-                       boolean oneQuestionPerScreen, String asUser) throws Exception {
+                       InstallService installService, RestoreFactory restoreFactory, String host,
+                       boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.domain = domain;
-        this.auth = auth;
         this.appId = appId;
         this.asUser = asUser;
         resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference);
-        this.sandbox = CaseAPIs.restoreIfNotExists(restoreFactory, false);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference, preview);
+        this.engine = install.first;
+        if (install.second && !preview && !restoreFactory.getHasRestored()) {
+            this.sandbox = restoreFactory.performTimedSync();
+        }
+        this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         this.locale = locale;
         SessionUtils.setLocale(this.locale);
-        this.screen = getNextScreen();
         this.uuid = UUID.randomUUID().toString();
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+        initializeBreadcrumbs();
+        this.preview = preview;
+    }
+
+    public void resetSession() {
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
+        initializeBreadcrumbs();
+    }
+
+    private void initializeBreadcrumbs() {
+        this.breadcrumbs = new ArrayList<>();
+        this.breadcrumbs.add(SessionUtils.getAppTitle());
     }
     
     public void updateApp(String updateMode) {
@@ -152,20 +166,37 @@ public class MenuSession {
      * @return Whether or not we were able to evaluate to a new screen.
      */
     public boolean handleInput(String input) throws CommCareSessionException {
+        Screen screen = getNextScreen();
         log.info("Screen " + screen + " handling input " + input);
         if(screen == null) {
             return false;
         }
         try {
             boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
+            Screen previousScreen = screen;
             screen = getNextScreen();
-            log.info("Screen " + screen + " set to " + ret);
+            addTitle(input, previousScreen);
             return true;
         } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
                     " threw exception " + e.getMessage() + ". Please try reloading this application" +
                     " and if the problem persists please report a bug.", e);
         }
+    }
+
+    private void addTitle(String input, Screen previousScreen) {
+        if (previousScreen instanceof EntityScreen) {
+            try {
+                String caseName = SessionUtils.tryLoadCaseName(sandbox.getCaseStorage(), input);
+                if (caseName != null) {
+                    breadcrumbs.add(caseName);
+                    return;
+                }
+            } catch (NoSuchElementException e) {
+                // That's ok, just fallback quietly
+            }
+        }
+        breadcrumbs.add(SessionUtils.getBestTitle(getSessionWrapper()));
     }
 
     public Screen getNextScreen() throws CommCareSessionException {
@@ -188,13 +219,13 @@ public class MenuSession {
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_DATUM_COMPUTED)) {
             computeDatum();
             return getNextScreen();
-        } else if(next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
-            QueryScreen queryScreen = new FormplayerQueryScreen(auth);
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
+            QueryScreen queryScreen = new FormplayerQueryScreen();
             queryScreen.init(sessionWrapper);
             return queryScreen;
-        } else if(next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
+        } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
             String username = asUser != null ?
-                    StringUtils.getFullUsername(asUser, domain, Constants.COMMCARE_USER_SUFFIX) : null;
+                    StringUtils.getFullUsername(asUser, domain) : null;
             FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
             syncScreen.init(sessionWrapper);
             return syncScreen;
@@ -230,22 +261,23 @@ public class MenuSession {
         return ret;
     }
 
-    public FormSession getFormEntrySession() throws Exception {
+    public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
+                                           FormplayerStorageFactory storageFactory) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
-        String postUrl = PropertyManager.instance().getSingularProperty("PostURL");
+        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen,
-                asUser, appId, null);
+                asUser, appId, null, formSendCalloutHandler, storageFactory);
     }
 
     public void reloadSession(FormSession formSession) throws Exception {
         String formXmlns = formSession.getXmlns();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
-        String postUrl = PropertyManager.instance().getSingularProperty("PostURL");
-        formSession.reload(formDef, postUrl);
+        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
+        formSession.reload(formDef, postUrl, engine.getPlatform().getStorageManager());
     }
 
     private byte[] serializeSession(CommCareSession session){
@@ -265,7 +297,7 @@ public class MenuSession {
         return CommCareSession.restoreSessionFromStream(platform, in);
     }
 
-    public SessionWrapper getSessionWrapper(){
+    public SessionWrapper getSessionWrapper (){
         return sessionWrapper;
     }
 
@@ -309,10 +341,6 @@ public class MenuSession {
         return locale;
     }
 
-    public void updateScreen() throws CommCareSessionException {
-        this.screen = getNextScreen();
-    }
-
     public String getAsUser() {
         return asUser;
     }
@@ -327,5 +355,60 @@ public class MenuSession {
 
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    public String[] getBreadcrumbs() {
+        String[] ret = new String[breadcrumbs.size()];
+        breadcrumbs.toArray(ret);
+        return ret;
+    }
+
+    public boolean getPreview() {
+        return preview;
+    }
+
+    public void setPreview(boolean preview) {
+        this.preview = preview;
+    }
+
+    public String[] getSelections() {
+        String[] ret = new String[selections.size()];
+        selections.toArray(ret);
+        return ret;
+    }
+
+    public void addSelection(String currentStep) {
+        selections.add(currentStep);
+    }
+
+    public void setCurrentBrowserLocation(String location) {
+        this.currentBrowserLocation = location;
+    }
+
+    public String getCurrentBrowserLocation() {
+        return this.currentBrowserLocation;
+    }
+
+    @Override
+    public void onEvalLocationChanged() {
+    }
+
+    @Override
+    public void onHereFunctionEvaluated() {
+        this.hereFunctionEvaluated = true;
+    }
+
+    public boolean locationRequestNeeded() {
+        return this.hereFunctionEvaluated && this.currentBrowserLocation == null;
+    }
+
+    public boolean hereFunctionEvaluated() {
+        return this.hereFunctionEvaluated;
+    }
+
+    public EvaluationContext getEvalContextWithHereFuncHandler() {
+        EvaluationContext ec = sessionWrapper.getEvaluationContext();
+        ec.addFunctionHandler(new FormplayerHereFunctionHandler(this, currentBrowserLocation));
+        return ec;
     }
 }

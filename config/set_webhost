@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Append an entry for the Docker host ("dockerhost") to /etc/hosts, and
+# alias the given hostname as "webhost"
+#
+# The script assumes dockerhost is the default gateway
+
+function usage {
+    echo "Usage: $0 <hostname>"
+}
+
+function add_dockerhost_to_hosts {
+    HOSTS_FILE=$1
+
+    GATEWAY=$(ip route | awk '/default/ { print $3 }')
+    HOSTS_ENTRY="$GATEWAY dockerhost"
+    IN_HOSTS=$(cat $HOSTS_FILE | grep "$HOSTS_ENTRY")
+    if [ -z "$IN_HOSTS" ]; then
+        echo "$HOSTS_ENTRY" >> $HOSTS_FILE
+    fi
+}
+
+function set_webhost_alias {
+    HOSTS_FILE=$1
+    WEB_HOST=$2
+
+    sed -i "/\b$WEB_HOST\b/ s/$/ webhost/" $HOSTS_FILE
+}
+
+if [ -z "$1" ]; then
+    usage
+    exit
+fi
+
+# /etc/hosts is a mount point in Docker, not a file.
+cp /etc/hosts /tmp/hosts
+add_dockerhost_to_hosts /tmp/hosts
+set_webhost_alias /tmp/hosts $1
+cp -f /tmp/hosts /etc/hosts
