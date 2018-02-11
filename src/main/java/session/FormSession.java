@@ -120,8 +120,10 @@ public class FormSession {
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.functionContext = session.getFunctionContext();
         setupJavaRosaObjects();
-        FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
-        formController.jumpToIndex(formIndex);
+        if (this.oneQuestionPerScreen) {
+            FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
+            formController.jumpToIndex(formIndex);
+        }
         setupFunctionContext();
         initialize(false, session.getSessionData(), storageFactory.getStorageManager());
         this.postUrl = session.getPostUrl();
@@ -168,7 +170,6 @@ public class FormSession {
         } else {
             initialize(true, sessionData, storageFactory.getStorageManager());
         }
-
         if (this.oneQuestionPerScreen) {
             stepToNextIndex();
             this.currentIndex = formController.getFormIndex().toString();
