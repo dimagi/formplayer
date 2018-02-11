@@ -170,6 +170,7 @@ public class FormSession {
         } else {
             initialize(true, sessionData, storageFactory.getStorageManager());
         }
+        
         if (this.oneQuestionPerScreen) {
             stepToNextIndex();
             this.currentIndex = formController.getFormIndex().toString();
