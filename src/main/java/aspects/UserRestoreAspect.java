@@ -1,11 +1,12 @@
 package aspects;
 
+import auth.BasicAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import auth.TokenAuth;
 import beans.AuthenticatedRequestBean;
-import hq.CaseAPIs;
 import hq.models.PostgresUser;
+import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
@@ -13,12 +14,12 @@ import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
+import repo.FormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import services.CategoryTimingHelper;
 import services.RestoreFactory;
-import util.Constants;
-import util.Timing;
 import util.UserUtils;
 
 import java.util.Arrays;
@@ -39,7 +40,19 @@ public class UserRestoreAspect {
     protected PostgresUserRepo postgresUserRepo;
 
     @Autowired
+    protected FormSessionRepo formSessionRepo;
+
+    @Autowired
     CategoryTimingHelper categoryTimingHelper;
+
+    @Value("${touchforms.username:#{null}}")
+    private String touchformsUsername;
+
+    @Value("${touchforms.password:#{null}}")
+    private String touchformsPassword;
+
+    @Value("${commcarehq.formplayerAuthKey:#{null}}")
+    private String authKey;
 
     @Before(value = "@annotation(annotations.UserRestore)")
     public void configureRestoreFactory(JoinPoint joinPoint) throws Throwable {
@@ -47,13 +60,29 @@ public class UserRestoreAspect {
         if (!(args.length > 1 && args[0] instanceof AuthenticatedRequestBean && args[1] instanceof String)) {
             throw new RuntimeException("Could not configure RestoreFactory with args " + Arrays.toString(args));
         }
-
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
         HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
-        restoreFactory.configure((AuthenticatedRequestBean)args[0], auth, requestBean.getUseLiveQuery());
+
+        configureRestoreFactory(requestBean, auth);
 
         if (requestBean.isMustRestore()) {
             restoreFactory.performTimedSync();
+        }
+    }
+
+    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) {
+        if (requestBean.getCaseId() != null) {
+            // SMS user filling out a form as a case
+            restoreFactory.configure(requestBean.getDomain(), requestBean.getCaseId(), auth);
+            return;
+        }
+        if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
+            // Normal restore path
+            restoreFactory.configure(requestBean, auth, requestBean.getUseLiveQuery());
+        } else {
+            // SMS users don't submit username and domain with each request, so obtain from session
+            SerializableFormSession formSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+            restoreFactory.configure(touchformsUsername, formSession.getDomain(), formSession.getAsUser(), auth);
         }
     }
 
@@ -64,7 +93,9 @@ public class UserRestoreAspect {
 
     private HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
         HqAuth auth;
-        if (UserUtils.isAnonymous(domain, username)) {
+        if (sessionToken != null && sessionToken.equals(authKey)) {
+            auth = new BasicAuth(touchformsUsername, touchformsPassword);
+        } else if (UserUtils.isAnonymous(domain, username)) {
             PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
             auth = new TokenAuth(postgresUser.getAuthToken());
         } else {

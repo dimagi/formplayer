@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import session.FormSession;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Created by willpride on 1/12/16.
@@ -15,7 +14,7 @@ public class NewFormResponse extends SessionResponseBean {
     private String[] langs;
     private String[] breadcrumbs;
     private EntityDetailResponse persistentCaseTile;
-
+    private QuestionBean event;
     public NewFormResponse(){}
 
     public NewFormResponse(FormSession fes) throws IOException {
@@ -55,5 +54,17 @@ public class NewFormResponse extends SessionResponseBean {
 
     public void setPersistentCaseTile(EntityDetailResponse persistentCaseTile) {
         this.persistentCaseTile = persistentCaseTile;
+    }
+
+    public QuestionBean getEvent() {
+        return event;
+    }
+
+    public void setEvent(QuestionBean event) {
+        this.event = event;
+    }
+
+    public void setTree(QuestionBean[] tree) {
+        this.tree = tree;
     }
 }
