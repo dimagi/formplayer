@@ -44,7 +44,8 @@
 
 trunk: master
 name: autostaging
-branches: []
+branches:
+  - wsp/okhttp-2
 submodules:
   libs/commcare:
     trunk: formplayer
