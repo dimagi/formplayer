@@ -13,6 +13,7 @@ import beans.NewFormResponse;
 import beans.NewSessionRequestBean;
 import beans.NotificationMessage;
 import beans.OpenRosaResponse;
+import beans.RawInstanceResponseBean;
 import beans.RepeatRequestBean;
 import beans.SessionRequestBean;
 import beans.SubmitRequestBean;
@@ -358,6 +359,26 @@ public class FormController extends AbstractBaseController{
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
         updateSession(formSession, serializableFormSession);
         return responseBean;
+    }
+
+    @ApiOperation(value = "Get the raw instance for a form session")
+    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.POST)
+    @ResponseBody
+    @UserLock
+    @UserRestore
+    public RawInstanceResponseBean getRawInstance(@RequestBody SessionRequestBean requestBean,
+                                                  @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        storageFactory.configure(serializableFormSession.getUsername(),
+                serializableFormSession.getDomain(),
+                serializableFormSession.getAppId(),
+                serializableFormSession.getAsUser()
+        );
+        FormSession formSession = new FormSession(serializableFormSession,
+                restoreFactory,
+                formSendCalloutHandler,
+                storageFactory);
+        return new RawInstanceResponseBean(formSession);
     }
 
 
