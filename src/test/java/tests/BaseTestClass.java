@@ -245,6 +245,18 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
+    RawInstanceResponseBean getInstance(String sessionId) throws Exception {
+        SessionRequestBean sessionRequestBean = new SessionRequestBean();
+        sessionRequestBean.setSessionId(sessionId);
+        sessionRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
+        sessionRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.GET,
+                Constants.URL_GET_INSTANCE,
+                sessionRequestBean,
+                RawInstanceResponseBean.class);
+    }
+
     NewFormResponse startNewForm(String requestPath, String formPath) throws Exception {
         when(xFormServiceMock.getFormXml(anyString()))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
