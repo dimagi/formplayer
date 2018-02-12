@@ -13,7 +13,7 @@ import beans.NewFormResponse;
 import beans.NewSessionRequestBean;
 import beans.NotificationMessage;
 import beans.OpenRosaResponse;
-import beans.RawInstanceResponseBean;
+import beans.GetInstanceResponseBean;
 import beans.RepeatRequestBean;
 import beans.SessionRequestBean;
 import beans.SubmitRequestBean;
@@ -366,7 +366,7 @@ public class FormController extends AbstractBaseController{
     @ResponseBody
     @UserLock
     @UserRestore
-    public RawInstanceResponseBean getRawInstance(@RequestBody SessionRequestBean requestBean,
+    public GetInstanceResponseBean getRawInstance(@RequestBody SessionRequestBean requestBean,
                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
         storageFactory.configure(serializableFormSession.getUsername(),
@@ -378,7 +378,7 @@ public class FormController extends AbstractBaseController{
                 restoreFactory,
                 formSendCalloutHandler,
                 storageFactory);
-        return new RawInstanceResponseBean(formSession);
+        return new GetInstanceResponseBean(formSession);
     }
 
 

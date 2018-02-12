@@ -16,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.util.Pair;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.integration.support.locks.LockRegistry;
@@ -28,7 +26,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
-import repo.impl.PostgresFormSessionRepo;
 import sandbox.SqlSandboxUtils;
 import services.*;
 import util.Constants;
@@ -245,7 +242,7 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
-    RawInstanceResponseBean getInstance(String sessionId) throws Exception {
+    GetInstanceResponseBean getInstance(String sessionId) throws Exception {
         SessionRequestBean sessionRequestBean = new SessionRequestBean();
         sessionRequestBean.setSessionId(sessionId);
         sessionRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
@@ -254,7 +251,7 @@ public class BaseTestClass {
                 RequestType.GET,
                 Constants.URL_GET_INSTANCE,
                 sessionRequestBean,
-                RawInstanceResponseBean.class);
+                GetInstanceResponseBean.class);
     }
 
     NewFormResponse startNewForm(String requestPath, String formPath) throws Exception {

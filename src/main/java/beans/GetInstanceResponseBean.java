@@ -13,21 +13,21 @@ import java.io.IOException;
  * Created by willpride on 2/8/16.
  */
 @ApiModel("Session Response")
-public class RawInstanceResponseBean extends BaseResponseBean {
+public class GetInstanceResponseBean extends BaseResponseBean {
 
     private String output;
     private String xmlns;
 
-    RawInstanceResponseBean() {}
+    GetInstanceResponseBean() {}
 
-    public RawInstanceResponseBean(FormSession formSession) throws IOException {
+    public GetInstanceResponseBean(FormSession formSession) throws IOException {
         this.output = formSession.getInstanceXml();
         this.xmlns = formSession.getXmlns();
     }
 
     @Override
     public String toString() {
-        return "RawInstanceResponseBean [instanceXml=" + output + "]";
+        return "GetInstanceResponseBean [instanceXml=" + output + "]";
     }
 
     public String getOutput() {
