@@ -19,10 +19,6 @@
     "app_id": "10a706429116a3e55f1d1302cd3db69f",
     "username": "test"
   },
-  "hq_auth": {
-    "type": "django-session",
-    "key": "3fu61g0hqz1743tjejdrr40j4e98wohk"
-  },
   "form_context": {
     "case_model": null
   },

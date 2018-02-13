@@ -70,6 +70,7 @@ public class Constants {
 
     //JSON
     public static final String QUESTION_TREE_KEY = "tree";
+    public static final String NAV_MODE_PROMPT = "prompt";
 
     // CCZ Parameters
     public static final String CCZ_LATEST_SAVED = "save";

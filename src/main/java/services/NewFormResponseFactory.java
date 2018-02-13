@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
 import sandbox.UserSqlSandbox;
 import session.FormSession;
+import util.Constants;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -43,7 +44,16 @@ public class NewFormResponseFactory {
 
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
-        String formXml = getFormXml(bean.getFormUrl());
+        String formXml = null;
+
+        if (bean.getFormUrl() != null) {
+            formXml = getFormXml(bean.getFormUrl());
+        }
+        else if (bean.getFormContent() != null) {
+            formXml = bean.getFormContent();
+        } else {
+            throw new RuntimeException("No FormURL or FormContent");
+        }
         UserSqlSandbox sandbox = restoreFactory.performTimedSync();
 
         storageFactory.configure(bean.getUsername(), bean.getDomain(), bean.getSessionData().getAppId(), bean.getRestoreAs());
@@ -63,11 +73,18 @@ public class NewFormResponseFactory {
                 bean.getSessionData().getAppId(),
                 bean.getSessionData().getFunctionContext(),
                 formSendCalloutHandler,
-                storageFactory
+                storageFactory,
+                Constants.NAV_MODE_PROMPT.equals(bean.getNavMode())
         );
 
         formSessionRepo.save(formSession.serialize());
-        return new NewFormResponse(formSession);
+        NewFormResponse response = new NewFormResponse(formSession);
+
+        if (bean.getNavMode() != null && bean.getNavMode().equals(Constants.NAV_MODE_PROMPT)) {
+            response.setEvent(response.getTree()[0]);
+            response.setTree(null);
+        }
+        return response;
     }
 
     public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
