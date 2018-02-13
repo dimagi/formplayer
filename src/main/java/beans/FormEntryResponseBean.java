@@ -8,11 +8,12 @@ import java.util.Arrays;
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FormEntryResponseBean extends SessionResponseBean{
+public class FormEntryResponseBean extends SessionResponseBean {
     private QuestionBean[] tree;
     private String status;
     private String reason;
     private String type;
+    private QuestionBean event;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public FormEntryResponseBean(){}
@@ -53,5 +54,13 @@ public class FormEntryResponseBean extends SessionResponseBean{
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public QuestionBean getEvent() {
+        return event;
+    }
+
+    public void setEvent(QuestionBean event) {
+        this.event = event;
     }
 }

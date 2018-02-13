@@ -1,10 +1,6 @@
 {
   "form_ix": "1J",
   "action": "delete-repeat",
-  "hq_auth": {
-    "type": "django-session",
-    "key": "6f9iv4hpax36vslk6ffnjs5xt5floebc"
-  },
   "form_context": {
     "case_model": null
   },

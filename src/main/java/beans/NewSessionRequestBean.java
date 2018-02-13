@@ -15,12 +15,13 @@ import java.util.Map;
 public class NewSessionRequestBean extends AuthenticatedRequestBean {
     private String formUrl;
     private String lang;
-    private Map<String, String> hqAuth;
     private SessionData sessionData;
     private Map<String, Object> formContext;
     private String instanceContent;
     private String postUrl;
+    private String formContent;
     private boolean oneQuestionPerScreen;
+    private String navMode;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public NewSessionRequestBean(){}
@@ -32,6 +33,16 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     public void setLang(String lang) {
         this.lang = lang;
     }
+
+    @JsonGetter(value = "form-content")
+    public String getFormContent() {
+        return formContent;
+    }
+    @JsonSetter(value = "form-content")
+    public void setFormContent(String formContent) {
+        this.formContent = formContent;
+    }
+
     @JsonGetter(value = "form-url")
     public String getFormUrl() {
         return formUrl;
@@ -40,14 +51,7 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     public void setFormUrl(String formUrl) {
         this.formUrl = formUrl;
     }
-    @JsonGetter(value = "hq_auth")
-    public Map<String, String> getHqAuth() {
-        return hqAuth;
-    }
-    @JsonSetter(value = "hq_auth")
-    public void setHqAuth(Map<String, String> hqAuth) {
-        this.hqAuth = hqAuth;
-    }
+
     @JsonGetter(value = "session-data")
     public SessionData getSessionData() {
         return sessionData;
@@ -77,7 +81,6 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     public String toString(){
         return "New Session Request Bean [form-url=" + formUrl +
                 ", postUrl= " + postUrl +
-                ", auth=" + hqAuth +
                 ", sessionData= " + sessionData +
                 ", instanceContent=" + instanceContent +"]";
     }
@@ -97,5 +100,14 @@ public class NewSessionRequestBean extends AuthenticatedRequestBean {
     @JsonSetter(value = "oneQuestionPerScreen")
     public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+    }
+
+    @JsonGetter(value = "nav_mode")
+    public String getNavMode() {
+        return navMode;
+    }
+    @JsonSetter(value = "nav_mode")
+    public void setNavMode(String navMode) {
+        this.navMode = navMode;
     }
 }
