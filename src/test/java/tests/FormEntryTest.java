@@ -1,12 +1,12 @@
 package tests;
 
 import beans.*;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.Constants;
-import utils.FileUtils;
 import utils.TestContext;
 
 import java.util.ArrayList;
@@ -35,7 +35,13 @@ public class FormEntryTest extends BaseTestClass{
         response = answerQuestionGetResult("10", "2",sessionId);
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
 
+        GetInstanceResponseBean getInstanceResponse = getInstance(sessionId);
+
         QuestionBean[] tree = response.getTree();
+
+        Assert.assertTrue(getInstanceResponse.getOutput().contains("ben rudolph"));
+        Assert.assertTrue(getInstanceResponse.getOutput().contains("William Pride"));
+        Assert.assertNotNull(getInstanceResponse.getXmlns());
 
         QuestionBean textBean = tree[1];
         assert textBean.getAnswer().equals("William Pride");
