@@ -36,6 +36,7 @@ import services.FormplayerStorageFactory;
 import services.InstallService;
 import services.RestoreFactory;
 import util.*;
+import util.SessionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -210,7 +211,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             menuScreen.init(sessionWrapper);
             return menuScreen;
         } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
-            EntityScreen entityScreen = new EntityScreen();
+            EntityScreen entityScreen = new EntityScreen(false);
             entityScreen.init(sessionWrapper);
             if (entityScreen.shouldBeSkipped()) {
                 return getNextScreen();
