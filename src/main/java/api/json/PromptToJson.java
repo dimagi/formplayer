@@ -144,6 +144,8 @@ public class PromptToJson {
                 obj.put("answer", (int) answerValue.getValue());
                 return;
             case Constants.DATATYPE_LONG:
+                obj.put("answer", (long) answerValue.getValue());
+                return;
             case Constants.DATATYPE_DECIMAL:
                 obj.put("answer", (double) answerValue.getValue());
                 return;
