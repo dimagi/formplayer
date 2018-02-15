@@ -89,6 +89,7 @@ public class FormSession {
     private Map<String, FunctionHandler[]> functionContext;
     private boolean isAtFirstIndex;
     private boolean inPromptMode;
+    private String caseId;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -123,6 +124,7 @@ public class FormSession {
         this.inPromptMode = session.getInPromptMode();
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.functionContext = session.getFunctionContext();
+        this.caseId = session.getCaseId();
         setupJavaRosaObjects();
         if (this.oneQuestionPerScreen || this.inPromptMode) {
             FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
@@ -150,7 +152,8 @@ public class FormSession {
                        Map<String, FunctionHandler[]> functionContext,
                        FormSendCalloutHandler formSendCalloutHandler,
                        FormplayerStorageFactory storageFactory,
-                       boolean inPromptMode) throws Exception {
+                       boolean inPromptMode,
+                       String caseId) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         formDef.setSendCalloutHandler(formSendCalloutHandler);
@@ -169,6 +172,7 @@ public class FormSession {
         this.currentIndex = "0";
         this.functionContext = functionContext;
         this.inPromptMode = inPromptMode;
+        this.caseId = caseId;
         setupJavaRosaObjects();
         setupFunctionContext();
         if(instanceContent != null){
@@ -347,6 +351,7 @@ public class FormSession {
         serializableFormSession.setAppId(appId);
         serializableFormSession.setFunctionContext(functionContext);
         serializableFormSession.setInPromptMode(inPromptMode);
+        serializableFormSession.setCaseId(caseId);
         return serializableFormSession;
     }
 

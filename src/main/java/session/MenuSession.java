@@ -270,7 +270,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return new FormSession(sandbox, formDef, username, domain,
                 sessionData, postUrl, locale, uuid,
                 null, oneQuestionPerScreen,
-                asUser, appId, null, formSendCalloutHandler, storageFactory, false);
+                asUser, appId, null, formSendCalloutHandler, storageFactory, false, null);
     }
 
     public void reloadSession(FormSession formSession) throws Exception {
