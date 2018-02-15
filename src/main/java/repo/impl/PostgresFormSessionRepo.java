@@ -106,8 +106,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
                 "username, initLang, sequenceId, " +
                 "domain, postUrl, sessionData, menu_session_id," +
                 "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid, functioncontext," +
-                "inPromptMode) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "inPromptMode, caseId) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(
                 query,
                 new Object[] {
@@ -128,7 +128,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
                         session.getAsUser(),
                         session.getAppId(),
                         functionContextBytes,
-                        session.getInPromptMode()
+                        session.getInPromptMode(),
+                        session.getCaseId()
                 },
                 new int[] {
                         Types.VARCHAR,
@@ -148,7 +149,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
                         Types.VARCHAR,
                         Types.VARCHAR,
                         Types.BINARY,
-                        Types.BINARY
+                        Types.BINARY,
+                        Types.VARCHAR
                 }
         );
         return session;
@@ -245,6 +247,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
             session.setAsUser(rs.getString("asUser"));
             session.setAppId(rs.getString("appid"));
             session.setInPromptMode(rs.getBoolean("inPromptMode"));
+            session.setCaseId(rs.getString("caseId"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if (st != null) {
