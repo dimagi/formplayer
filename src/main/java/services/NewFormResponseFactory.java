@@ -74,8 +74,10 @@ public class NewFormResponseFactory {
                 bean.getSessionData().getFunctionContext(),
                 formSendCalloutHandler,
                 storageFactory,
-                Constants.NAV_MODE_PROMPT.equals(bean.getNavMode())
+                Constants.NAV_MODE_PROMPT.equals(bean.getNavMode()),
+                bean.getCaseId()
         );
+
 
         formSessionRepo.save(formSession.serialize());
         NewFormResponse response = new NewFormResponse(formSession);
