@@ -37,10 +37,21 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
 
     @PostConstruct
     public void purgeFormSessions() {
-        String query = replaceTableName(
-                "delete from %s where dateopened::timestamptz < now() - interval '7 days'"
+        // Modeled on https://stackoverflow.com/a/6730401/2820312
+        String createFuncQuery = "create or replace function custom_safe_cast(text,anyelement) \n" +
+                "returns anyelement \n" +
+                "language plpgsql as $$ \n" +
+                "begin \n" +
+                "    $0 := $1; \n" +
+                "    return $0; \n" +
+                "    exception when others then \n" +
+                "        return $2; \n" +
+                "end; $$;";
+        this.jdbcTemplate.execute(createFuncQuery);
+        String deleteQuery = replaceTableName(
+                "delete from %s where custom_safe_cast(dateopened, '2011-01-01'::timestamp) < NOW() - INTERVAL '7 days';"
         );
-        this.jdbcTemplate.execute(query);
+        this.jdbcTemplate.execute(deleteQuery);
     }
 
     @Override
