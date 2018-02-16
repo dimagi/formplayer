@@ -264,7 +264,7 @@ public class MenuSessionRunnerService {
         NotificationMessage notificationMessage = null;
         screen.answerPrompts(queryDictionary);
         String responseString = queryRequester.makeQueryRequest(screen.getUriString(), restoreFactory.getUserHeaders());
-        boolean success = screen.processSuccess(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
+        boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
             if (screen.getCurrentMessage() != null) {
                 notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false);
