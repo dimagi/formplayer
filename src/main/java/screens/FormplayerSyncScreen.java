@@ -20,14 +20,13 @@ public class FormplayerSyncScreen extends SyncScreen {
     private String url;
 
     public FormplayerSyncScreen(String asUser) {
-        super();
+        super(null, null, System.out);
         this.asUser = asUser;
     }
 
     @Override
     public void init (SessionWrapper sessionWrapper) throws CommCareSessionException {
-
-        super.init(sessionWrapper);
+        this.sessionWrapper = sessionWrapper;
         String command = sessionWrapper.getCommand();
         Entry commandEntry = sessionWrapper.getPlatform().getEntry(command);
         if (commandEntry instanceof RemoteRequestEntry) {
