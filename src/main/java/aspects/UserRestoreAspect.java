@@ -71,9 +71,9 @@ public class UserRestoreAspect {
     }
 
     private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) {
-        if (requestBean.getCaseId() != null) {
+        if (requestBean.getRestoreAsCaseId() != null) {
             // SMS user filling out a form as a case
-            restoreFactory.configure(requestBean.getDomain(), requestBean.getCaseId(), auth);
+            restoreFactory.configure(requestBean.getDomain(), requestBean.getRestoreAsCaseId(), auth);
             return;
         }
         if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
@@ -83,8 +83,8 @@ public class UserRestoreAspect {
             // SMS users don't submit username and domain with each request, so obtain from session
             SerializableFormSession formSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
 
-            if (formSession.getCaseId() != null) {
-                restoreFactory.configure(formSession.getDomain(), formSession.getCaseId(), auth);
+            if (formSession.getRestoreAsCaseId() != null) {
+                restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId(), auth);
             } else {
                 restoreFactory.configure(touchformsUsername, formSession.getDomain(), formSession.getAsUser(), auth);
             }

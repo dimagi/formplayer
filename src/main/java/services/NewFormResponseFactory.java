@@ -75,7 +75,7 @@ public class NewFormResponseFactory {
                 formSendCalloutHandler,
                 storageFactory,
                 Constants.NAV_MODE_PROMPT.equals(bean.getNavMode()),
-                bean.getCaseId()
+                bean.getRestoreAsCaseId()
         );
 
 
