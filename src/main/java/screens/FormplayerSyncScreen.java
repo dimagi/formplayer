@@ -4,6 +4,7 @@ import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.Entry;
 import org.commcare.suite.model.PostRequest;
 import org.commcare.suite.model.RemoteRequestEntry;
+import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.SyncScreen;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -19,14 +20,13 @@ public class FormplayerSyncScreen extends SyncScreen {
     private String url;
 
     public FormplayerSyncScreen(String asUser) {
-        super();
+        super(null, null, System.out);
         this.asUser = asUser;
     }
 
     @Override
-    public void init (SessionWrapper sessionWrapper){
-
-        super.init(sessionWrapper);
+    public void init (SessionWrapper sessionWrapper) throws CommCareSessionException {
+        this.sessionWrapper = sessionWrapper;
         String command = sessionWrapper.getCommand();
         Entry commandEntry = sessionWrapper.getPlatform().getEntry(command);
         if (commandEntry instanceof RemoteRequestEntry) {

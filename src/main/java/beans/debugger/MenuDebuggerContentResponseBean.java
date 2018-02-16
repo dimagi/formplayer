@@ -1,5 +1,6 @@
 package beans.debugger;
 
+import beans.menus.LocationRelevantResponseBean;
 import org.json.JSONArray;
 import util.XmlUtils;
 
@@ -9,7 +10,7 @@ import java.util.List;
 /**
  * Response for the debugger tab
  */
-public class MenuDebuggerContentResponseBean {
+public class MenuDebuggerContentResponseBean extends LocationRelevantResponseBean {
     private String appId;
     private AutoCompletableItem[] autoCompletableItems;
     private XPathQueryItem[] recentXPathQueries;

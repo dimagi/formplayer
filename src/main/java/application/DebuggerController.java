@@ -1,14 +1,13 @@
 package application;
 
-import annotations.AppInstallFromSession;
+import annotations.AppInstall;
 import annotations.UserLock;
 import annotations.UserRestore;
-import auth.DjangoAuth;
 import beans.*;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import beans.debugger.MenuDebuggerContentResponseBean;
-import beans.debugger.MenuDebuggerRequestBean;
 import beans.debugger.XPathQueryItem;
+import beans.menus.LocationRelevantResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -53,7 +52,12 @@ public class DebuggerController extends AbstractBaseController {
             @RequestBody SessionRequestBean debuggerRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(debuggerRequest.getSessionId());
-        FormSession formSession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler);
+        storageFactory.configure(serializableFormSession.getUsername(),
+                serializableFormSession.getDomain(),
+                serializableFormSession.getAppId(),
+                serializableFormSession.getAsUser()
+        );
+        FormSession formSession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SerializableMenuSession serializableMenuSession = menuSessionRepo.findOne(serializableFormSession.getMenuSessionId());
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
                 debuggerRequest.getDomain(),
@@ -76,14 +80,13 @@ public class DebuggerController extends AbstractBaseController {
     @ApiOperation(value = "Get content needed for the menu debugger")
     @RequestMapping(value = Constants.URL_DEBUGGER_MENU_CONTENT, method = RequestMethod.POST)
     @UserRestore
-    @AppInstallFromSession
+    @AppInstall
     public MenuDebuggerContentResponseBean menuDebuggerContent(
-            @RequestBody MenuDebuggerRequestBean debuggerMenuRequest,
+            @RequestBody SessionNavigationBean debuggerMenuRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
 
-        MenuSession menuSession = getMenuSession(
-                debuggerMenuRequest.getMenuSessionId()
-        );
+        MenuSession menuSession = getMenuSessionFromBean(debuggerMenuRequest);
+        runnerService.advanceSessionWithSelections(menuSession, debuggerMenuRequest.getSelections());
 
         return new MenuDebuggerContentResponseBean(
                 menuSession.getAppId(),
@@ -94,21 +97,24 @@ public class DebuggerController extends AbstractBaseController {
     }
 
     @ApiOperation(value = "Evaluate the given XPath under the current context")
-    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_EVALUATE_MENU_XPATH, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
     @UserRestore
-    public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
-                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler);
+    @AppInstall
+    public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
+                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        MenuSession menuSession = getMenuSessionFromBean(evaluateXPathRequestBean);
+        runnerService.advanceSessionWithSelections(menuSession, evaluateXPathRequestBean.getSelections());
+
+
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
-                formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
+                menuSession.getSessionWrapper().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),
                 evaluateXPathRequestBean.getDebugOutputLevel()
         );
 
-        cacheFormXPathQuery(
+        cacheMenuXPathQuery(
                 evaluateXPathRequestBean.getDomain(),
                 evaluateXPathRequestBean.getUsername(),
                 evaluateXPathRequestBean.getXpath(),
@@ -120,24 +126,26 @@ public class DebuggerController extends AbstractBaseController {
     }
 
     @ApiOperation(value = "Evaluate the given XPath under the current context")
-    @RequestMapping(value = Constants.URL_EVALUATE_MENU_XPATH, method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
     @UserRestore
-    @AppInstallFromSession
-    public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
-                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        MenuSession menuSession = getMenuSession(
-                evaluateXPathRequestBean.getMenuSessionId()
+    public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
+                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
+        storageFactory.configure(serializableFormSession.getUsername(),
+                serializableFormSession.getDomain(),
+                serializableFormSession.getAppId(),
+                serializableFormSession.getAsUser()
         );
-
+        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
-                menuSession.getSessionWrapper().getEvaluationContext(),
+                formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),
                 evaluateXPathRequestBean.getDebugOutputLevel()
         );
 
-        cacheMenuXPathQuery(
+        cacheFormXPathQuery(
                 evaluateXPathRequestBean.getDomain(),
                 evaluateXPathRequestBean.getUsername(),
                 evaluateXPathRequestBean.getXpath(),

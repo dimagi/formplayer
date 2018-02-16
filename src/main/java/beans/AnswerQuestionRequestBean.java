@@ -18,6 +18,8 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
     @ApiModelProperty(value = "The answer given", required = true)
     private Object answer;
 
+    private String navMode;
+
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionRequestBean(){}
 
@@ -49,5 +51,13 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
     @Override
     public String toString(){
         return "Answer Question Bean [formIndex: " + formIndex + ", answer: " + answer + ", sessionId: " + sessionId + "]";
+    }
+    @JsonGetter(value = "nav_mode")
+    public String getNavMode() {
+        return navMode;
+    }
+    @JsonSetter(value = "nav_mode")
+    public void setNavMode(String navMode) {
+        this.navMode = navMode;
     }
 }

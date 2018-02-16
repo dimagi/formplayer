@@ -1,15 +1,14 @@
 package application;
 
 import aspects.*;
-import io.sentry.SentryClientFactory;
-import io.sentry.dsn.InvalidDsnException;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
+import io.sentry.SentryClientFactory;
+import io.sentry.dsn.InvalidDsnException;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.commcare.modern.reference.ArchiveFileRoot;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -19,7 +18,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -33,10 +31,8 @@ import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.impl.PostgresFormSessionRepo;
 import repo.impl.PostgresMenuSessionRepo;
-import repo.impl.PostgresMigratedFormSessionRepo;
 import repo.impl.PostgresUserRepo;
 import services.*;
-import util.Constants;
 import util.FormplayerSentry;
 
 import java.util.Properties;
@@ -219,12 +215,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    @Qualifier(value = "migrated")
-    public FormSessionRepo migratedFormSessionRepo(){
-        return new PostgresMigratedFormSessionRepo();
-    }
-
-    @Bean
     public MenuSessionRepo menuSessionRepo(){
         return new PostgresMenuSessionRepo();
     }
@@ -295,6 +285,12 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    BrowserValuesProvider browserValuesProvider() {
+        return new BrowserValuesProvider();
+    }
+
+    @Bean
     public LockAspect lockAspect() {
         return new LockAspect();
     }
@@ -316,6 +312,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Bean
     public AppInstallAspect appInstallAspect() {
         return new AppInstallAspect();
+    }
+
+    @Bean
+    public SetBrowserValuesAspect setBrowserValuesAspect() {
+        return new SetBrowserValuesAspect();
     }
 
     @Bean
@@ -345,4 +346,10 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
         return new FormplayerFormSendCalloutHandler();
     }
+
+    @Bean
+    public MenuSessionRunnerService menuSessionRunnerService() {return new MenuSessionRunnerService();}
+
+    @Bean
+    public MenuSessionFactory menuSessionFactory() {return new MenuSessionFactory();}
 }

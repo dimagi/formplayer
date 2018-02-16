@@ -1,8 +1,11 @@
 package services;
 
 import beans.InstallRequestBean;
+import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.javarosa.core.services.storage.StorageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.MenuSessionRepo;
@@ -10,6 +13,7 @@ import repo.SerializableMenuSession;
 import sandbox.SqlStorage;
 import sqlitedb.ApplicationDB;
 import sqlitedb.SQLiteDB;
+import util.FormplayerPropertyManager;
 
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
@@ -23,6 +27,9 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private String asUsername;
 
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
+
+    private FormplayerPropertyManager propertyManager;
+    private StorageManager storageManager;
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
@@ -57,6 +64,12 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.appId = appId;
         this.sqLiteDB = new ApplicationDB(domain, username, asUsername, appId);
         this.sqLiteDB.closeConnection();
+        this.propertyManager = new FormplayerPropertyManager(newStorage(PropertyManager.STORAGE_KEY, Property.class));
+        storageManager = new StorageManager(this);
+    }
+
+    public FormplayerPropertyManager getPropertyManager() {
+        return propertyManager;
     }
 
     @Override
@@ -96,4 +109,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         return asUsername;
     }
 
+    public StorageManager getStorageManager() {
+        return storageManager;
+    }
 }

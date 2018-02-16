@@ -1,12 +1,16 @@
 package application;
 
+import beans.SessionRequestBean;
+import beans.auth.HqUserDetailsBean;
+import objects.SerializableFormSession;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.redis.util.RedisLockRegistry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import repo.FormSessionRepo;
 import services.FormplayerLockRegistry;
 import services.HqUserDetailsService;
 import util.Constants;
@@ -40,6 +44,12 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     @Autowired
     FormplayerLockRegistry userLockRegistry;
 
+    @Autowired
+    FormSessionRepo formSessionRepo;
+
+    @Value("${commcarehq.formplayerAuthKey}")
+    private String authKey;
+
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         FormplayerHttpRequest request = new FormplayerHttpRequest((HttpServletRequest) req);
@@ -49,12 +59,19 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 setResponseUnauthorized(response, "Invalid session id");
                 return;
             }
-            setDomain(request);
-            setUserDetails(request);
-            JSONObject data = RequestUtils.getPostData(request);
-            if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
-                setResponseUnauthorized(response, "Invalid user");
-                return;
+
+            if (authKey != null && authKey.equals(getSessionId(request))) {
+                logger.info("Logging in as touchforms_user");
+                setSmsRequestDetails(request);
+            }
+            else {
+                setDomain(request);
+                setUserDetails(request);
+                JSONObject data = RequestUtils.getPostData(request);
+                if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
+                    setResponseUnauthorized(response, "Invalid user");
+                    return;
+                }
             }
         }
         filterChain.doFilter(request, response);
@@ -67,6 +84,36 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
             // TODO: Delete when no longer using HQ to proxy requests for Edit Forms
             return data.getJSONObject("session-data").getString("username");
         }
+    }
+
+    private void setSmsRequestDetails(FormplayerHttpRequest request) {
+        // If request has username and domain in body, use that
+        JSONObject body = RequestUtils.getPostData(request);
+        if (body.has("username") && body.has("domain")) {
+            setDomain(request);
+            setSmsUserDetails(request);
+        } else {
+            // Otherwise, get username and domain from FormSession
+            String sessionId = body.getString("session-id");
+            SerializableFormSession formSession = formSessionRepo.findOneWrapped(sessionId);
+            request.setDomain(formSession.getDomain());
+            HqUserDetailsBean userDetailsBean = new HqUserDetailsBean(
+                    new String[] {formSession.getDomain()},
+                    formSession.getDomain(),
+                    false
+            );
+            request.setUserDetails(userDetailsBean);
+        }
+    }
+
+    private void setSmsUserDetails(FormplayerHttpRequest request) {
+        JSONObject body = RequestUtils.getPostData(request);
+        HqUserDetailsBean userDetailsBean = new HqUserDetailsBean(
+                new String[] {body.getString("domain")},
+                body.getString("username"),
+                false
+            );
+        request.setUserDetails(userDetailsBean);
     }
 
     private void setUserDetails(FormplayerHttpRequest request) {

@@ -36,6 +36,7 @@ public class Constants {
     public static final String URL_NEXT_INDEX = "next_index";
     public static final String URL_PREV_INDEX = "prev_index";
     public static final String URL_VALIDATE_FORM = "validate_form";
+    public static final String URL_GET_INSTANCE = "get-instance";
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
     public static final String URL_DEBUGGER_MENU_CONTENT = "menu_debugger_content";
@@ -69,6 +70,7 @@ public class Constants {
 
     //JSON
     public static final String QUESTION_TREE_KEY = "tree";
+    public static final String NAV_MODE_PROMPT = "prompt";
 
     // CCZ Parameters
     public static final String CCZ_LATEST_SAVED = "save";

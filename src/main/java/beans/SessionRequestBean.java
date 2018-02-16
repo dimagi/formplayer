@@ -17,7 +17,16 @@ public class SessionRequestBean extends AuthenticatedRequestBean {
     }
     @JsonSetter(value = "session_id")
     public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+        if (sessionId != null) {
+            this.sessionId = sessionId;
+        }
+    }
+
+    @JsonSetter(value = "session-id")
+    public void setSessionDashId(String sessionId) {
+        if (this.sessionId == null) {
+            setSessionId(sessionId);
+        }
     }
 
     @Override

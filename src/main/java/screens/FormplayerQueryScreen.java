@@ -1,18 +1,9 @@
 package screens;
 
-import auth.HqAuth;
 import org.commcare.util.screen.QueryScreen;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 
 /**
@@ -21,7 +12,7 @@ import java.util.Hashtable;
 public class FormplayerQueryScreen extends QueryScreen {
 
     public FormplayerQueryScreen(){
-        super();
+        super(null, null, null);
     }
 
     public String getUriString() {

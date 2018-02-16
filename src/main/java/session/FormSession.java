@@ -1,6 +1,7 @@
 package session;
 
 import beans.FormEntryNavigationResponseBean;
+import beans.FormEntryResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import objects.FunctionHandler;
 import objects.SerializableFormSession;
@@ -12,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import api.json.JsonActionUtils;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.xpath.XPathException;
 import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
@@ -39,7 +41,9 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import services.FormplayerStorageFactory;
 import services.RestoreFactory;
+import util.Constants;
 
 import java.io.*;
 import java.util.Date;
@@ -84,6 +88,7 @@ public class FormSession {
     private String appId;
     private Map<String, FunctionHandler[]> functionContext;
     private boolean isAtFirstIndex;
+    private boolean inPromptMode;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -96,7 +101,8 @@ public class FormSession {
 
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
-                       FormSendCalloutHandler formSendCalloutHandler) throws Exception{
+                       FormSendCalloutHandler formSendCalloutHandler,
+                       FormplayerStorageFactory storageFactory) throws Exception{
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();
@@ -114,13 +120,17 @@ public class FormSession {
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
         this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
+        this.inPromptMode = session.getInPromptMode();
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.functionContext = session.getFunctionContext();
         setupJavaRosaObjects();
-        FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
-        formController.jumpToIndex(formIndex);
+        if (this.oneQuestionPerScreen || this.inPromptMode) {
+            FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
+            formController.jumpToIndex(formIndex);
+            formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(this.currentIndex, formDef));
+        }
         setupFunctionContext();
-        initialize(false, session.getSessionData());
+        initialize(false, session.getSessionData(), storageFactory.getStorageManager());
         this.postUrl = session.getPostUrl();
     }
 
@@ -138,7 +148,9 @@ public class FormSession {
                        String asUser,
                        String appId,
                        Map<String, FunctionHandler[]> functionContext,
-                       FormSendCalloutHandler formSendCalloutHandler) throws Exception {
+                       FormSendCalloutHandler formSendCalloutHandler,
+                       FormplayerStorageFactory storageFactory,
+                       boolean inPromptMode) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         formDef.setSendCalloutHandler(formSendCalloutHandler);
@@ -156,15 +168,16 @@ public class FormSession {
         this.appId = appId;
         this.currentIndex = "0";
         this.functionContext = functionContext;
+        this.inPromptMode = inPromptMode;
         setupJavaRosaObjects();
         setupFunctionContext();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData);
+            initialize(false, sessionData, storageFactory.getStorageManager());
         } else {
-            initialize(true, sessionData);
+            initialize(true, sessionData, storageFactory.getStorageManager());
         }
-
+        
         if (this.oneQuestionPerScreen) {
             stepToNextIndex();
             this.currentIndex = formController.getFormIndex().toString();
@@ -218,14 +231,9 @@ public class FormSession {
         }
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData) {
+    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
-                CommCareConfigEngine.MINOR_VERSION, new IStorageIndexedFactory() {
-            @Override
-            public IStorageUtilityIndexed newStorage(String name, Class type) {
-                return new SqlStorage(sandbox, type, name);
-            }
-        });
+                CommCareConfigEngine.MINOR_VERSION, storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
     }
@@ -296,7 +304,6 @@ public class FormSession {
 
     public String submitGetXml() throws IOException {
         formDef.postProcessInstance();
-        getFormTree();
         return getInstanceXml();
     }
 
@@ -339,6 +346,7 @@ public class FormSession {
         serializableFormSession.setAsUser(asUser);
         serializableFormSession.setAppId(appId);
         serializableFormSession.setFunctionContext(functionContext);
+        serializableFormSession.setInPromptMode(inPromptMode);
         return serializableFormSession;
     }
 
@@ -472,13 +480,23 @@ public class FormSession {
         setCurrentIndex(formController.getFormIndex().toString());
     }
 
-    public JSONObject answerQuestionToJSON(Object answer, String answerIndex) {
-        return JsonActionUtils.questionAnswerToJson(formEntryController,
+    public FormEntryResponseBean answerQuestionToJSON(Object answer, String answerIndex) throws IOException {
+        if (answerIndex == null) {
+            answerIndex = getCurrentIndex();
+        }
+
+        JSONObject jsonObject = JsonActionUtils.questionAnswerToJson(formEntryController,
                 formEntryModel,
                 answer != null ? answer.toString() : null,
                 answerIndex,
                 oneQuestionPerScreen,
                 currentIndex);
+
+        FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
+        if (!inPromptMode || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {
+            return response;
+        }
+        return getNextFormNavigation();
     }
 
     public FormEntryNavigationResponseBean getFormNavigation() throws IOException {
@@ -489,6 +507,27 @@ public class FormSession {
         responseBean.setIsAtFirstIndex(isAtFirstIndex);
         responseBean.setTitle(title);
         responseBean.setCurrentIndex(currentIndex);
+        responseBean.setEvent(responseBean.getTree()[0]);
+        return responseBean;
+    }
+
+    public FormEntryNavigationResponseBean getNextFormNavigation() throws IOException {
+        formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(this.currentIndex, formDef));
+        int nextEvent = formEntryController.stepToNextEvent();
+        this.currentIndex = formController.getFormIndex().toString();
+        JSONObject resp = JsonActionUtils.getPromptJson(formEntryModel);
+        FormEntryNavigationResponseBean responseBean
+                = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
+        responseBean.setIsAtLastIndex(isAtLastIndex);
+        responseBean.setIsAtFirstIndex(isAtFirstIndex);
+        responseBean.setTitle(title);
+        responseBean.setCurrentIndex(currentIndex);
+        responseBean.setInstanceXml(null);
+        responseBean.setTree(null);
+        if (nextEvent == formEntryController.EVENT_END_OF_FORM) {
+            String output = submitGetXml();
+            responseBean.getEvent().setOutput(output);
+        }
         return responseBean;
     }
 
@@ -512,12 +551,12 @@ public class FormSession {
         return oneQuestionPerScreen;
     }
 
-    public void reload(FormDef formDef, String postUrl) throws IOException {
+    public void reload(FormDef formDef, String postUrl, StorageManager storageManager) throws IOException {
         if(getInstanceXml() != null){
             loadInstanceXml(formDef, getInstanceXml());
-            initialize(false, sessionData);
+            initialize(false, sessionData, storageManager);
         } else {
-            initialize(true, sessionData);
+            initialize(true, sessionData, storageManager);
         }
         if (this.oneQuestionPerScreen) {
             FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
