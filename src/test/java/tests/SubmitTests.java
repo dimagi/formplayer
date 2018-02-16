@@ -1,34 +1,20 @@
 package tests;
 
-import beans.FormEntryResponseBean;
 import beans.NewFormResponse;
-import beans.QuestionBean;
 import beans.SubmitResponseBean;
-import beans.menus.CommandListResponseBean;
-import beans.menus.EntityListResponse;
 import org.commcare.cases.model.Case;
-import org.javarosa.xml.util.InvalidStructureException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
-import sqlitedb.UserDB;
-import utils.FileUtils;
 import utils.TestContext;
 
-import java.util.Hashtable;
-
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 /**
  * Regression tests for submission behaviors

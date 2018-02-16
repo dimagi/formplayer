@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
-import org.commcare.core.graph.util.GraphUtil;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
@@ -14,6 +13,7 @@ import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
+import util.FormplayerGraphUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,14 +48,13 @@ public class EntityListResponse extends MenuBean {
     public EntityListResponse() {}
 
     public EntityListResponse(EntityScreen nextScreen,
+                              EvaluationContext ec,
                               String detailSelection,
                               int offset,
                               String searchText,
-                              String id,
                               int sortIndex) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
-        EvaluationContext ec = nextScreen.getEvalContext();
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
@@ -87,7 +86,6 @@ public class EntityListResponse extends MenuBean {
         Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
         this.headers = pair.first;
         this.widthHints = pair.second;
-        setMenuSessionId(id);
         this.sortIndices = detail.getOrderedFieldIndicesForSorting();
     }
 
@@ -168,12 +166,11 @@ public class EntityListResponse extends MenuBean {
                                                                String searchText,
                                                                int sortIndex) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
-        nodeEntityFactory.prepareEntities();
         List<Entity<TreeReference>> full = new ArrayList<>();
         for (TreeReference reference: references) {
             full.add(nodeEntityFactory.getEntity(reference));
         }
-
+        nodeEntityFactory.prepareEntities(full);
         List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
         sort(matched, shortDetail, sortIndex);
         return matched;
@@ -231,9 +228,9 @@ public class EntityListResponse extends MenuBean {
         for (DetailField field : fields) {
             Object o;
             o = field.getTemplate().evaluate(context);
-            if(o instanceof GraphData) {
+            if (o instanceof GraphData) {
                 try {
-                    data[i] = GraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
+                    data[i] = FormplayerGraphUtil.getHTML((GraphData) o, "").replace("\"", "'");
                 } catch (GraphException e) {
                     data[i] = "<html><body>Error loading graph " + e + "</body></html>";
                 }

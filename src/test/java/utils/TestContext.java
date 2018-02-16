@@ -20,7 +20,18 @@ import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
-import services.*;
+import services.CategoryTimingHelper;
+import services.FormplayerFormSendCalloutHandler;
+import services.FormplayerStorageFactory;
+import services.InstallService;
+import services.MenuSessionFactory;
+import services.MenuSessionRunnerService;
+import services.NewFormResponseFactory;
+import services.QueryRequester;
+import services.RestoreFactory;
+import services.SubmitService;
+import services.SyncRequester;
+import services.XFormService;
 import util.FormplayerHttpRequest;
 import util.FormplayerSentry;
 
@@ -147,4 +158,10 @@ public class TestContext {
     public FormSendCalloutHandler formSendCalloutHandler() {
         return Mockito.mock(FormplayerFormSendCalloutHandler.class);
     }
+
+    @Bean
+    public MenuSessionRunnerService menuSessionRunnerService() {return Mockito.spy(MenuSessionRunnerService.class);}
+
+    @Bean
+    public MenuSessionFactory menuSessionFactory() {return Mockito.spy(MenuSessionFactory.class);}
 }

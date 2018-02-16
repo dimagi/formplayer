@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -28,7 +29,7 @@ import java.util.Map;
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
-public class PostgresFormSessionRepo implements FormSessionRepo {
+public class PostgresFormSessionRepo implements FormSessionRepo{
 
     @Autowired
     @Qualifier("formplayerTemplate")
@@ -113,8 +114,9 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 "(id, instanceXml, formXml, " +
                 "username, initLang, sequenceId, " +
                 "domain, postUrl, sessionData, menu_session_id," +
-                "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid, functioncontext) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid, functioncontext," +
+                "inPromptMode) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(
                 query,
                 new Object[] {
@@ -134,7 +136,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                         session.getCurrentIndex(),
                         session.getAsUser(),
                         session.getAppId(),
-                        functionContextBytes
+                        functionContextBytes,
+                        session.getInPromptMode()
                 },
                 new int[] {
                         Types.VARCHAR,
@@ -153,6 +156,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                         Types.VARCHAR,
                         Types.VARCHAR,
                         Types.VARCHAR,
+                        Types.BINARY,
                         Types.BINARY
                 }
         );
@@ -249,6 +253,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             session.setCurrentIndex(rs.getString("currentIndex"));
             session.setAsUser(rs.getString("asUser"));
             session.setAppId(rs.getString("appid"));
+            session.setInPromptMode(rs.getBoolean("inPromptMode"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if (st != null) {

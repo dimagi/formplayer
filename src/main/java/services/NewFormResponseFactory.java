@@ -1,21 +1,18 @@
 package services;
 
-import auth.HqAuth;
 import beans.NewFormResponse;
 import beans.NewSessionRequestBean;
-import hq.CaseAPIs;
 import objects.SerializableFormSession;
 import org.apache.commons.io.IOUtils;
-import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import sandbox.UserSqlSandbox;
 import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repo.FormSessionRepo;
+import sandbox.UserSqlSandbox;
 import session.FormSession;
 import util.Constants;
-import util.SimpleTimer;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -42,10 +39,24 @@ public class NewFormResponseFactory {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
+    @Autowired
+    private FormplayerStorageFactory storageFactory;
+
     public NewFormResponse getResponse(NewSessionRequestBean bean, String postUrl) throws Exception {
 
-        String formXml = getFormXml(bean.getFormUrl());
+        String formXml = null;
+
+        if (bean.getFormUrl() != null) {
+            formXml = getFormXml(bean.getFormUrl());
+        }
+        else if (bean.getFormContent() != null) {
+            formXml = bean.getFormContent();
+        } else {
+            throw new RuntimeException("No FormURL or FormContent");
+        }
         UserSqlSandbox sandbox = restoreFactory.performTimedSync();
+
+        storageFactory.configure(bean.getUsername(), bean.getDomain(), bean.getSessionData().getAppId(), bean.getRestoreAs());
 
         FormSession formSession = new FormSession(
                 sandbox,
@@ -61,11 +72,19 @@ public class NewFormResponseFactory {
                 bean.getRestoreAs(),
                 bean.getSessionData().getAppId(),
                 bean.getSessionData().getFunctionContext(),
-                formSendCalloutHandler
+                formSendCalloutHandler,
+                storageFactory,
+                Constants.NAV_MODE_PROMPT.equals(bean.getNavMode())
         );
 
         formSessionRepo.save(formSession.serialize());
-        return new NewFormResponse(formSession);
+        NewFormResponse response = new NewFormResponse(formSession);
+
+        if (bean.getNavMode() != null && bean.getNavMode().equals(Constants.NAV_MODE_PROMPT)) {
+            response.setEvent(response.getTree()[0]);
+            response.setTree(null);
+        }
+        return response;
     }
 
     public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
@@ -74,7 +93,7 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler);
+        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
     }
 
     private String getFormXml(String formUrl) {

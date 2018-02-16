@@ -2,6 +2,7 @@ package mocks;
 
 import objects.SerializableFormSession;
 import repo.FormSessionRepo;
+import repo.impl.PostgresFormSessionRepo;
 
 /**
  * Created by willpride on 12/7/16.
@@ -25,6 +26,7 @@ public abstract class MockFormSessionRepo implements FormSessionRepo {
         serializableFormSession.setAppId(toBeSaved.getAppId());
         serializableFormSession.setOneQuestionPerScreen(toBeSaved.getOneQuestionPerScreen());
         serializableFormSession.setCurrentIndex(toBeSaved.getCurrentIndex());
+        serializableFormSession.setInPromptMode(toBeSaved.getInPromptMode());
         return serializableFormSession;
     }
 

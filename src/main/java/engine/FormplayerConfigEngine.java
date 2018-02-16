@@ -40,7 +40,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
     public FormplayerConfigEngine(IStorageIndexedFactory storageFactory,
                                   FormplayerInstallerFactory formplayerInstallerFactory,
                                   ArchiveFileRoot formplayerArchiveFileRoot) {
-        super(storageFactory, formplayerInstallerFactory);
+        super(storageFactory, formplayerInstallerFactory, System.out);
         this.mArchiveRoot = formplayerArchiveFileRoot;
         ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
@@ -90,8 +90,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         try {
             zip = new ZipFile(fileName);
         } catch (IOException e) {
-            print.println("File at " + archiveURL + ": is not a valid CommCare Package. Downloaded to: " + fileName);
-            e.printStackTrace(print);
+            log.error("File at " + archiveURL + ": is not a valid CommCare Package. Downloaded to: " + fileName, e);
             return;
         }
         String archiveGUID = this.mArchiveRoot.addArchiveFile(zip, appId);

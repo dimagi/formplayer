@@ -2,8 +2,4 @@
   "filter_expr": "[case_name = '123']",
   "domain": "test",
   "username": "test",
-  "hq_auth": {
-    "type": "django-session",
-    "key": "3fu61g0hqz1743tjejdrr40j4e98wohk"
-  }
 }

@@ -28,13 +28,11 @@ import org.xmlpull.v1.XmlPullParserException;
 import sandbox.JdbcSqlStorageIterator;
 import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
-import util.PropertyUtils;
 import util.SimpleTimer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -59,12 +57,14 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         }
     }
 
-    public static TimingResult processXML(FormplayerTransactionParserFactory factory, String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
+    public static TimingResult processXML(FormplayerTransactionParserFactory factory,
+                                          String fileText,
+                                          boolean autoPurgeEnabled) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
         InputStream stream = new ByteArrayInputStream(fileText.getBytes("UTF-8"));
         process(stream, factory);
         SimpleTimer timer = new SimpleTimer();
         timer.start();
-        if (factory.wereCaseIndexesDisrupted() && PropertyUtils.isAutoPurgeEnabled()) {
+        if (factory.wereCaseIndexesDisrupted() && autoPurgeEnabled) {
             purgeCases(factory.getSqlSandbox());
         }
         timer.end();
