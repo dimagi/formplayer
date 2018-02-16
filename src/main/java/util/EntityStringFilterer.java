@@ -66,7 +66,9 @@ public class EntityStringFilterer {
             }
         }
 
-        matchList.addAll(matchScores.stream().map(match -> fullEntityList.get(match.first)).collect(Collectors.toList()));
+        for (Pair<Integer, Integer> match : matchScores) {
+            matchList.add(fullEntityList.get(match.first));
+        }
         return matchList;
     }
 }
