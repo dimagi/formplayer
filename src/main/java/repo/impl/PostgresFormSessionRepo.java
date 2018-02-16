@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import repo.FormSessionRepo;
 import util.Constants;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.LockModeType;
 import java.io.*;
 import java.sql.ResultSet;
@@ -33,6 +34,25 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
     @Autowired
     @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
+
+    @PostConstruct
+    public void purgeFormSessions() {
+        // Modeled on https://stackoverflow.com/a/6730401/2820312
+        String createFuncQuery = "create or replace function custom_safe_cast(text,anyelement) \n" +
+                "returns anyelement \n" +
+                "language plpgsql as $$ \n" +
+                "begin \n" +
+                "    $0 := $1; \n" +
+                "    return $0; \n" +
+                "    exception when others then \n" +
+                "        return $2; \n" +
+                "end; $$;";
+        this.jdbcTemplate.execute(createFuncQuery);
+        String deleteQuery = replaceTableName(
+                "delete from %s where custom_safe_cast(dateopened, '2011-01-01'::timestamp) < NOW() - INTERVAL '7 days';"
+        );
+        this.jdbcTemplate.execute(deleteQuery);
+    }
 
     @Override
     public List<SerializableFormSession> findUserSessions(String username) {
