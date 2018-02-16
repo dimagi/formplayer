@@ -29,7 +29,7 @@ public class SerializableFormSession implements Serializable{
     private String appId;
     private Map<String, FunctionHandler[]> functionContext;
     private boolean inPromptMode;
-    private String caseId;
+    private String restoreAsCaseId;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -191,11 +191,11 @@ public class SerializableFormSession implements Serializable{
         this.inPromptMode = inPromptMode;
     }
 
-    public void setCaseId(String caseId) {
-        this.caseId = caseId;
+    public void setRestoreAsCaseId(String restoreAsCaseId) {
+        this.restoreAsCaseId = restoreAsCaseId;
     }
 
-    public String getCaseId() {
-        return caseId;
+    public String getRestoreAsCaseId() {
+        return restoreAsCaseId;
     }
 }

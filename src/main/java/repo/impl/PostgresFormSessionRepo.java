@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -129,7 +128,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
                         session.getAppId(),
                         functionContextBytes,
                         session.getInPromptMode(),
-                        session.getCaseId()
+                        session.getRestoreAsCaseId()
                 },
                 new int[] {
                         Types.VARCHAR,
@@ -247,7 +246,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
             session.setAsUser(rs.getString("asUser"));
             session.setAppId(rs.getString("appid"));
             session.setInPromptMode(rs.getBoolean("inPromptMode"));
-            session.setCaseId(rs.getString("caseId"));
+            session.setRestoreAsCaseId(rs.getString("caseId"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if (st != null) {
