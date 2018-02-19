@@ -3,6 +3,7 @@ package application;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.flywaydb.core.Flyway;
+import org.javarosa.core.services.locale.LocalizerManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -40,6 +41,7 @@ public class Application {
         PrototypeUtils.setupPrototypes();
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         migrate();
+        LocalizerManager.setUseThreadLocalStrategy(true);
     }
 
     /**
