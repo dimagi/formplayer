@@ -513,6 +513,10 @@ public class FormSession {
         return responseBean;
     }
 
+    /**
+     *  Automatically advance to the next question after an answer when in "prompt" mode
+     *  (currently only used by SMS)
+     */
     public FormEntryNavigationResponseBean getNextFormNavigation() throws IOException {
         formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(this.currentIndex, formDef));
         int nextEvent = formEntryController.stepToNextEvent();
