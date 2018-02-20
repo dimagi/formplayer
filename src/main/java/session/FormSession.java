@@ -15,7 +15,6 @@ import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.xpath.XPathException;
-import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
@@ -27,8 +26,6 @@ import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.services.PrototypeManager;
-import org.javarosa.core.services.storage.IStorageIndexedFactory;
-import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.engine.FunctionExtensions;
@@ -89,6 +86,7 @@ public class FormSession {
     private Map<String, FunctionHandler[]> functionContext;
     private boolean isAtFirstIndex;
     private boolean inPromptMode;
+    private String restoreAsCaseId;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -123,6 +121,7 @@ public class FormSession {
         this.inPromptMode = session.getInPromptMode();
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.functionContext = session.getFunctionContext();
+        this.restoreAsCaseId = session.getRestoreAsCaseId();
         setupJavaRosaObjects();
         if (this.oneQuestionPerScreen || this.inPromptMode) {
             FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
@@ -150,7 +149,8 @@ public class FormSession {
                        Map<String, FunctionHandler[]> functionContext,
                        FormSendCalloutHandler formSendCalloutHandler,
                        FormplayerStorageFactory storageFactory,
-                       boolean inPromptMode) throws Exception {
+                       boolean inPromptMode,
+                       String caseId) throws Exception {
         this.username = TableBuilder.scrubName(username);
         this.formDef = formDef;
         formDef.setSendCalloutHandler(formSendCalloutHandler);
@@ -169,6 +169,7 @@ public class FormSession {
         this.currentIndex = "0";
         this.functionContext = functionContext;
         this.inPromptMode = inPromptMode;
+        this.restoreAsCaseId = caseId;
         setupJavaRosaObjects();
         setupFunctionContext();
         if(instanceContent != null){
@@ -347,6 +348,7 @@ public class FormSession {
         serializableFormSession.setAppId(appId);
         serializableFormSession.setFunctionContext(functionContext);
         serializableFormSession.setInPromptMode(inPromptMode);
+        serializableFormSession.setRestoreAsCaseId(restoreAsCaseId);
         return serializableFormSession;
     }
 

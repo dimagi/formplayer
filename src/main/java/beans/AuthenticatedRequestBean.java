@@ -17,7 +17,7 @@ public class AuthenticatedRequestBean {
     private boolean useLiveQuery;
 
     private String sessionId;
-    private String caseId;
+    private String restoreAsCaseId;
 
     private int timezoneOffsetMillis = -1;
 
@@ -94,12 +94,12 @@ public class AuthenticatedRequestBean {
         this.sessionId = sessionId;
     }
 
-    @JsonGetter(value = "case_id")
-    public String getCaseId() {
-        return caseId;
+    @JsonGetter(value = "restoreAsCaseId")
+    public String getRestoreAsCaseId() {
+        return restoreAsCaseId;
     }
-    @JsonSetter(value = "case_id")
-    public void setCaseId(String caseId) {
-        this.caseId = caseId;
+    @JsonSetter(value = "restoreAsCaseId")
+    public void setRestoreAsCaseId(String restoreAsCaseId) {
+        this.restoreAsCaseId = restoreAsCaseId;
     }
 }
