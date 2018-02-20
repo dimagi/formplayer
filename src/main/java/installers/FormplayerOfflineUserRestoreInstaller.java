@@ -64,14 +64,11 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
                            Reference ref, ResourceTable table,
                            CommCarePlatform platform, boolean upgrade)
             throws UnresolvedResourceException, UnfullfilledRequirementsException {
-        OfflineUserRestore offlineUserRestore = new OfflineUserRestore();
-        storage(platform).write(offlineUserRestore);
         if (upgrade) {
             table.commit(r, Resource.RESOURCE_STATUS_INSTALLED);
         } else {
             table.commit(r, Resource.RESOURCE_STATUS_UPGRADE);
         }
-        cacheLocation = offlineUserRestore.getID();
         return true;
     }
 
