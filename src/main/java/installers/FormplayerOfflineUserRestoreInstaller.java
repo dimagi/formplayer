@@ -1,12 +1,20 @@
 package installers;
 
+import org.commcare.resources.model.Resource;
+import org.commcare.resources.model.ResourceLocation;
+import org.commcare.resources.model.ResourceTable;
+import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.resources.model.installers.OfflineUserRestoreInstaller;
 import org.commcare.suite.model.OfflineUserRestore;
 import org.commcare.util.CommCarePlatform;
+import org.javarosa.core.reference.Reference;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.ExtUtil;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
+import org.javarosa.xml.util.InvalidStructureException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.xmlpull.v1.XmlPullParserException;
 import services.FormplayerStorageFactory;
 
 import java.io.DataInputStream;
@@ -27,6 +35,11 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
     }
 
     @Override
+    public boolean initialize(CommCarePlatform platform, boolean isUpgrade) {
+        return true;
+    }
+
+    @Override
     protected IStorageUtilityIndexed<OfflineUserRestore> storage(CommCarePlatform platform) {
         if (cacheStorage == null) {
             cacheStorage = storageFactory.newStorage(OfflineUserRestore.STORAGE_KEY, OfflineUserRestore.class);
@@ -44,6 +57,22 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
         storageFactory = new FormplayerStorageFactory();
         storageFactory.configure(username, domain, appId, restoreAs);
 
+    }
+
+    @Override
+    public boolean install(Resource r, ResourceLocation location,
+                           Reference ref, ResourceTable table,
+                           CommCarePlatform platform, boolean upgrade)
+            throws UnresolvedResourceException, UnfullfilledRequirementsException {
+        OfflineUserRestore offlineUserRestore = new OfflineUserRestore();
+        storage(platform).write(offlineUserRestore);
+        if (upgrade) {
+            table.commit(r, Resource.RESOURCE_STATUS_INSTALLED);
+        } else {
+            table.commit(r, Resource.RESOURCE_STATUS_UPGRADE);
+        }
+        cacheLocation = offlineUserRestore.getID();
+        return true;
     }
 
     @Override
