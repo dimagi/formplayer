@@ -16,7 +16,7 @@ import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.io.BufferedInputStream;
 import org.javarosa.core.io.StreamsUtil;
 import org.javarosa.core.reference.InvalidReferenceException;
-import org.javarosa.core.reference.ReferenceManagerHandler;
+import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.reference.ResourceReferenceFactory;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -42,7 +42,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
                                   ArchiveFileRoot formplayerArchiveFileRoot) {
         super(storageFactory, formplayerInstallerFactory, System.out);
         this.mArchiveRoot = formplayerArchiveFileRoot;
-        ReferenceManagerHandler.instance().addReferenceFactory(formplayerArchiveFileRoot);
+        ReferenceHandler.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
     
     private String parseAppId(String url) {
@@ -173,9 +173,9 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     @Override
     protected void setRoots() {
-        ReferenceManagerHandler.instance().addReferenceFactory(new JavaHttpRoot());
-        ReferenceManagerHandler.instance().addReferenceFactory(new ResourceReferenceFactory());
-        ReferenceManagerHandler.instance().addReferenceFactory(new ClasspathFileRoot());
+        ReferenceHandler.instance().addReferenceFactory(new JavaHttpRoot());
+        ReferenceHandler.instance().addReferenceFactory(new ResourceReferenceFactory());
+        ReferenceHandler.instance().addReferenceFactory(new ClasspathFileRoot());
     }
 
     @Override

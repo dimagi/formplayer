@@ -3,7 +3,7 @@ package application;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.flywaydb.core.Flyway;
-import org.javarosa.core.reference.ReferenceManagerHandler;
+import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -43,7 +43,7 @@ public class Application {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         migrate();
         LocalizerManager.setUseThreadLocalStrategy(true);
-        ReferenceManagerHandler.setUseThreadLocalStrategy(true);
+        ReferenceHandler.setUseThreadLocalStrategy(true);
     }
 
     /**
