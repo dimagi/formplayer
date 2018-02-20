@@ -526,6 +526,7 @@ public class FormSession {
         responseBean.setCurrentIndex(currentIndex);
         responseBean.setInstanceXml(null);
         responseBean.setTree(null);
+        responseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         if (nextEvent == formEntryController.EVENT_END_OF_FORM) {
             String output = submitGetXml();
             responseBean.getEvent().setOutput(output);

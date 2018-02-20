@@ -112,7 +112,6 @@ public class FormController extends AbstractBaseController{
         responseBean.setTitle(formEntrySession.getTitle());
         responseBean.setSequenceId(formEntrySession.getSequenceId());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
-        responseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         return responseBean;
     }
 
