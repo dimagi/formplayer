@@ -2,7 +2,7 @@ FormPlayer
 ===========
 
 FormPlayer is a RESTful XForm entry service written on the [Spring Framework](https://projects.spring.io/spring-framework/).
-Given a [user restore](https://confluence.dimagi.com/display/commcarepublic/OTA+Restore+API) and 
+Given a [user restore](https://confluence.dimagi.com/display/commcarepublic/OTA+Restore+API) and
 an [XForm](http://dimagi.github.io/xform-spec/) FormPlayer enables form entry via JSON calls and responses (detailed below).
 These files will often be hosted by a [CommCareHQ](https://www.github.com/dimagi/commcare-hq) server instance. Formplayer relies on the [CommCare](https://www.github.com/dimagi/commcare-core) libraries (included as subrepositories). Formplayer is built via gradle (wrapper files included).
 
@@ -14,7 +14,7 @@ These files will often be hosted by a [CommCareHQ](https://www.github.com/dimagi
 Building and Running
 ------------
 Clone formplayer repository
-    
+
     $ git clone https://github.com/dimagi/formplayer.git`
 
 Download submodule dependencies
@@ -28,6 +28,8 @@ To make properties file:
 Make sure you have the formplayer database created. You will be asked to provide a password after running this command; assuming you are running formplayer locally, you should use the password for the postgres user associated with the locally-running instance of commcare hq (which can be found in the `DATABASES` section of your `localsettings.py` file).
 
     $ createdb formplayer -U commcarehq -h localhost  # Update connection info as necessary (the defaults are fine for running locally)
+
+If you are running postgres in Docker, you may need to run this in the docker shell, using `./scripts/docker bash postgres` from the commcarehq repository.
 
 To run (with tests):
 
@@ -50,7 +52,7 @@ To test:
 When building on Linux it is sometimes necessary to run:
 
     $ gradle wrapper
-    
+
 ### Running in IntelliJ
 
 In order to set breakpoints, step through code, and link the runtime with source you'll need to run the code in an IDE. We use IntelliJ. To setup
