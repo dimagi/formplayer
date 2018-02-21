@@ -13,6 +13,7 @@ import org.commcare.util.screen.EntityListSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
+import util.EntityStringFilterer;
 import util.FormplayerGraphUtil;
 
 import java.util.ArrayList;
@@ -136,7 +137,7 @@ public class EntityListResponse extends MenuBean {
     private static List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
                                                               List<Entity<TreeReference>> full) {
         if (searchText != null && !"".equals(searchText)) {
-            EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), false, false, nodeEntityFactory, full);
+            EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), nodeEntityFactory, full);
             full = filterer.buildMatchList();
         }
         return full;
