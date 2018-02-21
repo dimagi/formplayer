@@ -29,6 +29,7 @@ public class SerializableFormSession implements Serializable{
     private String appId;
     private Map<String, FunctionHandler[]> functionContext;
     private boolean inPromptMode;
+    private String restoreAsCaseId;
 
     public String getInstanceXml() {
         return instanceXml;
@@ -188,5 +189,13 @@ public class SerializableFormSession implements Serializable{
 
     public void setInPromptMode(boolean inPromptMode) {
         this.inPromptMode = inPromptMode;
+    }
+
+    public void setRestoreAsCaseId(String restoreAsCaseId) {
+        this.restoreAsCaseId = restoreAsCaseId;
+    }
+
+    public String getRestoreAsCaseId() {
+        return restoreAsCaseId;
     }
 }

@@ -137,16 +137,21 @@ public class RestoreFactory {
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public UserSqlSandbox performTimedSync() throws Exception {
+        return performTimedSync(true);
+    }
+    public UserSqlSandbox performTimedSync(boolean shouldPurge) throws Exception {
         // Create parent dirs if needed
         if(getSqlSandbox().getLoggedInUser() != null){
             getSQLiteDB().createDatabaseFolder();
         }
         UserSqlSandbox sandbox = restoreUser();
-        SimpleTimer purgeTimer = new SimpleTimer();
-        purgeTimer.start();
-        FormRecordProcessorHelper.purgeCases(sandbox);
-        purgeTimer.end();
-        categoryTimingHelper.recordCategoryTiming(purgeTimer, Constants.TimingCategories.PURGE_CASES);
+        if (shouldPurge) {
+            SimpleTimer purgeTimer = new SimpleTimer();
+            purgeTimer.start();
+            FormRecordProcessorHelper.purgeCases(sandbox);
+            purgeTimer.end();
+            categoryTimingHelper.recordCategoryTiming(purgeTimer, Constants.TimingCategories.PURGE_CASES);
+        }
         return sandbox;
     }
 
