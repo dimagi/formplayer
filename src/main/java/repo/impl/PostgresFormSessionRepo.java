@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -126,8 +125,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
                 "username, initLang, sequenceId, " +
                 "domain, postUrl, sessionData, menu_session_id," +
                 "title, dateOpened, oneQuestionPerScreen, currentIndex, asUser, appid, functioncontext," +
-                "inPromptMode) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "inPromptMode, caseId) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         this.jdbcTemplate.update(
                 query,
                 new Object[] {
@@ -148,7 +147,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
                         session.getAsUser(),
                         session.getAppId(),
                         functionContextBytes,
-                        session.getInPromptMode()
+                        session.getInPromptMode(),
+                        session.getRestoreAsCaseId()
                 },
                 new int[] {
                         Types.VARCHAR,
@@ -168,7 +168,8 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
                         Types.VARCHAR,
                         Types.VARCHAR,
                         Types.BINARY,
-                        Types.BINARY
+                        Types.BINARY,
+                        Types.VARCHAR
                 }
         );
         return session;
@@ -265,6 +266,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
             session.setAsUser(rs.getString("asUser"));
             session.setAppId(rs.getString("appid"));
             session.setInPromptMode(rs.getBoolean("inPromptMode"));
+            session.setRestoreAsCaseId(rs.getString("caseId"));
 
             byte[] st = (byte[]) rs.getObject("sessionData");
             if (st != null) {

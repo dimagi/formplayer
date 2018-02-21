@@ -243,7 +243,8 @@ public class MenuSessionRunnerService {
             return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
         }
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            restoreFactory.performTimedSync();
+            // Don't purge for case claim
+            restoreFactory.performTimedSync(false);
             return new NotificationMessage("Case claim successful.", false);
         } else {
             return new NotificationMessage(
