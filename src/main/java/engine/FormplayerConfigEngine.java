@@ -23,7 +23,11 @@ import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
