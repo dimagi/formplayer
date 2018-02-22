@@ -16,14 +16,18 @@ import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.io.BufferedInputStream;
 import org.javarosa.core.io.StreamsUtil;
 import org.javarosa.core.reference.InvalidReferenceException;
-import org.javarosa.core.reference.ReferenceHandler;
+import org.javarosa.core.reference.ReferenceManager;
 import org.javarosa.core.reference.ResourceReferenceFactory;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -42,7 +46,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
                                   ArchiveFileRoot formplayerArchiveFileRoot) {
         super(storageFactory, formplayerInstallerFactory, System.out);
         this.mArchiveRoot = formplayerArchiveFileRoot;
-        ReferenceHandler.instance().addReferenceFactory(formplayerArchiveFileRoot);
+        ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
     
     private String parseAppId(String url) {
@@ -173,9 +177,9 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     @Override
     protected void setRoots() {
-        ReferenceHandler.instance().addReferenceFactory(new JavaHttpRoot());
-        ReferenceHandler.instance().addReferenceFactory(new ResourceReferenceFactory());
-        ReferenceHandler.instance().addReferenceFactory(new ClasspathFileRoot());
+        ReferenceManager.instance().addReferenceFactory(new JavaHttpRoot());
+        ReferenceManager.instance().addReferenceFactory(new ResourceReferenceFactory());
+        ReferenceManager.instance().addReferenceFactory(new ClasspathFileRoot());
     }
 
     @Override

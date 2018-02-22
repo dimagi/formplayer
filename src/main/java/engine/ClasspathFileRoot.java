@@ -3,7 +3,7 @@ package engine;
 import org.javarosa.core.reference.InvalidReferenceException;
 import org.javarosa.core.reference.Reference;
 import org.javarosa.core.reference.ReferenceFactory;
-import org.javarosa.core.reference.ReferenceHandler;
+import org.javarosa.core.reference.ReferenceManager;
 
 /**
  * Created by willpride on 1/4/17.
@@ -20,7 +20,7 @@ public class ClasspathFileRoot implements ReferenceFactory {
         if (context.lastIndexOf('/') != -1) {
             context = context.substring(0, context.lastIndexOf('/') + 1);
         }
-        return ReferenceHandler.instance().DeriveReference(context + URI);
+        return ReferenceManager.instance().DeriveReference(context + URI);
     }
 
     @Override
