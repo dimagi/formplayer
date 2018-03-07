@@ -359,7 +359,7 @@ public class FormController extends AbstractBaseController{
     }
 
     @ApiOperation(value = "Get the questios for the previous index in OQPS mode")
-    @RequestMapping(value = {Constants.URL_PREV_INDEX, Constants.URL_PREV}, method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_PREV_INDEX, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
     @UserRestore
