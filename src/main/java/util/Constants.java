@@ -40,7 +40,6 @@ public class Constants {
 
     // Alternative namings used by SMS
     public static final String URL_NEXT = "next";
-    public static final String URL_PREV = "prev";
 
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
