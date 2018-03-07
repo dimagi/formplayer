@@ -18,7 +18,7 @@ public class ConfigureStorageAspect {
     @Autowired
     protected FormplayerStorageFactory storageFactory;
 
-    @Before(value = "@annotation(annotations.ConfigureStorage)")
+    @Before(value = "@annotation(annotations.ConfigureStorageFromSession)")
     public void configureStorage(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         if (!(args[0] instanceof SessionRequestBean)) {
