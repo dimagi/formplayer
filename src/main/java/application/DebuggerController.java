@@ -1,13 +1,13 @@
 package application;
 
 import annotations.AppInstall;
+import annotations.ConfigureStorage;
 import annotations.UserLock;
 import annotations.UserRestore;
 import beans.*;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import beans.debugger.MenuDebuggerContentResponseBean;
 import beans.debugger.XPathQueryItem;
-import beans.menus.LocationRelevantResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -48,15 +48,11 @@ public class DebuggerController extends AbstractBaseController {
     @ApiOperation(value = "Get formatted questions and instance xml")
     @RequestMapping(value = Constants.URL_DEBUGGER_FORMATTED_QUESTIONS, method = RequestMethod.POST)
     @UserRestore
+    @ConfigureStorage
     public DebuggerFormattedQuestionsResponseBean getFormattedQuesitons(
             @RequestBody SessionRequestBean debuggerRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(debuggerRequest.getSessionId());
-        storageFactory.configure(serializableFormSession.getUsername(),
-                serializableFormSession.getDomain(),
-                serializableFormSession.getAppId(),
-                serializableFormSession.getAsUser()
-        );
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SerializableMenuSession serializableMenuSession = menuSessionRepo.findOne(serializableFormSession.getMenuSessionId());
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
@@ -130,14 +126,10 @@ public class DebuggerController extends AbstractBaseController {
     @ResponseBody
     @UserLock
     @UserRestore
+    @ConfigureStorage
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
-        storageFactory.configure(serializableFormSession.getUsername(),
-                serializableFormSession.getDomain(),
-                serializableFormSession.getAppId(),
-                serializableFormSession.getAsUser()
-        );
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
