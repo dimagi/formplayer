@@ -1,7 +1,7 @@
 package application;
 
 import annotations.AppInstall;
-import annotations.ConfigureStorage;
+import annotations.ConfigureStorageFromSession;
 import annotations.UserLock;
 import annotations.UserRestore;
 import beans.*;
@@ -48,7 +48,7 @@ public class DebuggerController extends AbstractBaseController {
     @ApiOperation(value = "Get formatted questions and instance xml")
     @RequestMapping(value = Constants.URL_DEBUGGER_FORMATTED_QUESTIONS, method = RequestMethod.POST)
     @UserRestore
-    @ConfigureStorage
+    @ConfigureStorageFromSession
     public DebuggerFormattedQuestionsResponseBean getFormattedQuesitons(
             @RequestBody SessionRequestBean debuggerRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
@@ -126,7 +126,7 @@ public class DebuggerController extends AbstractBaseController {
     @ResponseBody
     @UserLock
     @UserRestore
-    @ConfigureStorage
+    @ConfigureStorageFromSession
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());

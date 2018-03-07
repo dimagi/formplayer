@@ -8,10 +8,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for methods that require an installed application
+ * Annotation for methods that perform an install from a FormSession
  */
 @Component
 @Target(value = {ElementType.METHOD, ElementType.TYPE})
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface ConfigureStorage {
+public @interface ConfigureStorageFromSession {
 }
