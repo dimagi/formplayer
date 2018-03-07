@@ -210,10 +210,23 @@ public class BaseTestClass {
     }
 
     FormEntryNavigationResponseBean nextScreen(String sessionId) throws Exception {
+        return nextScreen(sessionId, false);
+    }
+
+    FormEntryNavigationResponseBean nextScreen(String sessionId, boolean promptMode) throws Exception {
         SessionRequestBean questionsBean = new SessionRequestBean();
         questionsBean.setSessionId(sessionId);
         questionsBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
         questionsBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+
+        if (promptMode) {
+            return generateMockQuery(ControllerType.FORM,
+                    RequestType.POST,
+                    Constants.URL_NEXT,
+                    questionsBean,
+                    FormEntryNavigationResponseBean.class);
+        }
+
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_NEXT_INDEX,
