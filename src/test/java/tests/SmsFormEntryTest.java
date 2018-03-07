@@ -47,6 +47,17 @@ public class SmsFormEntryTest extends BaseTestClass{
                 answerQuestionGetResult("requests/sms/session1/answer_1.json", newSessionResponse.getSessionId());
         assert formEntryResponseBean.getEvent().getType().equals("form-complete");
         assert formEntryResponseBean.getEvent().getIx().equals(">");
+    }
 
+    @Test
+    public void testFieldList() throws Exception {
+        NewFormResponse newSessionResponse = startNewForm("requests/sms/session2/new_form.json", "xforms/field_list.xml");
+        FormEntryResponseBean formEntryResponseBean =
+                answerQuestionGetResult("requests/sms/session1/answer_0.json", newSessionResponse.getSessionId());
+        assert formEntryResponseBean.getEvent().getType().equals("sub-group");
+        formEntryResponseBean = nextScreen(newSessionResponse.getSessionId(), true);
+        assert formEntryResponseBean.getEvent().getCaption().contains("First");
+        formEntryResponseBean =
+                answerQuestionGetResult("requests/sms/session1/answer_1.json", newSessionResponse.getSessionId());
     }
 }

@@ -135,7 +135,6 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
 
 
         long taken = System.currentTimeMillis() - start;
-        System.out.println("Purged.");
         log.info(String.format(
                 "Purged [%d Case, %d Ledger] records in %dms",
                 removedCaseCount, removedLedgers, taken));
