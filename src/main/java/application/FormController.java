@@ -314,7 +314,7 @@ public class FormController extends AbstractBaseController{
     }
 
     @ApiOperation(value = "Get the questions for the next index in OQPS mode")
-    @RequestMapping(value = {Constants.URL_NEXT_INDEX, Constants.URL_NEXT}, method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_NEXT_INDEX, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
     @UserRestore
@@ -332,6 +332,28 @@ public class FormController extends AbstractBaseController{
                 storageFactory);
         formSession.stepToNextIndex();
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
+        updateSession(formSession, serializableFormSession);
+        return responseBean;
+    }
+
+    @ApiOperation(value = "Get the questions for the next index for SMS")
+    @RequestMapping(value = Constants.URL_NEXT, method = RequestMethod.POST)
+    @ResponseBody
+    @UserLock
+    @UserRestore
+    public FormEntryNavigationResponseBean getNextSms(@RequestBody SessionRequestBean requestBean,
+                                                   @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+        storageFactory.configure(serializableFormSession.getUsername(),
+                serializableFormSession.getDomain(),
+                serializableFormSession.getAppId(),
+                serializableFormSession.getAsUser()
+        );
+        FormSession formSession = new FormSession(serializableFormSession,
+                restoreFactory,
+                formSendCalloutHandler,
+                storageFactory);
+        FormEntryNavigationResponseBean responseBean = formSession.getNextFormNavigation();
         updateSession(formSession, serializableFormSession);
         return responseBean;
     }
