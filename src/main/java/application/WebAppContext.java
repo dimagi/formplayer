@@ -315,6 +315,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
+    public ConfigureStorageFromSessionAspect configureStorageAspect() {
+        return new ConfigureStorageFromSessionAspect();
+    }
+
+    @Bean
     public SetBrowserValuesAspect setBrowserValuesAspect() {
         return new SetBrowserValuesAspect();
     }
