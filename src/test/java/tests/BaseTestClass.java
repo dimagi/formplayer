@@ -601,6 +601,10 @@ public class BaseTestClass {
             storageFactoryMock.configure((InstallRequestBean) bean);
         }
 
+        if (bean instanceof SessionRequestBean) {
+            storageFactoryMock.configure(((SessionRequestBean) bean).getSessionId());
+        }
+
         if (!(bean instanceof String)) {
             bean = mapper.writeValueAsString(bean);
         }

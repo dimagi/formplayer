@@ -2,8 +2,6 @@ package services;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.suite.model.StackFrameStep;
@@ -11,17 +9,13 @@ import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.Screen;
-import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import repo.FormSessionRepo;
 import repo.SerializableMenuSession;
 import session.MenuSession;
 
-import java.util.Hashtable;
 import java.util.Set;
-import java.util.Stack;
 import java.util.Vector;
 
 /**
