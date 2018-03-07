@@ -13,7 +13,7 @@ import services.FormplayerStorageFactory;
  */
 @Aspect
 @Order(7)
-public class ConfigureStorageAspect {
+public class ConfigureStorageFromSessionAspect {
 
     @Autowired
     protected FormplayerStorageFactory storageFactory;
