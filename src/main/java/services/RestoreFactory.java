@@ -102,7 +102,7 @@ public class RestoreFactory {
     private String caseId;
 
     public void configure(String domain, String caseId, HqAuth auth) {
-        this.setUsername("CASE" + caseId);
+        this.setUsername(UserUtils.getRestoreAsCaseIdUsername(caseId));
         this.setDomain(domain);
         this.setCaseId(caseId);
         this.setHqAuth(auth);

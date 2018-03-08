@@ -14,6 +14,7 @@ import sandbox.SqlStorage;
 import sqlitedb.ApplicationDB;
 import sqlitedb.SQLiteDB;
 import util.FormplayerPropertyManager;
+import util.UserUtils;
 
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
@@ -47,7 +48,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         SerializableFormSession formSession = formSessionRepo.findOneWrapped(formSessionId);
         if (formSession.getRestoreAsCaseId() != null) {
             configure(
-                    "CASE" + formSession.getRestoreAsCaseId(),
+                    UserUtils.getRestoreAsCaseIdUsername(formSession.getRestoreAsCaseId()),
                     formSession.getDomain(),
                     formSession.getAppId(),
                     null
