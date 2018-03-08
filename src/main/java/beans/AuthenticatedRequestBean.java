@@ -2,6 +2,7 @@ package beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import util.UserUtils;
 
 /**
  * The AuthenticatedRequestBean should be used for requests that
@@ -46,6 +47,9 @@ public class AuthenticatedRequestBean {
     }
 
     public String getUsernameDetail() {
+        if (restoreAsCaseId != null) {
+            return UserUtils.getRestoreAsCaseIdUsername(restoreAsCaseId);
+        }
         if (restoreAs != null) {
             return username + "_" + restoreAs;
         }
