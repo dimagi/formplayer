@@ -287,8 +287,11 @@ public class JsonActionUtils {
     }
 
     public static JSONArray getOneQuestionPerScreenJSON(FormEntryModel fem, FormEntryController fec, FormIndex formIndex) {
-        FormEntryPrompt[] prompts = fec.getQuestionPrompts(formIndex);
         JSONArray ret = new JSONArray();
+        if (formIndex.isEndOfFormIndex()) {
+            return ret;
+        }
+        FormEntryPrompt[] prompts = fec.getQuestionPrompts(formIndex);
         for (FormEntryPrompt prompt: prompts) {
             fem.setQuestionIndex(prompt.getIndex());
             JSONObject obj = new JSONObject();
