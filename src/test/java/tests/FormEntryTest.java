@@ -174,4 +174,11 @@ public class FormEntryTest extends BaseTestClass{
         assert response3.getTree().length == 1;
 
     }
+
+    // Test form with no questions
+    @Test
+    public void testNoQuestions() throws Exception {
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/no_questions.xml");
+        assert newSessionResponse.getTree().length == 0;
+    }
 }
