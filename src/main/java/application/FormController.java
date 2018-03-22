@@ -350,7 +350,7 @@ public class FormController extends AbstractBaseController{
     }
 
     @ApiOperation(value = "Get the raw instance for a form session")
-    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = RequestMethod.GET)
+    @RequestMapping(value = Constants.URL_GET_INSTANCE, method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     @UserLock
     @UserRestore
