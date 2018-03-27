@@ -58,7 +58,11 @@ public class NewFormResponseFactory {
         boolean shouldPurge = bean.getRestoreAsCaseId() == null;
         UserSqlSandbox sandbox = restoreFactory.performTimedSync(shouldPurge);
 
-        storageFactory.configure(bean.getUsername(), bean.getDomain(), bean.getSessionData().getAppId(), bean.getRestoreAs());
+        storageFactory.configure(bean.getUsername(),
+                bean.getDomain(),
+                bean.getSessionData().getAppId(),
+                bean.getRestoreAs(),
+                bean.getRestoreAsCaseId());
 
         FormSession formSession = new FormSession(
                 sandbox,
