@@ -40,26 +40,36 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
                 installRequestBean.getUsername(),
                 installRequestBean.getDomain(),
                 installRequestBean.getAppId(),
-                installRequestBean.getRestoreAs()
+                installRequestBean.getRestoreAs(),
+                installRequestBean.getRestoreAsCaseId()
         );
     }
 
     public void configure(String formSessionId) {
         SerializableFormSession formSession = formSessionRepo.findOneWrapped(formSessionId);
-        if (formSession.getRestoreAsCaseId() != null) {
+        configure(formSession);
+    }
+
+    public void configure(SerializableFormSession formSession) {
+        configure(formSession.getUsername(),
+                formSession.getDomain(),
+                formSession.getAppId(),
+                formSession.getAsUser(),
+                formSession.getRestoreAsCaseId()
+        );
+    }
+
+    public void configure(String username, String domain, String appId, String asUsername, String restoreAsCaseId) {
+        if (restoreAsCaseId != null) {
             configure(
-                    UserUtils.getRestoreAsCaseIdUsername(formSession.getRestoreAsCaseId()),
-                    formSession.getDomain(),
-                    formSession.getAppId(),
+                    UserUtils.getRestoreAsCaseIdUsername(restoreAsCaseId),
+                    domain,
+                    appId,
                     null
             );
-        } else {
-            configure(
-                    formSession.getUsername(),
-                    formSession.getDomain(),
-                    formSession.getAppId(),
-                    formSession.getAsUser()
-            );
+        }
+        else {
+            configure(username, domain, appId, asUsername);
         }
     }
 
