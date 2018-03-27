@@ -18,39 +18,13 @@ import java.io.IOException;
  */
 public class FormplayerXFormInstaller extends XFormInstaller {
 
-    FormplayerStorageFactory storageFactory;
-
     public FormplayerXFormInstaller(){}
-
-    public FormplayerXFormInstaller(FormplayerStorageFactory storageFactory) {
-        this.storageFactory = storageFactory;
-    }
 
     @Override
     protected IStorageUtilityIndexed<FormDef> storage(CommCarePlatform platform) {
         if (cacheStorage == null) {
-            cacheStorage = storageFactory.newStorage(FormDef.STORAGE_KEY, FormDef.class);
+            cacheStorage = platform.getStorageManager().getStorage(FormDef.STORAGE_KEY);
         }
         return cacheStorage;
-    }
-
-    @Override
-    public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
-        super.readExternal(in, pf);
-        String username = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
-        String domain = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
-        String appId = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
-        String asUsername = ExtUtil.nullIfEmpty(ExtUtil.readString(in));
-        storageFactory = new FormplayerStorageFactory();
-        storageFactory.configure(username, domain, appId, asUsername);
-    }
-
-    @Override
-    public void writeExternal(DataOutputStream out) throws IOException {
-        super.writeExternal(out);
-        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getUsername()));
-        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getDomain()));
-        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getAppId()));
-        ExtUtil.writeString(out, ExtUtil.emptyIfNull(storageFactory.getAsUsername()));
     }
 }
