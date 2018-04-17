@@ -8,6 +8,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
+import org.commcare.resources.model.InstallCancelledException;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
@@ -142,11 +143,11 @@ public class MenuSession implements HereFunctionHandlerListener {
             log.error(message, e);
             return new NotificationMessage(message, true);
         } catch (UnfullfilledRequirementsException e) {
-            String message = "Update Failed! This CLI host is incompatible with the app";
+            String message = "Update Failed! Formplayer is incompatible with the app";
             log.error(message, e);
             return new NotificationMessage(message, true);
-        } catch (Exception e) {
-            String message = "Update Failed! There is a problem with one of the resources";
+        } catch (InstallCancelledException e) {
+            String message = "Update Failed! Update was cancelled";
             log.error(message, e);
             return new NotificationMessage(message, true);
         }
