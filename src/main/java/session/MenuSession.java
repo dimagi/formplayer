@@ -1,5 +1,6 @@
 package session;
 
+import beans.NotificationMessage;
 import engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -7,6 +8,8 @@ import org.apache.http.client.utils.URIBuilder;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
+import org.commcare.resources.model.InstallCancelledException;
+import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.FormIdDatum;
@@ -20,6 +23,7 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
@@ -127,8 +131,26 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.breadcrumbs.add(SessionUtils.getAppTitle());
     }
     
-    public void updateApp(String updateMode) {
-        this.engine.attemptAppUpdate(updateMode);
+    public NotificationMessage updateApp(String updateMode) {
+        try {
+            if (this.engine.attemptAppUpdate(updateMode)) {
+                return new NotificationMessage("Application updated successfully.", false);
+            } else {
+                return new NotificationMessage("Application up to date.", false);
+            }
+        } catch (UnresolvedResourceException e) {
+            String message = "Update Failed! Couldn't find or install one of the remote resources";
+            log.error(message, e);
+            return new NotificationMessage(message, true);
+        } catch (UnfullfilledRequirementsException e) {
+            String message = "Update Failed! Formplayer is incompatible with the app";
+            log.error(message, e);
+            return new NotificationMessage(message, true);
+        } catch (InstallCancelledException e) {
+            String message = "Update Failed! Update was cancelled";
+            log.error(message, e);
+            return new NotificationMessage(message, true);
+        }
     }
 
     private void resolveInstallReference(String installReference, String appId, String host){
