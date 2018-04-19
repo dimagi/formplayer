@@ -23,8 +23,12 @@ public class UpdateRequestBean extends InstallRequestBean {
     private String sessionId;
 
     public String getUpdateMode() {
-        // Default to 'save' since this is only accessible from App Preview
-        return updateMode == null ? "save" : updateMode;
+        if(!VALID_UPDATE_MODES.contains(updateMode)) {
+            // Default to 'save' since this is only accessible from App Preview currently
+            log.error("Update mode " + updateMode + " was not valid, defaulting to save.");
+            return "save";
+        }
+        return updateMode;
     }
 
     public void setUpdateMode (String updateMode) {
