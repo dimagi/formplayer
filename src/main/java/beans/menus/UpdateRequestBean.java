@@ -29,7 +29,6 @@ public class UpdateRequestBean extends InstallRequestBean {
     public void setUpdateMode (String updateMode) {
         if(!VALID_UPDATE_MODES.contains(updateMode)) {
             // Default to 'build' since this is only accessible from App Preview
-            log.error("Update mode " + updateMode + " was not valid, defaulting to build.");
             this.updateMode = "build";
         } else {
             this.updateMode = updateMode;
