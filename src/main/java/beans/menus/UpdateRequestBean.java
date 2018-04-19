@@ -23,16 +23,12 @@ public class UpdateRequestBean extends InstallRequestBean {
     private String sessionId;
 
     public String getUpdateMode() {
-        return updateMode;
+        // Default to 'build' since this is only accessible from App Preview
+        return updateMode == null ? "save" : updateMode;
     }
 
     public void setUpdateMode (String updateMode) {
-        if(!VALID_UPDATE_MODES.contains(updateMode)) {
-            // Default to 'build' since this is only accessible from App Preview
-            this.updateMode = "build";
-        } else {
-            this.updateMode = updateMode;
-        }
+        this.updateMode = updateMode;
     }
 
     public String getSessionId() {
