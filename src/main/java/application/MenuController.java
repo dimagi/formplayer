@@ -4,13 +4,14 @@ import annotations.AppInstall;
 import annotations.UserLock;
 import annotations.UserRestore;
 import beans.InstallRequestBean;
-import beans.NotificationMessage;
+import beans.NewFormResponse;
 import beans.SessionNavigationBean;
 import beans.menus.BaseResponseBean;
 import beans.menus.EntityDetailListResponse;
 import beans.menus.EntityDetailResponse;
 import beans.menus.LocationRelevantResponseBean;
 import beans.menus.UpdateRequestBean;
+import exceptions.FormNotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.logging.Log;
@@ -20,14 +21,11 @@ import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import services.CategoryTimingHelper;
 import services.QueryRequester;
 import services.SyncRequester;
+import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 
@@ -66,9 +64,26 @@ public class MenuController extends AbstractBaseController {
     @UserLock
     @UserRestore
     @AppInstall
-    public NotificationMessage updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
+    public BaseResponseBean updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        return performUpdate(updateRequestBean);
+        MenuSession updatedSession = performUpdate(updateRequestBean);
+        if (updateRequestBean.getSessionId() != null) {
+            // Try restoring the old session, fail gracefully.
+            try {
+                FormSession oldSession = new FormSession(formSessionRepo.findOneWrapped(updateRequestBean.getSessionId()),
+                        restoreFactory,
+                        formSendCalloutHandler,
+                        storageFactory);
+                updatedSession.reloadSession(oldSession);
+                return new NewFormResponse(oldSession);
+            } catch (FormNotFoundException e) {
+                log.info("FormSession with id " + updateRequestBean.getSessionId() + " not found, returning root");
+            } catch (Exception e) {
+                log.info("FormSession with id " + updateRequestBean.getSessionId()
+                        + " failed to load with exception " + e);
+            }
+        }
+        return runnerService.getNextMenu(updatedSession);
     }
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
@@ -168,8 +183,9 @@ public class MenuController extends AbstractBaseController {
         return responseBean;
     }
 
-    private NotificationMessage performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
+    private MenuSession performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
         MenuSession currentSession = performInstall(updateRequestBean);
-        return currentSession.updateApp(updateRequestBean.getUpdateMode());
+        currentSession.updateApp(updateRequestBean.getUpdateMode());
+        return currentSession;
     }
 }
