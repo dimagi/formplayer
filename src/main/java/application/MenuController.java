@@ -61,11 +61,11 @@ public class MenuController extends AbstractBaseController {
         return runnerService.getNextMenu(performInstall(installRequestBean));
     }
 
-    @ApiOperation(value = "Update the application at the given reference")
-    @RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
-    @UserLock
-    @UserRestore
-    @AppInstall
+    //@ApiOperation(value = "Update the application at the given reference")
+    //@RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
+    //@UserLock
+    //@UserRestore
+    //@AppInstall
     public NotificationMessage updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         return performUpdate(updateRequestBean);
