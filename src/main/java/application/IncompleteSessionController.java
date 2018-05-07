@@ -37,7 +37,7 @@ public class IncompleteSessionController extends AbstractBaseController{
     public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
-        storageFactory.configure(session.getUsername(), session.getDomain(), session.getAppId(), session.getAsUser());
+        storageFactory.configure(session);
         return newFormResponseFactory.getResponse(session);
     }
 

@@ -4,6 +4,11 @@ package util;
  * Utility methods for dealing with users
  */
 public class UserUtils {
+
+    public static String getRestoreAsCaseIdUsername(String caseId) {
+        return "CASE" + caseId;
+    }
+
     public static boolean isAnonymous(String domain, String username) {
         if (domain == null || username == null) {
             return false;

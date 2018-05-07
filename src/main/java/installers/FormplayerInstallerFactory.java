@@ -20,20 +20,20 @@ public class FormplayerInstallerFactory extends InstallerFactory {
     FormplayerStorageFactory storageFactory;
 
     public ResourceInstaller getProfileInstaller(boolean forceInstall) {
-        return new FormplayerProfileInstaller(forceInstall, storageFactory);
+        return new FormplayerProfileInstaller(forceInstall);
     }
 
     @Override
     public ResourceInstaller getXFormInstaller() {
-        return new FormplayerXFormInstaller(storageFactory);
+        return new FormplayerXFormInstaller();
     }
 
     public ResourceInstaller getUserRestoreInstaller() {
-        return new FormplayerOfflineUserRestoreInstaller(storageFactory);
+        return new FormplayerOfflineUserRestoreInstaller();
     }
 
     public ResourceInstaller getSuiteInstaller() {
-        return new FormplayerSuiteInstaller(storageFactory);
+        return new FormplayerSuiteInstaller();
     }
 
     public ResourceInstaller getLocaleFileInstaller(String locale) {

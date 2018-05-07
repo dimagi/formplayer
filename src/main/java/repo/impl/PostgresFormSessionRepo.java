@@ -3,6 +3,9 @@ package repo.impl;
 import exceptions.FormNotFoundException;
 import objects.FunctionHandler;
 import objects.SerializableFormSession;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -28,7 +31,9 @@ import java.util.Map;
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
-public class PostgresFormSessionRepo implements FormSessionRepo{
+public class PostgresFormSessionRepo implements FormSessionRepo {
+
+    private final Log log = LogFactory.getLog(PostgresFormSessionRepo.class);
 
     @Autowired
     @Qualifier("formplayerTemplate")
@@ -37,20 +42,25 @@ public class PostgresFormSessionRepo implements FormSessionRepo{
     @PostConstruct
     public void purgeFormSessions() {
         // Modeled on https://stackoverflow.com/a/6730401/2820312
-        String createFuncQuery = "create or replace function custom_safe_cast(text,anyelement) \n" +
-                "returns anyelement \n" +
-                "language plpgsql as $$ \n" +
-                "begin \n" +
-                "    $0 := $1; \n" +
-                "    return $0; \n" +
-                "    exception when others then \n" +
-                "        return $2; \n" +
-                "end; $$;";
-        this.jdbcTemplate.execute(createFuncQuery);
-        String deleteQuery = replaceTableName(
-                "delete from %s where custom_safe_cast(dateopened, '2011-01-01'::timestamp) < NOW() - INTERVAL '7 days';"
-        );
-        this.jdbcTemplate.execute(deleteQuery);
+        try {
+            String createFuncQuery = "create or replace function custom_safe_cast(text,anyelement) \n" +
+                    "returns anyelement \n" +
+                    "language plpgsql as $$ \n" +
+                    "begin \n" +
+                    "    $0 := $1; \n" +
+                    "    return $0; \n" +
+                    "    exception when others then \n" +
+                    "        return $2; \n" +
+                    "end; $$;";
+            this.jdbcTemplate.execute(createFuncQuery);
+            String deleteQuery = replaceTableName(
+                    "delete from %s where custom_safe_cast(dateopened, '2011-01-01'::timestamp) < NOW() - INTERVAL '7 days';"
+            );
+            this.jdbcTemplate.execute(deleteQuery);
+        } catch (Exception e) {
+            // Don't crash for this. Not fatal and prevents start-up
+            log.error("Exception purge form sessions", e);
+        }
     }
 
     @Override

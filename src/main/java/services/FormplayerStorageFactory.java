@@ -1,6 +1,7 @@
 package services;
 
 import beans.InstallRequestBean;
+import objects.SerializableFormSession;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -8,12 +9,12 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.StorageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import repo.MenuSessionRepo;
-import repo.SerializableMenuSession;
+import repo.FormSessionRepo;
 import sandbox.SqlStorage;
 import sqlitedb.ApplicationDB;
 import sqlitedb.SQLiteDB;
 import util.FormplayerPropertyManager;
+import util.UserUtils;
 
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
@@ -32,25 +33,44 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private StorageManager storageManager;
 
     @Autowired
-    protected MenuSessionRepo menuSessionRepo;
+    protected FormSessionRepo formSessionRepo;
 
     public void configure(InstallRequestBean installRequestBean) {
         configure(
                 installRequestBean.getUsername(),
                 installRequestBean.getDomain(),
                 installRequestBean.getAppId(),
-                installRequestBean.getRestoreAs()
+                installRequestBean.getRestoreAs(),
+                installRequestBean.getRestoreAsCaseId()
         );
     }
 
-    public void configure(String menuSessionId) {
-        SerializableMenuSession menuSession = menuSessionRepo.findOneWrapped(menuSessionId);
-        configure(
-                menuSession.getUsername(),
-                menuSession.getDomain(),
-                menuSession.getAppId(),
-                menuSession.getAsUser()
+    public void configure(String formSessionId) {
+        SerializableFormSession formSession = formSessionRepo.findOneWrapped(formSessionId);
+        configure(formSession);
+    }
+
+    public void configure(SerializableFormSession formSession) {
+        configure(formSession.getUsername(),
+                formSession.getDomain(),
+                formSession.getAppId(),
+                formSession.getAsUser(),
+                formSession.getRestoreAsCaseId()
         );
+    }
+
+    public void configure(String username, String domain, String appId, String asUsername, String restoreAsCaseId) {
+        if (restoreAsCaseId != null) {
+            configure(
+                    UserUtils.getRestoreAsCaseIdUsername(restoreAsCaseId),
+                    domain,
+                    appId,
+                    null
+            );
+        }
+        else {
+            configure(username, domain, appId, asUsername);
+        }
     }
 
     public void configure(String username, String domain, String appId, String asUsername) {

@@ -49,7 +49,7 @@ public class UtilController extends AbstractBaseController {
     }
 
     @ApiOperation(value = "Wipe the applications databases")
-    @RequestMapping(value = Constants.URL_DELETE_APPLICATION_DBS, method = RequestMethod.POST)
+    @RequestMapping(value = {Constants.URL_DELETE_APPLICATION_DBS, Constants.URL_UPDATE}, method = RequestMethod.POST)
     @UserLock
     public NotificationMessage deleteApplicationDbs(
             @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
