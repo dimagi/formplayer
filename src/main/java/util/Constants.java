@@ -37,6 +37,10 @@ public class Constants {
     public static final String URL_PREV_INDEX = "prev_index";
     public static final String URL_VALIDATE_FORM = "validate_form";
     public static final String URL_GET_INSTANCE = "get-instance";
+
+    // Alternative namings used by SMS
+    public static final String URL_NEXT = "next";
+
     // Debugger URLS
     public static final String URL_DEBUGGER_FORMATTED_QUESTIONS = "formatted_questions";
     public static final String URL_DEBUGGER_MENU_CONTENT = "menu_debugger_content";

@@ -20,6 +20,7 @@ import services.FormplayerLockRegistry.FormplayerReentrantLock;
 import util.Constants;
 import util.FormplayerSentry;
 import util.RequestUtils;
+import util.UserUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
@@ -78,7 +79,10 @@ public class LockAspect {
             SerializableFormSession formSession = formSessionRepo.findOne(bean.getSessionId());
             String tempUser = formSession.getUsername();
             String restoreAs = formSession.getAsUser();
-            if (restoreAs != null) {
+            String restoreAsCaseId = formSession.getRestoreAsCaseId();
+            if (restoreAsCaseId != null) {
+                username = UserUtils.getRestoreAsCaseIdUsername(restoreAsCaseId);
+            } else if (restoreAs != null) {
                 username = tempUser + "_" + restoreAs;
             } else {
                 username = tempUser;

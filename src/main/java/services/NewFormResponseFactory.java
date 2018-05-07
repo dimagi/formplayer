@@ -54,9 +54,15 @@ public class NewFormResponseFactory {
         } else {
             throw new RuntimeException("No FormURL or FormContent");
         }
-        UserSqlSandbox sandbox = restoreFactory.performTimedSync();
+        // Don't purge when restoring as a case
+        boolean shouldPurge = bean.getRestoreAsCaseId() == null;
+        UserSqlSandbox sandbox = restoreFactory.performTimedSync(shouldPurge);
 
-        storageFactory.configure(bean.getUsername(), bean.getDomain(), bean.getSessionData().getAppId(), bean.getRestoreAs());
+        storageFactory.configure(bean.getUsername(),
+                bean.getDomain(),
+                bean.getSessionData().getAppId(),
+                bean.getRestoreAs(),
+                bean.getRestoreAsCaseId());
 
         FormSession formSession = new FormSession(
                 sandbox,

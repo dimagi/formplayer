@@ -86,7 +86,7 @@ public class UserRestoreAspect {
             if (formSession.getRestoreAsCaseId() != null) {
                 restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId(), auth);
             } else {
-                restoreFactory.configure(touchformsUsername, formSession.getDomain(), formSession.getAsUser(), auth);
+                restoreFactory.configure(formSession.getUsername(), formSession.getDomain(), formSession.getAsUser(), auth);
             }
         }
     }
