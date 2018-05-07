@@ -37,6 +37,7 @@ public class Constants {
     public static final String URL_PREV_INDEX = "prev_index";
     public static final String URL_VALIDATE_FORM = "validate_form";
     public static final String URL_GET_INSTANCE = "get-instance";
+    public static final String URL_CHANGE_LANGUAGE = "change_locale";
 
     // Alternative namings used by SMS
     public static final String URL_NEXT = "next";

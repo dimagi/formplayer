@@ -290,7 +290,7 @@ public class FormSession {
         this.sequenceId = sequenceId;
     }
 
-    private String getLocale() {
+    public String getLocale() {
         return locale;
     }
 
@@ -482,6 +482,11 @@ public class FormSession {
         setCurrentIndex(formController.getFormIndex().toString());
     }
 
+    public FormEntryResponseBean getCurrentJSON() throws IOException {
+        JSONObject jsonObject = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel);
+        return new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
+    }
+
     public FormEntryResponseBean answerQuestionToJSON(Object answer, String answerIndex) throws IOException {
         if (answerIndex == null) {
             answerIndex = getCurrentIndex();
@@ -579,5 +584,10 @@ public class FormSession {
 
     public void setIsAtFirstIndex(boolean isAtFirstIndex) {
         this.isAtFirstIndex = isAtFirstIndex;
+    }
+
+    public void changeLocale(String locale) {
+        this.locale = locale;
+        formEntryController.setLanguage(locale);
     }
 }
