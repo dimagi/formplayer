@@ -187,6 +187,11 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     }
 
     @Override
+    public User getLoggedInUserUnsafe() throws RuntimeException {
+        return getLoggedInUser();
+    }
+
+    @Override
     public void setLoggedInUser(User user) {
         this.user = user;
     }
