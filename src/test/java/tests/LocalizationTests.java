@@ -1,6 +1,7 @@
 package tests;
 
 import auth.HqAuth;
+import beans.FormEntryResponseBean;
 import beans.NewFormResponse;
 import beans.menus.CommandListResponseBean;
 import org.json.JSONObject;
@@ -52,6 +53,31 @@ public class LocalizationTests extends BaseTestClass {
         assert commandListResponseSpanish.getCommands()[0].getDisplayText().equals("Spanish Form 1");
 
         assert commandListResponseSpanish.getCommands()[1].getDisplayText().equals("Spanish Form 2");
+
+    }
+
+    @Test
+    public void testInFormLocalization() throws Exception {
+        NewFormResponse newFormResponse =
+                this.sessionNavigate(new String[]{"0", "0"}, "langs", NewFormResponse.class);
+
+        assert newFormResponse.getTree().length == 2;
+
+        assert newFormResponse.getTree()[0].getCaption().equals("I'm English");
+
+        assert newFormResponse.getTree()[1].getCaption().equals("English rules");
+
+        FormEntryResponseBean formResponse = this.changeLanguage("es");
+
+        assert formResponse.getTree()[0].getCaption().equals("I'm Spanish");
+
+        assert formResponse.getTree()[1].getCaption().equals("No Spanish rules");
+
+        formResponse = this.answerQuestionGetResult(null, "0", "sessionid");
+
+        assert formResponse.getTree()[0].getCaption().equals("I'm Spanish");
+
+        assert formResponse.getTree()[1].getCaption().equals("No Spanish rules");
 
     }
 
