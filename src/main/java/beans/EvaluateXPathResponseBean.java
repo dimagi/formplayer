@@ -66,7 +66,11 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
             serializer.setOutput(outputStream, "UTF-8");
             serializer.startTag(null, "result");
             serializer.flush();
-            XPathExpression.serializeResult(value, outputStream);
+            try {
+                XPathExpression.serializeResult(value, outputStream);
+            } catch (NullPointerException e) {
+                // We want to not fail on invalid refs here, just return an empty result
+            }
             serializer.endTag(null, "result");
             serializer.flush();
             output = XmlUtil.getPrettyXml(outputStream.toByteArray());
