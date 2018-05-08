@@ -67,8 +67,6 @@ dependencies {
     compile group: 'org.postgresql', name: 'postgresql', version: '9.3-1100-jdbc4'
     compile group: 'org.flywaydb', name: 'flyway-core', version: '4.0.3'
     compile group: 'org.springframework', name: 'spring-orm', version: '3.1.1.RELEASE'
-    compile group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.1.0.Final'
-    compile group: 'org.hibernate', name: 'hibernate-core', version: '5.1.0.Final'
     compile group: 'org.springframework.data', name: 'spring-data-commons', version: '1.12.2.RELEASE'
     compile group: 'javax.mail', name: 'mail', version: '1.5.0-b01'
     compile group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.3'
@@ -76,7 +74,6 @@ dependencies {
     compile 'org.xerial:sqlite-jdbc:3.16.1'
     compile fileTree(dir: 'libs', include: '*.jar')
     compile project(path: ':commcare', configuration: 'api')
-    compile project(path: ':commcare', configuration: 'translate')
     compile 'org.simpleframework:simple-xml:2.7.1'
     testCompile project(path: ':commcare', configuration: 'api')
     testCompile("org.springframework.boot:spring-boot-starter-test:1.4.3.RELEASE")
