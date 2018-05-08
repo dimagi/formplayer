@@ -7,6 +7,7 @@ import api.json.JsonActionUtils;
 import api.process.FormRecordProcessorHelper;
 import api.util.ApiConstants;
 import beans.AnswerQuestionRequestBean;
+import beans.ChangeLocaleRequestBean;
 import beans.FormEntryNavigationResponseBean;
 import beans.FormEntryResponseBean;
 import beans.InstanceXmlBean;
@@ -92,6 +93,20 @@ public class FormController extends AbstractBaseController{
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String postUrl = host + newSessionBean.getPostUrl();
         return newFormResponseFactory.getResponse(newSessionBean, postUrl);
+    }
+
+    @ApiOperation(value = "Change the form session locale")
+    @RequestMapping(value = Constants.URL_CHANGE_LANGUAGE, method = RequestMethod.POST)
+    @UserLock
+    @UserRestore
+    @ConfigureStorageFromSession
+    public FormEntryResponseBean changeLocale(@RequestBody ChangeLocaleRequestBean changeLocaleBean,
+                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(changeLocaleBean.getSessionId());
+        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+        formEntrySession.changeLocale(changeLocaleBean.getLocale());
+        updateSession(formEntrySession, serializableFormSession);
+        return formEntrySession.getCurrentJSON();
     }
 
     @ApiOperation(value = "Answer the question at the given index")
@@ -390,6 +405,7 @@ public class FormController extends AbstractBaseController{
         serialSession.setInstanceXml(formEntrySession.getInstanceXml());
         serialSession.setSequenceId(formEntrySession.getSequenceId());
         serialSession.setCurrentIndex(formEntrySession.getCurrentIndex());
+        serialSession.setInitLang(formEntrySession.getLocale());
         formSessionRepo.save(serialSession);
     }
 }

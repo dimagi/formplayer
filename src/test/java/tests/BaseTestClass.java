@@ -257,6 +257,18 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
+    FormEntryResponseBean changeLanguage(String locale) throws Exception {
+        ChangeLocaleRequestBean changeLocaleBean = new ChangeLocaleRequestBean();
+        changeLocaleBean.setLocale(locale);
+        changeLocaleBean.setUsername(formSessionRepoMock.findOneWrapped("sessionid").getUsername());
+        changeLocaleBean.setDomain(formSessionRepoMock.findOneWrapped("sessionid").getDomain());
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_CHANGE_LANGUAGE,
+                changeLocaleBean,
+                FormEntryResponseBean.class);
+    }
+
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
         answerQuestionBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());

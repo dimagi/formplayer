@@ -61,7 +61,7 @@ public class JsonActionUtils {
      * @param model      the FormEntryModel under consideration
      * @return The JSON representation of the question tree
      */
-    private static JSONObject getCurrentJson(FormEntryController controller,
+    public static JSONObject getCurrentJson(FormEntryController controller,
                                                  FormEntryModel model) {
         JSONObject ret = new JSONObject();
         ret.put(ApiConstants.QUESTION_TREE_KEY, getFullFormJSON(model, controller));
