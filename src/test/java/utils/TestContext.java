@@ -20,6 +20,7 @@ import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
+import services.BrowserValuesProvider;
 import services.CategoryTimingHelper;
 import services.FormplayerFormSendCalloutHandler;
 import services.FormplayerStorageFactory;
@@ -123,6 +124,11 @@ public class TestContext {
     @Bean
     public FormplayerInstallerFactory installerFactory() {
         return Mockito.spy(FormplayerInstallerFactory.class);
+    }
+
+    @Bean
+    public BrowserValuesProvider browserValuesProvider() {
+        return Mockito.spy(BrowserValuesProvider.class);
     }
 
     @Bean
