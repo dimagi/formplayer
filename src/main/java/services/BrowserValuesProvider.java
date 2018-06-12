@@ -11,7 +11,11 @@ public class BrowserValuesProvider extends TimezoneProvider {
     private int timezoneOffsetMillis = -1;
 
     public void setTimezoneOffset(AuthenticatedRequestBean bean) {
-        timezoneOffsetMillis = bean.getTzOffset();
+        setTimezoneOffset(bean.getTzOffset());
+    }
+
+    public void setTimezoneOffset(int offset) {
+        timezoneOffsetMillis = offset;
     }
 
     @Override

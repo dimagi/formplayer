@@ -1,6 +1,8 @@
 package tests;
 
 import beans.*;
+import org.javarosa.core.model.utils.DateUtils;
+import org.javarosa.core.services.locale.Localization;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +12,7 @@ import util.Constants;
 import utils.TestContext;
 
 import java.util.ArrayList;
+import java.util.TimeZone;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
@@ -145,6 +148,22 @@ public class FormEntryTest extends BaseTestClass{
 
     }
 
+    @Test
+    public void testEthiopianDates() throws Exception {
+        browserValuesProvider.setTimezoneOffset(3 * 60 * 1000 * 60 );
+        DateUtils.setTimezoneProvider(browserValuesProvider);
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/ethiopian_dates.xml");
+
+        String sessionId = newSessionResponse.getSessionId();
+        Localization.registerLanguageReference("default",
+                "jr://springfile/formplayer_translatable_strings.txt");
+
+        answerQuestionGetResult("0","2018-05-11", sessionId);
+        String ethiopianNew = evaluateXPath(sessionId, "/data/date_eth").getOutput();
+        String ethiopianOld = evaluateXPath(sessionId, "/data/archive/date_eth_old").getOutput();
+        assert ethiopianOld.equals(ethiopianNew);
+    }
+
     // Tests for OQPS mode
     @Test
     public void testOQPS() throws Exception {
@@ -157,6 +176,8 @@ public class FormEntryTest extends BaseTestClass{
     // Tests for OQPS next and previous methods
     @Test
     public void testOQPSPreviousNext() throws Exception {
+
+
 
         NewFormResponse newFormResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
 

@@ -101,6 +101,9 @@ public class BaseTestClass {
     protected FormplayerInstallerFactory formplayerInstallerFactory;
 
     @Autowired
+    protected BrowserValuesProvider browserValuesProvider;
+
+    @Autowired
     protected MenuSessionFactory menuSessionFactory;
 
     @Autowired
