@@ -8,6 +8,8 @@ import hq.CaseAPIs;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.JSONReporter;
@@ -34,6 +36,8 @@ import java.io.StringReader;
 @RestController
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
+
+    private final Log log = LogFactory.getLog(UtilController.class);
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
@@ -106,8 +110,10 @@ public class UtilController extends AbstractBaseController {
             parser.parse();
             reporter.setPassed();
         } catch (XFormParseException xfpe) {
+            log.error("Validate Form threw exception", xfpe);
             reporter.setFailed(xfpe);
         } catch (Exception e) {
+            log.error("Validate Form threw exception", e);
             reporter.setFailed(e);
         }
 
