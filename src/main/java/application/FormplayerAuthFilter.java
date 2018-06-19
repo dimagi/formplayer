@@ -59,7 +59,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (request.getHeader(Constants.HMAC_HEADER) != null) {
+            if (request.getHeader(Constants.HMAC_HEADER) != null && formplayerAuthKey != null) {
                 logger.info("Validating X-MAC-DIGEST");
                 String header = request.getHeader(Constants.HMAC_HEADER);
                 String body = RequestUtils.getBody(request);
