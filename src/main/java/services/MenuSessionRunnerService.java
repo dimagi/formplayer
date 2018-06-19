@@ -11,6 +11,7 @@ import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
+import org.commcare.suite.model.Text;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -87,6 +88,12 @@ public class MenuSessionRunnerService {
         Screen nextScreen = menuSession.getNextScreen();
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
+            String assertionFailure = getAssertionFailure(menuSession);
+            if (assertionFailure != null) {
+                BaseResponseBean responseBean = new BaseResponseBean("App Configuration Error", assertionFailure, true, true);
+                responseBean.setNotification(new NotificationMessage(assertionFailure, true));
+                return responseBean;
+            }
             return startFormEntry(menuSession);
         }
 
@@ -199,7 +206,9 @@ public class MenuSessionRunnerService {
                 sortIndex
         );
         if (nextResponse != null) {
-            nextResponse.setNotification(notificationMessage);
+            if (nextResponse.getNotification() == null) {
+                nextResponse.setNotification(notificationMessage);
+            }
             log.info("Returning menu: " + nextResponse);
             return nextResponse;
         } else {
@@ -380,6 +389,16 @@ public class MenuSessionRunnerService {
         } else {
             return null;
         }
+    }
+
+    private String getAssertionFailure(MenuSession menuSession) {
+        Text text = menuSession.getSessionWrapper().getCurrentEntry().getAssertions().getAssertionFailure(menuSession.getEvalContextWithHereFuncHandler());
+        if (text != null) {
+            return text.evaluate(menuSession.getEvalContextWithHereFuncHandler());
+        } else if (menuSession.getSessionWrapper().getForm() == null) {
+            return "No form found!";
+        }
+        return null;
     }
 
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
