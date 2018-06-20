@@ -1,8 +1,11 @@
 package util;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -62,5 +65,16 @@ public class RequestUtils {
 
     public static String getRequestEndpoint(HttpServletRequest request) {
         return StringUtils.strip(request.getRequestURI(), "/");
+    }
+
+    /**
+     * Get the HMAC hash of a given request body with a given key
+     * Used by Formplayer to validate requests from HQ using shared internal key `commcarehq.formplayerAuthKey`
+     */
+    public static String getHmac(String key, String data) throws Exception {
+        Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secret_key = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
+        sha256_HMAC.init(secret_key);
+        return Base64.encodeBase64String(sha256_HMAC.doFinal(data.getBytes("UTF-8")));
     }
 }

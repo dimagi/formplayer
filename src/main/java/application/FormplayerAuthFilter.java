@@ -1,6 +1,5 @@
 package application;
 
-import beans.SessionRequestBean;
 import beans.auth.HqUserDetailsBean;
 import objects.SerializableFormSession;
 import org.apache.commons.lang3.StringUtils;
@@ -48,11 +47,11 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     FormSessionRepo formSessionRepo;
 
     @Value("${commcarehq.formplayerAuthKey}")
-    private String authKey;
+    private String formplayerAuthKey;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        FormplayerHttpRequest request = new FormplayerHttpRequest((HttpServletRequest) req);
+        FormplayerHttpRequest request = new FormplayerHttpRequest(req);
         if (isAuthorizationRequired(request)) {
             // These are order dependent
             if (getSessionId(request) == null) {
@@ -60,9 +59,25 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (authKey != null && authKey.equals(getSessionId(request))) {
-                logger.info("Logging in as touchforms_user");
-                setSmsRequestDetails(request);
+            if (request.getHeader(Constants.HMAC_HEADER) != null && formplayerAuthKey != null) {
+                logger.info("Validating X-MAC-DIGEST");
+                String header = request.getHeader(Constants.HMAC_HEADER);
+                String body = RequestUtils.getBody(request);
+                try {
+                    String hash = RequestUtils.getHmac(formplayerAuthKey, body);
+                    if (header.equals(hash)) {
+                        setSmsRequestDetails(request);
+                    } else {
+                        logger.error(String.format("Hash comparison between request %s and generated %s failed",
+                                header, hash));
+                        setResponseUnauthorized(response, "Invalid HMAC hash");
+                        return;
+                    }
+                } catch (Exception e) {
+                    logger.error(String.format("Error generating hash of body %s", body), e);
+                    setResponseUnauthorized(response, "Invalid HMAC hash");
+                    return;
+                }
             }
             else {
                 setDomain(request);

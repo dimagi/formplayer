@@ -111,6 +111,9 @@ public class Constants {
     // 15 minutes in milliseconds
     public static final int LOCK_DURATION = 60 * 15 * 1000;
 
+    //Misc
+    public static String HMAC_HEADER = "X-MAC-DIGEST";
+
     // Datadog metrics
     public static final String DATADOG_REQUESTS = "requests";
     public static final String DATADOG_TIMINGS = "timings";
