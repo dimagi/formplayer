@@ -395,8 +395,6 @@ public class MenuSessionRunnerService {
         Text text = menuSession.getSessionWrapper().getCurrentEntry().getAssertions().getAssertionFailure(menuSession.getEvalContextWithHereFuncHandler());
         if (text != null) {
             return text.evaluate(menuSession.getEvalContextWithHereFuncHandler());
-        } else if (menuSession.getSessionWrapper().getForm() == null) {
-            return "No form found!";
         }
         return null;
     }
