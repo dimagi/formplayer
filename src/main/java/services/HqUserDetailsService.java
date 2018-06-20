@@ -4,7 +4,6 @@ import beans.auth.HqSessionKeyBean;
 import beans.auth.HqUserDetailsBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import exceptions.UserDetailsException;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import util.Constants;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
+import util.RequestUtils;
 
 @Service
 public class HqUserDetailsService {
@@ -60,9 +57,6 @@ public class HqUserDetailsService {
     }
 
     private String getHmac(String data) throws Exception {
-        Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secret_key = new SecretKeySpec(formplayerAuthKey.getBytes("UTF-8"), "HmacSHA256");
-        sha256_HMAC.init(secret_key);
-        return Base64.encodeBase64String(sha256_HMAC.doFinal(data.getBytes("UTF-8")));
+        return RequestUtils.getHmac(formplayerAuthKey, data);
     }
 }
