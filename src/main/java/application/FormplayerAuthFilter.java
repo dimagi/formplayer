@@ -53,12 +53,6 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         FormplayerHttpRequest request = new FormplayerHttpRequest(req);
         if (isAuthorizationRequired(request)) {
-            // These are order dependent
-            if (getSessionId(request) == null) {
-                setResponseUnauthorized(response, "Invalid session id");
-                return;
-            }
-
             if (request.getHeader(Constants.HMAC_HEADER) != null && formplayerAuthKey != null) {
                 logger.info("Validating X-MAC-DIGEST");
                 String header = request.getHeader(Constants.HMAC_HEADER);
@@ -80,6 +74,10 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 }
             }
             else {
+                if (getSessionId(request) == null) {
+                    setResponseUnauthorized(response, "Invalid session id");
+                    return;
+                }
                 setDomain(request);
                 setUserDetails(request);
                 JSONObject data = RequestUtils.getPostData(request);
