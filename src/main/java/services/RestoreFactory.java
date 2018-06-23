@@ -1,7 +1,6 @@
 package services;
 
 import api.process.FormRecordProcessorHelper;
-import auth.BasicAuth;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import engine.FormplayerTransactionParserFactory;
@@ -19,7 +18,6 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
@@ -40,6 +38,7 @@ import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
 import util.Constants;
 import util.FormplayerSentry;
+import util.RequestUtils;
 import util.SimpleTimer;
 import util.UserUtils;
 
@@ -91,6 +90,9 @@ public class RestoreFactory {
 
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
+
+    @Value("${commcarehq.formplayerAuthKey}")
+    private String formplayerAuthKey;
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
@@ -391,6 +393,17 @@ public class RestoreFactory {
         log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
         HttpHeaders headers = auth.getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
+
+        if (getCaseId() != null) {
+            // Add MAC header for case restores
+            try {
+                headers.add("X-MAC-DIGEST", RequestUtils.getHmac(formplayerAuthKey, restoreUrl));
+            } catch (Exception e) {
+                log.error("Could not get HMAC signature to auth restore request", e);
+                throw new RuntimeException(e);
+            }
+        }
+
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
