@@ -68,7 +68,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
         TreeElement root =
                 SessionInstanceBuilder.getSessionInstance(session.getFrame(), getDeviceId(),
-                        getVersionString(), u.getUsername(), u.getUniqueId(),
+                        getVersionString(), getCurrentDrift(), u.getUsername(), u.getUniqueId(),
                         userProperties).getRoot();
         root.setParent(instance.getBase());
         return root;
