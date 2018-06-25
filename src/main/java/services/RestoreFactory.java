@@ -452,15 +452,18 @@ public class RestoreFactory {
     }
 
     public Pair<String, HttpHeaders> getRestoreUrlAndHeaders() {
-        HttpHeaders headers = hqAuth.getAuthHeaders();
-        headers.add("x-openrosa-version", "2.0");
         if (caseId != null) {
-            return getCaseRestoreUrlAndHeaders(headers);
+            return getCaseRestoreUrlAndHeaders();
         }
-        return new Pair<>(getUserRestoreUrl(), headers);
+        return getUserRestoreUrlAndHeaders();
     }
 
-    public Pair<String, HttpHeaders> getCaseRestoreUrlAndHeaders(HttpHeaders headers) {
+    public Pair<String, HttpHeaders> getCaseRestoreUrlAndHeaders() {
+        HttpHeaders headers = new HttpHeaders(){
+            {
+                add("x-openrosa-version", "2.0");
+            }
+        };
         StringBuilder builder = new StringBuilder();
         builder.append("/a/");
         builder.append(domain);
@@ -478,7 +481,9 @@ public class RestoreFactory {
         return new Pair<> (fullUrl, headers);
     }
 
-    public String getUserRestoreUrl() {
+    public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders() {
+        HttpHeaders headers = hqAuth.getAuthHeaders();
+        headers.add("x-openrosa-version", "2.0");
         StringBuilder builder = new StringBuilder();
         builder.append(host);
         builder.append("/a/");
@@ -497,7 +502,8 @@ public class RestoreFactory {
         if( asUsername != null) {
             builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
         }
-        return builder.toString();
+        String fullUrl = builder.toString();
+        return new Pair<>(fullUrl, headers);
     }
 
 
