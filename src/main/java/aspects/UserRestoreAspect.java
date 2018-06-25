@@ -61,7 +61,7 @@ public class UserRestoreAspect {
             throw new RuntimeException("Could not configure RestoreFactory with args " + Arrays.toString(args));
         }
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
-        HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
+        HqAuth auth = getAuthHeaders((String) args[1]);
 
         configureRestoreFactory(requestBean, auth);
 
@@ -96,13 +96,10 @@ public class UserRestoreAspect {
         restoreFactory.getSQLiteDB().closeConnection();
     }
 
-    private HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
+    private HqAuth getAuthHeaders(String sessionToken) {
         HqAuth auth;
         if (sessionToken != null && sessionToken.equals(authKey)) {
             auth = new BasicAuth(touchformsUsername, touchformsPassword);
-        } else if (UserUtils.isAnonymous(domain, username)) {
-            PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
-            auth = new TokenAuth(postgresUser.getAuthToken());
         } else {
             auth = new DjangoAuth(sessionToken);
         }

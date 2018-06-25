@@ -94,8 +94,6 @@ public class Constants {
     public static final String COUCH_USERS_DB = "__users";
 
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
-    public static final String ANONYMOUS_USERNAME = "anonymous_user";
-    public static final int ANONYMOUS_DJANGO_USERID = -1;
     public static final String COMMCARE_USER_SUFFIX = "commcarehq.org";
 
     public static final Set<Pattern> AUTH_WHITELIST = new HashSet<Pattern>(Arrays.asList(
