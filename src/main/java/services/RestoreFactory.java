@@ -444,6 +444,10 @@ public class RestoreFactory {
     }
 
     public HttpHeaders getUserHeaders() {
+        if (getHqAuth() == null) {
+            throw new RuntimeException("Trying to get Authentication headers but request " +
+                    " did not have an authentication key.");
+        }
         HttpHeaders headers = getHqAuth().getAuthHeaders();
         headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
         headers.set("X-OpenRosa-Version", "3.0");
@@ -482,7 +486,10 @@ public class RestoreFactory {
     }
 
     public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders() {
-        HttpHeaders headers = hqAuth.getAuthHeaders();
+        if (getHqAuth() == null) {
+            throw new RuntimeException("Trying to restore a user but Django Authentication key was not set.");
+        }
+        HttpHeaders headers = getHqAuth().getAuthHeaders();
         headers.add("x-openrosa-version", "2.0");
         StringBuilder builder = new StringBuilder();
         builder.append(host);
