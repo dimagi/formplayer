@@ -135,7 +135,8 @@ public class RestoreFactory {
         this.hasRestored = false;
         sqLiteDB = new UserDB(domain, username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
-                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
+                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s",
+                username, asUsername, domain, useLiveQuery));
     }
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
@@ -462,37 +463,36 @@ public class RestoreFactory {
         return getUserRestoreUrlAndHeaders();
     }
 
-    public Pair<String, HttpHeaders> getCaseRestoreUrlAndHeaders() {
+    private HttpHeaders getHmacHeaders(String requestPath) {
         HttpHeaders headers = new HttpHeaders(){
             {
                 add("x-openrosa-version", "2.0");
             }
         };
+        try {
+            String digest = RequestUtils.getHmac(formplayerAuthKey, requestPath);
+            headers.add("X-MAC-DIGEST", digest);
+            return headers;
+        } catch (Exception e) {
+            log.error("Could not get HMAC signature to auth restore request", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Pair<String, HttpHeaders> getCaseRestoreUrlAndHeaders() {
         StringBuilder builder = new StringBuilder();
         builder.append("/a/");
         builder.append(domain);
         builder.append("/case_migrations/restore/");
         builder.append(caseId);
         builder.append("/");
-        try {
-            String digest = RequestUtils.getHmac(formplayerAuthKey, builder.toString());
-            headers.add("X-MAC-DIGEST", digest);
-        } catch (Exception e) {
-            log.error("Could not get HMAC signature to auth restore request", e);
-            throw new RuntimeException(e);
-        }
+        HttpHeaders headers = getHmacHeaders(builder.toString());
         String fullUrl = host + builder.toString();
         return new Pair<> (fullUrl, headers);
     }
 
     public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders() {
-        if (getHqAuth() == null) {
-            throw new RuntimeException("Trying to restore a user but Django Authentication key was not set.");
-        }
-        HttpHeaders headers = getHqAuth().getAuthHeaders();
-        headers.add("x-openrosa-version", "2.0");
         StringBuilder builder = new StringBuilder();
-        builder.append(host);
         builder.append("/a/");
         builder.append(domain);
         builder.append("/phone/restore/?version=2.0");
@@ -509,7 +509,16 @@ public class RestoreFactory {
         if( asUsername != null) {
             builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
         }
-        String fullUrl = builder.toString();
+        String restoreUrl = builder.toString();
+        HttpHeaders headers;
+        if (getHqAuth() == null) {
+            // Need to do digest auth
+            headers = getHmacHeaders(restoreUrl);
+        } else {
+            headers = getHqAuth().getAuthHeaders();
+            headers.add("x-openrosa-version", "2.0");
+        }
+        String fullUrl = host + restoreUrl;
         return new Pair<>(fullUrl, headers);
     }
 

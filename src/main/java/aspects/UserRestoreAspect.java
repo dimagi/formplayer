@@ -1,6 +1,6 @@
 package aspects;
 
-import auth.BasicAuth;
+import auth.DigestAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import auth.TokenAuth;
@@ -62,7 +62,7 @@ public class UserRestoreAspect {
                     String.format("Could not configure RestoreFactory with invalid request %s", Arrays.toString(args)));
         }
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
-        HqAuth auth = getAuthHeaders(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
+        HqAuth auth = getHqAuth(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
 
         configureRestoreFactory(requestBean, auth);
 
@@ -97,11 +97,13 @@ public class UserRestoreAspect {
         restoreFactory.getSQLiteDB().closeConnection();
     }
 
-    private HqAuth getAuthHeaders(String domain, String username, String sessionToken) {
+    private HqAuth getHqAuth(String domain, String username, String sessionToken) {
         HqAuth auth;
         if (UserUtils.isAnonymous(domain, username)) {
             PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
             auth = new TokenAuth(postgresUser.getAuthToken());
+        } else if (sessionToken == null) {
+            auth = new DigestAuth(authKey);
         } else {
             auth = new DjangoAuth(sessionToken);
         }
