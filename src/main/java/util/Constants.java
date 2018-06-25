@@ -48,7 +48,7 @@ public class Constants {
 
     // Change this version when a backwards incompatible change is made to the
     // mobile sqlite dbs.
-    public static final String SQLITE_DB_VERSION = "V3";
+    public static final String SQLITE_DB_VERSION = "V4";
 
     //Menus
     public static final String MENU_MODULE = "modules";
