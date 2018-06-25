@@ -1,6 +1,5 @@
 package aspects;
 
-import auth.DigestAuth;
 import auth.DjangoAuth;
 import auth.HqAuth;
 import auth.TokenAuth;
@@ -98,15 +97,14 @@ public class UserRestoreAspect {
     }
 
     private HqAuth getHqAuth(String domain, String username, String sessionToken) {
-        HqAuth auth;
+        HqAuth auth = null;
         if (UserUtils.isAnonymous(domain, username)) {
             PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
             auth = new TokenAuth(postgresUser.getAuthToken());
-        } else if (sessionToken == null) {
-            auth = new DigestAuth(authKey);
-        } else {
+        } else if (sessionToken != null) {
             auth = new DjangoAuth(sessionToken);
         }
+        // Null auth expected for SMS requests
         return auth;
     }
 
