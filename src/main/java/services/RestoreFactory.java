@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
+import org.commcare.modern.util.Pair;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
@@ -301,10 +302,10 @@ public class RestoreFactory {
 
     public InputStream getRestoreXml() {
         ensureValidParameters();
-        String restoreUrl = getRestoreUrl();
-        recordSentryData(restoreUrl);
-        log.info("Restoring from URL " + restoreUrl);
-        InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
+        Pair<String, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders();
+        recordSentryData(restoreUrlAndHeaders.first);
+        log.info("Restoring from URL " + restoreUrlAndHeaders.first);
+        InputStream restoreStream = getRestoreXmlHelper(restoreUrlAndHeaders.first, restoreUrlAndHeaders.second);
         setLastSyncTime();
         return restoreStream;
     }
@@ -388,22 +389,9 @@ public class RestoreFactory {
         );
     }
 
-    private InputStream getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
+    private InputStream getRestoreXmlHelper(String restoreUrl, HttpHeaders headers) {
         RestTemplate restTemplate = new RestTemplate();
-        log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
-        HttpHeaders headers = auth.getAuthHeaders();
-        headers.add("x-openrosa-version", "2.0");
-
-        if (getCaseId() != null) {
-            // Add MAC header for case restores
-            try {
-                headers.add("X-MAC-DIGEST", RequestUtils.getHmac(formplayerAuthKey, restoreUrl));
-            } catch (Exception e) {
-                log.error("Could not get HMAC signature to auth restore request", e);
-                throw new RuntimeException(e);
-            }
-        }
-
+        log.info("Restoring at domain: " + domain + " with url: " + restoreUrl);
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
@@ -463,22 +451,31 @@ public class RestoreFactory {
         return headers;
     }
 
-    public String getRestoreUrl() {
+    public Pair<String, HttpHeaders> getRestoreUrlAndHeaders() {
+        HttpHeaders headers = hqAuth.getAuthHeaders();
+        headers.add("x-openrosa-version", "2.0");
         if (caseId != null) {
-            return getCaseRestoreUrl();
+            return getCaseRestoreUrlAndHeaders(headers);
         }
-        return getUserRestoreUrl();
+        return new Pair<>(getUserRestoreUrl(), headers);
     }
 
-    public String getCaseRestoreUrl() {
+    public Pair<String, HttpHeaders> getCaseRestoreUrlAndHeaders(HttpHeaders headers) {
         StringBuilder builder = new StringBuilder();
-        builder.append(host);
         builder.append("/a/");
         builder.append(domain);
         builder.append("/case_migrations/restore/");
         builder.append(caseId);
         builder.append("/");
-        return builder.toString();
+        try {
+            String digest = RequestUtils.getHmac(formplayerAuthKey, builder.toString());
+            headers.add("X-MAC-DIGEST", digest);
+        } catch (Exception e) {
+            log.error("Could not get HMAC signature to auth restore request", e);
+            throw new RuntimeException(e);
+        }
+        String fullUrl = host + builder.toString();
+        return new Pair<> (fullUrl, headers);
     }
 
     public String getUserRestoreUrl() {
