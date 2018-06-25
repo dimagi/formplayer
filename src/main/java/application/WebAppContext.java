@@ -205,11 +205,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    public PostgresUserRepo postgresUserRepo(){
-        return new PostgresUserRepo();
-    }
-
-    @Bean
     public FormSessionRepo formSessionRepo(){
         return new PostgresFormSessionRepo();
     }
