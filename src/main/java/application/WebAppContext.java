@@ -77,18 +77,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${commcarehq.host}")
     private String hqHost;
 
-    @Value("${datasource.hq.url}")
-    private String hqPostgresUrl;
-
-    @Value("${datasource.hq.username}")
-    private String hqPostgresUsername;
-
-    @Value("${datasource.hq.password}")
-    private String hqPostgresPassword;
-
-    @Value("${datasource.hq.driverClassName}")
-    private String hqPostgresDriverName;
-
     @Value("${datasource.formplayer.url}")
     private String formplayerPostgresUrl;
 
@@ -171,11 +159,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         return new JdbcTemplate(formplayerDataSource());
     }
 
-    @Bean
-    public JdbcTemplate hqTemplate(){
-        return new JdbcTemplate(hqDataSource());
-    }
-
     @Primary
     @Bean
     public DataSource formplayerDataSource() {
@@ -184,18 +167,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         ds.setUrl(formplayerPostgresUrl);
         ds.setUsername(formplayerPostgresUsername);
         ds.setPassword(formplayerPostgresPassword);
-        ds.setRemoveAbandoned(true);
-        ds.setTestOnBorrow(true);
-        ds.setValidationQuery("select 1");
-        return ds;
-    }
-    @Bean
-    public DataSource hqDataSource() {
-        org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
-        ds.setDriverClassName(hqPostgresDriverName);
-        ds.setUrl(hqPostgresUrl);
-        ds.setUsername(hqPostgresUsername);
-        ds.setPassword(hqPostgresPassword);
         ds.setRemoveAbandoned(true);
         ds.setTestOnBorrow(true);
         ds.setValidationQuery("select 1");
