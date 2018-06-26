@@ -512,7 +512,7 @@ public class RestoreFactory {
         String restoreUrl = builder.toString();
         HttpHeaders headers;
         if (getHqAuth() == null) {
-            // Need to do digest auth
+            // Need to do HMAC auth
             headers = getHmacHeaders(restoreUrl);
         } else {
             headers = getHqAuth().getAuthHeaders();
