@@ -2,9 +2,7 @@ package aspects;
 
 import auth.DjangoAuth;
 import auth.HqAuth;
-import auth.TokenAuth;
 import beans.AuthenticatedRequestBean;
-import hq.models.PostgresUser;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,10 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import repo.FormSessionRepo;
-import repo.impl.PostgresUserRepo;
 import services.CategoryTimingHelper;
 import services.RestoreFactory;
-import util.UserUtils;
 
 import java.util.Arrays;
 
@@ -34,9 +30,6 @@ public class UserRestoreAspect {
 
     @Autowired
     protected RestoreFactory restoreFactory;
-
-    @Autowired
-    protected PostgresUserRepo postgresUserRepo;
 
     @Autowired
     protected FormSessionRepo formSessionRepo;
@@ -61,7 +54,8 @@ public class UserRestoreAspect {
                     String.format("Could not configure RestoreFactory with invalid request %s", Arrays.toString(args)));
         }
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
-        HqAuth auth = getHqAuth(requestBean.getDomain(), requestBean.getUsername(), (String) args[1]);
+
+        HqAuth auth = getHqAuth((String) args[1]);
 
         configureRestoreFactory(requestBean, auth);
 
@@ -96,16 +90,12 @@ public class UserRestoreAspect {
         restoreFactory.getSQLiteDB().closeConnection();
     }
 
-    private HqAuth getHqAuth(String domain, String username, String sessionToken) {
-        HqAuth auth = null;
-        if (UserUtils.isAnonymous(domain, username)) {
-            PostgresUser postgresUser = postgresUserRepo.getUserByUsername(username);
-            auth = new TokenAuth(postgresUser.getAuthToken());
-        } else if (sessionToken != null) {
-            auth = new DjangoAuth(sessionToken);
+    private HqAuth getHqAuth(String sessionToken) {
+        if (sessionToken != null) {
+            return new DjangoAuth(sessionToken);
         }
         // Null auth expected for SMS requests
-        return auth;
+        return null;
     }
 
 }
