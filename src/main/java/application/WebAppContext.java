@@ -1,6 +1,12 @@
 package application;
 
-import aspects.*;
+import aspects.AppInstallAspect;
+import aspects.ConfigureStorageFromSessionAspect;
+import aspects.LockAspect;
+import aspects.LoggingAspect;
+import aspects.MetricsAspect;
+import aspects.SetBrowserValuesAspect;
+import aspects.UserRestoreAspect;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
@@ -12,7 +18,13 @@ import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -31,8 +43,22 @@ import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.impl.PostgresFormSessionRepo;
 import repo.impl.PostgresMenuSessionRepo;
-import repo.impl.PostgresUserRepo;
-import services.*;
+import services.BrowserValuesProvider;
+import services.CategoryTimingHelper;
+import services.FormattedQuestionsService;
+import services.FormplayerFormSendCalloutHandler;
+import services.FormplayerLockRegistry;
+import services.FormplayerStorageFactory;
+import services.HqUserDetailsService;
+import services.InstallService;
+import services.MenuSessionFactory;
+import services.MenuSessionRunnerService;
+import services.NewFormResponseFactory;
+import services.QueryRequester;
+import services.RestoreFactory;
+import services.SubmitService;
+import services.SyncRequester;
+import services.XFormService;
 import util.FormplayerSentry;
 
 import java.util.Properties;
@@ -50,18 +76,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Value("${commcarehq.host}")
     private String hqHost;
-
-    @Value("${datasource.hq.url}")
-    private String hqPostgresUrl;
-
-    @Value("${datasource.hq.username}")
-    private String hqPostgresUsername;
-
-    @Value("${datasource.hq.password}")
-    private String hqPostgresPassword;
-
-    @Value("${datasource.hq.driverClassName}")
-    private String hqPostgresDriverName;
 
     @Value("${datasource.formplayer.url}")
     private String formplayerPostgresUrl;
@@ -145,11 +159,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         return new JdbcTemplate(formplayerDataSource());
     }
 
-    @Bean
-    public JdbcTemplate hqTemplate(){
-        return new JdbcTemplate(hqDataSource());
-    }
-
     @Primary
     @Bean
     public DataSource formplayerDataSource() {
@@ -158,18 +167,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         ds.setUrl(formplayerPostgresUrl);
         ds.setUsername(formplayerPostgresUsername);
         ds.setPassword(formplayerPostgresPassword);
-        ds.setRemoveAbandoned(true);
-        ds.setTestOnBorrow(true);
-        ds.setValidationQuery("select 1");
-        return ds;
-    }
-    @Bean
-    public DataSource hqDataSource() {
-        org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
-        ds.setDriverClassName(hqPostgresDriverName);
-        ds.setUrl(hqPostgresUrl);
-        ds.setUsername(hqPostgresUsername);
-        ds.setPassword(hqPostgresPassword);
         ds.setRemoveAbandoned(true);
         ds.setTestOnBorrow(true);
         ds.setValidationQuery("select 1");
@@ -202,11 +199,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         template.setConnectionFactory(jedisConnFactory());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
-    }
-
-    @Bean
-    public PostgresUserRepo postgresUserRepo(){
-        return new PostgresUserRepo();
     }
 
     @Bean

@@ -9,17 +9,6 @@ public class UserUtils {
         return "CASE" + caseId;
     }
 
-    public static boolean isAnonymous(String domain, String username) {
-        if (domain == null || username == null) {
-            return false;
-        }
-        return username.equals(anonymousUsername(domain));
-    }
-
-    public static String anonymousUsername(String domain) {
-        return Constants.ANONYMOUS_USERNAME + "@" + domain + "." + Constants.COMMCARE_USER_SUFFIX;
-    }
-
     // If given a domained username, return the un-domained username, otherwise return @param username
     public static String getUsernameBeforeAtSymbol(String wrappedUsername) {
         return wrappedUsername.contains("@")

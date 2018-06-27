@@ -7,7 +7,12 @@ import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
 import com.timgroup.statsd.StatsDClient;
-import exceptions.*;
+import exceptions.ApplicationConfigException;
+import exceptions.AsyncRetryException;
+import exceptions.FormNotFoundException;
+import exceptions.FormattedApplicationConfigException;
+import exceptions.InterruptedRuntimeException;
+import exceptions.UnresolvedResourceRuntimeException;
 import io.sentry.event.Event;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
@@ -29,8 +34,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
-import repo.impl.PostgresUserRepo;
-import services.*;
+import services.FormplayerStorageFactory;
+import services.InstallService;
+import services.MenuSessionFactory;
+import services.MenuSessionRunnerService;
+import services.NewFormResponseFactory;
+import services.QueryRequester;
+import services.RestoreFactory;
+import services.SyncRequester;
 import session.MenuSession;
 import util.Constants;
 import util.FormplayerHttpRequest;
@@ -77,9 +88,6 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected FormSendCalloutHandler formSendCalloutHandler;
-
-    @Autowired
-    PostgresUserRepo postgresUserRepo;
 
     @Value("${commcarehq.environment}")
     private String hqEnvironment;
