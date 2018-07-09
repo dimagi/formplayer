@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import repo.FormSessionRepo;
 import services.FormplayerLockRegistry;
 import services.HqUserDetailsService;
+import services.RestoreFactory;
 import util.Constants;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
@@ -46,6 +47,9 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     @Autowired
     FormSessionRepo formSessionRepo;
 
+    @Autowired
+    RestoreFactory restoreFactory;
+
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
 
@@ -61,6 +65,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                     String hash = RequestUtils.getHmac(formplayerAuthKey, body);
                     if (header.equals(hash)) {
                         setSmsRequestDetails(request);
+                        restoreFactory.setRequestValidatedWithHMAC(true);
                     } else {
                         logger.error(String.format("Hash comparison between request %s and generated %s failed",
                                 header, hash));

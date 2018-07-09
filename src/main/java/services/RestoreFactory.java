@@ -103,6 +103,7 @@ public class RestoreFactory {
     private boolean useLiveQuery;
     private boolean hasRestored;
     private String caseId;
+    private boolean requestValidatedWithHMAC;
 
     public void configure(String domain, String caseId, HqAuth auth) {
         this.setUsername(UserUtils.getRestoreAsCaseIdUsername(caseId));
@@ -464,6 +465,10 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
+        if (!requestValidatedWithHMAC) {
+            throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
+                    "was not validated with HMAC.", requestPath));
+        }
         HttpHeaders headers = new HttpHeaders(){
             {
                 add("x-openrosa-version", "2.0");
@@ -577,5 +582,9 @@ public class RestoreFactory {
 
     public String getCaseId() {
         return caseId;
+    }
+
+    public void setRequestValidatedWithHMAC(boolean requestValidatedWithHMAC) {
+        this.requestValidatedWithHMAC = requestValidatedWithHMAC;
     }
 }
