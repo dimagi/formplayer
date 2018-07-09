@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 public class FormplayerHttpRequest extends MultipleReadHttpRequest {
     private HqUserDetailsBean userDetails;
     private String domain;
+    private boolean requestValidatedWithHMAC;
 
     public FormplayerHttpRequest(HttpServletRequest request) {
         super(request);
@@ -26,5 +27,13 @@ public class FormplayerHttpRequest extends MultipleReadHttpRequest {
 
     public String getDomain() {
         return domain;
+    }
+
+    public void setRequestValidatedWithHMAC(boolean requestValidatedWithHMAC) {
+        this.requestValidatedWithHMAC = requestValidatedWithHMAC;
+    }
+
+    public boolean getRequestValidatedWithHMAC() {
+        return requestValidatedWithHMAC;
     }
 }

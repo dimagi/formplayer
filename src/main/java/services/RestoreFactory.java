@@ -38,6 +38,7 @@ import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
 import util.Constants;
+import util.FormplayerHttpRequest;
 import util.FormplayerSentry;
 import util.RequestUtils;
 import util.SimpleTimer;
@@ -77,6 +78,9 @@ public class RestoreFactory {
 
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
+    @Autowired(required = false)
+    private FormplayerHttpRequest request;
+
     @Autowired
     private FormplayerSentry raven;
 
@@ -103,7 +107,6 @@ public class RestoreFactory {
     private boolean useLiveQuery;
     private boolean hasRestored;
     private String caseId;
-    private boolean requestValidatedWithHMAC;
 
     public void configure(String domain, String caseId, HqAuth auth) {
         this.setUsername(UserUtils.getRestoreAsCaseIdUsername(caseId));
@@ -465,7 +468,7 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        if (!requestValidatedWithHMAC) {
+        if (!request.getRequestValidatedWithHMAC()) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
@@ -582,9 +585,5 @@ public class RestoreFactory {
 
     public String getCaseId() {
         return caseId;
-    }
-
-    public void setRequestValidatedWithHMAC(boolean requestValidatedWithHMAC) {
-        this.requestValidatedWithHMAC = requestValidatedWithHMAC;
     }
 }

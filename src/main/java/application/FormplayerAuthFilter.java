@@ -7,6 +7,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import repo.FormSessionRepo;
@@ -47,9 +49,6 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     @Autowired
     FormSessionRepo formSessionRepo;
 
-    @Autowired
-    RestoreFactory restoreFactory;
-
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
 
@@ -65,7 +64,6 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                     String hash = RequestUtils.getHmac(formplayerAuthKey, body);
                     if (header.equals(hash)) {
                         setSmsRequestDetails(request);
-                        restoreFactory.setRequestValidatedWithHMAC(true);
                     } else {
                         logger.error(String.format("Hash comparison between request %s and generated %s failed",
                                 header, hash));
@@ -107,6 +105,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     private void setSmsRequestDetails(FormplayerHttpRequest request) {
         // If request has username and domain in body, use that
         JSONObject body = RequestUtils.getPostData(request);
+        request.setRequestValidatedWithHMAC(true);
         if (body.has("username") && body.has("domain")) {
             setDomain(request);
             setSmsUserDetails(request);
