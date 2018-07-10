@@ -48,7 +48,7 @@ public class Constants {
 
     // Change this version when a backwards incompatible change is made to the
     // mobile sqlite dbs.
-    public static final String SQLITE_DB_VERSION = "V3";
+    public static final String SQLITE_DB_VERSION = "V4";
 
     //Menus
     public static final String MENU_MODULE = "modules";
@@ -94,8 +94,6 @@ public class Constants {
     public static final String COUCH_USERS_DB = "__users";
 
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
-    public static final String ANONYMOUS_USERNAME = "anonymous_user";
-    public static final int ANONYMOUS_DJANGO_USERID = -1;
     public static final String COMMCARE_USER_SUFFIX = "commcarehq.org";
 
     public static final Set<Pattern> AUTH_WHITELIST = new HashSet<Pattern>(Arrays.asList(

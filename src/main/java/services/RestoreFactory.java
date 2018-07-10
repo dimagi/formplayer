@@ -1,7 +1,6 @@
 package services;
 
 import api.process.FormRecordProcessorHelper;
-import auth.BasicAuth;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
 import engine.FormplayerTransactionParserFactory;
@@ -12,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.modern.database.TableBuilder;
+import org.commcare.modern.util.Pair;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
@@ -19,7 +19,6 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
@@ -39,7 +38,9 @@ import sandbox.UserSqlSandbox;
 import sqlitedb.SQLiteDB;
 import sqlitedb.UserDB;
 import util.Constants;
+import util.FormplayerHttpRequest;
 import util.FormplayerSentry;
+import util.RequestUtils;
 import util.SimpleTimer;
 import util.UserUtils;
 
@@ -77,6 +78,9 @@ public class RestoreFactory {
 
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
+    @Autowired(required = false)
+    private FormplayerHttpRequest request;
+
     @Autowired
     private FormplayerSentry raven;
 
@@ -91,6 +95,9 @@ public class RestoreFactory {
 
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
+
+    @Value("${commcarehq.formplayerAuthKey}")
+    private String formplayerAuthKey;
 
     private final Log log = LogFactory.getLog(RestoreFactory.class);
 
@@ -132,7 +139,8 @@ public class RestoreFactory {
         this.hasRestored = false;
         sqLiteDB = new UserDB(domain, username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
-                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
+                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s",
+                username, asUsername, domain, useLiveQuery));
     }
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
@@ -299,10 +307,10 @@ public class RestoreFactory {
 
     public InputStream getRestoreXml() {
         ensureValidParameters();
-        String restoreUrl = getRestoreUrl();
-        recordSentryData(restoreUrl);
-        log.info("Restoring from URL " + restoreUrl);
-        InputStream restoreStream = getRestoreXmlHelper(restoreUrl, hqAuth);
+        Pair<String, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders();
+        recordSentryData(restoreUrlAndHeaders.first);
+        log.info("Restoring from URL " + restoreUrlAndHeaders.first);
+        InputStream restoreStream = getRestoreXmlHelper(restoreUrlAndHeaders.first, restoreUrlAndHeaders.second);
         setLastSyncTime();
         return restoreStream;
     }
@@ -386,11 +394,9 @@ public class RestoreFactory {
         );
     }
 
-    private InputStream getRestoreXmlHelper(String restoreUrl, HqAuth auth) {
+    private InputStream getRestoreXmlHelper(String restoreUrl, HttpHeaders headers) {
         RestTemplate restTemplate = new RestTemplate();
-        log.info("Restoring at domain: " + domain + " with auth: " + auth + " with url: " + restoreUrl);
-        HttpHeaders headers = auth.getAuthHeaders();
-        headers.add("x-openrosa-version", "2.0");
+        log.info("Restoring at domain: " + domain + " with url: " + restoreUrl);
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
         ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
@@ -443,6 +449,10 @@ public class RestoreFactory {
     }
 
     public HttpHeaders getUserHeaders() {
+        if (getHqAuth() == null) {
+            throw new RuntimeException("Trying to get Authentication headers but request " +
+                    " did not have an authentication key.");
+        }
         HttpHeaders headers = getHqAuth().getAuthHeaders();
         headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
         headers.set("X-OpenRosa-Version", "3.0");
@@ -450,27 +460,47 @@ public class RestoreFactory {
         return headers;
     }
 
-    public String getRestoreUrl() {
+    public Pair<String, HttpHeaders> getRestoreUrlAndHeaders() {
         if (caseId != null) {
-            return getCaseRestoreUrl();
+            return getCaseRestoreUrlAndHeaders();
         }
-        return getUserRestoreUrl();
+        return getUserRestoreUrlAndHeaders();
     }
 
-    public String getCaseRestoreUrl() {
+    private HttpHeaders getHmacHeaders(String requestPath) {
+        if (!request.getRequestValidatedWithHMAC()) {
+            throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
+                    "was not validated with HMAC.", requestPath));
+        }
+        HttpHeaders headers = new HttpHeaders(){
+            {
+                add("x-openrosa-version", "2.0");
+            }
+        };
+        try {
+            String digest = RequestUtils.getHmac(formplayerAuthKey, requestPath);
+            headers.add("X-MAC-DIGEST", digest);
+            return headers;
+        } catch (Exception e) {
+            log.error("Could not get HMAC signature to auth restore request", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Pair<String, HttpHeaders> getCaseRestoreUrlAndHeaders() {
         StringBuilder builder = new StringBuilder();
-        builder.append(host);
         builder.append("/a/");
         builder.append(domain);
         builder.append("/case_migrations/restore/");
         builder.append(caseId);
         builder.append("/");
-        return builder.toString();
+        HttpHeaders headers = getHmacHeaders(builder.toString());
+        String fullUrl = host + builder.toString();
+        return new Pair<> (fullUrl, headers);
     }
 
-    public String getUserRestoreUrl() {
+    public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders() {
         StringBuilder builder = new StringBuilder();
-        builder.append(host);
         builder.append("/a/");
         builder.append(domain);
         builder.append("/phone/restore/?version=2.0");
@@ -487,7 +517,17 @@ public class RestoreFactory {
         if( asUsername != null) {
             builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
         }
-        return builder.toString();
+        String restoreUrl = builder.toString();
+        HttpHeaders headers;
+        if (getHqAuth() == null) {
+            // Need to do HMAC auth
+            headers = getHmacHeaders(restoreUrl);
+        } else {
+            headers = getHqAuth().getAuthHeaders();
+            headers.add("x-openrosa-version", "2.0");
+        }
+        String fullUrl = host + restoreUrl;
+        return new Pair<>(fullUrl, headers);
     }
 
 
