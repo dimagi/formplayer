@@ -429,15 +429,7 @@ public class RestoreFactory {
     }
 
     public String getSyncToken() {
-        JdbcSqlStorageIterator<User> iterator = getSqlSandbox().getUserStorage().iterate();
-        try {
-            if (!iterator.hasNext()) {
-                return null;
-            }
-            return iterator.next().getLastSyncToken();
-        } finally {
-            iterator.close();
-        }
+        return null;
     }
 
     // Device ID for tracking usage in the same way Android uses IMEI

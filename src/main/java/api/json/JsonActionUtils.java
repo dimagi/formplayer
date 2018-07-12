@@ -101,7 +101,7 @@ public class JsonActionUtils {
         JSONObject ret = new JSONObject();
         IAnswerData answerData;
 
-        if (answer == null || answer.equals("None")) {
+        if (answer == null || answer.equals("None") || answer.equals("")) {
             answerData = null;
         } else {
             try {
