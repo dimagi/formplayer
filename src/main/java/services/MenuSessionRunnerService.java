@@ -205,7 +205,7 @@ public class MenuSessionRunnerService {
         } else {
             BaseResponseBean responseBean = resolveFormGetNext(menuSession);
             if (responseBean == null) {
-                responseBean = new BaseResponseBean(null, "Got null menu, redirecting to home screen.", false, true);
+                responseBean = new BaseResponseBean(null, null, false, true);
             }
             return responseBean;
         }
