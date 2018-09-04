@@ -100,7 +100,8 @@ public class MenuSessionRunnerService {
         MenuBean menuResponseBean;
         // We're looking at a module or form menu
         if (nextScreen instanceof MenuScreen) {
-            menuResponseBean = new CommandListResponseBean((MenuScreen) nextScreen,
+            menuResponseBean = new CommandListResponseBean(
+                    (MenuScreen) nextScreen,
                     menuSession.getSessionWrapper(),
                     menuSession.getId()
             );
