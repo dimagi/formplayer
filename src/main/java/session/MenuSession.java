@@ -130,7 +130,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.breadcrumbs = new ArrayList<>();
         this.breadcrumbs.add(SessionUtils.getAppTitle());
     }
-    
+
     public NotificationMessage updateApp(String updateMode) {
         try {
             if (this.engine.attemptAppUpdate(updateMode)) {
@@ -224,6 +224,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
 
         if (next == null) {
+            if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
+                sessionWrapper.stepBack();
+                return getNextScreen();
+            }
             //XFORM TIME!
             return null;
         } else if (next.equals(SessionFrame.STATE_COMMAND_ID)) {
