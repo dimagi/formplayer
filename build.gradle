@@ -11,6 +11,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
+bootRepackage.enabled = false
 
 jar {
     baseName = 'formplayer'
