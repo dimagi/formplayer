@@ -7,6 +7,24 @@ buildscript {
     }
 }
 
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.3"
+  }
+}
+tasks.withType(com.github.spotbugs.SpotBugsTask) {
+  reports {
+    xml.enabled = false
+    html.enabled = true
+  }
+}
+apply plugin: "com.github.spotbugs"
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
