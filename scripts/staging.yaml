@@ -47,7 +47,3 @@ name: autostaging
 branches: [
     jr/redis-cluster-config,  # jordan 2018/10/18
 ]
-submodules:
-  libs/commcare:
-    trunk: formplayer2
-    branches: []
