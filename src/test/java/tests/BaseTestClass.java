@@ -7,6 +7,8 @@ import beans.debugger.XPathQueryItem;
 import beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import installers.FormplayerInstallerFactory;
+import org.javarosa.core.model.utils.DateUtils;
+import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.junit.After;
 import org.junit.Before;
@@ -166,6 +168,8 @@ public class BaseTestClass {
         PrototypeUtils.setupPrototypes();
         LocalizerManager.setUseThreadLocalStrategy(true);
         new SQLiteProperties().setDataDir("testdbs/");
+        MockTimezoneProvider tzProvider = new MockTimezoneProvider();
+        DateUtils.setTimezoneProvider(tzProvider);
     }
 
     private void setupSubmitServiceMock() {
@@ -658,4 +662,19 @@ public class BaseTestClass {
                 clazz
         );
     }
+
+    public class MockTimezoneProvider extends TimezoneProvider {
+
+        private int offsetMillis;
+
+        public void setOffset(int offset) {
+            this.offsetMillis = offset;
+        }
+
+        @Override
+        public int getTimezoneOffsetMillis() {
+            return offsetMillis;
+        }
+    }
+
 }
