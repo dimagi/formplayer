@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -61,6 +62,8 @@ import services.SyncRequester;
 import services.XFormService;
 import util.FormplayerSentry;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -89,8 +92,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${datasource.formplayer.driverClassName}")
     private String formplayerPostgresDriverName;
 
-    @Value("${redis.hostname}")
+    @Value("${redis.hostname:#{null}}")
     private String redisHostName;
+
+    @Value("${redis.clusterString:#{null}}")
+    private String redisClusterString;
 
     @Value("${sentry.dsn:}")
     private String ravenDsn;
@@ -175,6 +181,12 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
 
     @Bean
     public JedisConnectionFactory jedisConnFactory(){
+        if (redisClusterString != null) {
+            List<String> nodeList = Arrays.asList(redisClusterString.split(","));
+            RedisClusterConfiguration clusterConfig = new RedisClusterConfiguration(nodeList);
+            return new JedisConnectionFactory(clusterConfig);
+        }
+
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
         jedisConnectionFactory.setUsePool(true);
         jedisConnectionFactory.setHostName(redisHostName);
