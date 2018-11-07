@@ -60,21 +60,21 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 logger.info("Validating X-MAC-DIGEST");
                 String header = request.getHeader(Constants.HMAC_HEADER);
                 String body = RequestUtils.getBody(request);
+                String hash;
                 try {
-                    String hash = RequestUtils.getHmac(formplayerAuthKey, body);
-                    if (header.equals(hash)) {
-                        setSmsRequestDetails(request);
-                    } else {
-                        logger.error(String.format("Hash comparison between request %s and generated %s failed",
-                                header, hash));
-                        setResponseUnauthorized(response, "Invalid HMAC hash");
-                        return;
-                    }
+                    hash = RequestUtils.getHmac(formplayerAuthKey, body);
                 } catch (Exception e) {
                     logger.error(String.format("Error generating hash of body %s", body), e);
                     setResponseUnauthorized(response, "Invalid HMAC hash");
                     return;
                 }
+                if (!header.equals(hash)) {
+                    logger.error(String.format("Hash comparison between request %s and generated %s failed",
+                            header, hash));
+                    setResponseUnauthorized(response, "Invalid HMAC hash");
+                    return;
+                }
+                setSmsRequestDetails(request);
             }
             else {
                 if (getSessionId(request) == null) {
