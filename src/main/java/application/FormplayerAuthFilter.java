@@ -1,20 +1,18 @@
 package application;
 
 import beans.auth.HqUserDetailsBean;
+import exceptions.FormNotFoundException;
 import objects.SerializableFormSession;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import repo.FormSessionRepo;
 import services.FormplayerLockRegistry;
 import services.HqUserDetailsService;
-import services.RestoreFactory;
 import util.Constants;
 import util.FormplayerHttpRequest;
 import util.RequestUtils;
@@ -60,32 +58,37 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 logger.info("Validating X-MAC-DIGEST");
                 String header = request.getHeader(Constants.HMAC_HEADER);
                 String body = RequestUtils.getBody(request);
+                String hash;
                 try {
-                    String hash = RequestUtils.getHmac(formplayerAuthKey, body);
-                    if (header.equals(hash)) {
-                        setSmsRequestDetails(request);
-                    } else {
-                        logger.error(String.format("Hash comparison between request %s and generated %s failed",
-                                header, hash));
-                        setResponseUnauthorized(response, "Invalid HMAC hash");
-                        return;
-                    }
+                    hash = RequestUtils.getHmac(formplayerAuthKey, body);
                 } catch (Exception e) {
                     logger.error(String.format("Error generating hash of body %s", body), e);
-                    setResponseUnauthorized(response, "Invalid HMAC hash");
+                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid HMAC hash");
+                    return;
+                }
+                if (!header.equals(hash)) {
+                    logger.error(String.format("Hash comparison between request %s and generated %s failed",
+                            header, hash));
+                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid HMAC hash");
+                    return;
+                }
+                try {
+                    setSmsRequestDetails(request);
+                } catch (FormNotFoundException e) {
+                    setResponseError(response, HttpServletResponse.SC_NOT_FOUND, "Form session not found");
                     return;
                 }
             }
             else {
                 if (getSessionId(request) == null) {
-                    setResponseUnauthorized(response, "Invalid session id");
+                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid auth session");
                     return;
                 }
                 setDomain(request);
                 setUserDetails(request);
                 JSONObject data = RequestUtils.getPostData(request);
                 if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
-                    setResponseUnauthorized(response, "Invalid user");
+                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid user");
                     return;
                 }
             }
@@ -201,9 +204,9 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
 
     }
 
-    public void setResponseUnauthorized(HttpServletResponse response, String message) {
+    public void setResponseError(HttpServletResponse response, int statusCode, String message) {
         response.reset();
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setStatus(statusCode);
         response.setContentType("application/json");
 
         PrintWriter writer = null;
