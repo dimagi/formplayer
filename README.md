@@ -15,7 +15,7 @@ Building and Running
 ------------
 Clone formplayer repository
 
-    $ git clone https://github.com/dimagi/formplayer.git`
+    $ git clone https://github.com/dimagi/formplayer.git
 
 Download submodule dependencies
 
