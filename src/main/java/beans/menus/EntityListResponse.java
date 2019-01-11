@@ -66,6 +66,7 @@ public class EntityListResponse extends MenuBean {
                 throw new ApplicationConfigException(String.format("Could not create detail %s for case with ID %s " +
                         " either because the case filter matched zero or multiple cases.", detailSelection, detail));
             }
+            detail = nextScreen.getLongDetailList(reference)[0];
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
             Vector<TreeReference> references = ec.expandReference(neededDatum.getNodeset());
