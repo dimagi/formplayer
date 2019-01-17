@@ -66,9 +66,9 @@ public class EntityListResponse extends MenuBean {
                 throw new ApplicationConfigException(String.format("Could not create detail %s for case with ID %s " +
                         " either because the case filter matched zero or multiple cases.", detailSelection, detail));
             }
-            Detail longDetail = nextScreen.getLongDetailList(reference)[0];
-            if (longDetail != null) {
-                detail = longDetail;
+            Detail[] longDetails = nextScreen.getLongDetailList(reference);
+            if (longDetails != null) {
+                detail = longDetails[0];
             }
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
