@@ -152,7 +152,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             log.error(message, e);
             return new NotificationMessage(message, true);
         } catch (ResourceInitializationException e) {
-            String message = "Update Failed! Couldn't initialize one of the remote resources";
+            String message = "Update Failed! Couldn't initialize one of the resources";
             log.error(message, e);
             return new NotificationMessage(message, true);
         }
