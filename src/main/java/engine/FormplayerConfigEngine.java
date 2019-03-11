@@ -11,6 +11,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.reference.JavaHttpRoot;
 import org.commcare.resources.model.InstallCancelledException;
+import org.commcare.resources.model.ResourceInitializationException;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.io.BufferedInputStream;
@@ -183,7 +184,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
     }
 
     @Override
-    public void initEnvironment() {
+    public void initEnvironment() throws ResourceInitializationException {
         super.initEnvironment();
         Localization.registerLanguageReference("default",
                 "jr://springfile/formplayer_translatable_strings.txt");
