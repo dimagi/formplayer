@@ -9,6 +9,7 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.trace.AccumulatingReporter;
 import org.javarosa.core.model.trace.EvaluationTraceReporter;
 import org.javarosa.core.model.trace.ReducingTraceReporter;
+import org.javarosa.core.model.trace.TraceSerialization;
 import org.javarosa.core.model.utils.InstrumentationUtils;
 import org.javarosa.engine.XFormPlayer;
 import org.javarosa.engine.xml.XmlUtil;
@@ -51,7 +52,7 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
         if(Constants.BASIC_NO_TRACE.equals(debugTraceLevel)) {
             reporter = null;
         } else if(Constants.TRACE_REDUCE.equals(debugTraceLevel)) {
-            reporter = new ReducingTraceReporter();
+            reporter = new ReducingTraceReporter(false);
         } else if(Constants.TRACE_FULL.equals(debugTraceLevel)) {
             reporter = new AccumulatingReporter();
         }
@@ -71,7 +72,8 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
             serializer.flush();
             output = XmlUtil.getPrettyXml(outputStream.toByteArray());
 
-            trace = InstrumentationUtils.collectAndClearTraces(reporter, "Trace");
+            trace = InstrumentationUtils.collectAndClearTraces(reporter, "Trace",
+                    TraceSerialization.TraceInfoType.FULL_PROFILE);
         } catch (XPathException | XPathSyntaxException e) {
             status = Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
             output = e.getMessage();
