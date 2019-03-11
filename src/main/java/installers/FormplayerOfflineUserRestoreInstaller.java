@@ -44,7 +44,7 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
     @Override
     public boolean install(Resource r, ResourceLocation location,
                            Reference ref, ResourceTable table,
-                           CommCarePlatform platform, boolean upgrade)
+                           CommCarePlatform platform, boolean upgrade, boolean recovery)
             throws UnresolvedResourceException, UnfullfilledRequirementsException {
         if (upgrade) {
             table.commit(r, Resource.RESOURCE_STATUS_INSTALLED);
