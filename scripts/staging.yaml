@@ -46,4 +46,5 @@ trunk: master
 name: autostaging
 branches: [
     jr/redis-cluster-config,  # jordan 2018/10/18
+    formplayer_2.45, # shubham 2019/03/13
 ]
