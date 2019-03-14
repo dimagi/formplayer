@@ -32,7 +32,7 @@ public class SqlHelper {
         try {
             preparedStatement = c.prepareStatement("EXPLAIN QUERY PLAN " + sql);
             for (int i = 1; i <= args.length; i++) {
-                preparedStatement.setString(i, args[i-1]);
+                preparedStatement.setString(i, args[i - 1]);
             }
             ResultSet resultSet = preparedStatement.executeQuery();
             dumpResultSet(resultSet);
@@ -65,7 +65,7 @@ public class SqlHelper {
      * after printing.
      *
      * @param resultSet the ResultSet to print
-     * @param stream the stream to print to
+     * @param stream    the stream to print to
      */
     public static void dumpResultSet(ResultSet resultSet, PrintStream stream) throws SQLException {
         stream.println(">>>>> Dumping cursor " + resultSet);
@@ -192,10 +192,10 @@ public class SqlHelper {
      *                                  is not a valid key to select on for this object
      */
     public static PreparedStatement prepareTableSelectStatementProjection(Connection c,
-                                                                String storageKey,
-                                                                String where,
-                                                                String values[],
-                                                                String[] projections) {
+                                                                          String storageKey,
+                                                                          String where,
+                                                                          String values[],
+                                                                          String[] projections) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < projections.length; i++) {
             builder.append(projections[i]);
@@ -260,7 +260,7 @@ public class SqlHelper {
     }
 
     private static void performInsert(Connection c,
-                                     Pair<List<String>, String> valsAndInsertStatement) {
+                                      Pair<List<String>, String> valsAndInsertStatement) {
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = c.prepareStatement(valsAndInsertStatement.second);
@@ -328,7 +328,7 @@ public class SqlHelper {
     }
 
     private static Pair<List<String>, String> buildInsertOrReplaceStatement(String storageKey,
-                                                                   Map<String, String> contentVals) {
+                                                                            Map<String, String> contentVals) {
         return buildInsertStatement(storageKey, contentVals, "INSERT OR REPLACE INTO ");
     }
 
@@ -342,15 +342,15 @@ public class SqlHelper {
                 Object obj = mPair.second.get(i);
 
                 if (obj instanceof String) {
-                    preparedStatement.setString(i + 1, (String)obj);
+                    preparedStatement.setString(i + 1, (String) obj);
                 } else if (obj instanceof Blob) {
-                    preparedStatement.setBlob(i + 1, (Blob)obj);
+                    preparedStatement.setBlob(i + 1, (Blob) obj);
                 } else if (obj instanceof Integer) {
-                    preparedStatement.setInt(i + 1, (Integer)obj);
+                    preparedStatement.setInt(i + 1, (Integer) obj);
                 } else if (obj instanceof Long) {
-                    preparedStatement.setLong(i + 1, (Long)obj);
+                    preparedStatement.setLong(i + 1, (Long) obj);
                 } else if (obj instanceof byte[]) {
-                    preparedStatement.setBinaryStream(i + 1, new ByteArrayInputStream((byte[])obj), ((byte[])obj).length);
+                    preparedStatement.setBinaryStream(i + 1, new ByteArrayInputStream((byte[]) obj), ((byte[]) obj).length);
                 }
             }
             int affectedRows = preparedStatement.executeUpdate();
@@ -481,15 +481,15 @@ public class SqlHelper {
         int i = 2;
         for (Object obj : values) {
             if (obj instanceof String) {
-                preparedStatement.setString(i, (String)obj);
+                preparedStatement.setString(i, (String) obj);
             } else if (obj instanceof Blob) {
-                preparedStatement.setBlob(i, (Blob)obj);
+                preparedStatement.setBlob(i, (Blob) obj);
             } else if (obj instanceof Integer) {
-                preparedStatement.setInt(i, (Integer)obj);
+                preparedStatement.setInt(i, (Integer) obj);
             } else if (obj instanceof Long) {
-                preparedStatement.setLong(i, (Long)obj);
+                preparedStatement.setLong(i, (Long) obj);
             } else if (obj instanceof byte[]) {
-                preparedStatement.setBinaryStream(i, new ByteArrayInputStream((byte[])obj), ((byte[])obj).length);
+                preparedStatement.setBinaryStream(i, new ByteArrayInputStream((byte[]) obj), ((byte[]) obj).length);
             } else if (obj == null) {
                 preparedStatement.setNull(i, 0);
             }
@@ -525,7 +525,7 @@ public class SqlHelper {
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = connection.prepareStatement(query);
-            for(int i = 1; i <= args.length; i++) {
+            for (int i = 1; i <= args.length; i++) {
                 preparedStatement.setString(i, args[i - 1]);
             }
             preparedStatement.execute();
@@ -577,12 +577,13 @@ public class SqlHelper {
      * @param tableName  name of table
      */
     public static void deleteAllFromTable(Connection connection, String tableName) {
-        String query = "DELETE FROM " + tableName;
-
         PreparedStatement preparedStatement = null;
         try {
-            preparedStatement = connection.prepareStatement(query);
-            preparedStatement.execute();
+            if (isTableExist(connection, tableName)) {
+                String query = "DELETE FROM " + tableName;
+                preparedStatement = connection.prepareStatement(query);
+                preparedStatement.execute();
+            }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
         } finally {
@@ -594,5 +595,27 @@ public class SqlHelper {
                 }
             }
         }
+    }
+
+    private static boolean isTableExist(Connection connection, String tableName) {
+        ResultSet resultSet = null;
+        try {
+            DatabaseMetaData md = connection.getMetaData();
+            resultSet = md.getTables(null, null, tableName, null);
+            if (resultSet.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return false;
     }
 }

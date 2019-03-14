@@ -10,3 +10,4 @@ dbs/*
 gradle.properties
 .java-version
 scripts/*.pyc
+out/

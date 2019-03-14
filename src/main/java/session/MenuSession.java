@@ -9,6 +9,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.resources.model.InstallCancelledException;
+import org.commcare.resources.model.ResourceInitializationException;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
@@ -148,6 +149,10 @@ public class MenuSession implements HereFunctionHandlerListener {
             return new NotificationMessage(message, true);
         } catch (InstallCancelledException e) {
             String message = "Update Failed! Update was cancelled";
+            log.error(message, e);
+            return new NotificationMessage(message, true);
+        } catch (ResourceInitializationException e) {
+            String message = "Update Failed! Couldn't initialize one of the resources";
             log.error(message, e);
             return new NotificationMessage(message, true);
         }
