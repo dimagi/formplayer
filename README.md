@@ -67,6 +67,8 @@ In order to set breakpoints, step through code, and link the runtime with source
 
 After following these steps IntelliJ may need further configuration to work smoothly with Gradle.
 
+Note: You can also use Android Studio as your IDE and follow the same steps as above.
+
 #### Keeping your application.properties up to date
 
 Properties are occasionally added to application.example.properties that will be required to run on the latest version.
