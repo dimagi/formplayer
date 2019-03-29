@@ -3,6 +3,7 @@ package services;
 import engine.FormplayerConfigEngine;
 import exceptions.UnresolvedResourceRuntimeException;
 import installers.FormplayerInstallerFactory;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.reference.ArchiveFileRoot;
@@ -10,6 +11,7 @@ import org.commcare.modern.util.Pair;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import sqlitedb.SQLiteDB;
 import util.Constants;
 import util.SimpleTimer;
@@ -45,7 +47,7 @@ public class InstallService {
                 " and dbPath: " + sqliteDB.getDatabaseFileForDebugPurposes() + " \n" +
                 "and storage factory \" + storageFactory");
         try {
-            if(sqliteDB.databaseFileExists()) {
+            if (sqliteDB.databaseFileExists()) {
                 newInstall = false;
                 // If the SQLiteDB exists then this was not an update
                 // Try reusing old install, fail quietly
@@ -54,7 +56,8 @@ public class InstallService {
                     engine.initEnvironment();
                     return new Pair<>(engine, false);
                 } catch (Exception e) {
-                    log.error("Got exception " + e + " while reinitializing at path " + sqliteDB.getDatabaseFileForDebugPurposes());
+                    log.warn("Warning: Failed to use the existing sandbox located at path " + sqliteDB.getDatabaseFileForDebugPurposes() +
+                            " because of the exception " + e);
                 }
             }
 
