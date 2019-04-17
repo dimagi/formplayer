@@ -1,5 +1,7 @@
 package sqlitedb;
 
+import java.io.File;
+
 import util.Constants;
 
 class ApplicationDBPath extends DBPath {
@@ -18,7 +20,7 @@ class ApplicationDBPath extends DBPath {
 
     @Override
     public String getDatabasePath() {
-        return UserDBPath.getUserDBPath(domain, username, asUsername) + "/" + appId;
+        return UserDBPath.getUserDBPath(domain, username, asUsername) + File.separator + appId;
     }
 
     @Override
