@@ -122,10 +122,10 @@ public class FormEntryTest extends BaseTestClass{
         QuestionBean questionBean = response.getTree()[8];
         QuestionBean[] children = questionBean.getChildren();
 
-        assert children.length == 3;
+        assert children.length == 4;
 
-        QuestionBean red = children[0];
-        QuestionBean blue = children[1];
+        QuestionBean red = children[1];
+        QuestionBean blue = children[2];
 
         assert red.getAnswer().equals(1);
         assert blue.getAnswer().equals(2);
@@ -135,9 +135,9 @@ public class FormEntryTest extends BaseTestClass{
         questionBean = response.getTree()[8];
         children = questionBean.getChildren();
 
-        red = children[0];
-        blue = children[1];
-        QuestionBean green = children[2];
+        red = children[1];
+        blue = children[2];
+        QuestionBean green = children[3];
 
         assert red.getAnswer().equals(1);
         assert blue.getAnswer().equals(2);
