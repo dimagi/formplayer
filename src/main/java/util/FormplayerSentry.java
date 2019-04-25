@@ -161,7 +161,7 @@ public class FormplayerSentry {
         String username = "unknown";
         String synctoken = "unknown";
         String sandboxPath = "unknown";
-        if (restoreFactory == null || not restoreFactory.isConfigured()) {
+        if (restoreFactory != null && restoreFactory.isConfigured()) {
             username = restoreFactory.getEffectiveUsername();
             synctoken = restoreFactory.getSyncToken();
             sandboxPath = restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes();
