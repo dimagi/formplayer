@@ -107,6 +107,7 @@ public class RestoreFactory {
     private boolean useLiveQuery;
     private boolean hasRestored;
     private String caseId;
+    private boolean configured = false;
 
     public void configure(String domain, String caseId, HqAuth auth) {
         this.setUsername(UserUtils.getRestoreAsCaseIdUsername(caseId));
@@ -114,6 +115,7 @@ public class RestoreFactory {
         this.setCaseId(caseId);
         this.setHqAuth(auth);
         this.hasRestored = false;
+        this.configured = true;
         sqLiteDB = new UserDB(domain, username, null);
         log.info(String.format("configuring RestoreFactory with CaseID with arguments " +
                 "username = %s, caseId = %s, domain = %s", username, caseId, domain));
@@ -125,6 +127,7 @@ public class RestoreFactory {
         this.setAsUsername(asUsername);
         this.hqAuth = auth;
         this.hasRestored = false;
+        this.configured = true;
         sqLiteDB = new UserDB(domain, username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
@@ -137,6 +140,7 @@ public class RestoreFactory {
         this.setHqAuth(auth);
         this.setUseLiveQuery(useLiveQuery);
         this.hasRestored = false;
+        this.configured = true;
         sqLiteDB = new UserDB(domain, username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s",
@@ -586,4 +590,6 @@ public class RestoreFactory {
     public String getCaseId() {
         return caseId;
     }
+
+    public boolean isConfigured() { return this.configured; }
 }
