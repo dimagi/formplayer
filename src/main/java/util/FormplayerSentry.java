@@ -158,17 +158,25 @@ public class FormplayerSentry {
     }
 
     private EventBuilder getDefaultBuilder() {
+        String username = "unknown";
+        String synctoken = "unknown";
+        String sandboxPath = "unknown";
+        if (restoreFactory == null || not restoreFactory.isConfigured()) {
+            username = restoreFactory.getEffectiveUsername();
+            synctoken = restoreFactory.getSyncToken();
+            sandboxPath = restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes();
+        }
         return (
                 new EventBuilder()
                 .withEnvironment(environment)
                 .withTag(HQ_HOST_TAG, host)
                 .withTag(DOMAIN_TAG, domain)
-                .withTag(AS_USER, restoreFactory.getEffectiveUsername())
+                .withTag(AS_USER, username)
                 .withTag(URI, request == null ? null : request.getRequestURI())
                 .withExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL())
                 .withExtra(APP_URL_EXTRA, getAppURL())
-                .withExtra(USER_SYNC_TOKEN, restoreFactory == null ? "unknown" : restoreFactory.getSyncToken())
-                .withExtra(USER_SANDBOX_PATH, restoreFactory == null ? "unknown" : restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes())
+                .withExtra(USER_SYNC_TOKEN, synctoken)
+                .withExtra(USER_SANDBOX_PATH, sandboxPath)
         );
     }
 
