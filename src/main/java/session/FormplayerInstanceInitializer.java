@@ -2,8 +2,11 @@ package session;
 
 import database.models.FormplayerCaseIndexTable;
 import engine.FormplayerCaseInstanceTreeElement;
+import engine.FormplayerIndexedFixtureInstanceTreeElement;
 import sandbox.SqlStorage;
 import sandbox.UserSqlSandbox;
+
+import org.commcare.cases.instance.IndexedFixtureInstanceTreeElement;
 import org.commcare.cases.model.Case;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.session.SessionInstanceBuilder;
@@ -72,6 +75,20 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
                         userProperties).getRoot();
         root.setParent(instance.getBase());
         return root;
+    }
+
+    @Override
+    protected AbstractTreeElement setupFixtureData(ExternalDataInstance instance) {
+        AbstractTreeElement indexedFixture = FormplayerIndexedFixtureInstanceTreeElement.get(
+                mSandbox,
+                getRefId(instance.getReference()),
+                instance.getBase());
+
+        if (indexedFixture != null) {
+            return indexedFixture;
+        } else {
+            return loadFixtureRoot(instance, instance.getReference());
+        }
     }
 
     public String getVersionString() {
