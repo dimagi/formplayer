@@ -1,6 +1,7 @@
 package sandbox;
 
 import exceptions.SQLiteRuntimeException;
+
 import org.commcare.modern.util.Pair;
 import org.commcare.modern.database.*;
 import org.javarosa.core.services.Logger;
@@ -260,13 +261,14 @@ public class SqlHelper {
     }
 
     private static void performInsert(Connection c,
-                                      Pair<List<String>, String> valsAndInsertStatement) {
+                                      Pair<List<Object>, String> valsAndInsertStatement) {
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = c.prepareStatement(valsAndInsertStatement.second);
             int i = 1;
-            for (String val : valsAndInsertStatement.first) {
-                preparedStatement.setString(i++, val);
+
+            for (Object val : valsAndInsertStatement.first) {
+                setArgumentToSqlStatement(preparedStatement, val, i++);
             }
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -284,26 +286,26 @@ public class SqlHelper {
 
     public static void basicInsert(Connection c,
                                    String storageKey,
-                                   Map<String, String> contentVals) {
-        Pair<List<String>, String> valsAndInsertStatement =
+                                   Map<String, Object> contentVals) {
+        Pair<List<Object>, String> valsAndInsertStatement =
                 buildInsertStatement(storageKey, contentVals);
         performInsert(c, valsAndInsertStatement);
     }
 
     public static void insertOrReplace(Connection c,
                                        String storageKey,
-                                       Map<String, String> contentValues) {
-        Pair<List<String>, String> valsAndInsertStatement =
+                                       Map<String, Object> contentValues) {
+        Pair<List<Object>, String> valsAndInsertStatement =
                 buildInsertOrReplaceStatement(storageKey, contentValues);
         performInsert(c, valsAndInsertStatement);
     }
 
-    private static Pair<List<String>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, String> contentVals,
+    private static Pair<List<Object>, String> buildInsertStatement(String storageKey,
+                                                                   Map<String, Object> contentVals,
                                                                    String insertStatement) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(insertStatement).append(storageKey).append(" (");
-        List<String> values = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
         String prefix = "";
         for (String key : contentVals.keySet()) {
             stringBuilder.append(prefix);
@@ -322,13 +324,13 @@ public class SqlHelper {
         return Pair.create(values, stringBuilder.toString());
     }
 
-    private static Pair<List<String>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, String> contentVals) {
+    private static Pair<List<Object>, String> buildInsertStatement(String storageKey,
+                                                                   Map<String, Object> contentVals) {
         return buildInsertStatement(storageKey, contentVals, "INSERT INTO ");
     }
 
-    private static Pair<List<String>, String> buildInsertOrReplaceStatement(String storageKey,
-                                                                            Map<String, String> contentVals) {
+    private static Pair<List<Object>, String> buildInsertOrReplaceStatement(String storageKey,
+                                                                            Map<String, Object> contentVals) {
         return buildInsertStatement(storageKey, contentVals, "INSERT OR REPLACE INTO ");
     }
 
@@ -340,18 +342,7 @@ public class SqlHelper {
             preparedStatement = c.prepareStatement(mPair.first);
             for (int i = 0; i < mPair.second.size(); i++) {
                 Object obj = mPair.second.get(i);
-
-                if (obj instanceof String) {
-                    preparedStatement.setString(i + 1, (String) obj);
-                } else if (obj instanceof Blob) {
-                    preparedStatement.setBlob(i + 1, (Blob) obj);
-                } else if (obj instanceof Integer) {
-                    preparedStatement.setInt(i + 1, (Integer) obj);
-                } else if (obj instanceof Long) {
-                    preparedStatement.setLong(i + 1, (Long) obj);
-                } else if (obj instanceof byte[]) {
-                    preparedStatement.setBinaryStream(i + 1, new ByteArrayInputStream((byte[]) obj), ((byte[]) obj).length);
-                }
+                setArgumentToSqlStatement(preparedStatement, obj, i+1);
             }
             int affectedRows = preparedStatement.executeUpdate();
 
@@ -384,6 +375,20 @@ public class SqlHelper {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    private static void setArgumentToSqlStatement(PreparedStatement preparedStatement, Object arg, int index) throws SQLException {
+        if (arg instanceof String) {
+            preparedStatement.setString(index, (String)arg);
+        } else if (arg instanceof Blob) {
+            preparedStatement.setBlob(index, (Blob)arg);
+        } else if (arg instanceof Integer) {
+            preparedStatement.setInt(index, (Integer)arg);
+        } else if (arg instanceof Long) {
+            preparedStatement.setLong(index, (Long)arg);
+        } else if (arg instanceof byte[]) {
+            preparedStatement.setBinaryStream(index, new ByteArrayInputStream((byte[])arg), ((byte[])arg).length);
         }
     }
 
@@ -470,7 +475,6 @@ public class SqlHelper {
      * @param values            the ordered values to use in the PreparedStatement (corresponding to the
      *                          '?' in the query string)
      * @return the index of the next '?' NOT populated by this helper
-     * @throws SQLException
      */
     public static int setPreparedStatementArgs(PreparedStatement preparedStatement,
                                                Persistable persistable,
@@ -481,15 +485,15 @@ public class SqlHelper {
         int i = 2;
         for (Object obj : values) {
             if (obj instanceof String) {
-                preparedStatement.setString(i, (String) obj);
+                preparedStatement.setString(i, (String)obj);
             } else if (obj instanceof Blob) {
-                preparedStatement.setBlob(i, (Blob) obj);
+                preparedStatement.setBlob(i, (Blob)obj);
             } else if (obj instanceof Integer) {
-                preparedStatement.setInt(i, (Integer) obj);
+                preparedStatement.setInt(i, (Integer)obj);
             } else if (obj instanceof Long) {
-                preparedStatement.setLong(i, (Long) obj);
+                preparedStatement.setLong(i, (Long)obj);
             } else if (obj instanceof byte[]) {
-                preparedStatement.setBinaryStream(i, new ByteArrayInputStream((byte[]) obj), ((byte[]) obj).length);
+                preparedStatement.setBinaryStream(i, new ByteArrayInputStream((byte[])obj), ((byte[])obj).length);
             } else if (obj == null) {
                 preparedStatement.setNull(i, 0);
             }
