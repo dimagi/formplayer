@@ -11,6 +11,8 @@ import org.commcare.suite.model.StackFrameStep;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
+import org.javarosa.xpath.XPathException;
+
 import sandbox.SqlStorage;
 
 import java.util.NoSuchElementException;
@@ -36,9 +38,12 @@ public class SessionUtils {
         String[] stepTitles;
         try {
             stepTitles = session.getHeaderTitles();
-        } catch (NoLocalizedTextException e) {
+        } catch (NoLocalizedTextException | XPathException e) {
             // localization resources may not be installed while in the middle
             // of an update, so default to a generic title
+
+            // Also Catch XPathExceptions here since we don't want to show the xpath error on app startup
+            // and these errors will be visible later to the user when they go to the respective menu
             return null;
         }
 
