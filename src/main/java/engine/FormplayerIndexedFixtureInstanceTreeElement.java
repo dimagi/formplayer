@@ -17,8 +17,8 @@ public class FormplayerIndexedFixtureInstanceTreeElement extends IndexedFixtureI
     private TreeElement attributes;
 
     private FormplayerIndexedFixtureInstanceTreeElement(AbstractTreeElement instanceRoot,
-                                                    IStorageUtilityIndexed<StorageIndexedTreeElementModel> storage,
-                                                    IndexedFixtureIdentifier indexedFixtureIdentifier) {
+                                                        IStorageUtilityIndexed<StorageIndexedTreeElementModel> storage,
+                                                        IndexedFixtureIdentifier indexedFixtureIdentifier) {
         super(instanceRoot, storage, indexedFixtureIdentifier);
     }
 
@@ -44,6 +44,7 @@ public class FormplayerIndexedFixtureInstanceTreeElement extends IndexedFixtureI
                     String newMessage = "Deserialization failed for indexed fixture root atrribute wrapper: " + e.getMessage();
                     throw new RuntimeException(newMessage);
                 }
+                throw e;
             }
         }
         return attributes;
