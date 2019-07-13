@@ -6,9 +6,11 @@ import org.commcare.cases.model.StorageIndexedTreeElementModel;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.database.IndexedFixturePathsConstants;
-import org.commcare.modern.util.Pair;
+import org.commcare.modern.database.TableBuilder;
+import org.javarosa.core.model.IndexedFixtureIdentifier;
 import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import services.ConnectionHandler;
 
@@ -91,7 +93,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     }
 
     @Override
-    public Pair<String, String> getIndexedFixturePathBases(String fixtureName) {
+    public IndexedFixtureIdentifier getIndexedFixtureIdentifier(String fixtureName) {
         Connection connection;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -102,9 +104,10 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
             preparedStatement.setString(1, fixtureName);
             resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                String base = resultSet.getString(1);
-                String child = resultSet.getString(2);
-                return new Pair<>(base, child);
+                return new IndexedFixtureIdentifier(
+                        resultSet.getString(1),
+                        resultSet.getString(2),
+                        resultSet.getBytes(3));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -130,11 +133,12 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
 
     @Override
     public void setIndexedFixturePathBases(String fixtureName, String baseName,
-                                           String childName) {
-        Map<String, String> contentVals = new HashMap<>();
+                                           String childName,  TreeElement attrs) {
+        Map<String, Object> contentVals = new HashMap<>();
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_BASE, baseName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_CHILD, childName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_NAME, fixtureName);
+        contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_ATTRIBUTES, TableBuilder.toBlob(attrs));
         sqlUtil.insertOrReplace(contentVals);
     }
 

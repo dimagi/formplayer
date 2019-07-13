@@ -91,7 +91,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
      */
     public void indexCase(Case c) {
         for (CaseIndex ci : c.getIndices()) {
-            HashMap<String, String> contentValues = new HashMap<>();
+            HashMap<String, Object> contentValues = new HashMap<>();
             contentValues.put(COL_CASE_RECORD_ID, "" + c.getID());
             contentValues.put(COL_INDEX_NAME, ci.getName());
             contentValues.put(COL_INDEX_TYPE, ci.getTargetType());
