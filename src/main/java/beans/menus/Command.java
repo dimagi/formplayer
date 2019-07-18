@@ -2,6 +2,8 @@ package beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.Api;
+
+import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.CommCareSession;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.Entry;
@@ -35,10 +37,11 @@ public class Command {
 
     public Command(){}
 
-    public Command(MenuDisplayable menuDisplayable, int index, CommCareSession session, String badgeText){
+    public Command(MenuDisplayable menuDisplayable, int index, SessionWrapper session, String badgeText){
         super();
         this.setIndex(index);
-        this.setDisplayText(menuDisplayable.getDisplayText());
+        this.setDisplayText(menuDisplayable.getDisplayText(
+                session.getEvaluationContextWithAccumulatedInstances(menuDisplayable.getCommandID(), menuDisplayable.getRawText())));
         this.setImageUri(menuDisplayable.getImageURI());
         this.setAudioUri(menuDisplayable.getAudioURI());
         this.setNavigationState(getIconState(menuDisplayable, session));
