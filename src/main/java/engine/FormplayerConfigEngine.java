@@ -3,11 +3,13 @@ package engine;
 import exceptions.ApplicationConfigException;
 import exceptions.FormattedApplicationConfigException;
 import installers.FormplayerInstallerFactory;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.commcare.core.network.CommCareNetworkServiceGenerator;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.reference.JavaHttpRoot;
 import org.commcare.resources.model.InstallCancelledException;
@@ -49,12 +51,12 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         this.mArchiveRoot = formplayerArchiveFileRoot;
         ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
-    
+
     private String parseAppId(String url) {
         String appId = null;
         try {
             List<NameValuePair> params = new URIBuilder(url).getQueryParams();
-            for (NameValuePair param: params) {
+            for (NameValuePair param : params) {
                 if (param.getName().equals("app_id")) {
                     appId = param.getValue();
                 }
@@ -108,9 +110,11 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         BufferedInputStream bis = null;
         try {
             URL url = new URL(resource);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             conn.setInstanceFollowRedirects(true);  //you still need to handle redirect manully.
             HttpURLConnection.setFollowRedirects(true);
+            conn.setReadTimeout(CommCareNetworkServiceGenerator.CONNECTION_SO_TIMEOUT);
+            conn.setConnectTimeout(CommCareNetworkServiceGenerator.CONNECTION_TIMEOUT);
 
             if (conn.getResponseCode() == 400) {
                 handleInstallError(conn.getErrorStream());
