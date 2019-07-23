@@ -3,7 +3,9 @@ package engine;
 import exceptions.ApplicationConfigException;
 import exceptions.FormattedApplicationConfigException;
 import installers.FormplayerInstallerFactory;
+
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
@@ -22,6 +24,7 @@ import org.javarosa.core.reference.ResourceReferenceFactory;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -49,12 +52,12 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         this.mArchiveRoot = formplayerArchiveFileRoot;
         ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
-    
+
     private String parseAppId(String url) {
         String appId = null;
         try {
             List<NameValuePair> params = new URIBuilder(url).getQueryParams();
-            for (NameValuePair param: params) {
+            for (NameValuePair param : params) {
                 if (param.getName().equals("app_id")) {
                     appId = param.getValue();
                 }
@@ -108,7 +111,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         BufferedInputStream bis = null;
         try {
             URL url = new URL(resource);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             conn.setInstanceFollowRedirects(true);  //you still need to handle redirect manully.
             HttpURLConnection.setFollowRedirects(true);
 
@@ -119,9 +122,11 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
                         "Server is too busy. Please try again in a moment."
                 );
             } else if (conn.getResponseCode() == 500) {
-                throw new ApplicationConfigException(
-                        "There are errors in your application. Please fix these errors in your application before using app preview."
-                );
+                String errorMessage = parseErrorFromResponse(conn);
+                if (StringUtils.isEmpty(errorMessage)) {
+                    errorMessage = "There are errors in your application. Please fix these errors in your application before using app preview.";
+                }
+                throw new ApplicationConfigException(errorMessage);
             } else if (conn.getResponseCode() == 504) {
                 throw new RuntimeException(
                         "Timed out fetching the CommCare application. Please submit a ticket if you continue to see this."
@@ -159,6 +164,27 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
                 log.error("Exception closing input stream " + bis, e);
             }
         }
+    }
+
+    private String parseErrorFromResponse(HttpURLConnection connection) {
+        if (connection.getErrorStream() != null) {
+            try {
+                String errorStr = new String(StreamsUtil.inputStreamToByteArray(connection.getErrorStream()));
+                JSONObject errorJson = new JSONObject(errorStr);
+                if (errorJson.has("errors")) {
+                    JSONArray errors = errorJson.getJSONArray("errors");
+                    String consolidatedErrorMessage = "";
+                    for (int i = 0; i < errors.length(); i++) {
+                        consolidatedErrorMessage += errors.getString(i);
+                        consolidatedErrorMessage += "\n";
+                    }
+                    return consolidatedErrorMessage;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     private void handleInstallError(InputStream errorStream) {
