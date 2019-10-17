@@ -31,8 +31,12 @@ public abstract class Timing {
             return "lt_060s";
         } else if (timeInSeconds < 120) {
             return "lt_120s";
+        } else if (timeInSeconds < 300) {
+            return "lt_300s";
+        } else if (timeInSeconds < 600) {
+            return "lt_600s";
         } else {
-            return "over_120s";
+            return "over_600s";
         }
     }
 }
