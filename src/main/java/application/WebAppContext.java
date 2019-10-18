@@ -32,7 +32,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -61,7 +60,6 @@ import services.RestoreFactory;
 import services.SubmitService;
 import services.SyncRequester;
 import services.XFormService;
-import util.Constants;
 import util.FormplayerSentry;
 
 import java.util.Arrays;
@@ -349,13 +347,8 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsService(builder); }
 
     @Bean
-    public RestTemplate hqRest(RestTemplateBuilder builder) { return builder.build(); }
-
-    @Bean
     public RestTemplateBuilder restTemplateBuilder() {
-        return new RestTemplateBuilder()
-                .setConnectTimeout(Constants.CONNECT_TIMEOUT)
-                .setReadTimeout(Constants.READ_TIMEOUT);
+        return new RestTemplateBuilder();
     }
 
     @Bean
