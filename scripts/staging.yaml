@@ -44,5 +44,5 @@
 
 trunk: master
 name: autostaging
-branches:
-  - revert-690-revert-688-dm/hq-timeouts  # Danny 2019-10-18, Daniel's code
+branches: []
+#  - revert-690-revert-688-dm/hq-timeouts  # Danny 2019-10-18, Daniel's code
