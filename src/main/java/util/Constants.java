@@ -108,6 +108,8 @@ public class Constants {
     public static final int USER_LOCK_TIMEOUT = 21;
     // 15 minutes in milliseconds
     public static final int LOCK_DURATION = 60 * 15 * 1000;
+    public static final int CONNECT_TIMEOUT = 60 * 1000;
+    public static final int READ_TIMEOUT = LOCK_DURATION;
 
     //Misc
     public static String HMAC_HEADER = "X-MAC-DIGEST";
