@@ -98,6 +98,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     @Value("${redis.clusterString:#{null}}")
     private String redisClusterString;
 
+    @Value("${redis.Password:#{null}}")
+    private String redisPassword;
+
     @Value("${sentry.dsn:}")
     private String ravenDsn;
 
@@ -184,6 +187,9 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         if (redisClusterString != null) {
             List<String> nodeList = Arrays.asList(redisClusterString.split(","));
             RedisClusterConfiguration clusterConfig = new RedisClusterConfiguration(nodeList);
+            if (redisPassword != null){
+                clusterConfig.setPassword(redisPassword);
+            }
             return new JedisConnectionFactory(clusterConfig);
         }
 
