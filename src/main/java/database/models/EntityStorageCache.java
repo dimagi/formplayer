@@ -97,7 +97,7 @@ public class EntityStorageCache {
                         new String[]{this.mCacheName, entityKey, cacheKey});
         SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
         //We need to clear this cache value if it exists first.
-        HashMap<String, String> contentValues = new HashMap<>();
+        HashMap<String, Object> contentValues = new HashMap<>();
         contentValues.put(COL_CACHE_NAME, mCacheName);
         contentValues.put(COL_ENTITY_KEY, entityKey);
         contentValues.put(COL_CACHE_KEY, cacheKey);

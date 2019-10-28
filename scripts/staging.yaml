@@ -44,7 +44,5 @@
 
 trunk: master
 name: autostaging
-branches: [
-    jr/redis-cluster-config,  # jordan 2018/10/18
-    formplayer_2.45, # shubham 2019/03/13
-]
+branches: []
+#  - revert-690-revert-688-dm/hq-timeouts  # Danny 2019-10-18, Daniel's code

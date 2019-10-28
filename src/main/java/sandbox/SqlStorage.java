@@ -92,12 +92,12 @@ public class SqlStorage<T extends Persistable>
         }
     }
 
-    public void basicInsert(Map<String, String> contentVals) {
+    public void basicInsert(Map<String, Object> contentVals) {
         Connection connection = getConnection();
         SqlHelper.basicInsert(connection, tableName, contentVals);
     }
 
-    public void insertOrReplace(Map<String, String> contentVals) {
+    public void insertOrReplace(Map<String, Object> contentVals) {
         Connection connection = getConnection();
         SqlHelper.insertOrReplace(connection, tableName, contentVals);
     }
