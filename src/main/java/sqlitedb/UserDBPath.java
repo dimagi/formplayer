@@ -2,6 +2,9 @@ package sqlitedb;
 
 import application.SQLiteProperties;
 import org.commcare.modern.database.TableBuilder;
+
+import java.io.File;
+
 import util.Constants;
 
 class UserDBPath extends DBPath {
@@ -18,7 +21,7 @@ class UserDBPath extends DBPath {
     }
 
     static String getUserDBPath(String domain, String username, String asUsername) {
-        return SQLiteProperties.getDataDir() + domain + "/" + TableBuilder.scrubName(getUsernameDetail(username, asUsername));
+        return SQLiteProperties.getDataDir() + domain + File.separator + TableBuilder.scrubName(getUsernameDetail(username, asUsername));
     }
 
     private static String getUsernameDetail(String username, String asUsername) {
