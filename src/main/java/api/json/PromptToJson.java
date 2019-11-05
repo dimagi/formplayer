@@ -45,12 +45,8 @@ public class PromptToJson {
         parseQuestionAnswer(questionJson, prompt);
         questionJson.put("ix", jsonNullIfNull(prompt.getIndex()));
 
-        if (prompt.getDataType() == Constants.DATATYPE_CHOICE ||
-                prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
+        if (prompt.getDataType() == Constants.DATATYPE_CHOICE || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
             questionJson.put("choices", parseSelect(prompt));
-            if ("label".equals(prompt.getAppearanceHint())) {
-                questionJson.put("hide", true);
-            }
         }
     }
 
