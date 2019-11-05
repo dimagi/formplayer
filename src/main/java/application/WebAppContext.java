@@ -60,6 +60,7 @@ import services.XFormService;
 import util.Constants;
 import util.FormplayerSentry;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -320,8 +321,8 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public RestTemplateBuilder restTemplateBuilder() {
         return new RestTemplateBuilder()
-                .setConnectTimeout(Constants.CONNECT_TIMEOUT)
-                .setReadTimeout(Constants.READ_TIMEOUT);
+                .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
+                .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT));
     }
 
     @Bean
