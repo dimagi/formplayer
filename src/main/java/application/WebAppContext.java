@@ -349,6 +349,7 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
     public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsService(builder); }
 
     @Bean
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public RestTemplate hqRest(RestTemplateBuilder builder) { return builder.build(); }
 
     @Bean
