@@ -23,6 +23,10 @@ public class SQLiteProperties {
 
     @Value("${sqlite.dataDir}")
     public void setDataDir(String dataDir) {
-        this.dataDir = dataDir;
+        this.dataDir = normalizeUnixStylePathReferences(dataDir);
+    }
+
+    private String normalizeUnixStylePathReferences(String input) {
+        return input.replaceAll("\\/",String.format("\\%s", File.separator));
     }
 }
