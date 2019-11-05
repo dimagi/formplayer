@@ -36,7 +36,6 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     private final Log log = LogFactory.getLog(PostgresFormSessionRepo.class);
 
     @Autowired
-    @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
 
     @PostConstruct

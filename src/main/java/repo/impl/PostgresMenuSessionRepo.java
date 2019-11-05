@@ -27,7 +27,6 @@ import java.util.Optional;
 public class PostgresMenuSessionRepo implements MenuSessionRepo {
 
     @Autowired
-    @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
 
     @Override
