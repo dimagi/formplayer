@@ -1,15 +1,14 @@
 package db.migration;
 
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Arrays;
 
 /**
  * Give old incomplete forms a default value
  */
-public class V8__form_session_as_user implements SpringJdbcMigration {
+public class V8__form_session_as_user extends BaseFormplayerMigration {
     @Override
-    public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
+    public Iterable<String> getSqlStatements() {
+        return Arrays.asList("ALTER TABLE formplayer_sessions " +
                 "ADD asUser VARCHAR");
     }
 }
