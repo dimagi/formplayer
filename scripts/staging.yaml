@@ -6,6 +6,11 @@
 # From your formplayer directory with the virtualenv turned on and master
 # checked out to safely push your changes to scripts/staging.yaml
 #     $ scripts/commit-staging --push
+# setup or activate virtualenv with rebuildstaging requirements
+#     $ workon formplayer
+#  OR
+#     $ mkvirtualenv formplayer
+#     $ pip install -r scripts/rebuildstaging-requirements.txt
 # to check if your branch causes any conflicts before rebuilding
 #     $ scripts/rebuildstaging --no-push
 # to rebuild from your new spec and deploy
