@@ -93,6 +93,9 @@ public class RestoreFactory {
     @Autowired
     private FormplayerStorageFactory storageFactory;
 
+    @Autowired
+    private RestTemplate hqRest;
+
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
 
@@ -399,11 +402,10 @@ public class RestoreFactory {
     }
 
     private InputStream getRestoreXmlHelper(String restoreUrl, HttpHeaders headers) {
-        RestTemplate restTemplate = new RestTemplate();
         log.info("Restoring at domain: " + domain + " with url: " + restoreUrl);
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
-        ResponseEntity<org.springframework.core.io.Resource> response = restTemplate.exchange(
+        ResponseEntity<org.springframework.core.io.Resource> response = hqRest.exchange(
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),
