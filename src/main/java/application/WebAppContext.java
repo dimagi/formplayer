@@ -13,7 +13,6 @@ import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
 import io.sentry.SentryClientFactory;
 import io.sentry.dsn.InvalidDsnException;
-import org.apache.tomcat.jdbc.pool.DataSource;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -22,21 +21,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
@@ -72,25 +67,13 @@ import java.util.Properties;
 @EnableWebMvc
 @ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*", "installers.*"})
 @EnableAspectJAutoProxy
-public class WebAppContext extends WebMvcConfigurerAdapter {
+public class WebAppContext implements WebMvcConfigurer {
 
     @Value("${commcarehq.environment}")
     private String environment;
 
     @Value("${commcarehq.host}")
     private String hqHost;
-
-    @Value("${datasource.formplayer.url}")
-    private String formplayerPostgresUrl;
-
-    @Value("${datasource.formplayer.username}")
-    private String formplayerPostgresUsername;
-
-    @Value("${datasource.formplayer.password}")
-    private String formplayerPostgresPassword;
-
-    @Value("${datasource.formplayer.driverClassName}")
-    private String formplayerPostgresDriverName;
 
     @Value("${redis.hostname:#{null}}")
     private String redisHostName;
@@ -158,25 +141,6 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
                 "localhost",
                 8125
         );
-    }
-
-    @Bean
-    public JdbcTemplate formplayerTemplate(){
-        return new JdbcTemplate(formplayerDataSource());
-    }
-
-    @Primary
-    @Bean
-    public DataSource formplayerDataSource() {
-        org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
-        ds.setDriverClassName(formplayerPostgresDriverName);
-        ds.setUrl(formplayerPostgresUrl);
-        ds.setUsername(formplayerPostgresUsername);
-        ds.setPassword(formplayerPostgresPassword);
-        ds.setRemoveAbandoned(true);
-        ds.setTestOnBorrow(true);
-        ds.setValidationQuery("select 1");
-        return ds;
     }
 
     @Bean

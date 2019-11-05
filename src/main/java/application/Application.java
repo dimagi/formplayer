@@ -41,19 +41,8 @@ public class Application {
     public static void main(String[] args) {
         PrototypeUtils.setupPrototypes();
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
-        migrate();
         LocalizerManager.setUseThreadLocalStrategy(true);
         ReferenceHandler.setUseThreadLocalStrategy(true);
-    }
-
-    /**
-     * Attempt to run any outstanding migration in migration
-     * Does nothing if DB is up to date
-     */
-    private static void migrate() {
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.migrate();
     }
 
     // automatically pulls the @Primary DataSource from WebAppContext

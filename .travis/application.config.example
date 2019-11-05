@@ -7,30 +7,16 @@ server.port=8080
 redis.hostname=localhost
 sqlite.dataDir=dbs/  # Must end in /
 
-couch.username=commcarehq
-couch.password=commcarehq
-couch.protocol=http
-couch.host=localhost
-couch.port=5984
-couch.databaseName=commcarehq
-
-// Properties for HQ db
-datasource.hq.driverClassName=org.postgresql.Driver
-datasource.hq.url=jdbc:postgresql://localhost:5432/commcarehq?prepareThreshold=0
-datasource.hq.username=postgres
-datasource.hq.password=
-
-datasource.formplayer.driverClassName=org.postgresql.Driver
-datasource.formplayer.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
-datasource.formplayer.username=postgres
-datasource.formplayer.password=
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
+spring.datasource.username=postgres
+spring.datasource.password=
 
 // set flyway URL to Formplayer's own DB
-flyway.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
-flyway.user=postgres
-flyway.password=
-flyway.driverClassName=org.postgresql.Driver
-flyway.location=classpath:db/migration
+spring.flyway.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
+spring.flyway.user=postgres
+spring.flyway.password=
+spring.flyway.locations=classpath:db/migration
 
 spring.jpa.hibernate.ddl-auto
 
