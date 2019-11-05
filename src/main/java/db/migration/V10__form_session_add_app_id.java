@@ -1,15 +1,14 @@
 package db.migration;
 
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Arrays;
 
 /**
  * Add appId to form session
  */
-public class V10__form_session_add_app_id implements SpringJdbcMigration {
+public class V10__form_session_add_app_id extends BaseFormplayerMigration {
     @Override
-    public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
+    public Iterable<String> getSqlStatements() {
+        return Arrays.asList("ALTER TABLE formplayer_sessions " +
                 "ADD appid VARCHAR DEFAULT NULL");
     }
 }

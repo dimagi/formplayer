@@ -1,9 +1,11 @@
 package db.migration;
 
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
+import org.flywaydb.core.api.migration.BaseJavaMigration;
+import org.flywaydb.core.api.migration.Context;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,9 +16,10 @@ import java.util.List;
 /**
  * Attempt to fix null appId in form session
  */
-public class V11__form_session_add_missing_appid implements SpringJdbcMigration {
+public class V11__form_session_add_missing_appid extends BaseJavaMigration {
     @Override
-    public void migrate(final JdbcTemplate jdbcTemplate) throws Exception {
+    public void migrate(Context context) throws Exception {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
         String sql = "SELECT * FROM formplayer_sessions WHERE COALESCE(appid, '') = ''";
         List toBeFixed = jdbcTemplate.query(sql, new ResultSetExtractor<List>(){
 

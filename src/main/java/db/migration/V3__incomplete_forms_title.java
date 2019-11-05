@@ -1,19 +1,18 @@
 package db.migration;
 
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Arrays;
 
 /**
  * Initialize the formplayer session database
  * @author wspride
  */
-public class V3__incomplete_forms_title implements SpringJdbcMigration {
+public class V3__incomplete_forms_title extends BaseFormplayerMigration {
 
     @Override
-    public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
-                "ADD title text");
-        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
-                "ADD dateOpened text");
+    public Iterable<String> getSqlStatements() {
+        return Arrays.asList(
+                "ALTER TABLE formplayer_sessions ADD title text",
+                "ALTER TABLE formplayer_sessions ADD dateOpened text"
+        );
     }
 }
