@@ -150,17 +150,18 @@ public class WebAppContext implements WebMvcConfigurer {
     public JedisConnectionFactory jedisConnFactory(){
         if (redisClusterString != null) {
             List<String> nodeList = Arrays.asList(redisClusterString.split(","));
-            RedisClusterConfiguration clusterConfig = new RedisClusterConfiguration(nodeList);
-            if (redisPassword != null){
-                clusterConfig.setPassword(redisPassword);
+            RedisClusterConfiguration config = new RedisClusterConfiguration(nodeList);
+            if (redisPassword != null && !redisPassword.isEmpty()) {
+                config.setPassword(redisPassword);
             }
-            return new JedisConnectionFactory(clusterConfig);
+            return new JedisConnectionFactory(config);
+        } else {
+            RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHostName);
+            if (redisPassword != null && !redisPassword.isEmpty()) {
+                config.setPassword(redisPassword);
+            }
+            return new JedisConnectionFactory(config);
         }
-
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        jedisConnectionFactory.setUsePool(true);
-        jedisConnectionFactory.setHostName(redisHostName);
-        return jedisConnectionFactory;
     }
 
     @Bean
