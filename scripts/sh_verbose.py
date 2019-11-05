@@ -11,10 +11,10 @@ _original_init = sh.RunningCommand.__init__
 
 
 def _verbose_init(self, cmd, call_args, stdin, stdout, stderr):
-    print u"[{cwd}]$ {command}".format(
+    print(u"[{cwd}]$ {command}".format(
         cwd=format_cwd(call_args['cwd']),
         command=' '.join(cmd[0].rsplit('/', 1)[1:] + cmd[1:]),
-    )
+    ))
     try:
         _original_init(self, cmd, call_args, stdin, stdout, stderr)
     except sh.ErrorReturnCode as e:
