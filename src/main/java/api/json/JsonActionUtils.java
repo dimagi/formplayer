@@ -296,9 +296,7 @@ public class JsonActionUtils {
             fem.setQuestionIndex(prompt.getIndex());
             JSONObject obj = new JSONObject();
             PromptToJson.parseQuestionType(fem, obj);
-            if (!obj.has("hide")) {
-                ret.put(obj);
-            }
+            ret.put(obj);
         }
         return ret;
     }
