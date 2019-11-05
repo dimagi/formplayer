@@ -3,6 +3,8 @@ package application;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+
 /**
  * This class represents properties for the SQLite databases
  */
@@ -14,7 +16,7 @@ public class SQLiteProperties {
 
     public static String getDataDir() {
         if (dataDir == null) {
-            return "dbs/";
+            return String.format("dbs%s", File.separator);
         }
         return dataDir;
     }
