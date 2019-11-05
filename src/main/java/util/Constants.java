@@ -102,7 +102,8 @@ public class Constants {
             Pattern.compile("swagger.*"),
             Pattern.compile("webjars/.*"),
             Pattern.compile("configuration/.*"),
-            Pattern.compile("v2/.*")
+            Pattern.compile("v2/.*"),
+            Pattern.compile("favicon.ico")
     ));
 
     public static final int USER_LOCK_TIMEOUT = 21;
