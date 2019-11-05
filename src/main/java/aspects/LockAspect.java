@@ -76,7 +76,7 @@ public class LockAspect {
             username = TableBuilder.scrubName(bean.getUsernameDetail());
         }
         else {
-            SerializableFormSession formSession = formSessionRepo.findOne(bean.getSessionId());
+            SerializableFormSession formSession = formSessionRepo.findOneWrapped(bean.getSessionId());
             String tempUser = formSession.getUsername();
             String restoreAs = formSession.getAsUser();
             String restoreAsCaseId = formSession.getRestoreAsCaseId();
