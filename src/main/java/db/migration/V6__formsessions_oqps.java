@@ -1,17 +1,19 @@
 package db.migration;
 
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Arrays;
 
 /**
  * Give old incomplete forms a default value
  */
-public class V6__formsessions_oqps implements SpringJdbcMigration {
+public class V6__formsessions_oqps extends BaseFormplayerMigration {
     @Override
-    public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
-                "ADD oneQuestionPerScreen boolean DEFAULT false");
-        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
-                "ADD currentIndex integer DEFAULT -1");
+    public Iterable<String> getSqlStatements() {
+        return Arrays.asList(
+                "ALTER TABLE formplayer_sessions " +
+                "ADD oneQuestionPerScreen boolean DEFAULT false",
+
+                "ALTER TABLE formplayer_sessions " +
+                "ADD currentIndex integer DEFAULT -1"
+        );
     }
 }

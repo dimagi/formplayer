@@ -1,15 +1,14 @@
 package db.migration;
 
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Arrays;
 
 /**
  * Add appId to form session
  */
-public class V13__form_session_add_function_context implements SpringJdbcMigration {
+public class V13__form_session_add_function_context extends BaseFormplayerMigration {
     @Override
-    public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
+    public Iterable<String> getSqlStatements() {
+        return Arrays.asList("ALTER TABLE formplayer_sessions " +
                 "ADD functioncontext bytea");
     }
 }

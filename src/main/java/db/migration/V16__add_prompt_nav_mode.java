@@ -1,15 +1,14 @@
 package db.migration;
 
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Arrays;
 
 /**
  * Created by willpride on 11/9/17.
  */
-public class V16__add_prompt_nav_mode implements SpringJdbcMigration {
+public class V16__add_prompt_nav_mode extends BaseFormplayerMigration {
     @Override
-    public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-        jdbcTemplate.execute("ALTER TABLE formplayer_sessions " +
+    public Iterable<String> getSqlStatements() {
+        return Arrays.asList("ALTER TABLE formplayer_sessions " +
                 "ADD inPromptMode boolean DEFAULT false");
     }
 }
