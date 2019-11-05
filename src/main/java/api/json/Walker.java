@@ -87,9 +87,7 @@ public class Walker {
                 compiler.put(obj);
                 currentIndex = step(currentIndex, true);
             } else {
-                if (!obj.has("hide")) {
-                    compiler.put(obj);
-                }
+                compiler.put(obj);
                 currentIndex = step(currentIndex, true);
             }
         }
