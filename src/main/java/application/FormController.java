@@ -221,7 +221,7 @@ public class FormController extends AbstractBaseController{
     }
 
     protected void deleteSession(String id) {
-        formSessionRepo.delete(id);
+        formSessionRepo.deleteById(id);
     }
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {

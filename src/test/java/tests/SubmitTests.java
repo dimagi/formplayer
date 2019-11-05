@@ -37,7 +37,7 @@ public class SubmitTests extends BaseTestClass {
                 .when(submitServiceMock).submitForm(anyString(), anyString());
         // Assert that FormSession is not deleted
         Mockito.doThrow(new RuntimeException())
-                .when(formSessionRepoMock).delete(anyString());
+                .when(formSessionRepoMock).deleteById(anyString());
 
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", "derp");
         assert submitResponseBean.getStatus().equals("error");
