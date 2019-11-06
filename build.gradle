@@ -38,24 +38,30 @@ idea {
     }
 }
 
+dependencyManagement {
+    dependencies {
+
+    }
+}
+
 dependencies {
 
-    //Versions managed by Spring Dependency Management
+    //Versions managed by Spring Boot Dependency Management
     compile group: 'org.springframework.boot', name: 'spring-boot'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
     compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure'
-    compile group: 'org.springframework.data', name: 'spring-data-jpa'
-    compile group: 'org.springframework', name: 'spring-web'
-    compile group: 'org.springframework.data', name: 'spring-data-redis'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
-    compile group: 'org.springframework', name: 'spring-orm'
-    compile group: 'org.springframework.integration', name: 'spring-integration-redis'
-    compile group: 'org.springframework', name: 'spring-jdbc'
-    compile group: 'org.springframework.data', name: 'spring-data-commons'
 
+    compile group: 'org.springframework', name: 'spring-web', version: '5.2.0.RELEASE'
+    compile group: 'org.springframework', name: 'spring-orm', version: '5.2.0.RELEASE'
+    compile group: 'org.springframework', name: 'spring-jdbc', version: '5.2.0.RELEASE'
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.data', name: 'spring-data-redis', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.data', name: 'spring-data-commons', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.integration', name: 'spring-integration-redis', version: '5.2.0.RELEASE'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.0'
     compile group: 'io.sentry', name: 'sentry', version: '1.5.6'
