@@ -2,10 +2,8 @@ package application;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.flywaydb.core.Flyway;
 import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.LocalizerManager;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -22,7 +20,6 @@ import util.PrototypeUtils;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 import java.io.IOException;
 
 @Configuration
@@ -36,29 +33,11 @@ public class Application {
 
     private final Log log = LogFactory.getLog(Application.class);
 
-    static DataSource dataSource;
-
     public static void main(String[] args) {
         PrototypeUtils.setupPrototypes();
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
-        migrate();
         LocalizerManager.setUseThreadLocalStrategy(true);
         ReferenceHandler.setUseThreadLocalStrategy(true);
-    }
-
-    /**
-     * Attempt to run any outstanding migration in migration
-     * Does nothing if DB is up to date
-     */
-    private static void migrate() {
-        Flyway flyway = Flyway.configure().dataSource(dataSource).table("schema_version").load();
-        flyway.migrate();
-    }
-
-    // automatically pulls the @Primary DataSource from WebAppContext
-    @Autowired
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
     }
 
     /**
