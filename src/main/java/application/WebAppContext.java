@@ -54,18 +54,6 @@ public class WebAppContext implements WebMvcConfigurer {
     @Value("${commcarehq.host}")
     private String hqHost;
 
-    @Value("${datasource.formplayer.url}")
-    private String formplayerPostgresUrl;
-
-    @Value("${datasource.formplayer.username}")
-    private String formplayerPostgresUsername;
-
-    @Value("${datasource.formplayer.password}")
-    private String formplayerPostgresPassword;
-
-    @Value("${datasource.formplayer.driverClassName}")
-    private String formplayerPostgresDriverName;
-
     @Value("${redis.hostname:#{null}}")
     private String redisHostName;
 
