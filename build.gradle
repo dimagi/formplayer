@@ -38,12 +38,6 @@ idea {
     }
 }
 
-dependencyManagement {
-    dependencies {
-
-    }
-}
-
 dependencies {
 
     //Versions managed by Spring Boot Dependency Management
