@@ -389,6 +389,8 @@ public class SqlHelper {
             preparedStatement.setLong(index, (Long)arg);
         } else if (arg instanceof byte[]) {
             preparedStatement.setBinaryStream(index, new ByteArrayInputStream((byte[])arg), ((byte[])arg).length);
+        } else if(arg == null) {
+            //ToFix
         }
     }
 
