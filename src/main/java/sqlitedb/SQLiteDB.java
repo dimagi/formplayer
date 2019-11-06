@@ -41,7 +41,7 @@ public class SQLiteDB implements ConnectionHandler {
     }
 
     private Boolean matchesConnection(SQLiteConnection sqLiteConnection) {
-        return sqLiteConnection.url().contains(dbPath.getDatabasePath());
+        return sqLiteConnection.getUrl().contains(dbPath.getDatabasePath());
     }
 
     @Override
@@ -53,7 +53,7 @@ public class SQLiteDB implements ConnectionHandler {
                 if (connection instanceof SQLiteConnection) {
                     SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
                     if (!matchesConnection(sqLiteConnection)) {
-                        log.error(String.format("Connection for path %s already exists",  sqLiteConnection.url()));
+                        log.error(String.format("Connection for path %s already exists",  sqLiteConnection.getUrl()));
                         connection = getNewConnection();
                     }
                 }
