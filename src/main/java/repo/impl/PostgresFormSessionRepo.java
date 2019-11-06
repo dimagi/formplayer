@@ -5,7 +5,6 @@ import objects.FunctionHandler;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -25,6 +24,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Postgres implementation for storing form entry sessions
@@ -36,7 +36,6 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     private final Log log = LogFactory.getLog(PostgresFormSessionRepo.class);
 
     @Autowired
-    @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
 
     @PostConstruct
@@ -77,7 +76,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
 
     @Override
     @Lock(LockModeType.OPTIMISTIC)
-    public <S extends SerializableFormSession> Iterable<S> save(Iterable<S> entities) {
+    public <S extends SerializableFormSession> Iterable<S> saveAll(Iterable<S> entities) {
         for(SerializableFormSession session: entities){
             save(session);
         }
@@ -186,21 +185,21 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     }
 
     public SerializableFormSession findOneWrapped(String id) throws FormNotFoundException {
+        return findById(id).get();
+    }
+
+    @Override
+    public Optional<SerializableFormSession> findById(String id) throws FormNotFoundException {
+        String sql = replaceTableName("SELECT * FROM %s WHERE id = ?");
         try {
-            return findOne(id);
-        } catch(EmptyResultDataAccessException e) {
+            return Optional.of(jdbcTemplate.queryForObject(sql, new Object[]{id}, new SessionMapper()));
+        } catch (EmptyResultDataAccessException e) {
             throw new FormNotFoundException(id);
         }
     }
 
     @Override
-    public SerializableFormSession findOne(String id) {
-        String sql = replaceTableName("SELECT * FROM %s WHERE id = ?");
-        return jdbcTemplate.queryForObject(sql, new Object[] {id}, new SessionMapper());
-    }
-
-    @Override
-    public boolean exists(String s) {
+    public boolean existsById(String s) {
         String sql = replaceTableName("select exists(select 1 from %s where id = ?)");
         return this.jdbcTemplate.queryForObject(sql, boolean.class, s);
     }
@@ -214,7 +213,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     }
 
     @Override
-    public Iterable<SerializableFormSession> findAll(Iterable<String> strings) {
+    public Iterable<SerializableFormSession> findAllById(Iterable<String> strings) {
         List<SerializableFormSession> sessions = this.jdbcTemplate.query(
                 replaceTableName("SELECT * FROM %s WHERE id in(SELECT * FROM UNNEST (?)"),
                 new Object[] {strings},
@@ -230,19 +229,19 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
 
     @Override
     @Lock(LockModeType.OPTIMISTIC)
-    public void delete(String id) {
+    public void deleteById(String id) {
         this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
     }
 
     @Override
     public void delete(SerializableFormSession entity) {
-        delete(entity.getId());
+        deleteById(entity.getId());
     }
 
     @Override
-    public void delete(Iterable<? extends SerializableFormSession> entities) {
+    public void deleteAll(Iterable<? extends SerializableFormSession> entities) {
         for(SerializableFormSession session: entities){
-            delete(session.getId());
+            deleteById(session.getId());
         }
     }
 
@@ -250,7 +249,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     public void deleteAll() {
         Iterable<SerializableFormSession> allSessions = findAll();
         for(SerializableFormSession session: allSessions){
-            delete(session.getId());
+            deleteById(session.getId());
         }
     }
 

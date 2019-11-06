@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
@@ -77,8 +78,8 @@ public class TestContext {
     }
 
     @Bean
-    public RedisTemplate<String, Long> redisTemplateLong() {
-        return Mockito.mock(RedisTemplate.class);
+    public ValueOperations<String, Long> redisTemplateLong() {
+        return Mockito.mock(ValueOperations.class);
     }
 
     @Bean

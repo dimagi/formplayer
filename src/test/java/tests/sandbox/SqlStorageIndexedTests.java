@@ -37,7 +37,6 @@ public class SqlStorageIndexedTests {
 
     @Before
     public void setUp() throws Exception {
-
         owner = "owner";
         otherOwner = "otherowner";
         groupOwner = "groupowned";
@@ -79,7 +78,6 @@ public class SqlStorageIndexedTests {
 
     @Test
     public void testSqlCaseStorage() {
-
         PrototypeFactory mPrototypeFactory = new PrototypeFactory();
         mPrototypeFactory.addClass(Case.class);
 
@@ -148,7 +146,7 @@ public class SqlStorageIndexedTests {
             Vector ids = ledgerStorage.getIDsForValue("entity_id", "ledger_entity_id");
 
             assertEquals(1, ids.size());
-            assertTrue(ids.contains(1));
+            assertTrue(String.format("ID Set: %s did not contain 1", ids.toString()), ids.contains(1));
 
             Ledger readLedger2 = ledgerStorage.getRecordForValue("entity_id", "ledger_entity_id_3");
             assertEquals(readLedger2.getID(), 3);
@@ -176,5 +174,4 @@ public class SqlStorageIndexedTests {
     public void tearDown() {
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
-
 }

@@ -1,15 +1,14 @@
 package db.migration;
 
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Arrays;
 
 /**
  * Created by benrudolph on 3/13/17.
  */
-public class V12__drop_restore_xml_column implements SpringJdbcMigration {
+public class V12__drop_restore_xml_column extends BaseFormplayerMigration {
     @Override
-    public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-        jdbcTemplate.execute(
+    public Iterable<String> getSqlStatements() {
+        return Arrays.asList(
                 "ALTER TABLE formplayer_sessions DROP COLUMN restoreXml"
         );
     }

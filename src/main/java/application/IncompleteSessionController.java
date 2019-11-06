@@ -71,7 +71,7 @@ public class IncompleteSessionController extends AbstractBaseController{
     }
 
     protected void deleteSession(String id) {
-        formSessionRepo.delete(id);
+        formSessionRepo.deleteById(id);
     }
 
 }
