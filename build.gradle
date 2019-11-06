@@ -39,46 +39,46 @@ idea {
 }
 
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
-    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure'
-    compile group: 'org.springframework.data', name: 'spring-data-jpa'
-    compile("org.springframework:spring-web")
-    compile group: 'org.springframework.data', name: 'spring-data-redis'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
+    compile group: 'org.springframework.boot', name: 'spring-boot', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework', name: 'spring-web', version: '5.2.0.RELEASE'
+    compile group: 'org.springframework.data', name: 'spring-data-redis', version: '2.2.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.2.0.RELEASE'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.0'
     compile group: 'io.sentry', name: 'sentry', version: '1.5.6'
-    compile("org.apache.directory.studio:org.apache.commons.io:2.0.1")
-    compile 'org.json:json:20131018'
-    compile 'redis.clients:jedis'
-    compile 'org.apache.commons:commons-pool2:2.4.2'
-    compile 'commons-codec:commons-codec:1.5'
-    compile("javax.servlet:jstl:1.2")
-    compile('org.lightcouch:lightcouch:0.1.6')
-    compile("io.springfox:springfox-swagger2:2.4.0")
-    compile("io.springfox:springfox-swagger-ui:2.4.0")
+    compile group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.0.1'
+    compile group: 'org.json', name: 'json', version: '20131018'
+    compile group: 'redis.clients', name: 'jedis', version: '3.1.0'
+    compile group: 'org.apache.commons', name: 'commons-pool2', version: '2.4.2'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.5'
+    compile group: 'javax.servlet', name: 'jstl', version: '1.2'
+    compile group: 'org.lightcouch', name: 'lightcouch', version: '0.1.6'
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.4.0'
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.4.0'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
     compile group: 'org.apache.commons', name: 'commons-email', version: '1.2'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
-    compile group: 'org.springframework', name: 'spring-jdbc'
+    compile group: 'org.springframework', name: 'spring-jdbc', version: '5.2.0.RELEASE'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.8'
-    compile group: 'org.flywaydb', name: 'flyway-core'
-    compile group: 'org.springframework', name: 'spring-orm'
+    compile group: 'org.flywaydb', name: 'flyway-core', version: '6.0.6'
+    compile group: 'org.springframework', name: 'spring-orm', version: '5.2.0.RELEASE'
     compile group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.7.Final'
     compile group: 'org.hibernate', name: 'hibernate-core', version: '5.4.7.Final'
-    compile group: 'org.springframework.data', name: 'spring-data-commons'
+    compile group: 'org.springframework.data', name: 'spring-data-commons', version: '2.2.0.RELEASE'
     compile group: 'javax.mail', name: 'mail', version: '1.5.0-b01'
     compile group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.3'
-    compile group: 'org.springframework.integration', name: 'spring-integration-redis'
-    compile 'org.xerial:sqlite-jdbc:3.16.1'
+    compile group: 'org.springframework.integration', name: 'spring-integration-redis', version: '5.2.0.RELEASE'
+    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.16.1'
     compile fileTree(dir: 'libs', include: '*.jar')
     compile project(path: ':commcare', configuration: 'api')
     compile project(path: ':commcare', configuration: 'translate')
-    compile 'org.simpleframework:simple-xml:2.7.1'
+    compile group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
     testCompile project(path: ':commcare', configuration: 'api')
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("com.jayway.jsonpath:json-path:2.2.0")
