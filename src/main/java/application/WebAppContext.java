@@ -162,15 +162,11 @@ public class WebAppContext implements WebMvcConfigurer {
         if (redisClusterString != null) {
             List<String> nodeList = Arrays.asList(redisClusterString.split(","));
             RedisClusterConfiguration config = new RedisClusterConfiguration(nodeList);
-            if (redisPassword != null && !redisPassword.isEmpty()) {
-                config.setPassword(redisPassword);
-            }
+            config.setPassword(redisPassword);
             return new JedisConnectionFactory(config);
         } else {
             RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHostName);
-            if (redisPassword != null && !redisPassword.isEmpty()) {
-                config.setPassword(redisPassword);
-            }
+            config.setPassword(redisPassword);
             return new JedisConnectionFactory(config);
         }
     }
