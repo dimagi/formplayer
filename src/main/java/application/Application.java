@@ -51,7 +51,7 @@ public class Application {
      * Does nothing if DB is up to date
      */
     private static void migrate() {
-        Flyway flyway = Flyway.configure().dataSource(dataSource).load();
+        Flyway flyway = Flyway.configure().dataSource(dataSource).table("schema_version").load();
         flyway.migrate();
     }
 
