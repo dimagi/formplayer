@@ -1,12 +1,6 @@
 package application;
 
-import aspects.AppInstallAspect;
-import aspects.ConfigureStorageFromSessionAspect;
-import aspects.LockAspect;
-import aspects.LoggingAspect;
-import aspects.MetricsAspect;
-import aspects.SetBrowserValuesAspect;
-import aspects.UserRestoreAspect;
+import aspects.*;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerArchiveFileRoot;
@@ -16,16 +10,11 @@ import io.sentry.dsn.InvalidDsnException;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -33,7 +22,10 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
@@ -41,25 +33,11 @@ import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.impl.PostgresFormSessionRepo;
 import repo.impl.PostgresMenuSessionRepo;
-import services.BrowserValuesProvider;
-import services.CategoryTimingHelper;
-import services.FormattedQuestionsService;
-import services.FormplayerFormSendCalloutHandler;
-import services.FormplayerLockRegistry;
-import services.FormplayerStorageFactory;
-import services.HqUserDetailsService;
-import services.InstallService;
-import services.MenuSessionFactory;
-import services.MenuSessionRunnerService;
-import services.NewFormResponseFactory;
-import services.QueryRequester;
-import services.RestoreFactory;
-import services.SubmitService;
-import services.SyncRequester;
-import services.XFormService;
+import services.*;
 import util.Constants;
 import util.FormplayerSentry;
 
+import javax.sql.DataSource;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -78,6 +56,18 @@ public class WebAppContext implements WebMvcConfigurer {
 
     @Value("${commcarehq.host}")
     private String hqHost;
+
+    @Value("${datasource.formplayer.url}")
+    private String formplayerPostgresUrl;
+
+    @Value("${datasource.formplayer.username}")
+    private String formplayerPostgresUsername;
+
+    @Value("${datasource.formplayer.password}")
+    private String formplayerPostgresPassword;
+
+    @Value("${datasource.formplayer.driverClassName}")
+    private String formplayerPostgresDriverName;
 
     @Value("${redis.hostname:#{null}}")
     private String redisHostName;
@@ -145,6 +135,22 @@ public class WebAppContext implements WebMvcConfigurer {
                 "localhost",
                 8125
         );
+    }
+
+    @Bean
+    public JdbcTemplate formplayerTemplate(){
+        return new JdbcTemplate(formplayerDataSource());
+    }
+
+    @Primary
+    @Bean
+    public DataSource formplayerDataSource() {
+        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+        dataSourceBuilder.driverClassName(formplayerPostgresDriverName);
+        dataSourceBuilder.url(formplayerPostgresUrl);
+        dataSourceBuilder.username(formplayerPostgresUsername);
+        dataSourceBuilder.password(formplayerPostgresPassword);
+        return dataSourceBuilder.build();
     }
 
     @Bean
