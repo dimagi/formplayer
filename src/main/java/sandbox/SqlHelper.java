@@ -390,7 +390,7 @@ public class SqlHelper {
         } else if (arg instanceof byte[]) {
             preparedStatement.setBinaryStream(index, new ByteArrayInputStream((byte[])arg), ((byte[])arg).length);
         } else if(arg == null) {
-            //ToFix
+            preparedStatement.setNull(index, 0);
         }
     }
 
