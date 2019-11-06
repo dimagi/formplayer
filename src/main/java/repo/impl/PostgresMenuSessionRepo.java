@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Postgres implementation for storing form entry sessions
@@ -26,12 +27,11 @@ import java.util.List;
 public class PostgresMenuSessionRepo implements MenuSessionRepo {
 
     @Autowired
-    @Qualifier("formplayerTemplate")
     private JdbcTemplate jdbcTemplate;
 
     @Override
     @Lock(LockModeType.OPTIMISTIC)
-    public <S extends SerializableMenuSession> Iterable<S> save(Iterable<S> entities) {
+    public <S extends SerializableMenuSession> Iterable<S> saveAll(Iterable<S> entities) {
         for(SerializableMenuSession session: entities){
             save(session);
         }
@@ -67,13 +67,17 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
     }
 
     @Override
-    public SerializableMenuSession findOne(String id) {
+    public Optional<SerializableMenuSession> findById(String id) throws MenuNotFoundException {
         String sql = replaceTableName("SELECT * FROM %s WHERE id = ?");
-        return jdbcTemplate.queryForObject(sql, new Object[] {id}, new SessionMapper());
+        try {
+            return Optional.of(jdbcTemplate.queryForObject(sql, new Object[]{id}, new SessionMapper()));
+        } catch (EmptyResultDataAccessException e) {
+            throw new MenuNotFoundException(id);
+        }
     }
 
     @Override
-    public boolean exists(String s) {
+    public boolean existsById(String s) {
         String sql = replaceTableName("select exists(select 1 from %s where id = ?)");
         return this.jdbcTemplate.queryForObject(sql, boolean.class, s);
     }
@@ -87,7 +91,7 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
     }
 
     @Override
-    public Iterable<SerializableMenuSession> findAll(Iterable<String> strings) {
+    public Iterable<SerializableMenuSession> findAllById(Iterable<String> strings) {
         List<SerializableMenuSession> sessions = this.jdbcTemplate.query(
                 replaceTableName("SELECT * FROM %s WHERE id in(SELECT * FROM UNNEST (?)"),
                 new Object[] {strings},
@@ -103,19 +107,19 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
 
     @Override
     @Lock(LockModeType.OPTIMISTIC)
-    public void delete(String id) {
+    public void deleteById(String id) {
         this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
     }
 
     @Override
     public void delete(SerializableMenuSession entity) {
-        delete(entity.getId());
+        deleteById(entity.getId());
     }
 
     @Override
-    public void delete(Iterable<? extends SerializableMenuSession> entities) {
+    public void deleteAll(Iterable<? extends SerializableMenuSession> entities) {
         for(SerializableMenuSession session: entities){
-            delete(session.getId());
+            deleteById(session.getId());
         }
     }
 
@@ -123,17 +127,13 @@ public class PostgresMenuSessionRepo implements MenuSessionRepo {
     public void deleteAll() {
         Iterable<SerializableMenuSession> allSessions = findAll();
         for(SerializableMenuSession session: allSessions){
-            delete(session.getId());
+            deleteById(session.getId());
         }
     }
 
     @Override
     public SerializableMenuSession findOneWrapped(String id) throws MenuNotFoundException {
-        try {
-            return findOne(id);
-        } catch(EmptyResultDataAccessException e) {
-            throw new MenuNotFoundException(id);
-        }
+        return findById(id).get();
     }
 
     // TODO WSP Write migration for this to have OQPS boolean after asUser is merger

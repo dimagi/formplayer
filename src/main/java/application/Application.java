@@ -8,7 +8,7 @@ import org.javarosa.core.services.locale.LocalizerManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.orm.jpa.EntityScan;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -51,8 +51,7 @@ public class Application {
      * Does nothing if DB is up to date
      */
     private static void migrate() {
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
+        Flyway flyway = Flyway.configure().dataSource(dataSource).table("schema_version").load();
         flyway.migrate();
     }
 
