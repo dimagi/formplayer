@@ -2,6 +2,7 @@ package util;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.crypto.Mac;
@@ -57,7 +58,7 @@ public class RequestUtils {
         JSONObject data = null;
         try {
             data = new JSONObject(getBody(request));
-        } catch (IOException e) {
+        } catch (IOException | JSONException a) {
             throw new RuntimeException("Unreadable POST Body for the request: " + request.getRequestURI());
         }
         return data;
