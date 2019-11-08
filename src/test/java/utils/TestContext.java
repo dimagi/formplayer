@@ -10,6 +10,7 @@ import org.commcare.modern.reference.ArchiveFileRoot;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,8 +34,11 @@ import services.RestoreFactory;
 import services.SubmitService;
 import services.SyncRequester;
 import services.XFormService;
+import util.Constants;
 import util.FormplayerHttpRequest;
 import util.FormplayerSentry;
+
+import java.time.Duration;
 
 @Configuration
 public class TestContext {
@@ -149,6 +153,13 @@ public class TestContext {
     @Bean
     public FormplayerHttpRequest request() {
         return Mockito.mock(FormplayerHttpRequest.class);
+    }
+
+    @Bean
+    public RestTemplateBuilder restTemplateBuilder() {
+        return new RestTemplateBuilder()
+                .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
+                .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT));
     }
 
     @Bean
