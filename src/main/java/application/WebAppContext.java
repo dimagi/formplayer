@@ -10,7 +10,6 @@ import io.sentry.dsn.InvalidDsnException;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -20,7 +19,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -38,7 +36,6 @@ import services.*;
 import util.Constants;
 import util.FormplayerSentry;
 
-import javax.sql.DataSource;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -57,18 +54,6 @@ public class WebAppContext implements WebMvcConfigurer {
 
     @Value("${commcarehq.host}")
     private String hqHost;
-
-    @Value("${datasource.formplayer.url}")
-    private String formplayerPostgresUrl;
-
-    @Value("${datasource.formplayer.username}")
-    private String formplayerPostgresUsername;
-
-    @Value("${datasource.formplayer.password}")
-    private String formplayerPostgresPassword;
-
-    @Value("${datasource.formplayer.driverClassName}")
-    private String formplayerPostgresDriverName;
 
     @Value("${redis.hostname:#{null}}")
     private String redisHostName;
@@ -142,23 +127,7 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public JdbcTemplate formplayerTemplate(){
-        return new JdbcTemplate(formplayerDataSource());
-    }
-
-    @Primary
-    @Bean
-    public DataSource formplayerDataSource() {
-        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
-        dataSourceBuilder.driverClassName(formplayerPostgresDriverName);
-        dataSourceBuilder.url(formplayerPostgresUrl);
-        dataSourceBuilder.username(formplayerPostgresUsername);
-        dataSourceBuilder.password(formplayerPostgresPassword);
-        return dataSourceBuilder.build();
-    }
-
-    @Bean
-    public JedisConnectionFactory jedisConnFactory() {
+    public JedisConnectionFactory jedisConnFactory(){
         if (redisClusterString != null) {
             List<String> nodeList = Arrays.asList(redisClusterString.split(","));
             RedisClusterConfiguration config = new RedisClusterConfiguration(nodeList);
