@@ -14,6 +14,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -59,6 +60,9 @@ public class WebAppContext implements WebMvcConfigurer {
 
     @Value("${redis.clusterString:#{null}}")
     private String redisClusterString;
+
+    @Value("${redis.password:#{null}}")
+    private String redisPassword;
 
     @Value("${sentry.dsn:}")
     private String ravenDsn;
@@ -126,14 +130,14 @@ public class WebAppContext implements WebMvcConfigurer {
     public JedisConnectionFactory jedisConnFactory(){
         if (redisClusterString != null) {
             List<String> nodeList = Arrays.asList(redisClusterString.split(","));
-            RedisClusterConfiguration clusterConfig = new RedisClusterConfiguration(nodeList);
-            return new JedisConnectionFactory(clusterConfig);
+            RedisClusterConfiguration config = new RedisClusterConfiguration(nodeList);
+            config.setPassword(redisPassword);
+            return new JedisConnectionFactory(config);
+        } else {
+            RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHostName);
+            config.setPassword(redisPassword);
+            return new JedisConnectionFactory(config);
         }
-
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        jedisConnectionFactory.setUsePool(true);
-        jedisConnectionFactory.setHostName(redisHostName);
-        return jedisConnectionFactory;
     }
 
     @Bean
