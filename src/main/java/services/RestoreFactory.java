@@ -27,6 +27,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -160,8 +161,20 @@ public class RestoreFactory {
         if(getSqlSandbox().getLoggedInUser() != null){
             getSQLiteDB().createDatabaseFolder();
         }
-        UserSqlSandbox sandbox = restoreUser();
-        if (shouldPurge) {
+        UserSqlSandbox sandbox;
+        try {
+             sandbox = restoreUser();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().value() == 412) {
+                getSQLiteDB().deleteDatabaseFile();
+                // this line has the effect of clearing the sync token
+                // from the restore URL that's used
+                sqLiteDB = new UserDB(domain, username, asUsername);
+                return performTimedSync(shouldPurge);
+            }
+            throw e;
+        }
+        if (shouldPurge && sandbox != null) {
             SimpleTimer purgeTimer = new SimpleTimer();
             purgeTimer.start();
             FormRecordProcessorHelper.purgeCases(sandbox);
