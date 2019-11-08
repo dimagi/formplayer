@@ -19,6 +19,7 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
@@ -94,7 +95,7 @@ public class RestoreFactory {
     private FormplayerStorageFactory storageFactory;
 
     @Autowired
-    private RestTemplate hqRest;
+    private RestTemplateBuilder restTemplateBuilder;
 
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
@@ -405,7 +406,7 @@ public class RestoreFactory {
         log.info("Restoring at domain: " + domain + " with url: " + restoreUrl);
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
-        ResponseEntity<org.springframework.core.io.Resource> response = hqRest.exchange(
+        ResponseEntity<org.springframework.core.io.Resource> response = restTemplateBuilder.build().exchange(
                 restoreUrl,
                 HttpMethod.GET,
                 new HttpEntity<String>(headers),

@@ -294,10 +294,6 @@ public class WebAppContext implements WebMvcConfigurer {
     public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsService(builder); }
 
     @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public RestTemplate hqRest(RestTemplateBuilder builder) { return builder.build(); }
-
-    @Bean
     public RestTemplateBuilder restTemplateBuilder() {
         return new RestTemplateBuilder()
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
