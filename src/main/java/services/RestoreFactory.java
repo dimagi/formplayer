@@ -433,6 +433,8 @@ public class RestoreFactory {
                     org.springframework.core.io.Resource.class
             );
             status = response.getStatusCode().toString();
+        } catch (HttpClientErrorException e) {
+            status = e.getStatusCode().toString();
         } finally {
             downloadRestoreTimer.end();
             datadogStatsDClient.increment(
