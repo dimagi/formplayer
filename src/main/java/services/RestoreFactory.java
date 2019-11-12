@@ -435,6 +435,7 @@ public class RestoreFactory {
             status = response.getStatusCode().toString();
         } catch (HttpClientErrorException e) {
             status = e.getStatusCode().toString();
+            throw e;
         } finally {
             downloadRestoreTimer.end();
             datadogStatsDClient.increment(
