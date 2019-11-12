@@ -3,6 +3,7 @@ package services;
 import api.process.FormRecordProcessorHelper;
 import auth.HqAuth;
 import beans.AuthenticatedRequestBean;
+import com.timgroup.statsd.StatsDClient;
 import engine.FormplayerTransactionParserFactory;
 import exceptions.AsyncRetryException;
 import exceptions.SQLiteRuntimeException;
@@ -85,6 +86,9 @@ public class RestoreFactory {
 
     @Autowired
     private FormplayerSentry raven;
+
+    @Autowired
+    protected StatsDClient datadogStatsDClient;
 
     @Autowired
     private RedisTemplate redisTemplateLong;
@@ -416,16 +420,31 @@ public class RestoreFactory {
     }
 
     private InputStream getRestoreXmlHelper(String restoreUrl, HttpHeaders headers) {
+        ResponseEntity<org.springframework.core.io.Resource> response;
+        String status = "error";
         log.info("Restoring at domain: " + domain + " with url: " + restoreUrl);
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
-        ResponseEntity<org.springframework.core.io.Resource> response = restTemplateBuilder.build().exchange(
-                restoreUrl,
-                HttpMethod.GET,
-                new HttpEntity<String>(headers),
-                org.springframework.core.io.Resource.class
-        );
-        downloadRestoreTimer.end();
+        try {
+            response = restTemplateBuilder.build().exchange(
+                    restoreUrl,
+                    HttpMethod.GET,
+                    new HttpEntity<String>(headers),
+                    org.springframework.core.io.Resource.class
+            );
+            status = response.getStatusCode().toString();
+        } catch (HttpClientErrorException e) {
+            status = e.getStatusCode().toString();
+            throw e;
+        } finally {
+            downloadRestoreTimer.end();
+            datadogStatsDClient.increment(
+                    Constants.DATADOG_RESTORE_COUNT,
+                    "domain:" + domain,
+                    "duration:" + downloadRestoreTimer.getDurationBucket(),
+                    "status:" + status
+            );
+        }
 
         // Handle Async restore
         if (response.getStatusCode().value() == 202) {

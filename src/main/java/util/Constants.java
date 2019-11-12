@@ -119,6 +119,7 @@ public class Constants {
     public static final String DATADOG_REQUESTS = "requests";
     public static final String DATADOG_TIMINGS = "timings";
     public static final String DATADOG_GRANULAR_TIMINGS = "granular.timings";
+    public static final String DATADOG_RESTORE_COUNT = "restore.count";
 
     public static final class TimingCategories {
         public static final String WAIT_ON_LOCK = "wait_on_lock";
