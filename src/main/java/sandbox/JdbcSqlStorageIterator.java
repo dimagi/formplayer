@@ -146,8 +146,8 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
 
     public void close() {
         try {
-            preparedStatement.close();
             resultSet.close();
+            preparedStatement.close();
         } catch (SQLException e) {
             log.error("Unable to close JdbcSqlStorageIterator resources", e);
         }
