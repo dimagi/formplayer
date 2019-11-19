@@ -108,30 +108,21 @@ public class EntityStorageCache {
 
     // Currently unused
     public String retrieveCacheValue(String entityKey, String cacheKey) {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
+        Connection connection = handler.getConnection();
+        try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
                     TABLE_NAME,
                     new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
-                    new String[]{mCacheName, entityKey, cacheKey});
-            ResultSet resultSet = preparedStatement.executeQuery();
+                    new String[]{mCacheName, entityKey, cacheKey})) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
-            if (resultSet.next()) {
-                return resultSet.getString(resultSet.findColumn(COL_VALUE));
-            } else {
-                return null;
+                if (resultSet.next()) {
+                    return resultSet.getString(resultSet.findColumn(COL_VALUE));
+                } else {
+                    return null;
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing prepared statement ", e);
-                }
-            }
         }
     }
 
