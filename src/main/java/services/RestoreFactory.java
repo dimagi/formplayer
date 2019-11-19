@@ -47,6 +47,7 @@ import util.RequestUtils;
 import util.SimpleTimer;
 import util.UserUtils;
 
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -569,6 +570,12 @@ public class RestoreFactory {
         return new Pair<>(fullUrl, headers);
     }
 
+    @PreDestroy
+    public void preDestroy() {
+        if(sqLiteDB != null) {
+            sqLiteDB.closeConnection();
+        }
+    }
 
     public String getUsername() {
         return username;
