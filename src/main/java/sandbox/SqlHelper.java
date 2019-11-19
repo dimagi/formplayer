@@ -81,7 +81,6 @@ public class SqlHelper {
     public static void dropTable(Connection c, String storageKey) {
         String sqlStatement = "DROP TABLE IF EXISTS " + storageKey;
         try (PreparedStatement preparedStatement = c.prepareStatement(sqlStatement)) {
-            ;
             preparedStatement.execute();
         } catch (SQLException e) {
             Logger.log("E", "Could not drop table: " + e.getMessage());
