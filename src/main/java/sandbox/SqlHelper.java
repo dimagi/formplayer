@@ -29,25 +29,16 @@ public class SqlHelper {
     public static final boolean SQL_DEBUG = false;
 
     public static void explainSql(Connection c, String sql, String[] args) {
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = c.prepareStatement("EXPLAIN QUERY PLAN " + sql);
+        try (PreparedStatement preparedStatement = c.prepareStatement("EXPLAIN QUERY PLAN " + sql)){
             for (int i = 1; i <= args.length; i++) {
                 preparedStatement.setString(i, args[i - 1]);
             }
-            ResultSet resultSet = preparedStatement.executeQuery();
-            dumpResultSet(resultSet);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                dumpResultSet(resultSet);
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -89,20 +80,10 @@ public class SqlHelper {
 
     public static void dropTable(Connection c, String storageKey) {
         String sqlStatement = "DROP TABLE IF EXISTS " + storageKey;
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = c.prepareStatement(sqlStatement);
+        try (PreparedStatement preparedStatement = c.prepareStatement(sqlStatement)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             Logger.log("E", "Could not drop table: " + e.getMessage());
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
         }
     }
 
@@ -112,15 +93,25 @@ public class SqlHelper {
         try {
             preparedStatement = c.prepareStatement(sqlStatement);
             preparedStatement.execute();
+            preparedStatement.close();
+
             if (storageKey.equals(UserSqlSandbox.FORMPLAYER_CASE)) {
                 preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_id_index", UserSqlSandbox.FORMPLAYER_CASE, "case_id"));
                 preparedStatement.execute();
+                preparedStatement.close();
+
                 preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_type_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type"));
                 preparedStatement.execute();
+                preparedStatement.close();
+
                 preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_index", UserSqlSandbox.FORMPLAYER_CASE, "case_status"));
                 preparedStatement.execute();
+                preparedStatement.close();
+
                 preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_open_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type,case_status"));
                 preparedStatement.execute();
+                preparedStatement.close();
+
             }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
@@ -135,6 +126,12 @@ public class SqlHelper {
         }
     }
 
+    /**
+     * Get a prepared statement to select matching rows by the internal ID column
+     *
+     * Note: Caller is responsible for ensuring the prepared statement is closed
+     *
+     */
     public static PreparedStatement prepareIdSelectStatement(Connection c, String storageKey, int id) {
         try {
             PreparedStatement preparedStatement =
@@ -147,6 +144,12 @@ public class SqlHelper {
         }
     }
 
+    /**
+     * Get a prepared statement to select matching rows by multiple storage keys
+     *
+     * Note: Caller is responsible for ensuring the prepared statement is closed
+     *
+     */
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
                                                                           String storageKey,
                                                                           String[] projections) {
@@ -165,6 +168,13 @@ public class SqlHelper {
         }
     }
 
+    /**
+     * Get a prepared statement to select matching appropriate metadata fields from
+     * an individual record
+     *
+     * Note: Caller is responsible for ensuring the prepared statement is closed
+     *
+     */
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
                                                                           String storageKey,
                                                                           String recordId,
@@ -262,9 +272,7 @@ public class SqlHelper {
 
     private static void performInsert(Connection c,
                                       Pair<List<Object>, String> valsAndInsertStatement) {
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = c.prepareStatement(valsAndInsertStatement.second);
+        try (PreparedStatement preparedStatement = c.prepareStatement(valsAndInsertStatement.second)) {
             int i = 1;
 
             for (Object val : valsAndInsertStatement.first) {
@@ -273,14 +281,6 @@ public class SqlHelper {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -336,10 +336,8 @@ public class SqlHelper {
 
     public static int insertToTable(Connection c, String storageKey, Persistable p) {
         Pair<String, List<Object>> mPair = DatabaseHelper.getTableInsertData(storageKey, p);
-        PreparedStatement preparedStatement = null;
 
-        try {
-            preparedStatement = c.prepareStatement(mPair.first);
+        try (PreparedStatement preparedStatement = c.prepareStatement(mPair.first)) {
             for (int i = 0; i < mPair.second.size(); i++) {
                 Object obj = mPair.second.get(i);
                 setArgumentToSqlStatement(preparedStatement, obj, i+1);
@@ -367,14 +365,6 @@ public class SqlHelper {
             }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -411,21 +401,11 @@ public class SqlHelper {
 
         String query = "UPDATE " + storageKey + " SET " + DatabaseHelper.DATA_COL + " = ? WHERE " + where.first + ";";
 
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = c.prepareStatement(query);
+        try (PreparedStatement preparedStatement = c.prepareStatement(query)){
             setPreparedStatementArgs(preparedStatement, p, where.second);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -452,22 +432,12 @@ public class SqlHelper {
 
         String query = stringBuilder.append(queryEnd).toString();
 
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = connection.prepareStatement(query);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
             int lastArgIndex = setPreparedStatementArgs(preparedStatement, persistable, values);
             preparedStatement.setInt(lastArgIndex, id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -507,44 +477,24 @@ public class SqlHelper {
     public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String arg) {
         String query = "DELETE FROM " + tableName + " WHERE " + whereClause + ";";
 
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = connection.prepareStatement(query);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
             preparedStatement.setString(1, arg);
             preparedStatement.execute();
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    throw new SQLiteRuntimeException(e);
-                }
-            }
         }
     }
 
     public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String[] args) {
         String query = "DELETE FROM " + tableName + " WHERE " + whereClause + ";";
 
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = connection.prepareStatement(query);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
             for (int i = 1; i <= args.length; i++) {
                 preparedStatement.setString(i, args[i - 1]);
             }
             preparedStatement.execute();
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
         }
     }
 
@@ -558,21 +508,11 @@ public class SqlHelper {
     public static void deleteIdFromTable(Connection connection, String tableName, int id) {
         String query = "DELETE FROM " + tableName + " WHERE " + DatabaseHelper.ID_COL + " = ?;";
 
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = connection.prepareStatement(query);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, id);
             preparedStatement.execute();
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
         }
     }
 
@@ -583,23 +523,16 @@ public class SqlHelper {
      * @param tableName  name of table
      */
     public static void deleteAllFromTable(Connection connection, String tableName) {
-        PreparedStatement preparedStatement = null;
-        try {
-            if (isTableExist(connection, tableName)) {
-                String query = "DELETE FROM " + tableName;
-                preparedStatement = connection.prepareStatement(query);
-                preparedStatement.execute();
-            }
+
+        if (!isTableExist(connection, tableName)) {
+            return;
+        }
+
+        String query = "DELETE FROM " + tableName;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.execute();
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
         }
     }
 

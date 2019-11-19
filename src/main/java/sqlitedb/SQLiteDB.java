@@ -54,6 +54,7 @@ public class SQLiteDB implements ConnectionHandler {
                     SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
                     if (!matchesConnection(sqLiteConnection)) {
                         log.error(String.format("Connection for path %s already exists",  sqLiteConnection.getUrl()));
+                        connection.close();
                         connection = getNewConnection();
                     }
                 }
@@ -76,6 +77,7 @@ public class SQLiteDB implements ConnectionHandler {
     }
 
     public void deleteDatabaseFile() {
+        closeConnection();
         SqlSandboxUtils.deleteDatabaseFolder(dbArchivableFile);
     }
 
