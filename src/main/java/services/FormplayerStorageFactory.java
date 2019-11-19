@@ -9,6 +9,9 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.StorageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PreDestroy;
+
 import repo.FormSessionRepo;
 import sandbox.SqlStorage;
 import sqlitedb.ApplicationDB;
@@ -87,6 +90,14 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.propertyManager = new FormplayerPropertyManager(newStorage(PropertyManager.STORAGE_KEY, Property.class));
         storageManager = new StorageManager(this);
     }
+
+    @PreDestroy
+    public void preDestroy() {
+        if(sqLiteDB != null) {
+            sqLiteDB.closeConnection();
+        }
+    }
+
 
     public FormplayerPropertyManager getPropertyManager() {
         return propertyManager;
