@@ -37,18 +37,17 @@ public class ArchivableFile extends File {
 
     private static void decompressGzipFile(File gzipFile, File newFile) throws IOException {
         // copied and modified from http://www.journaldev.com/966/java-gzip-example-compress-decompress-file
+        try (
         FileInputStream fis = new FileInputStream(gzipFile);
         GZIPInputStream gis = new GZIPInputStream(fis);
         FileOutputStream fos = new FileOutputStream(newFile);
-        byte[] buffer = new byte[1024];
-        int len;
-        while((len = gis.read(buffer)) != -1){
-            fos.write(buffer, 0, len);
+        ) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = gis.read(buffer)) != -1) {
+                fos.write(buffer, 0, len);
+            }
         }
-        //close resources
-        fis.close();
-        fos.close();
-        gis.close();
     }
 
     private void waitOnLock() {
