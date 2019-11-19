@@ -94,38 +94,20 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
 
     @Override
     public IndexedFixtureIdentifier getIndexedFixtureIdentifier(String fixtureName) {
-        Connection connection;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = sqlUtil.getConnection();
-            preparedStatement =
-                    connection.prepareStatement(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE_SELECT_STMT);
+        Connection connection = sqlUtil.getConnection();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(
+                IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE_SELECT_STMT) ){
             preparedStatement.setString(1, fixtureName);
-            resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                return new IndexedFixtureIdentifier(
-                        resultSet.getString(1),
-                        resultSet.getString(2),
-                        resultSet.getBytes(3));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return new IndexedFixtureIdentifier(
+                            resultSet.getString(1),
+                            resultSet.getString(2),
+                            resultSet.getBytes(3));
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
 
         return null;

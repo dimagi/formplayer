@@ -131,38 +131,29 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         String[] projection = new String[] {COL_CASE_RECORD_ID, COL_INDEX_TARGET, COL_INDEX_RELATIONSHIP};
         HashMap<Integer,Vector<Pair<String, String>>> caseIndexMap = new HashMap<>();
 
-        PreparedStatement selectStatement = null;
-        try {
-            selectStatement = SqlHelper.prepareTableSelectProjectionStatement(connectionHandler.getConnection(),
+        try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectProjectionStatement(connectionHandler.getConnection(),
                     TABLE_NAME,
-                    projection);
-            ResultSet resultSet = selectStatement.executeQuery();
-            while (resultSet.next()) {
-                int caseRecordId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
-                String targetCase = resultSet.getString(resultSet.findColumn(COL_INDEX_TARGET));
-                String relationship = resultSet.getString(COL_INDEX_RELATIONSHIP);
-                Pair<String, String> index  = new Pair<> (targetCase, relationship);
+                    projection)) {
+            try (ResultSet resultSet = selectStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int caseRecordId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
+                    String targetCase = resultSet.getString(resultSet.findColumn(COL_INDEX_TARGET));
+                    String relationship = resultSet.getString(COL_INDEX_RELATIONSHIP);
+                    Pair<String, String> index = new Pair<>(targetCase, relationship);
 
-                Vector<Pair<String, String>> indexList;
-                if (!caseIndexMap.containsKey(caseRecordId)) {
-                    indexList = new Vector<>();
-                } else {
-                    indexList = caseIndexMap.get(caseRecordId);
+                    Vector<Pair<String, String>> indexList;
+                    if (!caseIndexMap.containsKey(caseRecordId)) {
+                        indexList = new Vector<>();
+                    } else {
+                        indexList = caseIndexMap.get(caseRecordId);
+                    }
+                    indexList.add(index);
+                    caseIndexMap.put(caseRecordId, indexList);
                 }
-                indexList.add(index);
-                caseIndexMap.put(caseRecordId, indexList);
+                return caseIndexMap;
             }
-            return caseIndexMap;
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (selectStatement != null) {
-                try {
-                    selectStatement.close();
-                } catch (SQLException e) {
-                    log.debug("Exception prepared statement connection ", e);
-                }
-            }
         }
     }
 
@@ -175,32 +166,24 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
      */
     public LinkedHashSet<Integer> getCasesMatchingIndex(String indexName, String targetValue) {
         String[] args = new String[]{indexName, targetValue};
-        PreparedStatement selectStatement = null;
-        try {
 
-            if (SqlHelper.SQL_DEBUG) {
-                String query = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ?", COL_CASE_RECORD_ID, TABLE_NAME, COL_INDEX_NAME, COL_INDEX_TARGET);
-                SqlHelper.explainSql(connectionHandler.getConnection(), query, args);
-            }
+        if (SqlHelper.SQL_DEBUG) {
+            String query = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ?", COL_CASE_RECORD_ID, TABLE_NAME, COL_INDEX_NAME, COL_INDEX_TARGET);
+            SqlHelper.explainSql(connectionHandler.getConnection(), query, args);
+        }
 
-            selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
+        try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
+                connectionHandler.getConnection(),
                     TABLE_NAME,
                     new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
-                    args);
-            ResultSet resultSet = selectStatement.executeQuery();
-            LinkedHashSet<Integer> ret = new LinkedHashSet<>();
-            SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
-            return ret;
+                    args)) {
+            try(ResultSet resultSet = selectStatement.executeQuery()) {
+                LinkedHashSet<Integer> ret = new LinkedHashSet<>();
+                SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
+                return ret;
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (selectStatement != null) {
-                try {
-                    selectStatement.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing connection ", e);
-                }
-            }
         }
     }
 
@@ -220,26 +203,18 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
         String whereExpr = String.format("%s = ? AND %s IN %s", COL_INDEX_NAME, COL_INDEX_TARGET, inSet);
 
-        PreparedStatement selectStatement = null;
-        try {
-            selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
+        try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
+                connectionHandler.getConnection(),
                     TABLE_NAME,
                     whereExpr,
-                    args);
-            ResultSet resultSet = selectStatement.executeQuery();
-            LinkedHashSet<Integer> ret = new LinkedHashSet<>();
-            SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
-            return ret;
+                    args)) {
+            try (ResultSet resultSet = selectStatement.executeQuery()) {
+                LinkedHashSet<Integer> ret = new LinkedHashSet<>();
+                SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
+                return ret;
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (selectStatement != null) {
-                try {
-                    selectStatement.close();
-                } catch (SQLException e) {
-                    log.debug("Exception prepared statement connection ", e);
-                }
-            }
         }
     }
 
@@ -247,14 +222,13 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         int resultsReturned = 0;
         String[] args = new String[]{indexName};
 
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
-                    TABLE_NAME,
-                    new String[]{COL_INDEX_NAME},
-                    args);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            try {
+        try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(
+                connectionHandler.getConnection(),
+                TABLE_NAME,
+                new String[]{COL_INDEX_NAME},
+                args)) {
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
                 while (resultSet.next()) {
                     resultsReturned++;
                     int id = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
@@ -270,21 +244,9 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                     indexCache.put(cacheID, cache);
                 }
                 return resultsReturned;
-            } finally {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing prepared statement ", e);
-                }
-            }
         }
     }
 
@@ -300,7 +262,6 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         String caseIdIndex = TableBuilder.scrubName(Case.INDEX_CASE_ID);
 
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases, "?");
-        PreparedStatement preparedStatement = null;
         try {
             for (Pair<String, String[]> querySet : whereParamList) {
 
@@ -320,36 +281,30 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                         COL_INDEX_NAME, indexName,
                         COL_CASE_RECORD_ID, querySet.first);
 
-                preparedStatement = connectionHandler.getConnection().prepareStatement(query);
-                int argIndex = 1;
-                for (String arg: querySet.second) {
-                    preparedStatement.setString(argIndex, arg);
-                    argIndex++;
-                }
+                try (PreparedStatement preparedStatement =
+                             connectionHandler.getConnection().prepareStatement(query)) {
+                    int argIndex = 1;
+                    for (String arg : querySet.second) {
+                        preparedStatement.setString(argIndex, arg);
+                        argIndex++;
+                    }
 
-                if (SqlHelper.SQL_DEBUG) {
-                    SqlHelper.explainSql(connectionHandler.getConnection(), query, querySet.second);
-                }
+                    if (SqlHelper.SQL_DEBUG) {
+                        SqlHelper.explainSql(connectionHandler.getConnection(), query, querySet.second);
+                    }
 
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        int caseId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
-                        int targetCase = resultSet.getInt(resultSet.findColumn(DatabaseHelper.ID_COL));
-                        set.loadResult(caseId, targetCase);
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            int caseId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
+                            int targetCase = resultSet.getInt(resultSet.findColumn(DatabaseHelper.ID_COL));
+                            set.loadResult(caseId, targetCase);
+                        }
                     }
                 }
             }
             return set;
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    log.debug("Exception closing prepared statement ", e);
-                }
-            }
         }
     }
 

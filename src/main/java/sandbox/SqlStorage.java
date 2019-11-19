@@ -85,7 +85,9 @@ public class SqlStorage<T extends Persistable>
         try {
             c = getConnection();
             for (String statement : statements) {
-                c.prepareStatement(statement).execute();
+                try (PreparedStatement preparedStatement = c.prepareStatement(statement)) {
+                    preparedStatement.execute();
+                }
             }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
@@ -139,35 +141,18 @@ public class SqlStorage<T extends Persistable>
 
     @Override
     public Vector<Integer> getIDsForValue(String fieldName, Object value) {
-        Connection connection;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = this.getConnection();
-            preparedStatement = SqlHelper.prepareTableSelectStatement(connection, this.tableName,
-                    new String[]{fieldName}, new String[]{(String) value});
+        Connection connection = this.getConnection();
+        try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
+                this.tableName, new String[]{fieldName}, new String[]{(String) value})) {
+
             if (preparedStatement == null) {
                 return null;
             }
-            resultSet = preparedStatement.executeQuery();
-            return fillIdWindow(resultSet, DatabaseHelper.ID_COL, new LinkedHashSet<Integer>());
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return fillIdWindow(resultSet, DatabaseHelper.ID_COL, new LinkedHashSet<Integer>());
+            }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -178,55 +163,36 @@ public class SqlStorage<T extends Persistable>
 
     @Override
     public List<Integer> getIDsForValues(String[] fieldNames, Object[] values, LinkedHashSet<Integer> returnSet) {
-        Connection connection;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet;
-        try {
-            connection = this.getConnection();
-            preparedStatement =
-                    SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values);
-            resultSet = preparedStatement.executeQuery();
-            return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
+        Connection connection = this.getConnection();
+        try (PreparedStatement preparedStatement =
+                SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
+            }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
     @Override
     public T getRecordForValue(String fieldName, Object value)
             throws NoSuchElementException, InvalidIndexException {
-        Connection connection;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet;
-        try {
-            connection = this.getConnection();
-            preparedStatement =
-                    SqlHelper.prepareTableSelectStatement(connection, this.tableName,
-                            new String[]{fieldName}, new String[]{(String) value});
-            resultSet = preparedStatement.executeQuery();
-            if (!resultSet.next()) {
-                throw new NoSuchElementException();
+        Connection connection = this.getConnection();
+
+        try (PreparedStatement preparedStatement =
+                     SqlHelper.prepareTableSelectStatement(connection, this.tableName,
+                             new String[]{fieldName}, new String[]{(String) value})) {
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new NoSuchElementException();
+                }
+
+                byte[] mBytes = resultSet.getBytes(DatabaseHelper.DATA_COL);
+                return newObject(mBytes, resultSet.getInt(DatabaseHelper.ID_COL));
             }
-            byte[] mBytes = resultSet.getBytes(DatabaseHelper.DATA_COL);
-            return newObject(mBytes, resultSet.getInt(DatabaseHelper.ID_COL));
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -247,33 +213,18 @@ public class SqlStorage<T extends Persistable>
 
     @Override
     public boolean exists(int id) {
-        PreparedStatement preparedStatement = null;
-        Connection connection;
-        ResultSet resultSet = null;
-        try {
-            connection = getConnection();
-            preparedStatement = SqlHelper.prepareIdSelectStatement(connection, this.tableName, id);
-            resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                return true;
+        Connection connection = getConnection();
+        try (PreparedStatement preparedStatement =
+                     SqlHelper.prepareIdSelectStatement(connection, this.tableName, id)){
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return true;
+                }
             }
+
         }  catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         return false;
     }
@@ -369,28 +320,21 @@ public class SqlStorage<T extends Persistable>
     public byte[] readBytes(int id) {
         PreparedStatement preparedStatement = null;
         Connection connection;
-        ResultSet resultSet = null;
         try {
             connection = getConnection();
             preparedStatement = SqlHelper.prepareIdSelectStatement(connection, this.tableName, id);
             if (preparedStatement == null) {
                 return null;
             }
-            resultSet = preparedStatement.executeQuery();
-            return resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
+            }
         } catch (SQLException e) {
             throw new NullPointerException("No result for id " + id);
         } finally {
             try {
                 if (preparedStatement != null) {
                     preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -464,37 +408,21 @@ public class SqlStorage<T extends Persistable>
     }
 
     public void getIDsForValues(String[] namesToMatch, String[] valuesToMatch, LinkedHashSet<Integer> ids) {
-        Connection connection;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = this.getConnection();
-            preparedStatement = SqlHelper.prepareTableSelectStatement(connection, this.tableName,
-                    namesToMatch, valuesToMatch);
+        Connection connection = this.getConnection();
+
+        try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
+                this.tableName, namesToMatch, valuesToMatch)) {
+
             if (preparedStatement == null) {
                 return;
             }
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                ids.add(resultSet.getInt(DatabaseHelper.ID_COL));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    ids.add(resultSet.getInt(DatabaseHelper.ID_COL));
+                }
             }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -537,86 +465,51 @@ public class SqlStorage<T extends Persistable>
 
     public void bulkRead(LinkedHashSet<Integer> cuedCases, HashMap<Integer, T> recordMap) throws RequestAbandonedException {
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases);
-        PreparedStatement preparedStatement = null;
-        Connection connection;
-        ResultSet resultSet = null;
+        Connection connection = this.getConnection();
         try {
-            connection = getConnection();
             for (Pair<String, String[]> querySet : whereParamList) {
 
-                preparedStatement =
+                try(PreparedStatement preparedStatement =
                         SqlHelper.prepareTableSelectStatement(connection,
-                                this.tableName,
-                                DatabaseHelper.ID_COL + " IN " + querySet.first,
-                                querySet.second);
-                resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    if(Thread.interrupted()) {
-                        throw new RequestAbandonedException();
+                                this.tableName, DatabaseHelper.ID_COL + " IN " + querySet.first,
+                                querySet.second)) {
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            if (Thread.interrupted()) {
+                                throw new RequestAbandonedException();
+                            }
+                            int index = resultSet.findColumn(DatabaseHelper.DATA_COL);
+                            byte[] data = resultSet.getBytes(index);
+                            recordMap.put(resultSet.getInt(DatabaseHelper.ID_COL),
+                                    newObject(data, resultSet.getInt(DatabaseHelper.ID_COL)));
+                        }
                     }
-                    int index = resultSet.findColumn(DatabaseHelper.DATA_COL);
-                    byte[] data = resultSet.getBytes(index);
-                    recordMap.put(resultSet.getInt(DatabaseHelper.ID_COL),
-                            newObject(data, resultSet.getInt(DatabaseHelper.ID_COL)));
                 }
             }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
     @Override
     public String[] getMetaDataForRecord(int recordId, String[] metaFieldNames) {
-        String rid = String.valueOf(recordId);
+        String recordIdString = String.valueOf(recordId);
         String[] scrubbedNames = scrubMetadataNames(metaFieldNames);
         String[] projection = getProjectedFieldsWithId(false, scrubbedNames);
-        PreparedStatement preparedStatement;
-        ResultSet resultSet = null;
-        preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(
-                getConnection(),
-                tableName,
-                rid,
-                projection
-                );
-        try {
-            resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                return readMetaDataFromResultSet(resultSet, scrubbedNames);
-            } else {
-                throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
+
+        try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(
+                getConnection(), tableName, recordIdString, projection
+                )) {
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return readMetaDataFromResultSet(resultSet, scrubbedNames);
+                } else {
+                    throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
+                }
             }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (resultSet != null) {
-                try {
-                    resultSet.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -640,45 +533,30 @@ public class SqlStorage<T extends Persistable>
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(recordIds);
         String [] scrubbedNames = scrubMetadataNames(metaFieldNames);
         String[] projection = getProjectedFieldsWithId(false, scrubbedNames);
-        PreparedStatement preparedStatement = null;
-        Connection connection;
-        ResultSet resultSet = null;
+        Connection connection = getConnection();
+
         try {
-            connection = getConnection();
             for (Pair<String, String[]> querySet : whereParamList) {
 
-                preparedStatement =
+                try (PreparedStatement preparedStatement =
                         SqlHelper.prepareTableSelectStatementProjection(connection,
                                 this.tableName,
                                 DatabaseHelper.ID_COL + " IN " + querySet.first,
-                                querySet.second,
-                                projection);
-                resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    if(Thread.interrupted()) {
-                        throw new RequestAbandonedException();
+                                querySet.second, projection) ) {
+
+                    try (ResultSet resultSet = preparedStatement.executeQuery() ) {
+                        while (resultSet.next()) {
+                            if (Thread.interrupted()) {
+                                throw new RequestAbandonedException();
+                            }
+                            String[] metaRead = readMetaDataFromResultSet(resultSet, scrubbedNames);
+                            metadataMap.put(resultSet.getInt(DatabaseHelper.ID_COL), metaRead);
+                        }
                     }
-                    String[] metaRead = readMetaDataFromResultSet(resultSet, scrubbedNames);
-                    metadataMap.put(resultSet.getInt(DatabaseHelper.ID_COL), metaRead);
                 }
             }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -693,14 +571,17 @@ public class SqlStorage<T extends Persistable>
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(matchingValues, "?");
         try {
             for (Pair<String, String[]> querySet : whereParamList) {
-                PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
+                try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
                         tableName,
                         fieldName + " IN " + querySet.first,
-                        querySet.second);
-                ResultSet resultSet = selectStatement.executeQuery();
-                while (resultSet.next()) {
-                    byte[] data = resultSet.getBytes(DatabaseHelper.DATA_COL);
-                    returnSet.add(newObject(data, resultSet.getInt(DatabaseHelper.ID_COL)));
+                        querySet.second)) {
+
+                    try(ResultSet resultSet = selectStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            byte[] data = resultSet.getBytes(DatabaseHelper.DATA_COL);
+                            returnSet.add(newObject(data, resultSet.getInt(DatabaseHelper.ID_COL)));
+                        }
+                    }
                 }
             }
             return returnSet;
@@ -712,36 +593,22 @@ public class SqlStorage<T extends Persistable>
     public String getMetaDataFieldForRecord(int recordId, String rawFieldName) {
         String rid = String.valueOf(recordId);
         String scrubbedName = TableBuilder.scrubName(rawFieldName);
-        PreparedStatement selectStatement = null;
-        ResultSet resultSet = null;
+
         try {
-            selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
-                    tableName,
+            try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
+                    connectionHandler.getConnection(), tableName,
                     DatabaseHelper.ID_COL + "=?",
-                    new String[]{rid});
-            resultSet = selectStatement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getString(scrubbedName);
-            } else {
-                throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
+                    new String[]{rid})) {
+                try (ResultSet resultSet = selectStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getString(scrubbedName);
+                    } else {
+                        throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
+                    }
+                }
             }
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
-        } finally {
-            if (resultSet != null) {
-                try {
-                    resultSet.close();
-                } catch (SQLException e) {
-                    // pass
-                }
-            }
-            if (selectStatement != null) {
-                try {
-                    selectStatement.close();
-                } catch (SQLException e) {
-                    // pass
-                }
-            }
         }
     }
 }
