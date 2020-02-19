@@ -1,2 +1,3 @@
 include ':commcare'
 project(':commcare').projectDir = new File('libs/commcare')
+rootProject.name = 'formplayer'
