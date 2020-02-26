@@ -7,6 +7,7 @@ an [XForm](http://dimagi.github.io/xform-spec/) FormPlayer enables form entry vi
 These files will often be hosted by a [CommCareHQ](https://www.github.com/dimagi/commcare-hq) server instance. Formplayer relies on the [CommCare](https://www.github.com/dimagi/commcare-core) libraries (included as subrepositories). Formplayer is built via gradle (wrapper files included).
 
 ### Dependencies
++ Java (OpenJDK 8)
 + Formplayer caches session instances via Redis
 + Formplayer stores session instances via Postgres
 + Formplayer builds SQLite database for each restored user
@@ -54,6 +55,23 @@ To test:
 When building on Linux it is sometimes necessary to run:
 
     $ gradle wrapper
+
+#### Troubleshooting
+
+*Could not resolve project :commcare*
+
+Run `git submodule update --init`
+
+*Compilation error*
+
+e.g. `no suitable constructor found for OutputFormat(Document)`
+
+You're likely running the wrong version of Java. Check with `java -version` which should show `1.8`
+
+- Install OpenJDK 8
+- Configure gradle to use the new Java
+  - Update `~/.gradle/gradle.properties` with `org.gradle.java.home=/JDK_PATH`
+  - OR run append this to gradle commands: `-Dorg.gradle.java.home=/JDK_PATH`
 
 ### Running in IntelliJ
 
