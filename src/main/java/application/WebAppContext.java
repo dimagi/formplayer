@@ -7,10 +7,17 @@ import engine.FormplayerArchiveFileRoot;
 import installers.FormplayerInstallerFactory;
 import io.sentry.SentryClientFactory;
 import io.sentry.dsn.InvalidDsnException;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.protocol.HttpContext;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
@@ -19,6 +26,7 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -36,10 +44,12 @@ import services.*;
 import util.Constants;
 import util.FormplayerSentry;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
 @EnableAutoConfiguration
@@ -296,6 +306,7 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public RestTemplateBuilder restTemplateBuilder() {
         return new RestTemplateBuilder()
+                .customizers(new MaxConnectionTimeCustomizer())
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
                 .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT));
     }
@@ -310,4 +321,27 @@ public class WebAppContext implements WebMvcConfigurer {
 
     @Bean
     public MenuSessionFactory menuSessionFactory() {return new MenuSessionFactory();}
+
+
+    static public class MaxConnectionTimeCustomizer implements RestTemplateCustomizer {
+
+        @Override
+        public void customize(RestTemplate restTemplate) {
+            HttpClient httpClient = HttpClientBuilder
+                    .create()
+                    .setRetryHandler((exception, executionCount, context) -> {
+                        if (executionCount > 3) {
+                            return false;
+                        }
+                        if (exception instanceof org.apache.http.NoHttpResponseException) {
+                            return true;
+                        }
+                        return false;
+                    })
+                    .build();
+
+            restTemplate.setRequestFactory(
+                    new HttpComponentsClientHttpRequestFactory(httpClient));
+        }
+    }
 }
