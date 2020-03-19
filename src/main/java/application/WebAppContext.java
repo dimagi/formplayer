@@ -329,15 +329,7 @@ public class WebAppContext implements WebMvcConfigurer {
         public void customize(RestTemplate restTemplate) {
             HttpClient httpClient = HttpClientBuilder
                     .create()
-                    .setRetryHandler((exception, executionCount, context) -> {
-                        if (executionCount > 3) {
-                            return false;
-                        }
-                        if (exception instanceof org.apache.http.NoHttpResponseException) {
-                            return true;
-                        }
-                        return false;
-                    })
+                    .setConnectionTimeToLive(1000, TimeUnit.MILLISECONDS)
                     .build();
 
             restTemplate.setRequestFactory(
