@@ -15,6 +15,8 @@ public class FormplayerPropertyManager extends PropertyManager {
     public static final String ENABLE_BULK_PERFORMANCE = "cc-enable-bulk-performance";
     public static final String AUTO_PURGE_ENABLED = "cc-auto-purge";
 
+    public static final String POST_FORM_SYNC = "cc-sync-after-form";
+
     /**
      * Constructor for this PropertyManager
      *
@@ -39,5 +41,9 @@ public class FormplayerPropertyManager extends PropertyManager {
 
     public boolean isAutoPurgeEnabled() {
         return doesPropertyMatch(AUTO_PURGE_ENABLED, NO, YES);
+    }
+
+    public boolean isSyncAfterFormEnabled() {
+        return doesPropertyMatch(POST_FORM_SYNC, NO, YES);
     }
 }

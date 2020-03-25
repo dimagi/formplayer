@@ -195,6 +195,13 @@ public class FormController extends AbstractBaseController{
                 }
             }
 
+            if (storageFactory.getPropertyManager().isSyncAfterFormEnabled()) {
+                //If configured to do so, do a sync with server now to ensure dats is up to date.
+                //Need to do before end of form nav triggers, since the new data might change the
+                //validity of the form
+                restoreFactory.performTimedSync();
+            }
+
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
                 Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
