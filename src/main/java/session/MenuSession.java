@@ -80,6 +80,9 @@ public class MenuSession implements HereFunctionHandlerListener {
     private String currentBrowserLocation;
     private boolean hereFunctionEvaluated;
 
+    // Stores the entity screens created to manage state for the lifecycle of this request
+    private Map<String, EntityScreen> entityScreenCache = new HashMap<>();
+
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.username = TableBuilder.scrubName(session.getUsername());
@@ -124,6 +127,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public void resetSession() {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
+        this.entityScreenCache.clear();
         initializeBreadcrumbs();
     }
 
@@ -240,8 +244,8 @@ public class MenuSession implements HereFunctionHandlerListener {
             menuScreen.init(sessionWrapper);
             return menuScreen;
         } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
-            EntityScreen entityScreen = new EntityScreen(false);
-            entityScreen.init(sessionWrapper);
+            EntityScreen entityScreen = getEntityScreenForSession();
+
             if (entityScreen.shouldBeSkipped()) {
                 return getNextScreen();
             }
@@ -261,6 +265,23 @@ public class MenuSession implements HereFunctionHandlerListener {
             return syncScreen;
         }
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
+    }
+
+    private EntityScreen getEntityScreenForSession() throws CommCareSessionException {
+        String datumKey = sessionWrapper.getNeededDatum().getDataId();
+        if (!entityScreenCache.containsKey(datumKey)) {
+            EntityScreen entityScreen = createFreshEntityScreen();
+            entityScreenCache.put(datumKey, entityScreen);
+            return entityScreen;
+        } else {
+            return entityScreenCache.get(datumKey);
+        }
+    }
+
+    private EntityScreen createFreshEntityScreen() throws CommCareSessionException {
+        EntityScreen entityScreen = new EntityScreen(false);
+        entityScreen.init(sessionWrapper);
+        return entityScreen;
     }
 
     private void computeDatum() {
