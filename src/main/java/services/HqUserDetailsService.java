@@ -20,6 +20,7 @@ import util.RequestUtils;
 public class HqUserDetailsService {
     private final Log log = LogFactory.getLog(HqUserDetailsService.class);
     private final RestTemplate restTemplate;
+    private final RestTemplateBuilder builder;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -32,10 +33,12 @@ public class HqUserDetailsService {
 
     public HqUserDetailsService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+        this.builder = null;
     }
 
     public HqUserDetailsService(RestTemplateBuilder builder) {
-        restTemplate = builder.build();
+        this.builder = builder;
+        this.restTemplate = null;
     }
 
     public HqUserDetailsBean getUserDetails(String domain, String sessionKey) {
@@ -48,7 +51,8 @@ public class HqUserDetailsService {
             throw new UserDetailsException(e);
         }
         HttpEntity<String> request = new HttpEntity<>(data, headers);
-        HqUserDetailsBean userDetails = restTemplate.postForObject(getSessionDetailsUrl(), request, HqUserDetailsBean.class);
+        RestTemplate template = builder == null ? restTemplate : builder.build();
+        HqUserDetailsBean userDetails = template.postForObject(getSessionDetailsUrl(), request, HqUserDetailsBean.class);
         return userDetails;
     }
 
