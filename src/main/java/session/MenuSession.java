@@ -13,6 +13,7 @@ import org.commcare.resources.model.ResourceInitializationException;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.util.CommCarePlatform;
@@ -22,6 +23,8 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
+import org.javarosa.core.model.trace.ReducingTraceReporter;
+import org.javarosa.core.util.MD5;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -127,7 +130,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public void resetSession() {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
-        this.entityScreenCache.clear();
+        clearEntityScreenCache();
         initializeBreadcrumbs();
     }
 
@@ -267,8 +270,18 @@ public class MenuSession implements HereFunctionHandlerListener {
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
     }
 
+    private void clearEntityScreenCache() {
+        entityScreenCache.clear();
+    }
+
     private EntityScreen getEntityScreenForSession() throws CommCareSessionException {
-        String datumKey = sessionWrapper.getNeededDatum().getDataId();
+        EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
+
+        //This is only needed because with remote queries there can be nested datums with the same
+        //datum ID in the same http request lifecycle.
+        String nodesetHash = MD5.toHex(MD5.hash(datum.getNodeset().toString(true).getBytes()));
+
+        String datumKey = datum.getDataId() + ", "+ nodesetHash;
         if (!entityScreenCache.containsKey(datumKey)) {
             EntityScreen entityScreen = createFreshEntityScreen();
             entityScreenCache.put(datumKey, entityScreen);
