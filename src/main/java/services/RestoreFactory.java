@@ -77,6 +77,7 @@ public class RestoreFactory {
     public static final String FREQ_WEEKLY = "freq-weekly";
     public static final String FREQ_NEVER = "freq-never";
 
+    public static final Long TWENTY_MINUTES_IN_MILLISECONDS = 1000L * 60 * 20;
     public static final Long ONE_DAY_IN_MILLISECONDS = 86400000l;
     public static final Long ONE_WEEK_IN_MILLISECONDS = ONE_DAY_IN_MILLISECONDS * 7;
 
@@ -305,6 +306,16 @@ public class RestoreFactory {
         }
     }
 
+    public boolean useAggressiveSyncTiming() {
+        try {
+            return storageFactory.getPropertyManager().isSyncAfterFormEnabled();
+        } catch (RuntimeException e) {
+            // In cases where we don't have access to the PropertyManager, such as sync-db, this call
+            // throws a RuntimeException
+            return false;
+        }
+    }
+
     /**
      * Based on the frequency of restore set in the app, this method determines
      * whether the user should sync
@@ -314,10 +325,21 @@ public class RestoreFactory {
     public boolean isRestoreXmlExpired() {
         String freq = getSyncFreqency();
         Long lastSyncTime = getLastSyncTime();
-        if (lastSyncTime == null || freq == null) {
+        boolean isAggressive = useAggressiveSyncTiming();
+
+        if (lastSyncTime == null) {
+            return isAggressive;
+        }
+        
+        Long delta = System.currentTimeMillis() - lastSyncTime;
+
+        if (isAggressive) {
+            return delta > TWENTY_MINUTES_IN_MILLISECONDS;
+        }
+
+        if (freq == null) {
             return false;
         }
-        Long delta = System.currentTimeMillis() - lastSyncTime;
 
         switch (freq) {
             case FREQ_DAILY:
