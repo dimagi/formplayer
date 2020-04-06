@@ -310,7 +310,7 @@ public class RestoreFactory {
         try {
             return storageFactory.getPropertyManager().isSyncAfterFormEnabled();
         } catch (RuntimeException e) {
-            // In cases where we don't have access to the PropertyManager, such sync-db, this call
+            // In cases where we don't have access to the PropertyManager, such as sync-db, this call
             // throws a RuntimeException
             return false;
         }
