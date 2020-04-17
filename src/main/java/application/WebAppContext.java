@@ -39,6 +39,7 @@ import util.FormplayerSentry;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -155,6 +156,14 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public RedisTemplate<String, Long> redisTemplateLong() {
         RedisTemplate template = new RedisTemplate<String, Long>();
+        template.setConnectionFactory(jedisConnFactory());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, Map<String, String>> redisTemplateDict() {
+        RedisTemplate template = new RedisTemplate<String, Map<String, String>>();
         template.setConnectionFactory(jedisConnFactory());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;

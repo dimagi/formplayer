@@ -1,31 +1,26 @@
 package session;
 
-import beans.FormEntryNavigationResponseBean;
-import beans.FormEntryResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import objects.FunctionHandler;
-import objects.SerializableFormSession;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import api.json.JsonActionUtils;
-import org.commcare.util.engine.CommCareConfigEngine;
-import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.javarosa.core.services.storage.StorageManager;
-import org.javarosa.xpath.XPathException;
-import sandbox.UserSqlSandbox;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
+import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IFormElement;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.services.PrototypeManager;
+import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.engine.FunctionExtensions;
@@ -35,17 +30,31 @@ import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.FormInstanceLoader;
+import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
-import services.FormplayerStorageFactory;
-import services.RestoreFactory;
-import util.Constants;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
+
+import api.json.JsonActionUtils;
+import beans.FormEntryNavigationResponseBean;
+import beans.FormEntryResponseBean;
+import objects.FormVolatilityRecord;
+import objects.FunctionHandler;
+import objects.SerializableFormSession;
+import sandbox.UserSqlSandbox;
+import services.FormplayerStorageFactory;
+import services.MenuSessionRunnerService;
+import services.RestoreFactory;
+import util.Constants;
 
 /**
  *
@@ -87,6 +96,8 @@ public class FormSession {
     private boolean isAtFirstIndex;
     private boolean inPromptMode;
     private String restoreAsCaseId;
+
+    private FormVolatilityRecord sessionVolatilityRecord;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -237,6 +248,58 @@ public class FormSession {
                 CommCareConfigEngine.MINOR_VERSION, storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
+
+        if(newInstance) {
+            setVolatilityIndicators();
+        }
+    }
+
+    private String getPragma(String key) {
+        String value = formDef.getLocalizer().getText(key);
+        if(value != null) {
+            return formDef.fillTemplateString(
+                    value, TreeReference.rootRef());
+        }
+        return null;
+    }
+
+    private void setVolatilityIndicators()
+    {
+
+        String volatilityKey = getPragma("Pragma-Volatility-Key");
+        String entityTitle = getPragma("Pragma-Volatility-Entity-Title");
+
+        if(volatilityKey != null) {
+            this.sessionVolatilityRecord = new FormVolatilityRecord(
+                    String.format(MenuSessionRunnerService.VOLATILITY_KEY_TEMPLATE,
+                            this.getXmlns(),
+                            volatilityKey),
+                    this.getVolatilityKeyTimeout(),
+                    entityTitle);
+        }
+    }
+
+    public FormVolatilityRecord getSessionVolatilityRecord() {
+        return sessionVolatilityRecord;
+    }
+
+    /**
+     * @return the Timeout (in ms) for volatility notices for this form
+     */
+    private long getVolatilityKeyTimeout() {
+        String timeOut = getPragma("Pragma-Volatility-Window");
+
+        int timeOutWindow = 5 * 60;
+
+        if (timeOut != null) {
+            try {
+                int timeOutInput = Integer.parseInt(timeOut);
+                timeOutWindow = timeOutInput;
+            } catch (NumberFormatException nfe) {
+                System.out.println("Invalid timeout window: " + timeOut);
+            }
+        }
+        return timeOutWindow;
     }
 
     public String getInstanceXml() throws IOException {

@@ -18,8 +18,12 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import objects.FormVolatilityRecord;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
@@ -30,8 +34,14 @@ import session.MenuSession;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -72,6 +82,15 @@ public class MenuSessionRunnerService {
 
     @Autowired
     protected FormplayerStorageFactory storageFactory;
+
+    @Autowired
+    private RedisTemplate redisTemplateDict;
+
+    @Resource(name="redisTemplateDict")
+    private ValueOperations<String, Map<String, String>> volatilityCache;
+
+    @Autowired
+    HqUserDetailsService userDetailsService;
 
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
@@ -199,6 +218,7 @@ public class MenuSessionRunnerService {
                 }
             }
         }
+
         nextResponse = getNextMenu(
                 menuSession,
                 detailSelection,
@@ -400,12 +420,77 @@ public class MenuSessionRunnerService {
         return null;
     }
 
+
+    //If the data dict structure is changed, bump the version of the key
+    public final static String VOLATILITY_KEY_TEMPLATE = "FormInit-%s-%s-v1";
+    private final static String VOLATILITY_KEY_USER = "UserKey";
+    private final static String VOLATILITY_DISPLAY_STRING = "DisplayString";
+    private final static String VOLATILITY_UNIX_TIME_LOADED = "TimeLoaded";
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
+
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         NewFormResponse response = new NewFormResponse(formEntrySession);
+
+        response.setNotification(establishVolatility(formEntrySession));
+
         formSessionRepo.save(formEntrySession.serialize());
         return response;
     }
 
+    private NotificationMessage establishVolatility(FormSession session) {
+        FormVolatilityRecord def = session.getSessionVolatilityRecord();
+        String key = def.getKey();
+        if (volatilityCache != null && key != null) {
+
+            Map<String, String> record = volatilityCache.get(key);
+            if (record == null) {
+                volatilityCache.set(key, getVolatilityRecord(session),
+                        session.getSessionVolatilityRecord().getTimeout(), TimeUnit.SECONDS);
+            } else {
+                if (session.getUsername().equals(record.get(VOLATILITY_KEY_USER))) {
+                    //This is our record, don't display anything but do update
+                    volatilityCache.set(key, getVolatilityRecord(session),
+                            session.getSessionVolatilityRecord().getTimeout(), TimeUnit.SECONDS);
+                } else {
+                    return new NotificationMessage(formatWarningString(record), false);
+                }
+            }
+        }
+        return null;
+    }
+
+    private String formatWarningString(Map<String, String> record) {
+        String displayString = record.get(VOLATILITY_DISPLAY_STRING);
+        long timeLoaded = new Date().getTime();
+        try {
+            timeLoaded = Long.valueOf(record.get(VOLATILITY_UNIX_TIME_LOADED));
+        }catch(NumberFormatException nfe){
+
+        }
+        String formatString;
+
+        long current = new Date().getTime();
+        long delta = (current - timeLoaded) / 1000;
+
+        if(delta < 60) {
+            formatString = String.format("%d Seconds ago", delta);
+        } else {
+            delta = delta / 60;
+            formatString = String.format("%d Minutes ago", delta);
+        }
+
+        return String.format(displayString, formatString);
+    }
+
+
+    private Map<String, String> getVolatilityRecord(FormSession session) {
+        //Write our own
+        Map<String, String> dict = new HashMap<>();
+        dict.put(VOLATILITY_KEY_USER, session.getUsername());
+        dict.put(VOLATILITY_DISPLAY_STRING,
+                session.getSessionVolatilityRecord().getDisplayMessage(session.getUsername()));
+        dict.put(VOLATILITY_UNIX_TIME_LOADED, Long.toString(new Date().getTime()));
+        return dict;
+    }
 }

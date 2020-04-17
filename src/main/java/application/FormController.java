@@ -1,31 +1,7 @@
 package application;
 
-import annotations.ConfigureStorageFromSession;
-import annotations.UserLock;
-import annotations.UserRestore;
-import api.json.JsonActionUtils;
-import api.process.FormRecordProcessorHelper;
-import api.util.ApiConstants;
-import beans.AnswerQuestionRequestBean;
-import beans.ChangeLocaleRequestBean;
-import beans.FormEntryNavigationResponseBean;
-import beans.FormEntryResponseBean;
-import beans.InstanceXmlBean;
-import beans.NewFormResponse;
-import beans.NewSessionRequestBean;
-import beans.NotificationMessage;
-import beans.OpenRosaResponse;
-import beans.GetInstanceResponseBean;
-import beans.RepeatRequestBean;
-import beans.SessionRequestBean;
-import beans.SubmitRequestBean;
-import beans.SubmitResponseBean;
-import beans.menus.ErrorBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import engine.FormplayerTransactionParserFactory;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import objects.SerializableFormSession;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.form.api.FormEntryController;
@@ -44,6 +20,36 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import annotations.ConfigureStorageFromSession;
+import annotations.UserLock;
+import annotations.UserRestore;
+import api.json.JsonActionUtils;
+import api.process.FormRecordProcessorHelper;
+import api.util.ApiConstants;
+import beans.AnswerQuestionRequestBean;
+import beans.ChangeLocaleRequestBean;
+import beans.FormEntryNavigationResponseBean;
+import beans.FormEntryResponseBean;
+import beans.GetInstanceResponseBean;
+import beans.InstanceXmlBean;
+import beans.NewFormResponse;
+import beans.NewSessionRequestBean;
+import beans.NotificationMessage;
+import beans.OpenRosaResponse;
+import beans.RepeatRequestBean;
+import beans.SessionRequestBean;
+import beans.SubmitRequestBean;
+import beans.SubmitResponseBean;
+import beans.menus.ErrorBean;
+import engine.FormplayerTransactionParserFactory;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import objects.SerializableFormSession;
 import repo.SerializableMenuSession;
 import services.CategoryTimingHelper;
 import services.FormplayerStorageFactory;
@@ -53,10 +59,6 @@ import session.FormSession;
 import session.MenuSession;
 import util.Constants;
 import util.SimpleTimer;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
