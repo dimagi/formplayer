@@ -281,7 +281,7 @@ public class FormSession {
     }
 
     /**
-     * @return the Timeout (in ms) for volatility notices for this form
+     * @return the Timeout (in seconds) for volatility notices for this form
      */
     private long getVolatilityKeyTimeout() {
         String timeOut = getPragma("Pragma-Volatility-Window");
