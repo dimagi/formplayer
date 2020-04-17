@@ -6,10 +6,12 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import beans.NotificationMessage;
 import session.FormSession;
 
 /**
- * Redis cache record object for
+ * Redis cache record object for managing records of actions (open, complete, etc) which
+ * are taken against forms that are marked as 'volatile.'
  *
  * @author Clayton Sims (csims@dimagi.com)
  */
@@ -23,6 +25,7 @@ public class FormVolatilityRecord implements Serializable {
 
     private String username;
     private long openedOn;
+    private long submittedOn = 0;
 
     private String currentMessage;
 
@@ -33,7 +36,7 @@ public class FormVolatilityRecord implements Serializable {
 
     public FormVolatilityRecord(String key, long timeout, String entityName) {
         this.key = key;
-        this.timeout = timeout;
+        setTimeout(timeout);
         this.entityName = entityName;
     }
 
@@ -52,7 +55,8 @@ public class FormVolatilityRecord implements Serializable {
     }
 
     public void setTimeout(long timeout) {
-        this.timeout = timeout;
+        //Only allow notification records for up to an hour
+        this.timeout = Math.min(timeout, 60*60);
     }
 
     public String getEntityName() {
@@ -87,12 +91,27 @@ public class FormVolatilityRecord implements Serializable {
         this.currentMessage = currentMessage;
     }
 
+    public long getSubmittedOn() {
+        return submittedOn;
+    }
+
+    public void setSubmittedOn(long submittedOn) {
+        this.submittedOn = submittedOn;
+    }
+
     private String formatOpenedMessage(String userTitle) {
         String message = String.format(
-                "Warning: This form was started recently for %s by %s %s",
-                entityName == null? "the same record" : entityName,
+                "Warning: %s recently started this form for %s",
                 userTitle,
-                "%s");
+                entityName == null? "the same record" : entityName);
+        return message;
+    }
+
+    private String formatSubmittedMessage(String userTitle) {
+        String message = String.format(
+                "Warning: %s recently submitted this form for %s",
+                userTitle,
+                entityName == null? "the same record" : entityName);
         return message;
     }
 
@@ -113,22 +132,46 @@ public class FormVolatilityRecord implements Serializable {
         this.username = session.getUsername();
         this.currentMessage = formatOpenedMessage(session.getUsername());
         this.openedOn = new Date().getTime();
-
     }
 
-    public String formatWarningString() {
+    /**
+     * This record represents a finished form
+     *
+     * @param session
+     */
+    public void updateFormSubmitted(FormSession session) {
+        this.username = session.getUsername();
+        this.currentMessage = formatSubmittedMessage(session.getUsername());
+        this.submittedOn = new Date().getTime();
+    }
+
+    public NotificationMessage getNotificationIfRelevant(long lastSyncTime) {
         String formatString;
 
+        long anchor = wasSubmitted() ? submittedOn : openedOn;
+
         long current = new Date().getTime();
-        long delta = (current - openedOn) / 1000;
+        long delta = (current - anchor) / 1000;
 
         if(delta < 60) {
-            formatString = String.format("%d Seconds ago", delta);
+            formatString = String.format(" %d Seconds ago", delta);
         } else {
             delta = delta / 60;
-            formatString = String.format("%d Minutes ago", delta);
+            formatString = String.format(" %d Minutes ago", delta);
         }
 
-        return String.format(currentMessage, formatString);
+        if (submittedOn > lastSyncTime) {
+            formatString += ". Your data may be out of date! " +
+                    "You haven't synced since this form was submitted";
+        }
+        if(wasSubmitted() && submittedOn  < lastSyncTime) {
+            return null;
+        }
+
+        return new NotificationMessage(currentMessage + formatString, false);
+    }
+
+    public boolean wasSubmitted() {
+        return submittedOn != 0;
     }
 }

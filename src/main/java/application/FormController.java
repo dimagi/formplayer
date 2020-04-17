@@ -13,6 +13,8 @@ import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Resource;
 
 import annotations.ConfigureStorageFromSession;
 import annotations.UserLock;
@@ -49,6 +53,7 @@ import beans.menus.ErrorBean;
 import engine.FormplayerTransactionParserFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import objects.FormVolatilityRecord;
 import objects.SerializableFormSession;
 import repo.SerializableMenuSession;
 import services.CategoryTimingHelper;
@@ -80,6 +85,12 @@ public class FormController extends AbstractBaseController{
 
     @Autowired
     private FormplayerStorageFactory storageFactory;
+
+    @Autowired
+    private RedisTemplate redisVolatilityDict;
+
+    @Resource(name="redisVolatilityDict")
+    private ValueOperations<String, FormVolatilityRecord> volatilityCache;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -145,6 +156,8 @@ public class FormController extends AbstractBaseController{
                 formEntrySession.getFormEntryModel(),
                 submitRequestBean.getAnswers());
 
+        FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
+
         if (!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
                 || !submitRequestBean.isPrevalidated()) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
@@ -195,6 +208,15 @@ public class FormController extends AbstractBaseController{
                     // rollback sets autoCommit back to `true`
                     restoreFactory.rollback();
                 }
+            }
+
+            if (volatilityCache != null &&  volatilityRecord != null) {
+                FormVolatilityRecord existingRecord = volatilityCache.get(volatilityRecord.getKey());
+                if (existingRecord != null && existingRecord.matchesUser(formEntrySession)) {
+                    volatilityRecord = existingRecord;
+                }
+                volatilityRecord.updateFormSubmitted(formEntrySession);
+                volatilityRecord.write(volatilityCache);
             }
 
             if (storageFactory.getPropertyManager().isSyncAfterFormEnabled()) {

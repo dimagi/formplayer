@@ -431,14 +431,18 @@ public class MenuSessionRunnerService {
 
     private NotificationMessage establishVolatility(FormSession session) {
         FormVolatilityRecord newRecord = session.getSessionVolatilityRecord();
-        String key = newRecord.getKey();
-        if (volatilityCache != null && key != null) {
-            FormVolatilityRecord existingRecord = volatilityCache.get(key);
-            if (existingRecord == null || existingRecord.matchesUser(session)) {
+        if (volatilityCache != null && newRecord != null) {
+            FormVolatilityRecord existingRecord = volatilityCache.get(newRecord.getKey());
+
+            //Overwrite any existing records unless they were from a submissions, since submission
+            //records are more relevant
+            if (existingRecord == null || !existingRecord.wasSubmitted()) {
                 newRecord.updateFormOpened(session);
                 newRecord.write(volatilityCache);
-            } else {
-                return new NotificationMessage(existingRecord.formatWarningString(), false);
+            }
+
+            if(existingRecord != null && !existingRecord.matchesUser(session)) {
+                return existingRecord.getNotificationIfRelevant(restoreFactory.getLastSyncTime());
             }
         }
         return null;

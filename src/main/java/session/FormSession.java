@@ -249,9 +249,7 @@ public class FormSession {
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
 
-        if(newInstance) {
-            setVolatilityIndicators();
-        }
+        setVolatilityIndicators();
     }
 
     private String getPragma(String key) {
