@@ -265,13 +265,12 @@ public class FormSession {
 
     private void setVolatilityIndicators()
     {
-
         String volatilityKey = getPragma("Pragma-Volatility-Key");
         String entityTitle = getPragma("Pragma-Volatility-Entity-Title");
 
         if(volatilityKey != null) {
             this.sessionVolatilityRecord = new FormVolatilityRecord(
-                    String.format(MenuSessionRunnerService.VOLATILITY_KEY_TEMPLATE,
+                    String.format(FormVolatilityRecord.VOLATILITY_KEY_TEMPLATE,
                             this.getXmlns(),
                             volatilityKey),
                     this.getVolatilityKeyTimeout(),

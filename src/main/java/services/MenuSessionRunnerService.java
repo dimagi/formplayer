@@ -84,16 +84,12 @@ public class MenuSessionRunnerService {
     protected FormplayerStorageFactory storageFactory;
 
     @Autowired
-    private RedisTemplate redisTemplateDict;
+    private RedisTemplate redisVolatilityDict;
 
-    @Resource(name="redisTemplateDict")
-    private ValueOperations<String, Map<String, String>> volatilityCache;
-
-    @Autowired
-    HqUserDetailsService userDetailsService;
+    @Resource(name="redisVolatilityDict")
+    private ValueOperations<String, FormVolatilityRecord> volatilityCache;
 
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
-
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
         return getNextMenu(menuSession, null, 0, "", 0);
@@ -421,11 +417,6 @@ public class MenuSessionRunnerService {
     }
 
 
-    //If the data dict structure is changed, bump the version of the key
-    public final static String VOLATILITY_KEY_TEMPLATE = "FormInit-%s-%s-v1";
-    private final static String VOLATILITY_KEY_USER = "UserKey";
-    private final static String VOLATILITY_DISPLAY_STRING = "DisplayString";
-    private final static String VOLATILITY_UNIX_TIME_LOADED = "TimeLoaded";
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
@@ -439,58 +430,17 @@ public class MenuSessionRunnerService {
     }
 
     private NotificationMessage establishVolatility(FormSession session) {
-        FormVolatilityRecord def = session.getSessionVolatilityRecord();
-        String key = def.getKey();
+        FormVolatilityRecord newRecord = session.getSessionVolatilityRecord();
+        String key = newRecord.getKey();
         if (volatilityCache != null && key != null) {
-
-            Map<String, String> record = volatilityCache.get(key);
-            if (record == null) {
-                volatilityCache.set(key, getVolatilityRecord(session),
-                        session.getSessionVolatilityRecord().getTimeout(), TimeUnit.SECONDS);
+            FormVolatilityRecord existingRecord = volatilityCache.get(key);
+            if (existingRecord == null || existingRecord.matchesUser(session)) {
+                newRecord.updateFormOpened(session);
+                newRecord.write(volatilityCache);
             } else {
-                if (session.getUsername().equals(record.get(VOLATILITY_KEY_USER))) {
-                    //This is our record, don't display anything but do update
-                    volatilityCache.set(key, getVolatilityRecord(session),
-                            session.getSessionVolatilityRecord().getTimeout(), TimeUnit.SECONDS);
-                } else {
-                    return new NotificationMessage(formatWarningString(record), false);
-                }
+                return new NotificationMessage(existingRecord.formatWarningString(), false);
             }
         }
         return null;
-    }
-
-    private String formatWarningString(Map<String, String> record) {
-        String displayString = record.get(VOLATILITY_DISPLAY_STRING);
-        long timeLoaded = new Date().getTime();
-        try {
-            timeLoaded = Long.valueOf(record.get(VOLATILITY_UNIX_TIME_LOADED));
-        }catch(NumberFormatException nfe){
-
-        }
-        String formatString;
-
-        long current = new Date().getTime();
-        long delta = (current - timeLoaded) / 1000;
-
-        if(delta < 60) {
-            formatString = String.format("%d Seconds ago", delta);
-        } else {
-            delta = delta / 60;
-            formatString = String.format("%d Minutes ago", delta);
-        }
-
-        return String.format(displayString, formatString);
-    }
-
-
-    private Map<String, String> getVolatilityRecord(FormSession session) {
-        //Write our own
-        Map<String, String> dict = new HashMap<>();
-        dict.put(VOLATILITY_KEY_USER, session.getUsername());
-        dict.put(VOLATILITY_DISPLAY_STRING,
-                session.getSessionVolatilityRecord().getDisplayMessage(session.getUsername()));
-        dict.put(VOLATILITY_UNIX_TIME_LOADED, Long.toString(new Date().getTime()));
-        return dict;
     }
 }
