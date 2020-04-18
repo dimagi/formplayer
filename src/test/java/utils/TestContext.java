@@ -20,6 +20,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
+
+import objects.FormVolatilityRecord;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.CategoryTimingHelper;
@@ -88,6 +90,11 @@ public class TestContext {
     @Bean
     public StringRedisTemplate redisTemplate() {
         return Mockito.mock(StringRedisTemplate.class);
+    }
+
+    @Bean
+    public ValueOperations<String, FormVolatilityRecord> redisVolatilityDict() {
+        return Mockito.mock(ValueOperations.class);
     }
 
     @Bean
