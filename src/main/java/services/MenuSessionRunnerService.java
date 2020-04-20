@@ -18,8 +18,12 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import objects.FormVolatilityRecord;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.SerializableMenuSession;
@@ -30,8 +34,14 @@ import session.MenuSession;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -73,8 +83,13 @@ public class MenuSessionRunnerService {
     @Autowired
     protected FormplayerStorageFactory storageFactory;
 
-    private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
+    @Autowired
+    private RedisTemplate redisVolatilityDict;
 
+    @Resource(name="redisVolatilityDict")
+    private ValueOperations<String, FormVolatilityRecord> volatilityCache;
+
+    private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
         return getNextMenu(menuSession, null, 0, "", 0);
@@ -199,6 +214,7 @@ public class MenuSessionRunnerService {
                 }
             }
         }
+
         nextResponse = getNextMenu(
                 menuSession,
                 detailSelection,
@@ -400,12 +416,35 @@ public class MenuSessionRunnerService {
         return null;
     }
 
+
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
+
         menuSessionRepo.save(new SerializableMenuSession(menuSession));
         NewFormResponse response = new NewFormResponse(formEntrySession);
+
+        response.setNotification(establishVolatility(formEntrySession));
+
         formSessionRepo.save(formEntrySession.serialize());
         return response;
     }
 
+    private NotificationMessage establishVolatility(FormSession session) {
+        FormVolatilityRecord newRecord = session.getSessionVolatilityRecord();
+        if (volatilityCache != null && newRecord != null) {
+            FormVolatilityRecord existingRecord = volatilityCache.get(newRecord.getKey());
+
+            //Overwrite any existing records unless they were from a submissions, since submission
+            //records are more relevant
+            if (existingRecord == null || !existingRecord.wasSubmitted()) {
+                newRecord.updateFormOpened(session);
+                newRecord.write(volatilityCache);
+            }
+
+            if(existingRecord != null && !existingRecord.matchesUser(session)) {
+                return existingRecord.getNotificationIfRelevant(restoreFactory.getLastSyncTime());
+            }
+        }
+        return null;
+    }
 }

@@ -28,6 +28,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
+
+import objects.FormVolatilityRecord;
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import repo.impl.PostgresFormSessionRepo;
@@ -39,6 +41,7 @@ import util.FormplayerSentry;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -155,6 +158,14 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public RedisTemplate<String, Long> redisTemplateLong() {
         RedisTemplate template = new RedisTemplate<String, Long>();
+        template.setConnectionFactory(jedisConnFactory());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, FormVolatilityRecord> redisVolatilityDict() {
+        RedisTemplate template = new RedisTemplate<String, FormVolatilityRecord>();
         template.setConnectionFactory(jedisConnFactory());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
