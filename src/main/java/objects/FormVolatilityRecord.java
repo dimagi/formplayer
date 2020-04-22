@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 import beans.NotificationMessage;
 import session.FormSession;
+import util.StringUtils;
+import util.UserUtils;
 
 /**
  * Redis cache record object for managing records of actions (open, complete, etc) which
@@ -130,9 +132,10 @@ public class FormVolatilityRecord implements Serializable {
      */
     public void updateFormOpened(FormSession session) {
         this.username = session.getUsername();
-        this.currentMessage = formatOpenedMessage(session.getUsername());
+        this.currentMessage = formatOpenedMessage(UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
         this.openedOn = new Date().getTime();
     }
+
 
     /**
      * This record represents a finished form
@@ -141,12 +144,13 @@ public class FormVolatilityRecord implements Serializable {
      */
     public void updateFormSubmitted(FormSession session) {
         this.username = session.getUsername();
-        this.currentMessage = formatSubmittedMessage(session.getUsername());
+        this.currentMessage = formatSubmittedMessage(UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
         this.submittedOn = new Date().getTime();
     }
 
     public NotificationMessage getNotificationIfRelevant(long lastSyncTime) {
         String formatString;
+        NotificationMessage.Type type = NotificationMessage.Type.warning;
 
         long anchor = wasSubmitted() ? submittedOn : openedOn;
 
@@ -168,7 +172,7 @@ public class FormVolatilityRecord implements Serializable {
             return null;
         }
 
-        return new NotificationMessage(currentMessage + formatString, false);
+        return new NotificationMessage(currentMessage + formatString, type);
     }
 
     public boolean wasSubmitted() {
