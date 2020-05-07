@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.ArrayList;
+
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.FormplayerStorageFactory;
@@ -204,7 +206,22 @@ public abstract class AbstractBaseController {
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
+    void logNotification(@Nullable NotificationMessage notification, FormplayerHttpRequest req) {
+        try {
+            if (notification != null && notification.isError()) {
+                raven.sendRavenException(new RuntimeException(notification.getMessage()));
+                incrementDatadogCounter(Constants.DATADOG_ERRORS_NOTIFICATIONS, req, notification.getTag());
+            }
+        } catch (Exception e) {
+            // we don't wanna crash while logging the error
+        }
+    }
+
     private void incrementDatadogCounter(String metric, FormplayerHttpRequest req) {
+        incrementDatadogCounter(metric, req, null);
+    }
+
+    private void incrementDatadogCounter(String metric, FormplayerHttpRequest req, String tag) {
         String user = "unknown";
         String domain = "unknown";
         if (req.getUserDetails() != null) {
@@ -213,23 +230,18 @@ public abstract class AbstractBaseController {
         if (req.getDomain() != null) {
             domain = req.getDomain();
         }
+        ArrayList<String> tags = new ArrayList<>();
+        tags.add("domain:" + domain);
+        tags.add("user:" + user);
+        tags.add("request:" + req.getRequestURI());
+        if (tag != null) {
+            tags.add("tag:" + tag);
+        }
+
         datadogStatsDClient.increment(
                 metric,
-                "domain:" + domain,
-                "user:" + user,
-                "request:" + req.getRequestURI()
+                tags.toArray(new String[tags.size()])
         );
-    }
-
-    protected void logNotification(@Nullable NotificationMessage notification, FormplayerHttpRequest req) {
-        try {
-            if (notification != null && notification.isError()) {
-                raven.sendRavenException(new RuntimeException(notification.getMessage()));
-                incrementDatadogCounter(notification.getTag(), req);
-            }
-        } catch (Exception e) {
-            // we don't wanna crash while logging the error
-        }
     }
 
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
