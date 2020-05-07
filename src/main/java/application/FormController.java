@@ -63,6 +63,7 @@ import services.XFormService;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
+import util.FormplayerHttpRequest;
 import util.SimpleTimer;
 
 /**
@@ -147,7 +148,7 @@ public class FormController extends AbstractBaseController{
     @UserRestore
     @ConfigureStorageFromSession
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
-                                             @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
+                                         @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken, FormplayerHttpRequest req) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SubmitResponseBean submitResponseBean;
@@ -184,8 +185,11 @@ public class FormController extends AbstractBaseController{
 
                 if (!submitResponse.getStatusCode().is2xxSuccessful()) {
                     submitResponseBean.setStatus("error");
-                    submitResponseBean.setNotification(new NotificationMessage(
-                            "Form submission failed with error response" + submitResponse, true));
+                    NotificationMessage notification = new NotificationMessage(
+                            "Form submission failed with error response" + submitResponse,
+                            true, NotificationMessage.Tag.submit);
+                    submitResponseBean.setNotification(notification);
+                    logNotification(notification, req);
                     log.error("Submit response bean: " + submitResponseBean);
                     return submitResponseBean;
                 } else {
@@ -198,7 +202,9 @@ public class FormController extends AbstractBaseController{
             }
             catch (InvalidStructureException e) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
-                submitResponseBean.setNotification(new NotificationMessage(e.getMessage(), true));
+                NotificationMessage notification = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.submit);
+                submitResponseBean.setNotification(notification);
+                logNotification(notification, req);
                 log.error("Submission failed with structure exception " + e);
                 return submitResponseBean;
             }

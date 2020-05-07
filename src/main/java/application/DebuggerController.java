@@ -8,6 +8,7 @@ import beans.*;
 import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import beans.debugger.MenuDebuggerContentResponseBean;
 import beans.debugger.XPathQueryItem;
+import beans.menus.BaseResponseBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -22,6 +23,7 @@ import services.FormattedQuestionsService;
 import session.FormSession;
 import session.MenuSession;
 import util.Constants;
+import util.FormplayerHttpRequest;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -79,10 +81,12 @@ public class DebuggerController extends AbstractBaseController {
     @AppInstall
     public MenuDebuggerContentResponseBean menuDebuggerContent(
             @RequestBody SessionNavigationBean debuggerMenuRequest,
-            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+            FormplayerHttpRequest request) throws Exception {
 
         MenuSession menuSession = getMenuSessionFromBean(debuggerMenuRequest);
-        runnerService.advanceSessionWithSelections(menuSession, debuggerMenuRequest.getSelections());
+        BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(menuSession, debuggerMenuRequest.getSelections());
+        logNotification(responseBean.getNotification(), request);
 
         return new MenuDebuggerContentResponseBean(
                 menuSession.getAppId(),
@@ -99,9 +103,11 @@ public class DebuggerController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
-                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+                                                       @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+                                                       FormplayerHttpRequest request) throws Exception {
         MenuSession menuSession = getMenuSessionFromBean(evaluateXPathRequestBean);
-        runnerService.advanceSessionWithSelections(menuSession, evaluateXPathRequestBean.getSelections());
+        BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(menuSession, evaluateXPathRequestBean.getSelections());
+        logNotification(responseBean.getNotification(), request);
 
 
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(

@@ -4,6 +4,7 @@ import beans.NewFormResponse;
 import beans.NotificationMessage;
 import beans.menus.*;
 import exceptions.ApplicationConfigException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
@@ -86,7 +87,7 @@ public class MenuSessionRunnerService {
     @Autowired
     private RedisTemplate redisVolatilityDict;
 
-    @Resource(name="redisVolatilityDict")
+    @Resource(name = "redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
 
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
@@ -96,17 +97,18 @@ public class MenuSessionRunnerService {
     }
 
     private BaseResponseBean getNextMenu(MenuSession menuSession,
-                                           String detailSelection,
-                                           int offset,
-                                           String searchText,
-                                           int sortIndex) throws Exception {
+                                         String detailSelection,
+                                         int offset,
+                                         String searchText,
+                                         int sortIndex) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
             String assertionFailure = getAssertionFailure(menuSession);
             if (assertionFailure != null) {
-                BaseResponseBean responseBean = new BaseResponseBean("App Configuration Error", assertionFailure, true, true);
-                responseBean.setNotification(new NotificationMessage(assertionFailure, true));
+                BaseResponseBean responseBean = new BaseResponseBean("App Configuration Error",
+                        new NotificationMessage(assertionFailure, true, NotificationMessage.Tag.menu),
+                        true);
                 return responseBean;
             }
             return startFormEntry(menuSession);
@@ -116,7 +118,7 @@ public class MenuSessionRunnerService {
         // We're looking at a module or form menu
         if (nextScreen instanceof MenuScreen) {
             menuResponseBean = new CommandListResponseBean(
-                    (MenuScreen) nextScreen,
+                    (MenuScreen)nextScreen,
                     menuSession.getSessionWrapper(),
                     menuSession.getId()
             );
@@ -130,9 +132,9 @@ public class MenuSessionRunnerService {
                     searchText,
                     sortIndex
             );
-        } else if (nextScreen instanceof FormplayerQueryScreen){
+        } else if (nextScreen instanceof FormplayerQueryScreen) {
             menuResponseBean = new QueryResponseBean(
-                    (QueryScreen) nextScreen,
+                    (QueryScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
         } else {
@@ -155,7 +157,6 @@ public class MenuSessionRunnerService {
     /**
      * Advances the session based on the selections.
      *
-     * @param menuSession
      * @param selections      - Selections are either an integer index into a list of modules
      *                        or a case id indicating the case selected for a case detail.
      *                        <p>
@@ -165,9 +166,6 @@ public class MenuSessionRunnerService {
      * @param detailSelection - If requesting a case detail will be a case id, else null. When the case id is given
      *                        it is used to short circuit the normal TreeReference calculation by inserting a predicate that
      *                        is [@case_id = <detailSelection>].
-     * @param queryDictionary
-     * @param offset
-     * @param searchText
      */
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections,
@@ -187,27 +185,29 @@ public class MenuSessionRunnerService {
                     sortIndex
             );
         }
-        NotificationMessage notificationMessage = new NotificationMessage();
+        NotificationMessage notificationMessage = null;
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
             boolean gotNextScreen = menuSession.handleInput(selection);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
-                        "Overflowed selections with selection " + selection + " at index " + i, (true));
+                        "Overflowed selections with selection " + selection + " at index " + i,
+                        true,
+                        NotificationMessage.Tag.selection);
                 break;
             }
             Screen nextScreen = menuSession.getNextScreen();
 
             if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
                 notificationMessage = doQuery(
-                        (FormplayerQueryScreen) nextScreen,
+                        (FormplayerQueryScreen)nextScreen,
                         menuSession,
                         queryDictionary
                 );
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
-                        (FormplayerSyncScreen) nextScreen,
+                        (FormplayerSyncScreen)nextScreen,
                         menuSession);
                 if (syncResponse != null) {
                     return syncResponse;
@@ -223,7 +223,7 @@ public class MenuSessionRunnerService {
                 sortIndex
         );
         if (nextResponse != null) {
-            if (nextResponse.getNotification() == null) {
+            if (nextResponse.getNotification() == null && notificationMessage != null) {
                 nextResponse.setNotification(notificationMessage);
             }
             log.info("Returning menu: " + nextResponse);
@@ -231,7 +231,9 @@ public class MenuSessionRunnerService {
         } else {
             BaseResponseBean responseBean = resolveFormGetNext(menuSession);
             if (responseBean == null) {
-                responseBean = new BaseResponseBean(null, null, false, true);
+                responseBean = new BaseResponseBean(null,
+                        new NotificationMessage(null, false, NotificationMessage.Tag.selection),
+                        true);
             }
             return responseBean;
         }
@@ -254,8 +256,9 @@ public class MenuSessionRunnerService {
             return postSyncResponse;
         } else {
             // Otherwise, return use to the app root
-            postSyncResponse = new BaseResponseBean(null, "Redirecting after sync", false, true);
-            postSyncResponse.setNotification(notificationMessage);
+            postSyncResponse = new BaseResponseBean(null,
+                    new NotificationMessage("Redirecting after sync", false, NotificationMessage.Tag.sync),
+                    true);
             return postSyncResponse;
         }
     }
@@ -265,15 +268,15 @@ public class MenuSessionRunnerService {
                 screen.getBuiltQuery(),
                 restoreFactory.getUserHeaders());
         if (responseEntity == null) {
-            return new NotificationMessage("Session error, expected sync block but didn't get one.", true);
+            return new NotificationMessage("Session error, expected sync block but didn't get one.", true, NotificationMessage.Tag.sync);
         }
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             // Don't purge for case claim
             restoreFactory.performTimedSync(false);
-            return new NotificationMessage("Case claim successful.", false);
+            return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
         } else {
             return new NotificationMessage(
-                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true);
+                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true, NotificationMessage.Tag.sync);
         }
     }
 
@@ -293,10 +296,13 @@ public class MenuSessionRunnerService {
         boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
             if (screen.getCurrentMessage() != null) {
-                notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false);
+                notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
             }
         } else {
-            notificationMessage = new NotificationMessage("Query failed with message " + screen.getCurrentMessage(), true);
+            notificationMessage = new NotificationMessage(
+                    "Query failed with message " + screen.getCurrentMessage(),
+                    true,
+                    NotificationMessage.Tag.query);
         }
         Screen nextScreen = menuSession.getNextScreen();
         log.info("Next screen after query: " + nextScreen);
@@ -441,7 +447,7 @@ public class MenuSessionRunnerService {
                 newRecord.write(volatilityCache);
             }
 
-            if(existingRecord != null && !existingRecord.matchesUser(session)) {
+            if (existingRecord != null && !existingRecord.matchesUser(session)) {
                 return existingRecord.getNotificationIfRelevant(restoreFactory.getLastSyncTime());
             }
         }

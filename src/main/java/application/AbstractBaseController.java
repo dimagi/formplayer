@@ -2,11 +2,14 @@ package application;
 
 import aspects.LockAspect;
 import beans.InstallRequestBean;
+import beans.NotificationMessage;
 import beans.SessionNavigationBean;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
+
 import com.timgroup.statsd.StatsDClient;
+
 import exceptions.ApplicationConfigException;
 import exceptions.AsyncRetryException;
 import exceptions.FormNotFoundException;
@@ -14,6 +17,7 @@ import exceptions.FormattedApplicationConfigException;
 import exceptions.InterruptedRuntimeException;
 import exceptions.UnresolvedResourceRuntimeException;
 import io.sentry.event.Event;
+
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,10 +32,12 @@ import org.javarosa.xpath.XPathTypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
+
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.FormplayerStorageFactory;
@@ -154,6 +160,7 @@ public abstract class AbstractBaseController {
                 exception.getRetryAfter()
         );
     }
+
     /**
      * Catch exceptions that have formatted HTML errors
      */
@@ -212,6 +219,17 @@ public abstract class AbstractBaseController {
                 "user:" + user,
                 "request:" + req.getRequestURI()
         );
+    }
+
+    protected void logNotification(@Nullable NotificationMessage notification, FormplayerHttpRequest req) {
+        try {
+            if (notification != null && notification.isError()) {
+                raven.sendRavenException(new RuntimeException(notification.getMessage()));
+                incrementDatadogCounter(notification.getTag(), req);
+            }
+        } catch (Exception e) {
+            // we don't wanna crash while logging the error
+        }
     }
 
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
