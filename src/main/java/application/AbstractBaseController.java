@@ -138,6 +138,7 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleHttpRequestError(FormplayerHttpRequest req, HttpClientErrorException exception) {
         incrementDatadogCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
         log.error(String.format("Exception %s making external request %s.", exception, req));
+        raven.sendRavenException(exception, Event.Level.INFO);
         return new ExceptionResponseBean(exception.getResponseBodyAsString(), req.getRequestURL().toString());
     }
 
@@ -161,7 +162,7 @@ public abstract class AbstractBaseController {
     public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
-
+        raven.sendRavenException(exception, Event.Level.INFO);
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
@@ -169,6 +170,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     @ResponseStatus(HttpStatus.LOCKED)
     public ExceptionResponseBean handleLockError(FormplayerHttpRequest req, Exception exception) {
+        raven.sendRavenException(exception, Event.Level.INFO);
         return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
     }
 
