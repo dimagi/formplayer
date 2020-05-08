@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
 import services.CategoryTimingHelper;
 import services.QueryRequester;
 import services.SyncRequester;
@@ -61,7 +63,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                           FormplayerHttpRequest request) throws Exception {
+                                           HttpServletRequest request) throws Exception {
         BaseResponseBean baseResponseBean = runnerService.getNextMenu(performInstall(installRequestBean));
         logNotification(baseResponseBean.getNotification(), request);
         return baseResponseBean;
@@ -74,7 +76,7 @@ public class MenuController extends AbstractBaseController {
     //@AppInstall
     public NotificationMessage updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
                                              @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                             FormplayerHttpRequest request) throws Exception {
+                                             HttpServletRequest request) throws Exception {
         NotificationMessage notificationMessage = performUpdate(updateRequestBean);
         logNotification(notificationMessage, request);
         return notificationMessage;
@@ -86,7 +88,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                               FormplayerHttpRequest request) throws Exception {
+                                               HttpServletRequest request) throws Exception {
         MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
         if (sessionNavigationBean.getIsPersistent()) {
             BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(menuSession,
@@ -158,7 +160,7 @@ public class MenuController extends AbstractBaseController {
     @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                                    FormplayerHttpRequest request) throws Exception {
+                                                    HttpServletRequest request) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
         menuSession = getMenuSessionFromBean(sessionNavigationBean);

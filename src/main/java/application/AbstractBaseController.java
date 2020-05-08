@@ -40,6 +40,8 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 
+import javax.servlet.http.HttpServletRequest;
+
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.FormplayerStorageFactory;
@@ -206,7 +208,7 @@ public abstract class AbstractBaseController {
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
-    void logNotification(@Nullable NotificationMessage notification, FormplayerHttpRequest req) {
+    void logNotification(@Nullable NotificationMessage notification, HttpServletRequest req) {
         try {
             if (notification != null && notification.isError()) {
                 raven.sendRavenException(new RuntimeException(notification.getMessage()));
@@ -221,14 +223,17 @@ public abstract class AbstractBaseController {
         incrementDatadogCounter(metric, req, null);
     }
 
-    private void incrementDatadogCounter(String metric, FormplayerHttpRequest req, String tag) {
+    private void incrementDatadogCounter(String metric, HttpServletRequest req, String tag) {
         String user = "unknown";
         String domain = "unknown";
-        if (req.getUserDetails() != null) {
-            user = req.getUserDetails().getUsername();
-        }
-        if (req.getDomain() != null) {
-            domain = req.getDomain();
+        if(req instanceof FormplayerHttpRequest) {
+            FormplayerHttpRequest formplayerRequest = ((FormplayerHttpRequest)req);
+            if (formplayerRequest.getUserDetails() != null) {
+                user = formplayerRequest.getUserDetails().getUsername();
+            }
+            if (formplayerRequest.getDomain() != null) {
+                domain = formplayerRequest.getDomain();
+            }
         }
         ArrayList<String> tags = new ArrayList<>();
         tags.add("domain:" + domain);

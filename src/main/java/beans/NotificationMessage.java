@@ -25,7 +25,9 @@ public class NotificationMessage {
         incomplete_form,
         wipedb,
         clear_data,
-        volatility, menu
+        volatility,
+        menu,
+        unknown
     }
 
 
@@ -33,6 +35,10 @@ public class NotificationMessage {
     private String type;
     private String message;
     private String tag;
+
+    public NotificationMessage(){
+        // serialize
+    }
 
     public NotificationMessage(String message, boolean isError, Tag tag) {
         this.message = message;

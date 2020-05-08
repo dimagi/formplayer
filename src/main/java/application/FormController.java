@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import annotations.ConfigureStorageFromSession;
 import annotations.UserLock;
@@ -148,7 +149,7 @@ public class FormController extends AbstractBaseController{
     @UserRestore
     @ConfigureStorageFromSession
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
-                                         @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken, FormplayerHttpRequest req) throws Exception {
+                                         @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken, HttpServletRequest request) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SubmitResponseBean submitResponseBean;
@@ -189,7 +190,7 @@ public class FormController extends AbstractBaseController{
                             "Form submission failed with error response" + submitResponse,
                             true, NotificationMessage.Tag.submit);
                     submitResponseBean.setNotification(notification);
-                    logNotification(notification, req);
+                    logNotification(notification, request);
                     log.error("Submit response bean: " + submitResponseBean);
                     return submitResponseBean;
                 } else {
@@ -204,7 +205,7 @@ public class FormController extends AbstractBaseController{
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 NotificationMessage notification = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.submit);
                 submitResponseBean.setNotification(notification);
-                logNotification(notification, req);
+                logNotification(notification, request);
                 log.error("Submission failed with structure exception " + e);
                 return submitResponseBean;
             }

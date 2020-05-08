@@ -26,6 +26,8 @@ import util.Constants;
 import util.FormplayerHttpRequest;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
 import java.util.List;
 
 /**
@@ -82,7 +84,7 @@ public class DebuggerController extends AbstractBaseController {
     public MenuDebuggerContentResponseBean menuDebuggerContent(
             @RequestBody SessionNavigationBean debuggerMenuRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-            FormplayerHttpRequest request) throws Exception {
+            HttpServletRequest request) throws Exception {
 
         MenuSession menuSession = getMenuSessionFromBean(debuggerMenuRequest);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(menuSession, debuggerMenuRequest.getSelections());
@@ -104,7 +106,7 @@ public class DebuggerController extends AbstractBaseController {
     @AppInstall
     public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
                                                        @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                                       FormplayerHttpRequest request) throws Exception {
+                                                       HttpServletRequest request) throws Exception {
         MenuSession menuSession = getMenuSessionFromBean(evaluateXPathRequestBean);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(menuSession, evaluateXPathRequestBean.getSelections());
         logNotification(responseBean.getNotification(), request);
