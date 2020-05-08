@@ -334,7 +334,7 @@ public class RestoreFactory {
         Long delta = System.currentTimeMillis() - lastSyncTime;
 
         if (isAggressive) {
-            return delta > TWENTY_MINUTES_IN_MILLISECONDS;
+            return delta > FIVE_MINUTES_IN_MILLISECONDS;
         }
 
         if (freq == null) {
