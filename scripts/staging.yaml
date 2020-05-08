@@ -49,4 +49,5 @@
 
 trunk: master
 name: autostaging
-branches: []
+branches:
+  - errorHandling  # Shubham May 7
