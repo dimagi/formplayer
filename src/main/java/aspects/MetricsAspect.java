@@ -92,7 +92,7 @@ public class MetricsAspect {
     }
 
     private String getUnblockedTimeBucket(SimpleTimer timer) {
-        return Timing.getDurationBucket(timer.durationInMs() - getBlockedTime());
+        return Timing.getDurationBucket(timer.durationInSeconds() - getBlockedTime());
     }
 
     private String getBlockedTimeBucket() {
@@ -115,7 +115,7 @@ public class MetricsAspect {
         if (restoreFactory.getDownloadRestoreTimer() == null) {
             return 0;
         }
-        return restoreFactory.getDownloadRestoreTimer().durationInMs();
+        return restoreFactory.getDownloadRestoreTimer().durationInSeconds();
     }
 
     private String getInstallBlockedTimeBucket() {
@@ -126,7 +126,7 @@ public class MetricsAspect {
         if (installService.getInstallTimer() == null) {
             return 0;
         }
-        return installService.getInstallTimer().durationInMs();
+        return installService.getInstallTimer().durationInSeconds();
     }
 
     private String getSubmitBlockedTimeBucket() {
@@ -137,7 +137,7 @@ public class MetricsAspect {
         if (submitService.getSubmitTimer() == null) {
             return 0;
         }
-        return submitService.getSubmitTimer().durationInMs();
+        return submitService.getSubmitTimer().durationInSeconds();
     }
 
     private void sendTimingWarningToSentry(SimpleTimer timer) {
