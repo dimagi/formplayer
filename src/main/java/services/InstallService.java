@@ -56,8 +56,8 @@ public class InstallService {
                     engine.initEnvironment();
                     return new Pair<>(engine, false);
                 } catch (Exception e) {
-                    log.warn("Warning: An error occurred while trying to use the old DB file for app. CommCare will now try to install the new DB file for this app. Error details: Got exception "
-                            + e + " while reinitializing at path " + sqliteDB.getDatabaseFileForDebugPurposes());
+                    log.debug("An error occurred while trying to use the old DB file for app. Error details: Got exception "
+                            + e + " while reinitializing at path " + sqliteDB.getDatabaseFileForDebugPurposes() + " Reinitializing new DB ..");
                 }
             }
 

@@ -13,6 +13,7 @@ import beans.menus.LocationRelevantResponseBean;
 import beans.menus.UpdateRequestBean;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.util.screen.EntityScreen;
@@ -25,11 +26,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+
 import services.CategoryTimingHelper;
 import services.QueryRequester;
 import services.SyncRequester;
 import session.MenuSession;
 import util.Constants;
+import util.FormplayerHttpRequest;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -57,8 +62,11 @@ public class MenuController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
-                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        return runnerService.getNextMenu(performInstall(installRequestBean));
+                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+                                           HttpServletRequest request) throws Exception {
+        BaseResponseBean baseResponseBean = runnerService.getNextMenu(performInstall(installRequestBean));
+        logNotification(baseResponseBean.getNotification(), request);
+        return baseResponseBean;
     }
 
     //@ApiOperation(value = "Update the application at the given reference")
@@ -67,8 +75,11 @@ public class MenuController extends AbstractBaseController {
     //@UserRestore
     //@AppInstall
     public NotificationMessage updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
-                                          @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        return performUpdate(updateRequestBean);
+                                             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+                                             HttpServletRequest request) throws Exception {
+        NotificationMessage notificationMessage = performUpdate(updateRequestBean);
+        logNotification(notificationMessage, request);
+        return notificationMessage;
     }
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
@@ -76,10 +87,11 @@ public class MenuController extends AbstractBaseController {
     @UserRestore
     @AppInstall
     public EntityDetailListResponse getDetails(@RequestBody SessionNavigationBean sessionNavigationBean,
-                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+                                               HttpServletRequest request) throws Exception {
         MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
         if (sessionNavigationBean.getIsPersistent()) {
-            runnerService.advanceSessionWithSelections(menuSession,
+            BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(menuSession,
                     sessionNavigationBean.getSelections(),
                     null,
                     sessionNavigationBean.getQueryDictionary(),
@@ -87,7 +99,7 @@ public class MenuController extends AbstractBaseController {
                     sessionNavigationBean.getSearchText(),
                     sessionNavigationBean.getSortIndex()
             );
-
+            logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
             EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession);
             if (detail == null) {
@@ -101,7 +113,7 @@ public class MenuController extends AbstractBaseController {
         String detailSelection = selections[selections.length - 1];
         System.arraycopy(selections, 0, commitSelections, 0, selections.length - 1);
 
-        runnerService.advanceSessionWithSelections(
+        BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(
                 menuSession,
                 commitSelections,
                 detailSelection,
@@ -110,6 +122,8 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex()
         );
+        logNotification(baseResponseBean.getNotification(),request);
+
         Screen currentScreen = menuSession.getNextScreen();
 
         if (!(currentScreen instanceof EntityScreen)) {
@@ -120,7 +134,7 @@ public class MenuController extends AbstractBaseController {
             }
             return setLocationNeeds(new EntityDetailListResponse(detail), menuSession);
         }
-        EntityScreen entityScreen = (EntityScreen) currentScreen;
+        EntityScreen entityScreen = (EntityScreen)currentScreen;
         TreeReference reference = entityScreen.resolveTreeReference(detailSelection);
 
         if (reference == null) {
@@ -139,14 +153,14 @@ public class MenuController extends AbstractBaseController {
      * @param sessionNavigationBean Give an installation code or path and a set of session selections
      * @param authToken             The Django session id auth token
      * @return A MenuBean or a NewFormResponse
-     * @throws Exception
      */
     @RequestMapping(value = {Constants.URL_MENU_NAVIGATION, Constants.URL_INITIAL_MENU_NAVIGATION}, method = RequestMethod.POST)
     @UserLock
     @UserRestore
     @AppInstall
     public BaseResponseBean navigateSessionWithAuth(@RequestBody SessionNavigationBean sessionNavigationBean,
-                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+                                                    HttpServletRequest request) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
         MenuSession menuSession;
         menuSession = getMenuSessionFromBean(sessionNavigationBean);
@@ -159,6 +173,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex()
         );
+        logNotification(response.getNotification(),request);
         return setLocationNeeds(response, menuSession);
     }
 

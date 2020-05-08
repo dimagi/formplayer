@@ -172,7 +172,7 @@ public class FormVolatilityRecord implements Serializable {
             return null;
         }
 
-        return new NotificationMessage(currentMessage + formatString, type);
+        return new NotificationMessage(currentMessage + formatString, type, NotificationMessage.Tag.volatility);
     }
 
     public boolean wasSubmitted() {
