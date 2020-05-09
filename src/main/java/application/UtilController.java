@@ -121,7 +121,7 @@ public class UtilController extends AbstractBaseController {
             message = "No locks for the current user";
         }
 
-        return new NotificationMessage(message, false NotificationMessage.Type.success);
+        return new NotificationMessage(message, false, NotificationMessage.Tag.break_locks);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")
