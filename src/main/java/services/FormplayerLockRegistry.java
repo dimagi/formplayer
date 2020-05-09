@@ -5,6 +5,7 @@ import io.sentry.event.Event;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
+import org.joda.time.Seconds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.util.Assert;
@@ -119,6 +120,22 @@ public class FormplayerLockRegistry implements LockRegistry {
         }
     }
 
+    /**
+     * return the number of seconds since the user's current lock was acquired
+     */
+    public Integer getTimeLocked(String key) {
+        Integer lockIndex = getLockIndex(key);
+        synchronized (this.lockTableLocks[lockIndex]) {
+
+            FormplayerReentrantLock existingLock = obtain(key);
+            if (!existingLock.isLocked()) {
+                return null;
+            } else {
+                return existingLock.timeLocked();
+            }
+        }
+    }
+
     public class FormplayerReentrantLock extends ReentrantLock {
 
         DateTime lockTime;
@@ -139,6 +156,10 @@ public class FormplayerLockRegistry implements LockRegistry {
 
         public boolean isExpired() {
             return new DateTime().minusMillis(Constants.LOCK_DURATION).isAfter(lockTime);
+        }
+
+        public int timeLocked() {
+            return Seconds.secondsBetween(lockTime,new DateTime()).getSeconds();
         }
     }
 }

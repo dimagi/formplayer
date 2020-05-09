@@ -108,6 +108,20 @@ public class UtilController extends AbstractBaseController {
         return notificationMessage;
     }
 
+    @ApiOperation(value = "Reports back on any locks in place for the current user")
+    @RequestMapping(value = Constants.URL_CHECK_LOCKS, method = RequestMethod.POST)
+    public LockReportBean checkLocks(@RequestBody AuthenticatedRequestBean requestBean) throws Exception {
+        String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionRepo);
+
+
+        Integer secondsLocked = userLockRegistry.getTimeLocked(key);
+        if(secondsLocked == null) {
+            return new LockReportBean(false, 0);
+        } else{
+            return new LockReportBean(true, secondsLocked);
+        }
+    }
+
     @ApiOperation(value = "Breaks any currently locked requests for the current user")
     @RequestMapping(value = Constants.URL_BREAK_LOCKS, method = RequestMethod.POST)
     public NotificationMessage breakLocks(@RequestBody AuthenticatedRequestBean requestBean) throws Exception {
