@@ -136,6 +136,7 @@ public class Constants {
     public static final String DATADOG_ERRORS_EXTERNAL_REQUEST = "errors.external_request";
     public static final String DATADOG_ERRORS_CRASH = "errors.crash";
     public static final String DATADOG_ERRORS_LOCK = "errors.lock";
+    public static final String DATADOG_ERRORS_NOTIFICATIONS = "errors.notifications";
 
     // End Datadog metrics
 

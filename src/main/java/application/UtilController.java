@@ -24,9 +24,12 @@ import services.CategoryTimingHelper;
 import services.FormplayerLockRegistry;
 import sqlitedb.UserDB;
 import util.Constants;
+import util.FormplayerHttpRequest;
 import util.Timing;
 
 import java.io.StringReader;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Controller class (API endpoint) containing all all logic that isn't associated with
@@ -67,7 +70,8 @@ public class UtilController extends AbstractBaseController {
     @RequestMapping(value = {Constants.URL_DELETE_APPLICATION_DBS, Constants.URL_UPDATE}, method = RequestMethod.POST)
     @UserLock
     public NotificationMessage deleteApplicationDbs(
-            @RequestBody DeleteApplicationDbsRequestBean deleteRequest) {
+            @RequestBody DeleteApplicationDbsRequestBean deleteRequest,
+            HttpServletRequest request) {
 
         String message = "Successfully cleared application database for " + deleteRequest.getAppId();
         boolean success = true;
@@ -81,14 +85,17 @@ public class UtilController extends AbstractBaseController {
         if (!success) {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
-        return new NotificationMessage(message, !success);
+        NotificationMessage notificationMessage = new NotificationMessage(message, !success, NotificationMessage.Tag.wipedb);
+        logNotification(notificationMessage, request);
+        return notificationMessage;
     }
 
     @ApiOperation(value = "Clear the user's data")
     @RequestMapping(value = Constants.URL_CLEAR_USER_DATA, method = RequestMethod.POST)
     @UserLock
     public NotificationMessage clearUserData(
-            @RequestBody AuthenticatedRequestBean requestBean) {
+            @RequestBody AuthenticatedRequestBean requestBean,
+            HttpServletRequest request) {
 
         String message = "Successfully cleared the user data for  " + requestBean.getUsername();
         new UserDB(
@@ -96,7 +103,9 @@ public class UtilController extends AbstractBaseController {
                 requestBean.getUsername(),
                 requestBean.getRestoreAs()
         ).deleteDatabaseFolder();
-        return new NotificationMessage(message, true);
+        NotificationMessage notificationMessage = new NotificationMessage(message, true, NotificationMessage.Tag.clear_data);
+        logNotification(notificationMessage, request);
+        return notificationMessage;
     }
 
     @ApiOperation(value = "Breaks any currently locked requests for the current user")

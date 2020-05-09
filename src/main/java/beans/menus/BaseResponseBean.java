@@ -21,9 +21,9 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
 
     public BaseResponseBean() {}
 
-    public BaseResponseBean(String title, String message, boolean isError, boolean clearSession){
+    public BaseResponseBean(String title, NotificationMessage notification, boolean clearSession){
         this.title = title;
-        this.notification = new NotificationMessage(message, isError);
+        this.notification = notification;
         this.clearSession = clearSession;
     }
 

@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.aspectj.weaver.ast.Not;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -67,7 +68,7 @@ public class IncompleteSessionController extends AbstractBaseController{
             @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         deleteSession(incompleteSessionRequestBean.getSessionId());
-        return new NotificationMessage("Successfully deleted incomplete form.", false);
+        return new NotificationMessage("Successfully deleted incomplete form.", false, NotificationMessage.Tag.incomplete_form);
     }
 
     protected void deleteSession(String id) {

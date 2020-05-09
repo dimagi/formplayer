@@ -2,11 +2,14 @@ package application;
 
 import aspects.LockAspect;
 import beans.InstallRequestBean;
+import beans.NotificationMessage;
 import beans.SessionNavigationBean;
 import beans.exceptions.ExceptionResponseBean;
 import beans.exceptions.HTMLExceptionResponseBean;
 import beans.exceptions.RetryExceptionResponseBean;
+
 import com.timgroup.statsd.StatsDClient;
+
 import exceptions.ApplicationConfigException;
 import exceptions.AsyncRetryException;
 import exceptions.FormNotFoundException;
@@ -14,6 +17,7 @@ import exceptions.FormattedApplicationConfigException;
 import exceptions.InterruptedRuntimeException;
 import exceptions.UnresolvedResourceRuntimeException;
 import io.sentry.event.Event;
+
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,10 +32,16 @@ import org.javarosa.xpath.XPathTypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.ArrayList;
+
+import javax.servlet.http.HttpServletRequest;
+
 import repo.FormSessionRepo;
 import repo.MenuSessionRepo;
 import services.FormplayerStorageFactory;
@@ -138,6 +148,7 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleHttpRequestError(FormplayerHttpRequest req, HttpClientErrorException exception) {
         incrementDatadogCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
         log.error(String.format("Exception %s making external request %s.", exception, req));
+        raven.sendRavenException(exception, Event.Level.INFO);
         return new ExceptionResponseBean(exception.getResponseBodyAsString(), req.getRequestURL().toString());
     }
 
@@ -153,6 +164,7 @@ public abstract class AbstractBaseController {
                 exception.getRetryAfter()
         );
     }
+
     /**
      * Catch exceptions that have formatted HTML errors
      */
@@ -161,7 +173,7 @@ public abstract class AbstractBaseController {
     public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
-
+        raven.sendRavenException(exception, Event.Level.INFO);
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
@@ -169,6 +181,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     @ResponseStatus(HttpStatus.LOCKED)
     public ExceptionResponseBean handleLockError(FormplayerHttpRequest req, Exception exception) {
+        raven.sendRavenException(exception, Event.Level.INFO);
         return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
     }
 
@@ -195,20 +208,44 @@ public abstract class AbstractBaseController {
         return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
+    void logNotification(@Nullable NotificationMessage notification, HttpServletRequest req) {
+        try {
+            if (notification != null && notification.isError()) {
+                raven.sendRavenException(new RuntimeException(notification.getMessage()));
+                incrementDatadogCounter(Constants.DATADOG_ERRORS_NOTIFICATIONS, req, notification.getTag());
+            }
+        } catch (Exception e) {
+            // we don't wanna crash while logging the error
+        }
+    }
+
     private void incrementDatadogCounter(String metric, FormplayerHttpRequest req) {
+        incrementDatadogCounter(metric, req, null);
+    }
+
+    private void incrementDatadogCounter(String metric, HttpServletRequest req, String tag) {
         String user = "unknown";
         String domain = "unknown";
-        if (req.getUserDetails() != null) {
-            user = req.getUserDetails().getUsername();
+        if(req instanceof FormplayerHttpRequest) {
+            FormplayerHttpRequest formplayerRequest = ((FormplayerHttpRequest)req);
+            if (formplayerRequest.getUserDetails() != null) {
+                user = formplayerRequest.getUserDetails().getUsername();
+            }
+            if (formplayerRequest.getDomain() != null) {
+                domain = formplayerRequest.getDomain();
+            }
         }
-        if (req.getDomain() != null) {
-            domain = req.getDomain();
+        ArrayList<String> tags = new ArrayList<>();
+        tags.add("domain:" + domain);
+        tags.add("user:" + user);
+        tags.add("request:" + req.getRequestURI());
+        if (tag != null) {
+            tags.add("tag:" + tag);
         }
+
         datadogStatsDClient.increment(
                 metric,
-                "domain:" + domain,
-                "user:" + user,
-                "request:" + req.getRequestURI()
+                tags.toArray(new String[tags.size()])
         );
     }
 
