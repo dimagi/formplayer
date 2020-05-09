@@ -56,10 +56,14 @@ public class FormplayerLockRegistry implements LockRegistry {
         }
     }
 
+    private Integer getLockIndex(Object lockKey) {
+        return lockKey.hashCode() & this.mask;
+    }
+
     @Override
     public FormplayerReentrantLock obtain(Object lockKey) {
         Assert.notNull(lockKey, "'lockKey' must not be null");
-        Integer lockIndex = lockKey.hashCode() & this.mask;
+        Integer lockIndex = getLockIndex(lockKey);
 
         synchronized (this.lockTableLocks[lockIndex]) {
             FormplayerReentrantLock lock = this.lockTable[lockIndex];
@@ -74,21 +78,44 @@ public class FormplayerLockRegistry implements LockRegistry {
                 return lock;
             }
             if (lock.isExpired()) {
-                log.error(String.format("Thread %s owns expired lock with lock key %s.", ownerThread, lockKey));
-                ownerThread.interrupt();
-                try {
-                    ownerThread.join(5000);
-                } catch (InterruptedException e) {
-                    throw new InterruptedRuntimeException(e);
-                }
-                if (ownerThread.isAlive()) {
-                    log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
-                    Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
-                    e.setStackTrace(ownerThread.getStackTrace());
-                    raven.sendRavenException(new Exception(e), Event.Level.WARNING);
-                }
+                evict(lock, lockKey);
             }
             return lock;
+        }
+    }
+
+    private void evict(FormplayerReentrantLock lock, Object lockKey) {
+        Thread ownerThread = lock.getOwner();
+        log.error(String.format("Thread %s owns expired lock with lock key %s.", ownerThread, lockKey));
+        ownerThread.interrupt();
+        try {
+            ownerThread.join(5000);
+        } catch (InterruptedException e) {
+            throw new InterruptedRuntimeException(e);
+        }
+        if (ownerThread.isAlive()) {
+            log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
+            Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
+            e.setStackTrace(ownerThread.getStackTrace());
+            raven.sendRavenException(new Exception(e), Event.Level.WARNING);
+        }
+    }
+
+    /**
+     * Forcibly break any existing locks for the current user. Returns the broken lock if one
+     * existed
+     */
+    public boolean breakAnyExistingLocks(String key) {
+        Integer lockIndex = getLockIndex(key);
+        synchronized (this.lockTableLocks[lockIndex]) {
+
+            FormplayerReentrantLock existingLock = obtain(key);
+            if (!existingLock.isLocked()) {
+                return false;
+            } else {
+                evict(existingLock, key);
+                return true;
+            }
         }
     }
 

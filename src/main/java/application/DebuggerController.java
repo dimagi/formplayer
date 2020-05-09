@@ -103,7 +103,6 @@ public class DebuggerController extends AbstractBaseController {
         MenuSession menuSession = getMenuSessionFromBean(evaluateXPathRequestBean);
         runnerService.advanceSessionWithSelections(menuSession, evaluateXPathRequestBean.getSelections());
 
-
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 menuSession.getSessionWrapper().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),

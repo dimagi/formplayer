@@ -3,6 +3,7 @@ package application;
 import annotations.NoLogging;
 import annotations.UserLock;
 import annotations.UserRestore;
+import aspects.LockAspect;
 import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
@@ -17,7 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import repo.FormSessionRepo;
 import services.CategoryTimingHelper;
+import services.FormplayerLockRegistry;
 import sqlitedb.UserDB;
 import util.Constants;
 import util.Timing;
@@ -36,6 +40,13 @@ import java.io.StringReader;
 @RestController
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
+
+
+    @Autowired
+    FormplayerLockRegistry userLockRegistry;
+
+    @Autowired
+    private FormSessionRepo formSessionRepo;
 
     private final Log log = LogFactory.getLog(UtilController.class);
 
@@ -85,6 +96,22 @@ public class UtilController extends AbstractBaseController {
                 requestBean.getUsername(),
                 requestBean.getRestoreAs()
         ).deleteDatabaseFolder();
+        return new NotificationMessage(message, true);
+    }
+
+    @ApiOperation(value = "Breaks any currently locked requests for the current user")
+    @RequestMapping(value = Constants.URL_BREAK_LOCKS, method = RequestMethod.POST)
+    public NotificationMessage breakLocks(@RequestBody AuthenticatedRequestBean requestBean) throws Exception {
+        String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionRepo);
+
+        String message;
+
+        if(userLockRegistry.breakAnyExistingLocks(key)) {
+            message = "A lock existed and it was requested to be evicted";
+        } else {
+            message = "No locks for the current user";
+        }
+
         return new NotificationMessage(message, true);
     }
 

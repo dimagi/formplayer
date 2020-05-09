@@ -72,22 +72,8 @@ public class LockAspect {
         String username;
         AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
 
-        if (bean.getUsernameDetail() != null) {
-            username = TableBuilder.scrubName(bean.getUsernameDetail());
-        }
-        else {
-            SerializableFormSession formSession = formSessionRepo.findOneWrapped(bean.getSessionId());
-            String tempUser = formSession.getUsername();
-            String restoreAs = formSession.getAsUser();
-            String restoreAsCaseId = formSession.getRestoreAsCaseId();
-            if (restoreAsCaseId != null) {
-                username = UserUtils.getRestoreAsCaseIdUsername(restoreAsCaseId);
-            } else if (restoreAs != null) {
-                username = tempUser + "_" + restoreAs;
-            } else {
-                username = tempUser;
-            }
-        }
+
+        username = getLockKeyForAuthenticatedBean(bean, formSessionRepo);
 
         Lock lock;
 
@@ -113,6 +99,27 @@ public class LockAspect {
                 }
             }
         }
+    }
+
+    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionRepo formSessionRepo) {
+        String username;
+        if (bean.getUsernameDetail() != null) {
+            username = TableBuilder.scrubName(bean.getUsernameDetail());
+        }
+        else {
+            SerializableFormSession formSession = formSessionRepo.findOneWrapped(bean.getSessionId());
+            String tempUser = formSession.getUsername();
+            String restoreAs = formSession.getAsUser();
+            String restoreAsCaseId = formSession.getRestoreAsCaseId();
+            if (restoreAsCaseId != null) {
+                username = UserUtils.getRestoreAsCaseIdUsername(restoreAsCaseId);
+            } else if (restoreAs != null) {
+                username = tempUser + "_" + restoreAs;
+            } else {
+                username = tempUser;
+            }
+        }
+        return username;
     }
 
     private void logLockError(AuthenticatedRequestBean bean, ProceedingJoinPoint joinPoint, String lockIssue) {
