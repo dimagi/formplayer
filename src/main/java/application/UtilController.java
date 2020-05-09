@@ -92,7 +92,7 @@ public class UtilController extends AbstractBaseController {
                 requestBean.getUsername(),
                 requestBean.getRestoreAs()
         ).deleteDatabaseFolder();
-        NotificationMessage notificationMessage = new NotificationMessage(message, true, NotificationMessage.Tag.clear_data);
+        NotificationMessage notificationMessage = new NotificationMessage(message, false, NotificationMessage.Tag.clear_data);
         logNotification(notificationMessage, request);
         return notificationMessage;
     }
