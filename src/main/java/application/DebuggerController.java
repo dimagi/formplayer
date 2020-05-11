@@ -107,25 +107,6 @@ public class DebuggerController extends AbstractBaseController {
     public EvaluateXPathResponseBean menuEvaluateXpath(@RequestBody EvaluateXPathMenuRequestBean evaluateXPathRequestBean,
                                                        @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                        HttpServletRequest request) throws Exception {
-
-        String path = evaluateXPathRequestBean.getXpath();
-
-
-        if(path.equals("lockup")) {
-            System.out.println("Locking up for 30 seconds");
-            long start = System.currentTimeMillis();
-            try {
-                while (System.currentTimeMillis() - start < 1000 * 30) {
-                    Thread.sleep(100);
-                }
-            } catch(InterruptedException e) {
-                System.out.println("Lock Broken");
-            }
-            System.out.println("Lockup Complete");
-            return null;
-        }
-
-
         MenuSession menuSession = getMenuSessionFromBean(evaluateXPathRequestBean);
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(menuSession, evaluateXPathRequestBean.getSelections());
         logNotification(responseBean.getNotification(), request);
