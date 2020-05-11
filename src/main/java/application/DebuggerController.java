@@ -111,7 +111,6 @@ public class DebuggerController extends AbstractBaseController {
         BaseResponseBean responseBean = runnerService.advanceSessionWithSelections(menuSession, evaluateXPathRequestBean.getSelections());
         logNotification(responseBean.getNotification(), request);
 
-
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 menuSession.getSessionWrapper().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),

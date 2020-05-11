@@ -38,6 +38,8 @@ public class Constants {
     public static final String URL_VALIDATE_FORM = "validate_form";
     public static final String URL_GET_INSTANCE = "get-instance";
     public static final String URL_CHANGE_LANGUAGE = "change_locale";
+    public static final String URL_BREAK_LOCKS = "break_locks";
+    public static final String URL_CHECK_LOCKS = "check_locks";
 
     // Alternative namings used by SMS
     public static final String URL_NEXT = "next";

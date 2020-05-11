@@ -3,6 +3,7 @@ package application;
 import annotations.NoLogging;
 import annotations.UserLock;
 import annotations.UserRestore;
+import aspects.LockAspect;
 import beans.*;
 import hq.CaseAPIs;
 import io.swagger.annotations.Api;
@@ -17,7 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import repo.FormSessionRepo;
 import services.CategoryTimingHelper;
+import services.FormplayerLockRegistry;
 import sqlitedb.UserDB;
 import util.Constants;
 import util.FormplayerHttpRequest;
@@ -39,6 +43,13 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
+
+
+    @Autowired
+    FormplayerLockRegistry userLockRegistry;
+
+    @Autowired
+    private FormSessionRepo formSessionRepo;
 
     private final Log log = LogFactory.getLog(UtilController.class);
 
@@ -95,6 +106,36 @@ public class UtilController extends AbstractBaseController {
         NotificationMessage notificationMessage = new NotificationMessage(message, true, NotificationMessage.Tag.clear_data);
         logNotification(notificationMessage, request);
         return notificationMessage;
+    }
+
+    @ApiOperation(value = "Reports back on any locks in place for the current user")
+    @RequestMapping(value = Constants.URL_CHECK_LOCKS, method = RequestMethod.POST)
+    public LockReportBean checkLocks(@RequestBody AuthenticatedRequestBean requestBean) throws Exception {
+        String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionRepo);
+
+
+        Integer secondsLocked = userLockRegistry.getTimeLocked(key);
+        if(secondsLocked == null) {
+            return new LockReportBean(false, 0);
+        } else{
+            return new LockReportBean(true, secondsLocked);
+        }
+    }
+
+    @ApiOperation(value = "Breaks any currently locked requests for the current user")
+    @RequestMapping(value = Constants.URL_BREAK_LOCKS, method = RequestMethod.POST)
+    public NotificationMessage breakLocks(@RequestBody AuthenticatedRequestBean requestBean) throws Exception {
+        String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionRepo);
+
+        String message;
+
+        if(userLockRegistry.breakAnyExistingLocks(key)) {
+            message = "A lock existed and it was requested to be evicted";
+        } else {
+            message = "No locks for the current user";
+        }
+
+        return new NotificationMessage(message, false, NotificationMessage.Tag.break_locks);
     }
 
     @ApiOperation(value = "Gets the status of the Formplayer service")

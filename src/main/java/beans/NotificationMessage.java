@@ -25,6 +25,7 @@ public class NotificationMessage {
         incomplete_form,
         wipedb,
         clear_data,
+        break_locks,
         volatility,
         menu,
         unknown

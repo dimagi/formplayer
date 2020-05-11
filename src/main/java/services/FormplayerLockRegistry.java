@@ -5,6 +5,7 @@ import io.sentry.event.Event;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
+import org.joda.time.Seconds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.util.Assert;
@@ -56,10 +57,14 @@ public class FormplayerLockRegistry implements LockRegistry {
         }
     }
 
+    private Integer getLockIndex(Object lockKey) {
+        return lockKey.hashCode() & this.mask;
+    }
+
     @Override
     public FormplayerReentrantLock obtain(Object lockKey) {
         Assert.notNull(lockKey, "'lockKey' must not be null");
-        Integer lockIndex = lockKey.hashCode() & this.mask;
+        Integer lockIndex = getLockIndex(lockKey);
 
         synchronized (this.lockTableLocks[lockIndex]) {
             FormplayerReentrantLock lock = this.lockTable[lockIndex];
@@ -74,21 +79,60 @@ public class FormplayerLockRegistry implements LockRegistry {
                 return lock;
             }
             if (lock.isExpired()) {
-                log.error(String.format("Thread %s owns expired lock with lock key %s.", ownerThread, lockKey));
-                ownerThread.interrupt();
-                try {
-                    ownerThread.join(5000);
-                } catch (InterruptedException e) {
-                    throw new InterruptedRuntimeException(e);
-                }
-                if (ownerThread.isAlive()) {
-                    log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
-                    Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
-                    e.setStackTrace(ownerThread.getStackTrace());
-                    raven.sendRavenException(new Exception(e), Event.Level.WARNING);
-                }
+                evict(lock, lockKey);
             }
             return lock;
+        }
+    }
+
+    private void evict(FormplayerReentrantLock lock, Object lockKey) {
+        Thread ownerThread = lock.getOwner();
+        log.error(String.format("Thread %s owns expired lock with lock key %s.", ownerThread, lockKey));
+        ownerThread.interrupt();
+        try {
+            ownerThread.join(5000);
+        } catch (InterruptedException e) {
+            throw new InterruptedRuntimeException(e);
+        }
+        if (ownerThread.isAlive()) {
+            log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
+            Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
+            e.setStackTrace(ownerThread.getStackTrace());
+            raven.sendRavenException(new Exception(e), Event.Level.WARNING);
+        }
+    }
+
+    /**
+     * Forcibly break any existing locks for the current user. Returns the broken lock if one
+     * existed
+     */
+    public boolean breakAnyExistingLocks(String key) {
+        Integer lockIndex = getLockIndex(key);
+        synchronized (this.lockTableLocks[lockIndex]) {
+
+            FormplayerReentrantLock existingLock = obtain(key);
+            if (!existingLock.isLocked()) {
+                return false;
+            } else {
+                evict(existingLock, key);
+                return true;
+            }
+        }
+    }
+
+    /**
+     * return the number of seconds since the user's current lock was acquired
+     */
+    public Integer getTimeLocked(String key) {
+        Integer lockIndex = getLockIndex(key);
+        synchronized (this.lockTableLocks[lockIndex]) {
+
+            FormplayerReentrantLock existingLock = obtain(key);
+            if (!existingLock.isLocked()) {
+                return null;
+            } else {
+                return existingLock.timeLocked();
+            }
         }
     }
 
@@ -112,6 +156,10 @@ public class FormplayerLockRegistry implements LockRegistry {
 
         public boolean isExpired() {
             return new DateTime().minusMillis(Constants.LOCK_DURATION).isAfter(lockTime);
+        }
+
+        public int timeLocked() {
+            return Seconds.secondsBetween(lockTime,new DateTime()).getSeconds();
         }
     }
 }
