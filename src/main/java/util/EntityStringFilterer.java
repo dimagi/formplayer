@@ -20,10 +20,13 @@ public class EntityStringFilterer {
     private final NodeEntityFactory nodeFactory;
     protected final List<Entity<TreeReference>> matchList;
     protected final List<Entity<TreeReference>> fullEntityList;
+    private final boolean isFuzzySearchEnabled;
 
     public EntityStringFilterer(String[] searchTerms,
                                 NodeEntityFactory nodeFactory,
-                                List<Entity<TreeReference>> fullEntityList) {
+                                List<Entity<TreeReference>> fullEntityList,
+                                boolean isFuzzySearchEnabled) {
+        this.isFuzzySearchEnabled = isFuzzySearchEnabled;
         this.matchList = new ArrayList<>();
         this.nodeFactory = nodeFactory;
         this.fullEntityList = fullEntityList;
@@ -47,7 +50,7 @@ public class EntityStringFilterer {
         EntitySortUtil.sortEntities(fullEntityList,
                 searchTerms,
                 currentLocale,
-                true,
+                isFuzzySearchEnabled,
                 matchScores,
                 matchList,
                 fullEntityList::get);

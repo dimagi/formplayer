@@ -25,21 +25,22 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
         this.isPersistentDetail = true;
     }
 
-    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference) {
-        entityDetailList = processDetails(screen, ec, treeReference);
+    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference, boolean isFuzzySearchEnabled) {
+        entityDetailList = processDetails(screen, ec, treeReference, isFuzzySearchEnabled);
     }
 
-    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference) {
-        entityDetailList = processDetails(detailList, ec, treeReference);
+    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference, boolean isFuzzySearchEnabled) {
+        entityDetailList = processDetails(detailList, ec, treeReference, isFuzzySearchEnabled);
     }
 
-    private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref) {
-        return processDetails(screen.getLongDetailList(ref), ec, ref);
+    private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref, boolean isFuzzySearchEnabled) {
+        return processDetails(screen.getLongDetailList(ref), ec, ref, isFuzzySearchEnabled);
     }
 
     private EntityDetailResponse[] processDetails(Detail[] detailList,
                                                   EvaluationContext ec,
-                                                  TreeReference ref) {
+                                                  TreeReference ref,
+                                                  boolean isFuzzySearchEnabled) {
         if (detailList == null || !(detailList.length > 0)) {
             // No details, just return null
             return null;
@@ -65,7 +66,8 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
                 EntityDetailResponse response = new EntityDetailResponse(detailList[i],
                         subContext.expandReference(contextualizedNodeset),
                         subContext,
-                        titles[i]);
+                        titles[i],
+                        isFuzzySearchEnabled);
                 accumulator.add(response);
             }
         }
