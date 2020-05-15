@@ -15,6 +15,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.util.Pair;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
+import org.javarosa.core.util.PropertyUtils;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
@@ -57,6 +58,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -83,6 +85,8 @@ public class RestoreFactory {
 
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
+    private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
+
     @Autowired(required = false)
     private FormplayerHttpRequest request;
 
@@ -93,9 +97,6 @@ public class RestoreFactory {
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
-    private RedisTemplate redisTemplateLong;
-
-    @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
@@ -104,8 +105,17 @@ public class RestoreFactory {
     @Autowired
     private RestTemplateBuilder restTemplateBuilder;
 
+    @Autowired
+    private RedisTemplate redisTemplateLong;
+
     @Resource(name="redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Resource(name="redisTemplate")
+    private ValueOperations<String, String> originTokens;
 
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
@@ -519,7 +529,18 @@ public class RestoreFactory {
         headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
         headers.set("X-OpenRosa-Version", "3.0");
         headers.set("X-OpenRosa-DeviceId", getSyncDeviceId());
+        addOriginTokenHeader(headers);
         return headers;
+    }
+
+    private void addOriginTokenHeader(HttpHeaders headers) {
+        String originToken = PropertyUtils.genUUID();
+        String redisKey = String.format("%s%s", ORIGIN_TOKEN_SLUG, originToken);
+        System.out.println("Adding redis key: " + redisKey);
+        originTokens.set(redisKey,
+                "valid",
+                Duration.ofSeconds(60));
+        headers.set("X-CommCareHQ-Origin-Token", originToken);
     }
 
     public Pair<String, HttpHeaders> getRestoreUrlAndHeaders() {
@@ -539,6 +560,7 @@ public class RestoreFactory {
                 add("x-openrosa-version", "2.0");
             }
         };
+        addOriginTokenHeader(headers);
         try {
             String digest = RequestUtils.getHmac(formplayerAuthKey, requestPath);
             headers.add("X-MAC-DIGEST", digest);
@@ -587,6 +609,7 @@ public class RestoreFactory {
         } else {
             headers = getHqAuth().getAuthHeaders();
             headers.add("x-openrosa-version", "2.0");
+            addOriginTokenHeader(headers);
         }
         String fullUrl = host + restoreUrl;
         return new Pair<>(fullUrl, headers);
