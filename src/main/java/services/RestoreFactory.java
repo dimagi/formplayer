@@ -112,9 +112,9 @@ public class RestoreFactory {
     private ValueOperations<String, Long> valueOperations;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate redisTemplateString;
 
-    @Resource(name="redisTemplate")
+    @Resource(name="redisTemplateString")
     private ValueOperations<String, String> originTokens;
 
     @Value("${commcarehq.formplayerAuthKey}")

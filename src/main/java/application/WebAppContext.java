@@ -156,6 +156,13 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
+    public RedisTemplate<String, String> redisTemplateString() {
+        StringRedisTemplate template = new StringRedisTemplate(jedisConnFactory());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
+
+    @Bean
     public RedisTemplate<String, Long> redisTemplateLong() {
         RedisTemplate template = new RedisTemplate<String, Long>();
         template.setConnectionFactory(jedisConnFactory());
