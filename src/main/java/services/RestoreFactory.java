@@ -536,7 +536,6 @@ public class RestoreFactory {
     private void addOriginTokenHeader(HttpHeaders headers) {
         String originToken = PropertyUtils.genUUID();
         String redisKey = String.format("%s%s", ORIGIN_TOKEN_SLUG, originToken);
-        System.out.println("Adding redis key: " + redisKey);
         originTokens.set(redisKey,
                 "valid",
                 Duration.ofSeconds(60));
