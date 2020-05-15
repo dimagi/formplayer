@@ -18,6 +18,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
@@ -91,6 +92,12 @@ public class TestContext {
     public StringRedisTemplate redisTemplate() {
         return Mockito.mock(StringRedisTemplate.class);
     }
+
+    @Bean
+    public ValueOperations<String, Long> redisTemplateString() {
+        return Mockito.mock(ValueOperations.class);
+    }
+
 
     @Bean
     public ValueOperations<String, FormVolatilityRecord> redisVolatilityDict() {
