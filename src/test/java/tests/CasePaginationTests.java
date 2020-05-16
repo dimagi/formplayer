@@ -6,15 +6,14 @@ import beans.menus.EntityDetailResponse;
 import beans.menus.EntityListResponse;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
-import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import mocks.FormPlayerPropertyManagerMock;
 import sandbox.SqlStorage;
 import sqlitedb.SQLiteDB;
-import util.FormplayerPropertyManager;
 import utils.TestContext;
 import static org.mockito.Mockito.when;
 
@@ -94,6 +93,7 @@ public class CasePaginationTests extends BaseTestClass {
     public void testNormalSearch() throws Exception {
         SQLiteDB db = storageFactoryMock.getSQLiteDB();
         FormPlayerPropertyManagerMock propertyManagerMock = new FormPlayerPropertyManagerMock(new SqlStorage(db, Property.class, PropertyManager.STORAGE_KEY));
+        propertyManagerMock.enableFuzzySearch(false);
         when(storageFactoryMock.getPropertyManager()).thenReturn(propertyManagerMock);
         EntityListResponse entityListResponse =
                 sessionNavigate("requests/navigators/search_navigator.json", EntityListResponse.class);
@@ -110,16 +110,5 @@ public class CasePaginationTests extends BaseTestClass {
         assert entityListResponse.getEntities().length == 10;
         assert entityListResponse.getPageCount() == 2;
         assert entityListResponse.getCurrentPage() == 1;
-    }
-
-    public class FormPlayerPropertyManagerMock extends FormplayerPropertyManager {
-        public FormPlayerPropertyManagerMock(IStorageUtilityIndexed properties) {
-            super(properties);
-        }
-
-        @Override
-        public boolean isFuzzySearchEnabled() {
-            return false;
-        }
     }
 }
