@@ -1,9 +1,7 @@
 package services;
 
-import beans.auth.HqSessionKeyBean;
-import beans.auth.HqUserDetailsBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import exceptions.UserDetailsException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +9,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+
+import beans.auth.HqSessionKeyBean;
+import beans.auth.HqUserDetailsBean;
+import exceptions.SessionAuthUnavailableException;
+import exceptions.UserDetailsException;
 import util.Constants;
 import util.RequestUtils;
 
@@ -52,6 +59,14 @@ public class HqUserDetailsService {
         }
         HttpEntity<String> request = new HttpEntity<>(data, headers);
         RestTemplate template = builder == null ? restTemplate : builder.build();
+        template.setErrorHandler(new DefaultResponseErrorHandler()  {
+            @Override
+            public void handleError(ClientHttpResponse response) throws IOException {
+                if(response.getRawStatusCode() == 404) {
+                    throw new SessionAuthUnavailableException();
+                }
+            }
+        });
         HqUserDetailsBean userDetails = template.postForObject(getSessionDetailsUrl(), request, HqUserDetailsBean.class);
         return userDetails;
     }
