@@ -65,6 +65,7 @@ public class HqUserDetailsService {
                 if(response.getRawStatusCode() == 404) {
                     throw new SessionAuthUnavailableException();
                 }
+                super.handleError(response);
             }
         });
         HqUserDetailsBean userDetails = template.postForObject(getSessionDetailsUrl(), request, HqUserDetailsBean.class);
