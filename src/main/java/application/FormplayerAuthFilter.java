@@ -2,6 +2,7 @@ package application;
 
 import beans.auth.HqUserDetailsBean;
 import exceptions.FormNotFoundException;
+import exceptions.SessionAuthUnavailableException;
 import objects.SerializableFormSession;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
@@ -85,7 +86,12 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                     return;
                 }
                 setDomain(request);
-                setUserDetails(request);
+                try {
+                    setUserDetails(request);
+                } catch(SessionAuthUnavailableException saue) {
+                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "User session unavailable");
+                    return;
+                }
                 JSONObject data = RequestUtils.getPostData(request);
                 if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
                     setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid user");
