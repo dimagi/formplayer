@@ -1,6 +1,8 @@
 package tests;
 
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.trace.ReducingTraceReporter;
+import org.javarosa.core.model.utils.InstrumentationUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -38,14 +40,20 @@ public class CaseDbOptimizationsTest extends BaseTestClass {
         UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
         EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         ec.setDebugModeOn();
-        evaluate("join(',',instance('casedb')/casedb/case[index/parent = 'test_case_parent']/@case_id)", "child_one,child_two,child_three", ec);
-        evaluate("join(',',instance('casedb')/casedb/case[index/parent = 'test_case_parent'][@case_id = 'child_two']/@case_id)", "child_two", ec);
-        evaluate("join(',',instance('casedb')/casedb/case[index/parent = 'test_case_parent'][@case_id != 'child_two']/@case_id)", "child_one,child_three", ec);
+        evaluate("sort(join(' ',instance('casedb')/casedb/case[index/parent = 'test_case_parent']/@case_id))", "child_one child_three child_two", ec);
+        evaluate("sort(join(',',instance('casedb')/casedb/case[index/parent = 'test_case_parent'][@case_id = 'child_two']/@case_id))", "child_two", ec);
+        evaluate("sort(join(' ',instance('casedb')/casedb/case[index/parent = 'test_case_parent'][@case_id != 'child_two']/@case_id))", "child_one child_three", ec);
 
-        evaluate("join(',',instance('casedb')/casedb/case[selected('test_case_parent', index/parent)]/@case_id)", "child_one,child_two,child_three", ec);
-        evaluate("join(',',instance('casedb')/casedb/case[selected('test_case_parent test_case_parent_2', index/parent)]/@case_id)", "child_one,child_two,child_three", ec);
-        evaluate("join(',',instance('casedb')/casedb/case[selected('test_case_parent_2 test_case_parent', index/parent)]/@case_id)", "child_one,child_two,child_three", ec);
-        evaluate("join(',',instance('casedb')/casedb/case[selected('test_case_parent_2 test_case_parent_3', index/parent)]/@case_id)", "", ec);
-        evaluate("join(',',instance('casedb')/casedb/case[selected('', index/parent)]/@case_id)", "", ec);
+        evaluate("sort(join(' ',instance('casedb')/casedb/case[selected('test_case_parent', index/parent)]/@case_id))", "child_one child_three child_two", ec);
+        evaluate("sort(join(' ',instance('casedb')/casedb/case[selected('test_case_parent test_case_parent_2', index/parent)]/@case_id))", "child_one child_three child_two", ec);
+        evaluate("sort(join(' ',instance('casedb')/casedb/case[selected('test_case_parent_2 test_case_parent', index/parent)]/@case_id))", "child_one child_three child_two", ec);
+        evaluate("join(' ',instance('casedb')/casedb/case[selected('test_case_parent_2 test_case_parent_3', index/parent)]/@case_id)", "", ec);
+        evaluate("join(' ',instance('casedb')/casedb/case[selected('', index/parent)]/@case_id)", "", ec);
+
+        ReducingTraceReporter reporter = new ReducingTraceReporter(false);
+        ec.setDebugModeOn(reporter);
+
+        evaluate("sort(join(' ', instance('casedb')/casedb/case[@case_id='child_one' or @case_id='child_two']/case_name))",  "One Two", ec);
+        InstrumentationUtils.printAndClearTraces(reporter,"Test Path");
     }
 }

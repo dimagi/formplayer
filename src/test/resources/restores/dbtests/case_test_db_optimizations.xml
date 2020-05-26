@@ -20,7 +20,7 @@
           user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_child</case_type>
-            <case_name>Test Case</case_name>
+            <case_name>One</case_name>
             <owner_id>test_user_id</owner_id>
         </create>
         <index>
@@ -31,7 +31,7 @@
           user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_child</case_type>
-            <case_name>Test Case</case_name>
+            <case_name>Two</case_name>
             <owner_id>test_user_id</owner_id>
         </create>
         <index>
