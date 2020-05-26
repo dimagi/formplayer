@@ -101,7 +101,7 @@ public class MenuController extends AbstractBaseController {
             );
             logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
-            EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession);
+            EntityDetailListResponse detail = runnerService.getInlineDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled());
             if (detail == null) {
                 throw new RuntimeException("Could not get inline details");
             }
@@ -128,7 +128,7 @@ public class MenuController extends AbstractBaseController {
 
         if (!(currentScreen instanceof EntityScreen)) {
             // See if we have a persistent case tile to expand
-            EntityDetailResponse detail = runnerService.getPersistentDetail(menuSession);
+            EntityDetailResponse detail = runnerService.getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled());
             if (detail == null) {
                 throw new RuntimeException("Tried to get details while not on a case list.");
             }
@@ -142,7 +142,10 @@ public class MenuController extends AbstractBaseController {
         }
 
         return setLocationNeeds(
-                new EntityDetailListResponse(entityScreen, menuSession.getEvalContextWithHereFuncHandler(), reference),
+                new EntityDetailListResponse(entityScreen,
+                        menuSession.getEvalContextWithHereFuncHandler(),
+                        reference,
+                        storageFactory.getPropertyManager().isFuzzySearchEnabled()),
                 menuSession
         );
     }

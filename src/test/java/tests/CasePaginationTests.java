@@ -4,15 +4,17 @@ import beans.menus.EntityBean;
 import beans.menus.EntityDetailListResponse;
 import beans.menus.EntityDetailResponse;
 import beans.menus.EntityListResponse;
-import org.commcare.cases.entity.Entity;
+import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.properties.Property;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import utils.FileUtils;
-import utils.TestContext;
 
-import static org.mockito.Matchers.any;
+import mocks.FormPlayerPropertyManagerMock;
+import sandbox.SqlStorage;
+import sqlitedb.SQLiteDB;
+import utils.TestContext;
 import static org.mockito.Mockito.when;
 
 /**
@@ -79,13 +81,27 @@ public class CasePaginationTests extends BaseTestClass {
 
     // test that searching (filtering the case list) works
     @Test
-    public void testSearch() throws Exception {
+    public void testFuzzySearch() throws Exception {
+        EntityListResponse entityListResponse =
+                sessionNavigate("requests/navigators/search_navigator.json", EntityListResponse.class);
+        assert entityListResponse.getEntities().length == 10;
+        assert entityListResponse.getCurrentPage() == 0;
+        assert entityListResponse.getPageCount() == 0;
+    }
+
+    @Test
+    public void testNormalSearch() throws Exception {
+        SQLiteDB db = storageFactoryMock.getSQLiteDB();
+        FormPlayerPropertyManagerMock propertyManagerMock = new FormPlayerPropertyManagerMock(new SqlStorage(db, Property.class, PropertyManager.STORAGE_KEY));
+        propertyManagerMock.enableFuzzySearch(false);
+        when(storageFactoryMock.getPropertyManager()).thenReturn(propertyManagerMock);
         EntityListResponse entityListResponse =
                 sessionNavigate("requests/navigators/search_navigator.json", EntityListResponse.class);
         assert entityListResponse.getEntities().length == 9;
         assert entityListResponse.getCurrentPage() == 0;
         assert entityListResponse.getPageCount() == 0;
     }
+
     // test that searching and paginating simultaneously works
     @Test
     public void testSearchAndPagination() throws Exception {

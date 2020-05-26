@@ -53,7 +53,8 @@ public class EntityListResponse extends MenuBean {
                               String detailSelection,
                               int offset,
                               String searchText,
-                              int sortIndex) {
+                              int sortIndex,
+                              boolean isFuzzySearchEnabled) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
@@ -73,7 +74,7 @@ public class EntityListResponse extends MenuBean {
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
             Vector<TreeReference> references = ec.expandReference(neededDatum.getNodeset());
-            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex);
+            List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
             if (entityList.size() > CASE_LENGTH_LIMIT && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
                 setCurrentPage(offset / CASE_LENGTH_LIMIT);
@@ -128,8 +129,9 @@ public class EntityListResponse extends MenuBean {
                                                               EvaluationContext ec,
                                                               String searchText,
                                                               EntityDatum neededDatum,
-                                                              int sortIndex) {
-        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText, sortIndex);
+                                                              int sortIndex,
+                                                              boolean isFuzzySearchEnabled) {
+        List<Entity<TreeReference>> entityList = buildEntityList(detail, ec, references, searchText, sortIndex, isFuzzySearchEnabled);
         List<EntityBean> entities = new ArrayList<>();
         for (Entity<TreeReference> entity : entityList) {
             TreeReference treeReference = entity.getElement();
@@ -139,9 +141,9 @@ public class EntityListResponse extends MenuBean {
     }
 
     private static List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
-                                                              List<Entity<TreeReference>> full) {
+                                                              List<Entity<TreeReference>> full, boolean isFuzzySearchEnabled) {
         if (searchText != null && !"".equals(searchText)) {
-            EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), nodeEntityFactory, full);
+            EntityStringFilterer filterer = new EntityStringFilterer(searchText.split(" "), nodeEntityFactory, full, isFuzzySearchEnabled);
             full = filterer.buildMatchList();
         }
         return full;
@@ -169,14 +171,15 @@ public class EntityListResponse extends MenuBean {
                                                                EvaluationContext context,
                                                                Vector<TreeReference> references,
                                                                String searchText,
-                                                               int sortIndex) {
+                                                               int sortIndex,
+                                                               boolean isFuzzySearchEnabled) {
         NodeEntityFactory nodeEntityFactory = new NodeEntityFactory(shortDetail, context);
         List<Entity<TreeReference>> full = new ArrayList<>();
         for (TreeReference reference: references) {
             full.add(nodeEntityFactory.getEntity(reference));
         }
         nodeEntityFactory.prepareEntities(full);
-        List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full);
+        List<Entity<TreeReference>> matched = filterEntities(searchText, nodeEntityFactory, full, isFuzzySearchEnabled);
         sort(matched, shortDetail, sortIndex);
         return matched;
     }

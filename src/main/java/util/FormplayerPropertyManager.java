@@ -16,6 +16,7 @@ public class FormplayerPropertyManager extends PropertyManager {
     public static final String AUTO_PURGE_ENABLED = "cc-auto-purge";
 
     public static final String POST_FORM_SYNC = "cc-sync-after-form";
+    public static final String FUZZY_SEARCH_ENABLED = "cc-fuzzy-search-enabled";
 
     /**
      * Constructor for this PropertyManager
@@ -45,5 +46,9 @@ public class FormplayerPropertyManager extends PropertyManager {
 
     public boolean isSyncAfterFormEnabled() {
         return doesPropertyMatch(POST_FORM_SYNC, NO, YES);
+    }
+
+    public boolean isFuzzySearchEnabled() {
+        return doesPropertyMatch(FUZZY_SEARCH_ENABLED, NO, YES);
     }
 }

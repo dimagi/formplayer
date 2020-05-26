@@ -3,13 +3,12 @@ package util;
 import org.commcare.cases.entity.Entity;
 import org.commcare.cases.entity.NodeEntityFactory;
 import org.commcare.modern.util.Pair;
+import org.commcare.util.EntitySortUtil;
 import org.javarosa.core.model.instance.TreeReference;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
-
 
 /**
  * Filter entity list via all string-representable entity fields
@@ -21,11 +20,13 @@ public class EntityStringFilterer {
     private final NodeEntityFactory nodeFactory;
     protected final List<Entity<TreeReference>> matchList;
     protected final List<Entity<TreeReference>> fullEntityList;
-
+    private final boolean isFuzzySearchEnabled;
 
     public EntityStringFilterer(String[] searchTerms,
                                 NodeEntityFactory nodeFactory,
-                                List<Entity<TreeReference>> fullEntityList) {
+                                List<Entity<TreeReference>> fullEntityList,
+                                boolean isFuzzySearchEnabled) {
+        this.isFuzzySearchEnabled = isFuzzySearchEnabled;
         this.matchList = new ArrayList<>();
         this.nodeFactory = nodeFactory;
         this.fullEntityList = fullEntityList;
@@ -46,29 +47,13 @@ public class EntityStringFilterer {
         }
 
         Locale currentLocale = Locale.getDefault();
-        for (int index = 0; index < fullEntityList.size(); ++index) {
-            Entity<TreeReference> e = fullEntityList.get(index);
-            boolean add = false;
-            int score = 0;
-            filter:
-            for (String filter : searchTerms) {
-                add = false;
-                for (int i = 0; i < e.getNumFields(); ++i) {
-                    String field = e.getNormalizedField(i).toLowerCase();
-                    if (!"".equals(field) && field.toLowerCase(currentLocale).contains(filter.toLowerCase())) {
-                        add = true;
-                        continue filter;
-                    }
-                }
-            }
-            if (add) {
-                matchScores.add(Pair.create(index, score));
-            }
-        }
-
-        for (Pair<Integer, Integer> match : matchScores) {
-            matchList.add(fullEntityList.get(match.first));
-        }
+        EntitySortUtil.sortEntities(fullEntityList,
+                searchTerms,
+                currentLocale,
+                isFuzzySearchEnabled,
+                matchScores,
+                matchList,
+                fullEntityList::get);
         return matchList;
     }
 }

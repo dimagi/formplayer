@@ -130,7 +130,8 @@ public class MenuSessionRunnerService {
                     detailSelection,
                     offset,
                     searchText,
-                    sortIndex
+                    sortIndex,
+                    storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             menuResponseBean = new QueryResponseBean(
@@ -145,7 +146,7 @@ public class MenuSessionRunnerService {
         menuResponseBean.setAppId(menuSession.getAppId());
         menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
                 ", App Version: " + menuSession.getAppVersion());
-        menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
+        menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
         return menuResponseBean;
     }
 
@@ -334,12 +335,12 @@ public class MenuSessionRunnerService {
         return reference;
     }
 
-    public static EntityDetailListResponse getInlineDetail(MenuSession menuSession) {
-        return getDetail(menuSession, true);
+    public static EntityDetailListResponse getInlineDetail(MenuSession menuSession, boolean isFuzzySearchEnabled) {
+        return getDetail(menuSession, true, isFuzzySearchEnabled);
     }
 
-    public static EntityDetailResponse getPersistentDetail(MenuSession menuSession) {
-        EntityDetailListResponse detailListResponse = getDetail(menuSession, false);
+    public static EntityDetailResponse getPersistentDetail(MenuSession menuSession, boolean isFuzzySearchEnabled) {
+        EntityDetailListResponse detailListResponse = getDetail(menuSession, false, isFuzzySearchEnabled);
         if (detailListResponse == null) {
             return null;
         }
@@ -350,7 +351,7 @@ public class MenuSessionRunnerService {
         return detailList[0];
     }
 
-    private static EntityDetailListResponse getDetail(MenuSession menuSession, boolean inline) {
+    private static EntityDetailListResponse getDetail(MenuSession menuSession, boolean inline, boolean isFuzzySearchEnabled) {
         SessionWrapper session = menuSession.getSessionWrapper();
         StackFrameStep stepToFrame = getStepToFrame(session);
         if (stepToFrame == null) {
@@ -375,7 +376,7 @@ public class MenuSessionRunnerService {
         EvaluationContext ec;
         if (inline) {
             ec = menuSession.getEvalContextWithHereFuncHandler();
-            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(), ec, reference);
+            return new EntityDetailListResponse(persistentDetail.getFlattenedDetails(), ec, reference, isFuzzySearchEnabled);
         } else {
             ec = new EvaluationContext(menuSession.getEvalContextWithHereFuncHandler(), reference);
             EntityDetailResponse detailResponse = new EntityDetailResponse(persistentDetail, ec);
@@ -406,7 +407,7 @@ public class MenuSessionRunnerService {
     private NewFormResponse startFormEntry(MenuSession menuSession) throws Exception {
         if (menuSession.getSessionWrapper().getForm() != null) {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
-            formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession));
+            formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
             return formResponseBean;
         } else {
