@@ -23,6 +23,9 @@
             <case_name>One</case_name>
             <owner_id>test_user_id</owner_id>
         </create>
+        <update>
+            <external_id>one</external_id>
+        </update>
         <index>
             <parent case_type="unit_test_parent">test_case_parent</parent>
         </index>
@@ -34,6 +37,9 @@
             <case_name>Two</case_name>
             <owner_id>test_user_id</owner_id>
         </create>
+        <update>
+            <external_id>two</external_id>
+        </update>
         <index>
             <parent case_type="unit_test_parent">test_case_parent</parent>
         </index>
@@ -45,6 +51,9 @@
             <case_name>Test Case</case_name>
             <owner_id>test_user_id</owner_id>
         </create>
+        <update>
+            <external_id>three</external_id>
+        </update>
         <index>
             <parent case_type="unit_test_parent">test_case_parent</parent>
         </index>

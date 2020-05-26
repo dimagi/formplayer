@@ -50,10 +50,8 @@ public class CaseDbOptimizationsTest extends BaseTestClass {
         evaluate("join(' ',instance('casedb')/casedb/case[selected('test_case_parent_2 test_case_parent_3', index/parent)]/@case_id)", "", ec);
         evaluate("join(' ',instance('casedb')/casedb/case[selected('', index/parent)]/@case_id)", "", ec);
 
-        ReducingTraceReporter reporter = new ReducingTraceReporter(false);
-        ec.setDebugModeOn(reporter);
-
         evaluate("sort(join(' ', instance('casedb')/casedb/case[@case_id='child_one' or @case_id='child_two']/case_name))",  "One Two", ec);
-        InstrumentationUtils.printAndClearTraces(reporter,"Test Path");
+
+        evaluate("sort(join(' ', instance('casedb')/casedb/case[@owner_id='test_user_id' and @external_id='three']/@case_id))",  "child_three", ec);
     }
 }
