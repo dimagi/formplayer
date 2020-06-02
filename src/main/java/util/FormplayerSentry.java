@@ -231,4 +231,10 @@ public class FormplayerSentry {
     public void setAppId(String appId) {
         this.appId = appId;
     }
+
+    public void cleanup() {
+        if (sentryClient != null) {
+            sentryClient.closeConnection();
+        }
+    }
 }
