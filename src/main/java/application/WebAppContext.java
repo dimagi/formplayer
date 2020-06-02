@@ -193,7 +193,7 @@ public class WebAppContext implements WebMvcConfigurer {
         return new XFormService();
     }
 
-    @Bean
+    @Bean(destroyMethod="cleanup")
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerSentry raven() {
         FormplayerSentry raven;
