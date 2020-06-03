@@ -12,19 +12,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import repo.FormSessionRepo;
-import services.FormplayerLockRegistry;
+import services.FallbackSentryReporter;
 import services.HqUserDetailsService;
 import util.Constants;
 import util.FormplayerHttpRequest;
+import util.FormplayerSentry;
 import util.RequestUtils;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,71 +45,132 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     HqUserDetailsService userDetailsService;
 
     @Autowired
-    FormplayerLockRegistry userLockRegistry;
+    FormSessionRepo formSessionRepo;
 
     @Autowired
-    FormSessionRepo formSessionRepo;
+    FallbackSentryReporter sentryReporter;
 
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        FormplayerHttpRequest request = new FormplayerHttpRequest(req);
-        if (isAuthorizationRequired(request)) {
-            if (request.getHeader(Constants.HMAC_HEADER) != null && formplayerAuthKey != null) {
-                logger.info("Validating X-MAC-DIGEST");
-                String header = request.getHeader(Constants.HMAC_HEADER);
-                String body = RequestUtils.getBody(request);
-                String hash;
-                try {
-                    hash = RequestUtils.getHmac(formplayerAuthKey, body);
-                } catch (Exception e) {
-                    logger.error(String.format("Error generating hash of body %s", body), e);
-                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid HMAC hash");
-                    return;
-                }
-                if (!header.equals(hash)) {
-                    logger.error(String.format("Hash comparison between request %s and generated %s failed",
-                            header, hash));
-                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid HMAC hash");
-                    return;
-                }
-                try {
-                    setSmsRequestDetails(request);
-                } catch (FormNotFoundException e) {
-                    setResponseError(response, HttpServletResponse.SC_NOT_FOUND, "Form session not found");
-                    return;
-                }
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain)  {
+        try {
+            FormplayerHttpRequest request = getRequestIfAuthorized(req);
+            filterChain.doFilter(request, response);
+        } catch(Exception e) {
+            AuthorizationFailureException ace;
+            if (e instanceof AuthorizationFailureException) {
+                ace = (AuthorizationFailureException)e;
+            } else {
+                ace = new AuthorizationFailureException(
+                        "Unexpected auth error",
+                        String.format("Error configuring request authentication: %s", e.getMessage()),
+                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        e);
             }
-            else {
-                if (getSessionId(request) == null) {
-                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid auth session");
-                    return;
-                }
-                setDomain(request);
-                try {
-                    setUserDetails(request);
-                } catch(SessionAuthUnavailableException saue) {
-                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "User session unavailable");
-                    return;
-                }
-                JSONObject data = RequestUtils.getPostData(request);
-                if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
-                    setResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid user");
-                    return;
-                }
+            if (ace.shouldReport()) {
+                logger.error(String.format("Request to %s - Authorization Failed[%d] Unexpectedly - %s",
+                        req.getRequestURI(),
+                        ace.getResponseCode(),
+                        ace.getLog()), ace);
+
+                sentryReporter.sendEvent(
+                    sentryReporter.getEventForException(ace)
+                            .withMessage(ace.getLog())
+                            .withTag("uri",req.getRequestURI()));
+            } else {
+                logger.warn(String.format("Request to %s - Authorization Failed[%d] - %s",
+                        req.getRequestURI(),
+                        ace.getResponseCode(),
+                        ace.getLog()));
             }
+            this.setResponseError(response, ace);
         }
-        filterChain.doFilter(request, response);
     }
 
-    private String getUsername(JSONObject data) {
+    /**
+     * Returns a FormplayerHttpRequest with appropriate authentication information if
+     * authorized, or throws
+     */
+    private FormplayerHttpRequest getRequestIfAuthorized(HttpServletRequest req) throws AuthorizationFailureException {
+        FormplayerHttpRequest request = new FormplayerHttpRequest(req);
+        if (!isAuthorizationRequired(request)) {
+            return request;
+        }
+
+        if (request.getHeader(Constants.HMAC_HEADER) != null && formplayerAuthKey != null) {
+            String header = request.getHeader(Constants.HMAC_HEADER);
+            String hash = getHmacHashFromRequest(request);
+            if (!header.equals(hash)) {
+                throw AuthorizationFailureException.AuthFailedWithLog (
+                        "Invalid HMAC hash",
+                        String.format("Hash comparison between request %s and generated %s failed", header, hash),
+                        HttpServletResponse.SC_UNAUTHORIZED).forceReport();
+
+            }
+            try {
+                setSmsRequestDetails(request);
+            } catch (FormNotFoundException e) {
+                throw AuthorizationFailureException.AuthFailed("Form session not found",
+                                                        HttpServletResponse.SC_NOT_FOUND);
+            }
+            return request;
+        }
+        else {
+            if (getSessionId(request) == null) {
+                throw AuthorizationFailureException.AuthFailed("Invalid auth session",
+                        HttpServletResponse.SC_UNAUTHORIZED);
+            }
+
+            setDomain(request);
+
+            try {
+                setUserDetails(request);
+            } catch(SessionAuthUnavailableException saue) {
+                throw AuthorizationFailureException.AuthFailed("User session unavailable",
+                        HttpServletResponse.SC_UNAUTHORIZED);
+            }
+            JSONObject data = RequestUtils.getPostData(request);
+
+            if (!authorizeRequest(request, data.getString("domain"), getUsername(data))) {
+                throw AuthorizationFailureException.AuthFailed("Invalid user",
+                        HttpServletResponse.SC_UNAUTHORIZED);
+            }
+            return request;
+        }
+    }
+
+    private String getHmacHashFromRequest(FormplayerHttpRequest request) throws AuthorizationFailureException {
+        logger.info("Validating X-MAC-DIGEST");
+        String body = null;
+        try {
+            body = RequestUtils.getBody(request);
+            return RequestUtils.getHmac(formplayerAuthKey, body);
+        } catch (Exception e) {
+            throw AuthorizationFailureException.AuthFailedWithError(
+                    "Error validating session",
+                    String.format("Error generating HMAC hash for validation of body: %s", body == null ? "Error reading body" : body),
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    e);
+        }
+    }
+
+    private String getUsername(JSONObject data) throws AuthorizationFailureException {
         try {
             return data.getString("username");
         } catch (JSONException e) {
-            // TODO: Delete when no longer using HQ to proxy requests for Edit Forms
-            return data.getJSONObject("session-data").getString("username");
+            try {
+                // TODO: Delete when no longer using HQ to proxy requests for Edit Forms
+                return data.getJSONObject("session-data").getString("username");
+            } catch (JSONException etwo) {
+                throw AuthorizationFailureException.AuthFailedWithError(
+                        "No username for authentication",
+                        "Request doesn't contain a username in POST data or session data for authentication",
+                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        etwo);
+
+            }
         }
     }
 
@@ -210,22 +273,66 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
 
     }
 
-    public void setResponseError(HttpServletResponse response, int statusCode, String message) {
-        response.reset();
-        response.setStatus(statusCode);
+    public void setResponseError(HttpServletResponse response, AuthorizationFailureException authException) {
+        response.setStatus(authException.getResponseCode());
         response.setContentType("application/json");
 
         PrintWriter writer = null;
+
         JSONObject responseJSON = new JSONObject();
-        responseJSON.put("error", message);
+        responseJSON.put("error", authException.getMessage());
         try {
             writer = response.getWriter();
+            writer.write(responseJSON.toString());
         } catch (IOException e) {
             throw new RuntimeException("Unable to write response", e);
+        } finally {
+            writer.flush();
+            writer.close();
         }
-        writer.write(responseJSON.toString());
-        writer.flush();
-        writer.close();
     }
 
+    public static class AuthorizationFailureException extends Exception {
+        private String log;
+        private int responseCode;
+        private boolean report;
+
+        public String getLog() {
+            return log;
+        }
+
+        public int getResponseCode() {
+            return responseCode;
+        }
+
+        public boolean shouldReport() {
+            return report;
+        }
+
+        public static AuthorizationFailureException AuthFailed(String message, int responseCode) {
+            return new AuthorizationFailureException(message, message, responseCode, null);
+        }
+        public static AuthorizationFailureException AuthFailedWithLog(String message, String log, int responseCode) {
+            return new AuthorizationFailureException(message, log, responseCode, null);
+        }
+        public static AuthorizationFailureException AuthFailedWithError(String message, String log, int responseCode, Exception e) {
+            return new AuthorizationFailureException(message, log, responseCode, e);
+        }
+        private AuthorizationFailureException(String message, String log,
+                                              int responseCode,
+                                              Exception source) {
+            super(message);
+            this.log = log;
+            this.responseCode = responseCode;
+            if (source != null) {
+                this.report = true;
+                this.initCause(source);
+            }
+        }
+
+        public AuthorizationFailureException forceReport() {
+            this.report = true;
+            return this;
+        }
+    }
 }
