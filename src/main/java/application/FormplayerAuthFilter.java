@@ -106,7 +106,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 throw AuthorizationFailureException.AuthFailedWithLog (
                         "Invalid HMAC hash",
                         String.format("Hash comparison between request %s and generated %s failed", header, hash),
-                        HttpServletResponse.SC_UNAUTHORIZED).forceReport();
+                        HttpServletResponse.SC_BAD_REQUEST).forceReport();
 
             }
             try {
@@ -151,7 +151,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
             throw AuthorizationFailureException.AuthFailedWithError(
                     "Error validating session",
                     String.format("Error generating HMAC hash for validation of body: %s", body == null ? "Error reading body" : body),
-                    HttpServletResponse.SC_UNAUTHORIZED,
+                    HttpServletResponse.SC_BAD_REQUEST,
                     e);
         }
     }
@@ -167,7 +167,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                 throw AuthorizationFailureException.AuthFailedWithError(
                         "No username for authentication",
                         "Request doesn't contain a username in POST data or session data for authentication",
-                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        HttpServletResponse.SC_BAD_REQUEST,
                         etwo);
 
             }
