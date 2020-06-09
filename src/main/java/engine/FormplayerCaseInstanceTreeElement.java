@@ -3,6 +3,7 @@ package engine;
 import database.models.FormplayerCaseIndexTable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.query.handlers.LogicalValueIndexHandler;
 import org.commcare.modern.engine.cases.CaseIndexQuerySetTransform;
 import org.commcare.modern.engine.cases.query.CaseIndexPrefetchHandler;
 import sandbox.SqlHelper;
@@ -58,6 +59,8 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         CaseModelQuerySetMatcher matcher = new CaseModelQuerySetMatcher(multiplicityIdMapping);
         matcher.addQuerySetTransform(new CaseIndexQuerySetTransform(formplayerCaseIndexTable));
         queryPlanner.addQueryHandler(new ModelQueryLookupHandler(matcher));
+
+        queryPlanner.addQueryHandler(new LogicalValueIndexHandler(this.getStorageIndexMap(), this.getStorage()));
     }
 
     @Override
