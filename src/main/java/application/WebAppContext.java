@@ -209,6 +209,9 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
+    public FallbackSentryReporter sentryReporter() { return new FallbackSentryReporter(); }
+
+    @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public CategoryTimingHelper categoryTimingHelper() {
         return new CategoryTimingHelper();
