@@ -176,7 +176,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex()
         );
-        logNotification(response.getNotification(),request);
+        logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
     }
 

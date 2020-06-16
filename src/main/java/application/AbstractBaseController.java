@@ -210,9 +210,12 @@ public abstract class AbstractBaseController {
 
     void logNotification(@Nullable NotificationMessage notification, HttpServletRequest req) {
         try {
-            if (notification != null && notification.isError()) {
+            if (notification != null && notification.getType() == NotificationMessage.Type.error.name()) {
                 raven.sendRavenException(new RuntimeException(notification.getMessage()));
                 incrementDatadogCounter(Constants.DATADOG_ERRORS_NOTIFICATIONS, req, notification.getTag());
+            } else if (notification != null && notification.getType() == NotificationMessage.Type.app_error.name()) {
+                raven.sendRavenException(new ApplicationConfigException(notification.getMessage()),Event.Level.INFO);
+                incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req, notification.getTag());
             }
         } catch (Exception e) {
             // we don't wanna crash while logging the error

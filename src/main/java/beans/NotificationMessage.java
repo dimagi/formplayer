@@ -13,6 +13,7 @@ public class NotificationMessage {
     public enum Type {
         success,
         warning,
+        app_error,
         error
     }
 
@@ -55,7 +56,7 @@ public class NotificationMessage {
     public NotificationMessage(String message, Type type, Tag tag) {
         this.message = message;
         this.type = type.name();
-        this.isError = type == Type.error;
+        this.isError = type == Type.error || type == Type.app_error;
         this.tag = tag.name();
     }
 
