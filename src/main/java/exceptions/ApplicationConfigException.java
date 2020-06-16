@@ -6,7 +6,12 @@ package exceptions;
  * is thrown, no error emails are sent.
  */
 public class ApplicationConfigException extends RuntimeException {
-        public ApplicationConfigException(String message) {
-            super(message);
-        }
+
+    public ApplicationConfigException(String message) {
+        super(message);
+    }
+
+    public ApplicationConfigException(String message, Exception wrapped) {
+        super(message, wrapped);
+    }
 }
