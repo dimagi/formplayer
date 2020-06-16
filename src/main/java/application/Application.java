@@ -59,4 +59,9 @@ public class Application {
     public Filter loggingFilter() {
         return new ResponseLoggingFilter();
     }
+
+    @Bean
+    public Filter reqRespLoggingFilter() {
+        return new RequestResponseLoggingFilter();
+    }
 }
