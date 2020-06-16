@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingResponseWrapper;
+
 import repo.FormSessionRepo;
 import services.FallbackSentryReporter;
 import services.HqUserDetailsService;
@@ -57,7 +59,15 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain)  {
         try {
             FormplayerHttpRequest request = getRequestIfAuthorized(req);
-            filterChain.doFilter(request, response);
+            ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
+
+            filterChain.doFilter(request, responseWrapper);
+
+            //Get a copy of what we are returning for logging
+            String responseBody = new String(responseWrapper.getContentAsByteArray());
+
+            //This preps the response for the actual outbound connection
+            responseWrapper.copyBodyToResponse();
         } catch(Exception e) {
             AuthorizationFailureException ace;
             if (e instanceof AuthorizationFailureException) {
