@@ -21,8 +21,13 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.kxml2.io.KXmlSerializer;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import exceptions.ApplicationConfigException;
+import io.sentry.event.Event;
 import session.FormSession;
 import util.Constants;
+import util.FormplayerSentry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,7 +47,8 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
     //Jackson requires the default constructor
     public EvaluateXPathResponseBean(){}
 
-    public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath, String debugTraceLevel) throws XPathSyntaxException {
+    public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath, String debugTraceLevel,
+                                     FormplayerSentry raven) throws XPathSyntaxException {
         status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         KXmlSerializer serializer = new KXmlSerializer();
@@ -79,6 +85,13 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
             output = e.getMessage();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch(Exception e) {
+            ApplicationConfigException ace =
+                    new ApplicationConfigException("Unexpected error evaluating expression", e);
+            raven.sendRavenException(ace, Event.Level.INFO);
+
+            status= Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
+            output = ace.getMessage();
         }
     }
 

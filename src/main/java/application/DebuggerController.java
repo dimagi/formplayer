@@ -9,6 +9,7 @@ import beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import beans.debugger.MenuDebuggerContentResponseBean;
 import beans.debugger.XPathQueryItem;
 import beans.menus.BaseResponseBean;
+import exceptions.ApplicationConfigException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import objects.SerializableFormSession;
@@ -114,7 +115,8 @@ public class DebuggerController extends AbstractBaseController {
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 menuSession.getSessionWrapper().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),
-                evaluateXPathRequestBean.getDebugOutputLevel()
+                evaluateXPathRequestBean.getDebugOutputLevel(),
+                raven
         );
 
         cacheMenuXPathQuery(
@@ -141,7 +143,8 @@ public class DebuggerController extends AbstractBaseController {
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),
-                evaluateXPathRequestBean.getDebugOutputLevel()
+                evaluateXPathRequestBean.getDebugOutputLevel(),
+                raven
         );
 
         cacheFormXPathQuery(

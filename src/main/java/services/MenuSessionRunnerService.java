@@ -107,7 +107,7 @@ public class MenuSessionRunnerService {
             String assertionFailure = getAssertionFailure(menuSession);
             if (assertionFailure != null) {
                 BaseResponseBean responseBean = new BaseResponseBean("App Configuration Error",
-                        new NotificationMessage(assertionFailure, true, NotificationMessage.Tag.menu),
+                        new NotificationMessage(assertionFailure, NotificationMessage.Type.app_error, NotificationMessage.Tag.menu),
                         true);
                 return responseBean;
             }
