@@ -9,6 +9,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import repo.FormSessionRepo;
@@ -39,6 +41,7 @@ import java.util.regex.Pattern;
  * @author wspride
  */
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class FormplayerAuthFilter extends OncePerRequestFilter {
 
     @Autowired
