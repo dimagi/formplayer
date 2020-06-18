@@ -1,12 +1,26 @@
 package sandbox;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.zip.GZIPInputStream;
 
+import exceptions.InterruptedRuntimeException;
+import exceptions.SqlArchiveLockException;
+import services.InstallService;
+
 public class ArchivableFile extends File {
+
+    private static final long ARCHIVE_PROCESS_LOCK_ACQUIRE_TIMEOUT = 5 * 1000;
+
+    private static final long ARCHIVE_PROCESS_LOCK_LIFESPAN = 5 * 60 * 1000;
+
+    private final Log log = LogFactory.getLog(ArchivableFile.class);
 
     public ArchivableFile(String pathname) {
         super(pathname);
@@ -28,11 +42,23 @@ public class ArchivableFile extends File {
     @Override
     public boolean delete() {
         boolean gzipDeleted = false;
-        waitOnLock();
-        if (getGzipFile().exists()) {
-            gzipDeleted = getGzipFile().delete();
+        try {
+            acquireLock(ARCHIVE_PROCESS_LOCK_ACQUIRE_TIMEOUT, true);
+
+            if (getGzipFile().exists()) {
+                gzipDeleted = getGzipFile().delete();
+            }
+            return super.delete() || gzipDeleted;
+        } catch(IOException sqle) {
+            //If we can't get the lock, no other operations will work anyway.
+            return false;
+        } finally {
+            try {
+                deleteLockOrThrow();
+            } catch(IOException ioe) {
+                return false;
+            }
         }
-        return super.delete() || gzipDeleted;
     }
 
     private static void decompressGzipFile(File gzipFile, File newFile) throws IOException {
@@ -50,40 +76,89 @@ public class ArchivableFile extends File {
         }
     }
 
-    private void waitOnLock() {
-        while (getLockFile().exists()) {
+    /**
+     * @param force If an existing lockfile should be deleted regardless of age
+     * @return True if a lock file was expired and successfully deleted
+     */
+    private boolean clearLockFileIfExpired(boolean force) {
+        File databaseLockFile = getLockFile();
+        long lockFileAge = System.currentTimeMillis() - databaseLockFile.lastModified();
+        if (force || lockFileAge > ARCHIVE_PROCESS_LOCK_LIFESPAN) {
+            log.info("Evicted expired archivable file lock at: " + databaseLockFile.getPath());
+            return databaseLockFile.delete() && !databaseLockFile.exists();
+        }
+        return false;
+    }
+
+    /**
+     * @param timeout How long to wait for the lock before throwing a SqlArchiveLockException
+     * @param force If true, attempts to delete an existing lockfile regardless of age
+     * @throws IOException
+     */
+    private void acquireLock(long timeout, boolean force) throws IOException {
+        File databaseLockFile = getLockFile();
+        long start = System.currentTimeMillis();
+
+        while (databaseLockFile.exists()) {
+            if ((System.currentTimeMillis() - start) > timeout) {
+                if (clearLockFileIfExpired(force)) {
+                    break;
+                }
+                throw new SqlArchiveLockException("Timed out trying to acquire the archivable file lock");
+            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                throw new InterruptedRuntimeException(e);
             }
+        }
+
+        boolean lockCreated = databaseLockFile.createNewFile();
+
+        if (!lockCreated) {
+            throw new SqlArchiveLockException("Could not create lock file for sql archive");
+        }
+    }
+
+    private void initPaths() throws IOException {
+        File databaseFolder = new File(getParent());
+
+        if (!databaseFolder.exists()) {
+            Files.createDirectories(databaseFolder.toPath());
         }
     }
 
     public void unarchiveIfArchived() throws IOException {
+        initPaths();
+
         File databaseFile = new File(getPath());
-        File databaseLockFile = getLockFile();
         File databaseGzipFile = getGzipFile();
 
-        waitOnLock();
+        acquireLock(ARCHIVE_PROCESS_LOCK_ACQUIRE_TIMEOUT, false);
 
-        if (!databaseFile.exists() && databaseGzipFile.exists()) {
-            try {
-                boolean lockCreated = databaseLockFile.createNewFile();
-                if (!lockCreated) {
-                    throw new IOException("Could not create lock file");
-                }
+        try {
+            if (!databaseFile.exists() && databaseGzipFile.exists()) {
                 decompressGzipFile(databaseGzipFile, databaseFile);
                 boolean gzipDeleted = databaseGzipFile.delete();
                 if (!gzipDeleted) {
-                    throw new IOException("Could not delete gzipFile");
+                    throw new IOException("Could not delete sql archive GZIP file");
                 }
-            } finally {
-                boolean lockDeleted = databaseLockFile.delete();
-                if (!lockDeleted && databaseLockFile.exists()) {
-                    throw new IOException("Could not delete lock file. This can result in a deadlock");
-                }
+            } else if (databaseFile.exists()) {
+                //This 'touch' lets the background process that cleans up older unused databases
+                //recognize that the file is being used.
+                databaseFile.setLastModified(System.currentTimeMillis());
             }
+        } finally {
+            deleteLockOrThrow();
+        }
+    }
+    private void deleteLockOrThrow() throws IOException {
+        File databaseLockFile = getLockFile();
+
+        boolean lockDeleted = databaseLockFile.delete();
+        if (!lockDeleted && databaseLockFile.exists()) {
+            throw new IOException("Could not delete sql archive lock file." +
+                    " This can result in a deadlock");
         }
     }
 }
