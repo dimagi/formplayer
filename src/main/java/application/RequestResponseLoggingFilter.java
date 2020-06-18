@@ -27,7 +27,14 @@ import java.util.TimeZone;
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class RequestResponseLoggingFilter extends GenericFilterBean {
 
-    private final Log log = LogFactory.getLog(RequestResponseLoggingFilter.class);
+    private Log log = LogFactory.getLog(RequestResponseLoggingFilter.class);
+
+    public RequestResponseLoggingFilter(Log log){
+        super();
+        if (log != null) {
+            this.log = log;
+        }
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
@@ -37,7 +44,6 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(httpResponse);
         filterChain.doFilter(request, responseWrapper);
 
-        // Get a copy of what we are returning for logging
         String requestBody = IOUtils.toString(httpRequest.getReader());
         String responseBody = new String(responseWrapper.getContentAsByteArray());
 

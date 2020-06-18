@@ -62,6 +62,6 @@ public class Application {
 
     @Bean
     public Filter reqRespLoggingFilter() {
-        return new RequestResponseLoggingFilter();
+        return new RequestResponseLoggingFilter(null);
     }
 }
