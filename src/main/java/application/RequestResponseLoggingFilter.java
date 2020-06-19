@@ -36,54 +36,78 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
         }
     }
 
+    /**
+     * Wraps the filterChain `doFilter` call by logging the request and response. Catches potential
+     * exceptions within the method and does not propagate them so the request is unaffected.
+     * @param request request object
+     * @param response response object
+     * @param filterChain filter chain where `doFilter` is called
+     * @throws IOException
+     * @throws ServletException
+     */
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
-        final HttpServletRequest httpRequest = (HttpServletRequest) request;
-        final HttpServletResponse httpResponse = (HttpServletResponse) response;
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
+            throws IOException, ServletException {
+        // json corresponding to the log ine and passed around to log as much as possible in case of exceptions.
+        JSONObject logLineJson = new JSONObject();
 
+        try {
+            // Extract information from request before moving to the next filter along the chain.
+            this.doBefore(logLineJson, request);
+        } catch (Exception e) {
+            log.error(e);
+            logLineJson.put("loggingRequestError", e);
+        }
+
+        // Pass onto next filter, which should not throw an exception.
+        final HttpServletResponse httpResponse = (HttpServletResponse) response;
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(httpResponse);
         filterChain.doFilter(request, responseWrapper);
 
-        String requestBody = IOUtils.toString(httpRequest.getReader());
-        String responseBody = new String(responseWrapper.getContentAsByteArray());
+        try {
+            // Extract information from response.
+            this.doAfter(logLineJson, responseWrapper);
+        } catch (Exception e) {
+            log.error(e);
+            logLineJson.put("loggingResponseError", e);
+        } finally {
+            // Always log and always prep the response for outbound connection
+            log.info(logLineJson);
+            responseWrapper.copyBodyToResponse();
+        }
+    }
 
-        String restoreAs = null;
-        String url = null;
-        String domain = null;
-        String user = null;
+    private void doBefore(JSONObject logLineJson,
+                          ServletRequest request) throws IOException {
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+        String requestBody = IOUtils.toString(httpRequest.getReader());
+        logLineJson.put("requestBody", requestBody);
 
         try {
-            restoreAs = new JSONObject(requestBody).getString("restoreAs");
+            logLineJson.put("restoreAs", new JSONObject(requestBody).getString("restoreAs"));
         } catch (JSONException e) {
             // Swallow, restoreAs not always provided in request.
         }
 
-        if (request instanceof FormplayerHttpRequest) {
-            FormplayerHttpRequest formplayerHttpRequest = (FormplayerHttpRequest) request;
-            domain = formplayerHttpRequest.getDomain();
-            url = new String(formplayerHttpRequest.getRequestURL());
+        FormplayerHttpRequest formplayerHttpRequest = (FormplayerHttpRequest) request;
+        logLineJson.put("projectSpace", formplayerHttpRequest.getDomain());
+        logLineJson.put("requestUrl", new String(formplayerHttpRequest.getRequestURL()));
 
-            HqUserDetailsBean userDetailsBean = formplayerHttpRequest.getUserDetails();
-            user = (userDetailsBean != null) ? formplayerHttpRequest.getUserDetails().getUsername() : null;
-        }
+        HqUserDetailsBean userDetailsBean = formplayerHttpRequest.getUserDetails();
+        String user = (userDetailsBean != null) ? formplayerHttpRequest.getUserDetails().getUsername() : null;
+        logLineJson.put("username" , user);
+    }
 
-        JSONObject logLine = (new JSONObject())
-                .put("requestUrl", url)
-                .put("requestBody", requestBody)
-                .put("projectSpace", domain)
-                .put("username", user)
-                .put("restoreAs", restoreAs)
-                .put("date", this.currentTimeISO8601())
+    private void doAfter(JSONObject logLineJson, ContentCachingResponseWrapper responseWrapper) {
+        String responseBody = new String(responseWrapper.getContentAsByteArray());
+        logLineJson.put("date", this.currentTimeISO8601())
                 .put("responseBody", responseBody);
-        log.info(logLine);
-
-        // prep the response for the actual outbound connection
-        responseWrapper.copyBodyToResponse();
     }
 
     private String currentTimeISO8601() {
         TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
         df.setTimeZone(tz);
         return df.format(new Date());
     }
