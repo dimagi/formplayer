@@ -5,7 +5,7 @@ import org.springframework.data.annotation.TypeAlias;
 /**
  * Created by benrudolph on 11/27/16.
  */
-@TypeAlias("beans.debugger.XPathQueryItem")
+@TypeAlias("XPathQueryItem")
 public class XPathQueryItem {
     private String xpath;
     private String output;
