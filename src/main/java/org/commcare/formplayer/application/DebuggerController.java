@@ -188,6 +188,6 @@ public class DebuggerController extends AbstractBaseController {
     }
 
     private String redisXPathKey(String prefix, String domain, String username) {
-        return "debugger:xpath:" + prefix + ":" + domain + ":" + username;
+        return "debugger:xpath:v2:" + prefix + ":" + domain + ":" + username;
     }
 }

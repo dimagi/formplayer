@@ -272,7 +272,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
 
     public void setResponseError(HttpServletResponse response, AuthorizationFailureException authException) {
         response.setStatus(authException.getResponseCode());
-        response.setContentType("org/commcare/formplayer/application/json");
+        response.setContentType("application/json");
 
         PrintWriter writer = null;
 

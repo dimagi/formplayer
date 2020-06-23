@@ -20,7 +20,7 @@ public class InstanceAutocompletableItem extends AutoCompletableItem {
                 instance = baseInstance + "casedb/case";
                 break;
             case SESSION_INSTANCE:
-                instance = baseInstance + "org/commcare/formplayer/session";
+                instance = baseInstance + "session";
                 break;
             case LOCATION_INSTANCE:
                 instance = baseInstance + "locations";
