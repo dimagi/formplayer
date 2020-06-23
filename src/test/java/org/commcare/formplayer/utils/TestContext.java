@@ -1,0 +1,192 @@
+package org.commcare.formplayer.utils;
+
+import com.timgroup.statsd.StatsDClient;
+import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.mocks.MockFormSessionRepo;
+import org.commcare.formplayer.mocks.MockLockRegistry;
+import org.commcare.formplayer.mocks.MockMenuSessionRepo;
+import org.commcare.formplayer.mocks.TestInstallService;
+import org.commcare.modern.reference.ArchiveFileRoot;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.integration.support.locks.LockRegistry;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+
+import org.commcare.formplayer.objects.FormVolatilityRecord;
+import org.commcare.formplayer.repo.FormSessionRepo;
+import org.commcare.formplayer.repo.MenuSessionRepo;
+import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.InstallService;
+import org.commcare.formplayer.services.MenuSessionFactory;
+import org.commcare.formplayer.services.MenuSessionRunnerService;
+import org.commcare.formplayer.services.NewFormResponseFactory;
+import org.commcare.formplayer.services.QueryRequester;
+import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.services.SubmitService;
+import org.commcare.formplayer.services.SyncRequester;
+import org.commcare.formplayer.services.XFormService;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerHttpRequest;
+import org.commcare.formplayer.util.FormplayerSentry;
+
+import java.time.Duration;
+
+@Configuration
+public class TestContext {
+
+    public TestContext() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Bean
+    public MessageSource messageSource() {
+        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+ 
+        messageSource.setBasename("i18n/messages");
+        messageSource.setUseCodeAsDefaultMessage(true);
+ 
+        return messageSource;
+    }
+
+    @Bean
+    public InternalResourceViewResolver viewResolver(){
+        InternalResourceViewResolver internalResourceViewResolver = new InternalResourceViewResolver();
+        internalResourceViewResolver.setPrefix("/WEB-INF/jsp/view/");
+        internalResourceViewResolver.setSuffix(".jsp");
+        return internalResourceViewResolver;
+    }
+
+    @Bean
+    public FormSessionRepo formSessionRepo() {
+        return Mockito.spy(MockFormSessionRepo.class);
+    }
+
+    @Bean
+    public MenuSessionRepo menuSessionRepo() {
+        return Mockito.spy(MockMenuSessionRepo.class);
+    }
+
+    @Bean
+    public XFormService newFormRequest() {
+        return Mockito.mock(XFormService.class);
+    }
+
+    @Bean
+    public ValueOperations<String, Long> redisTemplateLong() {
+        return Mockito.mock(ValueOperations.class);
+    }
+
+    @Bean
+    public StringRedisTemplate redisTemplate() {
+        return Mockito.mock(StringRedisTemplate.class);
+    }
+
+    @Bean
+    public ValueOperations<String, Long> redisTemplateString() {
+        return Mockito.mock(ValueOperations.class);
+    }
+
+
+    @Bean
+    public ValueOperations<String, FormVolatilityRecord> redisVolatilityDict() {
+        return Mockito.mock(ValueOperations.class);
+    }
+
+    @Bean
+    public RestoreFactory restoreFactory() {
+        return Mockito.spy(RestoreFactory.class);
+    }
+
+    @Bean
+    public FormplayerStorageFactory storageFactory() {
+        return Mockito.spy(FormplayerStorageFactory.class);
+    }
+
+    @Bean
+    public InstallService installService(){
+        return Mockito.spy(TestInstallService.class);
+    }
+
+    @Bean
+    public SubmitService submitService() {
+        return Mockito.mock(SubmitService.class);
+    }
+
+    @Bean
+    public FormplayerSentry raven() {
+        return Mockito.spy(new FormplayerSentry(null));
+    }
+
+    @Bean
+    public LockRegistry userLockRegistry() {
+        return Mockito.spy(MockLockRegistry.class);
+    }
+
+    @Bean
+    public NewFormResponseFactory newFormResponseFactory(){
+        return Mockito.spy(NewFormResponseFactory.class);
+    }
+
+    @Bean
+    public FormplayerInstallerFactory installerFactory() {
+        return Mockito.spy(FormplayerInstallerFactory.class);
+    }
+
+    @Bean
+    public ArchiveFileRoot formplayerArchiveFileRoot() {
+        return Mockito.spy(ArchiveFileRoot.class);
+    }
+
+    @Bean
+    public QueryRequester queryRequester() {
+        return Mockito.mock(QueryRequester.class);
+    }
+
+    @Bean
+    public SyncRequester syncRequester() {
+        return Mockito.mock(SyncRequester.class);
+    }
+
+    @Bean
+    public CategoryTimingHelper categoryTimingHelper() {
+        return Mockito.spy(CategoryTimingHelper.class);
+    }
+
+    @Bean
+    public FormplayerHttpRequest request() {
+        return Mockito.mock(FormplayerHttpRequest.class);
+    }
+
+    @Bean
+    public RestTemplateBuilder restTemplateBuilder() {
+        return new RestTemplateBuilder()
+                .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
+                .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT));
+    }
+
+    @Bean
+    public StatsDClient datadogStatsDClient() {
+        return Mockito.mock(StatsDClient.class);
+    }
+
+    @Bean
+    public FormSendCalloutHandler formSendCalloutHandler() {
+        return Mockito.mock(FormplayerFormSendCalloutHandler.class);
+    }
+
+    @Bean
+    public MenuSessionRunnerService menuSessionRunnerService() {return Mockito.spy(MenuSessionRunnerService.class);}
+
+    @Bean
+    public MenuSessionFactory menuSessionFactory() {return Mockito.spy(MenuSessionFactory.class);}
+}
