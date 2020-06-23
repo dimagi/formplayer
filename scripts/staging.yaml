@@ -51,3 +51,4 @@ trunk: master
 name: autostaging
 branches:
   - errorHandling  # Shubham May 7
+  - kev/hipaa-logging  # Kevin Jun 19
