@@ -1,6 +1,6 @@
-package application;
+package org.commcare.formplayer.application;
 
-import beans.auth.HqUserDetailsBean;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,7 +10,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.util.ContentCachingResponseWrapper;
-import util.FormplayerHttpRequest;
+import org.commcare.formplayer.util.FormplayerHttpRequest;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

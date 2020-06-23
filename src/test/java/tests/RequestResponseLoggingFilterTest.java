@@ -1,7 +1,7 @@
 package tests;
 
-import application.RequestResponseLoggingFilter;
-import beans.auth.HqUserDetailsBean;
+import org.commcare.formplayer.application.RequestResponseLoggingFilter;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.apache.commons.logging.Log;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -11,8 +11,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import util.FormplayerHttpRequest;
-import utils.TestContext;
+import org.commcare.formplayer.util.FormplayerHttpRequest;
+import org.commcare.formplayer.utils.TestContext;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
