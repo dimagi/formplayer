@@ -1,6 +1,6 @@
 package org.commcare.formplayer.tests;
 
-import org.commcare.formplayer.application.Application;
+import org.commcare.formplayer.Application;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;

@@ -8,6 +8,8 @@ import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.StorageManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -23,6 +25,7 @@ import org.commcare.formplayer.util.UserUtils;
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
  */
 @Component
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     private String username;

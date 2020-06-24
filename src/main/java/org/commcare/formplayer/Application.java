@@ -1,4 +1,4 @@
-package org.commcare.formplayer.application;
+package org.commcare.formplayer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -6,6 +6,7 @@ import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -23,11 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@Configuration
-@ComponentScan
-@EnableAutoConfiguration
-@EnableWebMvc
-@Component
+@SpringBootApplication
 @EnableJpaRepositories(basePackages = {"repo.*", "objects.*"})
 @EntityScan("objects.*")
 public class Application {

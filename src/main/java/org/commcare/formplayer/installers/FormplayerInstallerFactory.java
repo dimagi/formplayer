@@ -6,6 +6,8 @@ import org.commcare.resources.model.installers.LocaleFileInstaller;
 import org.commcare.resources.model.installers.LoginImageInstaller;
 import org.commcare.resources.model.installers.MediaInstaller;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 
@@ -14,6 +16,7 @@ import org.commcare.formplayer.services.FormplayerStorageFactory;
  * The primary difference is that Formplayer overrides the storage() call to point to its own storage factory class
  */
 @Component
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FormplayerInstallerFactory extends InstallerFactory {
 
     @Autowired

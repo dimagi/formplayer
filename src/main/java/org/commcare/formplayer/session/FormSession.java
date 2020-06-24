@@ -65,7 +65,6 @@ import org.commcare.formplayer.util.Constants;
  *
  * @author willpride
  */
-@Component
 public class FormSession {
 
     Log log = LogFactory.getLog(FormSession.class);

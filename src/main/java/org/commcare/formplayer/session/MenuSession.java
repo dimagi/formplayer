@@ -58,8 +58,6 @@ import java.util.*;
  *
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
  */
-@EnableAutoConfiguration
-@Component
 public class MenuSession implements HereFunctionHandlerListener {
     private FormplayerConfigEngine engine;
     private UserSqlSandbox sandbox;

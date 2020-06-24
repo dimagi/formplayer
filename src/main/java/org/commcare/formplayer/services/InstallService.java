@@ -10,6 +10,8 @@ import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.util.Pair;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
@@ -22,6 +24,7 @@ import org.commcare.formplayer.util.SimpleTimer;
  * This can involve app download, install, and initialization of resources.
  */
 @Service
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class InstallService {
 
     @Autowired

@@ -35,7 +35,6 @@ import java.util.List;
  */
 @Api(value = "Debugger Controller", description = "Operations involving the CloudCare Debugger")
 @RestController
-@EnableAutoConfiguration
 public class DebuggerController extends AbstractBaseController {
 
     private int MAX_RECENT = 5;
