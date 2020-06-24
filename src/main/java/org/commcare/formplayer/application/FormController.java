@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -65,6 +66,7 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.SimpleTimer;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -178,23 +180,30 @@ public class FormController extends AbstractBaseController{
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
                                 "Puring cases took some time" : "Probably didn't have to purge cases");
-                ResponseEntity<String> submitResponse = submitService.submitForm(
-                        formEntrySession.getInstanceXml(),
-                        formEntrySession.getPostUrl()
-                );
 
-                if (!submitResponse.getStatusCode().is2xxSuccessful()) {
-                    submitResponseBean.setStatus("error");
-                    NotificationMessage notification = new NotificationMessage(
-                            "Form submission failed with error response" + submitResponse,
-                            true, NotificationMessage.Tag.submit);
-                    submitResponseBean.setNotification(notification);
-                    logNotification(notification, request);
-                    log.error("Submit response bean: " + submitResponseBean);
+                ResponseEntity<String> submitResponse;
+                try {
+                    submitResponse = submitService.submitForm(
+                            formEntrySession.getInstanceXml(),
+                            formEntrySession.getPostUrl()
+                    );
+                } catch (HttpClientErrorException e) {
+                    if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                        submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
+                    } else {
+                        submitResponseBean.setStatus("error");
+                        NotificationMessage notification = new NotificationMessage(
+                                "Form submission failed with error response: " + e.getStatusText(),
+                                true, NotificationMessage.Tag.submit);
+                        submitResponseBean.setNotification(notification);
+                        logNotification(notification, request);
+                        log.error("Submit response bean: " + submitResponseBean);
+                    }
                     return submitResponseBean;
-                } else {
-                    parseSubmitResponseMessage(submitResponse.getBody(), submitResponseBean);
                 }
+
+                parseSubmitResponseMessage(submitResponse.getBody(), submitResponseBean);
+
                 // Only delete session immediately after successful submit
                 deleteSession(submitRequestBean.getSessionId());
                 restoreFactory.commit();
