@@ -1,0 +1,39 @@
+package org.commcare.formplayer.tests;
+
+import org.commcare.formplayer.application.SQLiteProperties;
+import org.commcare.formplayer.beans.SyncDbResponseBean;
+import org.commcare.cases.model.Case;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.commcare.formplayer.sandbox.SqlSandboxUtils;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.sqlitedb.UserDB;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.utils.TestContext;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = TestContext.class)
+public class FilterTests extends BaseTestClass {
+
+    @Test
+    public void testSyncDb() throws Exception {
+
+        configureRestoreFactory("synctestdomain", "synctestuser");
+
+        SyncDbResponseBean syncDbResponseBean = syncDb();
+
+        assert(syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
+        assert(SqlSandboxUtils.databaseFolderExists(SQLiteProperties.getDataDir()));
+
+        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("synctestdomain","synctestuser", null));
+
+        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+
+        assert (15 == caseStorage.getNumRecords());
+
+        //TODO add ledgers, fixtures, etc.
+    }
+}
