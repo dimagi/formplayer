@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
-@ActiveProfiles("UnitTesting")
 public class CaseClaimTests extends BaseTestClass {
 
     @Override
