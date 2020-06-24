@@ -181,19 +181,18 @@ public class FormController extends AbstractBaseController{
                         purgeCasesTimer.durationInMs() > 2 ?
                                 "Puring cases took some time" : "Probably didn't have to purge cases");
 
-                ResponseEntity<String> submitResponse;
-                try {
-                    submitResponse = submitService.submitForm(
-                            formEntrySession.getInstanceXml(),
-                            formEntrySession.getPostUrl()
-                    );
-                } catch (HttpClientErrorException e) {
-                    if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                ResponseEntity<String> submitResponse = submitService.submitForm(
+                        formEntrySession.getInstanceXml(),
+                        formEntrySession.getPostUrl()
+                );
+
+                if (!submitResponse.getStatusCode().is2xxSuccessful()) {
+                    if (submitResponse.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
                         submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
                     } else {
                         submitResponseBean.setStatus("error");
                         NotificationMessage notification = new NotificationMessage(
-                                "Form submission failed with error response: " + e.getStatusText(),
+                                "Form submission failed with error response" + submitResponse,
                                 true, NotificationMessage.Tag.submit);
                         submitResponseBean.setNotification(notification);
                         logNotification(notification, request);
