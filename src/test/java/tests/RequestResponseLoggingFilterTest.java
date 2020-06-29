@@ -46,7 +46,7 @@ public class RequestResponseLoggingFilterTest {
         MockHttpServletResponse response = this.getHttpServletResponse(responseBody);
         FilterChain filterChain = this.getFilterChain(responseBody);
 
-        RequestResponseLoggingFilter reqRespFilter= new RequestResponseLoggingFilter(this.log);
+        RequestResponseLoggingFilter reqRespFilter= new RequestResponseLoggingFilter(this.log, true);
         reqRespFilter.doFilter(request, response, filterChain);
 
         verify(this.log).info(argThat(logMessage -> {
@@ -58,7 +58,6 @@ public class RequestResponseLoggingFilterTest {
                     ((JSONObject) logMessage).getString("requestBody").equals(requestBody);
 
         }));
-
     }
 
     private FormplayerHttpRequest getFormPlayerHttpRequest(String body, String user, String domain,
