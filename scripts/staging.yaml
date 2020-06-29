@@ -50,5 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-  - errorHandling  # Shubham May 7
   - kev/hipaa-logging  # Kevin Jun 19
+  - csims/namespacing  # Clayton Jun 23
+  - kev/hipaa-logging+csims/namespacing # Kevin Clayton Jun 28

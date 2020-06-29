@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.DefaultResponseErrorHandler;
@@ -34,6 +35,12 @@ public class SubmitService extends DefaultResponseErrorHandler {
         submitTimer.start();
         try {
             RestTemplate restTemplate = new RestTemplate();
+            restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
+                @Override
+                protected boolean hasError(HttpStatus statusCode) {
+                    return false;
+                }
+            });
             HttpEntity<?> entity = new HttpEntity<Object>(formXml, restoreFactory.getUserHeaders());
             return restTemplate.exchange(submitUrl,
                     HttpMethod.POST,
