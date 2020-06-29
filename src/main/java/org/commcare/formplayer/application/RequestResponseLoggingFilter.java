@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.GenericFilterBean;
@@ -26,6 +27,9 @@ import java.util.TimeZone;
 
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class RequestResponseLoggingFilter extends GenericFilterBean {
+
+    @Value("${sensitiveData.enableLogging:false}")
+    private boolean enablePhiLogging;
 
     private Log log = LogFactory.getLog(RequestResponseLoggingFilter.class);
 
@@ -72,7 +76,7 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
             logLineJson.put("loggingResponseError", e);
         } finally {
             // Always log and always prep the response for outbound connection
-            log.info(logLineJson);
+            this.log_sensitive(logLineJson);
             responseWrapper.copyBodyToResponse();
         }
     }
@@ -110,6 +114,12 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
         df.setTimeZone(tz);
         return df.format(new Date());
+    }
+
+    private void log_sensitive(Object msg) {
+        if (this.enablePhiLogging) {
+            log.info(msg);
+        }
     }
 
 }
