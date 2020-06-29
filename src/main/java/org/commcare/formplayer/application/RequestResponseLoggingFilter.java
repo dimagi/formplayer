@@ -6,7 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.GenericFilterBean;
@@ -77,7 +76,7 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
             logLineJson.put("loggingResponseError", e);
         } finally {
             // Always log and always prep the response for outbound connection
-            this.log_sensitive(logLineJson);
+            this.logSensitive(logLineJson);
             responseWrapper.copyBodyToResponse();
         }
     }
@@ -117,7 +116,7 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
         return df.format(new Date());
     }
 
-    private void log_sensitive(Object msg) {
+    private void logSensitive(Object msg) {
         if (this.enableSensitiveLogging) {
             log.info(msg);
         }

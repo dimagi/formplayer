@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -58,6 +59,18 @@ public class RequestResponseLoggingFilterTest {
                     ((JSONObject) logMessage).getString("requestBody").equals(requestBody);
 
         }));
+    }
+
+    @Test
+    public void testDoFilterNoLogging() throws IOException, ServletException {
+        FormplayerHttpRequest request = this.getFormPlayerHttpRequest("b", "u", "b", "u");
+        MockHttpServletResponse response = this.getHttpServletResponse("b");
+        FilterChain filterChain = this.getFilterChain("b");
+
+        RequestResponseLoggingFilter reqRespFilter= new RequestResponseLoggingFilter(this.log, false);
+        reqRespFilter.doFilter(request, response, filterChain);
+
+        verify(this.log, never()).info(Mockito.any());
     }
 
     private FormplayerHttpRequest getFormPlayerHttpRequest(String body, String user, String domain,
