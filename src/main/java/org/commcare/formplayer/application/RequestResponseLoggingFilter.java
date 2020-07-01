@@ -52,6 +52,12 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
+        // If enableSensitiveLogging is false, skip all logging logic.
+        if (!this.enableSensitiveLogging) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // json corresponding to the log ine and passed around to log as much as possible in case of exceptions.
         JSONObject logLineJson = new JSONObject();
 
@@ -76,7 +82,7 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
             logLineJson.put("loggingResponseError", e);
         } finally {
             // Always log and always prep the response for outbound connection
-            this.logSensitive(logLineJson);
+            log.info(logLineJson);
             responseWrapper.copyBodyToResponse();
         }
     }
@@ -115,11 +121,4 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
         df.setTimeZone(tz);
         return df.format(new Date());
     }
-
-    private void logSensitive(Object msg) {
-        if (this.enableSensitiveLogging) {
-            log.info(msg);
-        }
-    }
-
 }
