@@ -1,4 +1,4 @@
-package org.commcare.formplayer.db.migration;
+package db.migration;
 
 import java.util.Arrays;
 
