@@ -60,6 +60,7 @@ public class Constants {
     public static final String ANSWER_RESPONSE_STATUS_POSITIVE = "accepted";
     public static final String ANSWER_RESPONSE_STATUS_NEGATIVE = "validation-error";
     public static final String SYNC_RESPONSE_STATUS_POSITIVE = "success";
+    public static final String SUBMIT_RESPONSE_TOO_MANY_REQUESTS = "too-many-requests";
 
     //Debug output request types
     public static final String BASIC_NO_TRACE = "basic";

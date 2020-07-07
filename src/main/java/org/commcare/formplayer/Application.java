@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.LocalizerManager;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,6 +29,10 @@ import java.io.IOException;
 @EnableJpaRepositories(basePackages = {"repo.*", "objects.*"})
 @EntityScan("objects.*")
 public class Application {
+
+    // Allows logging of sensitive data.
+    @Value("${sensitiveData.enableLogging:false}")
+    private boolean enableSensitiveLogging;
 
     private final Log log = LogFactory.getLog(Application.class);
 
@@ -55,5 +60,10 @@ public class Application {
     @Bean
     public Filter loggingFilter() {
         return new ResponseLoggingFilter();
+    }
+
+    @Bean
+    public Filter reqRespLoggingFilter() {
+        return new RequestResponseLoggingFilter(null, enableSensitiveLogging);
     }
 }
