@@ -2,6 +2,7 @@ package org.commcare.formplayer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.application.RequestResponseLoggingFilter;
 import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.springframework.beans.factory.annotation.Value;
