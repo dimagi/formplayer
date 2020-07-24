@@ -40,7 +40,7 @@ public class Application {
     private final Log log = LogFactory.getLog(Application.class);
 
     public static void main(String[] args) {
-        PrototypeUtils.setupPrototypes();
+        PrototypeUtils.setupThreadLocalPrototypes();
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         LocalizerManager.setUseThreadLocalStrategy(true);
         ReferenceHandler.setUseThreadLocalStrategy(true);
