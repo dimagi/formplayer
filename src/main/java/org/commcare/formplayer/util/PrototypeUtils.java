@@ -32,7 +32,7 @@ import org.javarosa.xpath.expr.*;
  * Created by willpride on 2/8/16.
  */
 public class PrototypeUtils {
-    public static void setupPrototypes(){
+    public static void setupThreadLocalPrototypes(){
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         String[] prototypes = new String[] {BasicInstaller.class.getName(),
                 LocaleFileInstaller.class.getName(),
@@ -103,5 +103,7 @@ public class PrototypeUtils {
             PrototypeManager.registerPrototype(clazz.getName());
         }
         PrototypeManager.registerPrototypes(prototypes);
+
+        PrototypeManager.useThreadLocalStrategy(true);
     }
 }
