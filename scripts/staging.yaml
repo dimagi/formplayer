@@ -53,3 +53,4 @@ branches:
   - kev/hipaa-logging  # Kevin Jun 19
   - csims/namespacing  # Clayton Jun 23
   - kev/hipaa-logging+csims/namespacing # Kevin Clayton Jun 28
+  - dmr/sqliteOptionsString  # Danny Jul 24
