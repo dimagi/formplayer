@@ -7,6 +7,7 @@ import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import io.sentry.SentryClientFactory;
 import io.sentry.dsn.InvalidDsnException;
+import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -68,8 +69,12 @@ public class WebAppContext implements WebMvcConfigurer {
     @Value("${sentry.dsn:}")
     private String ravenDsn;
 
+    @Value("${sqlite.optionsString:?journal_mode=MEMORY}")
+    private String sqliteOptionsString;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        SqlSandboxUtils.optionsString = sqliteOptionsString;
         registry.addResourceHandler("/static/**").addResourceLocations("/static/");
         registry.addResourceHandler("swagger-ui.html")
                 .addResourceLocations("classpath:/META-INF/resources/");

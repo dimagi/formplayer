@@ -13,6 +13,8 @@ import java.io.File;
  */
 public class SqlSandboxUtils {
 
+    public static String optionsString;
+
     public static void deleteDatabaseFolder(String path) {
         File databaseFolder = new File(path);
         deleteDatabaseFolder(databaseFolder);
@@ -47,7 +49,7 @@ public class SqlSandboxUtils {
         try {
             Class.forName("org.sqlite.JDBC");
             SQLiteConnectionPoolDataSource dataSource = new SQLiteConnectionPoolDataSource();
-            dataSource.setUrl("jdbc:sqlite:" + databasePath.getPath() + "?journal_mode=MEMORY");
+            dataSource.setUrl("jdbc:sqlite:" + databasePath.getPath() + optionsString);
             return dataSource;
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);

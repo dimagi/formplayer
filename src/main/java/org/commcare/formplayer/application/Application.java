@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.commcare.formplayer.util.PrototypeUtils;
+import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -37,9 +38,13 @@ public class Application {
     @Value("${sensitiveData.enableLogging:false}")
     private boolean enableSensitiveLogging;
 
+    @Value("${sqlite.optionsString:?journal_mode=MEMORY}")
+    private static String sqliteOptionsString;
+
     private final Log log = LogFactory.getLog(Application.class);
 
     public static void main(String[] args) {
+        SqlSandboxUtils.optionsString = sqliteOptionsString;
         PrototypeUtils.setupThreadLocalPrototypes();
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         LocalizerManager.setUseThreadLocalStrategy(true);
