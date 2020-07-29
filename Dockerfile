@@ -1,4 +1,4 @@
-FROM openjdk:7-jre-slim
+FROM openjdk:8-jre-slim
 LABEL maintainer="Dimagi <devops@dimagi.com>"
 
 # Environment variable WEB_HOST is used for setting where Django is
