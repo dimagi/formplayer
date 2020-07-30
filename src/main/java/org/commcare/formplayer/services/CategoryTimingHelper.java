@@ -1,6 +1,10 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.session.MenuSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.commcare.formplayer.util.*;
@@ -9,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 
 @Component
 public class CategoryTimingHelper {
+    private final Log log = LogFactory.getLog(CategoryTimingHelper.class);
+
     @Autowired
     private HttpServletRequest request;
 
@@ -63,5 +69,10 @@ public class CategoryTimingHelper {
                 "category:" + category,
                 "request:" + RequestUtils.getRequestEndpoint(request)
         );
+
+        log.debug(String.format("Timing Event[%s][%s]: %dms",
+                RequestUtils.getRequestEndpoint(request),
+                category,
+                timing.durationInMs()));
     }
 }

@@ -218,15 +218,18 @@ public class RestoreFactory {
         while (true) {
             try {
                 UserSqlSandbox sandbox = getSqlSandbox();
-                SimpleTimer parseTimer = new SimpleTimer();
-                parseTimer.start();
                 FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
                 InputStream restoreStream = getRestoreXml();
+
+                SimpleTimer parseTimer = new SimpleTimer();
+                parseTimer.start();
+
                 setAutoCommit(false);
                 ParseUtils.parseIntoSandbox(restoreStream, factory, true, true);
                 hasRestored = true;
                 commit();
                 setAutoCommit(true);
+
                 parseTimer.end();
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
                 sandbox.writeSyncToken();
