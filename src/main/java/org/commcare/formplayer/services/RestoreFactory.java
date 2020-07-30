@@ -206,7 +206,7 @@ public class RestoreFactory {
             return getSqlSandbox();
         } else {
             getSQLiteDB().createDatabaseFolder();
-            return restoreUser();
+            return performTimedSync(false);
         }
     }
 
