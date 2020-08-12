@@ -50,4 +50,4 @@
 trunk: master
 name: autostaging
 branches:
-  - dmr/sqliteOptionsString  # Danny Jul 24
+  - dmr/remove-datadog-user-tag  # Danny Aug 12
