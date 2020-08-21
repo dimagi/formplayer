@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.TestContext;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.mockito.Matchers.anyString;
 
@@ -31,7 +32,7 @@ public class SubmitTests extends BaseTestClass {
 
         UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
         SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
-        assert(caseStorage.getNumRecords() == 15);
+        assertThat(caseStorage.getNumRecords()).isEqualTo(15);
 
         Mockito.doReturn(new ResponseEntity<>(HttpStatus.BAD_REQUEST))
                 .when(submitServiceMock).submitForm(anyString(), anyString());

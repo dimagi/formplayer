@@ -185,6 +185,9 @@ public class FormplayerSentry {
     }
 
     public void sendRavenException(Exception exception, Event.Level level) {
+        if (sentryClient == null) {
+            return;
+        }
         if (request != null) {
             setDomain(request.getDomain());
 

@@ -5,19 +5,22 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.SimpleTimer;
+import org.springframework.web.context.annotation.RequestScope;
 
 import java.io.IOException;
 
 /**
  * Service that handles form submission to CommCareHQ
  */
+@Service
+@RequestScope
 public class SubmitService extends DefaultResponseErrorHandler {
 
     @Autowired
@@ -25,6 +28,9 @@ public class SubmitService extends DefaultResponseErrorHandler {
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
+
+    @Autowired
+    RestTemplate errorPassthroughRestTemplate;
 
     private final Log log = LogFactory.getLog(SubmitService.class);
 
@@ -34,15 +40,8 @@ public class SubmitService extends DefaultResponseErrorHandler {
         submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ);
         submitTimer.start();
         try {
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
-                @Override
-                protected boolean hasError(HttpStatus statusCode) {
-                    return false;
-                }
-            });
             HttpEntity<?> entity = new HttpEntity<Object>(formXml, restoreFactory.getUserHeaders());
-            return restTemplate.exchange(submitUrl,
+            return errorPassthroughRestTemplate.exchange(submitUrl,
                     HttpMethod.POST,
                     entity, String.class);
         } finally {
@@ -56,6 +55,7 @@ public class SubmitService extends DefaultResponseErrorHandler {
 
     // Overriding the default error handler allows us to perform error handling in FormController
     // rather than at the Spring level
+    // CS: I am fairly sure this code does nothing and can be removed
     @Override
     public void handleError(ClientHttpResponse response) throws IOException {
         log.error("Error submitting form: " + response);
