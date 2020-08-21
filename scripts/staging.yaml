@@ -51,3 +51,4 @@ trunk: master
 name: autostaging
 branches:
   - dmr/remove-datadog-user-tag  # Danny Aug 12
+  - ctsims/use_spring_correctly  # Danny/Clayton Aug 21
