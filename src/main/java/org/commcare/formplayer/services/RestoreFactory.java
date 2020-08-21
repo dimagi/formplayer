@@ -22,6 +22,8 @@ import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
@@ -30,6 +32,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -65,6 +68,7 @@ import java.util.concurrent.TimeUnit;
  * then retrieves and returns the restore XML.
  */
 @Component
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RestoreFactory {
     @Value("${commcarehq.host}")
     private String host;
@@ -104,7 +108,7 @@ public class RestoreFactory {
     private FormplayerStorageFactory storageFactory;
 
     @Autowired
-    private RestTemplateBuilder restTemplateBuilder;
+    private RestTemplate restTemplate;
 
     @Autowired
     private RedisTemplate redisTemplateLong;
@@ -464,7 +468,7 @@ public class RestoreFactory {
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
         downloadRestoreTimer.start();
         try {
-            response = restTemplateBuilder.build().exchange(
+            response = restTemplate.exchange(
                     restoreUrl,
                     HttpMethod.GET,
                     new HttpEntity<String>(headers),

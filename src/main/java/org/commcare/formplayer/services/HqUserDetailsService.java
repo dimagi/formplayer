@@ -4,30 +4,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.DefaultResponseErrorHandler;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-
 import org.commcare.formplayer.beans.auth.HqSessionKeyBean;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.exceptions.UserDetailsException;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class HqUserDetailsService {
     private final Log log = LogFactory.getLog(HqUserDetailsService.class);
-    private final RestTemplate restTemplate;
-    private final RestTemplateBuilder builder;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -38,15 +31,8 @@ public class HqUserDetailsService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public HqUserDetailsService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-        this.builder = null;
-    }
-
-    public HqUserDetailsService(RestTemplateBuilder builder) {
-        this.builder = builder;
-        this.restTemplate = null;
-    }
+    @Autowired
+    private RestTemplate restTemplate;
 
     public HqUserDetailsBean getUserDetails(String domain, String sessionKey) {
         HttpHeaders headers = new HttpHeaders();
@@ -58,18 +44,13 @@ public class HqUserDetailsService {
             throw new UserDetailsException(e);
         }
         HttpEntity<String> request = new HttpEntity<>(data, headers);
-        RestTemplate template = builder == null ? restTemplate : builder.build();
-        template.setErrorHandler(new DefaultResponseErrorHandler()  {
-            @Override
-            public void handleError(ClientHttpResponse response) throws IOException {
-                if(response.getRawStatusCode() == 404) {
-                    throw new SessionAuthUnavailableException();
-                }
-                super.handleError(response);
-            }
-        });
-        HqUserDetailsBean userDetails = template.postForObject(getSessionDetailsUrl(), request, HqUserDetailsBean.class);
-        return userDetails;
+
+        try {
+            HqUserDetailsBean userDetails = restTemplate.postForObject(getSessionDetailsUrl(), request, HqUserDetailsBean.class);
+            return userDetails;
+        } catch(HttpClientErrorException.NotFound nfe) {
+            throw new SessionAuthUnavailableException();
+        }
     }
 
     private String getSessionDetailsUrl() {

@@ -4,14 +4,16 @@ import com.timgroup.statsd.StatsDClient;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.session.MenuSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.commcare.formplayer.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 
 @Component
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CategoryTimingHelper {
     private final Log log = LogFactory.getLog(CategoryTimingHelper.class);
 

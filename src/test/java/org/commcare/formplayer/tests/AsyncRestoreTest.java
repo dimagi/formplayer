@@ -1,15 +1,15 @@
 package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.exceptions.AsyncRetryException;
+import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.TestContext;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.utils.FileUtils;
-import org.commcare.formplayer.utils.TestContext;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

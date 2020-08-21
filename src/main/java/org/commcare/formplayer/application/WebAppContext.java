@@ -1,17 +1,41 @@
 package org.commcare.formplayer.application;
 
-import org.commcare.formplayer.aspects.*;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
+
+import org.commcare.formplayer.aspects.AppInstallAspect;
+import org.commcare.formplayer.aspects.ConfigureStorageFromSessionAspect;
+import org.commcare.formplayer.aspects.LockAspect;
+import org.commcare.formplayer.aspects.LoggingAspect;
+import org.commcare.formplayer.aspects.MetricsAspect;
+import org.commcare.formplayer.aspects.SetBrowserValuesAspect;
+import org.commcare.formplayer.aspects.UserRestoreAspect;
 import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
-import org.commcare.formplayer.installers.FormplayerInstallerFactory;
-import io.sentry.SentryClientFactory;
-import io.sentry.dsn.InvalidDsnException;
+import org.commcare.formplayer.objects.FormVolatilityRecord;
+import org.commcare.formplayer.repo.FormSessionRepo;
+import org.commcare.formplayer.repo.MenuSessionRepo;
+import org.commcare.formplayer.repo.impl.PostgresFormSessionRepo;
+import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
+import org.commcare.formplayer.services.BrowserValuesProvider;
+import org.commcare.formplayer.services.FallbackSentryReporter;
+import org.commcare.formplayer.services.FormattedQuestionsService;
+import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
+import org.commcare.formplayer.services.FormplayerLockRegistry;
+import org.commcare.formplayer.services.QueryRequester;
+import org.commcare.formplayer.services.SubmitService;
+import org.commcare.formplayer.services.SyncRequester;
+import org.commcare.formplayer.services.XFormService;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -19,6 +43,8 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -28,25 +54,23 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
-import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.repo.FormSessionRepo;
-import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.impl.PostgresFormSessionRepo;
-import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
-import org.commcare.formplayer.services.*;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
-
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import io.sentry.SentryClientFactory;
+import io.sentry.dsn.InvalidDsnException;
+
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
-@EnableAutoConfiguration
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"application.*", "repo.*", "objects.*", "requests.*", "session.*", "installers.*"})
+@ComponentScan(basePackages = {"org.commcare.formplayer.application.*",
+        "org.commcare.formplayer.repo.*",
+        "org.commcare.formplayer.objects.*",
+        "org.commcare.formplayer.requests.*",
+        "org.commcare.formplayer.session.*",
+        "org.commcare.formplayer.installers.*"})
 @EnableAspectJAutoProxy
 public class WebAppContext implements WebMvcConfigurer {
 
@@ -209,30 +233,6 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public FallbackSentryReporter sentryReporter() { return new FallbackSentryReporter(); }
 
-    @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public CategoryTimingHelper categoryTimingHelper() {
-        return new CategoryTimingHelper();
-    }
-
-    @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public RestoreFactory restoreFactory() {
-        return new RestoreFactory();
-    }
-
-    @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public FormplayerStorageFactory storageFactory() {
-        return new FormplayerStorageFactory();
-    }
-
-    @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public InstallService installService(){
-        return new InstallService();
-    }
-
     @Bean FormattedQuestionsService formattedQuestionsService() {
         return new FormattedQuestionsService();
     }
@@ -241,17 +241,6 @@ public class WebAppContext implements WebMvcConfigurer {
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public SubmitService submitService(){
         return new SubmitService();
-    }
-
-    @Bean
-    public NewFormResponseFactory newFormResponseFactory(){
-        return new NewFormResponseFactory();
-    }
-
-    @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    FormplayerInstallerFactory installerFactory() {
-        return new FormplayerInstallerFactory();
     }
 
     @Bean
@@ -310,23 +299,16 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public HqUserDetailsService userDetailsService(RestTemplateBuilder builder) { return new HqUserDetailsService(builder); }
-
-    @Bean
-    public RestTemplateBuilder restTemplateBuilder() {
-        return new RestTemplateBuilder()
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
-                .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT));
+                .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT))
+                .requestFactory(OkHttp3ClientHttpRequestFactory.class)
+                .build();
     }
 
     @Bean
     public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
         return new FormplayerFormSendCalloutHandler();
     }
-
-    @Bean
-    public MenuSessionRunnerService menuSessionRunnerService() {return new MenuSessionRunnerService();}
-
-    @Bean
-    public MenuSessionFactory menuSessionFactory() {return new MenuSessionFactory();}
 }

@@ -1,8 +1,13 @@
 package org.commcare.formplayer.tests;
 
+import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
-import org.commcare.cases.model.Case;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.sqlitedb.UserDB;
+import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.TestContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -11,11 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.sqlitedb.UserDB;
-import org.commcare.formplayer.utils.FileUtils;
-import org.commcare.formplayer.utils.TestContext;
 
 import java.util.Hashtable;
 

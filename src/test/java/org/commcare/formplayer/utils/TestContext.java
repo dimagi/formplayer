@@ -1,25 +1,12 @@
 package org.commcare.formplayer.utils;
 
 import com.timgroup.statsd.StatsDClient;
+
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.mocks.MockFormSessionRepo;
 import org.commcare.formplayer.mocks.MockLockRegistry;
 import org.commcare.formplayer.mocks.MockMenuSessionRepo;
 import org.commcare.formplayer.mocks.TestInstallService;
-import org.commcare.modern.reference.ArchiveFileRoot;
-import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.integration.support.locks.LockRegistry;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
-
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
@@ -38,10 +25,22 @@ import org.commcare.formplayer.services.XFormService;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerHttpRequest;
 import org.commcare.formplayer.util.FormplayerSentry;
+import org.commcare.modern.reference.ArchiveFileRoot;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.integration.support.locks.LockRegistry;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import java.time.Duration;
 
-@Configuration
 public class TestContext {
 
     public TestContext() {
@@ -168,10 +167,10 @@ public class TestContext {
     }
 
     @Bean
-    public RestTemplateBuilder restTemplateBuilder() {
+    public RestTemplate restTemplate() {
         return new RestTemplateBuilder()
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
-                .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT));
+                .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT)).build();
     }
 
     @Bean
