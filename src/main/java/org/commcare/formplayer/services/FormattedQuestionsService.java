@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -15,10 +16,17 @@ import org.springframework.web.client.RestTemplate;
  * Service that gets HTML formatted questions to display to the user
  * Implemented by by requesting HQ to generate template
  */
+@Component
 public class FormattedQuestionsService {
 
     @Autowired
     RestoreFactory restoreFactory;
+
+    @Value("${commcarehq.host}")
+    private String host;
+
+    @Autowired
+    RestTemplate restTemplate;
 
     public class QuestionResponse {
         private String formattedQuestions;
@@ -36,11 +44,8 @@ public class FormattedQuestionsService {
             return questionList;
         }
     }
-    @Value("${commcarehq.host}")
-    private String host;
 
     public QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml) {
-        RestTemplate restTemplate = new RestTemplate();
         MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
 
         body.add("instanceXml", instanceXml);
