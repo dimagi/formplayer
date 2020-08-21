@@ -23,6 +23,10 @@ public class RestTemplateConfig {
     }
 
     @Bean
+    /**
+     * RestTemplate which will pass through invalid response codes, rather than
+     * throwing exceptions
+     */
     public RestTemplate errorPassthroughRestTemplate(RestTemplateBuilder builder) {
         RestTemplate template = builder
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
