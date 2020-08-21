@@ -29,7 +29,6 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -43,8 +42,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -239,12 +236,6 @@ public class WebAppContext implements WebMvcConfigurer {
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public SubmitService submitService(){
-        return new SubmitService();
-    }
-
-    @Bean
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     BrowserValuesProvider browserValuesProvider() {
         return new BrowserValuesProvider();
     }
@@ -296,15 +287,6 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public SyncRequester syncRequester() {
         return new SyncRequester();
-    }
-
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder
-                .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
-                .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT))
-                .requestFactory(OkHttp3ClientHttpRequestFactory.class)
-                .build();
     }
 
     @Bean
