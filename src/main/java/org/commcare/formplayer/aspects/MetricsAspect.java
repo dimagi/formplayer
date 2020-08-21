@@ -45,13 +45,11 @@ public class MetricsAspect {
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         String domain = "<unknown>";
-        String user = "<unknown>";
 
         String requestPath = RequestUtils.getRequestEndpoint(request);
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
-            user = bean.getUsernameDetail();
         }
 
         SimpleTimer timer = new SimpleTimer();
@@ -62,7 +60,6 @@ public class MetricsAspect {
         datadogStatsDClient.increment(
                 Constants.DATADOG_REQUESTS,
                 "domain:" + domain,
-                "user:" + user,
                 "request:" + requestPath,
                 "duration:" + timer.getDurationBucket(),
                 "unblocked_time:" + getUnblockedTimeBucket(timer),
@@ -76,7 +73,6 @@ public class MetricsAspect {
                 Constants.DATADOG_TIMINGS,
                 timer.durationInMs(),
                 "domain:" + domain,
-                "user:" + user,
                 "request:" + requestPath,
                 "duration:" + timer.getDurationBucket(),
                 "unblocked_time:" + getUnblockedTimeBucket(timer),

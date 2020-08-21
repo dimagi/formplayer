@@ -106,10 +106,17 @@ public class FormSession {
         initLocale();
     }
 
+    // Session object for ongoing sessions
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
                        FormSendCalloutHandler formSendCalloutHandler,
                        FormplayerStorageFactory storageFactory) throws Exception{
+
+        //We don't want ongoing form sessions to change their db state underneath in the middle,
+        //so suppress continuous syncs. Eventually this should likely go into the bean connector
+        // for FormController endpoints rather than this config.
+        restoreFactory.setPermitAggressiveSyncs(false);
+
         this.username = session.getUsername();
         this.asUser = session.getAsUser();
         this.appId = session.getAppId();

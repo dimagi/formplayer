@@ -165,7 +165,7 @@ public class BaseTestClass {
         mapper = new ObjectMapper();
         storageFactoryMock.getSQLiteDB().closeConnection();
         restoreFactoryMock.getSQLiteDB().closeConnection();
-        PrototypeUtils.setupPrototypes();
+        PrototypeUtils.setupThreadLocalPrototypes();
         LocalizerManager.setUseThreadLocalStrategy(true);
         new SQLiteProperties().setDataDir("testdbs/");
         MockTimezoneProvider tzProvider = new MockTimezoneProvider();

@@ -78,6 +78,8 @@ public class RestoreFactory {
     private String domain;
     private HqAuth hqAuth;
 
+    private boolean permitAggressiveSyncs = true;
+
     public static final String FREQ_DAILY = "freq-daily";
     public static final String FREQ_WEEKLY = "freq-weekly";
     public static final String FREQ_NEVER = "freq-never";
@@ -210,7 +212,7 @@ public class RestoreFactory {
             return getSqlSandbox();
         } else {
             getSQLiteDB().createDatabaseFolder();
-            return restoreUser();
+            return performTimedSync(false);
         }
     }
 
@@ -222,15 +224,18 @@ public class RestoreFactory {
         while (true) {
             try {
                 UserSqlSandbox sandbox = getSqlSandbox();
-                SimpleTimer parseTimer = new SimpleTimer();
-                parseTimer.start();
                 FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
                 InputStream restoreStream = getRestoreXml();
+
+                SimpleTimer parseTimer = new SimpleTimer();
+                parseTimer.start();
+
                 setAutoCommit(false);
                 ParseUtils.parseIntoSandbox(restoreStream, factory, true, true);
                 hasRestored = true;
                 commit();
                 setAutoCommit(true);
+
                 parseTimer.end();
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
                 sandbox.writeSyncToken();
@@ -321,7 +326,8 @@ public class RestoreFactory {
 
     public boolean useAggressiveSyncTiming() {
         try {
-            return storageFactory.getPropertyManager().isSyncAfterFormEnabled();
+            return storageFactory.getPropertyManager().isSyncAfterFormEnabled() &&
+                    permitAggressiveSyncs;
         } catch (RuntimeException e) {
             // In cases where we don't have access to the PropertyManager, such as sync-db, this call
             // throws a RuntimeException
@@ -615,6 +621,13 @@ public class RestoreFactory {
         }
         String fullUrl = host + restoreUrl;
         return new Pair<>(fullUrl, headers);
+    }
+
+    /**
+     * Configures whether restores through this factory should support 'aggressive' syncs.
+     */
+    public void setPermitAggressiveSyncs(boolean permitAggressiveSyncs) {
+        this.permitAggressiveSyncs = permitAggressiveSyncs;
     }
 
     @PreDestroy

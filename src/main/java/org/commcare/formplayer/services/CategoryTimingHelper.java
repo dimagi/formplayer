@@ -1,6 +1,9 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -12,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CategoryTimingHelper {
+    private final Log log = LogFactory.getLog(CategoryTimingHelper.class);
 
     @Autowired
     private HttpServletRequest request;
@@ -67,5 +71,10 @@ public class CategoryTimingHelper {
                 "category:" + category,
                 "request:" + RequestUtils.getRequestEndpoint(request)
         );
+
+        log.debug(String.format("Timing Event[%s][%s]: %dms",
+                RequestUtils.getRequestEndpoint(request),
+                category,
+                timing.durationInMs()));
     }
 }
