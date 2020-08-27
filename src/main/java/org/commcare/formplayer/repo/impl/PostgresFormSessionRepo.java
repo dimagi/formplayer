@@ -57,7 +57,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             log.info("Beginning state form session purge");
             long start = System.currentTimeMillis();
             int deletedRows = this.jdbcTemplate.update(deleteQuery);
-            long elapsed = (System.currentTimeMillis() - start) / 1000;
+            long elapsed = System.currentTimeMillis() - start;
             log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
         } catch (Exception e) {
             // Don't crash for this. Not fatal and prevents start-up
