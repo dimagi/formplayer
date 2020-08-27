@@ -54,7 +54,11 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             String deleteQuery = replaceTableName(
                     "delete from %s where custom_safe_cast(dateopened, '2011-01-01'::timestamp) < NOW() - INTERVAL '7 days';"
             );
-            this.jdbcTemplate.execute(deleteQuery);
+            log.info("Beginning state form session purge");
+            long start = System.currentTimeMillis();
+            int deletedRows = this.jdbcTemplate.update(deleteQuery);
+            long elapsed = System.currentTimeMillis() - start;
+            log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
         } catch (Exception e) {
             // Don't crash for this. Not fatal and prevents start-up
             log.error("Exception purge form sessions", e);
