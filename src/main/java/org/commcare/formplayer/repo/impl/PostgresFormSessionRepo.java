@@ -64,6 +64,10 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
                 int deletedRows = this.jdbcTemplate.update(deleteQuery);
                 long elapsed = System.currentTimeMillis() - start;
                 log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
+            } else {
+                log.debug(String.format("Skipping stale session purge due to current trigger " +
+                        "config '%s'. To enable, set " +
+                        "commcare.formplayer.purge.trigger=startup", purgeConfig));
             }
         } catch (Exception e) {
             // Don't crash for this. Not fatal and prevents start-up
