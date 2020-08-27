@@ -6,6 +6,7 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,6 +38,9 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Value("${commcare.formplayer.purge.trigger}")
+    private String purgeConfig;
+
     @PostConstruct
     public void purgeFormSessions() {
         // Modeled on https://stackoverflow.com/a/6730401/2820312
@@ -54,11 +58,13 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             String deleteQuery = replaceTableName(
                     "delete from %s where custom_safe_cast(dateopened, '2011-01-01'::timestamp) < NOW() - INTERVAL '7 days';"
             );
-            log.info("Beginning state form session purge");
-            long start = System.currentTimeMillis();
-            int deletedRows = this.jdbcTemplate.update(deleteQuery);
-            long elapsed = System.currentTimeMillis() - start;
-            log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
+            if ("startup".equals(purgeConfig)) {
+                log.info("Beginning state form session purge");
+                long start = System.currentTimeMillis();
+                int deletedRows = this.jdbcTemplate.update(deleteQuery);
+                long elapsed = System.currentTimeMillis() - start;
+                log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
+            }
         } catch (Exception e) {
             // Don't crash for this. Not fatal and prevents start-up
             log.error("Exception purge form sessions", e);
