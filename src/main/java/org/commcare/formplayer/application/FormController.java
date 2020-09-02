@@ -122,7 +122,9 @@ public class FormController extends AbstractBaseController{
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         formEntrySession.changeLocale(changeLocaleBean.getLocale());
         updateSession(formEntrySession, serializableFormSession);
-        return formEntrySession.getCurrentJSON();
+        FormEntryResponseBean responseBean = formEntrySession.getCurrentJSON();
+        responseBean.setTitle(formEntrySession.getTitle());
+        return responseBean;
     }
 
     @ApiOperation(value = "Answer the question at the given index")
