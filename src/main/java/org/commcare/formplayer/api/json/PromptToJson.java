@@ -35,7 +35,6 @@ public class PromptToJson {
         parseCaption(prompt, questionJson);
         questionJson.put("help", jsonNullIfNull(prompt.getHelpText()));
         questionJson.put("binding", jsonNullIfNull(prompt.getQuestion().getBind().getReference().toString()));
-        questionJson.put("style", jsonNullIfNull(parseStyle(prompt)));
         questionJson.put("datatype", jsonNullIfNull(parseDataType(prompt)));
         questionJson.put("control", jsonNullIfNull(prompt.getControlType()));
         questionJson.put("required", prompt.isRequired() ? 1 : 0);
@@ -80,6 +79,7 @@ public class PromptToJson {
                 return obj;
             case FormEntryController.EVENT_QUESTION:
                 obj.put("type", "question");
+                obj.put("style", jsonNullIfNull(parseStyle(model)));
                 parseQuestion(model.getQuestionPrompt(), obj);
                 return obj;
             case FormEntryController.EVENT_REPEAT_JUNCTURE:
@@ -90,6 +90,7 @@ public class PromptToJson {
                 // we're in a subgroup
                 parseCaption(model.getCaptionPrompt(), obj);
                 obj.put("type", "sub-group");
+                obj.put("style", jsonNullIfNull(parseStyle(model)));
                 obj.put("repeatable", false);
                 break;
             case FormEntryController.EVENT_REPEAT:
@@ -201,8 +202,10 @@ public class PromptToJson {
 
     //TODO WSP: What the fuck is drew doing XFormPlayer parse_style_info
     // https://github.com/dimagi/touchforms/blob/master/touchforms/backend/xformplayer.py#L400
-    private static JSONObject parseStyle(FormEntryPrompt prompt) {
+    private static JSONObject parseStyle(FormEntryModel model) {
+        FormEntryCaption prompt = model.getCaptionPrompt();
         String hint = prompt.getAppearanceHint();
+
         if (hint == null) {
             return null;
         }
