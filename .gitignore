@@ -6,6 +6,7 @@ gradle/
 *.DS_STORE
 *.idea/
 *.iml
+*.swp
 __pycache__
 dbs/*
 gradle.properties
