@@ -72,20 +72,20 @@ public class PromptToJson {
         switch (status) {
             case FormEntryController.EVENT_BEGINNING_OF_FORM:
                 obj.put("type", "form-start");
-                return obj;
+                break;
             case FormEntryController.EVENT_END_OF_FORM:
                 obj.put("ix", ">");
                 obj.put("type", "form-complete");
-                return obj;
+                break;
             case FormEntryController.EVENT_QUESTION:
                 obj.put("type", "question");
                 obj.put("style", jsonNullIfNull(parseStyle(model)));
                 parseQuestion(model.getQuestionPrompt(), obj);
-                return obj;
+                break;
             case FormEntryController.EVENT_REPEAT_JUNCTURE:
                 obj.put("type", "repeat-juncture");
                 parseRepeatJuncture(model, obj, ix);
-                return obj;
+                break;
             case FormEntryController.EVENT_GROUP:
                 // we're in a subgroup
                 parseCaption(model.getCaptionPrompt(), obj);
