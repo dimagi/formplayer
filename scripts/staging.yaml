@@ -51,3 +51,4 @@ trunk: master
 name: autostaging
 branches:
   - jls/appearance-for-groups    # Jenny Sept 4
+  - ce/change-form-language      # Cal Sept 8
