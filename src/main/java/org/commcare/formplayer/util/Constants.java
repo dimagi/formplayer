@@ -142,5 +142,5 @@ public class Constants {
 
     // End Datadog metrics
 
-
+    public static final String SCHEDULED_TASKS_PURGE = "scheduled_tasks.purge";
 }
