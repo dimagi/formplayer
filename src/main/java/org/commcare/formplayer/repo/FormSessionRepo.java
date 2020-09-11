@@ -10,7 +10,7 @@ import java.util.List;
  * Repository for storing and accessing form entry sessions
  */
 public interface FormSessionRepo extends CrudRepository<SerializableFormSession, String> {
-    int purgeFormSessions();
+    int purge();
     List<SerializableFormSession> findUserSessions(String username);
     SerializableFormSession findOneWrapped(String id) throws FormNotFoundException;
 }

@@ -38,18 +38,33 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Value("${commcare.formplayer.purge.trigger}")
-    private String purgeConfig;
-
-    @PostConstruct
-    public void purge() {
-        if ("startup".equals(purgeConfig)) {
-            this.purgeFormSessions();
-        } else {
-            log.debug(String.format("Skipping stale session purge due to current trigger " +
-                    "config '%s'. To enable, set " +
-                    "commcare.formplayer.purge.trigger=startup", purgeConfig));
+    public int purge() {
+        // Modeled on https://stackoverflow.com/a/6730401/2820312
+        int deletedRows = 0;
+        try {
+            String createFuncQuery = "create or replace function custom_safe_cast(text,anyelement) \n" +
+                    "returns anyelement \n" +
+                    "language plpgsql as $$ \n" +
+                    "begin \n" +
+                    "    $0 := $1; \n" +
+                    "    return $0; \n" +
+                    "    exception when others then \n" +
+                    "        return $2; \n" +
+                    "end; $$;";
+            this.jdbcTemplate.execute(createFuncQuery);
+            String deleteQuery = replaceTableName(
+                    "delete from %s where custom_safe_cast(dateopened, '2011-01-01'::timestamp) < NOW() - INTERVAL '7 days';"
+            );
+            log.info("Beginning state form session purge");
+            long start = System.currentTimeMillis();
+            deletedRows = this.jdbcTemplate.update(deleteQuery);
+            long elapsed = System.currentTimeMillis() - start;
+            log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
+        } catch (Exception e) {
+            // Don't crash for this. Not fatal and prevents start-up
+            log.error("Exception purge form sessions", e);
         }
+        return deletedRows;
     }
 
     @Override
@@ -303,35 +318,6 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
 
     public String replaceTableName(String query){
         return String.format(query, Constants.POSTGRES_SESSION_TABLE_NAME);
-    }
-
-    public int purgeFormSessions() {
-        // Modeled on https://stackoverflow.com/a/6730401/2820312
-        int deletedRows = 0;
-        try {
-            String createFuncQuery = "create or replace function custom_safe_cast(text,anyelement) \n" +
-                    "returns anyelement \n" +
-                    "language plpgsql as $$ \n" +
-                    "begin \n" +
-                    "    $0 := $1; \n" +
-                    "    return $0; \n" +
-                    "    exception when others then \n" +
-                    "        return $2; \n" +
-                    "end; $$;";
-            this.jdbcTemplate.execute(createFuncQuery);
-            String deleteQuery = replaceTableName(
-                    "delete from %s where custom_safe_cast(dateopened, '2011-01-01'::timestamp) < NOW() - INTERVAL '7 days';"
-            );
-            log.info("Beginning state form session purge");
-            long start = System.currentTimeMillis();
-            deletedRows = this.jdbcTemplate.update(deleteQuery);
-            long elapsed = System.currentTimeMillis() - start;
-            log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
-        } catch (Exception e) {
-            // Don't crash for this. Not fatal and prevents start-up
-            log.error("Exception purge form sessions", e);
-        }
-        return deletedRows;
     }
 
 }

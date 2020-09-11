@@ -33,10 +33,10 @@ public class ScheduledTasks {
     @Scheduled(cron= "${commcare.formplayer.scheduledTasks.purge.cron:-}")
     @SchedulerLock(name = "purge",
             lockAtMostFor = "${commcare.formplayer.scheduledTasks.purge.lockAtMostFor:5h}",
-            lockAtLeastFor = "${commcare.formplayer.scheduledTasks.purge.lockAtLeastFor:20m}")
+            lockAtLeastFor = "${commcare.formplayer.scheduledTasks.purge.lockAtLeastFor:1h}")
     public void purge() {
         log.info("Starting purge scheduled task.");
-        int deletedRows = formSessionRepo.purgeFormSessions();
+        int deletedRows = formSessionRepo.purge();
         datadogStatsDClient.count(
                 "%s.%s".format(Constants.SCHEDULED_TASKS_PURGE, "deletedRows"),
                 deletedRows
