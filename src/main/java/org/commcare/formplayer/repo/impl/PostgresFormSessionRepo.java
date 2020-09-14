@@ -1,10 +1,13 @@
 package org.commcare.formplayer.repo.impl;
 
+import com.timgroup.statsd.StatsDClient;
+import io.sentry.event.Event;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -38,6 +41,12 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private StatsDClient datadogStatsDClient;
+
+    @Autowired
+    private FormplayerSentry raven;
+
     public int purge() {
         // Modeled on https://stackoverflow.com/a/6730401/2820312
         int deletedRows = 0;
@@ -60,9 +69,10 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             deletedRows = this.jdbcTemplate.update(deleteQuery);
             long elapsed = System.currentTimeMillis() - start;
             log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
+            datadogStatsDClient.time("PostgresFormSessionRepo.purge.timeInMillis", elapsed);
         } catch (Exception e) {
-            // Don't crash for this. Not fatal and prevents start-up
             log.error("Exception purge form sessions", e);
+            raven.sendRavenException(e, Event.Level.ERROR);
         }
         return deletedRows;
     }

@@ -38,11 +38,11 @@ public class ScheduledTasks {
         log.info("Starting purge scheduled task.");
         int deletedRows = formSessionRepo.purge();
         datadogStatsDClient.count(
-                "%s.%s".format(Constants.SCHEDULED_TASKS_PURGE, "deletedRows"),
+                String.format("%s.%s", Constants.SCHEDULED_TASKS_PURGE, "deletedRows"),
                 deletedRows
         );
         datadogStatsDClient.increment(
-                "%s.%s".format(Constants.SCHEDULED_TASKS_PURGE, "timesRun")
+                String.format("%s.%s", Constants.SCHEDULED_TASKS_PURGE, "timesRun")
         );
     }
 }
