@@ -29,8 +29,8 @@ public class ScheduledTasks {
     @Autowired
     private StatsDClient datadogStatsDClient;
 
-    // the default "-" corresponds to Scheduled.CRON_DISABLED
-    @Scheduled(cron= "${commcare.formplayer.scheduledTasks.purge.cron:-}")
+    // the default "0 0 0 * * *" schedule means midnight each night
+    @Scheduled(cron= "${commcare.formplayer.scheduledTasks.purge.cron:0 0 0 * * *}")
     @SchedulerLock(name = "purge",
             lockAtMostFor = "${commcare.formplayer.scheduledTasks.purge.lockAtMostFor:5h}",
             lockAtLeastFor = "${commcare.formplayer.scheduledTasks.purge.lockAtLeastFor:1h}")
