@@ -1,10 +1,13 @@
 package org.commcare.formplayer.repo.impl;
 
+import com.timgroup.statsd.StatsDClient;
+import io.sentry.event.Event;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -38,12 +41,15 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Value("${commcare.formplayer.purge.trigger}")
-    private String purgeConfig;
+    @Autowired
+    private StatsDClient datadogStatsDClient;
 
-    @PostConstruct
-    public void purgeFormSessions() {
+    @Autowired
+    private FormplayerSentry raven;
+
+    public int purge() {
         // Modeled on https://stackoverflow.com/a/6730401/2820312
+        int deletedRows = 0;
         try {
             String createFuncQuery = "create or replace function custom_safe_cast(text,anyelement) \n" +
                     "returns anyelement \n" +
@@ -58,21 +64,17 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             String deleteQuery = replaceTableName(
                     "delete from %s where custom_safe_cast(dateopened, '2011-01-01'::timestamp) < NOW() - INTERVAL '7 days';"
             );
-            if ("startup".equals(purgeConfig)) {
-                log.info("Beginning state form session purge");
-                long start = System.currentTimeMillis();
-                int deletedRows = this.jdbcTemplate.update(deleteQuery);
-                long elapsed = System.currentTimeMillis() - start;
-                log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
-            } else {
-                log.debug(String.format("Skipping stale session purge due to current trigger " +
-                        "config '%s'. To enable, set " +
-                        "commcare.formplayer.purge.trigger=startup", purgeConfig));
-            }
+            log.info("Beginning state form session purge");
+            long start = System.currentTimeMillis();
+            deletedRows = this.jdbcTemplate.update(deleteQuery);
+            long elapsed = System.currentTimeMillis() - start;
+            log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
+            datadogStatsDClient.time("PostgresFormSessionRepo.purge.timeInMillis", elapsed);
         } catch (Exception e) {
-            // Don't crash for this. Not fatal and prevents start-up
             log.error("Exception purge form sessions", e);
+            raven.sendRavenException(e, Event.Level.ERROR);
         }
+        return deletedRows;
     }
 
     @Override

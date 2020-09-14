@@ -42,6 +42,8 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -55,9 +57,15 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import javax.sql.DataSource;
 
 import io.sentry.SentryClientFactory;
 import io.sentry.dsn.InvalidDsnException;
+
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
 @Configuration
@@ -69,6 +77,8 @@ import io.sentry.dsn.InvalidDsnException;
         "org.commcare.formplayer.session.*",
         "org.commcare.formplayer.installers.*"})
 @EnableAspectJAutoProxy
+@EnableScheduling
+@EnableSchedulerLock(defaultLockAtMostFor = "10m")
 public class WebAppContext implements WebMvcConfigurer {
 
     @Value("${commcarehq.environment}")
@@ -292,5 +302,15 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
         return new FormplayerFormSendCalloutHandler();
+    }
+
+    @Bean
+    public LockProvider lockProvider(DataSource dataSource) {
+        return new JdbcTemplateLockProvider(
+                JdbcTemplateLockProvider.Configuration.builder()
+                        .withJdbcTemplate(new JdbcTemplate(dataSource))
+                        .usingDbTime() // Works on Postgres, MySQL, MariaDb, MS SQL, Oracle, DB2, HSQL and H2
+                        .build()
+        );
     }
 }
