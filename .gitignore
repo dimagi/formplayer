@@ -3,6 +3,7 @@ testdbs/*
 .gradle
 config/application.properties
 gradle/
+local.properties
 *.DS_STORE
 *.idea/
 *.iml
