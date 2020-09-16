@@ -100,6 +100,8 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
             // Swallow, restoreAs not always provided in request.
         }
 
+        logLineJson.put("sourceIpAddr", request.getRemoteAddr());
+
         FormplayerHttpRequest formplayerHttpRequest = (FormplayerHttpRequest) request;
         logLineJson.put("projectSpace", formplayerHttpRequest.getDomain());
         logLineJson.put("requestUrl", new String(formplayerHttpRequest.getRequestURL()));
