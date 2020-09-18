@@ -34,7 +34,7 @@ public class CaseDbQueryTest extends BaseTestClass {
     @Test
     public void testBasicCaseQueries() throws Exception {
         syncDb();
-        UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
+        UserSqlSandbox sandbox = getRestoreSandbox();
         EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         evaluate("count(instance('casedb')/casedb/case[@case_id = 'test_case_id'])", "1", ec);
         evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/case_name", "Test Case", ec);

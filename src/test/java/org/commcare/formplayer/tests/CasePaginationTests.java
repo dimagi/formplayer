@@ -100,6 +100,7 @@ public class CasePaginationTests extends BaseTestClass {
         assert entityListResponse.getEntities().length == 9;
         assert entityListResponse.getCurrentPage() == 0;
         assert entityListResponse.getPageCount() == 0;
+        db.closeConnection();
     }
 
     // test that searching and paginating simultaneously works

@@ -35,7 +35,7 @@ public class ReassignCaseTest extends BaseTestClass {
     @Test
     public void testCaseReassign() throws Exception {
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("reassigndomain", "reassignusername", null));
+        UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("reassigndomain", "reassignusername", null));
         SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
 
         assert caseStorage.getNumRecords() == 0;

@@ -36,7 +36,7 @@ public class CaseDbIndexTests extends BaseTestClass {
     @Test
     public void testCaseCreateIndex() throws Exception {
         syncDb();
-        UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
+        UserSqlSandbox sandbox = getRestoreSandbox();
         EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id_child']/index/parent", "test_case_id", ec);
         evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/index/missing", "", ec);

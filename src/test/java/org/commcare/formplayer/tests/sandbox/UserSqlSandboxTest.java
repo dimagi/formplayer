@@ -11,6 +11,8 @@ import org.junit.Test;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.UserDB;
 
+import java.sql.SQLException;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -26,14 +28,19 @@ public class UserSqlSandboxTest {
     @Before
     public void setUp() throws Exception {
         new UserDB("a", "b", null).deleteDatabaseFolder();
-        sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
-        PrototypeFactory.setStaticHasher(new ClassNameHasher());
-        ParseUtils.parseIntoSandbox(this.getClass().getClassLoader().getResourceAsStream("restores/ipm_restore.xml"), sandbox);
-        sandbox = null;
+
+        UserSqlSandbox sandbox = null;
+        try {
+            sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
+            PrototypeFactory.setStaticHasher(new ClassNameHasher());
+            ParseUtils.parseIntoSandbox(this.getClass().getClassLoader().getResourceAsStream("restores/ipm_restore.xml"), sandbox);
+        } finally {
+            sandbox.getConnection().close();
+        }
     }
 
     @Test
-    public void test() {
+    public void test() throws Exception {
         sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
         Assert.assertEquals(sandbox.getCaseStorage().getNumRecords(), 6);
         Assert.assertEquals(sandbox.getLedgerStorage().getNumRecords(), 3);
@@ -43,7 +50,8 @@ public class UserSqlSandboxTest {
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() throws SQLException {
+        sandbox.getConnection().close();
         new UserDB("a", "b", null).deleteDatabaseFolder();
     }
 }

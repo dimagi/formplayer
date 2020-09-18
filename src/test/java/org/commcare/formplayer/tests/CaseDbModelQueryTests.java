@@ -36,7 +36,7 @@ public class CaseDbModelQueryTests extends BaseTestClass {
     @Test
     public void testDbModelQueryLookups() throws Exception {
         syncDb();
-        UserSqlSandbox sandbox = restoreFactoryMock.getSqlSandbox();
+        UserSqlSandbox sandbox = getRestoreSandbox();
         EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         ec.setDebugModeOn();
         evaluate("join(',',instance('casedb')/casedb/case[@case_type='unit_test_child_child'][@status='open'][true() and " +

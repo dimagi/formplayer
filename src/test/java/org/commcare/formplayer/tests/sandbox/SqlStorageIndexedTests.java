@@ -14,6 +14,7 @@ import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.UserDB;
 
+import java.sql.SQLException;
 import java.util.Vector;
 
 import static junit.framework.Assert.fail;
@@ -34,6 +35,7 @@ public class SqlStorageIndexedTests {
     private Vector<String> groupOwned;
     private Vector<String> userOwned;
 
+    UserSqlSandbox sandbox;
 
     @Before
     public void setUp() throws Exception {
@@ -84,7 +86,7 @@ public class SqlStorageIndexedTests {
         String storageKey = "TFCase";
         String username = "sql-storage-test";
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
+        sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
         caseStorage = new SqlStorage<>(sandbox, Case.class, storageKey);
 
         caseStorage.write(a);
@@ -136,7 +138,7 @@ public class SqlStorageIndexedTests {
             String storageKey = "Ledger";
             String username = "wspride";
 
-            UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
+            sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
             ledgerStorage = new SqlStorage<>(sandbox, Ledger.class, storageKey);
 
             ledgerStorage.write(l);
@@ -171,7 +173,10 @@ public class SqlStorageIndexedTests {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws SQLException {
+        if(sandbox != null) {
+            sandbox.getConnection().close();
+        }
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);
     }
 }
