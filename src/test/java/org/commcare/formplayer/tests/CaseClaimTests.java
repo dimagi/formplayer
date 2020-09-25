@@ -43,8 +43,7 @@ public class CaseClaimTests extends BaseTestClass {
 
     @Test
     public void testQueryScreen() throws Exception {
-
-        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("caseclaimdomain", "caseclaimusername", null));
+        UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
         SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
 
         configureQueryMock();
@@ -76,7 +75,7 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testAlreadyOwnCase() throws Exception {
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(new UserDB("caseclaimdomain", "caseclaimusername", null));
+        UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
         SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
         Hashtable<String, String> queryDictionary = new Hashtable<>();
         queryDictionary.put("name", "Burt");

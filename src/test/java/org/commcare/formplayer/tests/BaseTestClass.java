@@ -7,6 +7,8 @@ import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.sqlitedb.UserDB;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.services.locale.LocalizerManager;
@@ -40,6 +42,7 @@ import org.commcare.formplayer.utils.TestContext;
 import javax.servlet.http.Cookie;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -183,8 +186,39 @@ public class BaseTestClass {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws SQLException {
+        if(customConnector != null) {
+            customConnector.closeConnection();
+        }
+
+        if(sandbox != null ) {
+            sandbox.getConnection().close();
+        }
+        restoreFactoryMock.getSQLiteDB().closeConnection();
+        storageFactoryMock.getSQLiteDB().closeConnection();
         SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
+    }
+
+    private UserDB customConnector;
+
+    protected UserDB getUserDbConnector(String domain, String username, String restoreAs) {
+        customConnector = new UserDB(domain, username, restoreAs);
+        return customConnector;
+    }
+
+    UserSqlSandbox sandbox;
+
+    protected UserSqlSandbox getRestoreSandbox() {
+        if (sandbox != null) {
+            try {
+                sandbox.getConnection().close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            sandbox =  null;
+        }
+        sandbox = restoreFactoryMock.getSqlSandbox();
+        return sandbox;
     }
 
     public class RestoreFactoryAnswer implements Answer {
@@ -610,14 +644,17 @@ public class BaseTestClass {
         ResultActions result = null;
 
         if (bean instanceof AuthenticatedRequestBean) {
+            restoreFactoryMock.getSQLiteDB().closeConnection();
             restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"), false);
         }
 
         if (bean instanceof InstallRequestBean) {
+            storageFactoryMock.getSQLiteDB().closeConnection();
             storageFactoryMock.configure((InstallRequestBean) bean);
         }
 
         if (bean instanceof SessionRequestBean) {
+            storageFactoryMock.getSQLiteDB().closeConnection();
             storageFactoryMock.configure(((SessionRequestBean) bean).getSessionId());
         }
 
