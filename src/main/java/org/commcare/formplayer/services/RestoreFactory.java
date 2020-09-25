@@ -174,23 +174,23 @@ public class RestoreFactory {
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public UserSqlSandbox performTimedSync() throws Exception {
-        return performTimedSync(true);
+        return performTimedSync(true, false);
     }
-    public UserSqlSandbox performTimedSync(boolean shouldPurge) throws Exception {
+    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
         // Create parent dirs if needed
         if(getSqlSandbox().getLoggedInUser() != null){
             getSQLiteDB().createDatabaseFolder();
         }
         UserSqlSandbox sandbox;
         try {
-             sandbox = restoreUser();
+             sandbox = restoreUser(skipFixtures);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().value() == 412) {
                 getSQLiteDB().deleteDatabaseFile();
                 // this line has the effect of clearing the sync token
                 // from the restore URL that's used
                 sqLiteDB = new UserDB(domain, username, asUsername);
-                return performTimedSync(shouldPurge);
+                return performTimedSync(shouldPurge, skipFixtures);
             }
             throw e;
         }
@@ -211,11 +211,15 @@ public class RestoreFactory {
             return getSqlSandbox();
         } else {
             getSQLiteDB().createDatabaseFolder();
-            return performTimedSync(false);
+            return performTimedSync(false, false);
         }
     }
 
-    private UserSqlSandbox restoreUser() throws
+    private UserSqlSandbox restoreUser() throws Exception {
+        return restoreUser(false);
+    }
+
+    private UserSqlSandbox restoreUser(boolean skipFixtures) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
         int maxRetries = 2;
@@ -224,7 +228,7 @@ public class RestoreFactory {
             try {
                 UserSqlSandbox sandbox = getSqlSandbox();
                 FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
-                InputStream restoreStream = getRestoreXml();
+                InputStream restoreStream = getRestoreXml(skipFixtures);
 
                 SimpleTimer parseTimer = new SimpleTimer();
                 parseTimer.start();
@@ -372,8 +376,12 @@ public class RestoreFactory {
     }
 
     public InputStream getRestoreXml() {
+        return getRestoreXml(false);
+    }
+
+    public InputStream getRestoreXml(boolean skipFixtures) {
         ensureValidParameters();
-        Pair<String, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders();
+        Pair<String, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders(skipFixtures);
         recordSentryData(restoreUrlAndHeaders.first);
         log.info("Restoring from URL " + restoreUrlAndHeaders.first);
         InputStream restoreStream = getRestoreXmlHelper(restoreUrlAndHeaders.first, restoreUrlAndHeaders.second);
@@ -549,12 +557,15 @@ public class RestoreFactory {
                 Duration.ofSeconds(60));
         headers.set("X-CommCareHQ-Origin-Token", originToken);
     }
-
     public Pair<String, HttpHeaders> getRestoreUrlAndHeaders() {
+        return getRestoreUrlAndHeaders(false);
+    }
+
+    public Pair<String, HttpHeaders> getRestoreUrlAndHeaders(boolean skipFixtures) {
         if (caseId != null) {
             return getCaseRestoreUrlAndHeaders();
         }
-        return getUserRestoreUrlAndHeaders();
+        return getUserRestoreUrlAndHeaders(skipFixtures);
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
@@ -589,8 +600,11 @@ public class RestoreFactory {
         String fullUrl = host + builder.toString();
         return new Pair<> (fullUrl, headers);
     }
-
     public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders() {
+        return getUserRestoreUrlAndHeaders(false);
+    }
+
+    public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders(boolean skipFixtures) {
         StringBuilder builder = new StringBuilder();
         builder.append("/a/");
         builder.append(domain);
@@ -607,6 +621,9 @@ public class RestoreFactory {
 
         if( asUsername != null) {
             builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
+        }
+        if (skipFixtures) {
+            builder.append("&skip_fixtures=True");
         }
         String restoreUrl = builder.toString();
         HttpHeaders headers;

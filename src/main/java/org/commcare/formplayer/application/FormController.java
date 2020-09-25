@@ -237,7 +237,7 @@ public class FormController extends AbstractBaseController{
                 //If configured to do so, do a sync with server now to ensure dats is up to date.
                 //Need to do before end of form nav triggers, since the new data might change the
                 //validity of the form
-                restoreFactory.performTimedSync();
+                restoreFactory.performTimedSync(true, true);
             }
 
             if (formEntrySession.getMenuSessionId() != null &&
