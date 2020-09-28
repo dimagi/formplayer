@@ -327,6 +327,16 @@ public class RestoreFactory {
         }
     }
 
+    public boolean skipFixturesAfterSubmit() {
+        try {
+            return storageFactory.getPropertyManager().skipFixturesAfterSubmit();
+        } catch (RuntimeException e) {
+            // In cases where we don't have access to the PropertyManager, such sync-db, this call
+            // throws a RuntimeException
+            return false;
+        }
+    }
+
     public boolean useAggressiveSyncTiming() {
         try {
             return storageFactory.getPropertyManager().isSyncAfterFormEnabled() &&
@@ -622,8 +632,8 @@ public class RestoreFactory {
         if( asUsername != null) {
             builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
         }
-        if (skipFixtures) {
-            builder.append("&skip_fixtures=True");
+        if (skipFixtures && skipFixturesAfterSubmit()) {
+            builder.append("&skip_fixtures=true");
         }
         String restoreUrl = builder.toString();
         HttpHeaders headers;
