@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -161,7 +162,7 @@ public class BaseTestClass {
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
         setupSubmitServiceMock();
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();

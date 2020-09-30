@@ -18,6 +18,8 @@ public class FormplayerPropertyManager extends PropertyManager {
     public static final String POST_FORM_SYNC = "cc-sync-after-form";
     public static final String FUZZY_SEARCH_ENABLED = "cc-fuzzy-search-enabled";
 
+    public static final String SKIP_FIXTURES_AFTER_SUBMIT = "cc-skip-fixtures-after-submit";
+
     /**
      * Constructor for this PropertyManager
      *
@@ -50,5 +52,9 @@ public class FormplayerPropertyManager extends PropertyManager {
 
     public boolean isFuzzySearchEnabled() {
         return doesPropertyMatch(FUZZY_SEARCH_ENABLED, NO, YES);
+    }
+
+    public boolean skipFixturesAfterSubmit() {
+        return doesPropertyMatch(SKIP_FIXTURES_AFTER_SUBMIT, NO, YES);
     }
 }

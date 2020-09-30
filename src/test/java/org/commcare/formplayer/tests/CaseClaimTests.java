@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.Hashtable;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -60,7 +61,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         // When we sync afterwards, include new case and case-claim 
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
 
         CommandListResponseBean commandResponse = sessionNavigateWithQuery(new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
                 "caseclaim",
@@ -83,7 +84,7 @@ public class CaseClaimTests extends BaseTestClass {
         configureQueryMockOwned();
         configureSyncMock();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim.xml");
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml();
+        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
 
         CommandListResponseBean response = sessionNavigateWithQuery(new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
                 "caseclaim",

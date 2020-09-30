@@ -269,7 +269,7 @@ public class MenuSessionRunnerService {
         }
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             // Don't purge for case claim
-            restoreFactory.performTimedSync(false);
+            restoreFactory.performTimedSync(false, false);
             return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
         } else {
             return new NotificationMessage(
