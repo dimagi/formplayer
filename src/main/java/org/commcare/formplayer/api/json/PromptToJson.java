@@ -35,7 +35,6 @@ public class PromptToJson {
         parseCaption(prompt, questionJson);
         questionJson.put("help", jsonNullIfNull(prompt.getHelpText()));
         questionJson.put("binding", jsonNullIfNull(prompt.getQuestion().getBind().getReference().toString()));
-        questionJson.put("style", jsonNullIfNull(parseStyle(prompt)));
         questionJson.put("datatype", jsonNullIfNull(parseDataType(prompt)));
         questionJson.put("control", jsonNullIfNull(prompt.getControlType()));
         questionJson.put("required", prompt.isRequired() ? 1 : 0);
@@ -73,23 +72,25 @@ public class PromptToJson {
         switch (status) {
             case FormEntryController.EVENT_BEGINNING_OF_FORM:
                 obj.put("type", "form-start");
-                return obj;
+                break;
             case FormEntryController.EVENT_END_OF_FORM:
                 obj.put("ix", ">");
                 obj.put("type", "form-complete");
-                return obj;
+                break;
             case FormEntryController.EVENT_QUESTION:
                 obj.put("type", "question");
+                obj.put("style", jsonNullIfNull(parseStyle(model.getCaptionPrompt())));
                 parseQuestion(model.getQuestionPrompt(), obj);
-                return obj;
+                break;
             case FormEntryController.EVENT_REPEAT_JUNCTURE:
                 obj.put("type", "repeat-juncture");
                 parseRepeatJuncture(model, obj, ix);
-                return obj;
+                break;
             case FormEntryController.EVENT_GROUP:
                 // we're in a subgroup
                 parseCaption(model.getCaptionPrompt(), obj);
                 obj.put("type", "sub-group");
+                obj.put("style", jsonNullIfNull(parseStyle(model.getCaptionPrompt())));
                 obj.put("repeatable", false);
                 break;
             case FormEntryController.EVENT_REPEAT:
@@ -201,8 +202,8 @@ public class PromptToJson {
 
     //TODO WSP: What the fuck is drew doing XFormPlayer parse_style_info
     // https://github.com/dimagi/touchforms/blob/master/touchforms/backend/xformplayer.py#L400
-    private static JSONObject parseStyle(FormEntryPrompt prompt) {
-        String hint = prompt.getAppearanceHint();
+    private static JSONObject parseStyle(FormEntryCaption caption) {
+        String hint = caption.getAppearanceHint();
         if (hint == null) {
             return null;
         }
