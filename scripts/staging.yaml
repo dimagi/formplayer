@@ -51,3 +51,4 @@ trunk: master
 name: autostaging
 branches:
   - kev/point-core-to-kev-timezone # Kevin Sept 30
+  - jls/debug # Jenny Oct 6
