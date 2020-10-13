@@ -173,6 +173,7 @@ public class MenuSessionRunnerService {
      *                        it is used to short circuit the normal TreeReference calculation by inserting a predicate that
      *                        is [@case_id = <detailSelection>].
      */
+    @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections,
                                                          String detailSelection,

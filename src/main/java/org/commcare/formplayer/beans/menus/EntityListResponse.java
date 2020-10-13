@@ -142,6 +142,7 @@ public class EntityListResponse extends MenuBean {
         return entities;
     }
 
+    @Trace
     private static List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
                                                               List<Entity<TreeReference>> full, boolean isFuzzySearchEnabled) {
         if (searchText != null && !"".equals(searchText)) {
