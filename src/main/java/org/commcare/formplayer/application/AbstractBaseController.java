@@ -18,6 +18,7 @@ import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.commcare.formplayer.exceptions.UnresolvedResourceRuntimeException;
 import io.sentry.event.Event;
 
+import datadog.trace.api.Trace;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -252,6 +253,7 @@ public abstract class AbstractBaseController {
         );
     }
 
+    @Trace
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
         MenuSession menuSession = performInstall(sessionNavigationBean);
         menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());

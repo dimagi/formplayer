@@ -1,5 +1,6 @@
 package org.commcare.formplayer.beans.menus;
 
+import datadog.trace.api.Trace;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
@@ -125,6 +126,7 @@ public class EntityListResponse extends MenuBean {
         return new EntityBean[]{processEntity(detail, reference, ec, neededDatum)};
     }
 
+    @Trace
     public static List<EntityBean> processEntitiesForCaseList(Detail detail, Vector<TreeReference> references,
                                                               EvaluationContext ec,
                                                               String searchText,
@@ -149,6 +151,7 @@ public class EntityListResponse extends MenuBean {
         return full;
     }
 
+    @Trace
     private List<EntityBean> paginateEntities(List<EntityBean> matched,
                                                          int offset) {
         if(offset > matched.size()){
@@ -167,6 +170,7 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
+    @Trace
     private static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
                                                                EvaluationContext context,
                                                                Vector<TreeReference> references,

@@ -5,6 +5,7 @@ import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 
+import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.session.SessionWrapper;
@@ -93,6 +94,7 @@ public class MenuSessionRunnerService {
         return getNextMenu(menuSession, null, 0, "", 0);
     }
 
+    @Trace
     private BaseResponseBean getNextMenu(MenuSession menuSession,
                                          String detailSelection,
                                          int offset,
@@ -152,6 +154,7 @@ public class MenuSessionRunnerService {
         ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
     }
 
+    @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null, 0, null, 0);
