@@ -260,6 +260,7 @@ public abstract class AbstractBaseController {
         return menuSession;
     }
 
+    @Trace
     protected MenuSession performInstall(InstallRequestBean bean) throws Exception {
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {

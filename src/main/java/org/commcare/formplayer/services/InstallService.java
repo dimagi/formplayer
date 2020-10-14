@@ -43,6 +43,7 @@ public class InstallService {
 
     CategoryTimingHelper.RecordingTimer installTimer;
 
+    @Trace
     public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference, boolean preview) throws Exception {
         boolean newInstall = true;
         SQLiteDB sqliteDB = storageFactory.getSQLiteDB();
