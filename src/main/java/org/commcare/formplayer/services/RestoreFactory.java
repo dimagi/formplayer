@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import datadog.trace.api.Trace;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
 import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;

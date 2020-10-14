@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.suite.model.MenuDisplayable;
