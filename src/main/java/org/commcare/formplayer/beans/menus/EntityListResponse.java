@@ -229,6 +229,7 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
+    @Trace
     private static EntityBean processEntity(Detail detail, TreeReference treeReference,
                                             EvaluationContext ec, EntityDatum neededDatum) {
         EvaluationContext context = new EvaluationContext(ec, treeReference);

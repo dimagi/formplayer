@@ -223,6 +223,7 @@ public class RestoreFactory {
         return restoreUser(false);
     }
 
+    @Trace
     private UserSqlSandbox restoreUser(boolean skipFixtures) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
@@ -264,6 +265,7 @@ public class RestoreFactory {
         }
     }
 
+    @Trace
     public UserSqlSandbox getSqlSandbox() {
         return new UserSqlSandbox(this.sqLiteDB);
     }
@@ -383,6 +385,7 @@ public class RestoreFactory {
         return getRestoreXml(false);
     }
 
+    @Trace
     public InputStream getRestoreXml(boolean skipFixtures) {
         ensureValidParameters();
         Pair<String, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders(skipFixtures);
