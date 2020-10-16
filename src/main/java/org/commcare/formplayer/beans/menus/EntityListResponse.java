@@ -73,7 +73,7 @@ public class EntityListResponse extends MenuBean {
             }
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
-            Vector<TreeReference> references = ec.expandReference(neededDatum.getNodeset());
+            Vector<TreeReference> references = nextScreen.getReferences();
             List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
             if (entityList.size() > CASE_LENGTH_LIMIT && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
