@@ -21,6 +21,7 @@ public class AuthenticatedRequestBean {
     private String restoreAsCaseId;
 
     private int timezoneOffsetMillis = -1;
+    private String timezoneFromBrowser = null;
 
     public String getUsername() {
         return username;
@@ -87,6 +88,16 @@ public class AuthenticatedRequestBean {
     @JsonSetter(value = "tz_offset_millis")
     public void setTzOffset(int offset) {
         this.timezoneOffsetMillis = offset;
+    }
+
+    @JsonGetter(value = "tz_from_browser")
+    public String getTzFromBrowser() {
+        return this.timezoneFromBrowser;
+    }
+
+    @JsonSetter(value = "tz_from_browser")
+    public void setTzFromBrowser(String offset) {
+        this.timezoneFromBrowser = offset;
     }
 
     @JsonGetter(value = "session-id")
