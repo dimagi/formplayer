@@ -49,7 +49,6 @@ public class EntityListResponse extends MenuBean {
     public EntityListResponse() {}
 
     public EntityListResponse(EntityScreen nextScreen,
-                              EvaluationContext ec,
                               String detailSelection,
                               int offset,
                               String searchText,
@@ -58,6 +57,7 @@ public class EntityListResponse extends MenuBean {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
+        EvaluationContext ec = nextScreen.getEvalContext();
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
         // We will shortcircuit the computation to just get the relevant detailSelection.
