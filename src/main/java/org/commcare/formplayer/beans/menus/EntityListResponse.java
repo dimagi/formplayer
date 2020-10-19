@@ -189,6 +189,7 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
+    @Trace
     private static void sort(List<Entity<TreeReference>> entityList,
                              Detail shortDetail,
                              int sortIndex) {
