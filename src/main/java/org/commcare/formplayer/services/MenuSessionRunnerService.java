@@ -172,6 +172,7 @@ public class MenuSessionRunnerService {
                                                          String searchText,
                                                          int sortIndex) throws Exception {
         BaseResponseBean nextResponse;
+        boolean needsDetail;
         // If we have no selections, we're are the root screen.
         if (selections == null) {
             return getNextMenu(
@@ -185,7 +186,11 @@ public class MenuSessionRunnerService {
         NotificationMessage notificationMessage = null;
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
-            boolean gotNextScreen = menuSession.handleInput(selection);
+
+            // minimal entity screens are only safe if there will be no further selection
+            // and we do not need the case detail
+            needsDetail = detailSelection != null || i != selections.length;
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -193,7 +198,7 @@ public class MenuSessionRunnerService {
                         NotificationMessage.Tag.selection);
                 break;
             }
-            Screen nextScreen = menuSession.getNextScreen();
+            Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
             if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
                 notificationMessage = doQuery(
