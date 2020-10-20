@@ -333,6 +333,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return ret;
     }
 
+    @Trace
     public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
                                            FormplayerStorageFactory storageFactory) throws Exception {
         String formXmlns = sessionWrapper.getForm();

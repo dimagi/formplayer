@@ -1,6 +1,7 @@
 package org.commcare.formplayer.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import datadog.trace.api.Trace;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -248,6 +249,7 @@ public class FormSession {
         }
     }
 
+    @Trace
     private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, storageManager);
@@ -304,6 +306,7 @@ public class FormSession {
         return timeOutWindow;
     }
 
+    @Trace
     public String getInstanceXml() throws IOException {
         byte[] bytes = new XFormSerializingVisitor().serializeInstance(formDef.getInstance());
         return new String(bytes, "US-ASCII");

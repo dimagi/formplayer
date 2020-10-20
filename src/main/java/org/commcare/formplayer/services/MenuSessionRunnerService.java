@@ -415,6 +415,7 @@ public class MenuSessionRunnerService {
         return stepToFrame;
     }
 
+    @Trace
     private NewFormResponse startFormEntry(MenuSession menuSession) throws Exception {
         if (menuSession.getSessionWrapper().getForm() != null) {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
@@ -435,6 +436,7 @@ public class MenuSessionRunnerService {
     }
 
 
+    @Trace
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
