@@ -324,6 +324,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
     }
 
+    @Trace
     private HashMap<String, String> getSessionData() {
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
         HashMap<String, String> ret = new HashMap<>();
