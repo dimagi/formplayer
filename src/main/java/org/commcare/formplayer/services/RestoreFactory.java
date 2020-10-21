@@ -649,6 +649,7 @@ public class RestoreFactory {
     /**
      * Configures whether restores through this factory should support 'aggressive' syncs.
      */
+    @Trace
     public void setPermitAggressiveSyncs(boolean permitAggressiveSyncs) {
         this.permitAggressiveSyncs = permitAggressiveSyncs;
     }

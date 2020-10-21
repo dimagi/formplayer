@@ -392,6 +392,7 @@ public class FormSession {
         return Base64.encodeBase64String(baos.toByteArray());
     }
 
+    @Trace
     private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
         byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
         DataInputStream inputStream =
