@@ -17,6 +17,7 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
 
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
+    private boolean requireSearch;
 
     public EntityDetailListResponse() {}
 
@@ -94,5 +95,15 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     @JsonSetter(value = "isPersistentDetail")
     public void setPersistentDetail(boolean persistentDetail) {
         this.isPersistentDetail = persistentDetail;
+    }
+
+    @JsonGetter(value = "requireSearch")
+    public boolean getRequireSearch() {
+        return requireSearch;
+    }
+
+    @JsonSetter(value = "requireSearch")
+    public void setRequireSearch(boolean requireSearch) {
+        this.requireSearch = requireSearch;
     }
 }

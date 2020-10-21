@@ -33,6 +33,7 @@ public class EntityListResponse extends MenuBean {
     private Tile[] tiles;
     private int[] widthHints;
     private int numEntitiesPerRow;
+    private boolean requireSearch;
     private boolean useUniformUnits;
     private int[] sortIndices;
 
@@ -73,7 +74,11 @@ public class EntityListResponse extends MenuBean {
             }
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
-            Vector<TreeReference> references = nextScreen.getReferences();
+            Vector<TreeReference> references = new Vector<TreeReference>();
+            this.requireSearch = nextScreen.getShortDetail().doesRequireSearch();
+            if (!this.requireSearch || searchText != null && !"".equals(searchText)) {
+                references = nextScreen.getReferences();
+            }
             List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
             if (entityList.size() > CASE_LENGTH_LIMIT && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
@@ -215,6 +220,14 @@ public class EntityListResponse extends MenuBean {
 
     public void setSortIndices(int[] sortIndices) {
         this.sortIndices = sortIndices;
+    }
+
+    public boolean getRequireSearch() {
+        return this.requireSearch;
+    }
+
+    public void setRequireSearch(boolean requireSearch) {
+        this.requireSearch = requireSearch;
     }
 
     static class LogNotifier implements EntitySortNotificationInterface {
