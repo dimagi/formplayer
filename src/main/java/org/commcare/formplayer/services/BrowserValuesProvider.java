@@ -51,7 +51,7 @@ public class BrowserValuesProvider extends TimezoneProvider {
         String tzName = (tz == null) ? null : tz.getDisplayName();
         String errorMsg = String.format("Reported timezone %s has offset %d which is different than reported" +
                 "offset %d", tzName, tzOffsetFromTz, reportedTzOffsetMillis);
-        throw new TzDiscrepancyException("");
+        throw new TzDiscrepancyException(errorMsg);
     }
 
     @Override
