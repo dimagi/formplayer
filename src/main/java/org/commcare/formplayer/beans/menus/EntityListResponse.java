@@ -34,6 +34,7 @@ public class EntityListResponse extends MenuBean {
     private int[] widthHints;
     private int numEntitiesPerRow;
     private boolean requireSearch;
+    private String searchText;
     private boolean useUniformUnits;
     private int[] sortIndices;
 
@@ -76,7 +77,8 @@ public class EntityListResponse extends MenuBean {
         } else {
             Vector<TreeReference> references = new Vector<TreeReference>();
             this.requireSearch = nextScreen.getShortDetail().doesRequireSearch();
-            if (!this.requireSearch || searchText != null && !"".equals(searchText)) {
+            this.searchText = searchText;
+            if (!this.requireSearch || this.searchText != null && !"".equals(this.searchText)) {
                 references = nextScreen.getReferences();
             }
             List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
@@ -228,6 +230,14 @@ public class EntityListResponse extends MenuBean {
 
     public void setRequireSearch(boolean requireSearch) {
         this.requireSearch = requireSearch;
+    }
+
+    public String getSearchText() {
+        return this.searchText;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     static class LogNotifier implements EntitySortNotificationInterface {
