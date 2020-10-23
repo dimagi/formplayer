@@ -50,5 +50,5 @@
 trunk: master
 name: autostaging
 branches:
-  - jls/debug # Jenny Oct 6
+  - jls/require-search-text # Jenny Oct 22
   - ce/trace-annotations # Cal Oct 13
