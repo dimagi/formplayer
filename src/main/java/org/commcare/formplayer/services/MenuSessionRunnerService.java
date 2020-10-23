@@ -33,7 +33,6 @@ import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
-import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -123,9 +122,9 @@ public class MenuSessionRunnerService {
             );
         } else if (nextScreen instanceof EntityScreen) {
             // We're looking at a case list or detail screen
-            addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
                     (EntityScreen)nextScreen,
+                    menuSession.getEvalContextWithHereFuncHandler(),
                     detailSelection,
                     offset,
                     searchText,
@@ -147,11 +146,6 @@ public class MenuSessionRunnerService {
                 ", App Version: " + menuSession.getAppVersion());
         menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
         return menuResponseBean;
-    }
-
-    private void addHereFuncHandler(EntityScreen nextScreen, MenuSession menuSession) {
-        EvaluationContext ec = nextScreen.getEvalContext();
-        ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
     }
 
     @Trace
