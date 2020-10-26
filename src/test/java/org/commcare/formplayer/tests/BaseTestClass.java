@@ -490,6 +490,23 @@ public class BaseTestClass {
         );
     }
 
+    EncryptStringResponseBean encryptString(String message, String key, String algorithm) throws Exception {
+        EncryptStringRequestBean encryptStringRequestBean = new EncryptStringRequestBean();
+        encryptStringRequestBean.setUsername("encryptuser");
+        encryptStringRequestBean.setDomain("encryptdomain");
+        encryptStringRequestBean.setMessage(message);
+        encryptStringRequestBean.setKey(key);
+        encryptStringRequestBean.setAlgorithm(algorithm);
+
+        return generateMockQuery(
+                ControllerType.UTIL,
+                RequestType.POST,
+                Constants.URL_ENCRYPT_STRING,
+                encryptStringRequestBean,
+                EncryptStringResponseBean.class
+        );
+    }
+
     <T> T getDetails(String requestPath, Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SessionNavigationBean.class);

@@ -167,4 +167,12 @@ public class UtilController extends AbstractBaseController {
 
         return reporter.generateJSONReport();
     }
+
+    @ApiOperation(value = "Encrypt a string with a given algorithm and key")
+    @RequestMapping(value = Constants.URL_ENCRYPT_STRING, method = RequestMethod.POST)
+    public EncryptStringResponseBean encryptString(@RequestBody EncryptStringRequestBean encryptStringBean) throws Exception {
+        EncryptStringResponseBean responseBean = new EncryptStringResponseBean(encryptStringBean);
+        return responseBean;
+    }
+
 }

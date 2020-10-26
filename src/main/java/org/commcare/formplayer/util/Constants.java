@@ -40,6 +40,7 @@ public class Constants {
     public static final String URL_CHANGE_LANGUAGE = "change_locale";
     public static final String URL_BREAK_LOCKS = "break_locks";
     public static final String URL_CHECK_LOCKS = "check_locks";
+    public static final String URL_ENCRYPT_STRING = "encrypt_string";
 
     // Alternative namings used by SMS
     public static final String URL_NEXT = "next";
@@ -61,6 +62,8 @@ public class Constants {
     public static final String ANSWER_RESPONSE_STATUS_NEGATIVE = "validation-error";
     public static final String SYNC_RESPONSE_STATUS_POSITIVE = "success";
     public static final String SUBMIT_RESPONSE_TOO_MANY_REQUESTS = "too-many-requests";
+    public static final String ENCRYPT_STRING_SUCCESS = "encrypt-string-success";
+    public static final String ENCRYPT_STRING_FAILURE = "encrypt-string-failure";
 
     //Debug output request types
     public static final String BASIC_NO_TRACE = "basic";
