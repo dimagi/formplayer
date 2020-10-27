@@ -1,6 +1,6 @@
 bcrypt==3.1.7
 cffi==1.13.0
-cryptography==2.8
+cryptography==3.2
 Fabric3==1.14.post1
 gevent==1.4.0
 greenlet==0.4.15
