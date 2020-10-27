@@ -17,7 +17,8 @@ import java.util.Base64;
 
 
 /**
- * Created by charlie.garrett@gmail.com on 10/23/20.
+ * Response to a string encrypt request.
+ *
  */
 @ApiModel("Session Response")
 public class EncryptStringResponseBean extends BaseResponseBean {

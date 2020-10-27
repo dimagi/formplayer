@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 /**
  * Request to encrypt a string with a specified algorithm and key.
  *
- * Created by charlie.garrett@gmail.com on 10/23/20.
  */
 public class EncryptStringRequestBean extends AuthenticatedRequestBean {
     private String message;
