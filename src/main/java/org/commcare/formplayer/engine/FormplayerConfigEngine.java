@@ -53,7 +53,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
 
-    private String parseAppId(String url) {
+    public static String parseAppId(String url) {
         String appId = null;
         try {
             List<NameValuePair> params = new URIBuilder(url).getQueryParams();
@@ -103,6 +103,11 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         }
         String archiveGUID = this.mArchiveRoot.addArchiveFile(zip, appId);
         init("jr://archive/" + archiveGUID + "/profile.ccpr");
+    }
+
+    public void removeArchive(String archiveURL) {
+       String appId = parseAppId(archiveURL);
+       mArchiveRoot.removeArchiveFile(appId);
     }
 
     @Override

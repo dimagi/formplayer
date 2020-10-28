@@ -47,4 +47,11 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
             throw new InvalidReferenceException(String.format("Error deriving reference with exception %s.", guidPath), guidPath);
         }
     }
+
+    @Override
+    public String removeArchiveFile(String appId) {
+        String mGUID = super.removeArchiveFile(appId);
+        redisTemplate.delete(String.format("formplayer:archive:%s", mGUID));
+        return mGUID;
+    }
 }

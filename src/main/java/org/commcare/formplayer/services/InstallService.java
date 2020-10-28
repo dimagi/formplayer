@@ -18,6 +18,7 @@ import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.SimpleTimer;
 
+
 /**
  * The InstallService handles configuring the application,
  * either from a .ccz or .ccpr reference or existing dbs.
@@ -84,10 +85,12 @@ public class InstallService {
             return new Pair<>(engine, newInstall);
         } catch (UnresolvedResourceException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
+            formplayerArchiveFileRoot.removeArchiveFile(FormplayerConfigEngine.parseAppId(reference));
             throw new UnresolvedResourceRuntimeException(e);
         } catch (Exception e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
             sqliteDB.deleteDatabaseFile();
+            formplayerArchiveFileRoot.removeArchiveFile(FormplayerConfigEngine.parseAppId(reference));
             throw e;
         }
     }
