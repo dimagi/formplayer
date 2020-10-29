@@ -113,7 +113,7 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
         return this.searchText;
     }
 
-    @JsonGetter(value = "searchText")
+    @JsonSetter(value = "searchText")
     public void setSearchText(String searchText) {
         this.searchText = searchText;
     }
