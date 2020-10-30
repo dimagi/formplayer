@@ -203,10 +203,11 @@ public class MenuSessionRunnerService {
             );
         }
         NotificationMessage notificationMessage = null;
-        String cacheValue = String.join("|", selections);
+        String cacheValue;
         String cacheKey = UserUtils.getFullUserDetail(menuSession.getUsername(), menuSession.getAsUser(), menuSession.getDomain());
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
+            cacheValue = String.join("|", Arrays.copyOfRange(selections,0,i));
             boolean confirmed = redisSessionCache.isMember(cacheKey, cacheValue);
 
             // minimal entity screens are only safe if there will be no further selection
@@ -246,6 +247,7 @@ public class MenuSessionRunnerService {
                 searchText,
                 sortIndex
         );
+        cacheValue = String.join("|", selections);
         redisSessionCache.add(cacheKey, cacheValue);
 
         if (nextResponse != null) {
