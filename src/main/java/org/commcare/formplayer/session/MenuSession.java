@@ -192,21 +192,33 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     public boolean handleInput(String input) throws CommCareSessionException {
-        return handleInput(input, true);
+        return handleInput(input, true, false);
     }
 
     /**
      * @param input the user step input
      * @return Whether or not we were able to evaluate to a new screen.
      */
-    public boolean handleInput(String input, boolean needsDetail) throws CommCareSessionException {
+    public boolean handleInput(String input, boolean needsDetail, boolean confirmed) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
         if(screen == null) {
             return false;
         }
         try {
-            boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
+            if (screen instanceof EntityScreen) {
+                if (input.startsWith("action ") || !confirmed) {
+                        screen.init(sessionWrapper);
+                        if (screen.shouldBeSkipped()) {
+                            return handleInput(input, true, confirmed);
+                        }
+                        screen.handleInputAndUpdateSession(sessionWrapper, input);
+                } else {
+                    sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
+                }
+            } else {
+                boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
+            }
             Screen previousScreen = screen;
             screen = getNextScreen(needsDetail);
             addTitle(input, previousScreen);
@@ -297,7 +309,6 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     private EntityScreen createFreshEntityScreen(boolean needsDetail) throws CommCareSessionException {
         EntityScreen entityScreen = new EntityScreen(false, needsDetail);
-        entityScreen.init(sessionWrapper);
         return entityScreen;
     }
 

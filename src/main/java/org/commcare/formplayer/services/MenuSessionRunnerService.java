@@ -121,6 +121,10 @@ public class MenuSessionRunnerService {
             );
         } else if (nextScreen instanceof EntityScreen) {
             // We're looking at a case list or detail screen
+            nextScreen.init(menuSession.getSessionWrapper());
+            if (nextScreen.shouldBeSkipped()) {
+                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex);
+            }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
                     (EntityScreen)nextScreen,
