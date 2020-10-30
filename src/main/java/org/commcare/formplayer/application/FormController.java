@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +67,7 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.SimpleTimer;
+import org.commcare.formplayer.util.UserUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 /**
@@ -95,6 +97,12 @@ public class FormController extends AbstractBaseController{
     @Resource(name="redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
 
+    @Autowired
+    private RedisTemplate redisSetTemplate;
+
+    @Resource(name = "redisSetTemplate")
+    private SetOperations<String, String> redisSessionCache;
+
     @Value("${commcarehq.host}")
     private String host;
 
@@ -105,7 +113,7 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
-        public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
+    public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
         String postUrl = host + newSessionBean.getPostUrl();
         return newFormResponseFactory.getResponse(newSessionBean, postUrl);
@@ -207,6 +215,8 @@ public class FormController extends AbstractBaseController{
 
                 // Only delete session immediately after successful submit
                 deleteSession(submitRequestBean.getSessionId());
+                String cacheKey = UserUtils.getFullUserDetail(submitRequestBean.getUsername(), submitRequestBean.getRestoreAs(), submitRequestBean.getDomain());
+                redisSessionCache.getOperations().delete(cacheKey);
                 restoreFactory.commit();
 
             }

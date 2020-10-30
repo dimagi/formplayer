@@ -12,11 +12,15 @@ import org.commcare.resources.model.UnresolvedResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.SimpleTimer;
+
+import javax.annotation.Resource;
 
 /**
  * The InstallService handles configuring the application,
@@ -38,6 +42,12 @@ public class InstallService {
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
+
+    @Autowired
+    private RedisTemplate redisSetTemplate;
+
+    @Resource(name = "redisSetTemplate")
+    private SetOperations<String, String> redisSessionCache;
 
     private final Log log = LogFactory.getLog(InstallService.class);
 
@@ -81,6 +91,7 @@ public class InstallService {
             engine.initEnvironment();
             installTimer.end();
             installTimer.record();
+            redisSessionCache.getOperations().delete(storageFactory.getUsername());
             return new Pair<>(engine, newInstall);
         } catch (UnresolvedResourceException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());

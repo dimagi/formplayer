@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -120,6 +121,12 @@ public class RestoreFactory {
 
     @Resource(name="redisTemplateString")
     private ValueOperations<String, String> originTokens;
+
+    @Autowired
+    private RedisTemplate redisSetTemplate;
+
+    @Resource(name = "redisSetTemplate")
+    private SetOperations<String, String> redisSessionCache;
 
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
@@ -242,6 +249,8 @@ public class RestoreFactory {
                 parseTimer.end();
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
                 sandbox.writeSyncToken();
+                String cacheKey = UserUtils.getFullUserDetail(username, asUsername, domain);
+                redisSessionCache.getOperations().delete(cacheKey);
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
                 if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
