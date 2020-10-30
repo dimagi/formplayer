@@ -25,4 +25,14 @@ public class UserUtils {
             return username;
         }
     }
+
+    public static String getFullUserDetail(String username, String asUsername, String domain) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(domain);
+        builder.append("_").append(username);
+        if (asUsername != null) {
+            builder.append("_").append(asUsername);
+        }
+        return builder.toString();
+    }
 }

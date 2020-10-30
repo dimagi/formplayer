@@ -20,6 +20,7 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -33,11 +34,13 @@ import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.UserUtils;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Arrays;
 
 import javax.annotation.Resource;
 
@@ -86,6 +89,12 @@ public class MenuSessionRunnerService {
 
     @Resource(name = "redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
+
+    @Autowired
+    private RedisTemplate redisSetTemplate;
+
+    @Resource(name = "redisSetTemplate")
+    private SetOperations<String, String> redisSessionCache;
 
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
@@ -194,13 +203,16 @@ public class MenuSessionRunnerService {
             );
         }
         NotificationMessage notificationMessage = null;
+        String cacheValue = String.join("|", selections);
+        String cacheKey = UserUtils.getFullUserDetail(menuSession.getUsername(), menuSession.getAsUser(), menuSession.getDomain());
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
+            boolean confirmed = redisSessionCache.isMember(cacheKey, cacheValue);
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -234,6 +246,8 @@ public class MenuSessionRunnerService {
                 searchText,
                 sortIndex
         );
+        redisSessionCache.add(cacheKey, cacheValue);
+
         if (nextResponse != null) {
             if (nextResponse.getNotification() == null && notificationMessage != null) {
                 nextResponse.setNotification(notificationMessage);
