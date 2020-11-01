@@ -21,12 +21,15 @@ import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.commcare.formplayer.services.CategoryTimingHelper;
@@ -34,6 +37,7 @@ import org.commcare.formplayer.services.QueryRequester;
 import org.commcare.formplayer.services.SyncRequester;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.UserUtils;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -52,6 +56,12 @@ public class MenuController extends AbstractBaseController {
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
+
+    @Autowired
+    private RedisTemplate redisSetTemplate;
+
+    @Resource(name = "redisSetTemplate")
+    private SetOperations<String, String> redisSessionCache;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -140,6 +150,9 @@ public class MenuController extends AbstractBaseController {
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
+        String cacheKey = UserUtils.getFullUserDetail(sessionNavigationBean.getUsername(), sessionNavigationBean.getRestoreAs(), sessionNavigationBean.getDomain());
+        String cacheValue = String.join("|", selections);
+        redisSessionCache.add(cacheKey, cacheValue);
         return setLocationNeeds(
                 new EntityDetailListResponse(entityScreen,
                         menuSession.getEvalContextWithHereFuncHandler(),
