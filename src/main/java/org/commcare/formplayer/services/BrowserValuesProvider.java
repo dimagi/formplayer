@@ -31,19 +31,20 @@ public class BrowserValuesProvider extends TimezoneProvider {
         }
 
         try {
-            checkTzDiscrepancy(timezoneFromBrowser, timezoneOffsetMillis);
+            checkTzDiscrepancy(timezoneFromBrowser, timezoneOffsetMillis, new Date());
         } catch (TzDiscrepancyException e) {
             raven.sendRavenException(e, Event.Level.WARNING);
         }
     }
 
-    public void checkTzDiscrepancy(TimeZone tz, int reportedTzOffsetMillis) throws TzDiscrepancyException {
+    public void checkTzDiscrepancy(TimeZone tz, int reportedTzOffsetMillis, Date date) throws TzDiscrepancyException {
         if (tz == null && reportedTzOffsetMillis == -1) {
             return;
         }
         int tzOffsetFromTz = 0;
         if (tz != null) {
-            tzOffsetFromTz = tz.getOffset(new Date().getTime());
+            date = (date == null) ? new Date() : date;
+            tzOffsetFromTz = tz.getOffset(date.getTime());
             if (tzOffsetFromTz == reportedTzOffsetMillis) {
                 return;
             }
