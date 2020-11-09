@@ -76,7 +76,7 @@ public class EntityListResponse extends MenuBean {
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
         } else {
             Vector<TreeReference> references = new Vector<TreeReference>();
-            this.requireSearch = nextScreen.getShortDetail().doesRequireSearch();
+            this.requireSearch = nextScreen.getShortDetail().isSearchRequired();
             this.searchText = searchText;
             if (!this.requireSearch || this.searchText != null && !"".equals(this.searchText)) {
                 references = nextScreen.getReferences();
