@@ -196,7 +196,11 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     /**
-     * @param input the user step input
+     * @param input       The user step input
+     * @param needsDetail Whether a full entity screen is required for this request
+                          or if a list of references is sufficient
+     * @param confirmed   Whether the input has been previously validated 
+     *                    allowing this step to skip validation
      * @return Whether or not we were able to evaluate to a new screen.
      */
     public boolean handleInput(String input, boolean needsDetail, boolean confirmed) throws CommCareSessionException {

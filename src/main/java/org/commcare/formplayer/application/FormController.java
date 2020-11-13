@@ -66,7 +66,6 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.SimpleTimer;
-import org.commcare.formplayer.util.UserUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 /**

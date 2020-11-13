@@ -670,6 +670,11 @@ public class RestoreFactory {
         return String.join("|", selections);
     }
 
+    /**
+     * Adds a sequence of menu selections to the set of validated selections
+     * for a given user session so that certain optimizations can skip validation
+     * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
+     */
     public void cacheSessionSelections(String[] selections) {
         String cacheKey = getSessionCacheKey();
         String cacheValue = getSessionCacheValue(selections);
@@ -677,6 +682,11 @@ public class RestoreFactory {
         redisSetTemplate.expire(cacheKey, 1, TimeUnit.HOURS);
     }
 
+    /**
+     * Checks whether a sequence of menu selections has already been validated
+     * for a given user session
+     * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
+     */
     public boolean isConfirmedSelection(String[] selections) {
         String cacheKey = getSessionCacheKey();
         String cacheValue = getSessionCacheValue(selections);

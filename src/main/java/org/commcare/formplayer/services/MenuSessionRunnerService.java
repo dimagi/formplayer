@@ -33,7 +33,6 @@ import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
-import org.commcare.formplayer.util.UserUtils;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
