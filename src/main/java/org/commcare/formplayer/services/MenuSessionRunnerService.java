@@ -20,7 +20,6 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -89,12 +88,6 @@ public class MenuSessionRunnerService {
 
     @Resource(name = "redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
-
-    @Autowired
-    private RedisTemplate redisSetTemplate;
-
-    @Resource(name = "redisSetTemplate")
-    private SetOperations<String, String> redisSessionCache;
 
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
@@ -203,12 +196,10 @@ public class MenuSessionRunnerService {
             );
         }
         NotificationMessage notificationMessage = null;
-        String cacheValue;
-        String cacheKey = UserUtils.getFullUserDetail(menuSession.getUsername(), menuSession.getAsUser(), menuSession.getDomain());
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
-            cacheValue = String.join("|", Arrays.copyOfRange(selections,0,i));
-            boolean confirmed = redisSessionCache.isMember(cacheKey, cacheValue);
+
+            boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections,0,i));
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
@@ -247,8 +238,7 @@ public class MenuSessionRunnerService {
                 searchText,
                 sortIndex
         );
-        cacheValue = String.join("|", selections);
-        redisSessionCache.add(cacheKey, cacheValue);
+        restoreFactory.cacheSessionSelections(selections);
 
         if (nextResponse != null) {
             if (nextResponse.getNotification() == null && notificationMessage != null) {

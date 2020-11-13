@@ -21,8 +21,6 @@ import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,12 +54,6 @@ public class MenuController extends AbstractBaseController {
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
-
-    @Autowired
-    private RedisTemplate redisSetTemplate;
-
-    @Resource(name = "redisSetTemplate")
-    private SetOperations<String, String> redisSessionCache;
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
@@ -150,9 +142,7 @@ public class MenuController extends AbstractBaseController {
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
-        String cacheKey = UserUtils.getFullUserDetail(sessionNavigationBean.getUsername(), sessionNavigationBean.getRestoreAs(), sessionNavigationBean.getDomain());
-        String cacheValue = String.join("|", selections);
-        redisSessionCache.add(cacheKey, cacheValue);
+        restoreFactory.cacheSessionSelections(selections);
         return setLocationNeeds(
                 new EntityDetailListResponse(entityScreen,
                         menuSession.getEvalContextWithHereFuncHandler(),

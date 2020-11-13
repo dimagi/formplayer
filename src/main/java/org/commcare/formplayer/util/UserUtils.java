@@ -27,14 +27,4 @@ public class UserUtils {
             return username;
         }
     }
-
-    public static String getFullUserDetail(String username, String asUsername, String domain) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(domain);
-        builder.append("_").append(TableBuilder.scrubName(username));
-        if (asUsername != null) {
-            builder.append("_").append(asUsername);
-        }
-        return builder.toString();
-    }
 }

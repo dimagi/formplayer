@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -96,12 +95,6 @@ public class FormController extends AbstractBaseController{
 
     @Resource(name="redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
-
-    @Autowired
-    private RedisTemplate redisSetTemplate;
-
-    @Resource(name = "redisSetTemplate")
-    private SetOperations<String, String> redisSessionCache;
 
     @Value("${commcarehq.host}")
     private String host;
@@ -215,8 +208,6 @@ public class FormController extends AbstractBaseController{
 
                 // Only delete session immediately after successful submit
                 deleteSession(submitRequestBean.getSessionId());
-                String cacheKey = UserUtils.getFullUserDetail(submitRequestBean.getUsername(), submitRequestBean.getRestoreAs(), submitRequestBean.getDomain());
-                redisSessionCache.getOperations().delete(cacheKey);
                 restoreFactory.commit();
 
             }

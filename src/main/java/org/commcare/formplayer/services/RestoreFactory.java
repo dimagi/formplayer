@@ -249,8 +249,6 @@ public class RestoreFactory {
                 parseTimer.end();
                 categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
                 sandbox.writeSyncToken();
-                String cacheKey = UserUtils.getFullUserDetail(username, asUsername, domain);
-                redisSessionCache.getOperations().delete(cacheKey);
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
                 if (e instanceof InvalidStructureException || ++counter >= maxRetries) {
@@ -290,6 +288,8 @@ public class RestoreFactory {
     }
 
     public void commit() {
+        String cacheKey = getSessionCacheKey();
+        redisSessionCache.getOperations().delete(cacheKey);
         try {
             sqLiteDB.getConnection().commit();
         } catch (SQLException e) {
@@ -653,6 +653,34 @@ public class RestoreFactory {
      */
     public void setPermitAggressiveSyncs(boolean permitAggressiveSyncs) {
         this.permitAggressiveSyncs = permitAggressiveSyncs;
+    }
+
+    private String getSessionCacheKey() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(storageFactory.getAppId());
+        builder.append("_").append(domain);
+        builder.append("_").append(username);
+        if (asUsername != null) {
+            builder.append("_").append(asUsername);
+        }
+        return builder.toString();
+    }
+
+    private String getSessionCacheValue(String[] selections){
+        return String.join("|", selections);
+    }
+
+    public void cacheSessionSelections(String[] selections) {
+        String cacheKey = getSessionCacheKey();
+        String cacheValue = getSessionCacheValue(selections);
+        redisSessionCache.add(cacheKey, cacheValue);
+        redisSetTemplate.expire(cacheKey, 1, TimeUnit.HOURS);
+    }
+
+    public boolean isConfirmedSelection(String[] selections) {
+        String cacheKey = getSessionCacheKey();
+        String cacheValue = getSessionCacheValue(selections);
+        return redisSessionCache.isMember(cacheKey, cacheValue);
     }
 
     @PreDestroy

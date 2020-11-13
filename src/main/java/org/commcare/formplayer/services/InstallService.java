@@ -43,12 +43,6 @@ public class InstallService {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
-    @Autowired
-    private RedisTemplate redisSetTemplate;
-
-    @Resource(name = "redisSetTemplate")
-    private SetOperations<String, String> redisSessionCache;
-
     private final Log log = LogFactory.getLog(InstallService.class);
 
     CategoryTimingHelper.RecordingTimer installTimer;
@@ -91,7 +85,6 @@ public class InstallService {
             engine.initEnvironment();
             installTimer.end();
             installTimer.record();
-            redisSessionCache.getOperations().delete(storageFactory.getUsername());
             return new Pair<>(engine, newInstall);
         } catch (UnresolvedResourceException e) {
             log.error("Got exception " + e + " while installing reference " + reference + " at path " + sqliteDB.getDatabaseFileForDebugPurposes());
