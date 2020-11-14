@@ -50,7 +50,7 @@
 trunk: master
 name: autostaging
 branches:
-  - jls/require-search-text # Jenny Oct 22
+  # - jls/require-search-text # Jenny Oct 22
   - ce/tracing # Cal Oct 23
   # - ce/session-cache # Cal Oct 30
   - ce/form-tracing # Cal Nov 9
