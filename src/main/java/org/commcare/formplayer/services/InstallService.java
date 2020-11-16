@@ -4,6 +4,7 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.UnresolvedResourceRuntimeException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 
+import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.modern.reference.ArchiveFileRoot;
@@ -43,6 +44,7 @@ public class InstallService {
 
     CategoryTimingHelper.RecordingTimer installTimer;
 
+    @Trace
     public Pair<FormplayerConfigEngine, Boolean> configureApplication(String reference, boolean preview) throws Exception {
         boolean newInstall = true;
         SQLiteDB sqliteDB = storageFactory.getSQLiteDB();

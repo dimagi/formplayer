@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.suite.model.MenuDisplayable;
@@ -79,6 +80,7 @@ public class MenuSessionFactory {
         }
     }
 
+    @Trace
     public MenuSession buildSession(String username,
                                     String domain,
                                     String appId,
@@ -91,6 +93,7 @@ public class MenuSessionFactory {
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
     }
 
+    @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
         return new MenuSession(serializableMenuSession, installService, restoreFactory, host);
     }
