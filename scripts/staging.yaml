@@ -54,8 +54,8 @@ branches:
   - ce/session-cache # Cal Oct 30
   #- ce/form-tracing # Cal Nov 9
   - jls/autolaunch-action # Jenny Nov 16
-submodules:
-  submodules/langcodes:
-    branches:
-      - jls/autolaunch-action # Jenny Nov 16
-      - ce/tag-triggers # Cal Nov 16
+#submodules:
+#  submodules/langcodes:
+#    branches:
+#      - jls/autolaunch-action # Jenny Nov 16
+#      - ce/tag-triggers # Cal Nov 16
