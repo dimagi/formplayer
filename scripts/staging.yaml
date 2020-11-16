@@ -55,6 +55,7 @@ branches:
   - jls/autolaunch-action # Jenny Nov 16
 submodules:
   libs/commcare:
+    trunk: formplayer
     branches:
       - jls/autolaunch-action # Jenny Nov 16
       - ce/tag-triggers # Cal Nov 16
