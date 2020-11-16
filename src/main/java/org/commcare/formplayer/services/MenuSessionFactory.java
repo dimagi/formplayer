@@ -58,6 +58,7 @@ public class MenuSessionFactory {
                 }
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen) screen;
+                entityScreen.init(menuSession.getSessionWrapper());
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
                 Set<String> entityIds = entityScreen.getReferenceMap().keySet();
                 for (StackFrameStep step: steps) {
