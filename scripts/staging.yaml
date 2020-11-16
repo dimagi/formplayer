@@ -60,3 +60,4 @@ submodules:
     branches:
       - jls/autolaunch-action # Jenny Nov 16
       - ce/tag-triggers # Cal Nov 16
+      - ce/index-state-category # Cal Nov 16
