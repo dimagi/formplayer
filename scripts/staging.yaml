@@ -50,10 +50,10 @@
 trunk: master
 name: autostaging
 branches:
-  #- jls/autolaunch-action+ce/session-cache+ce/tracing
+  - jls/autolaunch-action+ce/session-cache+ce/tracing
   - jls/autolaunch-action+ce/tracing
   - ce/tracing # Cal Oct 23
-  #- ce/session-cache # Cal Oct 30
+  - ce/session-cache # Cal Oct 30
   - jls/autolaunch-action # Jenny Nov 16
 submodules:
   libs/commcare:
