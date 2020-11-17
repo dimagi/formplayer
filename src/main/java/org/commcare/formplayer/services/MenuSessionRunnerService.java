@@ -202,12 +202,15 @@ public class MenuSessionRunnerService {
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
-            boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections,0,i));
-
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
             boolean allowAutoLaunch = i == selections.length;
+
+            // do not skip screen creation if it may have automatic actions
+            boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections,0,i)) && !allowAutoLaunch;
+
+
             boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, allowAutoLaunch);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
