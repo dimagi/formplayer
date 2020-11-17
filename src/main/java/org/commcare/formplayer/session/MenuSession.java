@@ -215,7 +215,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 if (input.startsWith("action ") || !confirmed) {
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
-                        return handleInput(input, true, confirmed);
+                        return handleInput(input, true, confirmed, allowAutoLaunch);
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input);
                 } else {
@@ -317,7 +317,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     private EntityScreen createFreshEntityScreen(boolean needsDetail, boolean allowAutoLaunch) throws CommCareSessionException {
-        EntityScreen entityScreen = new EntityScreen(false, needsDetail);
+        EntityScreen entityScreen = new EntityScreen(false, needsDetail, allowAutoLaunch, sessionWrapper);
         return entityScreen;
     }
 
