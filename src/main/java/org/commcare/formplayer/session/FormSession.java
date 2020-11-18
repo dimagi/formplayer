@@ -1,6 +1,7 @@
 package org.commcare.formplayer.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import datadog.trace.api.Trace;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -97,6 +98,7 @@ public class FormSession {
 
     private FormVolatilityRecord sessionVolatilityRecord;
 
+    @Trace
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -205,6 +207,7 @@ public class FormSession {
      * Setup static function handlers. At the moment we only expect/accept date functions
      * (in particular, now() and today()) but could be extended in the future.
      */
+    @Trace
     private void setupFunctionContext() {
         if (functionContext == null || functionContext.size() < 1) {
             return;
@@ -230,6 +233,7 @@ public class FormSession {
         }
     }
 
+    @Trace
     private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
         StringReader stringReader = new StringReader(instanceContent);
         XFormParser xFormParser = new XFormParser(stringReader);
@@ -248,6 +252,7 @@ public class FormSession {
         }
     }
 
+    @Trace
     private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, storageManager);
@@ -266,6 +271,7 @@ public class FormSession {
         return null;
     }
 
+    @Trace
     private void setVolatilityIndicators()
     {
         String volatilityKey = getPragma("Pragma-Volatility-Key");
@@ -304,6 +310,7 @@ public class FormSession {
         return timeOutWindow;
     }
 
+    @Trace
     public String getInstanceXml() throws IOException {
         byte[] bytes = new XFormSerializingVisitor().serializeInstance(formDef.getInstance());
         return new String(bytes, "US-ASCII");
@@ -325,6 +332,7 @@ public class FormSession {
         return langs;
     }
 
+    @Trace
     public JSONArray getFormTree() {
         if (oneQuestionPerScreen) {
             return JsonActionUtils.getOneQuestionPerScreenJSON(formController.getFormEntryController().getModel(),
@@ -384,6 +392,7 @@ public class FormSession {
         return Base64.encodeBase64String(baos.toByteArray());
     }
 
+    @Trace
     private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
         byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
         DataInputStream inputStream =
@@ -392,6 +401,7 @@ public class FormSession {
     }
 
 
+    @Trace
     public SerializableFormSession serialize() throws IOException {
         SerializableFormSession serializableFormSession = new SerializableFormSession();
         serializableFormSession.setInstanceXml(getInstanceXml());
