@@ -195,6 +195,7 @@ public class MenuSessionRunnerService {
             );
         }
         NotificationMessage notificationMessage = null;
+        log.info("[jls] Pre-loop, with selections: " + String.join(", ", selections));
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
@@ -204,6 +205,7 @@ public class MenuSessionRunnerService {
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
             boolean allowAutoLaunch = i == selections.length;
+            log.info("[jls] In loop, with selection " + selection + ", confirmed = " + confirmed + ", allowAutoLaunch = " + allowAutoLaunch);
             boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, allowAutoLaunch);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
