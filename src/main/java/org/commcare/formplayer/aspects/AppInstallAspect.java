@@ -1,5 +1,6 @@
 package org.commcare.formplayer.aspects;
 
+import datadog.trace.api.Trace;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -25,6 +26,7 @@ public class AppInstallAspect {
     private FormplayerSentry raven;
 
     @Before(value = "@annotation(org.commcare.formplayer.annotations.AppInstall)")
+    @Trace
     public void configureStorageFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         if (!(args[0] instanceof InstallRequestBean)) {
