@@ -38,6 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Arrays;
 
 import javax.annotation.Resource;
 
@@ -121,6 +122,10 @@ public class MenuSessionRunnerService {
             );
         } else if (nextScreen instanceof EntityScreen) {
             // We're looking at a case list or detail screen
+            nextScreen.init(menuSession.getSessionWrapper());
+            if (nextScreen.shouldBeSkipped()) {
+                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex);
+            }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
                     (EntityScreen)nextScreen,
@@ -193,10 +198,12 @@ public class MenuSessionRunnerService {
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
+            boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections,0,i));
+
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -230,6 +237,8 @@ public class MenuSessionRunnerService {
                 searchText,
                 sortIndex
         );
+        restoreFactory.cacheSessionSelections(selections);
+
         if (nextResponse != null) {
             if (nextResponse.getNotification() == null && notificationMessage != null) {
                 nextResponse.setNotification(notificationMessage);

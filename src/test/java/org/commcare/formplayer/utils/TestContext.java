@@ -35,6 +35,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
@@ -95,6 +96,10 @@ public class TestContext {
         return Mockito.mock(ValueOperations.class);
     }
 
+    @Bean
+    public SetOperations<String, String> redisSetTemplate() {
+        return Mockito.mock(SetOperations.class, Mockito.RETURNS_DEEP_STUBS);
+    }
 
     @Bean
     public ValueOperations<String, FormVolatilityRecord> redisVolatilityDict() {

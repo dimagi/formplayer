@@ -19,6 +19,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
@@ -135,6 +136,9 @@ public class BaseTestClass {
 
     @Mock
     private ValueOperations<String, Long> valueOperations;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private SetOperations<String, String> redisSessionCache;
 
     protected ObjectMapper mapper;
 
