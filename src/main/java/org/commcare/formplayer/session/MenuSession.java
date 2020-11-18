@@ -200,19 +200,17 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @return Whether or not we were able to evaluate to a new screen.
      */
     public boolean handleInput(String input, boolean needsDetail) throws CommCareSessionException {
-        return handleInput(input, true, false, false);
+        return handleInput(input, true, false);
     }
 
     /**
      * @param input             The user step input
      * @param needsDetail       Whether a full entity screen is required for this request
      *                          or if a list of references is sufficient
-     * @param confirmed         Whether the input has been previously validated,
-     *                          allowing this step to skip validation
      * @param allowAutoLaunch   If this step is allow to automatically launch an action,
      *                          assuming it has an autolaunch action specified.
      */
-    public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch) throws CommCareSessionException {
+    public boolean handleInput(String input, boolean needsDetail, boolean allowAutoLaunch) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail, allowAutoLaunch);
         log.info("Screen " + screen + " handling input " + input);
         if(screen == null) {

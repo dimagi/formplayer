@@ -197,7 +197,7 @@ public class MenuSessionRunnerService {
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
             boolean allowAutoLaunch = i == selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, allowAutoLaunch);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, allowAutoLaunch);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
