@@ -16,10 +16,10 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     protected NotificationMessage notification;
     protected String title;
     protected boolean clearSession;
+    protected boolean shouldAutoSubmit;
     private String appId;
     private String appVersion;
     private String[] selections;
-    private boolean shouldAutoSubmit;
 
     public BaseResponseBean() {}
 
