@@ -96,6 +96,7 @@ public class FormSession {
     private String restoreAsCaseId;
 
     private FormVolatilityRecord sessionVolatilityRecord;
+    private boolean shouldAutoSubmit;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -255,6 +256,7 @@ public class FormSession {
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
 
         setVolatilityIndicators();
+        setAutoSubmitFlag();
     }
 
     private String getPragma(String key) {
@@ -279,6 +281,20 @@ public class FormSession {
                     this.getVolatilityKeyTimeout(),
                     entityTitle);
         }
+    }
+
+    private void setAutoSubmitFlag() {
+        String shouldSubmit = getPragma("Pragma-Submit-Automatically");
+        if(shouldSubmit != null ) {
+            this.shouldAutoSubmit = true;
+        }
+        else {
+            this.shouldAutoSubmit = false;
+        }
+    }
+
+    public boolean getAutoSubmitFlag() {
+        return shouldAutoSubmit;
     }
 
     public FormVolatilityRecord getSessionVolatilityRecord() {
