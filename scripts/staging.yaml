@@ -64,4 +64,5 @@ submodules:
       - jls/autolaunch-action # Jenny Nov 16
       #- jls/autolaunch-action-on-formplayer # Jenny Nov 18
       - ce/tag-triggers # Cal Nov 16
-      - ce/index-state-category # Cal Nov 16
+      #- ce/index-state-category # Cal Nov 16
+      - sr/autosubmi # Cal Dec 4
