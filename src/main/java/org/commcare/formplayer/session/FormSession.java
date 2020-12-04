@@ -97,6 +97,7 @@ public class FormSession {
 
     private FormVolatilityRecord sessionVolatilityRecord;
     private boolean shouldAutoSubmit;
+    private boolean suppressAutosync;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -257,6 +258,7 @@ public class FormSession {
 
         setVolatilityIndicators();
         setAutoSubmitFlag();
+        setSuppressAutosyncFlag();
     }
 
     private String getPragma(String key) {
@@ -293,8 +295,22 @@ public class FormSession {
         }
     }
 
+    private void setSuppressAutosyncFlag() {
+        String shouldSubmit = getPragma("Pragma-Suppress-Autosync");
+        if(shouldSubmit != null ) {
+            this.suppressAutosync = true;
+        }
+        else {
+            this.suppressAutosync = false;
+        }
+    }
+
     public boolean getAutoSubmitFlag() {
         return shouldAutoSubmit;
+    }
+
+    public boolean getSuppressAutosync() {
+        return suppressAutosync;
     }
 
     public FormVolatilityRecord getSessionVolatilityRecord() {
