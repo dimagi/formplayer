@@ -50,15 +50,15 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         this.notification = notification;
     }
 
-    public void setAutoSubmit(boolean shouldAutoSubmit) {
+    public void shouldAutoSubmit(boolean shouldAutoSubmit) {
         this.shouldAutoSubmit = shouldAutoSubmit;
     }
 
-    public boolean isClearSession() {
+    public boolean isclearSession() {
         return clearSession;
     }
 
-    public void setClearSession(boolean clearSession) {
+    public void setclearSession(boolean clearSession) {
         this.clearSession = clearSession;
     }
 
@@ -67,6 +67,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         return "BaseResponseBean [title=" + title + ", " +
                 "notification=" + notification + ", " +
                 "clearSession=" + clearSession + ", " +
+                "shouldAutoSubmit=" + shouldAutoSubmit + ", " +
                 "selections=" + selections + "]";
     }
 
