@@ -62,7 +62,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         return clearSession;
     }
 
-    public void setclearSession(boolean clearSession) {
+    public void setClearSession(boolean clearSession) {
         this.clearSession = clearSession;
     }
 
