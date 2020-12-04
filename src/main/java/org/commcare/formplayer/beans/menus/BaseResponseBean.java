@@ -50,7 +50,11 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         this.notification = notification;
     }
 
-    public void shouldAutoSubmit(boolean shouldAutoSubmit) {
+    public boolean getShouldAutoSubmit() {
+        return shouldAutoSubmit;
+    }
+
+     public void setShouldAutoSubmit(boolean shouldAutoSubmit) {
         this.shouldAutoSubmit = shouldAutoSubmit;
     }
 
