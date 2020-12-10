@@ -60,6 +60,9 @@ public class EntityListResponse extends MenuBean {
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
         EvaluationContext ec = nextScreen.getEvalContext();
 
+        this.actions = processActions(nextScreen.getSession());
+        this.autolaunch = processAutolaunch(nextScreen.getSession());
+
         // When detailSelection is not null it means we're processing a case detail, not a case list.
         // We will shortcircuit the computation to just get the relevant detailSelection.
         if (detailSelection != null) {
@@ -73,6 +76,9 @@ public class EntityListResponse extends MenuBean {
                 detail = longDetails[0];
             }
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
+        } else if (this.autolaunch != null) {
+            // This is a case list that the UI is going to skip, so don't bother processing entities
+            entities = new EntityBean[0];
         } else {
             Vector<TreeReference> references = nextScreen.getReferences();
             List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
@@ -89,8 +95,6 @@ public class EntityListResponse extends MenuBean {
         processTitle(session);
         processCaseTiles(detail);
         this.styles = processStyles(detail);
-        this.actions = processActions(nextScreen.getSession());
-        this.autolaunch = processAutolaunch(nextScreen.getSession());   // TODO: skip some other processing?
         Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
         this.headers = pair.first;
         this.widthHints = pair.second;
