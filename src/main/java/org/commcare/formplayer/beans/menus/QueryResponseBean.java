@@ -4,7 +4,10 @@ import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.DisplayUnit;
 import org.commcare.util.screen.QueryScreen;
 
+import org.javarosa.core.util.OrderedHashtable;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -27,13 +30,13 @@ public class QueryResponseBean extends MenuBean {
     }
 
     public QueryResponseBean(QueryScreen queryScreen, SessionWrapper session){
-        Hashtable<String, DisplayUnit> displayMap = queryScreen.getUserInputDisplays();
+        OrderedHashtable<String, DisplayUnit> displayMap = queryScreen.getUserInputDisplays();
         displays = new DisplayElement[displayMap.size()];
         int count = 0 ;
-        for (Map.Entry<String, DisplayUnit> displayEntry : displayMap.entrySet()) {
-            displays[count] = new DisplayElement(displayEntry.getValue(),
+        for (String key : Collections.list(displayMap.keys())) {
+            displays[count] = new DisplayElement(displayMap.get(key),
                     session.getEvaluationContext(),
-                    displayEntry.getKey());
+                    key);
             count++;
         }
         setTitle(queryScreen.getScreenTitle());

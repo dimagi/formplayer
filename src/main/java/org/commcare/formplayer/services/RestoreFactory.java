@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -121,6 +122,12 @@ public class RestoreFactory {
 
     @Resource(name="redisTemplateString")
     private ValueOperations<String, String> originTokens;
+
+    @Autowired
+    private RedisTemplate redisSetTemplate;
+
+    @Resource(name = "redisSetTemplate")
+    private SetOperations<String, String> redisSessionCache;
 
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
@@ -287,6 +294,8 @@ public class RestoreFactory {
     }
 
     public void commit() {
+        String cacheKey = getSessionCacheKey();
+        redisSessionCache.getOperations().delete(cacheKey);
         try {
             sqLiteDB.getConnection().commit();
         } catch (SQLException e) {
@@ -652,6 +661,44 @@ public class RestoreFactory {
     @Trace
     public void setPermitAggressiveSyncs(boolean permitAggressiveSyncs) {
         this.permitAggressiveSyncs = permitAggressiveSyncs;
+    }
+
+    private String getSessionCacheKey() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(storageFactory.getAppId());
+        builder.append("_").append(domain);
+        builder.append("_").append(username);
+        if (asUsername != null) {
+            builder.append("_").append(asUsername);
+        }
+        return builder.toString();
+    }
+
+    private String getSessionCacheValue(String[] selections){
+        return String.join("|", selections);
+    }
+
+    /**
+     * Adds a sequence of menu selections to the set of validated selections
+     * for a given user session so that certain optimizations can skip validation
+     * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
+     */
+    public void cacheSessionSelections(String[] selections) {
+        String cacheKey = getSessionCacheKey();
+        String cacheValue = getSessionCacheValue(selections);
+        redisSessionCache.add(cacheKey, cacheValue);
+        redisSetTemplate.expire(cacheKey, 1, TimeUnit.HOURS);
+    }
+
+    /**
+     * Checks whether a sequence of menu selections has already been validated
+     * for a given user session
+     * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
+     */
+    public boolean isConfirmedSelection(String[] selections) {
+        String cacheKey = getSessionCacheKey();
+        String cacheValue = getSessionCacheValue(selections);
+        return redisSessionCache.isMember(cacheKey, cacheValue);
     }
 
     @PreDestroy

@@ -31,26 +31,32 @@ public class BrowserValuesProvider extends TimezoneProvider {
         }
 
         try {
-            checkTzDiscrepancy(timezoneFromBrowser, timezoneOffsetMillis);
+            checkTzDiscrepancy(bean, timezoneFromBrowser, new Date());
         } catch (TzDiscrepancyException e) {
             raven.sendRavenException(e, Event.Level.WARNING);
         }
     }
 
-    public void checkTzDiscrepancy(TimeZone tz, int reportedTzOffsetMillis) throws TzDiscrepancyException {
-        if (tz == null && reportedTzOffsetMillis == -1) {
+    public void checkTzDiscrepancy(AuthenticatedRequestBean bean,
+                                   TimeZone tz,
+                                   Date date) throws TzDiscrepancyException {
+        int reportedTzOffsetMillis = bean.getTzOffset();
+        String reportedTzId = bean.getTzFromBrowser();
+
+        if (reportedTzId == null && reportedTzOffsetMillis == -1) {
             return;
         }
         int tzOffsetFromTz = 0;
         if (tz != null) {
-            tzOffsetFromTz = tz.getOffset(new Date().getTime());
+            date = (date == null) ? new Date() : date;
+            tzOffsetFromTz = tz.getOffset(date.getTime());
             if (tzOffsetFromTz == reportedTzOffsetMillis) {
                 return;
             }
         }
         String tzName = (tz == null) ? null : tz.getDisplayName();
-        String errorMsg = String.format("Reported timezone %s has offset %d which is different than reported" +
-                "offset %d", tzName, tzOffsetFromTz, reportedTzOffsetMillis);
+        String errorMsg = String.format("Reported timezone %s generated tz name %s with offset %d which is different " +
+                "than reported offset %d", reportedTzId, tzName, tzOffsetFromTz, reportedTzOffsetMillis);
         throw new TzDiscrepancyException(errorMsg);
     }
 

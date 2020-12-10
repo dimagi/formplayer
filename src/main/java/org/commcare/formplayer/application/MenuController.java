@@ -140,6 +140,7 @@ public class MenuController extends AbstractBaseController {
             throw new RuntimeException("Could not find case with ID " + detailSelection);
         }
 
+        restoreFactory.cacheSessionSelections(selections);
         return setLocationNeeds(
                 new EntityDetailListResponse(entityScreen,
                         menuSession.getEvalContextWithHereFuncHandler(),

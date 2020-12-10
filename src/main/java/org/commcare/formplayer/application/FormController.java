@@ -105,7 +105,7 @@ public class FormController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
-        public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
+    public NewFormResponse newFormResponse(@RequestBody NewSessionRequestBean newSessionBean,
                                            @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
         String postUrl = host + newSessionBean.getPostUrl();
         return newFormResponseFactory.getResponse(newSessionBean, postUrl);
