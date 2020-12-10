@@ -1,5 +1,6 @@
 package org.commcare.formplayer.session;
 
+import datadog.trace.api.Trace;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
@@ -248,6 +249,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         breadcrumbs.add(SessionUtils.getBestTitle(getSessionWrapper()));
     }
 
+    @Trace
     public Screen getNextScreen() throws CommCareSessionException {
         return getNextScreen(true);
     }
@@ -293,6 +295,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         entityScreenCache.clear();
     }
 
+    @Trace
     private EntityScreen getEntityScreenForSession(boolean needsDetail) throws CommCareSessionException {
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
@@ -310,6 +313,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
     }
 
+    @Trace
     private EntityScreen createFreshEntityScreen(boolean needsDetail) throws CommCareSessionException {
         EntityScreen entityScreen = new EntityScreen(false, needsDetail, sessionWrapper);
         return entityScreen;
@@ -334,6 +338,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
     }
 
+    @Trace
     private HashMap<String, String> getSessionData() {
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
         HashMap<String, String> ret = new HashMap<>();
@@ -343,6 +348,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return ret;
     }
 
+    @Trace
     public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
                                            FormplayerStorageFactory storageFactory) throws Exception {
         String formXmlns = sessionWrapper.getForm();
@@ -488,6 +494,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return this.hereFunctionEvaluated;
     }
 
+    @Trace
     public EvaluationContext getEvalContextWithHereFuncHandler() {
         EvaluationContext ec = sessionWrapper.getEvaluationContext();
         ec.addFunctionHandler(new FormplayerHereFunctionHandler(this, currentBrowserLocation));

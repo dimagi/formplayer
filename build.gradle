@@ -64,6 +64,7 @@ dependencies {
 
     //Unmanaged Dependencies
     compile group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.3'
+    compile group: 'com.datadoghq', name: 'dd-trace-api', version: '0.64.0'
     compile group: 'io.sentry', name: 'sentry', version: '1.7.28'
     compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.4.0'
     compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.4.0'
