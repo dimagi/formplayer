@@ -340,6 +340,7 @@ public class EntityListResponse extends MenuBean {
                 ", action=" + Arrays.toString(actions) +
                 ", parent=" + super.toString() +
                 ", headers=" + Arrays.toString(headers) +
+                ", entities=" + Arrays.toString(entities) +
                 ", locales=" + Arrays.toString(getLocales()) + "]";
     }
 

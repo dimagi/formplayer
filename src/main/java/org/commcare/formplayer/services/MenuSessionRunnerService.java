@@ -310,6 +310,8 @@ public class MenuSessionRunnerService {
         NotificationMessage notificationMessage = null;
         screen.answerPrompts(queryDictionary);
         String responseString = queryRequester.makeQueryRequest(screen.getUriString(), restoreFactory.getUserHeaders());
+        log.info("Formplayer doing query URI " + screen.getUriString());
+        log.info("Formplayer doing query got responseString " + responseString);
         boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
             if (screen.getCurrentMessage() != null) {
