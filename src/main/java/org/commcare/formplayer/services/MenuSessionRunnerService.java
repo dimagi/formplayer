@@ -124,6 +124,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             log.info("jls calling EntityScreen.init from getNextMenu");
             nextScreen.init(menuSession.getSessionWrapper());
+            log.info("jls got log: " + ((EntityScreen)nextScreen).jlsLog);
             if (nextScreen.shouldBeSkipped()) {
                 log.info("jls skipping EntityScreen and getting next menu");
                 return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex);
