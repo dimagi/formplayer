@@ -294,6 +294,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     private EntityScreen getEntityScreenForSession(boolean needsDetail) throws CommCareSessionException {
+        log.info("in getEntityScreenForSession, needsDetail=" + needsDetail);
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
         //This is only needed because with remote queries there can be nested datums with the same
@@ -301,6 +302,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         String nodesetHash = MD5.toHex(MD5.hash(datum.getNodeset().toString(true).getBytes()));
 
         String datumKey = datum.getDataId() + ", "+ nodesetHash;
+        log.info("in getEntityScreenForSession, was " + datumKey + " in the cache? " + entityScreenCache.containsKey(datumKey));
         if (!entityScreenCache.containsKey(datumKey)) {
             EntityScreen entityScreen = createFreshEntityScreen(needsDetail);
             entityScreenCache.put(datumKey, entityScreen);
