@@ -52,6 +52,7 @@ name: autostaging
 branches:
   - jls/autolaunch-action-round-2+ce/tracing
   - jls/autolaunch-action-round-2  # Jenny Dec 9
+  - jls/autolaunch-action-round-2-debug
   - ce/tracing # Cal Oct 23
   - sr/autosubmit # Cal Dec 4
 submodules:
