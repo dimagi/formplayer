@@ -15,6 +15,8 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.commcare.formplayer.util.EntityStringFilterer;
 import org.commcare.formplayer.util.FormplayerGraphUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,12 +51,15 @@ public class EntityListResponse extends MenuBean {
 
     public EntityListResponse() {}
 
+    private static final Log log = LogFactory.getLog(EntityListResponse.class);
+
     public EntityListResponse(EntityScreen nextScreen,
                               String detailSelection,
                               int offset,
                               String searchText,
                               int sortIndex,
                               boolean isFuzzySearchEnabled) {
+        log.info("jls creating EntityListResponse, detailSelection is " + detailSelection);
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
@@ -81,7 +86,9 @@ public class EntityListResponse extends MenuBean {
             entities = new EntityBean[0];
         } else {
             Vector<TreeReference> references = nextScreen.getReferences();
+            log.info("jls number of references is " + references.size());
             List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
+            log.info("jls initial number of entities is " + entityList.size());
             if (entityList.size() > CASE_LENGTH_LIMIT && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
                 setCurrentPage(offset / CASE_LENGTH_LIMIT);
@@ -90,6 +97,7 @@ public class EntityListResponse extends MenuBean {
             }
             entities = new EntityBean[entityList.size()];
             entityList.toArray(entities);
+            log.info("jls final number of entities is " + entityList.size());
         }
 
         processTitle(session);
