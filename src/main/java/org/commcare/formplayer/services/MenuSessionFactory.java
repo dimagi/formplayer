@@ -58,6 +58,7 @@ public class MenuSessionFactory {
                 }
             } else if (screen instanceof EntityScreen) {
                 EntityScreen entityScreen = (EntityScreen) screen;
+                log.info("jls calling EntityScreen.init from rebuildSessionFromFrame");
                 entityScreen.init(menuSession.getSessionWrapper());
                 if (entityScreen.shouldBeSkipped()) {
                     screen = menuSession.getNextScreen();

@@ -211,6 +211,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         try {
             if (screen instanceof EntityScreen) {
                 if (input.startsWith("action ") || !confirmed) {
+                    log.info("jls calling init from handleInput");
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
                         return handleInput(input, true, confirmed);
@@ -264,6 +265,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             return null;
         } else if (next.equals(SessionFrame.STATE_COMMAND_ID)) {
             MenuScreen menuScreen = new MenuScreen();
+            log.info("jls calling init from getNextScreen for a STATE_COMMAND_ID");
             menuScreen.init(sessionWrapper);
             return menuScreen;
         } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
@@ -276,10 +278,12 @@ public class MenuSession implements HereFunctionHandlerListener {
             computeDatum();
             return getNextScreen();
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_QUERY_REQUEST)) {
+            log.info("jls calling init from getNextScreen for a QueryScreen");
             QueryScreen queryScreen = new FormplayerQueryScreen();
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
+            log.info("jls calling init from getNextScreen for a STATE_SYNC_REQUEST");
             String username = asUser != null ?
                     StringUtils.getFullUsername(asUser, domain) : null;
             FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
