@@ -125,6 +125,7 @@ public class MenuSessionRunnerService {
             log.info("jls calling EntityScreen.init from getNextMenu");
             nextScreen.init(menuSession.getSessionWrapper());
             log.info("jls got log: " + ((EntityScreen)nextScreen).jlsLog);
+            System.out.println("jls got log: " + ((EntityScreen)nextScreen).jlsLog);
             if (nextScreen.shouldBeSkipped()) {
                 log.info("jls skipping EntityScreen and getting next menu");
                 return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex);
