@@ -270,7 +270,7 @@ public class EntityListResponse extends MenuBean {
     }
 
     private static DisplayElement[] processActions(SessionWrapper session) {
-        Vector<Action> actions = getActions(session);
+        Vector<Action> actions = getActionDefinitions(session);
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action: actions) {
             displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
@@ -281,7 +281,7 @@ public class EntityListResponse extends MenuBean {
     }
 
     private static String processAutolaunch(SessionWrapper session) {
-        Vector<Action> actions = getActions(session);
+        Vector<Action> actions = getActionDefinitions(session);
         String ret = null;
         int index = 0;
         for (Action action: actions) {
@@ -293,7 +293,7 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private static Vector<Action> getActions(SessionWrapper session) {
+    private static Vector<Action> getActionDefinitions(SessionWrapper session) {
         EntityDatum datum = (EntityDatum) session.getNeededDatum();
         if (session.getFrame().getSteps().lastElement().getElementType().equals(SessionFrame.STATE_QUERY_REQUEST)) {
             return new Vector<Action>();
