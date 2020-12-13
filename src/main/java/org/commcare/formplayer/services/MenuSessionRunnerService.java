@@ -203,8 +203,7 @@ public class MenuSessionRunnerService {
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
-            boolean allowAutoLaunch = i == selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, allowAutoLaunch);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
