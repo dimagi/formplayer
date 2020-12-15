@@ -29,6 +29,7 @@ import java.util.Vector;
 public class EntityListResponse extends MenuBean {
     private EntityBean[] entities;
     private DisplayElement[] actions;
+    private String autolaunch;
     private Style[] styles;
     private String[] headers;
     private Tile[] tiles;
@@ -60,6 +61,9 @@ public class EntityListResponse extends MenuBean {
         EntityDatum neededDatum = (EntityDatum) session.getNeededDatum();
         EvaluationContext ec = nextScreen.getEvalContext();
 
+        this.actions = processActions(nextScreen.getSession());
+        this.autolaunch = processAutolaunch(nextScreen.getSession());
+
         // When detailSelection is not null it means we're processing a case detail, not a case list.
         // We will shortcircuit the computation to just get the relevant detailSelection.
         if (detailSelection != null) {
@@ -73,6 +77,9 @@ public class EntityListResponse extends MenuBean {
                 detail = longDetails[0];
             }
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
+        } else if (this.autolaunch != null) {
+            // This is a case list that the UI is going to skip, so don't bother processing entities
+            entities = new EntityBean[0];
         } else {
             Vector<TreeReference> references = nextScreen.getReferences();
             List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
@@ -89,7 +96,6 @@ public class EntityListResponse extends MenuBean {
         processTitle(session);
         processCaseTiles(detail);
         this.styles = processStyles(detail);
-        this.actions = processActions(nextScreen.getSession());
         Pair<String[], int[]> pair = processHeader(detail, ec, sortIndex);
         this.headers = pair.first;
         this.widthHints = pair.second;
@@ -271,11 +277,7 @@ public class EntityListResponse extends MenuBean {
     }
 
     private static DisplayElement[] processActions(SessionWrapper session) {
-        EntityDatum datum = (EntityDatum) session.getNeededDatum();
-        if (session.getFrame().getSteps().lastElement().getElementType().equals(SessionFrame.STATE_QUERY_REQUEST)) {
-            return null;
-        }
-        Vector<Action> actions = session.getDetail((datum).getShortDetail()).getCustomActions(session.getEvaluationContext());
+        Vector<Action> actions = getActionDefinitions(session);
         ArrayList<DisplayElement> displayActions = new ArrayList<>();
         for (Action action: actions) {
             displayActions.add(new DisplayElement(action, session.getEvaluationContext()));
@@ -283,6 +285,27 @@ public class EntityListResponse extends MenuBean {
         DisplayElement[] ret = new DisplayElement[actions.size()];
         displayActions.toArray(ret);
         return ret;
+    }
+
+    private static String processAutolaunch(SessionWrapper session) {
+        Vector<Action> actions = getActionDefinitions(session);
+        String ret = null;
+        int index = 0;
+        for (Action action: actions) {
+            if (action.isAutoLaunching()) {
+                ret = "action " + index;
+            }
+            index = index + 1;
+        }
+        return ret;
+    }
+
+    private static Vector<Action> getActionDefinitions(SessionWrapper session) {
+        EntityDatum datum = (EntityDatum) session.getNeededDatum();
+        if (session.getFrame().getSteps().lastElement().getElementType().equals(SessionFrame.STATE_QUERY_REQUEST)) {
+            return new Vector<Action>();
+        }
+        return session.getDetail((datum).getShortDetail()).getCustomActions(session.getEvaluationContext());
     }
 
     public EntityBean[] getEntities() {
@@ -303,6 +326,14 @@ public class EntityListResponse extends MenuBean {
 
     public DisplayElement[] getActions() {
         return actions;
+    }
+
+    public String getAutolaunch() {
+        return autolaunch;
+    }
+
+    public void setAutolaunch(String autolaunch) {
+        this.autolaunch = autolaunch;
     }
 
     private void setActions(DisplayElement[] actions) {
