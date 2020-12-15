@@ -203,6 +203,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param confirmed         Whether the input has been previously validated,
      *                          allowing this step to skip validation
      */
+    @Trace
     public boolean handleInput(String input, boolean needsDetail, boolean confirmed) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
@@ -249,11 +250,11 @@ public class MenuSession implements HereFunctionHandlerListener {
         breadcrumbs.add(SessionUtils.getBestTitle(getSessionWrapper()));
     }
 
-    @Trace
     public Screen getNextScreen() throws CommCareSessionException {
         return getNextScreen(true);
     }
 
+    @Trace
     public Screen getNextScreen(boolean needsDetail) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
 

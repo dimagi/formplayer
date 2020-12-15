@@ -266,6 +266,7 @@ public class MenuSessionRunnerService {
      * After a sync, we can either pop another menu/form to begin
      * or just return to the app menu.
      */
+    @Trace
     private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
                                            MenuSession menuSession) throws Exception {
         NotificationMessage notificationMessage = doSync(nextScreen);
@@ -307,6 +308,7 @@ public class MenuSessionRunnerService {
      * <p>
      * Will do nothing if this wasn't a query screen.
      */
+    @Trace
     private NotificationMessage doQuery(FormplayerQueryScreen screen,
                                         MenuSession menuSession,
                                         Hashtable<String, String> queryDictionary) throws CommCareSessionException {
