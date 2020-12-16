@@ -213,11 +213,16 @@ public class MenuSession implements HereFunctionHandlerListener {
         try {
             if (screen instanceof EntityScreen) {
                 if (input.startsWith("action ") || !confirmed) {
-                    screen.init(sessionWrapper);
-                    if (screen.shouldBeSkipped()) {
-                        return handleInput(input, true, confirmed, allowAutoLaunch);
+                    if (input.startsWith("action ") && screen.getAutoLaunchAction() != null) {
+                        screen.setPendingAction(screen.getAutoLaunchAction);
+                        screen.updateSession(sessionWrapper);
+                    } else {
+                        screen.init(sessionWrapper);
+                        if (screen.shouldBeSkipped()) {
+                            return handleInput(input, true, confirmed, allowAutoLaunch);
+                        }
+                        screen.handleInputAndUpdateSession(sessionWrapper, input);
                     }
-                    screen.handleInputAndUpdateSession(sessionWrapper, input);
                 } else {
                     sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
                 }
