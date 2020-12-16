@@ -206,26 +206,34 @@ public class MenuSession implements HereFunctionHandlerListener {
     @Trace
     public boolean handleInput(String input, boolean needsDetail, boolean confirmed) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
-        log.info("Screen " + screen + " handling input " + input);
+        log.info("jls Screen " + screen + " handling input " + input);
         if(screen == null) {
             return false;
         }
         try {
             if (screen instanceof EntityScreen) {
+                log.info("This is an entity screen, input = " + input + " and confirmed = " + confirmed);
                 if (input.startsWith("action ") || !confirmed) {
+                    log.info("Calling init");
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
+                        log.info("Re-calling handleInput");
                         return handleInput(input, true, confirmed);
                     }
+                    log.info("Calling handleInputAndUpdateSession");
                     screen.handleInputAndUpdateSession(sessionWrapper, input);
                 } else {
+                    log.info("Calling setDatum");
                     sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
                 }
             } else {
+                log.info("This is not an entity screen");
                 boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
             }
             Screen previousScreen = screen;
+            log.info("Calling getNextScreen");
             screen = getNextScreen(needsDetail);
+            log.info("Done with getNextScreen");
             addTitle(input, previousScreen);
             return true;
         } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
