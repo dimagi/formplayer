@@ -52,6 +52,7 @@ name: autostaging
 branches:
   - ce/tracing # Cal Oct 23
   - sr/autosubmit # Cal Dec 4
+  - jls/autolaunch3 # Jenny Dec 15
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -59,3 +60,4 @@ submodules:
       - ce/tag-triggers # Cal Nov 16
       #- ce/index-state-category # Cal Nov 16
       #- ce/ensure-session # Cal Nov 20
+      - jls/autolaunch3 # Jenny Dec 15
