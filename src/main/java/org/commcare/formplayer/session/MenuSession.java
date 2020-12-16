@@ -213,9 +213,9 @@ public class MenuSession implements HereFunctionHandlerListener {
         try {
             if (screen instanceof EntityScreen) {
                 if (input.startsWith("action ") || !confirmed) {
-                    if (input.startsWith("action ") && screen.getAutoLaunchAction() != null) {
-                        screen.setPendingAction(screen.getAutoLaunchAction);
-                        screen.updateSession(sessionWrapper);
+                    EntityScreen entityScreen = (EntityScreen)screen;
+                    if (input.startsWith("action ") && entityScreen.getAutoLaunchAction() != null) {
+                        sessionWrapper.executeStackOperations(entityScreen.getAutoLaunchAction().getStackOperations(), entityScreen.getEvalContext());
                     } else {
                         screen.init(sessionWrapper);
                         if (screen.shouldBeSkipped()) {
