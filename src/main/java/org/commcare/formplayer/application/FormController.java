@@ -157,9 +157,13 @@ public class FormController extends AbstractBaseController{
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SubmitResponseBean submitResponseBean;
 
+        SimpleTimer validationTimer = new SimpleTimer();
+        validationTimer.start();
         submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 submitRequestBean.getAnswers());
+        validationTimer.end();
+        categoryTimingHelper.recordCategoryTiming(validationTimer, Constants.TimingCategories.VALIDATE_SUBMISSION);
 
         FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
 

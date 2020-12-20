@@ -184,6 +184,8 @@ public class RestoreFactory {
         return performTimedSync(true, false);
     }
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
+        SimpleTimer completeRestoreTimer = new SimpleTimer();
+        completeRestoreTimer.start();
         // Create parent dirs if needed
         if(getSqlSandbox().getLoggedInUser() != null){
             getSQLiteDB().createDatabaseFolder();
@@ -208,6 +210,8 @@ public class RestoreFactory {
             purgeTimer.end();
             categoryTimingHelper.recordCategoryTiming(purgeTimer, Constants.TimingCategories.PURGE_CASES);
         }
+        completeRestoreTimer.end();
+        categoryTimingHelper.recordCategoryTiming(completeRestoreTimer, Constants.TimingCategories.COMPLETE_RESTORE);
         return sandbox;
     }
 
