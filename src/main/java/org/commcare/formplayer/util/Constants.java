@@ -133,6 +133,7 @@ public class Constants {
         public static final String DOWNLOAD_RESTORE = "download_restore";
         public static final String COMPLETE_RESTORE = "complete_restore";
         public static final String VALIDATE_SUBMISSION = "validate_submission";
+        public static final String END_OF_FORM_NAV = "end_of_form_navigation";
     }
 
     // Errors

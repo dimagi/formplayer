@@ -248,6 +248,8 @@ public class FormController extends AbstractBaseController{
                 restoreFactory.performTimedSync(true, skipFixtures);
             }
 
+            SimpleTimer navTimer = new SimpleTimer();
+            navTimer.start();
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
                 Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
@@ -255,6 +257,8 @@ public class FormController extends AbstractBaseController{
                     submitResponseBean.setNextScreen(nav);
                 }
             }
+            navTimer.end();
+            categoryTimingHelper.recordCategoryTiming(navTimer, Constants.TimingCategories.END_OF_FORM_NAV);
         }
         return submitResponseBean;
     }
