@@ -69,7 +69,8 @@ public class CategoryTimingHelper {
                 Constants.DATADOG_GRANULAR_TIMINGS,
                 timing.durationInMs(),
                 "category:" + category,
-                "request:" + RequestUtils.getRequestEndpoint(request)
+                "request:" + RequestUtils.getRequestEndpoint(request),
+                "duration:" + timing.getDurationBucket()
         );
 
         log.debug(String.format("Timing Event[%s][%s]: %dms",
