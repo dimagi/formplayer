@@ -310,12 +310,8 @@ public class MenuSession implements HereFunctionHandlerListener {
         entityScreenCache.clear();
     }
 
-<<<<<<< HEAD
     @Trace
-    private EntityScreen getEntityScreenForSession(boolean needsDetail) throws CommCareSessionException {
-=======
     private EntityScreen getEntityScreenForSession(boolean needsDetail, boolean allowAutoLaunch) throws CommCareSessionException {
->>>>>>> master
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
         //This is only needed because with remote queries there can be nested datums with the same
@@ -332,14 +328,9 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
     }
 
-<<<<<<< HEAD
     @Trace
-    private EntityScreen createFreshEntityScreen(boolean needsDetail) throws CommCareSessionException {
-        EntityScreen entityScreen = new EntityScreen(false, needsDetail, sessionWrapper);
-=======
     private EntityScreen createFreshEntityScreen(boolean needsDetail, boolean allowAutoLaunch) throws CommCareSessionException {
         EntityScreen entityScreen = new EntityScreen(false, needsDetail, allowAutoLaunch, sessionWrapper);
->>>>>>> master
         return entityScreen;
     }
 
