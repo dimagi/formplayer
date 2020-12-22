@@ -59,19 +59,33 @@ public class CategoryTimingHelper {
         recordCategoryTiming(timing, category, null);
     }
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage) {
+        recordCategoryTiming(timing, category, sentryMessage, null);
+    }
+    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, String domain) {
         raven.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)
                 .setData("duration", timing.formatDuration())
                 .record();
 
-        datadogStatsDClient.recordExecutionTime(
+        if (domain != null) {
+            datadogStatsDClient.recordExecutionTime(
                 Constants.DATADOG_GRANULAR_TIMINGS,
                 timing.durationInMs(),
                 "category:" + category,
                 "request:" + RequestUtils.getRequestEndpoint(request),
                 "duration:" + timing.getDurationBucket()
-        );
+            );
+        } else {
+            datadogStatsDClient.recordExecutionTime(
+                Constants.DATADOG_GRANULAR_TIMINGS,
+                timing.durationInMs(),
+                "category:" + category,
+                "request:" + RequestUtils.getRequestEndpoint(request),
+                "duration:" + timing.getDurationBucket(),
+                "domain:" + domain
+            );
+        }
 
         log.debug(String.format("Timing Event[%s][%s]: %dms",
                 RequestUtils.getRequestEndpoint(request),
