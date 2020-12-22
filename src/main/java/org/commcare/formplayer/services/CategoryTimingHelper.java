@@ -74,7 +74,8 @@ public class CategoryTimingHelper {
                 timing.durationInMs(),
                 "category:" + category,
                 "request:" + RequestUtils.getRequestEndpoint(request),
-                "duration:" + timing.getDurationBucket()
+                "duration:" + timing.getDurationBucket(),
+                "domain:" + domain
             );
         } else {
             datadogStatsDClient.recordExecutionTime(
@@ -82,8 +83,7 @@ public class CategoryTimingHelper {
                 timing.durationInMs(),
                 "category:" + category,
                 "request:" + RequestUtils.getRequestEndpoint(request),
-                "duration:" + timing.getDurationBucket(),
-                "domain:" + domain
+                "duration:" + timing.getDurationBucket()
             );
         }
 
