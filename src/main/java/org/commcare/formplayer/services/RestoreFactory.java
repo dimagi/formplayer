@@ -184,6 +184,8 @@ public class RestoreFactory {
         return performTimedSync(true, false);
     }
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
+        SimpleTimer completeRestoreTimer = new SimpleTimer();
+        completeRestoreTimer.start();
         // Create parent dirs if needed
         if(getSqlSandbox().getLoggedInUser() != null){
             getSQLiteDB().createDatabaseFolder();
@@ -206,8 +208,10 @@ public class RestoreFactory {
             purgeTimer.start();
             FormRecordProcessorHelper.purgeCases(sandbox);
             purgeTimer.end();
-            categoryTimingHelper.recordCategoryTiming(purgeTimer, Constants.TimingCategories.PURGE_CASES);
+            categoryTimingHelper.recordCategoryTiming(purgeTimer, Constants.TimingCategories.PURGE_CASES, null, domain);
         }
+        completeRestoreTimer.end();
+        categoryTimingHelper.recordCategoryTiming(completeRestoreTimer, Constants.TimingCategories.COMPLETE_RESTORE, null, domain);
         return sandbox;
     }
 
@@ -247,7 +251,7 @@ public class RestoreFactory {
                 setAutoCommit(true);
 
                 parseTimer.end();
-                categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
+                categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE, null, domain);
                 sandbox.writeSyncToken();
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {

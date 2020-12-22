@@ -157,9 +157,13 @@ public class FormController extends AbstractBaseController{
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SubmitResponseBean submitResponseBean;
 
+        SimpleTimer validationTimer = new SimpleTimer();
+        validationTimer.start();
         submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 submitRequestBean.getAnswers());
+        validationTimer.end();
+        categoryTimingHelper.recordCategoryTiming(validationTimer, Constants.TimingCategories.VALIDATE_SUBMISSION, null, submitRequestBean.getDomain());
 
         FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
 
@@ -181,7 +185,7 @@ public class FormController extends AbstractBaseController{
 
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
-                                "Puring cases took some time" : "Probably didn't have to purge cases");
+                                "Purging cases took some time" : "Probably didn't have to purge cases", submitRequestBean.getDomain());
 
                 ResponseEntity<String> submitResponse = submitService.submitForm(
                         formEntrySession.getInstanceXml(),
@@ -244,6 +248,8 @@ public class FormController extends AbstractBaseController{
                 restoreFactory.performTimedSync(true, skipFixtures);
             }
 
+            SimpleTimer navTimer = new SimpleTimer();
+            navTimer.start();
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
                 Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
@@ -251,6 +257,8 @@ public class FormController extends AbstractBaseController{
                     submitResponseBean.setNextScreen(nav);
                 }
             }
+            navTimer.end();
+            categoryTimingHelper.recordCategoryTiming(navTimer, Constants.TimingCategories.END_OF_FORM_NAV, null, submitRequestBean.getDomain());
         }
         return submitResponseBean;
     }
