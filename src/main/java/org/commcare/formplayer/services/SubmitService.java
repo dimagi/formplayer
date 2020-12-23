@@ -37,7 +37,7 @@ public class SubmitService extends DefaultResponseErrorHandler {
     private CategoryTimingHelper.RecordingTimer submitTimer;
 
     public ResponseEntity<String> submitForm(String formXml, String submitUrl) {
-        submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ);
+        submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ, restoreFactory.getDomain());
         submitTimer.start();
         try {
             HttpEntity<?> entity = new HttpEntity<Object>(formXml, restoreFactory.getUserHeaders());

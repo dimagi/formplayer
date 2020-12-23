@@ -66,10 +66,11 @@ public class SubmitServiceTests {
 
     @Test
     public void assertThatErrorsPassThrough() {
+        when(restoreFactory.getDomain()).thenReturn("arealdomain");
+
         CategoryTimingHelper.RecordingTimer mockedTimer = Mockito.mock(CategoryTimingHelper.RecordingTimer.class);
         when(mockedTimer.end()).thenReturn(mockedTimer);
-
-        when(categoryTimingHelper.newTimer(anyString())).thenReturn(mockedTimer);
+        when(categoryTimingHelper.newTimer(anyString(), anyString())).thenReturn(mockedTimer);
 
         String serverUrl = "https://formplayer.test/receiver";
 

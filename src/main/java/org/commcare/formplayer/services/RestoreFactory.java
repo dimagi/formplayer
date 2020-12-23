@@ -485,7 +485,7 @@ public class RestoreFactory {
         ResponseEntity<org.springframework.core.io.Resource> response;
         String status = "error";
         log.info("Restoring at domain: " + domain + " with url: " + restoreUrl);
-        downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
+        downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
         downloadRestoreTimer.start();
         try {
             response = restTemplate.exchange(
