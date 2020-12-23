@@ -28,11 +28,12 @@ public class CategoryTimingHelper {
 
     public class RecordingTimer extends SimpleTimer {
         private CategoryTimingHelper parent;
-        private String category, sentryMessage;
+        private String category, sentryMessage, domain;
 
-        private RecordingTimer(CategoryTimingHelper parent, String category) {
+        private RecordingTimer(CategoryTimingHelper parent, String category, String domain) {
             this.parent = parent;
             this.category = category;
+            this.domain = domain;
         }
 
         @Override
@@ -47,12 +48,16 @@ public class CategoryTimingHelper {
         }
 
         public void record() {
-            parent.recordCategoryTiming(this, category, sentryMessage);
+            parent.recordCategoryTiming(this, category, sentryMessage, domain);
         }
     }
 
     public RecordingTimer newTimer(String category) {
-        return new RecordingTimer(this, category);
+        return newTimer(category, null);
+    }
+
+    public RecordingTimer newTimer(String category, String domain) {
+        return new RecordingTimer(this, category, domain);
     }
 
     public void recordCategoryTiming(Timing timing, String category) {

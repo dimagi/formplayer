@@ -67,7 +67,7 @@ public class InstallService {
             // Wipe out folder and attempt install
             sqliteDB.closeConnection();
             sqliteDB.deleteDatabaseFile();
-            installTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL);
+            installTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL, storageFactory.getDomain());
             installTimer.start();
             if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiating folder " + sqliteDB.getDatabaseFileForDebugPurposes());
