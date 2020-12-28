@@ -448,6 +448,8 @@ public class MenuSessionRunnerService {
         NewFormResponse response = new NewFormResponse(formEntrySession);
 
         response.setNotification(establishVolatility(formEntrySession));
+        response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
+
 
         formSessionRepo.save(formEntrySession.serialize());
         return response;
