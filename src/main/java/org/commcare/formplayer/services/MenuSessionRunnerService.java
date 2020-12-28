@@ -159,7 +159,8 @@ public class MenuSessionRunnerService {
 
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
-        return advanceSessionWithSelections(menuSession, selections, null, null, 0, null, 0);
+        return advanceSessionWithSelections(menuSession, selections, null, null,
+                0, null, 0, false);
     }
 
     /**
@@ -181,7 +182,8 @@ public class MenuSessionRunnerService {
                                                          Hashtable<String, String> queryDictionary,
                                                          int offset,
                                                          String searchText,
-                                                         int sortIndex) throws Exception {
+                                                         int sortIndex,
+                                                         boolean doQuery) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -198,7 +200,7 @@ public class MenuSessionRunnerService {
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
-            boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections,0,i));
+            boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
@@ -214,12 +216,17 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-            if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
-                notificationMessage = doQuery(
-                        (FormplayerQueryScreen)nextScreen,
-                        menuSession,
-                        queryDictionary
-                );
+            if (nextScreen instanceof FormplayerQueryScreen) {
+                if (doQuery) {
+                    notificationMessage = doQuery(
+                            (FormplayerQueryScreen)nextScreen,
+                            menuSession,
+                            queryDictionary
+                    );
+                } else {
+                    answerQueryPrompts((FormplayerQueryScreen)nextScreen,
+                            queryDictionary);
+                }
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
@@ -255,6 +262,15 @@ public class MenuSessionRunnerService {
             }
             return responseBean;
         }
+    }
+
+    // Sets the query fields and refreshes any itemset choices based on them
+    private void answerQueryPrompts(FormplayerQueryScreen screen,
+                                    Hashtable<String, String> queryDictionary) {
+        if (queryDictionary != null) {
+            screen.answerPrompts(queryDictionary);
+        }
+        screen.refreshItemSetChoices();
     }
 
 

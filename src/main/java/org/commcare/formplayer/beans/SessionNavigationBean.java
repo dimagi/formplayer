@@ -18,6 +18,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private String geoLocation;
     private String menuSessionId;
     private Hashtable<String, String> queryDictionary;
+    private boolean doQuery;
     private boolean isPersistent;
     private int sortIndex;
 
@@ -68,6 +69,16 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "query_dictionary")
     public void setQueryDictionary(Hashtable<String, String> queryDictionary) {
         this.queryDictionary = queryDictionary;
+    }
+
+    @JsonGetter(value = "do_query")
+    public boolean isDoQuery() {
+        return doQuery;
+    }
+
+    @JsonSetter(value = "do_query")
+    public void setDoQuery(boolean doQuery) {
+        this.doQuery = doQuery;
     }
 
     @JsonGetter(value = "geo_location")
