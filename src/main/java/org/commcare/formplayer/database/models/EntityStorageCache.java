@@ -2,6 +2,7 @@ package org.commcare.formplayer.database.models;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.sandbox.PostgresDB;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.formplayer.sandbox.SqlHelper;
 import org.commcare.modern.database.DatabaseHelper;
@@ -102,7 +103,7 @@ public class EntityStorageCache {
         contentValues.put(COL_CACHE_KEY, cacheKey);
         contentValues.put(COL_VALUE, value);
         contentValues.put(COL_TIMESTAMP, String.valueOf(timestamp));
-        SqlHelper.basicInsert(handler.getConnection(), TABLE_NAME, contentValues);
+        SqlHelper.basicInsert(handler.getConnection(), TABLE_NAME, contentValues, handler instanceof PostgresDB);
     }
 
     // Currently unused

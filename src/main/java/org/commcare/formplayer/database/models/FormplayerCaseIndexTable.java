@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
 import org.commcare.cases.query.queryset.DualTableSingleMatchModelQuerySet;
+import org.commcare.formplayer.sandbox.PostgresDB;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.database.TableBuilder;
@@ -97,7 +98,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
             contentValues.put(COL_INDEX_TYPE, ci.getTargetType());
             contentValues.put(COL_INDEX_TARGET, ci.getTarget());
             contentValues.put(COL_INDEX_RELATIONSHIP, ci.getRelationship());
-            SqlHelper.basicInsert(connectionHandler.getConnection(), TABLE_NAME, contentValues);
+            SqlHelper.basicInsert(connectionHandler.getConnection(), TABLE_NAME, contentValues, connectionHandler instanceof PostgresDB);
         }
     }
 
