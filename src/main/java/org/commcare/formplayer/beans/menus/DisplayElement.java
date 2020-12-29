@@ -27,7 +27,7 @@ public class DisplayElement {
     private String value;
 
     @Nullable
-    Vector<SelectChoice> itemsetChoices;
+    String[] itemsetChoices;
 
     public DisplayElement() {
     }
@@ -43,7 +43,7 @@ public class DisplayElement {
     }
 
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id, @Nullable String input,
-                          @Nullable String value, @Nullable Vector<SelectChoice> itemsetChoices) {
+                          @Nullable String value, @Nullable String[] itemsetChoices) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if (displayUnit.getImageURI() != null) {
@@ -106,7 +106,7 @@ public class DisplayElement {
         return input;
     }
 
-    public Vector<SelectChoice> getItemsetChoices() {
+    public String[] getItemsetChoices() {
         return itemsetChoices;
     }
 }

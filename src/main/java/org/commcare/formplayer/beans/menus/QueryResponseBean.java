@@ -45,10 +45,22 @@ public class QueryResponseBean extends MenuBean {
                     key,
                     queryPromptItem.getInput(),
                     currentAnswers.get(key),
-                    queryPromptItem.getItemsetBinding() != null ? queryPromptItem.getItemsetBinding().getChoices() : null);
+                    getItemsetChoices(queryPromptItem));
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
+    }
+
+    private String[] getItemsetChoices(QueryPrompt queryPrompt) {
+        if (queryPrompt.getItemsetBinding() != null) {
+            Vector<SelectChoice> selectChoices = queryPrompt.getItemsetBinding().getChoices();
+            String[] choices = new String[selectChoices.size()];
+            for (int i = 0; i < selectChoices.size(); i++) {
+                choices[i] = selectChoices.get(i).getLabelInnerText();
+            }
+            return choices;
+        }
+        return null;
     }
 
     @Override
