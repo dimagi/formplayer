@@ -51,6 +51,7 @@ trunk: master
 name: autostaging
 branches:
   - ce/tracing # Cal Oct 23
+  - caseClaim # Shubham Dec 29
 submodules:
   libs/commcare:
     trunk: formplayer
