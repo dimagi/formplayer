@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.sandbox.PostgresDB;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -33,6 +34,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private String asUsername;
 
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
+    private PostgresDB postgresDB = new PostgresDB();
 
     private FormplayerPropertyManager propertyManager;
     private StorageManager storageManager;
@@ -107,7 +109,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqlStorage(this.sqLiteDB, type, name);
+        return new SqlStorage(this.postgresDB, type, name);
     }
 
     public String getUsername() {

@@ -96,21 +96,25 @@ public class SqlStorage<T extends Persistable>
 
     public void basicInsert(Map<String, Object> contentVals) {
         Connection connection = getConnection();
-        SqlHelper.basicInsert(connection, tableName, contentVals);
+        SqlHelper.basicInsert(connection, tableName, contentVals, isPostgres());
     }
 
     public void insertOrReplace(Map<String, Object> contentVals) {
         Connection connection = getConnection();
-        SqlHelper.insertOrReplace(connection, tableName, contentVals);
+        SqlHelper.insertOrReplace(connection, tableName, contentVals, isPostgres());
     }
 
     private void buildTableFromInstance(T instance) throws ClassNotFoundException {
         Connection connection = getConnection();
-        SqlHelper.createTable(connection, tableName, instance);
+        SqlHelper.createTable(connection, tableName, instance, isPostgres());
     }
 
     public Connection getConnection() {
         return connectionHandler.getConnection();
+    }
+
+    public boolean isPostgres() {
+        return connectionHandler instanceof PostgresDB;
     }
 
     @Override
@@ -121,7 +125,7 @@ public class SqlStorage<T extends Persistable>
         }
         Connection connection;
         connection = getConnection();
-        int id = SqlHelper.insertToTable(connection, tableName, p);
+        int id = SqlHelper.insertToTable(connection, tableName, p, isPostgres());
         p.setID(id);
     }
 
@@ -206,10 +210,10 @@ public class SqlStorage<T extends Persistable>
     @Override
     public int add(T e) {
         Connection connection = getConnection();
-        int id = SqlHelper.insertToTable(connection, tableName, e);
+        int id = SqlHelper.insertToTable(connection, tableName, e, isPostgres());
         connection = getConnection();
         e.setID(id);
-        SqlHelper.updateId(connection, tableName, e);
+        SqlHelper.updateId(connection, tableName, e, isPostgres());
         return id;
     }
 
@@ -335,6 +339,9 @@ public class SqlStorage<T extends Persistable>
                 return null;
             }
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (isPostgres()) {
+                    resultSet.next();
+                }
                 return resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
             }
         } catch (SQLException e) {
@@ -353,7 +360,7 @@ public class SqlStorage<T extends Persistable>
     @Override
     public void update(int id, Persistable p) {
         Connection connection = getConnection();
-        SqlHelper.updateToTable(connection, tableName, p, id);
+        SqlHelper.updateToTable(connection, tableName, p, id, isPostgres());
     }
 
     @Override

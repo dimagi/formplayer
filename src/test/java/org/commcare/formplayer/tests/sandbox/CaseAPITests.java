@@ -83,7 +83,7 @@ public class CaseAPITests {
 
             SqlHelper.createTable(connection, "TFLedger", new Ledger());
 
-            SqlHelper.insertToTable(connection, "TFLedger", l);
+            SqlHelper.insertToTable(connection, "TFLedger", l, false);
 
             preparedStatement = SqlHelper.prepareTableSelectStatement(connection, "TFLedger", new String[]{"entity-id"},
                     new String[]{"ledger_entity_id"});
