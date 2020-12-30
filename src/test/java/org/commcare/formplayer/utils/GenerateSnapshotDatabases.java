@@ -42,7 +42,8 @@ public class GenerateSnapshotDatabases extends BaseTestClass {
         return snapshotDbDirectory;
     }
 
-    protected boolean remoteDatabaseFoldersAfterTests() {
+    @Override
+    protected boolean removeDatabaseFoldersAfterTests() {
         return false;
     }
 

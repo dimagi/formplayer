@@ -184,7 +184,7 @@ public class BaseTestClass {
         return "testdbs/";
     }
 
-    protected boolean remoteDatabaseFoldersAfterTests() {
+    protected boolean removeDatabaseFoldersAfterTests() {
         return true;
     }
 
@@ -209,7 +209,7 @@ public class BaseTestClass {
         }
         restoreFactoryMock.getSQLiteDB().closeConnection();
         storageFactoryMock.getSQLiteDB().closeConnection();
-        if (remoteDatabaseFoldersAfterTests()) {
+        if (removeDatabaseFoldersAfterTests()) {
             SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
         }
     }

@@ -48,11 +48,6 @@ public class SnapshotTests extends BaseTestClass {
         }
     }
 
-    protected boolean remoteDatabaseFoldersAfterTests() {
-        return true;
-    }
-
-
     @Test
     public void testUserSandbox() throws Exception {
         UserDB database = getUserDbConnector("snapshot", "snapshot_test", null);
@@ -64,9 +59,9 @@ public class SnapshotTests extends BaseTestClass {
         UserSqlSandbox sandbox = new UserSqlSandbox(database);
         enumerate("Case", sandbox.getCaseStorage());
         enumerate("Ledger", sandbox.getLedgerStorage());
-        enumerate("User",sandbox.getUserStorage());
-        enumerate("App Fixtures",sandbox.getAppFixtureStorage());
-        enumerate("User Fixtures",sandbox.getUserFixtureStorage());
+        enumerate("User", sandbox.getUserStorage());
+        enumerate("App Fixtures", sandbox.getAppFixtureStorage());
+        enumerate("User Fixtures", sandbox.getUserFixtureStorage());
     }
 
     @Test
