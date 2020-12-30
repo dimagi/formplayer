@@ -159,7 +159,7 @@ public class MenuSessionRunnerService {
 
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
-        return advanceSessionWithSelections(menuSession, selections, null, null, 0, null, 0);
+        return advanceSessionWithSelections(menuSession, selections, null, null, 0, null, 0, false);
     }
 
     /**
@@ -181,7 +181,8 @@ public class MenuSessionRunnerService {
                                                          Hashtable<String, String> queryDictionary,
                                                          int offset,
                                                          String searchText,
-                                                         int sortIndex) throws Exception {
+                                                         int sortIndex,
+                                                         boolean doQuery) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -214,12 +215,17 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-            if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
-                notificationMessage = doQuery(
-                        (FormplayerQueryScreen)nextScreen,
-                        menuSession,
-                        queryDictionary
-                );
+            if (nextScreen instanceof FormplayerQueryScreen) {
+                if (doQuery) {
+System.out.println("doing query");
+                    notificationMessage = doQuery(
+                            (FormplayerQueryScreen)nextScreen,
+                            menuSession,
+                            queryDictionary
+                    );
+                } else {
+System.out.println("not doing query");
+                }
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(

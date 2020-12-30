@@ -210,7 +210,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         if(screen == null) {
             return false;
         }
-        try {
+        //try {
             if (screen instanceof EntityScreen) {
                 if (input.startsWith("action ") || !confirmed) {
                     EntityScreen entityScreen = (EntityScreen)screen;
@@ -233,11 +233,11 @@ public class MenuSession implements HereFunctionHandlerListener {
             screen = getNextScreen(needsDetail, allowAutoLaunch);
             addTitle(input, previousScreen);
             return true;
-        } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
+        /*} catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
                     " threw exception " + e.getMessage() + ". Please try reloading this application" +
                     " and if the problem persists please report a bug.", e);
-        }
+        }*/
     }
 
     private void addTitle(String input, Screen previousScreen) {
