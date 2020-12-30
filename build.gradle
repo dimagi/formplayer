@@ -118,6 +118,14 @@ test {
     }
 }
 
+task CreateSnapshotDbs(type: Test) {
+    environment('org.commcare.formplayer.test.snapshot.mode', 'write')
+    filter {
+        //specific test method
+        includeTestsMatching "org.commcare.formplayer.utils.GenerateSnapshotDatabases"
+    }
+}
+
 task copyTestResources(type: Copy) {
     from "${projectDir}/src/test/resources"
     into "${buildDir}/classes/test"
