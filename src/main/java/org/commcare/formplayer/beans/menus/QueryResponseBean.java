@@ -1,18 +1,15 @@
 package org.commcare.formplayer.beans.menus;
 
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.suite.model.DisplayUnit;
+import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.QueryPrompt;
 import org.commcare.util.screen.QueryScreen;
 
-import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.util.OrderedHashtable;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Map;
-import java.util.Vector;
 
 /**
  * Created by willpride on 4/13/16.
@@ -40,27 +37,23 @@ public class QueryResponseBean extends MenuBean {
         int count = 0;
         for (String key : Collections.list(queryPromptMap.keys())) {
             QueryPrompt queryPromptItem = queryPromptMap.get(key);
+            String currentAnswer = currentAnswers.get(key);
+
+            // Map the current Answer to the itemset index of the answer
+            Pair<String[], Integer> choicesAndAnswerIndex = queryPromptItem.getItemsetChoicesWithAnswerIndex(currentAnswer);
+            if (queryPromptItem.isSelectOne()) {
+                currentAnswer = choicesAndAnswerIndex.second == -1 ? null : String.valueOf(choicesAndAnswerIndex.second);
+            }
+
             displays[count] = new DisplayElement(queryPromptItem.getDisplay(),
                     session.getEvaluationContext(),
                     key,
                     queryPromptItem.getInput(),
-                    currentAnswers.get(key),
-                    getItemsetChoices(queryPromptItem));
+                    currentAnswer,
+                    choicesAndAnswerIndex.first);
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
-    }
-
-    private String[] getItemsetChoices(QueryPrompt queryPrompt) {
-        if (queryPrompt.getItemsetBinding() != null) {
-            Vector<SelectChoice> selectChoices = queryPrompt.getItemsetBinding().getChoices();
-            String[] choices = new String[selectChoices.size()];
-            for (int i = 0; i < selectChoices.size(); i++) {
-                choices[i] = selectChoices.get(i).getLabelInnerText();
-            }
-            return choices;
-        }
-        return null;
     }
 
     @Override
