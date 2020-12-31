@@ -97,7 +97,7 @@ public class MenuController extends AbstractBaseController {
                     sessionNavigationBean.getOffset(),
                     sessionNavigationBean.getSearchText(),
                     sessionNavigationBean.getSortIndex(),
-                    false
+                    sessionNavigationBean.isDoQuery()
             );
             logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
@@ -121,7 +121,7 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
-                false
+                sessionNavigationBean.isDoQuery()
         );
         logNotification(baseResponseBean.getNotification(),request);
 
