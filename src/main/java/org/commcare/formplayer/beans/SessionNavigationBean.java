@@ -1,4 +1,5 @@
 package org.commcare.formplayer.beans;
+import org.commcare.formplayer.objects.QueryDictionary;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -17,7 +18,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private String searchText;
     private String geoLocation;
     private String menuSessionId;
-    private Hashtable<String, String> queryDictionary;
+    private QueryDictionary queryDictionary;
     private boolean doQuery;
     private boolean isPersistent;
     private int sortIndex;
@@ -63,11 +64,11 @@ public class SessionNavigationBean extends InstallRequestBean {
         this.menuSessionId = menuSessionId;
     }
     @JsonGetter(value = "query_dictionary")
-    public Hashtable<String, String> getQueryDictionary() {
+    public QueryDictionary getQueryDictionary() {
         return queryDictionary;
     }
     @JsonSetter(value = "query_dictionary")
-    public void setQueryDictionary(Hashtable<String, String> queryDictionary) {
+    public void setQueryDictionary(QueryDictionary queryDictionary) {
         this.queryDictionary = queryDictionary;
     }
 
