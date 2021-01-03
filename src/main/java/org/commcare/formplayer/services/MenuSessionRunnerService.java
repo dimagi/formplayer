@@ -4,6 +4,7 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.objects.QueryDictionary;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -185,7 +186,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections,
                                                          String detailSelection,
-                                                         Hashtable<String, String> queryDictionary,
+                                                         QueryDictionary queryDictionary,
                                                          int offset,
                                                          String searchText,
                                                          int sortIndex,
@@ -224,13 +225,14 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-            if (nextScreen instanceof FormplayerQueryScreen) {
+            String queryDictionaryKey = String.join(",", selections);
+            if (nextScreen instanceof FormplayerQueryScreen && queryDictionary != null) {
                 ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
-                if (doQuery) {
+                if (doQuery && queryDictionary.getData().get(queryDictionaryKey) != null) {
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
                             menuSession,
-                            queryDictionary
+                            queryDictionary.getData().get(queryDictionaryKey)
                     );
                 }
             }
