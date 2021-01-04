@@ -5,11 +5,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.DisplayUnit;
-import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.springframework.lang.Nullable;
 
-import java.util.Vector;
 
 /**
  * Created by willpride on 4/14/16.
@@ -41,6 +39,7 @@ public class DisplayElement {
             this.imageUri = action.getDisplay().getImageURI().evaluate(ec);
         }
     }
+
 
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id, @Nullable String input,
                           @Nullable String value, @Nullable String[] itemsetChoices) {
@@ -85,9 +84,13 @@ public class DisplayElement {
         this.imageUri = imageUri;
     }
 
+    public String getValue() {
+        return value;
+    }
+
     @Override
-    public String toString() {
-        return "DisplayElement id=" + id + ", text=" + text + ", imageUri=" + imageUri + ", audioUri=" + audioUri;
+    public String toString(){
+        return "DisplayElement id=" + id + ", text=" + text + ", value=" + value + ", imageUri=" + imageUri + ", audioUri=" + audioUri;
     }
 
     public String getId() {
@@ -96,10 +99,6 @@ public class DisplayElement {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getValue() {
-        return value;
     }
 
     public String getInput() {

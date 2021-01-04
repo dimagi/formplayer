@@ -4,7 +4,6 @@ import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.QueryPrompt;
 import org.commcare.util.screen.QueryScreen;
-
 import org.javarosa.core.util.OrderedHashtable;
 
 import java.util.Arrays;
