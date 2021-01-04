@@ -32,12 +32,14 @@ public class QueryResponseBean extends MenuBean {
 
     public QueryResponseBean(QueryScreen queryScreen, SessionWrapper session){
         OrderedHashtable<String, QueryPrompt> queryPromptMap = queryScreen.getUserInputDisplays();
+        Hashtable<String, String> currentAnswers = queryScreen.getCurrentAnswers();
         displays = new DisplayElement[queryPromptMap.size()];
         int count = 0 ;
         for (String key : Collections.list(queryPromptMap.keys())) {
             displays[count] = new DisplayElement(queryPromptMap.get(key).getDisplay(),
                     session.getEvaluationContext(),
-                    key);
+                    key,
+                    currentAnswers.get(key));
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
