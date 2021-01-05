@@ -225,6 +225,7 @@ public class MenuSessionRunnerService {
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
             if (nextScreen instanceof FormplayerQueryScreen) {
+                ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
                 if (doQuery) {
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
