@@ -597,6 +597,7 @@ public class BaseTestClass {
     <T> T sessionNavigateWithQuery(String[] selections,
                                    String testName,
                                    Hashtable<String, String> queryDictionary,
+                                   boolean doQuery,
                                    Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setSelections(selections);
@@ -605,6 +606,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
         sessionNavigationBean.setQueryDictionary(queryDictionary);
+        sessionNavigationBean.setDoQuery(doQuery);
         return generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,

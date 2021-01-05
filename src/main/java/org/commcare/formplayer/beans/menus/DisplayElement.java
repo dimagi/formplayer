@@ -8,6 +8,8 @@ import org.commcare.suite.model.DisplayUnit;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.springframework.lang.Nullable;
 
+import java.util.Arrays;
+
 
 /**
  * Created by willpride on 4/14/16.
@@ -90,7 +92,8 @@ public class DisplayElement {
 
     @Override
     public String toString(){
-        return "DisplayElement id=" + id + ", text=" + text + ", value=" + value + ", imageUri=" + imageUri + ", audioUri=" + audioUri;
+        return "DisplayElement id=" + id + ", text=" + text + ", value=" + value + ", imageUri=" + imageUri
+                + ", audioUri=" + audioUri + ", itemsetChoices=" + Arrays.toString(itemsetChoices);
     }
 
     public String getId() {
