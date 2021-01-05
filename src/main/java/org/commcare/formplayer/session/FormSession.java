@@ -562,6 +562,7 @@ public class FormSession {
         return new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
     }
 
+    @Trace
     public FormEntryResponseBean answerQuestionToJSON(Object answer, String answerIndex) throws IOException {
         if (answerIndex == null) {
             answerIndex = getCurrentIndex();

@@ -17,6 +17,8 @@ import org.json.JSONObject;
 
 import java.util.*;
 
+import datadog.trace.api.Trace;
+
 /**
  * Utility functions for performing some action on a Form and receiving a JSON response
  */
@@ -93,6 +95,7 @@ public class JsonActionUtils {
      * @param prompt     the question to be answered
      * @return The JSON representation of the updated question tree
      */
+    @Trace
     private static JSONObject questionAnswerToJson(FormEntryController controller,
                                                   FormEntryModel model, String answer,
                                                   FormEntryPrompt prompt,
