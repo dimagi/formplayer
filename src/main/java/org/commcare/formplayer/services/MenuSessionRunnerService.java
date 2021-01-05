@@ -91,14 +91,16 @@ public class MenuSessionRunnerService {
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, 0, "", 0);
+        return getNextMenu(menuSession, null, 0, "", 0, null, false);
     }
 
     private BaseResponseBean getNextMenu(MenuSession menuSession,
                                          String detailSelection,
                                          int offset,
                                          String searchText,
-                                         int sortIndex) throws Exception {
+                                         int sortIndex,
+                                         Hashtable<String, String> queryDictionary,
+                                         boolean doQuery) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -124,7 +126,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
-                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex);
+                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryDictionary, doQuery);
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
@@ -136,6 +138,10 @@ public class MenuSessionRunnerService {
                     storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
         } else if (nextScreen instanceof FormplayerQueryScreen) {
+            if(!doQuery){
+                answerQueryPrompts((FormplayerQueryScreen)nextScreen,
+                        queryDictionary);
+            }
             menuResponseBean = new QueryResponseBean(
                     (QueryScreen)nextScreen,
                     menuSession.getSessionWrapper()
@@ -193,7 +199,9 @@ public class MenuSessionRunnerService {
                     null,
                     offset,
                     searchText,
-                    sortIndex
+                    sortIndex,
+                    queryDictionary,
+                    doQuery
             );
         }
         NotificationMessage notificationMessage = null;
@@ -223,9 +231,6 @@ public class MenuSessionRunnerService {
                             menuSession,
                             queryDictionary
                     );
-                } else {
-                    answerQueryPrompts((FormplayerQueryScreen)nextScreen,
-                            queryDictionary);
                 }
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
@@ -243,7 +248,9 @@ public class MenuSessionRunnerService {
                 detailSelection,
                 offset,
                 searchText,
-                sortIndex
+                sortIndex,
+                queryDictionary,
+                doQuery
         );
         restoreFactory.cacheSessionSelections(selections);
 
