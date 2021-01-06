@@ -164,6 +164,7 @@ public class JsonActionUtils {
      * @param data            the String answer
      * @return the IAnswerData version of @data above
      */
+    @Trace
     private static IAnswerData getAnswerData(FormEntryPrompt formEntryPrompt, String data) {
         int index;
         switch(formEntryPrompt.getDataType()){
