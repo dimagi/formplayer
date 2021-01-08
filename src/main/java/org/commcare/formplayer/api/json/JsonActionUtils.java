@@ -97,9 +97,11 @@ public class JsonActionUtils {
                                                   FormEntryModel model, String answer,
                                                   FormEntryPrompt prompt,
                                                   boolean oneQuestionPerScreen,
-                                                  FormIndex navIndex) {
+						  FormIndex navIndex,
+						  boolean skipValidation) {
         JSONObject ret = new JSONObject();
         IAnswerData answerData;
+	boolean answerUnchanged = false;
 
         if (answer == null || answer.equals("None")) {
             answerData = null;
@@ -113,6 +115,10 @@ public class JsonActionUtils {
                 return ret;
             }
         }
+	IAnswerData currentAnswerData = prompt.getAnswerValue();
+	if (answerData != null && currentAnswerData != null && answerData.uncast().equals(currentAnswerData.uncast())) {
+	    answerUnchanged = true;
+	}
         int result = controller.answerQuestion(prompt.getIndex(), answerData);
         if (result == FormEntryController.ANSWER_REQUIRED_BUT_EMPTY) {
             ret.put(ApiConstants.RESPONSE_STATUS_KEY, "validation-error");
@@ -121,7 +127,7 @@ public class JsonActionUtils {
             ret.put(ApiConstants.RESPONSE_STATUS_KEY, "validation-error");
             ret.put(ApiConstants.ERROR_TYPE_KEY, "constraint");
             ret.put(ApiConstants.ERROR_REASON_KEY, prompt.getConstraintText());
-        } else if (result == FormEntryController.ANSWER_OK) {
+        } else if ((skipValidation && answerUnchanged) || result == FormEntryController.ANSWER_OK) {
             if (oneQuestionPerScreen) {
                 ret.put(ApiConstants.QUESTION_TREE_KEY, getOneQuestionPerScreenJSON(
                     model, controller, navIndex));
@@ -147,11 +153,12 @@ public class JsonActionUtils {
                                                   FormEntryModel model, String answer,
                                                   String ansIndex,
                                                   boolean oneQuestionPerScreen,
-                                                  String navIndex) {
+                                                  String navIndex,
+						  boolean skipValidation) {
         FormIndex answerIndex = indexFromString(ansIndex, model.getForm());
         FormEntryPrompt prompt = model.getQuestionPrompt(answerIndex);
         FormIndex navigationIndex = indexFromString(navIndex, model.getForm());
-        return questionAnswerToJson(controller, model, answer, prompt, oneQuestionPerScreen, navigationIndex);
+        return questionAnswerToJson(controller, model, answer, prompt, oneQuestionPerScreen, navigationIndex, skipValidation);
     }
 
     /**
