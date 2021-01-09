@@ -116,7 +116,7 @@ public class JsonActionUtils {
             }
         }
 	IAnswerData currentAnswerData = prompt.getAnswerValue();
-	if (skipValidation && answerData != null && currentAnswerData != null && answerData.uncast().equals(currentAnswerData.uncast())) {
+	if (skipValidation && answerData != null && currentAnswerData != null && answerData.uncast().getValue().equals(currentAnswerData.uncast().getValue())) {
 	    result = FormEntryController.ANSWER_OK;
 	} else {
 	    result = controller.answerQuestion(prompt.getIndex(), answerData);
