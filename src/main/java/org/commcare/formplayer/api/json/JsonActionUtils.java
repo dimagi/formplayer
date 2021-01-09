@@ -101,7 +101,7 @@ public class JsonActionUtils {
 						  boolean skipValidation) {
         JSONObject ret = new JSONObject();
         IAnswerData answerData;
-	boolean answerUnchanged = false;
+	int result;
 
         if (answer == null || answer.equals("None")) {
             answerData = null;
@@ -116,10 +116,11 @@ public class JsonActionUtils {
             }
         }
 	IAnswerData currentAnswerData = prompt.getAnswerValue();
-	if (answerData != null && currentAnswerData != null && answerData.uncast().equals(currentAnswerData.uncast())) {
-	    answerUnchanged = true;
+	if (skipValidation && answerData != null && currentAnswerData != null && answerData.uncast().equals(currentAnswerData.uncast())) {
+	    result = FormEntryController.ANSWER_OK;
+	} else {
+	    result = controller.answerQuestion(prompt.getIndex(), answerData);
 	}
-        int result = controller.answerQuestion(prompt.getIndex(), answerData);
         if (result == FormEntryController.ANSWER_REQUIRED_BUT_EMPTY) {
             ret.put(ApiConstants.RESPONSE_STATUS_KEY, "validation-error");
             ret.put(ApiConstants.ERROR_TYPE_KEY, "required");
@@ -127,7 +128,7 @@ public class JsonActionUtils {
             ret.put(ApiConstants.RESPONSE_STATUS_KEY, "validation-error");
             ret.put(ApiConstants.ERROR_TYPE_KEY, "constraint");
             ret.put(ApiConstants.ERROR_REASON_KEY, prompt.getConstraintText());
-        } else if ((skipValidation && answerUnchanged) || result == FormEntryController.ANSWER_OK) {
+        } else if (result == FormEntryController.ANSWER_OK) {
             if (oneQuestionPerScreen) {
                 ret.put(ApiConstants.QUESTION_TREE_KEY, getOneQuestionPerScreenJSON(
                     model, controller, navIndex));
