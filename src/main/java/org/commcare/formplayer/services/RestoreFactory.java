@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -59,9 +60,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
@@ -394,9 +399,9 @@ public class RestoreFactory {
 
     public InputStream getRestoreXml(boolean skipFixtures) {
         ensureValidParameters();
-        Pair<String, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders(skipFixtures);
-        recordSentryData(restoreUrlAndHeaders.first);
-        log.info("Restoring from URL " + restoreUrlAndHeaders.first);
+        Pair<URI, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders(skipFixtures);
+        recordSentryData(restoreUrlAndHeaders.first.toString());
+        log.info("Restoring from URL " + restoreUrlAndHeaders.first.toString());
         InputStream restoreStream = getRestoreXmlHelper(restoreUrlAndHeaders.first, restoreUrlAndHeaders.second);
         setLastSyncTime();
         return restoreStream;
@@ -481,10 +486,10 @@ public class RestoreFactory {
         );
     }
 
-    private InputStream getRestoreXmlHelper(String restoreUrl, HttpHeaders headers) {
+    private InputStream getRestoreXmlHelper(URI restoreUrl, HttpHeaders headers) {
         ResponseEntity<org.springframework.core.io.Resource> response;
         String status = "error";
-        log.info("Restoring at domain: " + domain + " with url: " + restoreUrl);
+        log.info("Restoring at domain: " + domain + " with url: " + restoreUrl.toString());
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
         downloadRestoreTimer.start();
         try {
@@ -570,11 +575,11 @@ public class RestoreFactory {
                 Duration.ofSeconds(60));
         headers.set("X-CommCareHQ-Origin-Token", originToken);
     }
-    public Pair<String, HttpHeaders> getRestoreUrlAndHeaders() {
+    public Pair<URI, HttpHeaders> getRestoreUrlAndHeaders() {
         return getRestoreUrlAndHeaders(false);
     }
 
-    public Pair<String, HttpHeaders> getRestoreUrlAndHeaders(boolean skipFixtures) {
+    public Pair<URI, HttpHeaders> getRestoreUrlAndHeaders(boolean skipFixtures) {
         if (caseId != null) {
             return getCaseRestoreUrlAndHeaders();
         }
@@ -602,7 +607,7 @@ public class RestoreFactory {
         }
     }
 
-    public Pair<String, HttpHeaders> getCaseRestoreUrlAndHeaders() {
+    public Pair<URI, HttpHeaders> getCaseRestoreUrlAndHeaders() {
         StringBuilder builder = new StringBuilder();
         builder.append("/a/");
         builder.append(domain);
@@ -611,34 +616,41 @@ public class RestoreFactory {
         builder.append("/");
         HttpHeaders headers = getHmacHeaders(builder.toString());
         String fullUrl = host + builder.toString();
-        return new Pair<> (fullUrl, headers);
+        return new Pair<> (UriComponentsBuilder.fromUriString(fullUrl).build(true).toUri(), headers);
     }
-    public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders() {
+    public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders() {
         return getUserRestoreUrlAndHeaders(false);
     }
 
-    public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders(boolean skipFixtures) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("/a/");
-        builder.append(domain);
-        builder.append("/phone/restore/?version=2.0");
+    public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders(boolean skipFixtures) {
+        // URI
+        String restoreUrl = "/a/" + domain + "/phone/restore/?version=2.0";
+        String uri = host + restoreUrl;
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(uri);
         String syncToken = getSyncToken();
         if (syncToken != null && !"".equals(syncToken)) {
-            builder.append("&since=").append(syncToken);
+            builder.queryParam("since", syncToken);
         }
-        builder.append("&device_id=").append(getSyncDeviceId());
-
+        builder.queryParam("device_id", getSyncDeviceId());
         if (useLiveQuery) {
-            builder.append("&case_sync=livequery");
+            builder.queryParam("case_sync", "livequery");
         }
-
         if( asUsername != null) {
-            builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
+            try {
+                // URL Encoding because we know usernames with chars like '+' fail,
+                // might want to encode other params later
+                builder.queryParam("as",
+                        URLEncoder.encode(asUsername + "@" + domain + ".commcarehq.org", UTF_8.toString()));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("Unable to encode login_as username.");
+            }
         }
         if (skipFixtures) {
-            builder.append("&skip_fixtures=true");
+            builder.queryParam("skip_fixtures", "true");
         }
-        String restoreUrl = builder.toString();
+        URI fullUrl = builder.build(true).toUri();
+
+        // Headers
         HttpHeaders headers;
         if (getHqAuth() == null) {
             // Need to do HMAC auth
@@ -648,7 +660,6 @@ public class RestoreFactory {
             headers.add("x-openrosa-version", "2.0");
             addOriginTokenHeader(headers);
         }
-        String fullUrl = host + restoreUrl;
         return new Pair<>(fullUrl, headers);
     }
 
