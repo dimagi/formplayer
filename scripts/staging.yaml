@@ -61,3 +61,4 @@ submodules:
       - jls/formplayer-merge-master # Jenny Dec 29
       #- ce/index-state-category # Cal Nov 16
       #- ce/ensure-session # Cal Nov 20
+      - kev/formplayer-username-fix # Kevin Jan 12
