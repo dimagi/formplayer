@@ -636,11 +636,15 @@ public class RestoreFactory {
             builder.queryParam("case_sync", "livequery");
         }
         if( asUsername != null) {
+            String unEncodedAsUsername = asUsername;
+            if (!asUsername.contains("@")) {
+                unEncodedAsUsername += "@" + domain + ".commcarehq.org";
+            }
             try {
                 // URL Encoding because we know usernames with chars like '+' fail,
                 // might want to encode other params later
                 builder.queryParam("as",
-                        URLEncoder.encode(asUsername + "@" + domain + ".commcarehq.org", UTF_8.toString()));
+                        URLEncoder.encode(unEncodedAsUsername, UTF_8.toString()));
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException("Unable to encode login_as username.");
             }
