@@ -633,7 +633,10 @@ public class RestoreFactory {
         }
 
         if( asUsername != null) {
-            builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
+            builder.append("&as=").append(asUsername);
+            if (!asUsername.contains("@")) {
+                builder.append("@").append(domain).append(".commcarehq.org");
+            }
         }
         if (skipFixtures) {
             builder.append("&skip_fixtures=true");

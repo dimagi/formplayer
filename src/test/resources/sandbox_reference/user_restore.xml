@@ -4,7 +4,7 @@
         <restore_id>9f7c4e0a3a8ca4e2ecf54444fb7e70cf</restore_id>
     </Sync>
     <Registration xmlns="http://openrosa.org/user/registration">
-        <username>vl1</username>
+        <username>snapshot_test</username>
         <password>sha1$KOXD0OGyqKTP$139e6226da49dd500336dcd189b519da06aeb087</password>
         <uuid>7afceb0259b2866be17b3632392f8a4b</uuid>
         <date>2014-12-30</date>
@@ -13,7 +13,7 @@
             <data key="commcare_last_name" />
             <data key="commcare_phone_number" />
             <data key="commcare_first_name" />
-        </user_data>b
+        </user_data>
     </Registration>
     <schema id="locations">
         <indices>
