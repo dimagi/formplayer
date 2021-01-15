@@ -54,7 +54,7 @@ branches:
   - formplayer_2.50
   - caseClaim # Shubham Jan 13
   - ce/skip-validation # Cal Jan 7
-  - kev/formplayer-username-fix # Kevin Jan 12
+  - revert-810-revert-805-kev/formplayer-username-fix # Kevin Jan 12
 submodules:
   libs/commcare:
     trunk: formplayer
