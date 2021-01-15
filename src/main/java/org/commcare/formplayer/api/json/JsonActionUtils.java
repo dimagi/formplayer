@@ -97,11 +97,11 @@ public class JsonActionUtils {
                                                   FormEntryModel model, String answer,
                                                   FormEntryPrompt prompt,
                                                   boolean oneQuestionPerScreen,
-						  FormIndex navIndex,
-						  boolean skipValidation) {
+                                                  FormIndex navIndex,
+                                                  boolean skipValidation) {
         JSONObject ret = new JSONObject();
         IAnswerData answerData;
-	int result;
+        int result;
 
         if (answer == null || answer.equals("None")) {
             answerData = null;
@@ -115,12 +115,12 @@ public class JsonActionUtils {
                 return ret;
             }
         }
-	IAnswerData currentAnswerData = prompt.getAnswerValue();
-	if (skipValidation && answerData != null && currentAnswerData != null && answerData.uncast().getValue().equals(currentAnswerData.uncast().getValue())) {
-	    result = FormEntryController.ANSWER_OK;
-	} else {
-	    result = controller.answerQuestion(prompt.getIndex(), answerData);
-	}
+        IAnswerData currentAnswerData = model.getForm().getInstance().resolveReference(prompt.getIndex().getReference()).getValue();
+        if (skipValidation && answerData != null && currentAnswerData != null && answerData.uncast().getValue().equals(currentAnswerData.uncast().getValue())) {
+            result = FormEntryController.ANSWER_OK;
+        } else {
+            result = controller.answerQuestion(prompt.getIndex(), answerData);
+        }
         if (result == FormEntryController.ANSWER_REQUIRED_BUT_EMPTY) {
             ret.put(ApiConstants.RESPONSE_STATUS_KEY, "validation-error");
             ret.put(ApiConstants.ERROR_TYPE_KEY, "required");
@@ -155,7 +155,7 @@ public class JsonActionUtils {
                                                   String ansIndex,
                                                   boolean oneQuestionPerScreen,
                                                   String navIndex,
-						  boolean skipValidation) {
+                                                  boolean skipValidation) {
         FormIndex answerIndex = indexFromString(ansIndex, model.getForm());
         FormEntryPrompt prompt = model.getQuestionPrompt(answerIndex);
         FormIndex navigationIndex = indexFromString(navIndex, model.getForm());
