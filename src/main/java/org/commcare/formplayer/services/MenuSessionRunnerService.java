@@ -140,8 +140,8 @@ public class MenuSessionRunnerService {
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
-            if (queryData != null && (queryData.getExecute().get(queryKey) == null || !queryData.getExecute().get(queryKey))) {
-                answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs().get(queryKey));
+            if (queryData != null && queryData.getExecute(queryKey)) {
+                answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
             }
             menuResponseBean = new QueryResponseBean(
                     (QueryScreen)nextScreen,
@@ -226,14 +226,14 @@ public class MenuSessionRunnerService {
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if (nextScreen instanceof FormplayerQueryScreen && queryData != null) {
                 ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
-                if (queryData.getExecute().get(queryKey) != null && queryData.getInputs().get(queryKey) != null) {
+                if (queryData.getExecute(queryKey)) {
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
                             menuSession,
-                            queryData.getInputs().get(queryKey)
+                            queryData.getInputs(queryKey)
                     );
                 } else {
-                    answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs().get(queryKey));
+                    answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
                 }
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
