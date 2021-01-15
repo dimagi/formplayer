@@ -652,6 +652,14 @@ public class RestoreFactory {
         if (skipFixtures) {
             builder.queryParam("skip_fixtures", "true");
         }
+        if (getHqAuth() == null && username != null) {
+            try {
+                // URL Encoding because we know usernames with chars like '+' fail,
+                builder.queryParam("for", URLEncoder.encode(username, UTF_8.toString()));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("Unable to encode 'for' username.");
+            }
+        }
         URI fullUrl = builder.build(true).toUri();
 
         // Headers
