@@ -10,24 +10,12 @@ import java.util.Map;
  * Created by jschweers on 12/28/20.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class QueryData {
+public class QueryData extends Hashtable<String, Object> {
     private String KEY_EXECUTE = "execute";
     private String KEY_INPUTS = "inputs";
 
-    private Hashtable<String, Map<String, Object>> data = new Hashtable<>();
-
-    @JsonGetter(value="data")
-    public Hashtable<String, Map<String, Object>> getData() {
-        return data;
-    }
-
-    @JsonSetter(value="data")
-    public void setData(Hashtable<String, Map<String, Object>> data) {
-        this.data = data;
-    }
-
     public Boolean getExecute(String key) {
-        Map<String, Object> value = this.data.get(key);
+        Map<String, Object> value = (Map<String, Object>) this.get(key);
         if (value != null) {
             return (Boolean) value.get(this.KEY_EXECUTE);
         }
@@ -35,7 +23,7 @@ public class QueryData {
     };
 
     public Hashtable<String, String> getInputs(String key) {
-        Map<String, Object> value = this.data.get(key);
+        Map<String, Object> value = (Map<String, Object>) this.get(key);
         if (value != null) {
             Map<String, String> valueInputs = (Map<String, String>) value.get(this.KEY_INPUTS);
             if (valueInputs != null) {
