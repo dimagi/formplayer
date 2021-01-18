@@ -57,12 +57,12 @@ branches:
   - revert-810-revert-805-kev/formplayer-username-fix+sk/pass-requesting-user  # SK Jan 18
   - revert-810-revert-805-kev/formplayer-username-fix # Kevin Jan 12
   - sk/pass-requesting-user # SK Jan 18
+  - caseClaim+jls/parent-child-case-search # Jenny Jan 18
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - ce/tag-triggers # Cal Nov 16
       - jls/formplayer-merge-master # Jenny Dec 29
-      - caseClaim+jls/parent-child-case-search # Jenny Jan 18
       #- ce/index-state-category # Cal Nov 16
       #- ce/ensure-session # Cal Nov 20
