@@ -334,7 +334,11 @@ public class MenuSessionRunnerService {
                                         Hashtable<String, String> queryDictionary) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
         NotificationMessage notificationMessage = null;
-        screen.answerPrompts(queryDictionary);
+
+        if (queryDictionary != null) {
+            screen.answerPrompts(queryDictionary);
+        }
+
         String responseString = queryRequester.makeQueryRequest(screen.getUriString(), restoreFactory.getUserHeaders());
         boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
