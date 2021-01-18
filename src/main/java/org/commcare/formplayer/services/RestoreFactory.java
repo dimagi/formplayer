@@ -661,18 +661,23 @@ public class RestoreFactory {
                 throw new RuntimeException("Unable to encode 'for' username.");
             }
         }
-        URI fullUrl = builder.build(true).toUri();
 
         // Headers
         HttpHeaders headers;
         if (getHqAuth() == null) {
-            // Need to do HMAC auth
-            headers = getHmacHeaders(restoreUrl);
+            // Do HMAC auth which requires only the path and query components of the URL
+            UriComponentsBuilder authPath = builder.cloneBuilder();
+            authPath.scheme(null);
+            authPath.host(null);
+            authPath.userInfo(null);
+            authPath.port(null);
+            headers = getHmacHeaders(authPath.build(true).toUriString());
         } else {
             headers = getHqAuth().getAuthHeaders();
             headers.add("x-openrosa-version", "2.0");
             addOriginTokenHeader(headers);
         }
+        URI fullUrl = builder.build(true).toUri();
         return new Pair<>(fullUrl, headers);
     }
 
