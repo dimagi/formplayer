@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
 import org.commcare.cases.query.queryset.DualTableSingleMatchModelQuerySet;
-import org.commcare.formplayer.sandbox.PostgresDB;
+import org.commcare.formplayer.postgresutil.PostgresDB;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.database.TableBuilder;

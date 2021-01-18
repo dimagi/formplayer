@@ -1,4 +1,4 @@
-package org.commcare.formplayer.sandbox;
+package org.commcare.formplayer.postgresutil;
 
 import org.commcare.formplayer.services.ConnectionHandler;
 

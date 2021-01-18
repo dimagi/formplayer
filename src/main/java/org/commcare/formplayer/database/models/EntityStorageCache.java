@@ -2,7 +2,7 @@ package org.commcare.formplayer.database.models;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.sandbox.PostgresDB;
+import org.commcare.formplayer.postgresutil.PostgresDB;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.formplayer.sandbox.SqlHelper;
 import org.commcare.modern.database.DatabaseHelper;
