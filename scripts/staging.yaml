@@ -63,5 +63,6 @@ submodules:
     branches:
       - ce/tag-triggers # Cal Nov 16
       - jls/formplayer-merge-master # Jenny Dec 29
+      - caseClaim+jls/parent-child-case-search # Jenny Jan 18
       #- ce/index-state-category # Cal Nov 16
       #- ce/ensure-session # Cal Nov 20
