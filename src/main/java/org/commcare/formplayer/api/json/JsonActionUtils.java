@@ -283,6 +283,7 @@ public class JsonActionUtils {
         return ret;
     }
 
+    @Trace
     public static JSONArray getFullFormJSON(FormEntryModel fem, FormEntryController fec) {
         JSONArray ret = new JSONArray();
         Walker walker = new Walker(ret, FormIndex.createBeginningOfFormIndex(), fec, fem);
