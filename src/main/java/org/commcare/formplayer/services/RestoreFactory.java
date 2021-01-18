@@ -80,6 +80,7 @@ public class RestoreFactory {
 
     private String asUsername;
     private String username;
+    private String scrubbed_username;
     private String domain;
     private HqAuth hqAuth;
 
@@ -153,7 +154,7 @@ public class RestoreFactory {
         this.setHqAuth(auth);
         this.hasRestored = false;
         this.configured = true;
-        sqLiteDB = new UserDB(domain, username, null);
+        sqLiteDB = new UserDB(domain, scrubbed_username, null);
         log.info(String.format("configuring RestoreFactory with CaseID with arguments " +
                 "username = %s, caseId = %s, domain = %s", username, caseId, domain));
     }
@@ -165,7 +166,7 @@ public class RestoreFactory {
         this.hqAuth = auth;
         this.hasRestored = false;
         this.configured = true;
-        sqLiteDB = new UserDB(domain, username, asUsername);
+        sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
@@ -178,8 +179,8 @@ public class RestoreFactory {
         this.setUseLiveQuery(useLiveQuery);
         this.hasRestored = false;
         this.configured = true;
-        sqLiteDB = new UserDB(domain, username, asUsername);
-        log.info(String.format("configuring RestoreFactory with arguments " +
+        sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
+        log.info(String.format("configuring RestoreFactory from authed request with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s",
                 username, asUsername, domain, useLiveQuery));
     }
@@ -203,7 +204,7 @@ public class RestoreFactory {
                 getSQLiteDB().deleteDatabaseFile();
                 // this line has the effect of clearing the sync token
                 // from the restore URL that's used
-                sqLiteDB = new UserDB(domain, username, asUsername);
+                sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
                 return performTimedSync(shouldPurge, skipFixtures);
             }
             throw e;
@@ -429,7 +430,7 @@ public class RestoreFactory {
     }
 
     private String lastSyncKey() {
-        return "last-sync-time:" + domain + ":" + username + ":" + asUsername;
+        return "last-sync-time:" + domain + ":" + scrubbed_username + ":" + asUsername;
     }
 
     /**
@@ -652,18 +653,31 @@ public class RestoreFactory {
         if (skipFixtures) {
             builder.queryParam("skip_fixtures", "true");
         }
-        URI fullUrl = builder.build(true).toUri();
+        if (getHqAuth() == null && username != null) {
+            try {
+                // URL Encoding because we know usernames with chars like '+' fail,
+                builder.queryParam("for", URLEncoder.encode(username, UTF_8.toString()));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("Unable to encode 'for' username.");
+            }
+        }
 
         // Headers
         HttpHeaders headers;
         if (getHqAuth() == null) {
-            // Need to do HMAC auth
-            headers = getHmacHeaders(restoreUrl);
+            // Do HMAC auth which requires only the path and query components of the URL
+            UriComponentsBuilder authPath = builder.cloneBuilder();
+            authPath.scheme(null);
+            authPath.host(null);
+            authPath.userInfo(null);
+            authPath.port(null);
+            headers = getHmacHeaders(authPath.build(true).toUriString());
         } else {
             headers = getHqAuth().getAuthHeaders();
             headers.add("x-openrosa-version", "2.0");
             addOriginTokenHeader(headers);
         }
+        URI fullUrl = builder.build(true).toUri();
         return new Pair<>(fullUrl, headers);
     }
 
@@ -678,7 +692,7 @@ public class RestoreFactory {
         StringBuilder builder = new StringBuilder();
         builder.append(storageFactory.getAppId());
         builder.append("_").append(domain);
-        builder.append("_").append(username);
+        builder.append("_").append(scrubbed_username);
         if (asUsername != null) {
             builder.append("_").append(asUsername);
         }
@@ -724,7 +738,8 @@ public class RestoreFactory {
     }
 
     public void setUsername(String username) {
-        this.username = TableBuilder.scrubName(username);
+        this.username = username;
+        this.scrubbed_username = TableBuilder.scrubName(username);
     }
 
     public String getDomain() {
