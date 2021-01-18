@@ -53,10 +53,10 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
         // If enableSensitiveLogging is false, skip all logging logic.
-        if (!this.enableSensitiveLogging) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+//        if (!this.enableSensitiveLogging) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
 
         // json corresponding to the log ine and passed around to log as much as possible in case of exceptions.
         JSONObject logLineJson = new JSONObject();

@@ -189,7 +189,8 @@ public class MenuSessionRunnerService {
                                                          QueryData queryData,
                                                          int offset,
                                                          String searchText,
-                                                         int sortIndex) throws Exception {
+                                                         int sortIndex,
+                                                         boolean forceManualSearch) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -225,8 +226,9 @@ public class MenuSessionRunnerService {
 
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if (nextScreen instanceof FormplayerQueryScreen && queryData != null) {
-                ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
-                if (queryData.getExecute(queryKey)) {
+                FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen) nextScreen);
+                formplayerQueryScreen.refreshItemSetChoices();
+                if (queryData.getExecute(queryKey) || (formplayerQueryScreen.doDefaultSearch() && !forceManualSearch)) {
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
                             menuSession,
