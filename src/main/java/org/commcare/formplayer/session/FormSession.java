@@ -98,6 +98,7 @@ public class FormSession {
     private FormVolatilityRecord sessionVolatilityRecord;
     private boolean shouldAutoSubmit;
     private boolean suppressAutosync;
+    private boolean shouldSkipFullFormValidation;
 
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
@@ -259,6 +260,7 @@ public class FormSession {
         setVolatilityIndicators();
         setAutoSubmitFlag();
         setSuppressAutosyncFlag();
+        setSkipValidation();
     }
 
     private String getPragma(String key) {
@@ -305,12 +307,25 @@ public class FormSession {
         }
     }
 
+    private void setSkipValidation() {
+        String shouldSkipValidation = getPragma("Pragma-Skip-Full-Form-Validation");
+        if (shouldSkipValidation != null) {
+            this.shouldSkipFullFormValidation = true;
+        } else {
+            this.shouldSkipFullFormValidation = false;
+        }
+    }
+
     public boolean getAutoSubmitFlag() {
         return shouldAutoSubmit;
     }
 
     public boolean getSuppressAutosync() {
         return suppressAutosync;
+    }
+
+    public boolean getSkipValidation() {
+        return shouldSkipFullFormValidation;
     }
 
     public FormVolatilityRecord getSessionVolatilityRecord() {
@@ -594,7 +609,8 @@ public class FormSession {
                 answer != null ? answer.toString() : null,
                 answerIndex,
                 oneQuestionPerScreen,
-                currentIndex);
+                currentIndex,
+                false);
 
         FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
         if (!inPromptMode || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {
