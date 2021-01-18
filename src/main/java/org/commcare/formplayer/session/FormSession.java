@@ -260,7 +260,7 @@ public class FormSession {
         setVolatilityIndicators();
         setAutoSubmitFlag();
         setSuppressAutosyncFlag();
-	setSkipValidation();
+        setSkipValidation();
     }
 
     private String getPragma(String key) {
@@ -308,12 +308,12 @@ public class FormSession {
     }
 
     private void setSkipValidation() {
-	String shouldSkipValidation = getPragma("Pragma-Skip-Full-Form-Validation");
-	if (shouldSkipValidation != null) {
-	    this.shouldSkipFullFormValidation = true;
-	} else {
-	    this.shouldSkipFullFormValidation = false;
-	}
+        String shouldSkipValidation = getPragma("Pragma-Skip-Full-Form-Validation");
+        if (shouldSkipValidation != null) {
+            this.shouldSkipFullFormValidation = true;
+        } else {
+            this.shouldSkipFullFormValidation = false;
+        }
     }
 
     public boolean getAutoSubmitFlag() {
@@ -325,7 +325,7 @@ public class FormSession {
     }
 
     public boolean getSkipValidation() {
-	return shouldSkipFullFormValidation;
+        return shouldSkipFullFormValidation;
     }
 
     public FormVolatilityRecord getSessionVolatilityRecord() {
@@ -609,8 +609,8 @@ public class FormSession {
                 answer != null ? answer.toString() : null,
                 answerIndex,
                 oneQuestionPerScreen,
-		currentIndex,
-		false);
+                currentIndex,
+                false);
 
         FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
         if (!inPromptMode || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {

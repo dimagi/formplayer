@@ -161,8 +161,8 @@ public class FormController extends AbstractBaseController{
         validationTimer.start();
         submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-		submitRequestBean.getAnswers(),
-		formEntrySession.getSkipValidation());
+                submitRequestBean.getAnswers(),
+                formEntrySession.getSkipValidation());
         validationTimer.end();
         categoryTimingHelper.recordCategoryTiming(validationTimer, Constants.TimingCategories.VALIDATE_SUBMISSION, null, submitRequestBean.getDomain());
 
@@ -296,8 +296,8 @@ public class FormController extends AbstractBaseController{
      */
     private SubmitResponseBean validateSubmitAnswers(FormEntryController formEntryController,
                                        FormEntryModel formEntryModel,
-				       Map<String, Object> answers,
-				       boolean skipValidation) {
+                                       Map<String, Object> answers,
+                                       boolean skipValidation) {
         SubmitResponseBean submitResponseBean = new SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
         HashMap<String, ErrorBean> errors = new HashMap<>();
         for(String key: answers.keySet()){
@@ -312,8 +312,8 @@ public class FormController extends AbstractBaseController{
                             answer,
                             key,
                             false,
-			    null,
-			    skipValidation);
+                            null,
+                            skipValidation);
             if(!answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 ErrorBean error = new ErrorBean();
