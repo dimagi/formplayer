@@ -167,7 +167,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null,
-                0, null, 0);
+                0, null, 0, false);
     }
 
     /**
@@ -190,7 +190,7 @@ public class MenuSessionRunnerService {
                                                          int offset,
                                                          String searchText,
                                                          int sortIndex,
-                                                         boolean forceManualSearch) throws Exception {
+                                                         boolean forceManualAction) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -228,7 +228,7 @@ public class MenuSessionRunnerService {
             if (nextScreen instanceof FormplayerQueryScreen && queryData != null) {
                 FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen) nextScreen);
                 formplayerQueryScreen.refreshItemSetChoices();
-                if (queryData.getExecute(queryKey) || (formplayerQueryScreen.doDefaultSearch() && !forceManualSearch)) {
+                if (queryData.getExecute(queryKey) || (formplayerQueryScreen.doDefaultSearch() && !forceManualAction)) {
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
                             menuSession,

@@ -98,13 +98,13 @@ public class SessionNavigationBean extends InstallRequestBean {
         this.sortIndex = sortIndex;
     }
 
-    @JsonGetter(value = "force_manual_search")
-    public boolean isForceManualSearch() {
+    @JsonGetter(value = "force_manual_action")
+    public boolean isForceManualAction() {
         return forceManualSearch;
     }
 
-    @JsonSetter(value = "force_manual_search")
-    public void setForceManualSearch(boolean forceManualSearch) {
+    @JsonSetter(value = "force_manual_action")
+    public void setForceManualAction(boolean forceManualSearch) {
         this.forceManualSearch = forceManualSearch;
     }
 }
