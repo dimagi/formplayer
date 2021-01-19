@@ -107,7 +107,7 @@ public class SqlStorage<T extends Persistable>
 
     private void buildTableFromInstance(T instance) throws ClassNotFoundException {
         Connection connection = getConnection();
-        SqlHelper.createTable(connection, tableName, instance, isPostgres());
+        SqlHelper.createTable(connection, tableName, instance, isPostgres(), getCurrentSchema());
     }
 
     public Connection getConnection() {
@@ -118,6 +118,14 @@ public class SqlStorage<T extends Persistable>
         return connectionHandler instanceof PostgresDB;
     }
 
+    public String getCurrentSchema() {
+        if (isPostgres()) {
+            return ((PostgresDB) connectionHandler).getCurrentSchema();
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public void write(Persistable p) {
         if (p.getID() != -1) {
@@ -126,7 +134,7 @@ public class SqlStorage<T extends Persistable>
         }
         Connection connection;
         connection = getConnection();
-        int id = SqlHelper.insertToTable(connection, tableName, p, isPostgres());
+        int id = SqlHelper.insertToTable(connection, tableName, p, isPostgres(), getCurrentSchema());
         p.setID(id);
     }
 
@@ -211,7 +219,7 @@ public class SqlStorage<T extends Persistable>
     @Override
     public int add(T e) {
         Connection connection = getConnection();
-        int id = SqlHelper.insertToTable(connection, tableName, e, isPostgres());
+        int id = SqlHelper.insertToTable(connection, tableName, e, isPostgres(), getCurrentSchema());
         connection = getConnection();
         e.setID(id);
         SqlHelper.updateId(connection, tableName, e, isPostgres());
@@ -361,7 +369,7 @@ public class SqlStorage<T extends Persistable>
     @Override
     public void update(int id, Persistable p) {
         Connection connection = getConnection();
-        SqlHelper.updateToTable(connection, tableName, p, id, isPostgres());
+        SqlHelper.updateToTable(connection, tableName, p, id, isPostgres(), getCurrentSchema());
     }
 
     @Override

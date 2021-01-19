@@ -130,8 +130,8 @@ public class PostgresTableBuilder {
         unique.add(scrubName(columnName));
     }
 
-    public String getTableCreateString() {
-        String built = "CREATE TABLE IF NOT EXISTS " + scrubName(name) + " (";
+    public String getTableCreateString(String currentSchema) {
+        String built = "CREATE TABLE IF NOT EXISTS " + currentSchema + "." + scrubName(name) + " (";
         for (int i = 0; i < cols.size(); ++i) {
             built += cols.elementAt(i);
             if (i < cols.size() - 1) {
@@ -142,10 +142,10 @@ public class PostgresTableBuilder {
         return built;
     }
 
-    public Pair<String, List<Object>> getTableInsertData(Persistable p) {
+    public Pair<String, List<Object>> getTableInsertData(Persistable p, String currentSchema) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("INSERT INTO ").append(scrubName(name)).append(" (");
+        stringBuilder.append("INSERT INTO ").append(currentSchema).append(".").append(scrubName(name)).append(" (");
         HashMap<String, Object> contentValues = DatabaseHelper.getMetaFieldsAndValues(p);
 
         ArrayList<Object> params = new ArrayList<>();

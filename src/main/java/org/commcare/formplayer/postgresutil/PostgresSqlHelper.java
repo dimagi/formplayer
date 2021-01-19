@@ -59,8 +59,8 @@ public class PostgresSqlHelper {
      * @param persistable persistable to update with
      * @param id          sql record to update
      */
-    public static void updateToTable(Connection connection, String tableName, Persistable persistable, int id) {
-        String queryStart = "UPDATE " + tableName + " SET ";
+    public static void updateToTable(Connection connection, String tableName, Persistable persistable, int id, String currentSchema) {
+        String queryStart = "UPDATE " + currentSchema + "." + tableName + " SET ";
         String queryEnd = " WHERE " + DatabaseHelper.ID_COL + " = ?;";
 
         HashMap<String, Object> map = DatabaseHelper.getMetaFieldsAndValues(persistable);
@@ -101,8 +101,8 @@ public class PostgresSqlHelper {
     }
 
 
-    public static int insertToTable(Connection c, String storageKey, Persistable p) {
-        Pair<String, List<Object>> mPair = PostgresDatabaseHelper.getTableInsertData(storageKey, p);
+    public static int insertToTable(Connection c, String storageKey, Persistable p, String currentSchema) {
+        Pair<String, List<Object>> mPair = PostgresDatabaseHelper.getTableInsertData(storageKey, p, currentSchema);
 
         try (PreparedStatement preparedStatement = c.prepareStatement(mPair.first, Statement.RETURN_GENERATED_KEYS)) {
             for (int i = 0; i < mPair.second.size(); i++) {
