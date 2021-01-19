@@ -53,9 +53,11 @@ branches:
   - ce/tracing # Cal Oct 23
   - formplayer_2.50
   - caseClaim # Shubham Jan 13
-  - ce/skip-validation # Cal Jan 7
+  - revert-810-revert-805-kev/formplayer-username-fix+sk/pass-requesting-user  # SK Jan 18
   - revert-810-revert-805-kev/formplayer-username-fix # Kevin Jan 12
   - sk/pass-requesting-user # SK Jan 18
+  - caseClaim+jls/parent-child-case-search # Jenny Jan 18
+  - ce/no-json-validation # Cal Jan 18
 submodules:
   libs/commcare:
     trunk: formplayer
