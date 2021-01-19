@@ -295,9 +295,6 @@ public class EntityListResponse extends MenuBean {
 
     private static Vector<Action> getActionDefinitions(SessionWrapper session) {
         EntityDatum datum = (EntityDatum) session.getNeededDatum();
-        if (session.getFrame().getSteps().lastElement().getElementType().equals(SessionFrame.STATE_QUERY_REQUEST)) {
-            return new Vector<Action>();
-        }
         return session.getDetail((datum).getShortDetail()).getCustomActions(session.getEvaluationContext());
     }
 
