@@ -2,6 +2,7 @@ package org.commcare.formplayer.sandbox;
 
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
 
+import org.commcare.formplayer.postgresutil.PostgresDB;
 import org.commcare.formplayer.postgresutil.PostgresDatabaseHelper;
 import org.commcare.formplayer.postgresutil.PostgresSqlHelper;
 import org.commcare.formplayer.sqliteutil.SqliteSqlHelper;
@@ -90,10 +91,10 @@ public class SqlHelper {
         }
     }
 
-    public static void createTable(Connection c, String storageKey, Persistable p, boolean isPostgres) {
+    public static void createTable(Connection c, String storageKey, Persistable p, boolean isPostgres, String currentSchema) {
         String sqlStatement;
         if (isPostgres) {
-            sqlStatement = PostgresDatabaseHelper.getTableCreateString(storageKey, p);
+            sqlStatement = PostgresDatabaseHelper.getTableCreateString(storageKey, p, currentSchema);
         } else {
             sqlStatement = DatabaseHelper.getTableCreateString(storageKey, p);
         }
@@ -344,9 +345,9 @@ public class SqlHelper {
         return buildInsertStatement(storageKey, contentVals, "INSERT OR REPLACE INTO ");
     }
 
-    public static int insertToTable(Connection c, String storageKey, Persistable p, boolean isPostgres) {
+    public static int insertToTable(Connection c, String storageKey, Persistable p, boolean isPostgres, String currentSchema) {
         if (isPostgres) {
-            return PostgresSqlHelper.insertToTable(c, storageKey, p);
+            return PostgresSqlHelper.insertToTable(c, storageKey, p, currentSchema);
         } else {
             return SqliteSqlHelper.insertToTable(c, storageKey, p);
         }
@@ -393,9 +394,9 @@ public class SqlHelper {
      * @param persistable persistable to update with
      * @param id          sql record to update
      */
-    public static void updateToTable(Connection connection, String tableName, Persistable persistable, int id, boolean isPostgres) {
+    public static void updateToTable(Connection connection, String tableName, Persistable persistable, int id, boolean isPostgres, String currentSchema) {
         if (isPostgres) {
-            PostgresSqlHelper.updateToTable(connection, tableName, persistable, id);
+            PostgresSqlHelper.updateToTable(connection, tableName, persistable, id, currentSchema);
         } else {
             SqliteSqlHelper.updateToTable(connection, tableName, persistable, id);
         }

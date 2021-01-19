@@ -19,16 +19,17 @@ import java.util.Set;
  */
 public class PostgresDatabaseHelper {
 
-    public static String getTableCreateString(String storageKey, Persistable p) {
+    public static String getTableCreateString(String storageKey, Persistable p, String currentSchema) {
         PostgresTableBuilder builder = new PostgresTableBuilder(storageKey);
         builder.addData(p);
-        return builder.getTableCreateString();
+        return builder.getTableCreateString(currentSchema);
     }
 
     public static Pair<String, List<Object>> getTableInsertData(String storageKey,
-                                                                Persistable p) {
+                                                                Persistable p, 
+                                                                String currentSchema) {
         PostgresTableBuilder builder = new PostgresTableBuilder(storageKey);
         builder.addData(p);
-        return builder.getTableInsertData(p);
+        return builder.getTableInsertData(p, currentSchema);
     }
 }
