@@ -28,11 +28,12 @@ public class CategoryTimingHelper {
 
     public class RecordingTimer extends SimpleTimer {
         private CategoryTimingHelper parent;
-        private String category, sentryMessage;
+        private String category, sentryMessage, domain;
 
-        private RecordingTimer(CategoryTimingHelper parent, String category) {
+        private RecordingTimer(CategoryTimingHelper parent, String category, String domain) {
             this.parent = parent;
             this.category = category;
+            this.domain = domain;
         }
 
         @Override
@@ -47,30 +48,49 @@ public class CategoryTimingHelper {
         }
 
         public void record() {
-            parent.recordCategoryTiming(this, category, sentryMessage);
+            parent.recordCategoryTiming(this, category, sentryMessage, domain);
         }
     }
 
     public RecordingTimer newTimer(String category) {
-        return new RecordingTimer(this, category);
+        return newTimer(category, null);
+    }
+
+    public RecordingTimer newTimer(String category, String domain) {
+        return new RecordingTimer(this, category, domain);
     }
 
     public void recordCategoryTiming(Timing timing, String category) {
         recordCategoryTiming(timing, category, null);
     }
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage) {
+        recordCategoryTiming(timing, category, sentryMessage, null);
+    }
+    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, String domain) {
         raven.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)
                 .setData("duration", timing.formatDuration())
                 .record();
 
-        datadogStatsDClient.recordExecutionTime(
+        if (domain != null) {
+            datadogStatsDClient.recordExecutionTime(
                 Constants.DATADOG_GRANULAR_TIMINGS,
                 timing.durationInMs(),
                 "category:" + category,
-                "request:" + RequestUtils.getRequestEndpoint(request)
-        );
+                "request:" + RequestUtils.getRequestEndpoint(request),
+                "duration:" + timing.getDurationBucket(),
+                "domain:" + domain
+            );
+        } else {
+            datadogStatsDClient.recordExecutionTime(
+                Constants.DATADOG_GRANULAR_TIMINGS,
+                timing.durationInMs(),
+                "category:" + category,
+                "request:" + RequestUtils.getRequestEndpoint(request),
+                "duration:" + timing.getDurationBucket()
+            );
+        }
 
         log.debug(String.format("Timing Event[%s][%s]: %dms",
                 RequestUtils.getRequestEndpoint(request),

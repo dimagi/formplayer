@@ -59,7 +59,7 @@ public class UtilController extends AbstractBaseController {
     @UserLock
     @UserRestore
     public SyncDbResponseBean syncUserDb(@RequestBody SyncDbRequestBean syncRequest,
-                                         @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
+                                         @CookieValue(value = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         restoreFactory.performTimedSync();
         return new SyncDbResponseBean();
     }
