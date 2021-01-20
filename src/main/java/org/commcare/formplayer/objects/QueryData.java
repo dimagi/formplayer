@@ -22,6 +22,11 @@ public class QueryData extends Hashtable<String, Object> {
         return new Boolean(false);
     };
 
+    public void setExecute(String key, Boolean value) {
+        this.initKey(key);
+        ((Map<String, Object>) this.get(key)).put(this.KEY_EXECUTE, value);
+    }
+
     public Hashtable<String, String> getInputs(String key) {
         Map<String, Object> value = (Map<String, Object>) this.get(key);
         if (value != null) {
@@ -36,4 +41,15 @@ public class QueryData extends Hashtable<String, Object> {
         }
         return null;
     };
+
+    public void setInputs(String key, Hashtable<String, String> value) {
+        this.initKey(key);
+        ((Map<String, Object>) this.get(key)).put(this.KEY_INPUTS, value);
+    }
+
+    private void initKey(String key) {
+        if (this.get(key) == null) {
+            this.put(key, new Hashtable<String, Object>());
+        }
+    }
 }
