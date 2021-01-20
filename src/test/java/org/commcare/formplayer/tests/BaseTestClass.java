@@ -175,9 +175,17 @@ public class BaseTestClass {
         restoreFactoryMock.getSQLiteDB().closeConnection();
         PrototypeUtils.setupThreadLocalPrototypes();
         LocalizerManager.setUseThreadLocalStrategy(true);
-        new SQLiteProperties().setDataDir("testdbs/");
+        new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
         MockTimezoneProvider tzProvider = new MockTimezoneProvider();
         DateUtils.setTimezoneProvider(tzProvider);
+    }
+
+    protected String getDatabaseFolderRoot() {
+        return "testdbs/";
+    }
+
+    protected boolean removeDatabaseFoldersAfterTests() {
+        return true;
     }
 
     private void setupSubmitServiceMock() {
@@ -201,7 +209,9 @@ public class BaseTestClass {
         }
         restoreFactoryMock.getSQLiteDB().closeConnection();
         storageFactoryMock.getSQLiteDB().closeConnection();
-        SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
+        if (removeDatabaseFoldersAfterTests()) {
+            SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
+        }
     }
 
     private UserDB customConnector;
@@ -382,7 +392,7 @@ public class BaseTestClass {
                 SubmitResponseBean.class);
     }
 
-    SyncDbResponseBean syncDb() throws Exception {
+    protected SyncDbResponseBean syncDb() throws Exception {
         SyncDbRequestBean syncDbRequestBean = new SyncDbRequestBean();
         syncDbRequestBean.setDomain(restoreFactoryMock.getDomain());
         syncDbRequestBean.setUsername(restoreFactoryMock.getUsername());
@@ -614,7 +624,7 @@ public class BaseTestClass {
                 clazz);
     }
 
-    CommandListResponseBean doInstall(String requestPath) throws Exception {
+    protected CommandListResponseBean doInstall(String requestPath) throws Exception {
         InstallRequestBean installRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), InstallRequestBean.class);
         return generateMockQuery(ControllerType.MENU,

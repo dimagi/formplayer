@@ -8,6 +8,7 @@ import org.commcare.formplayer.util.SessionUtils;
  * Base class for responses being sent to the front end. Params are:
  * title - self explanatory
  * notification - A message String and error boolean to be displayed by frontend
+ * sholdAutoSubmit - A boolean to indicate if the frontend should auto-submit the form
  * clearSession - True if the front end should redirect to the app home
  *  NOTE: clearSession causes all other displayables to be disregarded
  */
@@ -15,6 +16,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     protected NotificationMessage notification;
     protected String title;
     protected boolean clearSession;
+    protected boolean shouldAutoSubmit;
     private String appId;
     private String appVersion;
     private String[] selections;
@@ -25,6 +27,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         this.title = title;
         this.notification = notification;
         this.clearSession = clearSession;
+        this.shouldAutoSubmit = false;
     }
 
     protected void processTitle(SessionWrapper session) {
@@ -47,7 +50,15 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         this.notification = notification;
     }
 
-    public boolean isClearSession() {
+    public boolean getShouldAutoSubmit() {
+        return shouldAutoSubmit;
+    }
+
+     public void setShouldAutoSubmit(boolean shouldAutoSubmit) {
+        this.shouldAutoSubmit = shouldAutoSubmit;
+    }
+
+    public boolean isclearSession() {
         return clearSession;
     }
 
@@ -60,6 +71,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         return "BaseResponseBean [title=" + title + ", " +
                 "notification=" + notification + ", " +
                 "clearSession=" + clearSession + ", " +
+                "shouldAutoSubmit=" + shouldAutoSubmit + ", " +
                 "selections=" + selections + "]";
     }
 
