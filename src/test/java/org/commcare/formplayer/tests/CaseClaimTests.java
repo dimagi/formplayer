@@ -6,12 +6,12 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
-import org.javarosa.core.services.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,6 +22,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.Hashtable;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
@@ -63,18 +64,20 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays()[2].getItemsetChoices().length == 0;
 
         Hashtable<String, String> queryDictionary = new Hashtable<>();
-        queryDictionary.put("name", "Burt");
         queryDictionary.put("state", "1");
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryDictionary,
                 false,
                 QueryResponseBean.class);
-        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
+
+        // no value in queryDictionary should reset the value to empty
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Baran", "Kota"});
 
         // change selection
+        queryDictionary.put("name", "Burt");
         queryDictionary.put("state", "0");
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
@@ -85,12 +88,12 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
 
-
         EntityListResponse responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryDictionary,
                 true,
                 EntityListResponse.class);
+
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
         assert caseStorage.getNumRecords() == 20;
