@@ -2,6 +2,7 @@ package org.commcare.formplayer.postgresutil;
 
 import org.commcare.formplayer.sqlitedb.DBPath;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.modern.database.TableBuilder;
 
 /**
  * @author $|-|!˅@M
@@ -22,7 +23,7 @@ class PostgresDBPath extends DBPath {
 
     @Override
     public String getDatabasePath() {
-        return domain + "_" + appId;
+        return TableBuilder.scrubName(domain + "_" + appId);
     }
 
     @Override
