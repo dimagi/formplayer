@@ -10,9 +10,15 @@ plugins {
 }
 
 springBoot {
-    buildInfo()
+    buildInfo {
+        properties {
+            artifact = 'formplayer'
+            version = new Date().format('yyyy-MM-dd HH:mm:ss')
+            group = 'org.commcare'
+            name = 'Formplayer'
+        }
+    }
 }
-
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
