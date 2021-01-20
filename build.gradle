@@ -6,7 +6,13 @@ buildscript {
 
 plugins {
     id 'org.springframework.boot' version '2.2.0.RELEASE'
+    id "com.gorylenko.gradle-git-properties" version "2.2.4"
 }
+
+springBoot {
+    buildInfo()
+}
+
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
