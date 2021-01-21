@@ -192,6 +192,11 @@ public class MenuSession implements HereFunctionHandlerListener {
         return builder.toString();
     }
 
+    /**
+     * Handle a user step, ignoring performance optimizations and not allowing autolaunch actions.
+     *
+     * @param input             The user step input
+     */
     public boolean handleInput(String input) throws CommCareSessionException {
         return handleInput(input, true, false, false);
     }
@@ -202,7 +207,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      *                          or if a list of references is sufficient
      * @param confirmed         Whether the input has been previously validated,
      *                          allowing this step to skip validation
-     * @param allowAutoLaunch   If this step is allow to automatically launch an action,
+     * @param allowAutoLaunch   If this step is allowed to automatically launch an action,
      *                          assuming it has an autolaunch action specified.
      */
     @Trace
@@ -260,15 +265,32 @@ public class MenuSession implements HereFunctionHandlerListener {
         breadcrumbs.add(SessionUtils.getBestTitle(getSessionWrapper()));
     }
 
+    /**
+     * Get next screen for current request, based on current state of session,
+     * with no performance optimization and autolaunching of actions not allowed.
+     */
     public Screen getNextScreen() throws CommCareSessionException {
         return getNextScreen(true, false);
     }
 
+    /**
+     * Get next screen for current request, based on current state of session,
+     * with autolaunching of actions not allowed.
+     *
+     * @param needsDetail       Whether a full entity screen is required for this request
+     *                          or if a list of references is sufficient
+     */
     @Trace
     public Screen getNextScreen(boolean needsDetail) throws CommCareSessionException {
         return getNextScreen(needsDetail, false);
     }
 
+    /**
+     * @param needsDetail       Whether a full entity screen is required for this request
+     *                          or if a list of references is sufficient
+     * @param allowAutoLaunch   If this step is allowed to automatically launch an action,
+     *                          assuming it has an autolaunch action specified.
+     */
     public Screen getNextScreen(boolean needsDetail, boolean allowAutoLaunch) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
 

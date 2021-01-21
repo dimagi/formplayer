@@ -6,6 +6,18 @@ buildscript {
 
 plugins {
     id 'org.springframework.boot' version '2.2.0.RELEASE'
+    id "com.gorylenko.gradle-git-properties" version "2.2.4"
+}
+
+springBoot {
+    buildInfo {
+        properties {
+            artifact = 'formplayer'
+            version = new Date().format('yyyy-MM-dd HH:mm:ss')
+            group = 'org.commcare'
+            name = 'Formplayer'
+        }
+    }
 }
 
 apply plugin: 'java'
@@ -75,6 +87,7 @@ dependencies {
     implementation group: 'org.springframework.integration', name: 'spring-integration-redis', version: '5.2.0.RELEASE'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.14.0'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.14.0'
+    implementation group: 'io.micrometer', name: 'micrometer-registry-statsd', version: '1.3.0'
 
     implementation fileTree(dir: 'libs', include: '*.jar')
     implementation project(path: ':commcare', configuration: 'api')
