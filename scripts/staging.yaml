@@ -50,9 +50,7 @@
 trunk: master
 name: autostaging
 branches:
-  - ce/tracking+sk/gradle-lint # SK Jan 20
   - ce/tracing # Cal Oct 23
-  - sk/gradle-lint # SK Jan 20
   - formplayer_2.50
   - caseClaim # Shubham Jan 13
   - revert-810-revert-805-kev/formplayer-username-fix # Kevin Jan 12
