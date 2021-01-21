@@ -3,6 +3,8 @@ package org.commcare.formplayer.application;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.config.MeterFilter;
 import org.commcare.formplayer.aspects.AppInstallAspect;
 import org.commcare.formplayer.aspects.ConfigureStorageFromSessionAspect;
 import org.commcare.formplayer.aspects.LockAspect;
@@ -156,6 +158,16 @@ public class WebAppContext implements WebMvcConfigurer {
                 "localhost",
                 8125
         );
+    }
+
+    @Bean
+    public MeterFilter applyMetricPrefix() {
+        return new MeterFilter() {
+            @Override
+            public Meter.Id map(Meter.Id id) {
+                return id.withName("formplayer." + id.getName());
+            }
+        };
     }
 
     @Bean
