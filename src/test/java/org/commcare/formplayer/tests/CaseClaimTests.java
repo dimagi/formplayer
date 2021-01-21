@@ -4,12 +4,11 @@ import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
+import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
-import org.javarosa.core.services.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -60,37 +59,42 @@ public class CaseClaimTests extends BaseTestClass {
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
-        assert queryResponseBean.getDisplays()[2].getItemsetChoices().length == 0;
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
 
-        Hashtable<String, String> queryDictionary = new Hashtable<>();
-        queryDictionary.put("name", "Burt");
-        queryDictionary.put("state", "1");
+        Hashtable<String, String> inputs = new Hashtable<>();
+        inputs.put("state", "1");
+        QueryData queryData = new QueryData();
+        queryData.setExecute("search_command.m1", false);
+        queryData.setInputs("search_command.m1", inputs);
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
-                queryDictionary,
-                false,
+                queryData,
                 QueryResponseBean.class);
-        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
+
+        // no value in queryDictionary should reset the value to empty
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Baran", "Kota"});
 
         // change selection
-        queryDictionary.put("state", "0");
+        inputs.put("name", "Burt");
+        inputs.put("state", "0");
+        queryData.setInputs("search_command.m1", inputs);
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
-                queryDictionary,
-                false,
+                queryData,
                 QueryResponseBean.class);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
 
-
+        queryData.setExecute("search_command.m1", true);
         EntityListResponse responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
-                queryDictionary,
-                true,
+                queryData,
                 EntityListResponse.class);
+
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
         assert caseStorage.getNumRecords() == 20;
@@ -101,8 +105,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         CommandListResponseBean commandResponse = sessionNavigateWithQuery(new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
                 "caseclaim",
-                queryDictionary,
-                true,
+                queryData,
                 CommandListResponseBean.class);
         assert commandResponse.getCommands().length == 2;
         assert commandResponse.getSelections().length == 2;
@@ -115,8 +118,11 @@ public class CaseClaimTests extends BaseTestClass {
 
         UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
         SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
-        Hashtable<String, String> queryDictionary = new Hashtable<>();
-        queryDictionary.put("name", "Burt");
+        Hashtable<String, String> inputs = new Hashtable<>();
+        inputs.put("name", "Burt");
+        QueryData queryData = new QueryData();
+        queryData.setExecute("search_command.m1", true);
+        queryData.setInputs("search_command.m1", inputs);
 
         configureQueryMockOwned();
         configureSyncMock();
@@ -125,8 +131,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         CommandListResponseBean response = sessionNavigateWithQuery(new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
                 "caseclaim",
-                queryDictionary,
-                true,
+                queryData,
                 CommandListResponseBean.class);
         assert response.getSelections().length == 2;
     }

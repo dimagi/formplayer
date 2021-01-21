@@ -140,7 +140,7 @@ public class MenuSessionRunnerService {
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
-            if (queryData != null && queryData.getExecute(queryKey)) {
+            if (queryData != null && !queryData.getExecute(queryKey)) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
             }
             menuResponseBean = new QueryResponseBean(
