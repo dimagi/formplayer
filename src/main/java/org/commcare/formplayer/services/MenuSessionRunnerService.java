@@ -138,7 +138,7 @@ public class MenuSessionRunnerService {
                     storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
         } else if (nextScreen instanceof FormplayerQueryScreen) {
-            ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
+            ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if (queryData != null && !queryData.getExecute(queryKey)) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
@@ -225,17 +225,20 @@ public class MenuSessionRunnerService {
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
             String queryKey = menuSession.getSessionWrapper().getCommand();
-            if (nextScreen instanceof FormplayerQueryScreen && queryData != null) {
-                FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen) nextScreen);
+            if (nextScreen instanceof FormplayerQueryScreen) {
+                FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
                 formplayerQueryScreen.refreshItemSetChoices();
-                if (queryData.getExecute(queryKey) || (formplayerQueryScreen.doDefaultSearch() && !forceManualAction)) {
+                if ((queryData != null && queryData.getExecute(queryKey)) ||
+                        (formplayerQueryScreen.doDefaultSearch() && !forceManualAction)) {
+
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
                             menuSession,
-                            queryData.getInputs(queryKey)
+                            queryData==null ? null : queryData.getInputs(queryKey)
                     );
-                } else {
-                    answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
+                } else if (queryData != null) {
+                    answerQueryPrompts((FormplayerQueryScreen)nextScreen,
+                            queryData.getInputs(queryKey));
                 }
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
