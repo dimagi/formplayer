@@ -78,7 +78,7 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Baran", "Kota"});
 
         // change selection
-        queryDictionary.put("name", "Burt");
+        inputs.put("name", "Burt");
         inputs.put("state", "0");
         queryData.setInputs("search_command.m1", inputs);
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
