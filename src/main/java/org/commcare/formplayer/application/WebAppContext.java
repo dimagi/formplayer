@@ -161,7 +161,7 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public MeterFilter renameRegionTagMeterFilter() {
+    public MeterFilter applyMetricPrefix() {
         return new MeterFilter() {
             @Override
             public Meter.Id map(Meter.Id id) {
