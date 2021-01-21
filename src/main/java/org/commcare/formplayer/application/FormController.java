@@ -159,9 +159,14 @@ public class FormController extends AbstractBaseController{
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SubmitResponseBean submitResponseBean;
 
+        SimpleTimer validationTimer = new SimpleTimer();
+        validationTimer.start();
         submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
-                submitRequestBean.getAnswers());
+                submitRequestBean.getAnswers(),
+                formEntrySession.getSkipValidation());
+        validationTimer.end();
+        categoryTimingHelper.recordCategoryTiming(validationTimer, Constants.TimingCategories.VALIDATE_SUBMISSION, null, submitRequestBean.getDomain());
 
         FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
 
@@ -183,7 +188,7 @@ public class FormController extends AbstractBaseController{
 
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
-                                "Puring cases took some time" : "Probably didn't have to purge cases");
+                                "Purging cases took some time" : "Probably didn't have to purge cases", submitRequestBean.getDomain());
 
                 ResponseEntity<String> submitResponse = submitService.submitForm(
                         formEntrySession.getInstanceXml(),
@@ -237,7 +242,9 @@ public class FormController extends AbstractBaseController{
                 volatilityRecord.write(volatilityCache);
             }
 
-            if (storageFactory.getPropertyManager().isSyncAfterFormEnabled()) {
+            boolean suppressAutosync = formEntrySession.getSuppressAutosync();
+
+            if (storageFactory.getPropertyManager().isSyncAfterFormEnabled() && !suppressAutosync) {
                 //If configured to do so, do a sync with server now to ensure dats is up to date.
                 //Need to do before end of form nav triggers, since the new data might change the
                 //validity of the form
@@ -246,6 +253,8 @@ public class FormController extends AbstractBaseController{
                 restoreFactory.performTimedSync(true, skipFixtures);
             }
 
+            SimpleTimer navTimer = new SimpleTimer();
+            navTimer.start();
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
                 Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
@@ -253,6 +262,8 @@ public class FormController extends AbstractBaseController{
                     submitResponseBean.setNextScreen(nav);
                 }
             }
+            navTimer.end();
+            categoryTimingHelper.recordCategoryTiming(navTimer, Constants.TimingCategories.END_OF_FORM_NAV, null, submitRequestBean.getDomain());
         }
         return submitResponseBean;
     }
@@ -288,7 +299,8 @@ public class FormController extends AbstractBaseController{
     @Trace
     private SubmitResponseBean validateSubmitAnswers(FormEntryController formEntryController,
                                        FormEntryModel formEntryModel,
-                                       Map<String, Object> answers) {
+                                       Map<String, Object> answers,
+                                       boolean skipValidation) {
         SubmitResponseBean submitResponseBean = new SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
         HashMap<String, ErrorBean> errors = new HashMap<>();
         for(String key: answers.keySet()){
@@ -303,7 +315,8 @@ public class FormController extends AbstractBaseController{
                             answer,
                             key,
                             false,
-                            null);
+                            null,
+                            skipValidation);
             if(!answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 ErrorBean error = new ErrorBean();

@@ -97,6 +97,9 @@ public class FormSession {
     private String restoreAsCaseId;
 
     private FormVolatilityRecord sessionVolatilityRecord;
+    private boolean shouldAutoSubmit;
+    private boolean suppressAutosync;
+    private boolean shouldSkipFullFormValidation;
 
     @Trace
     private void setupJavaRosaObjects() {
@@ -260,6 +263,9 @@ public class FormSession {
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
 
         setVolatilityIndicators();
+        setAutoSubmitFlag();
+        setSuppressAutosyncFlag();
+        setSkipValidation();
     }
 
     private String getPragma(String key) {
@@ -285,6 +291,47 @@ public class FormSession {
                     this.getVolatilityKeyTimeout(),
                     entityTitle);
         }
+    }
+
+    private void setAutoSubmitFlag() {
+        String shouldSubmit = getPragma("Pragma-Submit-Automatically");
+        if(shouldSubmit != null ) {
+            this.shouldAutoSubmit = true;
+        }
+        else {
+            this.shouldAutoSubmit = false;
+        }
+    }
+
+    private void setSuppressAutosyncFlag() {
+        String shouldSubmit = getPragma("Pragma-Suppress-Autosync");
+        if(shouldSubmit != null ) {
+            this.suppressAutosync = true;
+        }
+        else {
+            this.suppressAutosync = false;
+        }
+    }
+
+    private void setSkipValidation() {
+        String shouldSkipValidation = getPragma("Pragma-Skip-Full-Form-Validation");
+        if (shouldSkipValidation != null) {
+            this.shouldSkipFullFormValidation = true;
+        } else {
+            this.shouldSkipFullFormValidation = false;
+        }
+    }
+
+    public boolean getAutoSubmitFlag() {
+        return shouldAutoSubmit;
+    }
+
+    public boolean getSuppressAutosync() {
+        return suppressAutosync;
+    }
+
+    public boolean getSkipValidation() {
+        return shouldSkipFullFormValidation;
     }
 
     public FormVolatilityRecord getSessionVolatilityRecord() {
@@ -573,7 +620,8 @@ public class FormSession {
                 answer != null ? answer.toString() : null,
                 answerIndex,
                 oneQuestionPerScreen,
-                currentIndex);
+                currentIndex,
+                false);
 
         FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
         if (!inPromptMode || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {
