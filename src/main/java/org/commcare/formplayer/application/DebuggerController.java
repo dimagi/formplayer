@@ -52,7 +52,7 @@ public class DebuggerController extends AbstractBaseController {
             @RequestBody SessionRequestBean debuggerRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(debuggerRequest.getSessionId());
-        FormSession formSession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+        FormSession formSession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, null);
         SerializableMenuSession serializableMenuSession = menuSessionRepo.findOneWrapped(serializableFormSession.getMenuSessionId());
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
                 debuggerRequest.getDomain(),
@@ -130,7 +130,7 @@ public class DebuggerController extends AbstractBaseController {
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, null);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),
