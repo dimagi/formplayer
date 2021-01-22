@@ -2,8 +2,6 @@ package org.commcare.formplayer.beans;
 
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 
-import io.swagger.annotations.ApiModel;
-
 import org.commcare.formplayer.session.FormSession;
 
 import java.io.IOException;
@@ -11,7 +9,6 @@ import java.io.IOException;
 /**
  * Created by willpride on 2/8/16.
  */
-@ApiModel("Session Response")
 public class GetInstanceResponseBean extends BaseResponseBean {
 
     private String output;
