@@ -2,20 +2,15 @@ package org.commcare.formplayer.beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Created by willpride on 1/20/16.
  */
-@ApiModel("Answer Question Request")
 public class AnswerQuestionRequestBean extends SessionRequestBean {
-    @ApiModelProperty(value = "The FormIndex of the question to be answered", required = true)
     private String formIndex;
     // This can be an array (multi select, geo point), integer, date, or String.
     // Even though they always come in as Strings, Jackson will try to parse the String into the above classes
     // and so needs this to be an Object to store them in
-    @ApiModelProperty(value = "The answer given", required = true)
     private Object answer;
 
     private String navMode;

@@ -102,7 +102,6 @@ public class Constants {
     public static final Set<Pattern> AUTH_WHITELIST = new HashSet<Pattern>(Arrays.asList(
             Pattern.compile(Constants.URL_SERVER_UP),
             Pattern.compile(Constants.URL_VALIDATE_FORM),
-            Pattern.compile("swagger.*"),
             Pattern.compile("webjars/.*"),
             Pattern.compile("configuration/.*"),
             Pattern.compile("v2/.*"),
