@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if ! command -v git-build-branch &> /dev/null
+then
+    echo "'git-build-branch' tool could not be found. Run 'pip install -r scripts/rebuildstaging-requirements.txt'."
+    exit 1
+fi
+
 function usage() {
     cat << EOF
 usage: $0 [-h|--help] [-v|--verbose] [--no-push] [--skip-fetch]
