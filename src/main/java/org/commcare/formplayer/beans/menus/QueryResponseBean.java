@@ -2,6 +2,7 @@ package org.commcare.formplayer.beans.menus;
 
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.suite.model.DisplayUnit;
+import org.commcare.suite.model.QueryPrompt;
 import org.commcare.util.screen.QueryScreen;
 
 import org.javarosa.core.util.OrderedHashtable;
@@ -30,13 +31,15 @@ public class QueryResponseBean extends MenuBean {
     }
 
     public QueryResponseBean(QueryScreen queryScreen, SessionWrapper session){
-        OrderedHashtable<String, DisplayUnit> displayMap = queryScreen.getUserInputDisplays();
-        displays = new DisplayElement[displayMap.size()];
+        OrderedHashtable<String, QueryPrompt> queryPromptMap = queryScreen.getUserInputDisplays();
+        Hashtable<String, String> currentAnswers = queryScreen.getCurrentAnswers();
+        displays = new DisplayElement[queryPromptMap.size()];
         int count = 0 ;
-        for (String key : Collections.list(displayMap.keys())) {
-            displays[count] = new DisplayElement(displayMap.get(key),
+        for (String key : Collections.list(queryPromptMap.keys())) {
+            displays[count] = new DisplayElement(queryPromptMap.get(key).getDisplay(),
                     session.getEvaluationContext(),
-                    key);
+                    key,
+                    currentAnswers.get(key));
             count++;
         }
         setTitle(queryScreen.getScreenTitle());

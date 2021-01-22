@@ -1,5 +1,6 @@
 package org.commcare.formplayer.installers;
 
+import org.commcare.resources.ResourceInstallContext;
 import org.commcare.resources.model.Resource;
 import org.commcare.resources.model.ResourceLocation;
 import org.commcare.resources.model.ResourceTable;
@@ -34,8 +35,7 @@ public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreIns
     @Override
     public boolean install(Resource r, ResourceLocation location,
                            Reference ref, ResourceTable table,
-                           CommCarePlatform platform, boolean upgrade, boolean recovery)
-            throws UnresolvedResourceException, UnfullfilledRequirementsException {
+                           CommCarePlatform platform, boolean upgrade, ResourceInstallContext resourceInstallContext) {
         if (upgrade) {
             table.commit(r, Resource.RESOURCE_STATUS_INSTALLED);
         } else {

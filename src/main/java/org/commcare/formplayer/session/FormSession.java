@@ -253,7 +253,7 @@ public class FormSession {
 
     private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
-                CommCareConfigEngine.MINOR_VERSION, storageManager);
+                CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
         formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
 
