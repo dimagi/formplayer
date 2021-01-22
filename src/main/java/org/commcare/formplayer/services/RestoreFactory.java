@@ -608,6 +608,16 @@ public class RestoreFactory {
         }
     }
 
+    private void builderQueryParamEncoded(UriComponentsBuilder builder, String name, String value)
+            throws UnsupportedEncodingException {
+        try {
+            builder.queryParam(name,
+                    URLEncoder.encode(value, UTF_8.toString()));
+        } catch (UnsupportedEncodingException e) {
+            throw new UnsupportedEncodingException(String.format("Unable to encode '%s'", name));
+        }
+    }
+
     public Pair<URI, HttpHeaders> getCaseRestoreUrlAndHeaders() {
         StringBuilder builder = new StringBuilder();
         builder.append("/a/");
@@ -629,37 +639,30 @@ public class RestoreFactory {
         String uri = host + restoreUrl;
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(uri);
         String syncToken = getSyncToken();
-        if (syncToken != null && !"".equals(syncToken)) {
-            builder.queryParam("since", syncToken);
-        }
-        builder.queryParam("device_id", getSyncDeviceId());
-        if (useLiveQuery) {
-            builder.queryParam("case_sync", "livequery");
-        }
-        if( asUsername != null) {
-            String unEncodedAsUsername = asUsername;
-            if (!asUsername.contains("@")) {
-                unEncodedAsUsername += "@" + domain + ".commcarehq.org";
+        // Add query params.
+        try {
+            if (syncToken != null && !"".equals(syncToken)) {
+                builderQueryParamEncoded(builder, "since", syncToken);
             }
-            try {
-                // URL Encoding because we know usernames with chars like '+' fail,
-                // might want to encode other params later
-                builder.queryParam("as",
-                        URLEncoder.encode(unEncodedAsUsername, UTF_8.toString()));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("Unable to encode login_as username.");
+            builderQueryParamEncoded(builder, "device_id", getSyncDeviceId());
+            if (useLiveQuery) {
+                builderQueryParamEncoded(builder, "case_sync", "livequery");
             }
-        }
-        if (skipFixtures) {
-            builder.queryParam("skip_fixtures", "true");
-        }
-        if (getHqAuth() == null && username != null) {
-            try {
-                // URL Encoding because we know usernames with chars like '+' fail,
-                builder.queryParam("for", URLEncoder.encode(username, UTF_8.toString()));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("Unable to encode 'for' username.");
+            if( asUsername != null) {
+                String unEncodedAsUsername = asUsername;
+                if (!asUsername.contains("@")) {
+                    unEncodedAsUsername += "@" + domain + ".commcarehq.org";
+                }
+                builderQueryParamEncoded(builder, "as", unEncodedAsUsername);
             }
+            if (skipFixtures) {
+                builderQueryParamEncoded(builder, "skip_fixtures", "true");
+            }
+            if (getHqAuth() == null && username != null) {
+                builderQueryParamEncoded(builder, "for", username);
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(String.format("Restore Error: " + e.getMessage()));
         }
 
         // Headers
