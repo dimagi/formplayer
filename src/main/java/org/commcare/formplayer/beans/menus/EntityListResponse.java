@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Vector;
 import java.util.function.Predicate;
 
-import io.swagger.annotations.ApiModel;
-
 /**
  * Created by willpride on 4/13/16.
  */
