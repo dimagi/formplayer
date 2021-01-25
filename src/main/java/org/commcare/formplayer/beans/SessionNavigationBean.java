@@ -1,4 +1,5 @@
 package org.commcare.formplayer.beans;
+import org.commcare.formplayer.objects.QueryData;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -17,8 +18,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private String searchText;
     private String geoLocation;
     private String menuSessionId;
-    private Hashtable<String, String> queryDictionary;
-    private boolean doQuery;
+    private QueryData queryData;
     private boolean isPersistent;
     private int sortIndex;
 
@@ -35,7 +35,7 @@ public class SessionNavigationBean extends InstallRequestBean {
         return "SessionNavigationBean [id= " + menuSessionId +
                 ", selections=" + Arrays.toString(selections) +
                 ", parent="  + super.toString() +
-                ", queryDict" + queryDictionary + "]";
+                ", queryData" + queryData + "]";
     }
 
     public int getOffset() {
@@ -62,23 +62,13 @@ public class SessionNavigationBean extends InstallRequestBean {
     public void setMenuSessionId(String menuSessionId) {
         this.menuSessionId = menuSessionId;
     }
-    @JsonGetter(value = "query_dictionary")
-    public Hashtable<String, String> getQueryDictionary() {
-        return queryDictionary;
+    @JsonGetter(value = "query_data")
+    public QueryData getQueryData() {
+        return queryData;
     }
-    @JsonSetter(value = "query_dictionary")
-    public void setQueryDictionary(Hashtable<String, String> queryDictionary) {
-        this.queryDictionary = queryDictionary;
-    }
-
-    @JsonGetter(value = "do_query")
-    public boolean isDoQuery() {
-        return doQuery;
-    }
-
-    @JsonSetter(value = "do_query")
-    public void setDoQuery(boolean doQuery) {
-        this.doQuery = doQuery;
+    @JsonSetter(value = "query_data")
+    public void setQueryData(QueryData queryData) {
+        this.queryData = queryData;
     }
 
     @JsonGetter(value = "geo_location")

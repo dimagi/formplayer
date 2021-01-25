@@ -88,11 +88,10 @@ public class MenuController extends AbstractBaseController {
             BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(menuSession,
                     sessionNavigationBean.getSelections(),
                     null,
-                    sessionNavigationBean.getQueryDictionary(),
+                    sessionNavigationBean.getQueryData(),
                     sessionNavigationBean.getOffset(),
                     sessionNavigationBean.getSearchText(),
-                    sessionNavigationBean.getSortIndex(),
-                    sessionNavigationBean.isDoQuery()
+                    sessionNavigationBean.getSortIndex()
             );
             logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
@@ -112,11 +111,10 @@ public class MenuController extends AbstractBaseController {
                 menuSession,
                 commitSelections,
                 detailSelection,
-                sessionNavigationBean.getQueryDictionary(),
+                sessionNavigationBean.getQueryData(),
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
-                sessionNavigationBean.getSortIndex(),
-                sessionNavigationBean.isDoQuery()
+                sessionNavigationBean.getSortIndex()
         );
         logNotification(baseResponseBean.getNotification(),request);
 
@@ -168,11 +166,10 @@ public class MenuController extends AbstractBaseController {
                 menuSession,
                 selections,
                 null,
-                sessionNavigationBean.getQueryDictionary(),
+                sessionNavigationBean.getQueryData(),
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
-                sessionNavigationBean.getSortIndex(),
-                sessionNavigationBean.isDoQuery()
+                sessionNavigationBean.getSortIndex()
         );
         logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);

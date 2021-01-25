@@ -1,5 +1,8 @@
 package org.commcare.formplayer.beans.menus;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.QueryPrompt;
@@ -16,6 +19,7 @@ import java.util.Hashtable;
 public class QueryResponseBean extends MenuBean {
 
     private DisplayElement[] displays;
+    private String queryKey;
     private final String type = "query";
 
     QueryResponseBean() {
@@ -53,6 +57,7 @@ public class QueryResponseBean extends MenuBean {
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
+        this.queryKey = session.getCommand();
     }
 
     @Override
@@ -63,5 +68,14 @@ public class QueryResponseBean extends MenuBean {
 
     public String getType() {
         return type;
+    }
+
+    @JsonGetter(value="queryKey")
+    public String getQueryKey() {
+        return queryKey;
+    }
+    @JsonSetter(value="queryKey")
+    public void setQueryKey(String queryKey) {
+        this.queryKey = queryKey;
     }
 }

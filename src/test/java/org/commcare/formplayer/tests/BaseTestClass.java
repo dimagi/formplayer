@@ -29,6 +29,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.repo.SerializableMenuSession;
@@ -606,8 +607,7 @@ public class BaseTestClass {
 
     <T> T sessionNavigateWithQuery(String[] selections,
                                    String testName,
-                                   Hashtable<String, String> queryDictionary,
-                                   boolean doQuery,
+                                   QueryData queryData,
                                    Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setSelections(selections);
@@ -615,8 +615,7 @@ public class BaseTestClass {
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
-        sessionNavigationBean.setQueryDictionary(queryDictionary);
-        sessionNavigationBean.setDoQuery(doQuery);
+        sessionNavigationBean.setQueryData(queryData);
         return generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,

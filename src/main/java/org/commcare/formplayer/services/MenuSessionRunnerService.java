@@ -4,6 +4,7 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -91,7 +92,7 @@ public class MenuSessionRunnerService {
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, 0, "", 0, null, false);
+        return getNextMenu(menuSession, null, 0, "", 0, null);
     }
 
     private BaseResponseBean getNextMenu(MenuSession menuSession,
@@ -99,8 +100,7 @@ public class MenuSessionRunnerService {
                                          int offset,
                                          String searchText,
                                          int sortIndex,
-                                         Hashtable<String, String> queryDictionary,
-                                         boolean doQuery) throws Exception {
+                                         QueryData queryData) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -126,7 +126,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
-                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryDictionary, doQuery);
+                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData);
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
@@ -138,9 +138,10 @@ public class MenuSessionRunnerService {
                     storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
         } else if (nextScreen instanceof FormplayerQueryScreen) {
-            if(!doQuery){
-                answerQueryPrompts((FormplayerQueryScreen)nextScreen,
-                        queryDictionary);
+            ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
+            String queryKey = menuSession.getSessionWrapper().getCommand();
+            if (queryData != null && !queryData.getExecute(queryKey)) {
+                answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
             }
             menuResponseBean = new QueryResponseBean(
                     (QueryScreen)nextScreen,
@@ -166,7 +167,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null,
-                0, null, 0, false);
+                0, null, 0);
     }
 
     /**
@@ -185,11 +186,10 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections,
                                                          String detailSelection,
-                                                         Hashtable<String, String> queryDictionary,
+                                                         QueryData queryData,
                                                          int offset,
                                                          String searchText,
-                                                         int sortIndex,
-                                                         boolean doQuery) throws Exception {
+                                                         int sortIndex) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -200,8 +200,7 @@ public class MenuSessionRunnerService {
                     offset,
                     searchText,
                     sortIndex,
-                    queryDictionary,
-                    doQuery
+                    queryData
             );
         }
         NotificationMessage notificationMessage = null;
@@ -224,14 +223,17 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-            if (nextScreen instanceof FormplayerQueryScreen) {
+            String queryKey = menuSession.getSessionWrapper().getCommand();
+            if (nextScreen instanceof FormplayerQueryScreen && queryData != null) {
                 ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
-                if (doQuery) {
+                if (queryData.getExecute(queryKey)) {
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
                             menuSession,
-                            queryDictionary
+                            queryData.getInputs(queryKey)
                     );
+                } else {
+                    answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
                 }
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
@@ -250,8 +252,7 @@ public class MenuSessionRunnerService {
                 offset,
                 searchText,
                 sortIndex,
-                queryDictionary,
-                doQuery
+                queryData
         );
         restoreFactory.cacheSessionSelections(selections);
 
@@ -278,7 +279,6 @@ public class MenuSessionRunnerService {
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
-        screen.refreshItemSetChoices();
     }
 
 
