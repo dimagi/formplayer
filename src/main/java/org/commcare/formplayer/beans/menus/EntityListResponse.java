@@ -2,7 +2,6 @@ package org.commcare.formplayer.beans.menus;
 
 import datadog.trace.api.Trace;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
-import io.swagger.annotations.ApiModel;
 import org.commcare.cases.entity.*;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
@@ -25,7 +24,6 @@ import java.util.Vector;
 /**
  * Created by willpride on 4/13/16.
  */
-@ApiModel("EntityBean List Response")
 public class EntityListResponse extends MenuBean {
     private EntityBean[] entities;
     private DisplayElement[] actions;

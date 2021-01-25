@@ -53,8 +53,6 @@ import org.commcare.formplayer.beans.SubmitRequestBean;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.SerializableMenuSession;
@@ -74,7 +72,6 @@ import datadog.trace.api.Trace;
  * Controller class (API endpoint) containing all form entry logic. This includes
  * opening a new form, question answering, and form submission.
  */
-@Api(value = "Form Controller", description = "Operations for navigating CommCare Forms")
 @RestController
 @EnableAutoConfiguration
 public class FormController extends AbstractBaseController{
@@ -103,7 +100,6 @@ public class FormController extends AbstractBaseController{
     private final Log log = LogFactory.getLog(FormController.class);
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @ApiOperation(value = "Start a new form entry session")
     @RequestMapping(value = Constants.URL_NEW_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
@@ -113,7 +109,6 @@ public class FormController extends AbstractBaseController{
         return newFormResponseFactory.getResponse(newSessionBean, postUrl);
     }
 
-    @ApiOperation(value = "Change the form session locale")
     @RequestMapping(value = Constants.URL_CHANGE_LANGUAGE, method = RequestMethod.POST)
     @UserLock
     @UserRestore
@@ -129,7 +124,6 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
-    @ApiOperation(value = "Answer the question at the given index")
     @RequestMapping(value = Constants.URL_ANSWER_QUESTION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
@@ -147,7 +141,6 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
-    @ApiOperation(value = "Submit the current form")
     @RequestMapping(value = Constants.URL_SUBMIT_FORM, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
@@ -329,7 +322,6 @@ public class FormController extends AbstractBaseController{
         return submitResponseBean;
     }
 
-    @ApiOperation(value = "Expand the repeat at the given index")
     @RequestMapping(value = Constants.URL_NEW_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
@@ -351,7 +343,6 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
-    @ApiOperation(value = "Delete the repeat at the given index")
     @RequestMapping(value = Constants.URL_DELETE_REPEAT, method = RequestMethod.POST)
     @ResponseBody
     @UserRestore
@@ -373,7 +364,6 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
-    @ApiOperation(value = "Get the questions for the next index in OQPS mode")
     @RequestMapping(value = Constants.URL_NEXT_INDEX, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
@@ -392,7 +382,6 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
-    @ApiOperation(value = "Get the questions for the next index for SMS")
     @RequestMapping(value = Constants.URL_NEXT, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
@@ -410,7 +399,6 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
-    @ApiOperation(value = "Get the questios for the previous index in OQPS mode")
     @RequestMapping(value = Constants.URL_PREV_INDEX, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
@@ -429,7 +417,6 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
-    @ApiOperation(value = "Get the raw instance for a form session")
     @RequestMapping(value = Constants.URL_GET_INSTANCE, method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     @UserLock
@@ -446,7 +433,6 @@ public class FormController extends AbstractBaseController{
     }
 
 
-    @ApiOperation(value = "Get the questions for the current index in OQPS mode")
     @RequestMapping(value = Constants.URL_CURRENT, method = RequestMethod.POST)
     @ResponseBody
     @UserLock

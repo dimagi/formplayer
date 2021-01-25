@@ -1,17 +1,21 @@
 #!/bin/bash
 
+if ! command -v git-build-branch &> /dev/null
+then
+    echo "'git-build-branch' tool could not be found. Run 'pip install -r scripts/rebuildstaging-requirements.txt'."
+    exit 1
+fi
+
 function usage() {
     cat << EOF
-usage: $0 [-h|--help] [-v|--verbose] [--deploy|--no-push] [--skip-fetch]
+usage: $0 [-h|--help] [-v|--verbose] [--no-push] [--skip-fetch]
 
 rebuild staging from yaml configuration (scripts/staging.yaml)
 
     -h --help       print this help text
     -v --verbose    display debugging output
-    --deploy        deploy after rebuild is complete
     --no-push       do not push changes (cannot be used with --deploy)
     --skip-fetch    assume local copy is already update date with remote
-    --enterprise    rebuild the enterprise branch
 EOF
 }
 
@@ -21,9 +25,6 @@ do
     shift
 
     case $key in
-      --deploy)
-        deploy=y
-        ;;
       -h|--help)
         usage
         exit
@@ -39,10 +40,6 @@ do
         no_push=y
         echo no-push
         ;;
-      --enterprise)
-        enterprise=y
-        echo enterprise
-        ;;
       *)
         usage
         exit 1
@@ -52,13 +49,13 @@ done
 
 function rebuildstaging() {
     echo "rebuilding staging branch, this might take a while..."
-    python scripts/rebuildstaging.py < scripts/staging.yaml "$@"
+    git-build-branch scripts/staging.yaml "$@"
 }
 
 args=''
 
 [[ $verbose = 'y' ]] && args="$args -v"
-[[ $no_push = 'y' ]] && args="$args --no-push"
+[[ -z "$no_push" || $no_push != 'y' ]] && args="$args --push"
 
 [[ $skip_fetch = 'y' ]] && args="$args sync rebuild"
 
@@ -71,13 +68,4 @@ then
     exit 1
 fi
 
-if [[ $deploy = 'y' && $no_push != 'y' && $enterprise != 'y' ]]
-then
-    rebuildstaging $args && {
-        which commcare-cloud \
-        && commcare-cloud staging deploy formplayer \
-        || echo 'Could not auto-deploy for you. Run `commcare-cloud staging fab deploy` to deploy.'
-    }
-else
-    rebuildstaging $args
-fi
+rebuildstaging $args

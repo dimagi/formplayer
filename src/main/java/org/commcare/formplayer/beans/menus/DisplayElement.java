@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.suite.model.Action;
 import org.commcare.suite.model.DisplayUnit;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.springframework.lang.Nullable;
 
 /**
  * Created by willpride on 4/14/16.
@@ -14,6 +15,9 @@ public class DisplayElement {
     private String audioUri;
     private String imageUri;
     private String id;
+
+    @Nullable
+    private String value;
 
     public DisplayElement(){}
 
@@ -27,7 +31,7 @@ public class DisplayElement {
         }
     }
 
-    public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id) {
+    public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id, @Nullable String value) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if(displayUnit.getImageURI() !=  null){
@@ -36,6 +40,7 @@ public class DisplayElement {
         if(displayUnit.getAudioURI() != null){
             this.audioUri = displayUnit.getAudioURI().evaluate(ec);
         }
+        this.value = value;
     }
 
     public String getText() {
@@ -63,9 +68,13 @@ public class DisplayElement {
         this.imageUri = imageUri;
     }
 
+    public String getValue() {
+        return value;
+    }
+
     @Override
     public String toString(){
-        return "DisplayElement id=" + id + ", text=" + text + ", imageUri=" + imageUri + ", audioUri=" + audioUri;
+        return "DisplayElement id=" + id + ", text=" + text + ", value=" + value + ", imageUri=" + imageUri + ", audioUri=" + audioUri;
     }
 
     public String getId() {

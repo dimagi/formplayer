@@ -3,6 +3,7 @@ package org.commcare.formplayer.tests;
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.UserDB;
@@ -45,10 +46,19 @@ public class CaseClaimTests extends BaseTestClass {
     @Test
     public void testQueryScreen() throws Exception {
         UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
-        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
 
         configureQueryMock();
         configureSyncMock();
+
+        QueryResponseBean queryResponseBean = sessionNavigate(new String[]{"1", "action 1"},
+                "caseclaim",
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays().length == 3;
+        // test default value
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
+
+
         Hashtable<String, String> queryDictionary = new Hashtable<>();
         queryDictionary.put("name", "Burt");
         EntityListResponse responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
@@ -77,7 +87,7 @@ public class CaseClaimTests extends BaseTestClass {
     public void testAlreadyOwnCase() throws Exception {
 
         UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
-        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
         Hashtable<String, String> queryDictionary = new Hashtable<>();
         queryDictionary.put("name", "Burt");
 
