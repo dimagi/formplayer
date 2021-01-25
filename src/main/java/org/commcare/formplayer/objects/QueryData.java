@@ -8,8 +8,6 @@ import java.util.Map;
 
 /**
  * Created by jschweers on 12/28/20.
-<<<<<<< HEAD
-=======
  *
  * QueryData stores the case search & claim data for a session.
  * It's a hashtable keyed by command id, e.g., "search_command.m2"
@@ -18,7 +16,6 @@ import java.util.Map;
  *     If not, just fetch the current values of the prompts.
  *  2. An "inputs" map where keys are field names and values are
  *     search terms.
->>>>>>> caseClaim+jls/parent-child-case-search
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryData extends Hashtable<String, Object> {

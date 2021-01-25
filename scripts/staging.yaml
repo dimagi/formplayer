@@ -50,19 +50,17 @@
 trunk: master
 name: autostaging
 branches:
-  - ce/tracing # Cal Oct 23
-  - formplayer_2.50
-  - caseClaim # Shubham Jan 13
   - revert-810-revert-805-kev/formplayer-username-fix # Kevin Jan 12
   - caseClaim+jls/parent-child-case-search # Jenny Jan 18
   - ce/no-json-validation # Cal Jan 18
+  - ce/tracing+skipToSearchResults
+  - ce/tracing # Cal Oct 23
   - skipToSearchResults # Shubham Jan 25
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - ce/tag-triggers # Cal Nov 16
-      - jls/formplayer-merge-master # Jenny Dec 29
       - skipToSearchResults # Shubham Jan 25
       #- ce/index-state-category # Cal Nov 16
       #- ce/ensure-session # Cal Nov 20
