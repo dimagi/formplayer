@@ -127,11 +127,3 @@ the `formplayer` branch.
 
 When updating Formplayer to have a new release of a CommCare version (e.g. 2.34 to 2.35), a PR should be opened from the `commcare_X.Y` branch into
 the `formplayer` branch. Once QA has been finished, merge the PR and update the Formplayer submodule.
-
-
-### Docs
-____________
-
-We automatically generate API documentation using the Swagger plug-in [SpringFox](https://github.com/springfox/springfox)
-for Spring. To view the generated docs, run the server (above) and navigate to http://localhost:8080/swagger-ui.html#/ (changing
-host and port as appropriate)
