@@ -11,8 +11,6 @@ import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
 import org.commcare.formplayer.beans.menus.UpdateRequestBean;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +37,6 @@ import org.commcare.formplayer.util.Constants;
  * Controller (API endpoint) containing all session navigation functionality.
  * This includes module, form, case, and session (incomplete form) selection.
  */
-@Api(value = "Menu Controllers", description = "Operations for navigating CommCare Menus and Cases")
 @RestController
 @EnableAutoConfiguration
 public class MenuController extends AbstractBaseController {
@@ -55,7 +52,6 @@ public class MenuController extends AbstractBaseController {
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
-    @ApiOperation(value = "Install the application at the given reference")
     @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
     @UserLock
     @UserRestore
@@ -68,7 +64,6 @@ public class MenuController extends AbstractBaseController {
         return baseResponseBean;
     }
 
-    //@ApiOperation(value = "Update the application at the given reference")
     //@RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
     //@UserLock
     //@UserRestore
