@@ -8,9 +8,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.RestoreFactory;
 
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +22,8 @@ import java.util.Map;
  * Created by benrudolph on 4/27/17.
  */
 public class FormplayerSentry {
+
+    public static final String FORM_NAME = "form_name";
 
     private static final Log log = LogFactory.getLog(FormplayerSentry.class);
 
@@ -117,6 +122,17 @@ public class FormplayerSentry {
     }
     public BreadcrumbRecorder newBreadcrumb() {
         return new BreadcrumbRecorder(this);
+    }
+
+    public void addTag(String name, String value) {
+        if (sentryClient == null) {
+            return;
+        }
+        try {
+            sentryClient.getContext().addTag(name, value);
+        } catch (Exception e) {
+            log.info("Error adding tag. Ensure that sentryClient is configured. ", e);
+        }
     }
 
     public void setUserContext(String userId, String username, String ipAddress) {

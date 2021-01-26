@@ -101,7 +101,7 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, null);
     }
 
     private String getFormXml(String formUrl) {
