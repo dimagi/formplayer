@@ -1,10 +1,5 @@
 package org.commcare.formplayer.services;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-
 import com.timgroup.statsd.StatsDClient;
 
 import org.apache.commons.logging.Log;
@@ -14,6 +9,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.commcare.formplayer.util.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -57,7 +57,7 @@ public class CategoryTimingHelper {
         }
 
         public void record() {
-            parent.recordCategoryTiming(this, category, sentryMessage, domain);
+            parent.recordCategoryTiming(this, category, sentryMessage, Collections.singletonMap(DOMAIN, domain));
         }
     }
 
@@ -75,16 +75,13 @@ public class CategoryTimingHelper {
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage) {
         recordCategoryTiming(timing, category, sentryMessage, null);
     }
-    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, String domain) {
-        recordCategoryTiming(timing, category, sentryMessage, Collections.singletonMap(DOMAIN, domain));
-    }
 
     /**
      * @param extras - optional arguments, the following keys are accepted:
      *               CategoryTimingHelper.DOMAIN,
      *               CategoryTimingHelper.FORM_NAME,
      */
-    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, @Nullable Map<String, String> extras) {
+    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
         raven.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)

@@ -61,6 +61,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -185,6 +187,10 @@ public class RestoreFactory {
         return performTimedSync(true, false);
     }
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
+        // create extras to send to category timing helper
+        Map<String, String> extras = new HashMap<>();
+        extras.put(CategoryTimingHelper.DOMAIN, domain);
+
         SimpleTimer completeRestoreTimer = new SimpleTimer();
         completeRestoreTimer.start();
         // Create parent dirs if needed
@@ -209,10 +215,20 @@ public class RestoreFactory {
             purgeTimer.start();
             FormRecordProcessorHelper.purgeCases(sandbox);
             purgeTimer.end();
-            categoryTimingHelper.recordCategoryTiming(purgeTimer, Constants.TimingCategories.PURGE_CASES, null, domain);
+            categoryTimingHelper.recordCategoryTiming(
+                    purgeTimer,
+                    Constants.TimingCategories.PURGE_CASES,
+                    null,
+                    extras
+            );
         }
         completeRestoreTimer.end();
-        categoryTimingHelper.recordCategoryTiming(completeRestoreTimer, Constants.TimingCategories.COMPLETE_RESTORE, null, domain);
+        categoryTimingHelper.recordCategoryTiming(
+                completeRestoreTimer,
+                Constants.TimingCategories.COMPLETE_RESTORE,
+                null,
+                extras
+        );
         return sandbox;
     }
 
@@ -234,6 +250,11 @@ public class RestoreFactory {
     private UserSqlSandbox restoreUser(boolean skipFixtures) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
+
+        // create extras to send to category timing helper
+        Map<String, String> extras = new HashMap<>();
+        extras.put(CategoryTimingHelper.DOMAIN, domain);
+
         int maxRetries = 2;
         int counter = 0;
         while (true) {
@@ -252,7 +273,12 @@ public class RestoreFactory {
                 setAutoCommit(true);
 
                 parseTimer.end();
-                categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE, null, domain);
+                categoryTimingHelper.recordCategoryTiming(
+                        parseTimer,
+                        Constants.TimingCategories.PARSE_RESTORE,
+                        null,
+                        extras
+                );
                 sandbox.writeSyncToken();
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
