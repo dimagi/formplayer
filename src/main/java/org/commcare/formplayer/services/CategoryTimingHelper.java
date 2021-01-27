@@ -73,7 +73,7 @@ public class CategoryTimingHelper {
         recordCategoryTiming(timing, category, null);
     }
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage) {
-        recordCategoryTiming(timing, category, sentryMessage, Collections.emptyMap());
+        recordCategoryTiming(timing, category, sentryMessage, null);
     }
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, String domain) {
         recordCategoryTiming(timing, category, sentryMessage, Collections.singletonMap(DOMAIN, domain));
@@ -84,7 +84,7 @@ public class CategoryTimingHelper {
      *               CategoryTimingHelper.DOMAIN,
      *               CategoryTimingHelper.FORM_NAME,
      */
-    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
+    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, @Nullable Map<String, String> extras) {
         raven.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)
@@ -95,11 +95,13 @@ public class CategoryTimingHelper {
         datadogArgs.add("category:" + category);
         datadogArgs.add("request:" + RequestUtils.getRequestEndpoint(request));
         datadogArgs.add("duration:" + timing.getDurationBucket());
-        if (extras.containsKey(DOMAIN)) {
-            datadogArgs.add("domain:" + extras.get(DOMAIN));
-        }
-        if (extras.containsKey(FORM_NAME)) {
-            datadogArgs.add("form_name:" + extras.get(FORM_NAME));
+        if (extras != null) {
+            if (extras.containsKey(DOMAIN)) {
+                datadogArgs.add("domain:" + extras.get(DOMAIN));
+            }
+            if (extras.containsKey(FORM_NAME)) {
+                datadogArgs.add("form_name:" + extras.get(FORM_NAME));
+            }
         }
 
         datadogStatsDClient.recordExecutionTime(
