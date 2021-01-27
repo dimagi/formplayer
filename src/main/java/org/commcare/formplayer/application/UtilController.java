@@ -6,9 +6,6 @@ import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.beans.*;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.xform.parse.XFormParseException;
@@ -37,7 +34,6 @@ import javax.servlet.http.HttpServletRequest;
  *      Sync User DB
  *      Get Sessions (Incomplete Forms)
  */
-@Api(value = "Util Controller", description = "Operations that aren't associated with form or menu navigation")
 @RestController
 @EnableAutoConfiguration
 public class UtilController extends AbstractBaseController {
@@ -54,7 +50,6 @@ public class UtilController extends AbstractBaseController {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
-    @ApiOperation(value = "Sync the user's database with the server")
     @RequestMapping(value = Constants.URL_SYNC_DB, method = RequestMethod.POST)
     @UserLock
     @UserRestore
@@ -64,7 +59,6 @@ public class UtilController extends AbstractBaseController {
         return new SyncDbResponseBean();
     }
 
-    @ApiOperation(value = "Wipe the applications databases")
     @RequestMapping(value = {Constants.URL_DELETE_APPLICATION_DBS, Constants.URL_UPDATE}, method = RequestMethod.POST)
     @UserLock
     public NotificationMessage deleteApplicationDbs(
@@ -88,7 +82,6 @@ public class UtilController extends AbstractBaseController {
         return notificationMessage;
     }
 
-    @ApiOperation(value = "Clear the user's data")
     @RequestMapping(value = Constants.URL_CLEAR_USER_DATA, method = RequestMethod.POST)
     @UserLock
     public NotificationMessage clearUserData(
@@ -106,7 +99,6 @@ public class UtilController extends AbstractBaseController {
         return notificationMessage;
     }
 
-    @ApiOperation(value = "Reports back on any locks in place for the current user")
     @RequestMapping(value = Constants.URL_CHECK_LOCKS, method = RequestMethod.POST)
     public LockReportBean checkLocks(@RequestBody AuthenticatedRequestBean requestBean) throws Exception {
         String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionRepo);
@@ -120,7 +112,6 @@ public class UtilController extends AbstractBaseController {
         }
     }
 
-    @ApiOperation(value = "Breaks any currently locked requests for the current user")
     @RequestMapping(value = Constants.URL_BREAK_LOCKS, method = RequestMethod.POST)
     public NotificationMessage breakLocks(@RequestBody AuthenticatedRequestBean requestBean) throws Exception {
         String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionRepo);
@@ -136,13 +127,11 @@ public class UtilController extends AbstractBaseController {
         return new NotificationMessage(message, false, NotificationMessage.Tag.break_locks);
     }
 
-    @ApiOperation(value = "Gets the status of the Formplayer service")
     @RequestMapping(value = Constants.URL_SERVER_UP, method = RequestMethod.GET)
     public ServerUpBean serverUp() throws Exception {
         return new ServerUpBean();
     }
 
-    @ApiOperation(value = "Validates an XForm")
     @NoLogging
     @RequestMapping(
         value = Constants.URL_VALIDATE_FORM,
