@@ -279,6 +279,7 @@ public class MenuSessionRunnerService {
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
+        screen.refreshItemSetChoices();
     }
 
 
