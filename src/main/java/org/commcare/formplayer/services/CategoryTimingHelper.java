@@ -78,6 +78,12 @@ public class CategoryTimingHelper {
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, String domain) {
         recordCategoryTiming(timing, category, sentryMessage, Collections.singletonMap(DOMAIN, domain));
     }
+
+    /**
+     * @param extras - optional arguments, the following keys are accepted:
+     *               CategoryTimingHelper.DOMAIN,
+     *               CategoryTimingHelper.FORM_NAME,
+     */
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
         raven.newBreadcrumb()
                 .setCategory(category)
