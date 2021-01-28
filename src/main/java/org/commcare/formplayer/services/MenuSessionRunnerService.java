@@ -228,13 +228,13 @@ public class MenuSessionRunnerService {
             if (nextScreen instanceof FormplayerQueryScreen) {
                 FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
                 formplayerQueryScreen.refreshItemSetChoices();
-                if ((queryData != null && queryData.getExecute(queryKey)) ||
-                        (formplayerQueryScreen.doDefaultSearch() && !forceManualAction)) {
-
+                boolean autoSearch = formplayerQueryScreen.doDefaultSearch() && !forceManualAction;
+                if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
                             menuSession,
-                            queryData==null ? null : queryData.getInputs(queryKey)
+                            queryData==null ? null : queryData.getInputs(queryKey),
+                            autoSearch
                     );
                 } else if (queryData != null) {
                     answerQueryPrompts((FormplayerQueryScreen)nextScreen,
@@ -335,7 +335,8 @@ public class MenuSessionRunnerService {
      */
     private NotificationMessage doQuery(FormplayerQueryScreen screen,
                                         MenuSession menuSession,
-                                        Hashtable<String, String> queryDictionary) throws CommCareSessionException {
+                                        Hashtable<String, String> queryDictionary,
+                                        boolean autoSearch) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
         NotificationMessage notificationMessage = null;
 
@@ -343,7 +344,7 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        String responseString = queryRequester.makeQueryRequest(screen.getUriString(), restoreFactory.getUserHeaders());
+        String responseString = queryRequester.makeQueryRequest(screen.getUriString(autoSearch), restoreFactory.getUserHeaders());
         boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
             if (screen.getCurrentMessage() != null) {
