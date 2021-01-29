@@ -224,6 +224,14 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
+            // We are most probably here because of pending stack ops after a child case claim
+            if (nextScreen == null) {
+                if (executeAndRebuildSession(menuSession)) {
+                    menuSession.handleInput(selection, needsDetail, confirmed, allowAutoLaunch);
+                    nextScreen = menuSession.getNextScreen(needsDetail);
+                }
+            }
+
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if (nextScreen instanceof FormplayerQueryScreen) {
                 FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
@@ -233,7 +241,7 @@ public class MenuSessionRunnerService {
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
                             menuSession,
-                            queryData==null ? null : queryData.getInputs(queryKey),
+                            queryData == null ? null : queryData.getInputs(queryKey),
                             autoSearch
                     );
                 } else if (queryData != null) {
@@ -361,17 +369,24 @@ public class MenuSessionRunnerService {
         return notificationMessage;
     }
 
-
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
-        menuSession.getSessionWrapper().syncState();
-        if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
-            menuSession.getSessionWrapper().clearVolatiles();
-            menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        if (executeAndRebuildSession(menuSession)) {
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
         }
         return null;
+    }
+
+    // Rebuild the session after executing any pending session stack
+    private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException {
+        menuSession.getSessionWrapper().syncState();
+        if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
+            menuSession.getSessionWrapper().clearVolatiles();
+            menuSessionFactory.rebuildSessionFromFrame(menuSession);
+            return true;
+        }
+        return false;
     }
 
     protected static TreeReference getReference(SessionWrapper session, EntityDatum entityDatum) {
