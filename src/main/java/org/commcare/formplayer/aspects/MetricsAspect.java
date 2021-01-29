@@ -57,6 +57,7 @@ public class MetricsAspect {
         String domain = "<unknown>";
         String formName = null;
 
+        SimpleTimer fetchTimer = null;
         String requestPath = RequestUtils.getRequestEndpoint(request);
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
@@ -66,8 +67,11 @@ public class MetricsAspect {
                 String sessionId = bean.getSessionId();
                 if (sessionId != null) {
                     try {
+                        fetchTimer = new SimpleTimer();
+                        fetchTimer.start();
                         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(bean.getSessionId());
                         formName = serializableFormSession.getTitle();
+                        fetchTimer.end();
                     } catch (FormNotFoundException e) {
 
                     }
@@ -105,6 +109,14 @@ public class MetricsAspect {
                 timer.durationInMs(),
                 datadogArgs.toArray(new String[datadogArgs.size()])
         );
+
+        if (fetchTimer != null) {
+            datadogStatsDClient.recordExecutionTime(
+                    "test_timings",
+                    fetchTimer.durationInMs(),
+                    datadogArgs.toArray(new String[datadogArgs.size()])
+            );
+        }
 
         if (timer.durationInMs() >= 60 * 1000) {
             sendTimingWarningToSentry(timer);
