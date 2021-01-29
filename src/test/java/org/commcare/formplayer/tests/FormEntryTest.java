@@ -1,15 +1,19 @@
 package org.commcare.formplayer.tests;
 
+import com.google.common.collect.ImmutableMap;
 import org.commcare.formplayer.beans.*;
+import org.commcare.formplayer.beans.menus.ErrorBean;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.utils.TestContext;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.utils.TestContext;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestContext.class)
@@ -180,5 +184,19 @@ public class FormEntryTest extends BaseTestClass{
     public void testNoQuestions() throws Exception {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/no_questions.xml");
         assert newSessionResponse.getTree().length == 0;
+    }
+
+    @Test
+    public void testAnswerValidation() throws Exception {
+        configureRestoreFactory("test", "test");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/constraints_minimal.xml");
+        String sessionId = newSessionResponse.getSessionId();
+
+        Map<String, Object> answers = ImmutableMap.of("0", "", "1", "test", "2", "");
+        SubmitResponseBean submitResponseBean = submitForm(answers, sessionId);
+        Assert.assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, submitResponseBean.getStatus());
+        Assert.assertEquals(2, submitResponseBean.getErrors().size());
+        Assert.assertEquals(new ErrorBean("validation-error", "required"), submitResponseBean.getErrors().get("0"));
+        Assert.assertEquals(new ErrorBean("validation-error", "constraint"), submitResponseBean.getErrors().get("1"));
     }
 }
