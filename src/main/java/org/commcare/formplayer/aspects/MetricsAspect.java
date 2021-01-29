@@ -16,6 +16,10 @@ import org.commcare.formplayer.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Random;
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * This aspect records various metrics for every request.
  */
@@ -81,9 +85,21 @@ public class MetricsAspect {
                 "install_blocked_time:" + getInstallBlockedTimeBucket(),
                 "submit_blocked_time:" + getSubmitBlockedTimeBucket()
         );
-        if (timer.durationInMs() >= 60 * 1000) {
+
+        long extremelySlowRequestThreshold = 60 * 1000;
+        Map<String, Long> slowRequestThresholds = getSlowRequestThresholds();
+
+        if (timer.durationInMs() >= extremelySlowRequestThreshold) {
             sendTimingWarningToSentry(timer);
+        } else if (slowRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= slowRequestThresholds.get(requestPath)) {
+            // limit slow requests sent to sentry, send 1 for every 100 requests
+            int chanceOfSending = 100;
+            Random random = new Random();
+            if (random.nextInt(chanceOfSending) == 0) {
+                sendTimingWarningToSentry(timer);
+            }
         }
+
         return result;
     }
 
@@ -134,6 +150,14 @@ public class MetricsAspect {
             return 0;
         }
         return submitService.getSubmitTimer().durationInSeconds();
+    }
+
+    private Map<String, Long> getSlowRequestThresholds() {
+        Map<String, Long> slowRequestThresholds = new HashMap<>();
+        slowRequestThresholds.put("answer", Long.valueOf(5 * 1000));
+        slowRequestThresholds.put("submit-all", Long.valueOf(20 * 1000));
+        slowRequestThresholds.put("navigate_menu", Long.valueOf(20 * 1000));
+        return slowRequestThresholds;
     }
 
     private void sendTimingWarningToSentry(SimpleTimer timer) {
