@@ -63,7 +63,7 @@ public class MetricsAspect {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
             // only tag metrics with form_name if one of these requests
-            if (requestPath.equals("submit-all") || requestPath.equals("answer")) {
+            if (requestPath.equals("submit-all")) {
                 String sessionId = bean.getSessionId();
                 if (sessionId != null) {
                     try {
@@ -111,6 +111,7 @@ public class MetricsAspect {
         );
 
         if (fetchTimer != null) {
+            datadogArgs.add("task:fetch_form_session");
             datadogStatsDClient.recordExecutionTime(
                     "test_timings",
                     fetchTimer.durationInMs(),
