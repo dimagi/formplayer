@@ -62,7 +62,7 @@ public class MetricsAspect {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
             // only tag metrics with form_name if one of these requests
-            if (requestPath == "submit-all" || requestPath == "answer") {
+            if (requestPath.equals("submit-all") || requestPath.equals("answer")) {
                 String sessionId = bean.getSessionId();
                 if (sessionId != null) {
                     try {
