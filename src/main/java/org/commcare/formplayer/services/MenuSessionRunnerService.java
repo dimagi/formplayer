@@ -224,14 +224,6 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-            // We are most probably here because of pending stack ops after a child case claim
-            if (nextScreen == null) {
-                if (executeAndRebuildSession(menuSession)) {
-                    menuSession.handleInput(selection, needsDetail, confirmed, allowAutoLaunch);
-                    nextScreen = menuSession.getNextScreen(needsDetail);
-                }
-            }
-
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if (nextScreen instanceof FormplayerQueryScreen) {
                 FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
