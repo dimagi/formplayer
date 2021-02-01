@@ -27,6 +27,9 @@ import java.util.HashMap;
 @Order(1)
 public class MetricsAspect {
 
+    private static final String EXTREMELY_SLOW_REQUEST = "long_request"; // artifact of prior naming
+    private static final String SLOW_REQUEST = "slow_request";
+
     @Autowired
     protected StatsDClient datadogStatsDClient;
 
@@ -90,13 +93,13 @@ public class MetricsAspect {
         Map<String, Long> slowRequestThresholds = getSlowRequestThresholds();
 
         if (timer.durationInMs() >= extremelySlowRequestThreshold) {
-            sendTimingWarningToSentry(timer);
+            sendTimingWarningToSentry(timer, EXTREMELY_SLOW_REQUEST);
         } else if (slowRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= slowRequestThresholds.get(requestPath)) {
             // limit slow requests sent to sentry, send 1 for every 100 requests
             int chanceOfSending = 100;
             Random random = new Random();
             if (random.nextInt(chanceOfSending) == 0) {
-                sendTimingWarningToSentry(timer);
+                sendTimingWarningToSentry(timer, SLOW_REQUEST);
             }
         }
 
@@ -160,12 +163,24 @@ public class MetricsAspect {
         return slowRequestThresholds;
     }
 
-    private void sendTimingWarningToSentry(SimpleTimer timer) {
+    private String getSentryMessageForSlowRequest(String category) {
+        Map<String, Long> messages = new HashMap<>();
+        messages.put(EXTREMELY_SLOW_REQUEST, "This request took a long time");
+        messages.put(SLOW_REQUEST, "This request was slow");
+        if (messages.containsKey(category)) {
+            return messages.get(category);
+        }
+
+        return "N/A";
+    }
+
+    private void sendTimingWarningToSentry(SimpleTimer timer, String category) {
         raven.newBreadcrumb()
-                .setCategory("long_request")
+                .setCategory(category)
                 .setLevel(Breadcrumb.Level.WARNING)
                 .setData("duration", timer.formatDuration())
                 .record();
-        raven.sendRavenException(new Exception("This request took a long time"), Event.Level.WARNING);
+        String message = getSentryMessageForSlowRequest(category);
+        raven.sendRavenException(new Exception(message), Event.Level.WARNING);
     }
 }
