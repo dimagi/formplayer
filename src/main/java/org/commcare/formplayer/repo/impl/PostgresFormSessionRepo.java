@@ -2,23 +2,25 @@ package org.commcare.formplayer.repo.impl;
 
 import com.timgroup.statsd.StatsDClient;
 import io.sentry.event.Event;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.repo.FormSessionRepo;
+import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.commcare.formplayer.repo.FormSessionRepo;
-import org.commcare.formplayer.util.Constants;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.LockModeType;
 import java.io.*;
 import java.sql.ResultSet;
@@ -29,11 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+
 /**
  * Postgres implementation for storing form entry sessions
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
+@CacheConfig(cacheNames = {"form_session"})
 public class PostgresFormSessionRepo implements FormSessionRepo {
 
     private final Log log = LogFactory.getLog(PostgresFormSessionRepo.class);
@@ -47,6 +51,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     private FormplayerSentry raven;
 
+    @CacheEvict(allEntries = true)
     public int purge() {
         // Modeled on https://stackoverflow.com/a/6730401/2820312
         int deletedRows = 0;
@@ -111,6 +116,7 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     }
 
     @Override
+    @CachePut(key = "#session.id")
     @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> S save(S session) {
 
@@ -201,11 +207,13 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         return session;
     }
 
+    @Cacheable
     public SerializableFormSession findOneWrapped(String id) throws FormNotFoundException {
         return findById(id).get();
     }
 
     @Override
+    @Cacheable
     public Optional<SerializableFormSession> findById(String id) throws FormNotFoundException {
         String sql = replaceTableName("SELECT * FROM %s WHERE id = ?");
         try {
@@ -245,12 +253,14 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     }
 
     @Override
+    @CacheEvict
     @Lock(LockModeType.OPTIMISTIC)
     public void deleteById(String id) {
         this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
     }
 
     @Override
+    @CacheEvict(key = "#entity.id")
     public void delete(SerializableFormSession entity) {
         deleteById(entity.getId());
     }
