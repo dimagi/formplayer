@@ -111,9 +111,8 @@ public class MetricsAspect {
         );
 
         if (fetchTimer != null) {
-            datadogArgs.add("task:fetch_form_session");
             datadogStatsDClient.recordExecutionTime(
-                    "test_timings",
+                    "fetch_form_session",
                     fetchTimer.durationInMs(),
                     datadogArgs.toArray(new String[datadogArgs.size()])
             );
