@@ -117,10 +117,9 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         byte[] sessionDataBytes = writeToBytes(session.getSessionData());
         byte[] functionContextBytes = writeToBytes(session.getFunctionContext());
 
-        int sessionCount = this.jdbcTemplate.queryForObject(
-                replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
+        boolean session_exists = existsById(session.getId());
 
-        if(sessionCount > 0){
+        if(session_exists){
             String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, " +
                     "sequenceId = ?, currentIndex = ?, postUrl = ?, initLang = ? WHERE id = ?");
             this.jdbcTemplate.update(query,
