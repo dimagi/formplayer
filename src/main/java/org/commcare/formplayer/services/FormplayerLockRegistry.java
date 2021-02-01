@@ -33,7 +33,7 @@ public class FormplayerLockRegistry implements LockRegistry {
     private final Log log = LogFactory.getLog(FormplayerLockRegistry.class);
 
     public FormplayerLockRegistry() {
-        this(0xFF);
+        this(0xFFFF);
     }
 
     public FormplayerLockRegistry(int mask) {
