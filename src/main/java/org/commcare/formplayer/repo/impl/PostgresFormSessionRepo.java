@@ -95,12 +95,10 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     }
 
     @Override
-    @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> Iterable<S> saveAll(Iterable<S> entities) {
-        for(SerializableFormSession session: entities){
-            save(session);
-        }
-        return entities;
+        // removed support due to caching implications
+        // we could support caching for this with aspectj weaving
+        throw new UnsupportedOperationException();
     }
 
     private byte[] writeToBytes(Object object){
@@ -267,17 +265,15 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
 
     @Override
     public void deleteAll(Iterable<? extends SerializableFormSession> entities) {
-        for(SerializableFormSession session: entities){
-            deleteById(session.getId());
-        }
+        // removed support due to caching implications
+        // we could support caching for this with aspectj weaving
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void deleteAll() {
-        Iterable<SerializableFormSession> allSessions = findAll();
-        for(SerializableFormSession session: allSessions){
-            deleteById(session.getId());
-        }
+        // removed support due to caching implications, also it's dangerous
+        throw new UnsupportedOperationException();
     }
 
     // helper class for mapping a db row to a serialized session
