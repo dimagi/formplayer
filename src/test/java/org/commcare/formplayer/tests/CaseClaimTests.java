@@ -52,8 +52,21 @@ public class CaseClaimTests extends BaseTestClass {
         configureQueryMock();
         configureSyncMock();
 
-        QueryResponseBean queryResponseBean = sessionNavigate(new String[]{"1", "action 1"},
+        // forceManualAction false and default Search on should result in search results right away
+        EntityListResponse responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
+                null,
+                false,
+                EntityListResponse.class);
+
+        assert responseBean.getEntities().length == 1;
+        assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
+
+        // forceManualAction true when default Search on should result in query screen
+        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                null,
+                true,
                 QueryResponseBean.class);
         assert queryResponseBean.getDisplays().length == 3;
         // test default value
@@ -70,6 +83,7 @@ public class CaseClaimTests extends BaseTestClass {
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
+                true,
                 QueryResponseBean.class);
 
         // no value in queryDictionary should reset the value to empty
@@ -84,15 +98,17 @@ public class CaseClaimTests extends BaseTestClass {
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
+                true,
                 QueryResponseBean.class);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
 
         queryData.setExecute("search_command.m1", true);
-        EntityListResponse responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+        responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
+                true,
                 EntityListResponse.class);
 
         assert responseBean.getEntities().length == 1;
@@ -106,6 +122,7 @@ public class CaseClaimTests extends BaseTestClass {
         CommandListResponseBean commandResponse = sessionNavigateWithQuery(new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
                 "caseclaim",
                 queryData,
+                true,
                 CommandListResponseBean.class);
         assert commandResponse.getCommands().length == 2;
         assert commandResponse.getSelections().length == 2;
@@ -132,6 +149,7 @@ public class CaseClaimTests extends BaseTestClass {
         CommandListResponseBean response = sessionNavigateWithQuery(new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
                 "caseclaim",
                 queryData,
+                true,
                 CommandListResponseBean.class);
         assert response.getSelections().length == 2;
     }

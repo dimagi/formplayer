@@ -28,7 +28,7 @@ public class QueryData extends Hashtable<String, Object> {
             return (Boolean) value.get(this.KEY_EXECUTE);
         }
         return new Boolean(false);
-    };
+    }
 
     public void setExecute(String key, Boolean value) {
         this.initKey(key);
@@ -48,7 +48,7 @@ public class QueryData extends Hashtable<String, Object> {
             }
         }
         return null;
-    };
+    }
 
     public void setInputs(String key, Hashtable<String, String> value) {
         this.initKey(key);
