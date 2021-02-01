@@ -1,6 +1,7 @@
 package org.commcare.formplayer.aspects;
 
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.beans.SessionResponseBean;
 import io.sentry.event.Breadcrumb;
 import io.sentry.event.Event;
 import com.timgroup.statsd.StatsDClient;
@@ -9,6 +10,9 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
@@ -16,9 +20,12 @@ import org.commcare.formplayer.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.Random;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 
 /**
  * This aspect records various metrics for every request.
@@ -48,15 +55,35 @@ public class MetricsAspect {
     @Autowired
     private InstallService installService;
 
+    @Autowired
+    protected FormSessionRepo formSessionRepo;
+
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         String domain = "<unknown>";
+        String formName = null;
 
+        SimpleTimer fetchTimer = null;
         String requestPath = RequestUtils.getRequestEndpoint(request);
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
+            // only tag metrics with form_name if one of these requests
+            if (requestPath.equals("submit-all")) {
+                String sessionId = bean.getSessionId();
+                if (sessionId != null) {
+                    try {
+                        fetchTimer = new SimpleTimer();
+                        fetchTimer.start();
+                        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(bean.getSessionId());
+                        formName = serializableFormSession.getTitle();
+                        fetchTimer.end();
+                    } catch (FormNotFoundException e) {
+
+                    }
+                }
+            }
         }
 
         SimpleTimer timer = new SimpleTimer();
@@ -64,30 +91,39 @@ public class MetricsAspect {
         Object result = joinPoint.proceed();
         timer.end();
 
+        List<String> datadogArgs = new ArrayList<>();
+        datadogArgs.add("domain:" + domain);
+        datadogArgs.add("request:" + requestPath);
+        datadogArgs.add("duration:" + timer.getDurationBucket());
+        datadogArgs.add("unblocked_time:" + getUnblockedTimeBucket(timer));
+        datadogArgs.add("blocked_time:" + getBlockedTimeBucket());
+        datadogArgs.add("restore_blocked_time:" + getRestoreBlockedTimeBucket());
+        datadogArgs.add("install_blocked_time:" + getInstallBlockedTimeBucket());
+        datadogArgs.add("submit_blocked_time:" + getSubmitBlockedTimeBucket());
+
+        // optional datadog args
+        if (formName != null) {
+            datadogArgs.add("form_name:" + formName);
+        }
+
         datadogStatsDClient.increment(
                 Constants.DATADOG_REQUESTS,
-                "domain:" + domain,
-                "request:" + requestPath,
-                "duration:" + timer.getDurationBucket(),
-                "unblocked_time:" + getUnblockedTimeBucket(timer),
-                "blocked_time:" + getBlockedTimeBucket(),
-                "restore_blocked_time:" + getRestoreBlockedTimeBucket(),
-                "install_blocked_time:" + getInstallBlockedTimeBucket(),
-                "submit_blocked_time:" + getSubmitBlockedTimeBucket()
+                datadogArgs.toArray(new String[datadogArgs.size()])
         );
 
         datadogStatsDClient.recordExecutionTime(
                 Constants.DATADOG_TIMINGS,
                 timer.durationInMs(),
-                "domain:" + domain,
-                "request:" + requestPath,
-                "duration:" + timer.getDurationBucket(),
-                "unblocked_time:" + getUnblockedTimeBucket(timer),
-                "blocked_time:" + getBlockedTimeBucket(),
-                "restore_blocked_time:" + getRestoreBlockedTimeBucket(),
-                "install_blocked_time:" + getInstallBlockedTimeBucket(),
-                "submit_blocked_time:" + getSubmitBlockedTimeBucket()
+                datadogArgs.toArray(new String[datadogArgs.size()])
         );
+
+        if (fetchTimer != null) {
+            datadogStatsDClient.recordExecutionTime(
+                    "fetch_form_session",
+                    fetchTimer.durationInMs(),
+                    datadogArgs.toArray(new String[datadogArgs.size()])
+            );
+        }
 
         long extremelySlowRequestThreshold = 60 * 1000;
         Map<String, Long> slowRequestThresholds = getSlowRequestThresholds();
