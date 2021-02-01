@@ -164,7 +164,7 @@ public class MetricsAspect {
     }
 
     private String getSentryMessageForSlowRequest(String category) {
-        Map<String, Long> messages = new HashMap<>();
+        Map<String, String> messages = new HashMap<>();
         messages.put(EXTREMELY_SLOW_REQUEST, "This request took a long time");
         messages.put(SLOW_REQUEST, "This request was slow");
         if (messages.containsKey(category)) {
