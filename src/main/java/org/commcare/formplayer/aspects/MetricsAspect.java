@@ -21,7 +21,11 @@ import org.commcare.formplayer.util.*;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 
 /**
  * This aspect records various metrics for every request.
@@ -29,6 +33,9 @@ import java.util.List;
 @Aspect
 @Order(1)
 public class MetricsAspect {
+
+    private static final String INTOLERABLE_REQUEST = "long_request"; // artifact of prior naming
+    private static final String TOLERABLE_REQUEST = "tolerable_request";
 
     @Autowired
     protected StatsDClient datadogStatsDClient;
@@ -50,6 +57,22 @@ public class MetricsAspect {
 
     @Autowired
     protected FormSessionRepo formSessionRepo;
+
+    private Map<String, Long> tolerableRequestThresholds;
+
+    private Map<String, String> sentryMessages;
+
+    public MetricsAspect() {
+        // build slow request thresholds
+        this.tolerableRequestThresholds = new HashMap<>();
+        this.tolerableRequestThresholds.put("answer", Long.valueOf(5 * 1000));
+        this.tolerableRequestThresholds.put("submit-all", Long.valueOf(20 * 1000));
+        this.tolerableRequestThresholds.put("navigate_menu", Long.valueOf(20 * 1000));
+
+        this.sentryMessages = new HashMap<>();
+        this.sentryMessages.put(INTOLERABLE_REQUEST, "This request took a long time");
+        this.sentryMessages.put(TOLERABLE_REQUEST, "This request was tolerable, but should be improved");
+    }
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -118,9 +141,19 @@ public class MetricsAspect {
             );
         }
 
-        if (timer.durationInMs() >= 60 * 1000) {
-            sendTimingWarningToSentry(timer);
+        long intolerableRequestThreshold = 60 * 1000;
+
+        if (timer.durationInMs() >= intolerableRequestThreshold) {
+            sendTimingWarningToSentry(timer, INTOLERABLE_REQUEST);
+        } else if (tolerableRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
+            // limit slow requests sent to sentry, send 1 for every 100 requests
+            int chanceOfSending = 1000;
+            Random random = new Random();
+            if (random.nextInt(chanceOfSending) == 0) {
+                sendTimingWarningToSentry(timer, TOLERABLE_REQUEST);
+            }
         }
+
         return result;
     }
 
@@ -173,12 +206,17 @@ public class MetricsAspect {
         return submitService.getSubmitTimer().durationInSeconds();
     }
 
-    private void sendTimingWarningToSentry(SimpleTimer timer) {
+    private void sendTimingWarningToSentry(SimpleTimer timer, String category) {
         raven.newBreadcrumb()
-                .setCategory("long_request")
+                .setCategory(category)
                 .setLevel(Breadcrumb.Level.WARNING)
                 .setData("duration", timer.formatDuration())
                 .record();
-        raven.sendRavenException(new Exception("This request took a long time"), Event.Level.WARNING);
+
+        String message = "N/A";
+        if (sentryMessages.containsKey(category)) {
+            message = sentryMessages.get(category);
+        }
+        raven.sendRavenException(new Exception(message), Event.Level.WARNING);
     }
 }
