@@ -1,7 +1,6 @@
 package org.commcare.formplayer.objects;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -11,15 +10,20 @@ import java.util.Map;
 @Entity
 @Table(name = "formplayer_sessions")
 public class SerializableFormSession implements Serializable{
+    @Id
     private String id;
     private String instanceXml;
     private String formXml;
     private String username;
     private String initLang;
     private int sequenceId;
+
+    @Convert(converter = ByteArrayConverter.class)
     private Map<String, String> sessionData;
     private String domain;
     private String postUrl;
+
+    @Column(name="menu_session_id")
     private String menuSessionId;
     private String title;
     private String dateOpened;
@@ -27,8 +31,13 @@ public class SerializableFormSession implements Serializable{
     private String asUser;
     private String currentIndex = "0";
     private String appId;
+
+    @Convert(converter = ByteArrayConverter.class)
     private Map<String, FunctionHandler[]> functionContext;
+
     private boolean inPromptMode;
+
+    @Column(name="caseid")
     private String restoreAsCaseId;
 
     public SerializableFormSession() { }
