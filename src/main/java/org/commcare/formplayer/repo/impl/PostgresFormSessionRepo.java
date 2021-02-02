@@ -45,10 +45,10 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Autowired
+    @Autowired(required = false)
     private StatsDClient datadogStatsDClient;
 
-    @Autowired
+    @Autowired(required = false)
     private FormplayerSentry raven;
 
     @CacheEvict(allEntries = true)
@@ -74,10 +74,14 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             deletedRows = this.jdbcTemplate.update(deleteQuery);
             long elapsed = System.currentTimeMillis() - start;
             log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
-            datadogStatsDClient.time("PostgresFormSessionRepo.purge.timeInMillis", elapsed);
+            if (datadogStatsDClient != null) {
+                datadogStatsDClient.time("PostgresFormSessionRepo.purge.timeInMillis", elapsed);
+            }
         } catch (Exception e) {
             log.error("Exception purge form sessions", e);
-            raven.sendRavenException(e, Event.Level.ERROR);
+            if (raven != null) {
+                raven.sendRavenException(e, Event.Level.ERROR);
+            }
         }
         return deletedRows;
     }
