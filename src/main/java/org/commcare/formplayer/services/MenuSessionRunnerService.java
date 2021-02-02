@@ -8,6 +8,7 @@ import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
@@ -492,7 +493,8 @@ public class MenuSessionRunnerService {
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
 
 
-        formSessionRepo.save(formEntrySession.serialize());
+        SerializableFormSession savedSession = formSessionRepo.save(formEntrySession.serialize());
+        formEntrySession.setSessionId(savedSession.getId());
         return response;
     }
 

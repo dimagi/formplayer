@@ -1,5 +1,7 @@
 package org.commcare.formplayer.objects;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Map;
@@ -10,7 +12,8 @@ import java.util.Map;
 @Entity
 @Table(name = "formplayer_sessions")
 public class SerializableFormSession implements Serializable{
-    @Id
+    @Id @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
     private String id;
     private String instanceXml;
     private String formXml;
