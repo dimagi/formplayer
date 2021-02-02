@@ -54,7 +54,6 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
 
 /**
  *
@@ -114,8 +113,7 @@ public class FormSession {
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
                        FormSendCalloutHandler formSendCalloutHandler,
-                       FormplayerStorageFactory storageFactory,
-                       FormplayerSentry raven) throws Exception{
+                       FormplayerStorageFactory storageFactory) throws Exception{
 
         //We don't want ongoing form sessions to change their db state underneath in the middle,
         //so suppress continuous syncs. Eventually this should likely go into the bean connector
@@ -152,10 +150,6 @@ public class FormSession {
         setupFunctionContext();
         initialize(false, session.getSessionData(), storageFactory.getStorageManager());
         this.postUrl = session.getPostUrl();
-
-        if (raven != null) {
-            raven.addTag(FormplayerSentry.FORM_NAME, this.title);
-        }
     }
 
     // New FormSession constructor
