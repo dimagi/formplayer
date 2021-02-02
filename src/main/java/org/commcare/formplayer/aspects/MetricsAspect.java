@@ -34,8 +34,8 @@ import java.util.Random;
 @Order(1)
 public class MetricsAspect {
 
-    private static final String EXTREMELY_SLOW_REQUEST = "long_request"; // artifact of prior naming
-    private static final String SLOW_REQUEST = "slow_request";
+    private static final String INTOLERABLE_REQUEST = "long_request"; // artifact of prior naming
+    private static final String TOLERABLE_REQUEST = "tolerable_request";
 
     @Autowired
     protected StatsDClient datadogStatsDClient;
@@ -57,6 +57,22 @@ public class MetricsAspect {
 
     @Autowired
     protected FormSessionRepo formSessionRepo;
+
+    private Map<String, Long> tolerableRequestThresholds;
+
+    private Map<String, String> sentryMessages;
+
+    public MetricsAspect() {
+        // build slow request thresholds
+        this.tolerableRequestThresholds = new HashMap<>();
+        this.tolerableRequestThresholds.put("answer", Long.valueOf(5 * 1000));
+        this.tolerableRequestThresholds.put("submit-all", Long.valueOf(20 * 1000));
+        this.tolerableRequestThresholds.put("navigate_menu", Long.valueOf(20 * 1000));
+
+        this.sentryMessages = new HashMap<>();
+        this.sentryMessages.put(INTOLERABLE_REQUEST, "This request took a long time");
+        this.sentryMessages.put(TOLERABLE_REQUEST, "This request was tolerable, but should be improved");
+    }
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -125,17 +141,16 @@ public class MetricsAspect {
             );
         }
 
-        long extremelySlowRequestThreshold = 60 * 1000;
-        Map<String, Long> slowRequestThresholds = getSlowRequestThresholds();
+        long intolerableRequestThreshold = 60 * 1000;
 
-        if (timer.durationInMs() >= extremelySlowRequestThreshold) {
-            sendTimingWarningToSentry(timer, EXTREMELY_SLOW_REQUEST);
-        } else if (slowRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= slowRequestThresholds.get(requestPath)) {
+        if (timer.durationInMs() >= intolerableRequestThreshold) {
+            sendTimingWarningToSentry(timer, INTOLERABLE_REQUEST);
+        } else if (tolerableRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
             // limit slow requests sent to sentry, send 1 for every 100 requests
-            int chanceOfSending = 100;
+            int chanceOfSending = 1000;
             Random random = new Random();
             if (random.nextInt(chanceOfSending) == 0) {
-                sendTimingWarningToSentry(timer, SLOW_REQUEST);
+                sendTimingWarningToSentry(timer, TOLERABLE_REQUEST);
             }
         }
 
@@ -191,32 +206,17 @@ public class MetricsAspect {
         return submitService.getSubmitTimer().durationInSeconds();
     }
 
-    private Map<String, Long> getSlowRequestThresholds() {
-        Map<String, Long> slowRequestThresholds = new HashMap<>();
-        slowRequestThresholds.put("answer", Long.valueOf(5 * 1000));
-        slowRequestThresholds.put("submit-all", Long.valueOf(20 * 1000));
-        slowRequestThresholds.put("navigate_menu", Long.valueOf(20 * 1000));
-        return slowRequestThresholds;
-    }
-
-    private String getSentryMessageForSlowRequest(String category) {
-        Map<String, String> messages = new HashMap<>();
-        messages.put(EXTREMELY_SLOW_REQUEST, "This request took a long time");
-        messages.put(SLOW_REQUEST, "This request was slow");
-        if (messages.containsKey(category)) {
-            return messages.get(category);
-        }
-
-        return "N/A";
-    }
-
     private void sendTimingWarningToSentry(SimpleTimer timer, String category) {
         raven.newBreadcrumb()
                 .setCategory(category)
                 .setLevel(Breadcrumb.Level.WARNING)
                 .setData("duration", timer.formatDuration())
                 .record();
-        String message = getSentryMessageForSlowRequest(category);
+
+        String message = "N/A";
+        if (sentryMessages.containsKey(category)) {
+            message = sentryMessages.get(category);
+        }
         raven.sendRavenException(new Exception(message), Event.Level.WARNING);
     }
 }
