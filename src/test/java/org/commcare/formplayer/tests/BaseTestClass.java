@@ -380,10 +380,14 @@ public class BaseTestClass {
 
 
     SubmitResponseBean submitForm(Map<String, Object> answers, String sessionId) throws Exception {
+        return submitForm(answers, sessionId, true);
+    }
+
+    SubmitResponseBean submitForm(Map<String, Object> answers, String sessionId, boolean prevalidated) throws Exception {
         SubmitRequestBean submitRequestBean = new SubmitRequestBean();
         submitRequestBean.setSessionId(sessionId);
         submitRequestBean.setAnswers(answers);
-        submitRequestBean.setPrevalidated(true);
+        submitRequestBean.setPrevalidated(prevalidated);
         submitRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
         submitRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         return generateMockQuery(ControllerType.FORM,
@@ -608,6 +612,7 @@ public class BaseTestClass {
     <T> T sessionNavigateWithQuery(String[] selections,
                                    String testName,
                                    QueryData queryData,
+                                   boolean forceManualAction,
                                    Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setSelections(selections);
@@ -616,6 +621,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setInstallReference("archives/" + testName + ".ccz");
         sessionNavigationBean.setQueryData(queryData);
+        sessionNavigationBean.setForceManualAction(forceManualAction);
         return generateMockQuery(ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,

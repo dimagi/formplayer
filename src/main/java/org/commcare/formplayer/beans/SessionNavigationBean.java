@@ -21,6 +21,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private QueryData queryData;
     private boolean isPersistent;
     private int sortIndex;
+    private boolean forceManualSearch;
 
     public String[] getSelections() {
         return selections;
@@ -95,5 +96,15 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     public void setSortIndex(int sortIndex) {
         this.sortIndex = sortIndex;
+    }
+
+    @JsonGetter(value = "force_manual_action")
+    public boolean isForceManualAction() {
+        return forceManualSearch;
+    }
+
+    @JsonSetter(value = "force_manual_action")
+    public void setForceManualAction(boolean forceManualSearch) {
+        this.forceManualSearch = forceManualSearch;
     }
 }
