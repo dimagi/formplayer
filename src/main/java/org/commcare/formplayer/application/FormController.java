@@ -134,9 +134,7 @@ public class FormController extends AbstractBaseController{
                                                 @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
-        if (raven != null) {
-            raven.addTag(FormplayerSentry.FORM_NAME, formEntrySession.getTitle());
-        }
+        raven.addTag(FormplayerSentry.FORM_NAME, formEntrySession.getTitle());
         FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
         updateSession(formEntrySession, serializableFormSession);
@@ -156,9 +154,7 @@ public class FormController extends AbstractBaseController{
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SubmitResponseBean submitResponseBean;
-        if (raven != null) {
-            raven.addTag(FormplayerSentry.FORM_NAME, formEntrySession.getTitle());
-        }
+        raven.addTag(FormplayerSentry.FORM_NAME, formEntrySession.getTitle());
         SimpleTimer validationTimer = new SimpleTimer();
         validationTimer.start();
         submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
