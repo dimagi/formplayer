@@ -77,9 +77,8 @@ public class CategoryTimingHelper {
     }
 
     /**
-     * @param extras - optional arguments, the following keys are accepted:
-     *               CategoryTimingHelper.DOMAIN,
-     *               CategoryTimingHelper.FORM_NAME,
+     * @param extras - optional tag/value pairs to send to datadog
+     * NOTE: if adding a new tag, add a constant for the tag name 
      */
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
         raven.newBreadcrumb()
@@ -93,11 +92,8 @@ public class CategoryTimingHelper {
         datadogArgs.add("request:" + RequestUtils.getRequestEndpoint(request));
         datadogArgs.add("duration:" + timing.getDurationBucket());
         if (extras != null) {
-            if (extras.containsKey(DOMAIN)) {
-                datadogArgs.add("domain:" + extras.get(DOMAIN));
-            }
-            if (extras.containsKey(FORM_NAME)) {
-                datadogArgs.add("form_name:" + extras.get(FORM_NAME));
+            for (Map.Entry<String, String> entry : extras.entrySet()) {
+                datadogArgs.add(entry.getKey() + ":" + entry.getValue());
             }
         }
 
