@@ -1,76 +1,33 @@
 package org.commcare.formplayer.tests;
 
-import org.commcare.formplayer.Application;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.web.context.WebApplicationContext;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.TestContext;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
-
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes=Application.class)
-@AutoConfigureMockMvc
-@WebAppConfiguration
-public class FormValidatorTests {
+@ContextConfiguration(classes = TestContext.class)
+public class FormValidatorTests extends BaseTestClass {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_XML.getType(),
             MediaType.APPLICATION_XML.getSubtype(),
             Charset.forName("utf8"));
-
-    private MockMvc mockMvc;
-
-    private HttpMessageConverter string2HttpMessageConverter;
-
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    @Autowired
-    void setConverters(HttpMessageConverter<?>[] converters) {
-        Optional<HttpMessageConverter<?>> converterOptional = Iterables.tryFind(Arrays.asList(converters), new Predicate<HttpMessageConverter<?>>() {
-            @Override
-            public boolean apply(HttpMessageConverter<?> hmc) {
-                return hmc instanceof StringHttpMessageConverter;
-            }
-        });
-
-        assertTrue("the XML message converter must not be null", converterOptional.isPresent());
-        this.string2HttpMessageConverter = converterOptional.get();
-    }
-
-
-    @Before
-    public void setup() throws Exception {
-        this.mockMvc = webAppContextSetup(webApplicationContext).build();
-    }
 
     @Test
     public void testValidateForm() throws Exception {
@@ -112,8 +69,8 @@ public class FormValidatorTests {
     }
 
     public void testValidateForm(String formXML, List<ResultMatcher> matchers) throws Exception {
-        ResultActions actions = mockMvc.perform(post(String.format("/%s", Constants.URL_VALIDATE_FORM))
-                .content(this.xml(formXML))
+        ResultActions actions = mockUtilController.perform(post(String.format("/%s", Constants.URL_VALIDATE_FORM))
+                .content(formXML)
                 .contentType(contentType))
                 .andExpect(status().isOk())
                 .andDo(log());
@@ -123,11 +80,5 @@ public class FormValidatorTests {
         }
     }
 
-    protected String xml(Object o) throws IOException {
-        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        this.string2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_XML, mockHttpOutputMessage);
-        return mockHttpOutputMessage.getBodyAsString();
-    }
 
 }
