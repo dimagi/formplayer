@@ -58,25 +58,28 @@ public class PostgresFormSessionRepoTest {
 
         // save a session
         SerializableFormSession session = new SerializableFormSession("123");
-        session.setAppId("app1");
+        session.setSequenceId(1);
         formSessionRepo.save(session);
 
         // cache is populated on save
-        Assert.assertEquals("app1", getCachedSession("123").get().getAppId());
+        Assert.assertEquals(1, getCachedSession("123").get().getSequenceId());
 
         // find works
         session = formSessionRepo.findOneWrapped("123");
-        Assert.assertEquals("app1", session.getAppId());
+        Assert.assertEquals(1, session.getSequenceId());
         Assert.assertEquals(session, getCachedSession("123").get());
 
         // update session
-        session.setAppId("app2");
+        session.setSequenceId(2);
         formSessionRepo.save(session);
 
         // cache and find return updated session
-        Assert.assertEquals("app2", getCachedSession("123").get().getAppId());
-        Assert.assertEquals("app2", formSessionRepo.findOneWrapped("123").getAppId());
+        Assert.assertEquals(2, getCachedSession("123").get().getSequenceId());
+        Assert.assertEquals(2, formSessionRepo.findOneWrapped("123").getSequenceId());
 
+        // ensure update is persisted to DB
+        cacheManager.getCache("form_session").clear();
+        Assert.assertEquals(2, formSessionRepo.findOneWrapped("123").getSequenceId());
     }
 
     @Test
