@@ -10,11 +10,20 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.commcare.formplayer.util.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CategoryTimingHelper {
+
+    public static final String DOMAIN = "domain";
+    public static final String FORM_NAME = "form_name";
+
     private final Log log = LogFactory.getLog(CategoryTimingHelper.class);
 
     @Autowired
@@ -48,7 +57,7 @@ public class CategoryTimingHelper {
         }
 
         public void record() {
-            parent.recordCategoryTiming(this, category, sentryMessage, domain);
+            parent.recordCategoryTiming(this, category, sentryMessage, Collections.singletonMap(DOMAIN, domain));
         }
     }
 
@@ -66,31 +75,34 @@ public class CategoryTimingHelper {
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage) {
         recordCategoryTiming(timing, category, sentryMessage, null);
     }
-    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, String domain) {
+
+    /**
+     * @param extras - optional tag/value pairs to send to datadog
+     * NOTE: if adding a new tag, add a constant for the tag name 
+     */
+    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
         raven.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)
                 .setData("duration", timing.formatDuration())
                 .record();
 
-        if (domain != null) {
-            datadogStatsDClient.recordExecutionTime(
-                Constants.DATADOG_GRANULAR_TIMINGS,
-                timing.durationInMs(),
-                "category:" + category,
-                "request:" + RequestUtils.getRequestEndpoint(request),
-                "duration:" + timing.getDurationBucket(),
-                "domain:" + domain
-            );
-        } else {
-            datadogStatsDClient.recordExecutionTime(
-                Constants.DATADOG_GRANULAR_TIMINGS,
-                timing.durationInMs(),
-                "category:" + category,
-                "request:" + RequestUtils.getRequestEndpoint(request),
-                "duration:" + timing.getDurationBucket()
-            );
+        List<String> datadogArgs = new ArrayList<>();
+        datadogArgs.add("category:" + category);
+        datadogArgs.add("request:" + RequestUtils.getRequestEndpoint(request));
+        datadogArgs.add("duration:" + timing.getDurationBucket());
+        if (extras != null) {
+            for (Map.Entry<String, String> entry : extras.entrySet()) {
+                datadogArgs.add(entry.getKey() + ":" + entry.getValue());
+            }
         }
+
+        datadogStatsDClient.recordExecutionTime(
+                Constants.DATADOG_GRANULAR_TIMINGS,
+                timing.durationInMs(),
+                datadogArgs.toArray(new String[datadogArgs.size()])
+        );
+
 
         log.debug(String.format("Timing Event[%s][%s]: %dms",
                 RequestUtils.getRequestEndpoint(request),

@@ -154,6 +154,11 @@ public class FormController extends AbstractBaseController{
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, raven);
         SubmitResponseBean submitResponseBean;
 
+        // package additional args to pass to category timing helper
+        Map<String, String> extras = new HashMap<String, String>();
+        extras.put(CategoryTimingHelper.DOMAIN, submitRequestBean.getDomain());
+        extras.put(CategoryTimingHelper.FORM_NAME, formEntrySession.getTitle());
+
         SimpleTimer validationTimer = new SimpleTimer();
         validationTimer.start();
         submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
@@ -161,7 +166,7 @@ public class FormController extends AbstractBaseController{
                 submitRequestBean.getAnswers(),
                 formEntrySession.getSkipValidation());
         validationTimer.end();
-        categoryTimingHelper.recordCategoryTiming(validationTimer, Constants.TimingCategories.VALIDATE_SUBMISSION, null, submitRequestBean.getDomain());
+        categoryTimingHelper.recordCategoryTiming(validationTimer, Constants.TimingCategories.VALIDATE_SUBMISSION, null, extras);
 
         FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
 
@@ -183,7 +188,7 @@ public class FormController extends AbstractBaseController{
 
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
-                                "Purging cases took some time" : "Probably didn't have to purge cases", submitRequestBean.getDomain());
+                                "Purging cases took some time" : "Probably didn't have to purge cases", extras);
 
                 ResponseEntity<String> submitResponse = submitService.submitForm(
                         formEntrySession.getInstanceXml(),
@@ -258,7 +263,7 @@ public class FormController extends AbstractBaseController{
                 }
             }
             navTimer.end();
-            categoryTimingHelper.recordCategoryTiming(navTimer, Constants.TimingCategories.END_OF_FORM_NAV, null, submitRequestBean.getDomain());
+            categoryTimingHelper.recordCategoryTiming(navTimer, Constants.TimingCategories.END_OF_FORM_NAV, null, extras);
         }
         return submitResponseBean;
     }
