@@ -28,6 +28,7 @@ public class SubmitTests extends BaseTestClass {
         // Start new session and submit create case form
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
+        String sessionId = newSessionResponse.getSessionId();
 
         UserSqlSandbox sandbox = getRestoreSandbox();
         SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
@@ -37,9 +38,9 @@ public class SubmitTests extends BaseTestClass {
                 .when(submitServiceMock).submitForm(anyString(), anyString());
         // Assert that FormSession is not deleted
         Mockito.doThrow(new RuntimeException())
-                .when(formSessionRepoMock).deleteById(anyString());
+                .when(formSessionService).deleteSessionById(anyString());
 
-        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", "derp");
+        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
         assert submitResponseBean.getStatus().equals("error");
         // Assert that case is not created
         assert(caseStorage.getNumRecords()== 15);

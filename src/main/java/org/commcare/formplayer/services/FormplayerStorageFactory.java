@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.services.FormSessionService;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sqlitedb.ApplicationDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
@@ -39,7 +39,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private StorageManager storageManager;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     public void configure(InstallRequestBean installRequestBean) {
         configure(
@@ -52,7 +52,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     }
 
     public void configure(String formSessionId) {
-        SerializableFormSession formSession = formSessionRepo.findOneWrapped(formSessionId);
+        SerializableFormSession formSession = formSessionService.getSessionById(formSessionId);
         configure(formSession);
     }
 

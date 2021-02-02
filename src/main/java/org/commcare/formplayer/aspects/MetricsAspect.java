@@ -8,11 +8,11 @@ import com.timgroup.statsd.StatsDClient;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.commcare.formplayer.services.FormSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
@@ -56,7 +56,7 @@ public class MetricsAspect {
     private InstallService installService;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     private Map<String, Long> tolerableRequestThresholds;
 
@@ -92,7 +92,7 @@ public class MetricsAspect {
                     try {
                         fetchTimer = new SimpleTimer();
                         fetchTimer.start();
-                        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(bean.getSessionId());
+                        SerializableFormSession serializableFormSession = formSessionService.getSessionById(bean.getSessionId());
                         formName = serializableFormSession.getTitle();
                         fetchTimer.end();
                     } catch (FormNotFoundException e) {

@@ -30,7 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.commcare.formplayer.objects.QueryData;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
@@ -73,7 +72,7 @@ public class BaseTestClass {
     private StringRedisTemplate redisTemplate;
 
     @Autowired
-    protected FormSessionRepo formSessionRepoMock;
+    protected FormSessionService formSessionService;
 
     @Autowired
     private MenuSessionRepo menuSessionRepoMock;
@@ -145,7 +144,6 @@ public class BaseTestClass {
 
     @Before
     public void setUp() throws Exception {
-        Mockito.reset(formSessionRepoMock);
         Mockito.reset(menuSessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreFactoryMock);
@@ -263,15 +261,22 @@ public class BaseTestClass {
         restoreFactoryMock.setUsername(username);
     }
 
+    private <T extends AuthenticatedRequestBean> T populateFromSession(T bean, String sessionId) {
+        SerializableFormSession session = formSessionService.getSessionById(sessionId);
+        bean.setUsername(session.getUsername());
+        bean.setDomain(session.getDomain());
+        bean.setSessionId(sessionId);
+        return bean;
+    }
+
     FormEntryNavigationResponseBean nextScreen(String sessionId) throws Exception {
         return nextScreen(sessionId, false);
     }
 
     FormEntryNavigationResponseBean nextScreen(String sessionId, boolean promptMode) throws Exception {
-        SessionRequestBean questionsBean = new SessionRequestBean();
+        SessionRequestBean questionsBean = populateFromSession(new SessionRequestBean(), sessionId);
         questionsBean.setSessionId(sessionId);
-        questionsBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        questionsBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+
 
         if (promptMode) {
             return generateMockQuery(ControllerType.FORM,
@@ -289,10 +294,7 @@ public class BaseTestClass {
     }
 
     FormEntryNavigationResponseBean previousScreen(String sessionId) throws Exception {
-        SessionRequestBean questionsBean = new SessionRequestBean();
-        questionsBean.setSessionId(sessionId);
-        questionsBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        questionsBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        SessionRequestBean questionsBean = populateFromSession(new SessionRequestBean(), sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_PREV_INDEX,
@@ -312,10 +314,8 @@ public class BaseTestClass {
     }
 
     FormEntryResponseBean changeLanguage(String locale) throws Exception {
-        ChangeLocaleRequestBean changeLocaleBean = new ChangeLocaleRequestBean();
+        ChangeLocaleRequestBean changeLocaleBean = populateFromSession(new ChangeLocaleRequestBean(), "sessionid");
         changeLocaleBean.setLocale(locale);
-        changeLocaleBean.setUsername(formSessionRepoMock.findOneWrapped("sessionid").getUsername());
-        changeLocaleBean.setDomain(formSessionRepoMock.findOneWrapped("sessionid").getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_CHANGE_LANGUAGE,
@@ -325,8 +325,7 @@ public class BaseTestClass {
 
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-        answerQuestionBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        answerQuestionBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        populateFromSession(answerQuestionBean, sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_ANSWER_QUESTION,
@@ -335,10 +334,7 @@ public class BaseTestClass {
     }
 
     GetInstanceResponseBean getInstance(String sessionId) throws Exception {
-        SessionRequestBean sessionRequestBean = new SessionRequestBean();
-        sessionRequestBean.setSessionId(sessionId);
-        sessionRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        sessionRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        SessionRequestBean sessionRequestBean = populateFromSession(new SessionRequestBean(), sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.GET,
                 Constants.URL_GET_INSTANCE,
@@ -384,12 +380,9 @@ public class BaseTestClass {
     }
 
     SubmitResponseBean submitForm(Map<String, Object> answers, String sessionId, boolean prevalidated) throws Exception {
-        SubmitRequestBean submitRequestBean = new SubmitRequestBean();
-        submitRequestBean.setSessionId(sessionId);
+        SubmitRequestBean submitRequestBean = populateFromSession(new SubmitRequestBean(), sessionId);
         submitRequestBean.setAnswers(answers);
         submitRequestBean.setPrevalidated(prevalidated);
-        submitRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        submitRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_SUBMIT_FORM,
@@ -429,9 +422,7 @@ public class BaseTestClass {
         String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
         RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
                 RepeatRequestBean.class);
-        newRepeatRequestBean.setSessionId(sessionId);
-        newRepeatRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        newRepeatRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        populateFromSession(newRepeatRequestBean, sessionId);
 
         return generateMockQuery(
                 ControllerType.FORM,
@@ -448,9 +439,7 @@ public class BaseTestClass {
 
         RepeatRequestBean deleteRepeatRequest = mapper.readValue(newRepeatRequestPayload,
                 RepeatRequestBean.class);
-        deleteRepeatRequest.setSessionId(sessionId);
-        deleteRepeatRequest.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        deleteRepeatRequest.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        populateFromSession(deleteRepeatRequest, sessionId);
         return generateMockQuery(
                 ControllerType.FORM,
                 RequestType.POST,
@@ -465,8 +454,7 @@ public class BaseTestClass {
                 FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"),
                 EvaluateXPathRequestBean.class
         );
-        evaluateXPathRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        evaluateXPathRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        populateFromSession(evaluateXPathRequestBean, sessionId);
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
         evaluateXPathRequestBean.setDebugOutputLevel(Constants.BASIC_NO_TRACE);

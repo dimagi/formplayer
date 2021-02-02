@@ -4,7 +4,6 @@ import com.timgroup.statsd.StatsDClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.Application;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +23,10 @@ public class ScheduledTasks {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    private StatsDClient datadogStatsDClient;
 
     @Autowired
-    private StatsDClient datadogStatsDClient;
+    private FormSessionService formSessionService;
 
     // the default "0 0 0 * * *" schedule means midnight each night
     @Scheduled(cron= "${commcare.formplayer.scheduledTasks.purge.cron:0 0 0 * * *}")
@@ -36,7 +35,7 @@ public class ScheduledTasks {
             lockAtLeastFor = "${commcare.formplayer.scheduledTasks.purge.lockAtLeastFor:1h}")
     public void purge() {
         log.info("Starting purge scheduled task.");
-        int deletedRows = formSessionRepo.purge();
+        int deletedRows = formSessionService.purge();
         datadogStatsDClient.count(
                 String.format("%s.%s", Constants.SCHEDULED_TASKS_PURGE, "deletedRows"),
                 deletedRows

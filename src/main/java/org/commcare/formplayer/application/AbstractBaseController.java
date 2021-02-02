@@ -1,5 +1,11 @@
 package org.commcare.formplayer.application;
 
+import com.timgroup.statsd.StatsDClient;
+import io.sentry.event.Event;
+import org.apache.catalina.connector.ClientAbortException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.NotificationMessage;
@@ -7,21 +13,13 @@ import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.exceptions.ExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.HTMLExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.RetryExceptionResponseBean;
-
-import com.timgroup.statsd.StatsDClient;
-
-import org.commcare.formplayer.exceptions.ApplicationConfigException;
-import org.commcare.formplayer.exceptions.AsyncRetryException;
-import org.commcare.formplayer.exceptions.FormNotFoundException;
-import org.commcare.formplayer.exceptions.FormattedApplicationConfigException;
-import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
-import org.commcare.formplayer.exceptions.UnresolvedResourceRuntimeException;
-import io.sentry.event.Event;
-
-import org.apache.catalina.connector.ClientAbortException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.commcare.core.process.CommCareInstanceInitializer;
+import org.commcare.formplayer.exceptions.*;
+import org.commcare.formplayer.repo.MenuSessionRepo;
+import org.commcare.formplayer.services.*;
+import org.commcare.formplayer.session.MenuSession;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerHttpRequest;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.util.screen.CommCareSessionException;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -38,24 +36,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.ArrayList;
-
 import javax.servlet.http.HttpServletRequest;
-
-import org.commcare.formplayer.repo.FormSessionRepo;
-import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.services.InstallService;
-import org.commcare.formplayer.services.MenuSessionFactory;
-import org.commcare.formplayer.services.MenuSessionRunnerService;
-import org.commcare.formplayer.services.NewFormResponseFactory;
-import org.commcare.formplayer.services.QueryRequester;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.services.SyncRequester;
-import org.commcare.formplayer.session.MenuSession;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
-import org.commcare.formplayer.util.FormplayerSentry;
+import java.util.ArrayList;
 
 /**
  * Base Controller class containing exception handling logic and
@@ -73,7 +55,7 @@ public abstract class AbstractBaseController {
     private SyncRequester syncRequester;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    protected FormSessionService formSessionService;
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;

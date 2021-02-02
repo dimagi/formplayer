@@ -9,7 +9,6 @@ import org.commcare.formplayer.repo.FormSessionRepo;
 public abstract class MockFormSessionRepo implements FormSessionRepo {
     private final SerializableFormSession serializableFormSession = new SerializableFormSession();
 
-    @Override
     public SerializableFormSession findOneWrapped(String id) {
         return serializableFormSession;
     }
