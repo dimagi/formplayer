@@ -33,7 +33,7 @@ import static java.util.Optional.ofNullable;
 public class PostgresFormSessionRepoTest {
 
     @Autowired
-    PostgresFormSessionRepo formSessionRepo;
+    FormSessionRepo formSessionRepo;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
