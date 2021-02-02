@@ -54,7 +54,6 @@ branches:
   - ce/tracing+skipToSearchResults
   - ce/tracing # Cal Oct 23
   - skipToSearchResults # Shubham Jan 25
-  - gh/form-name-to-datadog # Graham Jan 28 (poorly named)
   - ce/negative-index # Cal Feb 2
 submodules:
   libs/commcare:
