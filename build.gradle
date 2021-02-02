@@ -108,7 +108,8 @@ dependencies {
 
 test {
     testLogging {
-        exceptionFormat = 'full'
+        exceptionFormat 'full'
+        events "passed", "skipped", "failed"
     }
     if (isTravisBuild) {
         System.out.print('Is Travis test run')

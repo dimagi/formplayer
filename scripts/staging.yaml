@@ -50,12 +50,10 @@
 trunk: master
 name: autostaging
 branches:
-  - revert-810-revert-805-kev/formplayer-username-fix # Kevin Jan 12
   - ce/no-json-validation # Cal Jan 18
   - ce/tracing+skipToSearchResults
   - ce/tracing # Cal Oct 23
   - skipToSearchResults # Shubham Jan 25
-  - gh/datadog-form-name # Graham Jan 28
   - gh/form-name-to-datadog # Graham Jan 28 (poorly named)
 submodules:
   libs/commcare:

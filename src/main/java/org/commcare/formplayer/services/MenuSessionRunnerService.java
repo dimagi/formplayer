@@ -138,7 +138,7 @@ public class MenuSessionRunnerService {
                     storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
         } else if (nextScreen instanceof FormplayerQueryScreen) {
-            ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
+            ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if (queryData != null && !queryData.getExecute(queryKey)) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
@@ -167,7 +167,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null,
-                0, null, 0);
+                0, null, 0, false);
     }
 
     /**
@@ -189,7 +189,8 @@ public class MenuSessionRunnerService {
                                                          QueryData queryData,
                                                          int offset,
                                                          String searchText,
-                                                         int sortIndex) throws Exception {
+                                                         int sortIndex,
+                                                         boolean forceManualAction) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -224,16 +225,20 @@ public class MenuSessionRunnerService {
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
             String queryKey = menuSession.getSessionWrapper().getCommand();
-            if (nextScreen instanceof FormplayerQueryScreen && queryData != null) {
-                ((FormplayerQueryScreen) nextScreen).refreshItemSetChoices();
-                if (queryData.getExecute(queryKey)) {
+            if (nextScreen instanceof FormplayerQueryScreen) {
+                FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
+                formplayerQueryScreen.refreshItemSetChoices();
+                boolean autoSearch = formplayerQueryScreen.doDefaultSearch() && !forceManualAction;
+                if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
                     notificationMessage = doQuery(
                             (FormplayerQueryScreen)nextScreen,
                             menuSession,
-                            queryData.getInputs(queryKey)
+                            queryData == null ? null : queryData.getInputs(queryKey),
+                            autoSearch
                     );
-                } else {
-                    answerQueryPrompts((FormplayerQueryScreen)nextScreen, queryData.getInputs(queryKey));
+                } else if (queryData != null) {
+                    answerQueryPrompts((FormplayerQueryScreen)nextScreen,
+                            queryData.getInputs(queryKey));
                 }
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
@@ -330,11 +335,16 @@ public class MenuSessionRunnerService {
      */
     private NotificationMessage doQuery(FormplayerQueryScreen screen,
                                         MenuSession menuSession,
-                                        Hashtable<String, String> queryDictionary) throws CommCareSessionException {
+                                        Hashtable<String, String> queryDictionary,
+                                        boolean autoSearch) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
         NotificationMessage notificationMessage = null;
-        screen.answerPrompts(queryDictionary);
-        String responseString = queryRequester.makeQueryRequest(screen.getUriString(), restoreFactory.getUserHeaders());
+
+        if (queryDictionary != null) {
+            screen.answerPrompts(queryDictionary);
+        }
+
+        String responseString = queryRequester.makeQueryRequest(screen.getUriString(autoSearch), restoreFactory.getUserHeaders());
         boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
             if (screen.getCurrentMessage() != null) {
@@ -351,17 +361,24 @@ public class MenuSessionRunnerService {
         return notificationMessage;
     }
 
-
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
-        menuSession.getSessionWrapper().syncState();
-        if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
-            menuSession.getSessionWrapper().clearVolatiles();
-            menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        if (executeAndRebuildSession(menuSession)) {
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
         }
         return null;
+    }
+
+    // Rebuild the session after executing any pending session stack
+    private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException {
+        menuSession.getSessionWrapper().syncState();
+        if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
+            menuSession.getSessionWrapper().clearVolatiles();
+            menuSessionFactory.rebuildSessionFromFrame(menuSession);
+            return true;
+        }
+        return false;
     }
 
     protected static TreeReference getReference(SessionWrapper session, EntityDatum entityDatum) {

@@ -15,9 +15,14 @@ public class FormplayerQueryScreen extends QueryScreen {
         super(null, null, null);
     }
 
-    public String getUriString() {
+    /**
+     *
+     * @param skipDefaultPromptValues don't apply the default value expressions for query prompts
+     * @return case search url with search prompt values
+     */
+    public String getUriString(boolean skipDefaultPromptValues) {
         URL url = getBaseUrl();
-        Hashtable<String, String> params = getQueryParams();
+        Hashtable<String, String> params = getQueryParams(skipDefaultPromptValues);
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url.toString());
         for(String key: params.keySet()){
             builder.queryParam(key, params.get(key));
