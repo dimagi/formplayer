@@ -154,7 +154,7 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
 
         //Clear the most recent index and wipe it, because there is no way it is going to be useful
         //after this
-        mMostRecentBatchFetch = new String[2][];
+        mMostRecentBatchFetch = new String[4][];
 
         //remove the match from the inputs
         optimizations.removeElementAt(0);
