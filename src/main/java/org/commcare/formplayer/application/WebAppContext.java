@@ -248,7 +248,7 @@ public class WebAppContext implements WebMvcConfigurer {
         return raven;
     }
 
-    @Bean(destroyMethod="cleanup")
+    @Bean
     @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
         FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient());
