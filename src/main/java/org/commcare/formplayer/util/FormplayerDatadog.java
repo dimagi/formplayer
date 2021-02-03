@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class FormplayerDatadog {
 
-    class Tag {
+    public class Tag {
         private String name;
         private String value;
 
@@ -47,7 +47,7 @@ public class FormplayerDatadog {
     // Datadog API Wrappers
     public void recordExecutionTime(String aspect, final long value, List<String> additionalTags) {
         List<String> tagsToSend = new ArrayList<>(additionalTags);
-        for (Tag tag : tags) {
+        for (Tag tag : getTags()) {
             tagsToSend.add(tag.formatted());
         }
 
@@ -57,7 +57,7 @@ public class FormplayerDatadog {
 
     public void increment(String aspect, List<String> additionalTags) {
         List<String> tagsToSend = new ArrayList<>(additionalTags);
-        for (Tag tag : tags) {
+        for (Tag tag : getTags()) {
             tagsToSend.add(tag.formatted());
         }
 
