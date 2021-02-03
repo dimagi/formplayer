@@ -31,6 +31,11 @@ public class SerializableFormSession implements Serializable{
     private boolean inPromptMode;
     private String restoreAsCaseId;
 
+    public SerializableFormSession() { }
+    public SerializableFormSession(String id) {
+        this.id = id;
+    }
+
     public String getInstanceXml() {
         return instanceXml;
     }

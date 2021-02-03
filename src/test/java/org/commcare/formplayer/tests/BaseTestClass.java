@@ -63,7 +63,7 @@ public class BaseTestClass {
 
     private MockMvc mockFormController;
 
-    private MockMvc mockUtilController;
+    protected MockMvc mockUtilController;
 
     private MockMvc mockMenuController;
 
