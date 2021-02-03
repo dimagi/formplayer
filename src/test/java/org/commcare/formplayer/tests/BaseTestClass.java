@@ -6,7 +6,9 @@ import org.commcare.formplayer.beans.*;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.javarosa.core.model.utils.DateUtils;
@@ -45,11 +47,13 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.UUID;
 
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -142,6 +146,8 @@ public class BaseTestClass {
 
     protected ObjectMapper mapper;
 
+    final Map<String, SerializableFormSession> sessionMap = new HashMap<String, SerializableFormSession>();
+
     @Before
     public void setUp() throws Exception {
         Mockito.reset(menuSessionRepoMock);
@@ -165,7 +171,7 @@ public class BaseTestClass {
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
         setupSubmitServiceMock();
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();
@@ -177,6 +183,39 @@ public class BaseTestClass {
         new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
         MockTimezoneProvider tzProvider = new MockTimezoneProvider();
         DateUtils.setTimezoneProvider(tzProvider);
+
+        mockFormSessionService();
+    }
+
+    /*
+     * Setup mocking for the FormSessionService that allows saving and retrieving sessions.
+     * The 'persisted' sessions are cleared at the start of each test.
+     */
+    private void mockFormSessionService() {
+        sessionMap.clear();
+        doAnswer(new Answer<SerializableFormSession>() {
+            @Override
+            public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
+                SerializableFormSession session = (SerializableFormSession) invocation.getArguments()[0];
+                if (session.getId() == null) {
+                    // this is normally taken care of by Hibernate
+                    session.setId(UUID.randomUUID().toString());
+                }
+                sessionMap.put(session.getId(), session);
+                return session;
+            }
+        }).when(formSessionService).saveSession(any(SerializableFormSession.class));
+
+        when(formSessionService.getSessionById(anyString())).thenAnswer(new Answer<SerializableFormSession>() {
+            @Override
+            public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
+                String key = (String) invocation.getArguments()[0];
+                if (sessionMap.containsKey(key)) {
+                    return sessionMap.get(key);
+                }
+                throw new FormNotFoundException(key);
+            }
+        });
     }
 
     protected String getDatabaseFolderRoot() {
