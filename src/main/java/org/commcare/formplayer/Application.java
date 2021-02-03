@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @SpringBootApplication
-@EnableJpaRepositories(basePackages = {"repo.*", "objects.*"})
-@EntityScan("objects.*")
+@EnableJpaRepositories(basePackages = {"org.commcare.formplayer.repo"})
+@EntityScan("org.commcare.formplayer.objects")
 @EnableCaching
 public class Application {
 
