@@ -345,6 +345,7 @@ public class BaseTestClass {
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         AnswerQuestionRequestBean answerQuestionBean = mapper.readValue(requestPayload,
                 AnswerQuestionRequestBean.class);
+        answerQuestionBean.setSessionId(sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_ANSWER_QUESTION,
@@ -352,8 +353,8 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
-    FormEntryResponseBean changeLanguage(String locale) throws Exception {
-        ChangeLocaleRequestBean changeLocaleBean = populateFromSession(new ChangeLocaleRequestBean(), "sessionid");
+    FormEntryResponseBean changeLanguage(String locale, String sessionId) throws Exception {
+        ChangeLocaleRequestBean changeLocaleBean = populateFromSession(new ChangeLocaleRequestBean(), sessionId);
         changeLocaleBean.setLocale(locale);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
