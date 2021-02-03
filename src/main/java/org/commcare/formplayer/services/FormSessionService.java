@@ -10,6 +10,11 @@ import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@CacheConfig(cacheNames = {"form_session"})
 public class FormSessionService {
 
     private final Log log = LogFactory.getLog(FormSessionService.class);
@@ -28,11 +34,15 @@ public class FormSessionService {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
+    CacheManager cacheManager;
+
+    @Autowired(required = false)
     private StatsDClient datadogStatsDClient;
 
-    @Autowired
+    @Autowired(required = false)
     private FormplayerSentry raven;
 
+    @CacheEvict(allEntries = true)
     public int purge() {
         // Modeled on https://stackoverflow.com/a/6730401/2820312
         int deletedRows = 0;
@@ -56,14 +66,19 @@ public class FormSessionService {
             deletedRows = this.jdbcTemplate.update(deleteQuery);
             long elapsed = System.currentTimeMillis() - start;
             log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
-            datadogStatsDClient.time("PostgresFormSessionRepo.purge.timeInMillis", elapsed);
+            if (datadogStatsDClient != null) {
+                datadogStatsDClient.time("PostgresFormSessionRepo.purge.timeInMillis", elapsed);
+            }
         } catch (Exception e) {
             log.error("Exception purge form sessions", e);
-            raven.sendRavenException(e, Event.Level.ERROR);
+            if (raven != null) {
+                raven.sendRavenException(e, Event.Level.ERROR);
+            }
         }
         return deletedRows;
     }
 
+    @Cacheable
     public SerializableFormSession getSessionById(String id) {
         Optional<SerializableFormSession> session = formSessionRepo.findById(id);
         if (!session.isPresent()) {
@@ -76,10 +91,12 @@ public class FormSessionService {
         return formSessionRepo.findUserSessions(username);
     }
 
+    @CachePut(key = "#session.id")
     public SerializableFormSession saveSession(SerializableFormSession session) {
         return formSessionRepo.save(session);
     }
 
+    @CacheEvict
     public void deleteSessionById(String id) {
         formSessionRepo.deleteById(id);
     }
