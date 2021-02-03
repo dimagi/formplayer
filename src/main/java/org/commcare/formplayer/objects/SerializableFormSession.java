@@ -15,29 +15,54 @@ public class SerializableFormSession implements Serializable{
     @Id @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     private String id;
+
+    @Column(name="instancexml")
     private String instanceXml;
+
+    @Column(name="formxml")
     private String formXml;
+
     private String username;
+
+    @Column(name="initlang")
     private String initLang;
+
+    @Column(name="sequenceid")
     private int sequenceId;
 
+    @Column(name="sessiondata")
     @Convert(converter = ByteArrayConverter.class)
     private Map<String, String> sessionData;
+
     private String domain;
+
+    @Column(name="posturl")
     private String postUrl;
 
     @Column(name="menu_session_id")
     private String menuSessionId;
     private String title;
+
+    @Column(name="dateopened")
     private String dateOpened;
+
+    @Column(name="onequestionperscreen")
     private boolean oneQuestionPerScreen;
+
+    @Column(name="asuser")
     private String asUser;
+
+    @Column(name="currentindex")
     private String currentIndex = "0";
+
+    @Column(name="appid")
     private String appId;
 
+    @Column(name="functioncontext")
     @Convert(converter = ByteArrayConverter.class)
     private Map<String, FunctionHandler[]> functionContext;
 
+    @Column(name="inpromptmode")
     private boolean inPromptMode;
 
     @Column(name="caseid")
