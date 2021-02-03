@@ -31,8 +31,6 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.stereotype.Component;
 import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
@@ -162,9 +160,9 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
     }
 
-    private void resolveInstallReference(String installReference, String appId, String host){
+    private void resolveInstallReference(String installReference, String appId, String host) {
         if (installReference == null || installReference.equals("")) {
-            if(appId == null || "".equals(appId)){
+            if (appId == null || "".equals(appId)) {
                 throw new RuntimeException("Can't install - either installReference or app_id must be non-null");
             }
             this.installReference = host + getReferenceToLatest(appId);
@@ -175,8 +173,9 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     /**
      * Given an app id this returns a URI that will return a CCZ from HQ
+     *
      * @param appId An id of the application of the CCZ needed
-     * @return      An HQ URI to download the CCZ
+     * @return An HQ URI to download the CCZ
      */
     private String getReferenceToLatest(String appId) {
         URIBuilder builder;
@@ -212,29 +211,25 @@ public class MenuSession implements HereFunctionHandlerListener {
     public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail, allowAutoLaunch);
         log.info("Screen " + screen + " handling input " + input);
-        if(screen == null) {
+        if (screen == null) {
             return false;
         }
         try {
             boolean addBreadcrumb = true;
             if (screen instanceof EntityScreen) {
-                if (input.startsWith("action ") || !confirmed) {
-                    EntityScreen entityScreen = (EntityScreen)screen;
-                    if (input.startsWith("action ") && entityScreen.getAutoLaunchAction() != null) {
-                        sessionWrapper.executeStackOperations(entityScreen.getAutoLaunchAction().getStackOperations(), entityScreen.getEvalContext());
-                        addBreadcrumb = false;
-                    } else {
-                        screen.init(sessionWrapper);
-                        if (screen.shouldBeSkipped()) {
-                            return handleInput(input, true, confirmed, allowAutoLaunch);
-                        }
-                        screen.handleInputAndUpdateSession(sessionWrapper, input);
+                EntityScreen entityScreen = (EntityScreen)screen;
+                boolean autoLaunch = entityScreen.getAutoLaunchAction() != null;
+                if (input.startsWith("action ") || (autoLaunch) || !confirmed) {
+                    screen.init(sessionWrapper);
+                    if (screen.shouldBeSkipped()) {
+                        return handleInput(input, true, confirmed, allowAutoLaunch);
                     }
+                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
                 } else {
                     sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
                 }
             } else {
-                boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input);
+                boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
             }
             Screen previousScreen = screen;
             screen = getNextScreen(needsDetail, allowAutoLaunch);
@@ -242,7 +237,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 addTitle(input, previousScreen);
             }
             return true;
-        } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
+        } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
                     " threw exception " + e.getMessage() + ". Please try reloading this application" +
                     " and if the problem persists please report a bug.", e);
@@ -336,7 +331,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         //datum ID in the same http request lifecycle.
         String nodesetHash = MD5.toHex(MD5.hash(datum.getNodeset().toString(true).getBytes()));
 
-        String datumKey = datum.getDataId() + ", "+ nodesetHash;
+        String datumKey = datum.getDataId() + ", " + nodesetHash;
         if (!entityScreenCache.containsKey(datumKey)) {
             EntityScreen entityScreen = createFreshEntityScreen(needsDetail, allowAutoLaunch);
             entityScreenCache.put(datumKey, entityScreen);
@@ -398,13 +393,13 @@ public class MenuSession implements HereFunctionHandlerListener {
         formSession.reload(formDef, postUrl, engine.getPlatform().getStorageManager());
     }
 
-    private byte[] serializeSession(CommCareSession session){
+    private byte[] serializeSession(CommCareSession session) {
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         DataOutputStream oos;
         try {
             oos = new DataOutputStream(baos);
             session.serializeSessionState(oos);
-        } catch(IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return baos.toByteArray();
@@ -415,7 +410,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return CommCareSession.restoreSessionFromStream(platform, in);
     }
 
-    public SessionWrapper getSessionWrapper (){
+    public SessionWrapper getSessionWrapper() {
         return sessionWrapper;
     }
 
@@ -451,7 +446,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return installReference;
     }
 
-    public byte[] getCommcareSession(){
+    public byte[] getCommcareSession() {
         return serializeSession(sessionWrapper);
     }
 

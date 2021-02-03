@@ -224,6 +224,15 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
+            // Advance the session in case auto launch is set
+            if (nextScreen instanceof EntityScreen) {
+                EntityScreen entityScreen = (EntityScreen)nextScreen;
+                if (entityScreen.getAutoLaunchAction() != null) {
+                    menuSession.handleInput(selection, needsDetail, confirmed, true);
+                    nextScreen = menuSession.getNextScreen(needsDetail);
+                }
+            }
+
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if (nextScreen instanceof FormplayerQueryScreen) {
                 FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
@@ -248,6 +257,10 @@ public class MenuSessionRunnerService {
                 if (syncResponse != null) {
                     return syncResponse;
                 }
+            }
+
+            if (nextScreen == null) {
+                executeAndRebuildSession(menuSession);
             }
         }
 
