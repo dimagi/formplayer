@@ -29,6 +29,7 @@ import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathTypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -181,13 +182,16 @@ public abstract class AbstractBaseController {
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
         raven.sendRavenException(exception);
+        String message = exception.getMessage();
         if (exception instanceof ClientAbortException) {
             // We can't actually return anything since the client has bailed. To avoid errors return null
             // https://mtyurt.net/2016/04/18/spring-how-to-handle-ioexception-broken-pipe/
             log.error("Client Aborted! Returning null");
             return null;
+        } else if (exception instanceof DataAccessException) {
+            message = "An issue prevented us from processing your action, please try again";
         }
-        return new ExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
+        return new ExceptionResponseBean(message, req.getRequestURL().toString());
     }
 
     void logNotification(@Nullable NotificationMessage notification, HttpServletRequest req) {
