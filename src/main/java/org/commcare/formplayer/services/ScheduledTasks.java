@@ -3,15 +3,12 @@ package org.commcare.formplayer.services;
 import com.timgroup.statsd.StatsDClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.Application;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 

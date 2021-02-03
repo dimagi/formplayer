@@ -2,7 +2,6 @@ package org.commcare.formplayer.services;
 
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.services.FormSessionService;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;

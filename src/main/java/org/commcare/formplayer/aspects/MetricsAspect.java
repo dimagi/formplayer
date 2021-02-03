@@ -1,7 +1,6 @@
 package org.commcare.formplayer.aspects;
 
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.beans.SessionResponseBean;
 import io.sentry.event.Breadcrumb;
 import io.sentry.event.Event;
 import com.timgroup.statsd.StatsDClient;
