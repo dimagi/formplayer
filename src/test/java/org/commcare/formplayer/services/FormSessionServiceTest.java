@@ -121,6 +121,7 @@ public class FormSessionServiceTest {
     }
 
     // only include the service under test and it's dependencies
+    // This should not be necessary but we're using older versions of junit and spring
     @ComponentScan(
         basePackageClasses = {FormSessionService.class},
         useDefaultFilters = false,
