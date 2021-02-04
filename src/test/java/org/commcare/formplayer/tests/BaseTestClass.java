@@ -37,6 +37,7 @@ import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.PrototypeUtils;
 import org.commcare.formplayer.utils.FileUtils;
@@ -103,6 +104,9 @@ public class BaseTestClass {
     private NewFormResponseFactory newFormResponseFactoryMock;
 
     @Autowired
+    protected FormplayerDatadog datadogMock;
+
+    @Autowired
     protected FormplayerSentry ravenMock;
 
     @Autowired
@@ -162,6 +166,7 @@ public class BaseTestClass {
         Mockito.reset(formplayerInstallerFactory);
         Mockito.reset(queryRequester);
         Mockito.reset(syncRequester);
+        Mockito.reset(datadogMock);
         Mockito.reset(ravenMock);
         Mockito.reset(menuSessionFactory);
         Mockito.reset(menuSessionRunnerService);

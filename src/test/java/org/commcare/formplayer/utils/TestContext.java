@@ -10,6 +10,7 @@ import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHttpRequest;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.reference.ArchiveFileRoot;
@@ -110,6 +111,11 @@ public class TestContext {
     @Bean
     public SubmitService submitService() {
         return Mockito.mock(SubmitService.class);
+    }
+
+    @Bean
+    public FormplayerDatadog datadog() {
+        return Mockito.spy(new FormplayerDatadog(datadogStatsDClient()));
     }
 
     @Bean
