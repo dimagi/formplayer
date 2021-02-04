@@ -28,6 +28,7 @@ public class SerializableFormSession implements Serializable{
     private String initLang;
 
     @Column(name="sequenceid")
+    @Convert(converter = IntStringConverter.class)
     private int sequenceId;
 
     @Column(name="sessiondata")

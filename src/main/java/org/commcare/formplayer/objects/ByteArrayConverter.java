@@ -17,7 +17,4 @@ public class ByteArrayConverter implements AttributeConverter<Object, byte[]> {
     public Object convertToEntityAttribute(byte[] dbData) {
         return SerializationUtils.deserialize(dbData);
     }
-
-
-
 }
