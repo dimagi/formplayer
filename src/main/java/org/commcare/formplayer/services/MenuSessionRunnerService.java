@@ -259,7 +259,8 @@ public class MenuSessionRunnerService {
                 }
             }
 
-            if (nextScreen == null) {
+            if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
+                // we don't have a resolution, try rebuilding session to execute any pending ops
                 executeAndRebuildSession(menuSession);
                 rebuildSession = true;
             } else {
