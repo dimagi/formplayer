@@ -680,12 +680,12 @@ public class RestoreFactory {
                     unEncodedAsUsername += "@" + domain + ".commcarehq.org";
                 }
                 builderQueryParamEncoded(builder, "as", unEncodedAsUsername);
+            } else if (getHqAuth() == null && username != null) {
+                // HQ requesting to force a sync for a user
+                builderQueryParamEncoded(builder, "as", username);
             }
             if (skipFixtures) {
                 builderQueryParamEncoded(builder, "skip_fixtures", "true");
-            }
-            if (getHqAuth() == null && username != null) {
-                builderQueryParamEncoded(builder, "for", username);
             }
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(String.format("Restore Error: " + e.getMessage()));
