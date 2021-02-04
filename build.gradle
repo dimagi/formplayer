@@ -50,6 +50,13 @@ idea {
     }
 }
 
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+}
+
 dependencies {
 
     //Versions managed by Spring Boot Dependency Management
@@ -105,6 +112,8 @@ dependencies {
     testImplementation group: 'com.google.guava', name: 'guava', version: '30.1-jre'
 
     testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert', version: '1.4.0'
+
+    developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'
 
 }
 
