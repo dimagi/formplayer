@@ -205,6 +205,7 @@ public class MenuSessionRunnerService {
             );
         }
         NotificationMessage notificationMessage = null;
+        boolean rebuildSession = false;
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
@@ -213,8 +214,7 @@ public class MenuSessionRunnerService {
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
-            boolean allowAutoLaunch = i == selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, allowAutoLaunch);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -261,6 +261,9 @@ public class MenuSessionRunnerService {
 
             if (nextScreen == null) {
                 executeAndRebuildSession(menuSession);
+                rebuildSession = true;
+            } else {
+                menuSession.addSelection(selection);
             }
         }
 
@@ -279,14 +282,15 @@ public class MenuSessionRunnerService {
                 nextResponse.setNotification(notificationMessage);
             }
             log.info("Returning menu: " + nextResponse);
+
+            if (rebuildSession) {
+                nextResponse.setSelections(menuSession.getSelections());
+            }
             return nextResponse;
         } else {
-            BaseResponseBean responseBean = resolveFormGetNext(menuSession);
-            if (responseBean == null) {
-                responseBean = new BaseResponseBean(null,
-                        new NotificationMessage(null, false, NotificationMessage.Tag.selection),
-                        true);
-            }
+            BaseResponseBean responseBean = new BaseResponseBean(null,
+                    new NotificationMessage(null, false, NotificationMessage.Tag.selection),
+                    true);
             return responseBean;
         }
     }

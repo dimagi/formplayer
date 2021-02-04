@@ -127,6 +127,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
         clearEntityScreenCache();
         initializeBreadcrumbs();
+        selections.clear();
     }
 
     private void initializeBreadcrumbs() {
@@ -209,7 +210,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      *                          assuming it has an autolaunch action specified.
      */
     public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch) throws CommCareSessionException {
-        Screen screen = getNextScreen(needsDetail, allowAutoLaunch);
+        Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
             return false;
@@ -232,7 +233,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
             }
             Screen previousScreen = screen;
-            screen = getNextScreen(needsDetail, allowAutoLaunch);
+            screen = getNextScreen(needsDetail);
             if (addBreadcrumb) {
                 addTitle(input, previousScreen);
             }
@@ -264,27 +265,16 @@ public class MenuSession implements HereFunctionHandlerListener {
      * with no performance optimization and autolaunching of actions not allowed.
      */
     public Screen getNextScreen() throws CommCareSessionException {
-        return getNextScreen(true, false);
+        return getNextScreen(true);
     }
 
     /**
      * Get next screen for current request, based on current state of session,
      * with autolaunching of actions not allowed.
-     *
      * @param needsDetail       Whether a full entity screen is required for this request
      *                          or if a list of references is sufficient
      */
     public Screen getNextScreen(boolean needsDetail) throws CommCareSessionException {
-        return getNextScreen(needsDetail, false);
-    }
-
-    /**
-     * @param needsDetail       Whether a full entity screen is required for this request
-     *                          or if a list of references is sufficient
-     * @param allowAutoLaunch   If this step is allowed to automatically launch an action,
-     *                          assuming it has an autolaunch action specified.
-     */
-    public Screen getNextScreen(boolean needsDetail, boolean allowAutoLaunch) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
         if (next == null) {
             if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
@@ -298,7 +288,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             menuScreen.init(sessionWrapper);
             return menuScreen;
         } else if (next.equals(SessionFrame.STATE_DATUM_VAL)) {
-            EntityScreen entityScreen = getEntityScreenForSession(needsDetail, allowAutoLaunch);
+            EntityScreen entityScreen = getEntityScreenForSession(needsDetail);
             if (entityScreen.shouldBeSkipped()) {
                 return getNextScreen();
             }
@@ -324,7 +314,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         entityScreenCache.clear();
     }
 
-    private EntityScreen getEntityScreenForSession(boolean needsDetail, boolean allowAutoLaunch) throws CommCareSessionException {
+    private EntityScreen getEntityScreenForSession(boolean needsDetail) throws CommCareSessionException {
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
         //This is only needed because with remote queries there can be nested datums with the same
@@ -333,7 +323,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
         String datumKey = datum.getDataId() + ", " + nodesetHash;
         if (!entityScreenCache.containsKey(datumKey)) {
-            EntityScreen entityScreen = createFreshEntityScreen(needsDetail, allowAutoLaunch);
+            EntityScreen entityScreen = createFreshEntityScreen(needsDetail);
             entityScreenCache.put(datumKey, entityScreen);
             return entityScreen;
         } else {
@@ -341,8 +331,8 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
     }
 
-    private EntityScreen createFreshEntityScreen(boolean needsDetail, boolean allowAutoLaunch) throws CommCareSessionException {
-        EntityScreen entityScreen = new EntityScreen(false, needsDetail, allowAutoLaunch, sessionWrapper);
+    private EntityScreen createFreshEntityScreen(boolean needsDetail) throws CommCareSessionException {
+        EntityScreen entityScreen = new EntityScreen(false, needsDetail, sessionWrapper);
         return entityScreen;
     }
 
