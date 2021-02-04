@@ -450,7 +450,6 @@ public class FormSession {
         serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setSequenceId(getSequenceId());
         serializableFormSession.setInitLang(getLocale());
-        serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setDomain(getDomain());
         serializableFormSession.setPostUrl(getPostUrl());
         serializableFormSession.setMenuSessionId(menuSessionId);
