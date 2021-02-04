@@ -1,6 +1,7 @@
 package org.commcare.formplayer.application;
 
 import com.timgroup.statsd.StatsDClient;
+import datadog.trace.api.Trace;
 import io.sentry.event.Event;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
@@ -238,12 +239,14 @@ public abstract class AbstractBaseController {
         );
     }
 
+    @Trace
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
         MenuSession menuSession = performInstall(sessionNavigationBean);
         menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
         return menuSession;
     }
 
+    @Trace
     protected MenuSession performInstall(InstallRequestBean bean) throws Exception {
         if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
                 bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {

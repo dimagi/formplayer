@@ -1,5 +1,6 @@
 package org.commcare.formplayer.beans.menus;
 
+import datadog.trace.api.Trace;
 import org.commcare.cases.entity.Entity;
 import org.commcare.cases.entity.EntitySortNotificationInterface;
 import org.commcare.cases.entity.EntitySorter;
@@ -140,6 +141,7 @@ public class EntityListResponse extends MenuBean {
         return new EntityBean[]{processEntity(detail, reference, ec, neededDatum)};
     }
 
+    @Trace
     public static List<EntityBean> processEntitiesForCaseList(Detail detail, Vector<TreeReference> references,
                                                               EvaluationContext ec,
                                                               String searchText,
@@ -155,6 +157,7 @@ public class EntityListResponse extends MenuBean {
         return entities;
     }
 
+    @Trace
     private static List<Entity<TreeReference>> filterEntities(String searchText, NodeEntityFactory nodeEntityFactory,
                                                               List<Entity<TreeReference>> full, boolean isFuzzySearchEnabled) {
         if (searchText != null && !"".equals(searchText)) {
@@ -164,6 +167,7 @@ public class EntityListResponse extends MenuBean {
         return full;
     }
 
+    @Trace
     private List<EntityBean> paginateEntities(List<EntityBean> matched,
                                               int offset) {
         if (offset > matched.size()) {
@@ -182,6 +186,7 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
+    @Trace
     private static List<Entity<TreeReference>> buildEntityList(Detail shortDetail,
                                                                EvaluationContext context,
                                                                Vector<TreeReference> references,
@@ -199,6 +204,7 @@ public class EntityListResponse extends MenuBean {
         return matched;
     }
 
+    @Trace
     private static void sort(List<Entity<TreeReference>> entityList,
                              Detail shortDetail,
                              int sortIndex) {
@@ -239,6 +245,7 @@ public class EntityListResponse extends MenuBean {
         }
     }
 
+    @Trace
     private static EntityBean processEntity(Detail detail, TreeReference treeReference,
                                             EvaluationContext ec, EntityDatum neededDatum) {
         EvaluationContext context = new EvaluationContext(ec, treeReference);

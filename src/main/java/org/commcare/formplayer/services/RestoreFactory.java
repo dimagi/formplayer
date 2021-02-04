@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import datadog.trace.api.Trace;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
 import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
@@ -191,6 +192,8 @@ public class RestoreFactory {
     public UserSqlSandbox performTimedSync() throws Exception {
         return performTimedSync(true, false);
     }
+
+    @Trace
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
@@ -238,6 +241,7 @@ public class RestoreFactory {
     }
 
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
+    @Trace
     public UserSqlSandbox getSandbox() throws Exception {
         if(getSqlSandbox().getLoggedInUser() != null
                 && !isRestoreXmlExpired()){
@@ -252,6 +256,7 @@ public class RestoreFactory {
         return restoreUser(false);
     }
 
+    @Trace
     private UserSqlSandbox restoreUser(boolean skipFixtures) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
@@ -303,6 +308,7 @@ public class RestoreFactory {
         }
     }
 
+    @Trace
     public UserSqlSandbox getSqlSandbox() {
         return new UserSqlSandbox(this.sqLiteDB);
     }
@@ -424,6 +430,7 @@ public class RestoreFactory {
         return getRestoreXml(false);
     }
 
+    @Trace
     public InputStream getRestoreXml(boolean skipFixtures) {
         ensureValidParameters();
         Pair<URI, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders(skipFixtures);
@@ -713,6 +720,7 @@ public class RestoreFactory {
     /**
      * Configures whether restores through this factory should support 'aggressive' syncs.
      */
+    @Trace
     public void setPermitAggressiveSyncs(boolean permitAggressiveSyncs) {
         this.permitAggressiveSyncs = permitAggressiveSyncs;
     }
