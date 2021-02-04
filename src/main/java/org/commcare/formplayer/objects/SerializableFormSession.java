@@ -91,16 +91,6 @@ public class SerializableFormSession implements Serializable{
     }
 
     @Override
-    public int hashCode(){
-        return id.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof SerializableFormSession && obj.hashCode() == hashCode();
-    }
-
-    @Override
     public String toString(){
         return "Session [id=" + id + ", sequence=" + sequenceId + ", username=" + username
                 + " domain=" + domain + ", instance=" + instanceXml + "]";
