@@ -1,8 +1,10 @@
 package org.commcare.formplayer.repo;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.utils.JpaTestUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +12,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.persistence.EntityManager;
 import java.util.Date;
+
+import javax.persistence.EntityManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,7 +53,9 @@ public class FormSessionRepoTest {
 
         formSessionRepo.saveAndFlush(session);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
-        SerializableFormSession loaded = formSessionRepo.getOne(session.getId());
-        assertThat(loaded).usingRecursiveComparison().ignoringAllOverriddenEquals().isEqualTo(session);
+        SerializableFormSession loaded = JpaTestUtils.unwrapProxy(
+                formSessionRepo.getOne(session.getId())
+        );
+        assertThat(loaded).usingRecursiveComparison().isEqualTo(session);
     }
 }
