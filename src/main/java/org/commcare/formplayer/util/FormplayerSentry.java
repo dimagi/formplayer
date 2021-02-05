@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.RestoreFactory;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -49,9 +52,6 @@ public class FormplayerSentry {
 
     @Autowired
     private RestoreFactory restoreFactory;
-
-    @Autowired(required = false)
-    private FormplayerHttpRequest request;
 
     public FormplayerSentry(SentryClient sentryClient) {
         this.sentryClient = sentryClient;
@@ -182,6 +182,7 @@ public class FormplayerSentry {
             synctoken = restoreFactory.getSyncToken();
             sandboxPath = restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes();
         }
+        FormplayerHttpRequest request = getRequest();
         return (
                 new EventBuilder()
                 .withEnvironment(environment)
@@ -204,6 +205,7 @@ public class FormplayerSentry {
         if (sentryClient == null) {
             return;
         }
+        FormplayerHttpRequest request = getRequest();
         if (request != null) {
             setDomain(request.getDomain());
 
@@ -233,6 +235,14 @@ public class FormplayerSentry {
         } catch (Exception e) {
             log.info("Error sending event to Sentry. Ensure that sentryClient is configured. ", e);
         }
+    }
+
+    private FormplayerHttpRequest getRequest() {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (RequestContextHolder.getRequestAttributes() != null) {
+            return (FormplayerHttpRequest) ((ServletRequestAttributes) attributes).getRequest();
+        }
+        return null;
     }
 
     public String getDomain() {
