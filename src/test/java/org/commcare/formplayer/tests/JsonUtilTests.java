@@ -3,15 +3,15 @@ package org.commcare.formplayer.tests;
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.commcare.formplayer.util.FormParseInit;
+import org.junit.jupiter.api.Test;
 
 /**
  * Created by willpride on 3/31/16.
  */
 public class JsonUtilTests {
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
     }
 
