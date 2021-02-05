@@ -182,7 +182,7 @@ public class FormplayerSentry {
             synctoken = restoreFactory.getSyncToken();
             sandboxPath = restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes();
         }
-        FormplayerHttpRequest request = getRequest();
+        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
         return (
                 new EventBuilder()
                 .withEnvironment(environment)
@@ -205,7 +205,7 @@ public class FormplayerSentry {
         if (sentryClient == null) {
             return;
         }
-        FormplayerHttpRequest request = getRequest();
+        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
         if (request != null) {
             setDomain(request.getDomain());
 
@@ -235,14 +235,6 @@ public class FormplayerSentry {
         } catch (Exception e) {
             log.info("Error sending event to Sentry. Ensure that sentryClient is configured. ", e);
         }
-    }
-
-    private FormplayerHttpRequest getRequest() {
-        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if (RequestContextHolder.getRequestAttributes() != null) {
-            return (FormplayerHttpRequest) ((ServletRequestAttributes) attributes).getRequest();
-        }
-        return null;
     }
 
     public String getDomain() {

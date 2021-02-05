@@ -4,6 +4,9 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -77,5 +80,13 @@ public class RequestUtils {
         SecretKeySpec secret_key = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
         sha256_HMAC.init(secret_key);
         return Base64.encodeBase64String(sha256_HMAC.doFinal(data.getBytes("UTF-8")));
+    }
+
+    public static FormplayerHttpRequest getCurrentRequest() {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (RequestContextHolder.getRequestAttributes() != null) {
+            return (FormplayerHttpRequest) ((ServletRequestAttributes) attributes).getRequest();
+        }
+        return null;
     }
 }

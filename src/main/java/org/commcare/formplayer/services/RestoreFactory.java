@@ -615,14 +615,12 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if (RequestContextHolder.getRequestAttributes() != null) {
-            FormplayerHttpRequest request = (FormplayerHttpRequest) ((ServletRequestAttributes) attributes).getRequest();
-            if (!request.getRequestValidatedWithHMAC()) {
-                throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
-                        "was not validated with HMAC.", requestPath));
-            }
-        } else {
+        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
+        if (request == null) {
+            throw new RuntimeException(String.format(
+                    "HMAC Auth not available outside of a web request %s", requestPath
+            ));
+        } else if (!request.getRequestValidatedWithHMAC()) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
