@@ -3,7 +3,6 @@ package org.commcare.formplayer.session;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +36,6 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
-import org.javarosa.xform.schema.FormInstanceLoader;
 import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -101,7 +99,7 @@ public class FormSession {
         this.sandbox = restoreFactory.getSandbox();
         this.formDef = new FormDef();
         deserializeFormDef(session.getFormXml());
-        this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
+        loadInstanceXml(formDef, session.getInstanceXml());
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         setupJavaRosaObjects();
         if (session.getOneQuestionPerScreen() || session.getInPromptMode()) {
