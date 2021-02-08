@@ -2,30 +2,29 @@ package org.commcare.formplayer.tests;
 
 import com.timgroup.statsd.StatsDClient;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.utils.TestContext;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class FormplayerDatadogTests {
     FormplayerDatadog datadog;
     StatsDClient mockDatadogClient;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         mockDatadogClient = mock(StatsDClient.class);
         datadog = new FormplayerDatadog(mockDatadogClient);
@@ -35,10 +34,10 @@ public class FormplayerDatadogTests {
     public void testAddTag() {
         datadog.addTag("form", "test-form");
         List<FormplayerDatadog.Tag> tags = datadog.getTags();
-        assertEquals(1, tags.size());
+        Assertions.assertEquals(1, tags.size());
         FormplayerDatadog.Tag tag = tags.get(0);
         String formattedTag = tag.formatted();
-        assertEquals("form:test-form", formattedTag);
+        Assertions.assertEquals("form:test-form", formattedTag);
     }
 
     @Test
@@ -46,10 +45,10 @@ public class FormplayerDatadogTests {
         datadog.addTag("form", "test-form");
         datadog.addTag("form", "test-form-2");
         List<FormplayerDatadog.Tag> tags = datadog.getTags();
-        assertEquals(1, tags.size());
+        Assertions.assertEquals(1, tags.size());
         FormplayerDatadog.Tag tag = tags.get(0);
         String formattedTag = tag.formatted();
-        assertEquals("form:test-form-2", formattedTag);
+        Assertions.assertEquals("form:test-form-2", formattedTag);
     }
 
     @Test
@@ -57,10 +56,10 @@ public class FormplayerDatadogTests {
         datadog.addTag("form", "test-form");
         datadog.addTag("domain", "test-domain");
         List<FormplayerDatadog.Tag> tags = datadog.getTags();
-        assertEquals(2, tags.size());
+        Assertions.assertEquals(2, tags.size());
         datadog.clearTags();
         tags = datadog.getTags();
-        assertEquals(0, tags.size());
+        Assertions.assertEquals(0, tags.size());
     }
 
     @Test
