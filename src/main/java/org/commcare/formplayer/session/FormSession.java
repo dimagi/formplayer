@@ -97,8 +97,7 @@ public class FormSession {
         restoreFactory.setPermitAggressiveSyncs(false);
 
         this.sandbox = restoreFactory.getSandbox();
-        this.formDef = new FormDef();
-        deserializeFormDef(session.getFormXml());
+        this.formDef = deserializeFormDef(session.getFormXml());
         loadInstanceXml(formDef, session.getInstanceXml());
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         setupJavaRosaObjects();
@@ -377,11 +376,13 @@ public class FormSession {
         return Base64.encodeBase64String(baos.toByteArray());
     }
 
-    private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
+    private static FormDef deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
         byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
         DataInputStream inputStream =
                 new DataInputStream(new ByteArrayInputStream(sessionBytes));
+        FormDef formDef = new FormDef();
         formDef.readExternal(inputStream, PrototypeManager.getDefault());
+        return formDef;
     }
 
 
