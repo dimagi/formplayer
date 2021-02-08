@@ -391,13 +391,6 @@ public class MenuSession implements HereFunctionHandlerListener {
                 asUser, appId, null, formSendCalloutHandler, storageFactory, false, null);
     }
 
-    public void reloadSession(FormSession formSession) throws Exception {
-        String formXmlns = formSession.getXmlns();
-        FormDef formDef = engine.loadFormByXmlns(formXmlns);
-        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
-        formSession.reload(formDef, postUrl, engine.getPlatform().getStorageManager());
-    }
-
     private byte[] serializeSession(CommCareSession session){
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         DataOutputStream oos;
