@@ -83,6 +83,7 @@ public class PostgresFormSessionRepoTest {
     @Test
     public void testDeleteClearsCache() {
         SerializableFormSession session = new SerializableFormSession("123");
+        session.incrementSequence();
         formSessionRepo.save(session);
         assertEquals(session, getCachedSession("123").get());
 
@@ -93,6 +94,7 @@ public class PostgresFormSessionRepoTest {
     @Test
     public void testDeleteByIdClearsCache() {
         SerializableFormSession session = new SerializableFormSession("123");
+        session.incrementSequence();
         formSessionRepo.save(session);
         assertEquals(session, getCachedSession("123").get());
 
