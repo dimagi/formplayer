@@ -12,8 +12,8 @@ import org.commcare.formplayer.sqlitedb.UserDB;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.services.locale.LocalizerManager;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -47,7 +47,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import static org.mockito.Matchers.anyBoolean;
@@ -64,7 +63,7 @@ public class BaseTestClass {
 
     private MockMvc mockFormController;
 
-    private MockMvc mockUtilController;
+    protected MockMvc mockUtilController;
 
     private MockMvc mockMenuController;
 
@@ -147,7 +146,7 @@ public class BaseTestClass {
 
     protected ObjectMapper mapper;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Mockito.reset(formSessionRepoMock);
         Mockito.reset(menuSessionRepoMock);
@@ -204,7 +203,7 @@ public class BaseTestClass {
                 .when(submitServiceMock).submitForm(anyString(), anyString());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SQLException {
         if(customConnector != null) {
             customConnector.closeConnection();

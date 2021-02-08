@@ -51,9 +51,14 @@ trunk: master
 name: autostaging
 branches:
   - ce/no-json-validation # Cal Jan 18
-  - ce/tracing+skipToSearchResults
+  - sk/form-session-service+ce/tracing+gh/datadog-wrapper+gh/datadog-tag-refactor
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
+  - gh/datadog-wrapper # Graham Feb 3
+  - gh/datadog-tag-refactor # Graham Feb 3
+  - caseClaimHint #Shubham Feb 4
+  - sk/form-session-service # Simon Feb 4
+  - caseSearchItemsetFix #Shubham Feb 5
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -61,3 +66,5 @@ submodules:
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
+      - caseClaimHint #Shubham Feb 4
+      - caseSearchItemsetFix #Shubham Feb 5

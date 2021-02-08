@@ -1,27 +1,24 @@
 package org.commcare.formplayer.tests;
 
+import org.commcare.formplayer.util.FormplayerSentry;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
 import io.sentry.SentryClient;
 import io.sentry.context.Context;
 import io.sentry.event.Breadcrumb;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.commcare.formplayer.util.FormplayerSentry;
-import org.commcare.formplayer.utils.TestContext;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = TestContext.class)
 public class FormplayerRavenTest {
     FormplayerSentry raven;
     Context contextMock;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         SentryClient sentryMock = mock(SentryClient.class);
         contextMock = mock(Context.class);
