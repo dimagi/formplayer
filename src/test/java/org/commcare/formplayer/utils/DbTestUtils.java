@@ -6,7 +6,7 @@ import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by willpride on 3/8/17.
@@ -16,6 +16,6 @@ public class DbTestUtils {
         XPathExpression expr;
         expr = XPathParseTool.parseXPath(xpath);
         String result = FunctionUtils.toString(expr.eval(ec));
-        assertEquals("XPath: " + xpath, expectedValue, result);
+        assertEquals(expectedValue, result, "XPath: " + xpath);
     }
 }
