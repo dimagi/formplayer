@@ -8,14 +8,21 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.UserSandbox;
-import org.commcare.formplayer.repo.SerializableMenuSession;
+import org.commcare.formplayer.api.json.JsonActionUtils;
+import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
+import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.objects.FormVolatilityRecord;
+import org.commcare.formplayer.objects.FunctionHandler;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.util.Constants;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
-import org.javarosa.core.model.GroupDef;
-import org.javarosa.core.model.IFormElement;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
@@ -34,7 +41,6 @@ import org.javarosa.xform.schema.FormInstanceLoader;
 import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -43,17 +49,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
 import java.util.Map;
-
-import org.commcare.formplayer.api.json.JsonActionUtils;
-import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
-import org.commcare.formplayer.beans.FormEntryResponseBean;
-import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.objects.FunctionHandler;
-import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.util.Constants;
 
 /**
  *
