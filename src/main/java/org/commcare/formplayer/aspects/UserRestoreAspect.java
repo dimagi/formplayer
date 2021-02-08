@@ -81,7 +81,7 @@ public class UserRestoreAspect {
             if (span != null && (span instanceof MutableSpan)) {
                 MutableSpan localRootSpan = ((MutableSpan) span).getLocalRootSpan();
                 localRootSpan.setTag("domain", requestBean.getDomain());
-                localRootSpan.setTage("user", requestBean.getUsername());
+                localRootSpan.setTag("user", requestBean.getUsername());
             }
         } else {
             // SMS users don't submit username and domain with each request, so obtain from session
