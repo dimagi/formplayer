@@ -485,7 +485,7 @@ public class MenuSessionRunnerService {
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
-        menuSessionRepo.save(new SerializableMenuSession(menuSession));
+        menuSessionRepo.save(menuSession.serialize());
         NewFormResponse response = new NewFormResponse(formEntrySession);
 
         response.setNotification(establishVolatility(formEntrySession));

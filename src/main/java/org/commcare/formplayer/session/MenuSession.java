@@ -463,4 +463,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         ec.addFunctionHandler(new FormplayerHereFunctionHandler(this, currentBrowserLocation));
         return ec;
     }
+
+    public SerializableMenuSession serialize() {
+        session.setCommcareSession(serializeSession(sessionWrapper));
+        return session;
+    }
+
 }
