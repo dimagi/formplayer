@@ -23,7 +23,7 @@ public class NewFormResponse extends SessionResponseBean {
         this.title = fes.getSerializableSession().getTitle();
         this.sessionId = fes.getSessionId();
         this.sequenceId = fes.getSequenceId();
-        this.instanceXml = new InstanceXmlBean(fes);
+        this.instanceXml = new InstanceXmlBean(fes.getSerializableSession().getInstanceXml());
     }
 
     public QuestionBean[] getTree(){

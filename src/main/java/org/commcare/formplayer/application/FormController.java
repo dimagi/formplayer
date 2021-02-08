@@ -139,7 +139,7 @@ public class FormController extends AbstractBaseController{
         updateSession(formEntrySession);
         responseBean.setTitle(serializableFormSession.getTitle());
         responseBean.setSequenceId(formEntrySession.getSequenceId());
-        responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
         return responseBean;
     }
 
@@ -346,7 +346,7 @@ public class FormController extends AbstractBaseController{
         updateSession(formEntrySession);
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(serializableFormSession.getTitle());
-        responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
         log.info("New response: " + responseBean);
         return responseBean;
     }
@@ -368,7 +368,7 @@ public class FormController extends AbstractBaseController{
         updateSession(formEntrySession);
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
         responseBean.setTitle(serializableFormSession.getTitle());
-        responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
         return responseBean;
     }
 

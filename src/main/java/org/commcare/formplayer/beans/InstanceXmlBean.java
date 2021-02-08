@@ -14,8 +14,8 @@ public class InstanceXmlBean {
     // Jackson requires the default constructor be present
     public InstanceXmlBean(){}
 
-    public InstanceXmlBean(FormSession session) throws IOException {
-        output = XmlUtils.indent(session.getInstanceXml());
+    public InstanceXmlBean(String xml) {
+        output = XmlUtils.indent(xml);
     }
 
     public String getOutput() {
