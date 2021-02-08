@@ -57,7 +57,7 @@ branches:
   - gh/datadog-wrapper # Graham Feb 3
   - gh/datadog-tag-refactor # Graham Feb 3
   - caseClaimHint #Shubham Feb 4
-  - sk/form-session-service # Simon Feb 4
+  #- sk/form-session-service # Simon Feb 4
   - caseSearchItemsetFix #Shubham Feb 5
 submodules:
   libs/commcare:
