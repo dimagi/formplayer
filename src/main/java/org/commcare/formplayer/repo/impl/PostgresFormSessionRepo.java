@@ -2,23 +2,25 @@ package org.commcare.formplayer.repo.impl;
 
 import com.timgroup.statsd.StatsDClient;
 import io.sentry.event.Event;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.repo.FormSessionRepo;
+import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.commcare.formplayer.repo.FormSessionRepo;
-import org.commcare.formplayer.util.Constants;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.LockModeType;
 import java.io.*;
 import java.sql.ResultSet;
@@ -29,11 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+
 /**
  * Postgres implementation for storing form entry sessions
  * Corresponds to the new_formplayer_session table in the formplayer database
  */
 @Repository
+@CacheConfig(cacheNames = {"form_session"})
 public class PostgresFormSessionRepo implements FormSessionRepo {
 
     private final Log log = LogFactory.getLog(PostgresFormSessionRepo.class);
@@ -41,12 +45,13 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Autowired
+    @Autowired(required = false)
     private StatsDClient datadogStatsDClient;
 
-    @Autowired
+    @Autowired(required = false)
     private FormplayerSentry raven;
 
+    @CacheEvict(allEntries = true)
     public int purge() {
         // Modeled on https://stackoverflow.com/a/6730401/2820312
         int deletedRows = 0;
@@ -69,10 +74,14 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
             deletedRows = this.jdbcTemplate.update(deleteQuery);
             long elapsed = System.currentTimeMillis() - start;
             log.info(String.format("Purged %d stale form sessions in %d ms", deletedRows, elapsed));
-            datadogStatsDClient.time("PostgresFormSessionRepo.purge.timeInMillis", elapsed);
+            if (datadogStatsDClient != null) {
+                datadogStatsDClient.time("PostgresFormSessionRepo.purge.timeInMillis", elapsed);
+            }
         } catch (Exception e) {
             log.error("Exception purge form sessions", e);
-            raven.sendRavenException(e, Event.Level.ERROR);
+            if (raven != null) {
+                raven.sendRavenException(e, Event.Level.ERROR);
+            }
         }
         return deletedRows;
     }
@@ -90,12 +99,10 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     }
 
     @Override
-    @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> Iterable<S> saveAll(Iterable<S> entities) {
-        for(SerializableFormSession session: entities){
-            save(session);
-        }
-        return entities;
+        // removed support due to caching implications
+        // we could support caching for this with aspectj weaving
+        throw new UnsupportedOperationException();
     }
 
     private byte[] writeToBytes(Object object){
@@ -111,16 +118,16 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     }
 
     @Override
+    @CachePut(key = "#session.id")
     @Lock(LockModeType.OPTIMISTIC)
     public <S extends SerializableFormSession> S save(S session) {
 
         byte[] sessionDataBytes = writeToBytes(session.getSessionData());
         byte[] functionContextBytes = writeToBytes(session.getFunctionContext());
 
-        int sessionCount = this.jdbcTemplate.queryForObject(
-                replaceTableName("select count(*) from %s where id = ?"), Integer.class, session.getId());
+        boolean session_exists = existsById(session.getId());
 
-        if(sessionCount > 0){
+        if(session_exists){
             String query = replaceTableName("UPDATE %s SET instanceXml = ?, sessionData = ?, " +
                     "sequenceId = ?, currentIndex = ?, postUrl = ?, initLang = ? WHERE id = ?");
             this.jdbcTemplate.update(query,
@@ -201,11 +208,13 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
         return session;
     }
 
+    @Cacheable
     public SerializableFormSession findOneWrapped(String id) throws FormNotFoundException {
         return findById(id).get();
     }
 
     @Override
+    @Cacheable
     public Optional<SerializableFormSession> findById(String id) throws FormNotFoundException {
         String sql = replaceTableName("SELECT * FROM %s WHERE id = ?");
         try {
@@ -245,29 +254,29 @@ public class PostgresFormSessionRepo implements FormSessionRepo {
     }
 
     @Override
+    @CacheEvict
     @Lock(LockModeType.OPTIMISTIC)
     public void deleteById(String id) {
         this.jdbcTemplate.update(replaceTableName("DELETE FROM %s WHERE id = ?"), id);
     }
 
     @Override
+    @CacheEvict(key = "#entity.id")
     public void delete(SerializableFormSession entity) {
         deleteById(entity.getId());
     }
 
     @Override
     public void deleteAll(Iterable<? extends SerializableFormSession> entities) {
-        for(SerializableFormSession session: entities){
-            deleteById(session.getId());
-        }
+        // removed support due to caching implications
+        // we could support caching for this with aspectj weaving
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void deleteAll() {
-        Iterable<SerializableFormSession> allSessions = findAll();
-        for(SerializableFormSession session: allSessions){
-            deleteById(session.getId());
-        }
+        // removed support due to caching implications, also it's dangerous
+        throw new UnsupportedOperationException();
     }
 
     // helper class for mapping a db row to a serialized session

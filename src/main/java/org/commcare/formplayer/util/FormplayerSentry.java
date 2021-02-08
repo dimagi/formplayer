@@ -8,9 +8,15 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.RestoreFactory;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +25,8 @@ import java.util.Map;
  * Created by benrudolph on 4/27/17.
  */
 public class FormplayerSentry {
+
+    public static final String FORM_NAME = "form_name";
 
     private static final Log log = LogFactory.getLog(FormplayerSentry.class);
 
@@ -44,9 +52,6 @@ public class FormplayerSentry {
 
     @Autowired
     private RestoreFactory restoreFactory;
-
-    @Autowired(required = false)
-    private FormplayerHttpRequest request;
 
     public FormplayerSentry(SentryClient sentryClient) {
         this.sentryClient = sentryClient;
@@ -119,6 +124,17 @@ public class FormplayerSentry {
         return new BreadcrumbRecorder(this);
     }
 
+    public void addTag(String name, String value) {
+        if (sentryClient == null) {
+            return;
+        }
+        try {
+            sentryClient.getContext().addTag(name, value);
+        } catch (Exception e) {
+            log.info("Error adding tag. Ensure that sentryClient is configured. ", e);
+        }
+    }
+
     public void setUserContext(String userId, String username, String ipAddress) {
         User user = new User(
                 userId,
@@ -166,6 +182,7 @@ public class FormplayerSentry {
             synctoken = restoreFactory.getSyncToken();
             sandboxPath = restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes();
         }
+        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
         return (
                 new EventBuilder()
                 .withEnvironment(environment)
@@ -188,6 +205,7 @@ public class FormplayerSentry {
         if (sentryClient == null) {
             return;
         }
+        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
         if (request != null) {
             setDomain(request.getDomain());
 

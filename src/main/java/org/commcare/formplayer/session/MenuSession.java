@@ -218,12 +218,14 @@ public class MenuSession implements HereFunctionHandlerListener {
             return false;
         }
         try {
+            boolean addBreadcrumb = true;
             if (screen instanceof EntityScreen) {
                 log.info("This is an entity screen, input = " + input + " and confirmed = " + confirmed);
                 if (input.startsWith("action ") || !confirmed) {
                     EntityScreen entityScreen = (EntityScreen)screen;
                     if (input.startsWith("action ") && entityScreen.getAutoLaunchAction() != null) {
                         sessionWrapper.executeStackOperations(entityScreen.getAutoLaunchAction().getStackOperations(), entityScreen.getEvalContext());
+                        addBreadcrumb = false;
                     } else {
                         screen.init(sessionWrapper);
                         if (screen.shouldBeSkipped()) {
@@ -241,7 +243,9 @@ public class MenuSession implements HereFunctionHandlerListener {
             }
             Screen previousScreen = screen;
             screen = getNextScreen(needsDetail, allowAutoLaunch);
-            addTitle(input, previousScreen);
+            if (addBreadcrumb) {
+                addTitle(input, previousScreen);
+            }
             return true;
         } catch(ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
@@ -293,7 +297,6 @@ public class MenuSession implements HereFunctionHandlerListener {
      */
     public Screen getNextScreen(boolean needsDetail, boolean allowAutoLaunch) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
-
         if (next == null) {
             if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
                 sessionWrapper.stepBack();

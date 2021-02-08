@@ -63,6 +63,7 @@ import org.commcare.formplayer.services.XFormService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.SimpleTimer;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -90,6 +91,9 @@ public class FormController extends AbstractBaseController{
 
     @Autowired
     private RedisTemplate redisVolatilityDict;
+
+    @Autowired
+    private FormplayerSentry raven;
 
     @Resource(name="redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
@@ -132,6 +136,7 @@ public class FormController extends AbstractBaseController{
                                                 @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+        raven.addTag(FormplayerSentry.FORM_NAME, formEntrySession.getTitle());
         FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
         updateSession(formEntrySession, serializableFormSession);
@@ -151,6 +156,12 @@ public class FormController extends AbstractBaseController{
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SubmitResponseBean submitResponseBean;
+        raven.addTag(FormplayerSentry.FORM_NAME, formEntrySession.getTitle());
+
+        // package additional args to pass to category timing helper
+        Map<String, String> extras = new HashMap<String, String>();
+        extras.put(CategoryTimingHelper.DOMAIN, submitRequestBean.getDomain());
+        extras.put(CategoryTimingHelper.FORM_NAME, formEntrySession.getTitle());
 
         SimpleTimer validationTimer = new SimpleTimer();
         validationTimer.start();
@@ -159,7 +170,7 @@ public class FormController extends AbstractBaseController{
                 submitRequestBean.getAnswers(),
                 formEntrySession.getSkipValidation());
         validationTimer.end();
-        categoryTimingHelper.recordCategoryTiming(validationTimer, Constants.TimingCategories.VALIDATE_SUBMISSION, null, submitRequestBean.getDomain());
+        categoryTimingHelper.recordCategoryTiming(validationTimer, Constants.TimingCategories.VALIDATE_SUBMISSION, null, extras);
 
         FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
 
@@ -181,7 +192,7 @@ public class FormController extends AbstractBaseController{
 
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
-                                "Purging cases took some time" : "Probably didn't have to purge cases", submitRequestBean.getDomain());
+                                "Purging cases took some time" : "Probably didn't have to purge cases", extras);
 
                 ResponseEntity<String> submitResponse = submitService.submitForm(
                         formEntrySession.getInstanceXml(),
@@ -256,7 +267,7 @@ public class FormController extends AbstractBaseController{
                 }
             }
             navTimer.end();
-            categoryTimingHelper.recordCategoryTiming(navTimer, Constants.TimingCategories.END_OF_FORM_NAV, null, submitRequestBean.getDomain());
+            categoryTimingHelper.recordCategoryTiming(navTimer, Constants.TimingCategories.END_OF_FORM_NAV, null, extras);
         }
         return submitResponseBean;
     }
@@ -309,7 +320,8 @@ public class FormController extends AbstractBaseController{
                             key,
                             false,
                             null,
-                            skipValidation);
+                            skipValidation,
+                            false);
             if(!answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
                 submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
                 ErrorBean error = new ErrorBean();
