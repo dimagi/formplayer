@@ -16,7 +16,7 @@ public class SerializableFormSession implements Serializable{
     private String formXml;
     private String username;
     private String initLang;
-    private int sequenceId;
+    private Integer sequenceId;
     private Map<String, String> sessionData;
     private String domain;
     private String postUrl;
@@ -202,5 +202,13 @@ public class SerializableFormSession implements Serializable{
 
     public String getRestoreAsCaseId() {
         return restoreAsCaseId;
+    }
+
+    public void incrementSequence() {
+        if (sequenceId == null) {
+            sequenceId = 0;
+        } else {
+            sequenceId += 1;
+        }
     }
 }

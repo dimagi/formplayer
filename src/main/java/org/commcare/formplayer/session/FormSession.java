@@ -152,10 +152,10 @@ public class FormSession {
         session.setMenuSessionId(menuSessionId);
         session.setPostUrl(postUrl);
         session.setSessionData(sessionData);
-        session.setSequenceId(0);
         session.setInPromptMode(inPromptMode);
         session.setFunctionContext(functionContext);
         session.setRestoreAsCaseId(caseId);
+        session.setFormXml(serializeFormDef(formDef));
 
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
@@ -382,7 +382,7 @@ public class FormSession {
         return getInstanceXml();
     }
 
-    private String serializeFormDef() throws IOException {
+    private static String serializeFormDef(FormDef formDef) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream serializedStream = new DataOutputStream(baos);
         formDef.writeExternal(serializedStream);
@@ -398,7 +398,7 @@ public class FormSession {
 
 
     public SerializableFormSession serialize() throws IOException {
-        session.setFormXml(serializeFormDef());
+        session.incrementSequence();
         session.setInstanceXml(getInstanceXml());
         return session;
     }
@@ -413,10 +413,6 @@ public class FormSession {
 
     public String getMenuSessionId() {
         return session.getMenuSessionId();
-    }
-
-    public void setCurrentIndex(String index) {
-        session.setCurrentIndex(index);
     }
 
     public void setIsAtLastIndex(boolean isAtLastIndex) {
@@ -509,13 +505,13 @@ public class FormSession {
         boolean isEndOfForm = event == FormEntryController.EVENT_END_OF_FORM;
         setIsAtLastIndex(isEndOfForm);
         if (!isEndOfForm) {
-            setCurrentIndex(formController.getFormIndex().toString());
+            session.setCurrentIndex(formController.getFormIndex().toString());
         }
     }
 
     public void stepToPreviousIndex() {
         moveToPreviousView();
-        setCurrentIndex(formController.getFormIndex().toString());
+        session.setCurrentIndex(formController.getFormIndex().toString());
     }
 
     public FormEntryResponseBean getCurrentJSON() throws IOException {
