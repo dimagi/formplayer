@@ -84,7 +84,7 @@ public class RequestUtils {
 
     public static FormplayerHttpRequest getCurrentRequest() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if (RequestContextHolder.getRequestAttributes() != null) {
+        if (attributes != null) {
             return (FormplayerHttpRequest) ((ServletRequestAttributes) attributes).getRequest();
         }
         return null;
