@@ -54,16 +54,17 @@ public class DebuggerController extends AbstractBaseController {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(debuggerRequest.getSessionId());
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SerializableMenuSession serializableMenuSession = menuSessionRepo.findOneWrapped(serializableFormSession.getMenuSessionId());
+        String instanceXml = formSession.getInstanceXml();
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
                 debuggerRequest.getDomain(),
                 serializableMenuSession.getAppId(),
                 formSession.getXmlns(),
-                formSession.getInstanceXml()
+                instanceXml
         );
         return new DebuggerFormattedQuestionsResponseBean(
                 serializableMenuSession.getAppId(),
                 formSession.getXmlns(),
-                formSession.getInstanceXml(),
+                instanceXml,
                 response.getFormattedQuestions(),
                 response.getQuestionList(),
                 FunctionUtils.xPathFuncList(),
