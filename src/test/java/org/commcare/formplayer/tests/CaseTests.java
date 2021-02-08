@@ -1,19 +1,19 @@
 package org.commcare.formplayer.tests;
 
-import org.commcare.formplayer.application.SQLiteProperties;
-import org.commcare.formplayer.beans.*;
-import org.commcare.formplayer.sandbox.SqlSandboxUtils;
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.util.CasePurgeFilter;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
+import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.QuestionBean;
+import org.commcare.formplayer.beans.SubmitResponseBean;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Iterator;
 
@@ -22,7 +22,7 @@ import java.util.Iterator;
  *
  * This test tests that we can create and delete a case via the form API
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class CaseTests extends BaseTestClass {
 

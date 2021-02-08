@@ -2,22 +2,21 @@ package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.utils.TestContext;
 
 /**
  * Created by benrudolph on 1/19/17.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class RestoreFactoryTest {
 
@@ -28,7 +27,7 @@ public class RestoreFactoryTest {
     @Autowired
     RestoreFactory restoreFactorySpy;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Mockito.reset(restoreFactorySpy);
         MockitoAnnotations.initMocks(this);
@@ -58,7 +57,7 @@ public class RestoreFactoryTest {
         // Last sync time should be more than a day ago
         mockLastSyncTime(System.currentTimeMillis() - RestoreFactory.ONE_DAY_IN_MILLISECONDS - 1);
 
-        Assert.assertTrue(restoreFactorySpy.isRestoreXmlExpired());
+        Assertions.assertTrue(restoreFactorySpy.isRestoreXmlExpired());
     }
 
     @Test
@@ -67,7 +66,7 @@ public class RestoreFactoryTest {
 
         // Last sync time should be less than a day ago
         mockLastSyncTime(System.currentTimeMillis());
-        Assert.assertFalse(restoreFactorySpy.isRestoreXmlExpired());
+        Assertions.assertFalse(restoreFactorySpy.isRestoreXmlExpired());
     }
 
     @Test
@@ -75,7 +74,7 @@ public class RestoreFactoryTest {
         mockSyncFreq("default-case");
 
         mockLastSyncTime(null);
-        Assert.assertFalse(restoreFactorySpy.isRestoreXmlExpired());
+        Assertions.assertFalse(restoreFactorySpy.isRestoreXmlExpired());
     }
 
     @Test
@@ -85,7 +84,7 @@ public class RestoreFactoryTest {
         // Last sync time should be more than a week ago
         mockLastSyncTime(System.currentTimeMillis() - RestoreFactory.ONE_WEEK_IN_MILLISECONDS - 1);
 
-        Assert.assertTrue(restoreFactorySpy.isRestoreXmlExpired());
+        Assertions.assertTrue(restoreFactorySpy.isRestoreXmlExpired());
     }
 
     @Test
@@ -95,6 +94,6 @@ public class RestoreFactoryTest {
         // Last sync time should be less than a week ago
         mockLastSyncTime(System.currentTimeMillis());
 
-        Assert.assertFalse(restoreFactorySpy.isRestoreXmlExpired());
+        Assertions.assertFalse(restoreFactorySpy.isRestoreXmlExpired());
     }
 }
