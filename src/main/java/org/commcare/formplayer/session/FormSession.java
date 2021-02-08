@@ -582,25 +582,6 @@ public class FormSession {
     }
 
 
-    public void reload(FormDef formDef, String postUrl, StorageManager storageManager) throws IOException {
-        if(getInstanceXml() != null){
-            loadInstanceXml(formDef, getInstanceXml());
-            initialize(false, session.getSessionData(), storageManager);
-        } else {
-            initialize(true, session.getSessionData(), storageManager);
-        }
-        if (session.getOneQuestionPerScreen()) {
-            FormIndex firstIndex = JsonActionUtils.indexFromString(session.getCurrentIndex(), this.formDef);
-            IFormElement element = formEntryController.getModel().getForm().getChild(firstIndex);
-            while (element instanceof GroupDef && !formEntryController.isFieldListHost(firstIndex)) {
-                firstIndex =  formController.getNextFormIndex(firstIndex, false, true);
-                element = formEntryController.getModel().getForm().getChild(firstIndex);
-            }
-            session.setCurrentIndex(firstIndex.toString());
-        }
-        session.setPostUrl(postUrl);
-    }
-
     public void setIsAtFirstIndex(boolean isAtFirstIndex) {
         this.isAtFirstIndex = isAtFirstIndex;
     }
