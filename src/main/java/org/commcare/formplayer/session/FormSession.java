@@ -395,6 +395,7 @@ public class FormSession {
 
     public SerializableFormSession serialize() throws IOException {
         session.incrementSequence();
+        session.setFormXml(serializeFormDef(formDef));
         session.setInstanceXml(getInstanceXml());
         return session;
     }
