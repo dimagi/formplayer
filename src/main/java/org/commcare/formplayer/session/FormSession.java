@@ -515,7 +515,6 @@ public class FormSession {
 
     public void stepToPreviousIndex() {
         moveToPreviousView();
-        int event = formController.getEvent();
         setCurrentIndex(formController.getFormIndex().toString());
     }
 
