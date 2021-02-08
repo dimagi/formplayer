@@ -121,7 +121,7 @@ public class FormController extends AbstractBaseController{
         formEntrySession.changeLocale(changeLocaleBean.getLocale());
         updateSession(formEntrySession);
         FormEntryResponseBean responseBean = formEntrySession.getCurrentJSON();
-        responseBean.setTitle(formEntrySession.getTitle());
+        responseBean.setTitle(serializableFormSession.getTitle());
         return responseBean;
     }
 
@@ -133,11 +133,11 @@ public class FormController extends AbstractBaseController{
                                                 @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
-        raven.addTag(FormplayerSentry.FORM_NAME, formEntrySession.getTitle());
+        raven.addTag(FormplayerSentry.FORM_NAME, serializableFormSession.getTitle());
         FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
         updateSession(formEntrySession);
-        responseBean.setTitle(formEntrySession.getTitle());
+        responseBean.setTitle(serializableFormSession.getTitle());
         responseBean.setSequenceId(formEntrySession.getSequenceId());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
         return responseBean;
@@ -153,12 +153,12 @@ public class FormController extends AbstractBaseController{
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SubmitResponseBean submitResponseBean;
-        raven.addTag(FormplayerSentry.FORM_NAME, formEntrySession.getTitle());
+        raven.addTag(FormplayerSentry.FORM_NAME, serializableFormSession.getTitle());
 
         // package additional args to pass to category timing helper
         Map<String, String> extras = new HashMap<String, String>();
         extras.put(CategoryTimingHelper.DOMAIN, submitRequestBean.getDomain());
-        extras.put(CategoryTimingHelper.FORM_NAME, formEntrySession.getTitle());
+        extras.put(CategoryTimingHelper.FORM_NAME, serializableFormSession.getTitle());
 
         SimpleTimer validationTimer = new SimpleTimer();
         validationTimer.start();
@@ -345,7 +345,7 @@ public class FormController extends AbstractBaseController{
                 newRepeatRequestBean.getRepeatIndex());
         updateSession(formEntrySession);
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
-        responseBean.setTitle(formEntrySession.getTitle());
+        responseBean.setTitle(serializableFormSession.getTitle());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
         log.info("New response: " + responseBean);
         return responseBean;
@@ -367,7 +367,7 @@ public class FormController extends AbstractBaseController{
                 deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
         updateSession(formEntrySession);
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
-        responseBean.setTitle(formEntrySession.getTitle());
+        responseBean.setTitle(serializableFormSession.getTitle());
         responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
         return responseBean;
     }

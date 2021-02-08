@@ -334,10 +334,6 @@ public class FormSession {
         return formEntryController;
     }
 
-    public String getTitle(){
-        return session.getTitle();
-    }
-
     public String[] getLanguages(){
         return langs;
     }
@@ -585,5 +581,9 @@ public class FormSession {
     public void changeLocale(String locale) {
         session.setInitLang(locale);
         formEntryController.setLanguage(locale);
+    }
+
+    public SerializableFormSession getSerializableSession() {
+        return session;
     }
 }

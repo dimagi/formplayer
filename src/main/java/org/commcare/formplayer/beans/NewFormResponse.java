@@ -20,7 +20,7 @@ public class NewFormResponse extends SessionResponseBean {
     public NewFormResponse(FormSession fes) throws IOException {
         this.tree = new ObjectMapper().readValue(fes.getFormTree().toString(), QuestionBean[].class);
         this.langs = fes.getLanguages();
-        this.title = fes.getTitle();
+        this.title = fes.getSerializableSession().getTitle();
         this.sessionId = fes.getSessionId();
         this.sequenceId = fes.getSequenceId();
         this.instanceXml = new InstanceXmlBean(fes);
