@@ -1,9 +1,6 @@
 package org.commcare.formplayer.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.UserSandbox;
@@ -27,10 +24,8 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
-import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
-import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.engine.FunctionExtensions;
 import org.javarosa.form.api.FormController;
 import org.javarosa.form.api.FormEntryController;
@@ -41,13 +36,11 @@ import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
 import java.util.Map;
+
 
 /**
  *
