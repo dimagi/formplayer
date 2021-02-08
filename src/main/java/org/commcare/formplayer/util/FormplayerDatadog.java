@@ -2,13 +2,16 @@ package org.commcare.formplayer.util;
 
 import com.timgroup.statsd.StatsDClient;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.List;
 
 
 public class FormplayerDatadog {
 
-    public class Tag {
+    public static class Tag {
         private String name;
         private String value;
 
@@ -23,21 +26,21 @@ public class FormplayerDatadog {
     }
 
     private StatsDClient datadogClient;
-    private List<Tag> tags;
+    private Map<String, Tag> tags;
 
     public FormplayerDatadog(StatsDClient datadogClient) {
         this.datadogClient = datadogClient;
-        this.tags = new ArrayList<>();
+        this.tags = new HashMap<>();
     }
 
-    // Tag related methods
+    // Tag Management Methods
     public List<Tag> getTags() {
-        return this.tags;
+        return new ArrayList<>(this.tags.values());
     }
 
     public void addTag(String name, String value) {
         Tag tag = new Tag(name, value);
-        tags.add(tag);
+        tags.put(name, tag);
     }
 
     public void clearTags() {
@@ -45,24 +48,38 @@ public class FormplayerDatadog {
     }
 
     // Datadog API Wrappers
-    public void recordExecutionTime(String aspect, final long value, List<String> additionalTags) {
-        List<String> tagsToSend = new ArrayList<>(additionalTags);
-        for (Tag tag : getTags()) {
-            tagsToSend.add(tag.formatted());
-        }
-
+    public void recordExecutionTime(String aspect, final long value, List<Tag> additionalTags) {
+        List<String> tagsToSend = formattedTags(additionalTags);
         String[] datadogTags = tagsToSend.toArray(new String[tagsToSend.size()]);
         datadogClient.recordExecutionTime(aspect, value, datadogTags);
     }
 
-    public void increment(String aspect, List<String> additionalTags) {
-        List<String> tagsToSend = new ArrayList<>(additionalTags);
-        for (Tag tag : getTags()) {
-            tagsToSend.add(tag.formatted());
-        }
-
+    public void increment(String aspect, List<Tag> additionalTags) {
+        List<String> tagsToSend = formattedTags(additionalTags);
         String[] datadogTags = tagsToSend.toArray(new String[tagsToSend.size()]);
         datadogClient.increment(aspect, datadogTags);
+    }
+
+    // Private Helpers
+    private List<String> formattedTags(List<Tag> transientTags) {
+        List<String> formattedTags = new ArrayList<>();
+        // transient keys take precedence over existing keys
+        HashSet<String> transientKeys = new HashSet<String>();
+        
+        for (Tag tag : transientTags) {
+            formattedTags.add(tag.formatted());
+            // keep track of transient tag names
+            transientKeys.add(tag.name);
+        }
+
+        // append request scoped tags
+        for (Tag tag : getTags()) {
+            if (!transientKeys.contains(tag.name)) {
+                formattedTags.add(tag.formatted());
+            }
+        }
+
+        return formattedTags;
     }
 
 }
