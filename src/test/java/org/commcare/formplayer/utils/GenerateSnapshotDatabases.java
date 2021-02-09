@@ -3,13 +3,15 @@ package org.commcare.formplayer.utils;
 import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.tests.BaseTestClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
@@ -25,7 +27,7 @@ import java.io.File;
  *
  * @author ctsims
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class GenerateSnapshotDatabases extends BaseTestClass {
 
@@ -33,6 +35,7 @@ public class GenerateSnapshotDatabases extends BaseTestClass {
     public static String snapshotDbDirectory = "src/test/resources/snapshot/";
 
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("snapshot", "snapshot_test");
@@ -60,7 +63,7 @@ public class GenerateSnapshotDatabases extends BaseTestClass {
 
             //ensure the landing zone is clear
             if (new File(SQLiteProperties.getDataDir()).exists()) {
-                Assert.fail("Couldn't remove existing snapshot assets");
+                fail("Couldn't remove existing snapshot assets");
             }
             syncDb();
             doInstall("sandbox_reference/snapshot.json");

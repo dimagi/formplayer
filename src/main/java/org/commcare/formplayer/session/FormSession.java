@@ -611,7 +611,8 @@ public class FormSession {
                 answerIndex,
                 oneQuestionPerScreen,
                 currentIndex,
-                false);
+                false,
+                true);
 
         FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
         if (!inPromptMode || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {

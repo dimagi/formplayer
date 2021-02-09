@@ -1,25 +1,24 @@
 package org.commcare.formplayer.tests.sandbox;
 
-import junit.framework.TestCase;
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
-import org.javarosa.core.services.storage.IStorageIterator;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.UserDB;
+import org.javarosa.core.services.storage.IStorageIterator;
+import org.javarosa.core.util.externalizable.PrototypeFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
 import java.util.Vector;
 
-import static junit.framework.Assert.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SqlStorageIndexedTests {
 
@@ -37,7 +36,7 @@ public class SqlStorageIndexedTests {
 
     UserSqlSandbox sandbox;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         owner = "owner";
         otherOwner = "otherowner";
@@ -94,26 +93,26 @@ public class SqlStorageIndexedTests {
         Case readCase = caseStorage.read(1);
         assertEquals("a_case_name", readCase.getName());
         assertEquals(1, readCase.getID());
-        Assert.assertEquals(1, caseStorage.getNumRecords());
+        assertEquals(1, caseStorage.getNumRecords());
 
         int bID = caseStorage.add(b);
         readCase = caseStorage.read(bID);
         assertEquals(bID, readCase.getID());
         assertEquals("b_case_id", readCase.getCaseId());
-        Assert.assertEquals(2, caseStorage.getNumRecords());
+        assertEquals(2, caseStorage.getNumRecords());
 
         int id = caseStorage.add(c);
-        Assert.assertEquals(3, caseStorage.getNumRecords());
+        assertEquals(3, caseStorage.getNumRecords());
         readCase = caseStorage.getRecordForValue("case-id", "c_case_id");
         assertEquals(id, readCase.getID());
-        Assert.assertEquals(caseStorage.getIDsForValue("case-type", "case_type_ipsum").size(), 3);
+        assertEquals(caseStorage.getIDsForValue("case-type", "case_type_ipsum").size(), 3);
 
         caseStorage.remove(1);
 
-        Assert.assertEquals(2, caseStorage.getNumRecords());
+        assertEquals(2, caseStorage.getNumRecords());
         try {
             caseStorage.read(1);
-            org.junit.Assert.fail();
+            fail();
         } catch (NullPointerException e) {
             //good
         }
@@ -125,7 +124,7 @@ public class SqlStorageIndexedTests {
 
         caseStorage.removeAll();
 
-        Assert.assertEquals(0, caseStorage.getNumRecords());
+        assertEquals(0, caseStorage.getNumRecords());
     }
 
     @Test
@@ -148,7 +147,7 @@ public class SqlStorageIndexedTests {
             Vector ids = ledgerStorage.getIDsForValue("entity_id", "ledger_entity_id");
 
             assertEquals(1, ids.size());
-            assertTrue(String.format("ID Set: %s did not contain 1", ids.toString()), ids.contains(1));
+            assertTrue(ids.contains(1), String.format("ID Set: %s did not contain 1", ids.toString()));
 
             Ledger readLedger2 = ledgerStorage.getRecordForValue("entity_id", "ledger_entity_id_3");
             assertEquals(readLedger2.getID(), 3);
@@ -158,13 +157,13 @@ public class SqlStorageIndexedTests {
             assertEquals(count, 3);
 
             assertTrue(ledgerStorage.exists(1));
-            TestCase.assertFalse(ledgerStorage.exists(-123));
+            assertFalse(ledgerStorage.exists(-123));
 
             IStorageIterator<Ledger> mIterator = ledgerStorage.iterate();
 
-            Assert.assertEquals(1, mIterator.nextID());
-            Assert.assertEquals(2, mIterator.nextID());
-            Assert.assertEquals(3, mIterator.nextID());
+            assertEquals(1, mIterator.nextID());
+            assertEquals(2, mIterator.nextID());
+            assertEquals(3, mIterator.nextID());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,7 +171,7 @@ public class SqlStorageIndexedTests {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SQLException {
         if(sandbox != null) {
             sandbox.getConnection().close();

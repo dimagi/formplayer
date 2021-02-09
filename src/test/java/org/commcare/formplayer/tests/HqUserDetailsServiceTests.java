@@ -1,12 +1,12 @@
 package org.commcare.formplayer.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.util.Constants;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,10 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
@@ -78,7 +81,7 @@ public class HqUserDetailsServiceTests {
                 .andExpect(jsonPath("$.sessionId").value("invalid"))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND));
 
-        Assertions.assertThrows(SessionAuthUnavailableException.class, () ->{
+        assertThrows(SessionAuthUnavailableException.class, () -> {
             this.service.getUserDetails("domain", "invalid");
         });
     }
