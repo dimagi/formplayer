@@ -50,11 +50,10 @@
 trunk: master
 name: autostaging
 branches:
-  - sk/form-session-service+ce/tracing+gh/datadog-wrapper+gh/datadog-tag-refactor
+  - ce/tracing+autoLaunchRevamp
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - caseClaimHint #Shubham Feb 4
-  - sk/form-session-service # Simon Feb 4
   - caseSearchItemsetFix #Shubham Feb 5
   - autoLaunchRevamp #Shubham Feb 9
   - caseSearchCache #Shubham Feb 9

@@ -1,17 +1,16 @@
 package org.commcare.formplayer.aspects;
 
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.beans.SessionResponseBean;
 import io.sentry.event.Breadcrumb;
 import io.sentry.event.Event;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.commcare.formplayer.services.FormSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
@@ -55,7 +54,7 @@ public class MetricsAspect {
     private InstallService installService;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     private Map<String, Long> tolerableRequestThresholds;
 

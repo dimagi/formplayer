@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
+import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.util.Constants;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
@@ -24,13 +26,17 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-@RestClientTest(value=HqUserDetailsService.class)
+@RestClientTest(components = {HqUserDetailsService.class})
 @AutoConfigureWebClient(registerRestTemplate = true)
 @TestPropertySource(properties = {
         "commcarehq.host=",
         "commcarehq.formplayerAuthKey=secretkey"
 })
 public class HqUserDetailsServiceTests {
+
+    // mock this so we don't need to configure a DB
+    @MockBean
+    public FormSessionRepo formSessionRepo;
 
     @Autowired
     private ObjectMapper objectMapper;

@@ -11,10 +11,10 @@ import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.services.FormplayerLockRegistry.FormplayerReentrantLock;
@@ -50,7 +50,7 @@ public class LockAspect {
     private HttpServletRequest request;
 
     @Autowired
-    private FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     // needs to be accessible from WebAppContext.exceptionResolver
     public class LockError extends Exception {}
@@ -74,7 +74,7 @@ public class LockAspect {
         AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
 
 
-        username = getLockKeyForAuthenticatedBean(bean, formSessionRepo);
+        username = getLockKeyForAuthenticatedBean(bean, formSessionService);
 
         Lock lock;
 
@@ -102,13 +102,13 @@ public class LockAspect {
         }
     }
 
-    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionRepo formSessionRepo) {
+    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionService formSessionService) {
         String username;
         if (bean.getUsernameDetail() != null) {
             username = TableBuilder.scrubName(bean.getUsernameDetail());
         }
         else {
-            SerializableFormSession formSession = formSessionRepo.findOneWrapped(bean.getSessionId());
+            SerializableFormSession formSession = formSessionService.getSessionById(bean.getSessionId());
             String tempUser = formSession.getUsername();
             String restoreAs = formSession.getAsUser();
             String restoreAsCaseId = formSession.getRestoreAsCaseId();

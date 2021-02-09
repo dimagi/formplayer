@@ -5,6 +5,7 @@ import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.lang3.StringUtils;
+import org.commcare.formplayer.services.FormSessionService;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.FallbackSentryReporter;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.util.Constants;
@@ -45,7 +45,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     HqUserDetailsService userDetailsService;
 
     @Autowired
-    FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     @Autowired
     FallbackSentryReporter sentryReporter;
@@ -184,7 +184,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
         } else {
             // Otherwise, get username and domain from FormSession
             String sessionId = body.getString("session-id");
-            SerializableFormSession formSession = formSessionRepo.findOneWrapped(sessionId);
+            SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
             request.setDomain(formSession.getDomain());
             HqUserDetailsBean userDetailsBean = new HqUserDetailsBean(
                     new String[] {formSession.getDomain()},
