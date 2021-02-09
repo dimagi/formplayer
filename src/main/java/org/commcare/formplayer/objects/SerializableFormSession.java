@@ -12,8 +12,9 @@ import java.util.Map;
 @Entity
 @Table(name = "formplayer_sessions")
 public class SerializableFormSession implements Serializable{
-    @Id @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Id
+    @GeneratedValue( generator = "uuid" )
+    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
     @Column(name="instancexml")
