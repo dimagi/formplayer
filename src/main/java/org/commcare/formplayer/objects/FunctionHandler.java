@@ -9,6 +9,14 @@ public class FunctionHandler implements Serializable{
     private String name;
     private String value;
 
+    public FunctionHandler() {
+    }
+
+    public FunctionHandler(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
+
     public String getValue() {
         return value;
     }

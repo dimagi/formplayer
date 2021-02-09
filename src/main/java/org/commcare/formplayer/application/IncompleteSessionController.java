@@ -31,7 +31,7 @@ public class IncompleteSessionController extends AbstractBaseController{
     @UserRestore
     public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
+        SerializableFormSession session = formSessionService.getSessionById(incompleteSessionRequestBean.getSessionId());
         storageFactory.configure(session);
         return newFormResponseFactory.getResponse(session);
     }
@@ -42,7 +42,7 @@ public class IncompleteSessionController extends AbstractBaseController{
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
-        List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(scrubbedUsername);
+        List<SerializableFormSession> formplayerSessions = formSessionService.getSessionsForUser(scrubbedUsername);
 
         ArrayList<SerializableFormSession> sessions = new ArrayList<>();
         Set<String> formplayerSessionIds = new HashSet<>();
@@ -64,7 +64,7 @@ public class IncompleteSessionController extends AbstractBaseController{
     }
 
     protected void deleteSession(String id) {
-        formSessionRepo.deleteById(id);
+        formSessionService.deleteSessionById(id);
     }
 
 }

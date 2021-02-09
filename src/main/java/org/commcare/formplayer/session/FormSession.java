@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
 import java.util.Map;
-import java.util.UUID;
 
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
@@ -178,7 +177,6 @@ public class FormSession {
         this.domain = domain;
         this.postUrl = postUrl;
         this.locale = locale;
-        this.uuid = UUID.randomUUID().toString();
         this.sequenceId = 0;
         this.postUrl = postUrl;
         this.menuSessionId = menuSessionId;
@@ -386,6 +384,10 @@ public class FormSession {
         return uuid;
     }
 
+    public void setSessionId(String uuid) {
+        this.uuid = uuid;
+    }
+
     public String getXmlns(){
         Object metaData = getFormEntryModel().getForm().getMainInstance().getMetaData(FormInstance.META_XMLNS);
         if(metaData == null){
@@ -448,7 +450,6 @@ public class FormSession {
         serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setSequenceId(getSequenceId());
         serializableFormSession.setInitLang(getLocale());
-        serializableFormSession.setSessionData(getSessionData());
         serializableFormSession.setDomain(getDomain());
         serializableFormSession.setPostUrl(getPostUrl());
         serializableFormSession.setMenuSessionId(menuSessionId);
