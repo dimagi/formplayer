@@ -137,9 +137,11 @@ public class FormController extends AbstractBaseController{
                                                 @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+
         // add tags for future datadog/sentry requests
-        datadog.addTag(Constants.FORM_NAME_TAG, formEntrySession.getTitle());
+        datadog.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
         raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+
         FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
         updateSession(formEntrySession);
@@ -158,8 +160,9 @@ public class FormController extends AbstractBaseController{
                                          @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken, HttpServletRequest request) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+
         // add tags for future datadog/sentry requests
-        datadog.addTag(Constants.FORM_NAME_TAG, formEntrySession.getTitle());
+        datadog.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
         raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
         // package additional args to pass to category timing helper
