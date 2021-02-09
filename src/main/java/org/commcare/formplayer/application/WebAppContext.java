@@ -26,6 +26,7 @@ import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.services.SyncRequester;
 import org.commcare.formplayer.services.XFormService;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
@@ -239,6 +240,13 @@ public class WebAppContext implements WebMvcConfigurer {
                 .setData("environment", environment)
                 .record();
         return raven;
+    }
+
+    @Bean
+    @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public FormplayerDatadog datadog() {
+        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient());
+        return datadog;
     }
 
     @Bean
