@@ -82,7 +82,7 @@ dependencies {
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.3'
     implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '0.64.0'
     compile group: 'io.sentry', name: 'sentry', version: '1.7.28'
-    implementation group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.0.1'
+    implementation group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'
     implementation group: 'org.json', name: 'json', version: '20201115'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
     implementation group: 'org.springframework', name: 'spring-web', version: '5.2.0.RELEASE'
@@ -112,7 +112,7 @@ dependencies {
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path-assert', version: '2.5.0'
     testImplementation group: 'com.google.guava', name: 'guava', version: '30.1-jre'
 
-    testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert', version: '1.4.0'
+    testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0'
 
     developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'
 

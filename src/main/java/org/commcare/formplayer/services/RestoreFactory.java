@@ -198,7 +198,7 @@ public class RestoreFactory {
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
-        extras.put(CategoryTimingHelper.DOMAIN, domain);
+        extras.put(Constants.DOMAIN_TAG, domain);
 
         SimpleTimer completeRestoreTimer = new SimpleTimer();
         completeRestoreTimer.start();
@@ -264,7 +264,7 @@ public class RestoreFactory {
 
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
-        extras.put(CategoryTimingHelper.DOMAIN, domain);
+        extras.put(Constants.DOMAIN_TAG, domain);
 
         int maxRetries = 2;
         int counter = 0;
