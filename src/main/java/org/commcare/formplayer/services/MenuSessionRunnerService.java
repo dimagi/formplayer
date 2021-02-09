@@ -131,8 +131,8 @@ public class MenuSessionRunnerService {
                     menuSession.getSessionWrapper(),
                     menuSession.getId()
             );
-            datadog.addTag(Constants.MODULE_TAG, "command");
-            sentry.addTag(Constants.MODULE_TAG, "command");
+            datadog.addTag(Constants.MODULE_TAG, "menu");
+            sentry.addTag(Constants.MODULE_TAG, "menu");
         } else if (nextScreen instanceof EntityScreen) {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
@@ -148,8 +148,8 @@ public class MenuSessionRunnerService {
                     sortIndex,
                     storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
-            datadog.addTag(Constants.MODULE_TAG, "menu");
-            sentry.addTag(Constants.MODULE_TAG, "menu");
+            datadog.addTag(Constants.MODULE_TAG, "case_list");
+            sentry.addTag(Constants.MODULE_TAG, "case_list");
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
@@ -160,8 +160,8 @@ public class MenuSessionRunnerService {
                     (QueryScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
-            datadog.addTag(Constants.MODULE_TAG, "query");
-            sentry.addTag(Constants.MODULE_TAG, "query");
+            datadog.addTag(Constants.MODULE_TAG, "case_search");
+            sentry.addTag(Constants.MODULE_TAG, "case_search");
         } else {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
         }
