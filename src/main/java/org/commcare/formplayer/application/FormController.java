@@ -63,6 +63,7 @@ import org.commcare.formplayer.services.XFormService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.SimpleTimer;
 
@@ -88,6 +89,9 @@ public class FormController extends AbstractBaseController{
 
     @Autowired
     private RedisTemplate redisVolatilityDict;
+
+    @Autowired
+    private FormplayerDatadog datadog;
 
     @Autowired
     private FormplayerSentry raven;
@@ -133,8 +137,12 @@ public class FormController extends AbstractBaseController{
                                                 @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
-        raven.addTag(FormplayerSentry.FORM_NAME, serializableFormSession.getTitle());
-        FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
+
+        // add tags for future datadog/sentry requests
+        datadog.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+        raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+
+      FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
         updateSession(formEntrySession);
         responseBean.setTitle(serializableFormSession.getTitle());
@@ -152,14 +160,16 @@ public class FormController extends AbstractBaseController{
                                          @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken, HttpServletRequest request) throws Exception {
         SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
-        SubmitResponseBean submitResponseBean;
-        raven.addTag(FormplayerSentry.FORM_NAME, serializableFormSession.getTitle());
+
+        // add tags for future datadog/sentry requests
+        datadog.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+        raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
         // package additional args to pass to category timing helper
         Map<String, String> extras = new HashMap<String, String>();
-        extras.put(CategoryTimingHelper.DOMAIN, submitRequestBean.getDomain());
-        extras.put(CategoryTimingHelper.FORM_NAME, serializableFormSession.getTitle());
+        extras.put(Constants.DOMAIN_TAG, submitRequestBean.getDomain());
 
+        SubmitResponseBean submitResponseBean;
         SimpleTimer validationTimer = new SimpleTimer();
         validationTimer.start();
         submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
