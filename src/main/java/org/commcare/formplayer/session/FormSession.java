@@ -155,7 +155,6 @@ public class FormSession {
         session.setInPromptMode(inPromptMode);
         session.setFunctionContext(functionContext);
         session.setRestoreAsCaseId(caseId);
-        session.setFormXml(serializeFormDef(formDef));
 
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
@@ -172,6 +171,8 @@ public class FormSession {
             stepToNextIndex();
             session.setCurrentIndex(formController.getFormIndex().toString());
         }
+        // must be done after formDef is initialized
+        session.setFormXml(serializeFormDef(formDef));
     }
 
     /**
@@ -395,7 +396,6 @@ public class FormSession {
 
     public SerializableFormSession serialize() throws IOException {
         session.incrementSequence();
-        session.setFormXml(serializeFormDef(formDef));
         session.setInstanceXml(getInstanceXml());
         return session;
     }
