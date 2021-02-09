@@ -299,11 +299,6 @@ public class WebAppContext implements WebMvcConfigurer {
         return new FormplayerArchiveFileRoot();
     }
 
-//    @Bean
-//    public QueryRequester queryRequester() {
-//        return new QueryRequester();
-//    }
-
     @Bean
     public SyncRequester syncRequester() {
         return new SyncRequester();
