@@ -17,6 +17,7 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.engine.CommCareConfigEngine;
@@ -97,7 +98,7 @@ public class FormSession {
         restoreFactory.setPermitAggressiveSyncs(false);
 
         this.sandbox = restoreFactory.getSandbox();
-        this.formDef = deserializeFormDef(session.getFormXml());
+        this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
         loadInstanceXml(formDef, session.getInstanceXml());
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         setupJavaRosaObjects();
@@ -162,7 +163,7 @@ public class FormSession {
             session.setCurrentIndex(formController.getFormIndex().toString());
         }
         // must be done after formDef is initialized
-        session.setFormXml(serializeFormDef(formDef));
+        session.setFormXml(FormDefStringSerializer.serialize(formDef));
     }
 
     /**
@@ -368,23 +369,6 @@ public class FormSession {
         formDef.postProcessInstance();
         return getInstanceXml();
     }
-
-    private static String serializeFormDef(FormDef formDef) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream serializedStream = new DataOutputStream(baos);
-        formDef.writeExternal(serializedStream);
-        return Base64.encodeBase64String(baos.toByteArray());
-    }
-
-    private static FormDef deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
-        byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
-        DataInputStream inputStream =
-                new DataInputStream(new ByteArrayInputStream(sessionBytes));
-        FormDef formDef = new FormDef();
-        formDef.readExternal(inputStream, PrototypeManager.getDefault());
-        return formDef;
-    }
-
 
     public SerializableFormSession serialize() throws IOException {
         session.incrementSequence();
