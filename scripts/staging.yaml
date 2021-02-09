@@ -51,6 +51,7 @@ trunk: master
 name: autostaging
 branches:
   - sk/form-session-service+ce/tracing+gh/datadog-wrapper+gh/datadog-tag-refactor
+  - ce/tracing+autoLaunchRevamp
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - caseClaimHint #Shubham Feb 4
