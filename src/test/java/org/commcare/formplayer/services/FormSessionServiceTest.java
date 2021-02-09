@@ -3,11 +3,10 @@ package org.commcare.formplayer.services;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +20,21 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration
 public class FormSessionServiceTest {
 
@@ -46,7 +49,7 @@ public class FormSessionServiceTest {
 
     private String sessionId;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // the repo always returns the saved object so simulate that in the mock
         when(formSessionRepo.save(any())).thenAnswer(new Answer<SerializableFormSession>() {
@@ -59,20 +62,20 @@ public class FormSessionServiceTest {
         sessionId = UUID.randomUUID().toString();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         cacheManager.getCache("form_session").clear();
     }
 
-    @Test(expected = FormNotFoundException.class)
+    @Test
     public void testGetSessionById_NotFound() {
-        formSessionService.getSessionById(sessionId);
+        assertThrows(FormNotFoundException.class, () -> formSessionService.getSessionById(sessionId));
     }
 
     @Test
     public void testGetSessionById_cached() {
         // no cache to start
-        Assert.assertEquals(Optional.empty(), getCachedSession(sessionId));
+        assertEquals(Optional.empty(), getCachedSession(sessionId));
 
         // save a session
         SerializableFormSession session = new SerializableFormSession(sessionId);
@@ -80,38 +83,38 @@ public class FormSessionServiceTest {
         formSessionService.saveSession(session);
 
         // cache is populated on save
-        Assert.assertEquals(1, getCachedSession(sessionId).get().getSequenceId());
+        assertEquals(1, getCachedSession(sessionId).get().getSequenceId());
 
         // get session hits the cache (repo is mocked)
         session = formSessionService.getSessionById(sessionId);
-        Assert.assertEquals(1, session.getSequenceId());
+        assertEquals(1, session.getSequenceId());
 
         // update session
         session.setSequenceId(2);
         formSessionService.saveSession(session);
 
         // cache and find return updated session
-        Assert.assertEquals(2, getCachedSession(sessionId).get().getSequenceId());
-        Assert.assertEquals(2, formSessionService.getSessionById(sessionId).getSequenceId());
+        assertEquals(2, getCachedSession(sessionId).get().getSequenceId());
+        assertEquals(2, formSessionService.getSessionById(sessionId).getSequenceId());
     }
 
     @Test
     public void testDeleteSessionByIdEvictsFromCache() {
         SerializableFormSession session = new SerializableFormSession(sessionId);
         formSessionService.saveSession(session);
-        Assert.assertEquals(session, getCachedSession(sessionId).get());
+        assertEquals(session, getCachedSession(sessionId).get());
 
         formSessionService.deleteSessionById(session.getId());
-        Assert.assertFalse(getCachedSession(sessionId).isPresent());
+        assertFalse(getCachedSession(sessionId).isPresent());
     }
 
     @Test
     public void testPurgeClearsCache() {
         formSessionService.saveSession(new SerializableFormSession(sessionId));
-        Assert.assertTrue(getCachedSession(sessionId).isPresent());
+        assertTrue(getCachedSession(sessionId).isPresent());
 
         formSessionService.purge();
-        Assert.assertFalse(getCachedSession(sessionId).isPresent());
+        assertFalse(getCachedSession(sessionId).isPresent());
     }
 
     private Optional<SerializableFormSession> getCachedSession(String sessionId) {
