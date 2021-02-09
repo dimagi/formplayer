@@ -50,7 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-  - ce/no-json-validation # Cal Jan 18
   - sk/form-session-service+ce/tracing+gh/datadog-wrapper+gh/datadog-tag-refactor
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
