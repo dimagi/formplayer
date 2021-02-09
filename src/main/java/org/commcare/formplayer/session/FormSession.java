@@ -138,7 +138,6 @@ public class FormSession {
 
         this.formDef = formDef;
         session = new SerializableFormSession();
-        session.setId(UUID.randomUUID().toString());
         session.setUsername(TableBuilder.scrubName(username));
         session.setInitLang(locale);
         session.setDomain(domain);
@@ -350,10 +349,6 @@ public class FormSession {
 
     public String getSessionId(){
         return session.getId();
-    }
-
-    public void setSessionId(String uuid) {
-        this.uuid = uuid;
     }
 
     public String getXmlns(){

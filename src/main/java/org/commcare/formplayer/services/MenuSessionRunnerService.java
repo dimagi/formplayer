@@ -486,8 +486,7 @@ public class MenuSessionRunnerService {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
         menuSessionRepo.save(menuSession.serialize());
-        SerializableFormSession savedSession = formSessionService.saveSession(formEntrySession.serialize());
-        formEntrySession.setSessionId(savedSession.getId());
+        formSessionService.saveSession(formEntrySession.serialize());
         NewFormResponse response = new NewFormResponse(formEntrySession);
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
