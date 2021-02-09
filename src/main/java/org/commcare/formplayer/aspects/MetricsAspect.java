@@ -4,7 +4,6 @@ import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.beans.SessionResponseBean;
 import io.sentry.event.Breadcrumb;
 import io.sentry.event.Event;
-import com.timgroup.statsd.StatsDClient;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -38,7 +37,7 @@ public class MetricsAspect {
     private static final String TOLERABLE_REQUEST = "tolerable_request";
 
     @Autowired
-    protected StatsDClient datadogStatsDClient;
+    private FormplayerDatadog datadog;
 
     @Autowired
     private FormplayerSentry raven;
@@ -78,28 +77,11 @@ public class MetricsAspect {
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         String domain = "<unknown>";
-        String formName = null;
 
-        SimpleTimer fetchTimer = null;
         String requestPath = RequestUtils.getRequestEndpoint(request);
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
-            // only tag metrics with form_name if one of these requests
-            if (requestPath.equals("submit-all")) {
-                String sessionId = bean.getSessionId();
-                if (sessionId != null) {
-                    try {
-                        fetchTimer = new SimpleTimer();
-                        fetchTimer.start();
-                        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(bean.getSessionId());
-                        formName = serializableFormSession.getTitle();
-                        fetchTimer.end();
-                    } catch (FormNotFoundException e) {
-
-                    }
-                }
-            }
         }
 
         SimpleTimer timer = new SimpleTimer();
@@ -107,39 +89,19 @@ public class MetricsAspect {
         Object result = joinPoint.proceed();
         timer.end();
 
-        List<String> datadogArgs = new ArrayList<>();
-        datadogArgs.add("domain:" + domain);
-        datadogArgs.add("request:" + requestPath);
-        datadogArgs.add("duration:" + timer.getDurationBucket());
-        datadogArgs.add("unblocked_time:" + getUnblockedTimeBucket(timer));
-        datadogArgs.add("blocked_time:" + getBlockedTimeBucket());
-        datadogArgs.add("restore_blocked_time:" + getRestoreBlockedTimeBucket());
-        datadogArgs.add("install_blocked_time:" + getInstallBlockedTimeBucket());
-        datadogArgs.add("submit_blocked_time:" + getSubmitBlockedTimeBucket());
+        List<FormplayerDatadog.Tag> datadogArgs = new ArrayList<>();
+        datadogArgs.add(new FormplayerDatadog.Tag("domain", domain));
+        datadogArgs.add(new FormplayerDatadog.Tag("request", requestPath));
+        datadogArgs.add(new FormplayerDatadog.Tag("duration", timer.getDurationBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag("unblocked_time", getUnblockedTimeBucket(timer)));
+        datadogArgs.add(new FormplayerDatadog.Tag("blocked_time", getBlockedTimeBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag("restore_blocked_time", getRestoreBlockedTimeBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag("install_blocked_time", getInstallBlockedTimeBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag("submit_blocked_time", getSubmitBlockedTimeBucket()));
 
-        // optional datadog args
-        if (formName != null) {
-            datadogArgs.add("form_name:" + formName);
-        }
+        datadog.increment(Constants.DATADOG_REQUESTS, datadogArgs);
+        datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
 
-        datadogStatsDClient.increment(
-                Constants.DATADOG_REQUESTS,
-                datadogArgs.toArray(new String[datadogArgs.size()])
-        );
-
-        datadogStatsDClient.recordExecutionTime(
-                Constants.DATADOG_TIMINGS,
-                timer.durationInMs(),
-                datadogArgs.toArray(new String[datadogArgs.size()])
-        );
-
-        if (fetchTimer != null) {
-            datadogStatsDClient.recordExecutionTime(
-                    "fetch_form_session",
-                    fetchTimer.durationInMs(),
-                    datadogArgs.toArray(new String[datadogArgs.size()])
-            );
-        }
 
         long intolerableRequestThreshold = 60 * 1000;
 
