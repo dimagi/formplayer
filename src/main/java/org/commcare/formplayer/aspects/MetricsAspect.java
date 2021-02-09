@@ -88,15 +88,15 @@ public class MetricsAspect {
         Object result = joinPoint.proceed();
         timer.end();
 
-        List<String> datadogArgs = new ArrayList<>();
-        datadogArgs.add(Constants.DOMAIN_TAG + ":" + domain);
-        datadogArgs.add(Constants.REQUEST_TAG + ":" + requestPath);
-        datadogArgs.add(Constants.DURATION_TAG + ":" + timer.getDurationBucket());
-        datadogArgs.add(Constants.UNBLOCKED_TIME_TAG + ":" + getUnblockedTimeBucket(timer));
-        datadogArgs.add(Constants.BLOCKED_TIME_TAG + ":" + getBlockedTimeBucket());
-        datadogArgs.add(Constants.RESTORE_BLOCKED_TIME_TAG + ":" + getRestoreBlockedTimeBucket());
-        datadogArgs.add(Constants.INSTALL_BLOCKED_TIME_TAG + ":" + getInstallBlockedTimeBucket());
-        datadogArgs.add(Constants.SUBMIT_BLOCKED_TIME_TAG + ":" + getSubmitBlockedTimeBucket());
+        List<FormplayerDatadog.Tag> datadogArgs = new ArrayList<>();
+        datadogArgs.add(new FormplayerDatadog.Tag("domain", domain));
+        datadogArgs.add(new FormplayerDatadog.Tag("request", requestPath));
+        datadogArgs.add(new FormplayerDatadog.Tag("duration", timer.getDurationBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag("unblocked_time", getUnblockedTimeBucket(timer)));
+        datadogArgs.add(new FormplayerDatadog.Tag("blocked_time", getBlockedTimeBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag("restore_blocked_time", getRestoreBlockedTimeBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag("install_blocked_time", getInstallBlockedTimeBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag("submit_blocked_time", getSubmitBlockedTimeBucket()));
 
         datadog.increment(Constants.DATADOG_REQUESTS, datadogArgs);
         datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
