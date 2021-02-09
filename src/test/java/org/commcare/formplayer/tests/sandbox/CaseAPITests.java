@@ -3,12 +3,12 @@ package org.commcare.formplayer.tests.sandbox;
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
 import org.javarosa.core.util.externalizable.PrototypeFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.commcare.formplayer.sandbox.SqlHelper;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -20,7 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class CaseAPITests {
 
@@ -39,7 +39,7 @@ public class CaseAPITests {
     private final String databaseName = ("test.db");
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         owner = "owner";
@@ -105,7 +105,7 @@ public class CaseAPITests {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown(){
         try {
             if(preparedStatement != null) {

@@ -14,8 +14,8 @@ import org.commcare.formplayer.sqlitedb.UserDB;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.services.locale.LocalizerManager;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -152,7 +152,7 @@ public class BaseTestClass {
 
     final Map<String, SerializableFormSession> sessionMap = new HashMap<String, SerializableFormSession>();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Mockito.reset(menuSessionRepoMock);
         Mockito.reset(xFormServiceMock);
@@ -241,7 +241,7 @@ public class BaseTestClass {
                 .when(submitServiceMock).submitForm(anyString(), anyString());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SQLException {
         if(customConnector != null) {
             customConnector.closeConnection();

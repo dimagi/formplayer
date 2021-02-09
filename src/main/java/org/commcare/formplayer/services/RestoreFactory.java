@@ -34,6 +34,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -54,6 +57,7 @@ import org.commcare.formplayer.util.UserUtils;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -100,9 +104,6 @@ public class RestoreFactory {
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
     private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
-
-    @Autowired(required = false)
-    private FormplayerHttpRequest request;
 
     @Autowired
     private FormplayerSentry raven;
@@ -621,7 +622,12 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        if (!request.getRequestValidatedWithHMAC()) {
+        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
+        if (request == null) {
+            throw new RuntimeException(String.format(
+                    "HMAC Auth not available outside of a web request %s", requestPath
+            ));
+        } else if (!request.getRequestValidatedWithHMAC()) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
@@ -687,12 +693,12 @@ public class RestoreFactory {
                     unEncodedAsUsername += "@" + domain + ".commcarehq.org";
                 }
                 builderQueryParamEncoded(builder, "as", unEncodedAsUsername);
+            } else if (getHqAuth() == null && username != null) {
+                // HQ requesting to force a sync for a user
+                builderQueryParamEncoded(builder, "as", username);
             }
             if (skipFixtures) {
                 builderQueryParamEncoded(builder, "skip_fixtures", "true");
-            }
-            if (getHqAuth() == null && username != null) {
-                builderQueryParamEncoded(builder, "for", username);
             }
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(String.format("Restore Error: " + e.getMessage()));

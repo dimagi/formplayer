@@ -4,14 +4,13 @@ import org.commcare.formplayer.application.RequestResponseLoggingFilter;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.apache.commons.logging.Log;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.commcare.formplayer.util.FormplayerHttpRequest;
 import org.commcare.formplayer.utils.TestContext;
 
@@ -23,13 +22,13 @@ import java.io.IOException;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class RequestResponseLoggingFilterTest {
 
     Log log = null;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         this.log = mock(Log.class);
     }
