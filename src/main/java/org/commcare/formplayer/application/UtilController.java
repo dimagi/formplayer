@@ -16,7 +16,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.sqlitedb.UserDB;
@@ -41,9 +40,6 @@ public class UtilController extends AbstractBaseController {
 
     @Autowired
     FormplayerLockRegistry userLockRegistry;
-
-    @Autowired
-    private FormSessionRepo formSessionRepo;
 
     private final Log log = LogFactory.getLog(UtilController.class);
 
@@ -101,7 +97,7 @@ public class UtilController extends AbstractBaseController {
 
     @RequestMapping(value = Constants.URL_CHECK_LOCKS, method = RequestMethod.POST)
     public LockReportBean checkLocks(@RequestBody AuthenticatedRequestBean requestBean) throws Exception {
-        String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionRepo);
+        String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionService);
 
 
         Integer secondsLocked = userLockRegistry.getTimeLocked(key);
@@ -114,7 +110,7 @@ public class UtilController extends AbstractBaseController {
 
     @RequestMapping(value = Constants.URL_BREAK_LOCKS, method = RequestMethod.POST)
     public NotificationMessage breakLocks(@RequestBody AuthenticatedRequestBean requestBean) throws Exception {
-        String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionRepo);
+        String key = LockAspect.getLockKeyForAuthenticatedBean(requestBean, formSessionService);
 
         String message;
 

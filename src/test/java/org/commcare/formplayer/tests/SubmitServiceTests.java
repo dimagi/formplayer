@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.application.RestTemplateConfig;
+import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -25,11 +27,12 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
 
-@RestClientTest({SubmitService.class, RestTemplateConfig.class})
-/**
- * Regressions for the submission service processing
- */
+@RestClientTest(components = {SubmitService.class, RestTemplateConfig.class})
 public class SubmitServiceTests {
+
+    // mock this so we don't need to configure a DB
+    @MockBean
+    FormSessionRepo formSessionRepo;
 
     @MockBean
     RestoreFactory restoreFactory;

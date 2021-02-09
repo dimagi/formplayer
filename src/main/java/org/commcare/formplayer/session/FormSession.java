@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
 import java.util.Map;
-import java.util.UUID;
 
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
@@ -351,6 +350,10 @@ public class FormSession {
 
     public String getSessionId(){
         return session.getId();
+    }
+
+    public void setSessionId(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getXmlns(){

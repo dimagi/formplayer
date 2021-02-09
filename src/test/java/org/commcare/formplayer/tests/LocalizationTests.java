@@ -61,13 +61,13 @@ public class LocalizationTests extends BaseTestClass {
 
         assert newFormResponse.getTree()[1].getCaption().equals("English rules");
 
-        FormEntryResponseBean formResponse = this.changeLanguage("es");
+        FormEntryResponseBean formResponse = this.changeLanguage("es", newFormResponse.getSessionId());
 
         assert formResponse.getTree()[0].getCaption().equals("I'm Spanish");
 
         assert formResponse.getTree()[1].getCaption().equals("No Spanish rules");
 
-        formResponse = this.answerQuestionGetResult(null, "0", "sessionid");
+        formResponse = this.answerQuestionGetResult(null, "0", newFormResponse.getSessionId());
 
         assert formResponse.getTree()[0].getCaption().equals("I'm Spanish");
 

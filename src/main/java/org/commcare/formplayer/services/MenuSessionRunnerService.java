@@ -8,6 +8,7 @@ import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
@@ -26,7 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
@@ -69,7 +69,7 @@ public class MenuSessionRunnerService {
     private SyncRequester syncRequester;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    protected FormSessionService formSessionService;
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
@@ -486,12 +486,11 @@ public class MenuSessionRunnerService {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
         menuSessionRepo.save(menuSession.serialize());
-        formSessionRepo.save(formEntrySession.serialize());
+        SerializableFormSession savedSession = formSessionService.saveSession(formEntrySession.serialize());
+        formEntrySession.setSessionId(savedSession.getId());
         NewFormResponse response = new NewFormResponse(formEntrySession);
-
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
-
 
         return response;
     }

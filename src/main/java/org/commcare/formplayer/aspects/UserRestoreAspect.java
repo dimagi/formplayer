@@ -10,10 +10,10 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.commcare.formplayer.services.FormSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.RestoreFactory;
 
@@ -32,7 +32,7 @@ public class UserRestoreAspect {
     protected RestoreFactory restoreFactory;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     @Autowired
     CategoryTimingHelper categoryTimingHelper;
@@ -75,7 +75,7 @@ public class UserRestoreAspect {
             restoreFactory.configure(requestBean, auth, requestBean.getUseLiveQuery());
         } else {
             // SMS users don't submit username and domain with each request, so obtain from session
-            SerializableFormSession formSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+            SerializableFormSession formSession = formSessionService.getSessionById(requestBean.getSessionId());
 
             if (formSession.getRestoreAsCaseId() != null) {
                 restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId(), auth);

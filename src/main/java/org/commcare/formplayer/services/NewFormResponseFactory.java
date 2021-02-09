@@ -9,7 +9,6 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
@@ -31,7 +30,7 @@ public class NewFormResponseFactory {
     private RestoreFactory restoreFactory;
 
     @Autowired
-    private FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     @Autowired
     private FormSendCalloutHandler formSendCalloutHandler;
@@ -85,7 +84,8 @@ public class NewFormResponseFactory {
         );
 
 
-        formSessionRepo.save(formSession.serialize());
+        SerializableFormSession savedSession = formSessionService.saveSession(formSession.serialize());
+        formSession.setSessionId(savedSession.getId());
         NewFormResponse response = new NewFormResponse(formSession);
 
         if (bean.getNavMode() != null && bean.getNavMode().equals(Constants.NAV_MODE_PROMPT)) {
