@@ -31,8 +31,6 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.stereotype.Component;
 import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
@@ -77,7 +75,9 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.session = session;
-        resolveInstallReference(session.getInstallReference(), session.getAppId(), host);
+        session.setInstallReference(
+                resolveInstallReference(session.getInstallReference(), session.getAppId(), host, session.getDomain())
+        );
         this.engine = installService.configureApplication(session.getInstallReference(), session.getPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
@@ -90,20 +90,20 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String installReference, String locale,
                        InstallService installService, RestoreFactory restoreFactory, String host,
                        boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
+        String resolveInstallReference = resolveInstallReference(installReference, appId, host, domain);
         this.session = new SerializableMenuSession(
                 UUID.randomUUID().toString(),
                 TableBuilder.scrubName(username),
                 domain,
                 appId,
-                installReference,
+                resolveInstallReference,
                 locale,
                 null,
                 oneQuestionPerScreen,
                 asUser,
                 preview
         );
-        resolveInstallReference(installReference, appId, host);
-        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(installReference, preview);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(resolveInstallReference, preview);
         this.engine = install.first;
         if (install.second && !preview && !restoreFactory.getHasRestored()) {
             this.sandbox = restoreFactory.performTimedSync();
@@ -151,14 +151,14 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
     }
 
-    private void resolveInstallReference(String installReference, String appId, String host){
+    private static String resolveInstallReference(String installReference, String appId, String host, String domain){
         if (installReference == null || installReference.equals("")) {
             if(appId == null || "".equals(appId)){
                 throw new RuntimeException("Can't install - either installReference or app_id must be non-null");
             }
-            session.setInstallReference(host + getReferenceToLatest(appId));
+            return host + getReferenceToLatest(appId, domain);
         } else {
-            session.setInstallReference(installReference);
+            return installReference;
         }
     }
 
@@ -167,10 +167,10 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param appId An id of the application of the CCZ needed
      * @return      An HQ URI to download the CCZ
      */
-    private String getReferenceToLatest(String appId) {
+    private static String getReferenceToLatest(String appId, String domain) {
         URIBuilder builder;
         try {
-            builder = new URIBuilder("/a/" + session.getDomain() + "/apps/api/download_ccz/");
+            builder = new URIBuilder("/a/" + domain + "/apps/api/download_ccz/");
         } catch (URISyntaxException e) {
             e.printStackTrace();
             throw new RuntimeException("Unable to instantiate URIBuilder");
