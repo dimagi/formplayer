@@ -86,7 +86,7 @@ dependencies {
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
     implementation group: 'org.springframework', name: 'spring-web', version: '5.2.0.RELEASE'
     implementation group: 'org.springframework', name: 'spring-jdbc', version: '5.2.0.RELEASE'
-    implementation group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.2.0.RELEASE'
+    implementation group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.4.3'
     implementation group: 'org.springframework.data', name: 'spring-data-redis', version: '2.2.0.RELEASE'
     implementation group: 'org.springframework.data', name: 'spring-data-commons', version: '2.2.0.RELEASE'
     implementation group: 'org.springframework.integration', name: 'spring-integration-redis', version: '5.2.0.RELEASE'
