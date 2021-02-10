@@ -247,6 +247,8 @@ public class BaseTestClass {
         }
         restoreFactoryMock.getSQLiteDB().closeConnection();
         storageFactoryMock.getSQLiteDB().closeConnection();
+        storageFactoryMock.getPostgresDB().deleteDatabase();
+        storageFactoryMock.getPostgresDB().closeConnection();
         if (removeDatabaseFoldersAfterTests()) {
             SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
         }
