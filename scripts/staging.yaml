@@ -50,12 +50,12 @@
 trunk: master
 name: autostaging
 branches:
-  - ce/tracing+autoLaunchRevamp
+#   - ce/tracing+autoLaunchRevamp
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - caseClaimHint #Shubham Feb 4
   - caseSearchItemsetFix #Shubham Feb 5
-  - autoLaunchRevamp #Shubham Feb 9
+#   - autoLaunchRevamp #Shubham Feb 9
   - caseSearchCache #Shubham Feb 9
   - gh/add-case-list-name # Graham Feb 10
 submodules:
