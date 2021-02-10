@@ -30,7 +30,7 @@ public class SerializableFormSession implements Serializable{
 
     @Column(name="sequenceid")
     @Convert(converter = IntStringConverter.class)
-    private int sequenceId;
+    private Integer sequenceId;
 
     @Column(name="sessiondata")
     @Convert(converter = ByteArrayConverter.class)
@@ -231,5 +231,13 @@ public class SerializableFormSession implements Serializable{
 
     public String getRestoreAsCaseId() {
         return restoreAsCaseId;
+    }
+
+    public void incrementSequence() {
+        if (sequenceId == null) {
+            sequenceId = 0;
+        } else {
+            sequenceId += 1;
+        }
     }
 }

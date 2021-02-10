@@ -485,13 +485,12 @@ public class MenuSessionRunnerService {
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
-        menuSessionRepo.save(new SerializableMenuSession(menuSession));
-        SerializableFormSession savedSession = formSessionService.saveSession(formEntrySession.serialize());
-        formEntrySession.setSessionId(savedSession.getId());
-
+        menuSessionRepo.save(menuSession.serialize());
+        formSessionService.saveSession(formEntrySession.serialize());
         NewFormResponse response = new NewFormResponse(formEntrySession);
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
+
         return response;
     }
 

@@ -84,8 +84,7 @@ public class NewFormResponseFactory {
         );
 
 
-        SerializableFormSession savedSession = formSessionService.saveSession(formSession.serialize());
-        formSession.setSessionId(savedSession.getId());
+        formSessionService.saveSession(formSession.serialize());
         NewFormResponse response = new NewFormResponse(formSession);
 
         if (bean.getNavMode() != null && bean.getNavMode().equals(Constants.NAV_MODE_PROMPT)) {
