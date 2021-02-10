@@ -21,6 +21,9 @@ public class SerializableFormSession implements Serializable{
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
+    @Version
+    private int version;
+
     @Column(name="instancexml")
     private String instanceXml;
 
@@ -254,8 +257,7 @@ public class SerializableFormSession implements Serializable{
         return dateCreated;
     }
 
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
+    public int getVersion() {
+        return version;
     }
-
 }

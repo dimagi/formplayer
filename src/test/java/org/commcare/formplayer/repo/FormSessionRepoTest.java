@@ -57,8 +57,10 @@ public class FormSessionRepoTest {
         assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "version").isEqualTo(session);
         Instant dateCreated = loaded.getDateCreated();
         assertThat(dateCreated).isNotNull();
+        assertThat(loaded.getVersion()).isEqualTo(1);
 
         formSessionRepo.saveAndFlush(loaded);
         assertThat(loaded.getDateCreated()).isEqualTo(dateCreated);
+        assertThat(loaded.getVersion()).isEqualTo(2);
     }
 }

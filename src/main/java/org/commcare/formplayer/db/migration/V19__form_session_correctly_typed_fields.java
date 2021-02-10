@@ -9,6 +9,7 @@ public class V19__form_session_correctly_typed_fields extends BaseFormplayerMigr
         return Arrays.asList(
                 "ALTER TABLE formplayer_sessions ADD COLUMN datecreated timestamp with time zone",
                 "CREATE INDEX ON formplayer_sessions (datecreated)",
+                "ALTER TABLE formplayer_sessions ADD COLUMN version integer"
         );
     }
 }
