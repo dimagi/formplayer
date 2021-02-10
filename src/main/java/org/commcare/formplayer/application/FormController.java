@@ -298,6 +298,7 @@ public class FormController extends AbstractBaseController{
         formSessionService.deleteSessionById(id);
     }
 
+    @Trace
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
         MenuSession menuSession = menuSessionFactory.buildSession(serializedSession);

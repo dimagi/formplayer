@@ -367,6 +367,7 @@ public class MenuSessionRunnerService {
         return notificationMessage;
     }
 
+    @Trace
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
             BaseResponseBean response = getNextMenu(menuSession);

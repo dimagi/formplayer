@@ -42,6 +42,7 @@ public class MenuSessionFactory {
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
     */
+    @Trace
     public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
