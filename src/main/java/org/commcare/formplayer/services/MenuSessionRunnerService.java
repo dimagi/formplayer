@@ -37,6 +37,7 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.FormplayerSentry;
+import org.commcare.formplayer.util.SessionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -150,6 +151,8 @@ public class MenuSessionRunnerService {
             );
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             sentry.addTag(Constants.MODULE_TAG, "case_list");
+            String caseListName = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
+            datadog.addTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
