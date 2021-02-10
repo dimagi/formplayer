@@ -8,6 +8,8 @@ These files will often be hosted by a [CommCareHQ](https://www.github.com/dimagi
 Formplayer relies on the [CommCare](https://www.github.com/dimagi/commcare-core) libraries (included as subrepositories).
 Formplayer is built via [Gradle](https://spring.io/guides/gs/gradle/) (wrapper files included).
 
+See also the [dev guide](DEV_GUIDE.md) for more resources to get started.
+
 ### Dependencies
 + Java (OpenJDK 8)
 + Formplayer caches session instances via Redis
