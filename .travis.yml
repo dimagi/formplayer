@@ -13,6 +13,7 @@ before_script:
   - cp .travis/travis.gradle.properties gradle.properties
   - psql -c 'create database commcarehq;' -U postgres
   - psql -c 'create database formplayer;' -U postgres
+  - psql -c "create user commcarehq with password 'commcarehq'" -U postgres
   - curl -X PUT localhost:5984/commcarehq
   - curl -X PUT localhost:5984/_config/admins/commcarehq -d '"commcarehq"'
 script:
