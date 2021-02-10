@@ -1,49 +1,9 @@
 package org.commcare.formplayer.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.UserSandbox;
-import org.commcare.formplayer.repo.SerializableMenuSession;
-import org.commcare.modern.database.TableBuilder;
-import org.commcare.util.CommCarePlatform;
-import org.commcare.util.engine.CommCareConfigEngine;
-import org.javarosa.core.model.FormDef;
-import org.javarosa.core.model.FormIndex;
-import org.javarosa.core.model.GroupDef;
-import org.javarosa.core.model.IFormElement;
-import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.javarosa.core.model.instance.FormInstance;
-import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.model.utils.DateUtils;
-import org.javarosa.core.services.PrototypeManager;
-import org.javarosa.core.services.storage.StorageManager;
-import org.javarosa.core.util.UnregisteredLocaleException;
-import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.engine.FunctionExtensions;
-import org.javarosa.form.api.FormController;
-import org.javarosa.form.api.FormEntryController;
-import org.javarosa.form.api.FormEntryModel;
-import org.javarosa.model.xform.XFormSerializingVisitor;
-import org.javarosa.xform.parse.XFormParser;
-import org.javarosa.xform.schema.FormInstanceLoader;
-import org.javarosa.xpath.XPathException;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.stereotype.Component;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Date;
-import java.util.Map;
-
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
@@ -54,6 +14,33 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
+import org.commcare.modern.database.TableBuilder;
+import org.commcare.util.CommCarePlatform;
+import org.commcare.util.engine.CommCareConfigEngine;
+import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.FormIndex;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.model.utils.DateUtils;
+import org.javarosa.core.services.storage.StorageManager;
+import org.javarosa.core.util.UnregisteredLocaleException;
+import org.javarosa.engine.FunctionExtensions;
+import org.javarosa.form.api.FormController;
+import org.javarosa.form.api.FormEntryController;
+import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.model.xform.XFormSerializingVisitor;
+import org.javarosa.xform.parse.XFormParser;
+import org.javarosa.xpath.XPathException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Date;
+import java.util.Map;
+
 
 /**
  *
@@ -104,9 +91,8 @@ public class FormSession {
         restoreFactory.setPermitAggressiveSyncs(false);
 
         this.sandbox = restoreFactory.getSandbox();
-        this.formDef = new FormDef();
-        deserializeFormDef(session.getFormXml());
-        this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
+        this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
+        loadInstanceXml(formDef, session.getInstanceXml());
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         setupJavaRosaObjects();
         if (session.getOneQuestionPerScreen() || session.getInPromptMode()) {
@@ -170,7 +156,7 @@ public class FormSession {
             session.setCurrentIndex(formController.getFormIndex().toString());
         }
         // must be done after formDef is initialized
-        session.setFormXml(serializeFormDef(formDef));
+        session.setFormXml(FormDefStringSerializer.serialize(formDef));
     }
 
     /**
@@ -376,21 +362,6 @@ public class FormSession {
         formDef.postProcessInstance();
         return getInstanceXml();
     }
-
-    private static String serializeFormDef(FormDef formDef) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream serializedStream = new DataOutputStream(baos);
-        formDef.writeExternal(serializedStream);
-        return Base64.encodeBase64String(baos.toByteArray());
-    }
-
-    private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
-        byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
-        DataInputStream inputStream =
-                new DataInputStream(new ByteArrayInputStream(sessionBytes));
-        formDef.readExternal(inputStream, PrototypeManager.getDefault());
-    }
-
 
     public SerializableFormSession serialize() throws IOException {
         session.incrementSequence();
