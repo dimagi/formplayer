@@ -12,8 +12,9 @@ import java.util.Map;
 @Entity
 @Table(name = "formplayer_sessions")
 public class SerializableFormSession implements Serializable{
-    @Id @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Id
+    @GeneratedValue( generator = "uuid" )
+    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
     @Column(name="instancexml")
@@ -29,7 +30,7 @@ public class SerializableFormSession implements Serializable{
 
     @Column(name="sequenceid")
     @Convert(converter = IntStringConverter.class)
-    private int sequenceId;
+    private Integer sequenceId;
 
     @Column(name="sessiondata")
     @Convert(converter = ByteArrayConverter.class)
@@ -230,5 +231,13 @@ public class SerializableFormSession implements Serializable{
 
     public String getRestoreAsCaseId() {
         return restoreAsCaseId;
+    }
+
+    public void incrementSequence() {
+        if (sequenceId == null) {
+            sequenceId = 0;
+        } else {
+            sequenceId += 1;
+        }
     }
 }

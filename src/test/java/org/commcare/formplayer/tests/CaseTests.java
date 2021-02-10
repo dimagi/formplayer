@@ -17,6 +17,8 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Iterator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Created by willpride on 1/14/16.
  *
@@ -36,7 +38,7 @@ public class CaseTests extends BaseTestClass {
 
         SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
 
-        assert(caseStorage.getNumRecords() == 15);
+        assertEquals(15, caseStorage.getNumRecords());
         sandbox.getConnection().close();
 
         String sessionId = newSessionResponse.getSessionId();
@@ -46,11 +48,11 @@ public class CaseTests extends BaseTestClass {
 
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
 
-        assert submitResponseBean.getStatus().equals("success");
+        assertEquals("success", submitResponseBean.getStatus());
 
         // Test that we now have an additional case
 
-        assert(caseStorage.getNumRecords()== 16);
+        assertEquals(16, caseStorage.getNumRecords());
 
         // Try updating case
 
@@ -59,13 +61,13 @@ public class CaseTests extends BaseTestClass {
 
         FormEntryResponseBean responseBean = answerQuestionGetResult("0", "Test Response", sessionId);
         QuestionBean firstResponseBean = responseBean.getTree()[0];
-        assert firstResponseBean.getAnswer().equals("Test Response");
+        assertEquals("Test Response", firstResponseBean.getAnswer());
 
         responseBean = answerQuestionGetResult("1", "1", sessionId);
         firstResponseBean = responseBean.getTree()[0];
         QuestionBean secondResponseBean = responseBean.getTree()[1];
-        assert secondResponseBean.getAnswer().equals(1);
-        assert firstResponseBean.getAnswer().equals("Test Response");
+        assertEquals(1, secondResponseBean.getAnswer());
+        assertEquals("Test Response", firstResponseBean.getAnswer());
 
         answerQuestionGetResult("2", "[1, 2, 3]", sessionId);
         FormEntryResponseBean caseResult = answerQuestionGetResult("5", "2016-02-09", sessionId);
@@ -77,21 +79,21 @@ public class CaseTests extends BaseTestClass {
 
         UserSqlSandbox sandbox = getRestoreSandbox();
         SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
-        assert(caseStorage.getNumRecords() == 15);
+        assertEquals(15, caseStorage.getNumRecords());
 
         String sessionId = newSessionResponse.getSessionId();
         answerQuestionGetResult("0", "1", sessionId);
 
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_not_prevalidated.json", sessionId);
-        assert submitResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, submitResponseBean.getStatus());
 
         submitResponseBean = submitForm("requests/submit/submit_request_bad.json", sessionId);
-        assert submitResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
-        assert submitResponseBean.getErrors().keySet().size() == 1;
-        assert submitResponseBean.getErrors().get("0").getType().equals("illegal-argument");
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, submitResponseBean.getStatus());
+        assertEquals(1, submitResponseBean.getErrors().keySet().size());
+        assertEquals("illegal-argument", submitResponseBean.getErrors().get("0").getType());
 
         submitResponseBean = submitForm("requests/submit/submit_request_close_case.json", sessionId);
-        assert submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
+        assertEquals(Constants.SYNC_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
 
         // test that we have successfully closed this case (will still be in storage)
         caseStorage.removeAll(new CasePurgeFilter(caseStorage, null));
@@ -103,7 +105,7 @@ public class CaseTests extends BaseTestClass {
                 openCount ++;
             }
         }
-        assert openCount == 14;
+        assertEquals(14, openCount);
     }
 
     @Test
@@ -114,6 +116,6 @@ public class CaseTests extends BaseTestClass {
         EvaluateXPathResponseBean evaluateXPathResponseBean =
                 evaluateXPath(newSessionResponse2.getSessionId(), "instance('casedb')/casedb/case/@case_id");
 
-        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXPathResponseBean.getStatus());
     }
 }

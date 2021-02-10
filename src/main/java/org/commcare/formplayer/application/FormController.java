@@ -66,7 +66,6 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.SimpleTimer;
-import org.springframework.web.client.HttpClientErrorException;
 
 import datadog.trace.api.Trace;
 
@@ -126,9 +125,9 @@ public class FormController extends AbstractBaseController{
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(changeLocaleBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         formEntrySession.changeLocale(changeLocaleBean.getLocale());
-        updateSession(formEntrySession, serializableFormSession);
+        updateSession(formEntrySession);
         FormEntryResponseBean responseBean = formEntrySession.getCurrentJSON();
-        responseBean.setTitle(formEntrySession.getTitle());
+        responseBean.setTitle(serializableFormSession.getTitle());
         return responseBean;
     }
 
@@ -140,16 +139,17 @@ public class FormController extends AbstractBaseController{
                                                 @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(answerQuestionBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+
         // add tags for future datadog/sentry requests
-        datadog.addTag(Constants.FORM_NAME_TAG, formEntrySession.getTitle());
-        raven.addTag(Constants.FORM_NAME_TAG, formEntrySession.getTitle());
+        datadog.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+        raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
         FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
-        updateSession(formEntrySession, serializableFormSession);
-        responseBean.setTitle(formEntrySession.getTitle());
+        updateSession(formEntrySession);
+        responseBean.setTitle(serializableFormSession.getTitle());
         responseBean.setSequenceId(formEntrySession.getSequenceId());
-        responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
         return responseBean;
     }
 
@@ -162,9 +162,10 @@ public class FormController extends AbstractBaseController{
                                          @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken, HttpServletRequest request) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+
         // add tags for future datadog/sentry requests
-        datadog.addTag(Constants.FORM_NAME_TAG, formEntrySession.getTitle());
-        raven.addTag(Constants.FORM_NAME_TAG, formEntrySession.getTitle());
+        datadog.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+        raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
         // package additional args to pass to category timing helper
         Map<String, String> extras = new HashMap<String, String>();
@@ -356,10 +357,10 @@ public class FormController extends AbstractBaseController{
         JSONObject response = JsonActionUtils.descendRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 newRepeatRequestBean.getRepeatIndex());
-        updateSession(formEntrySession, serializableFormSession);
+        updateSession(formEntrySession);
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
-        responseBean.setTitle(formEntrySession.getTitle());
-        responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        responseBean.setTitle(serializableFormSession.getTitle());
+        responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
         log.info("New response: " + responseBean);
         return responseBean;
     }
@@ -378,10 +379,10 @@ public class FormController extends AbstractBaseController{
         JSONObject response = JsonActionUtils.deleteRepeatToJson(formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 deleteRepeatRequestBean.getRepeatIndex(), deleteRepeatRequestBean.getFormIndex());
-        updateSession(formEntrySession, serializableFormSession);
+        updateSession(formEntrySession);
         FormEntryResponseBean responseBean = mapper.readValue(response.toString(), FormEntryResponseBean.class);
-        responseBean.setTitle(formEntrySession.getTitle());
-        responseBean.setInstanceXml(new InstanceXmlBean(formEntrySession));
+        responseBean.setTitle(serializableFormSession.getTitle());
+        responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
         return responseBean;
     }
 
@@ -399,7 +400,7 @@ public class FormController extends AbstractBaseController{
                 storageFactory);
         formSession.stepToNextIndex();
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
-        updateSession(formSession, serializableFormSession);
+        updateSession(formSession);
         return responseBean;
     }
 
@@ -416,7 +417,7 @@ public class FormController extends AbstractBaseController{
                 formSendCalloutHandler,
                 storageFactory);
         FormEntryNavigationResponseBean responseBean = formSession.getNextFormNavigation();
-        updateSession(formSession, serializableFormSession);
+        updateSession(formSession);
         return responseBean;
     }
 
@@ -434,7 +435,7 @@ public class FormController extends AbstractBaseController{
                 storageFactory);
         formSession.stepToPreviousIndex();
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
-        updateSession(formSession, serializableFormSession);
+        updateSession(formSession);
         return responseBean;
     }
 
@@ -467,17 +468,12 @@ public class FormController extends AbstractBaseController{
                 formSendCalloutHandler,
                 storageFactory);
         FormEntryNavigationResponseBean responseBean = formSession.getFormNavigation();
-        updateSession(formSession, serializableFormSession);
+        updateSession(formSession);
         return responseBean;
     }
 
 
-    private void updateSession(FormSession formEntrySession, SerializableFormSession serialSession) throws IOException {
-        formEntrySession.setSequenceId(formEntrySession.getSequenceId() + 1);
-        serialSession.setInstanceXml(formEntrySession.getInstanceXml());
-        serialSession.setSequenceId(formEntrySession.getSequenceId());
-        serialSession.setCurrentIndex(formEntrySession.getCurrentIndex());
-        serialSession.setInitLang(formEntrySession.getLocale());
-        formSessionService.saveSession(serialSession);
+    private void updateSession(FormSession formEntrySession) throws IOException {
+        formSessionService.saveSession(formEntrySession.serialize());
     }
 }

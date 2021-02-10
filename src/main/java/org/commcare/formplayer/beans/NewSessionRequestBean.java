@@ -8,7 +8,7 @@ import org.commcare.formplayer.objects.SessionData;
 import java.util.Map;
 
 /**
- * Request to start a new form entry sessios
+ * Request to start a new form entry session
  * Optionally contains instanceContent for form editing or incomplete forms
  */
 @JsonIgnoreProperties
