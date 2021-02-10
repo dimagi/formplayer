@@ -33,7 +33,10 @@ import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.FormplayerSentry;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -86,6 +89,12 @@ public class MenuSessionRunnerService {
     @Autowired
     private RedisTemplate redisVolatilityDict;
 
+    @Autowired
+    private FormplayerDatadog datadog;
+
+    @Autowired
+    private FormplayerSentry sentry;
+
     @Resource(name = "redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
 
@@ -122,6 +131,8 @@ public class MenuSessionRunnerService {
                     menuSession.getSessionWrapper(),
                     menuSession.getId()
             );
+            datadog.addTag(Constants.MODULE_TAG, "menu");
+            sentry.addTag(Constants.MODULE_TAG, "menu");
         } else if (nextScreen instanceof EntityScreen) {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
@@ -137,6 +148,8 @@ public class MenuSessionRunnerService {
                     sortIndex,
                     storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
+            datadog.addTag(Constants.MODULE_TAG, "case_list");
+            sentry.addTag(Constants.MODULE_TAG, "case_list");
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
@@ -147,6 +160,8 @@ public class MenuSessionRunnerService {
                     (QueryScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
+            datadog.addTag(Constants.MODULE_TAG, "case_search");
+            sentry.addTag(Constants.MODULE_TAG, "case_search");
         } else {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
         }
@@ -467,6 +482,8 @@ public class MenuSessionRunnerService {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            datadog.addTag(Constants.MODULE_TAG, "form");
+            sentry.addTag(Constants.MODULE_TAG, "form");
             return formResponseBean;
         } else {
             return null;
