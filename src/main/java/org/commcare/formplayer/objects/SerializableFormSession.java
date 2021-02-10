@@ -1,9 +1,12 @@
 package org.commcare.formplayer.objects;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Map;
 
 /**
@@ -11,6 +14,7 @@ import java.util.Map;
  */
 @Entity
 @Table(name = "formplayer_sessions")
+@EntityListeners(AuditingEntityListener.class)
 public class SerializableFormSession implements Serializable{
     @Id
     @GeneratedValue( generator = "uuid" )
@@ -45,8 +49,13 @@ public class SerializableFormSession implements Serializable{
     private String menuSessionId;
     private String title;
 
+    // legacy field to be removed once `dateCreated` is fully populated
     @Column(name="dateopened")
     private String dateOpened;
+
+    @CreatedDate
+    @Column(name="datecreated")
+    private Instant dateCreated;
 
     @Column(name="onequestionperscreen")
     private boolean oneQuestionPerScreen;
@@ -240,4 +249,13 @@ public class SerializableFormSession implements Serializable{
             sequenceId += 1;
         }
     }
+
+    public Instant getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
 }
