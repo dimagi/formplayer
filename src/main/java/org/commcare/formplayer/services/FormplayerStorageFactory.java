@@ -143,6 +143,10 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         return sqLiteDB;
     }
 
+    public PostgresDB getPostgresDB() {
+        return postgresDB;
+    }
+
     public String getAsUsername() {
         return asUsername;
     }

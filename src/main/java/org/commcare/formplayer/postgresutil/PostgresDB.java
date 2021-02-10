@@ -21,24 +21,7 @@ public class PostgresDB implements ConnectionHandler {
         this.dbPath = dbPath;
         if (dbPath != null) {
             // Create the schema before doing anything.
-            Connection connection = getConnection();
-            String schemaCreationSt = "CREATE SCHEMA IF NOT EXISTS " + getCurrentSchema() + ";";
-            PreparedStatement preparedStatement = null;
-            try {
-                preparedStatement = connection.prepareStatement(schemaCreationSt);
-                preparedStatement.execute();
-                preparedStatement.close();
-            } catch (SQLException e) {
-                throw new SQLiteRuntimeException(e);
-            } finally {
-                if (preparedStatement != null) {
-                    try {
-                        preparedStatement.close();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+            runQuery("CREATE SCHEMA IF NOT EXISTS " + getCurrentSchema() + ";");
         }
     }
 
@@ -80,5 +63,31 @@ public class PostgresDB implements ConnectionHandler {
             e.printStackTrace();
         }
         connection = null;
+    }
+
+    public void deleteDatabase() {
+        if (dbPath != null) {
+            runQuery("DROP SCHEMA IF EXISTS " + getCurrentSchema() + " CASCADE;");
+        }
+    }
+
+    private void runQuery(String query) {
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.execute();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
