@@ -4,7 +4,9 @@ FormPlayer
 FormPlayer is a RESTful XForm entry service written on the [Spring Framework](https://projects.spring.io/spring-framework/).
 Given a [user restore](https://confluence.dimagi.com/display/commcarepublic/OTA+Restore+API) and
 an [XForm](http://dimagi.github.io/xform-spec/) FormPlayer enables form entry via JSON calls and responses (detailed below).
-These files will often be hosted by a [CommCareHQ](https://www.github.com/dimagi/commcare-hq) server instance. Formplayer relies on the [CommCare](https://www.github.com/dimagi/commcare-core) libraries (included as subrepositories). Formplayer is built via gradle (wrapper files included).
+These files will often be hosted by a [CommCareHQ](https://www.github.com/dimagi/commcare-hq) server instance.
+Formplayer relies on the [CommCare](https://www.github.com/dimagi/commcare-core) libraries (included as subrepositories).
+Formplayer is built via [Gradle](https://spring.io/guides/gs/gradle/) (wrapper files included).
 
 ### Dependencies
 + Java (OpenJDK 8)
