@@ -20,6 +20,7 @@ public class SessionRequestBean extends AuthenticatedRequestBean {
         }
     }
 
+    @Deprecated
     @JsonSetter(value = "session-id")
     public void setSessionDashId(String sessionId) {
         if (this.sessionId == null) {
