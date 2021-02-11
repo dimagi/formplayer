@@ -38,7 +38,7 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     @UserRestore
-    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
+    public GetSessionsResponse getSessions(@RequestBody AuthenticatedRequestBean getSessionRequest,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
