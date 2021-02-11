@@ -55,7 +55,7 @@ branches:
   - ce/negative-index # Cal Feb 2
   - caseClaimHint #Shubham Feb 4
   - caseSearchItemsetFix #Shubham Feb 5
-#   - autoLaunchRevamp #Shubham Feb 9
+  - autoLaunchRevamp #Shubham Feb 9
   - caseSearchCache #Shubham Feb 9
   - gh/add-case-list-name # Graham Feb 10
 submodules:
@@ -67,4 +67,4 @@ submodules:
       - ce/ensure-session # Cal Nov 20
       - caseClaimHint #Shubham Feb 4
       - caseSearchItemsetFix #Shubham Feb 5
-     # - autoLaunchRevamp #Shubham Feb 9
+      - autoLaunchRevamp #Shubham Feb 9
