@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
 /**
  * Annotation for methods that perform an install from a FormSession
  */
-@Component
 @Target(value = {ElementType.METHOD, ElementType.TYPE})
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface ConfigureStorageFromSession {
