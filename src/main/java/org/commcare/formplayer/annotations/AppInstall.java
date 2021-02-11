@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation for methods that require an installed application
  */
-@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Target(value = ElementType.METHOD)
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface AppInstall {
 }
