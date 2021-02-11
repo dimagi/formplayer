@@ -20,7 +20,7 @@ Developing Formplayer will require some level of knowledge of at least the follo
 * [AOP](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#aop)
 
 Spring Boot ties a number of the components of Spring together in way to meets the needs of most projects. It does
-this by using [conventions](boot_conventions), but it does not stop you from overriding the conventions.
+this by using [conventions][boot_conventions], but it does not stop you from overriding the conventions.
 
 [boot_conventions]: https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-structuring-your-code
 
