@@ -120,6 +120,19 @@ public class Constants {
     public static final String DATADOG_GRANULAR_TIMINGS = "granular.timings";
     public static final String DATADOG_RESTORE_COUNT = "restore.count";
 
+    // Datadog/Sentry tags
+    public static final String DOMAIN_TAG = "domain";
+    public static final String FORM_NAME_TAG = "form_name";
+    public static final String MODULE_TAG = "module";
+    public static final String REQUEST_TAG = "request";
+    public static final String CATEGORY_TAG = "category";
+    public static final String DURATION_TAG = "duration";
+    public static final String UNBLOCKED_TIME_TAG = "unblocked_time";
+    public static final String BLOCKED_TIME_TAG = "blocked_time";
+    public static final String RESTORE_BLOCKED_TIME_TAG = "restore_blocked_time";
+    public static final String INSTALL_BLOCKED_TIME_TAG = "install_blocked_time";
+    public static final String SUBMIT_BLOCKED_TIME_TAG = "submit_blocked_time";
+
     public static final class TimingCategories {
         public static final String WAIT_ON_LOCK = "wait_on_lock";
         public static final String SUBMIT_FORM_TO_HQ = "submit_form_to_hq";
@@ -131,6 +144,11 @@ public class Constants {
         public static final String VALIDATE_SUBMISSION = "validate_submission";
         public static final String END_OF_FORM_NAV = "end_of_form_navigation";
     }
+
+    // Requests
+    public static final String SUBMIT_ALL_REQUEST = "submit-all";
+    public static final String ANSWER_REQUEST = "answer";
+    public static final String NAV_MENU_REQUEST = "navigate_menu";
 
     // Errors
     public static final String DATADOG_ERRORS_APP_CONFIG = "errors.app_config";

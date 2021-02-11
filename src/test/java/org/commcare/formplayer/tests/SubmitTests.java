@@ -6,13 +6,12 @@ import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.TestContext;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -20,7 +19,7 @@ import static org.mockito.Matchers.anyString;
 /**
  * Regression tests for submission behaviors
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class SubmitTests extends BaseTestClass {
     @Test
@@ -28,6 +27,7 @@ public class SubmitTests extends BaseTestClass {
         // Start new session and submit create case form
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_3.json",
                 "xforms/cases/create_case.xml");
+        String sessionId = newSessionResponse.getSessionId();
 
         UserSqlSandbox sandbox = getRestoreSandbox();
         SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
@@ -37,9 +37,9 @@ public class SubmitTests extends BaseTestClass {
                 .when(submitServiceMock).submitForm(anyString(), anyString());
         // Assert that FormSession is not deleted
         Mockito.doThrow(new RuntimeException())
-                .when(formSessionRepoMock).deleteById(anyString());
+                .when(formSessionService).deleteSessionById(anyString());
 
-        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", "derp");
+        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
         assert submitResponseBean.getStatus().equals("error");
         // Assert that case is not created
         assert(caseStorage.getNumRecords()== 15);

@@ -33,6 +33,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -53,6 +56,7 @@ import org.commcare.formplayer.util.UserUtils;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -64,6 +68,8 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -97,9 +103,6 @@ public class RestoreFactory {
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
     private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
-
-    @Autowired(required = false)
-    private FormplayerHttpRequest request;
 
     @Autowired
     private FormplayerSentry raven;
@@ -190,6 +193,10 @@ public class RestoreFactory {
         return performTimedSync(true, false);
     }
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
+        // create extras to send to category timing helper
+        Map<String, String> extras = new HashMap<>();
+        extras.put(Constants.DOMAIN_TAG, domain);
+
         SimpleTimer completeRestoreTimer = new SimpleTimer();
         completeRestoreTimer.start();
         // Create parent dirs if needed
@@ -214,10 +221,20 @@ public class RestoreFactory {
             purgeTimer.start();
             FormRecordProcessorHelper.purgeCases(sandbox);
             purgeTimer.end();
-            categoryTimingHelper.recordCategoryTiming(purgeTimer, Constants.TimingCategories.PURGE_CASES, null, domain);
+            categoryTimingHelper.recordCategoryTiming(
+                    purgeTimer,
+                    Constants.TimingCategories.PURGE_CASES,
+                    null,
+                    extras
+            );
         }
         completeRestoreTimer.end();
-        categoryTimingHelper.recordCategoryTiming(completeRestoreTimer, Constants.TimingCategories.COMPLETE_RESTORE, null, domain);
+        categoryTimingHelper.recordCategoryTiming(
+                completeRestoreTimer,
+                Constants.TimingCategories.COMPLETE_RESTORE,
+                null,
+                extras
+        );
         return sandbox;
     }
 
@@ -239,6 +256,11 @@ public class RestoreFactory {
     private UserSqlSandbox restoreUser(boolean skipFixtures) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
+
+        // create extras to send to category timing helper
+        Map<String, String> extras = new HashMap<>();
+        extras.put(Constants.DOMAIN_TAG, domain);
+
         int maxRetries = 2;
         int counter = 0;
         while (true) {
@@ -257,7 +279,12 @@ public class RestoreFactory {
                 setAutoCommit(true);
 
                 parseTimer.end();
-                categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE, null, domain);
+                categoryTimingHelper.recordCategoryTiming(
+                        parseTimer,
+                        Constants.TimingCategories.PARSE_RESTORE,
+                        null,
+                        extras
+                );
                 sandbox.writeSyncToken();
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
@@ -588,7 +615,12 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        if (!request.getRequestValidatedWithHMAC()) {
+        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
+        if (request == null) {
+            throw new RuntimeException(String.format(
+                    "HMAC Auth not available outside of a web request %s", requestPath
+            ));
+        } else if (!request.getRequestValidatedWithHMAC()) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
@@ -654,12 +686,12 @@ public class RestoreFactory {
                     unEncodedAsUsername += "@" + domain + ".commcarehq.org";
                 }
                 builderQueryParamEncoded(builder, "as", unEncodedAsUsername);
+            } else if (getHqAuth() == null && username != null) {
+                // HQ requesting to force a sync for a user
+                builderQueryParamEncoded(builder, "as", username);
             }
             if (skipFixtures) {
                 builderQueryParamEncoded(builder, "skip_fixtures", "true");
-            }
-            if (getHqAuth() == null && username != null) {
-                builderQueryParamEncoded(builder, "for", username);
             }
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(String.format("Restore Error: " + e.getMessage()));

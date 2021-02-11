@@ -4,26 +4,27 @@ import org.commcare.formplayer.beans.menus.EntityBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
-import org.javarosa.core.services.PropertyManager;
-import org.javarosa.core.services.properties.Property;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.utils.TestContext;
+import org.javarosa.core.services.PropertyManager;
+import org.javarosa.core.services.properties.Property;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
+
 import static org.mockito.Mockito.when;
 
 /**
  * Created by willpride on 5/16/16.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class CasePaginationTests extends BaseTestClass {
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("loaddomain", "loaduser");

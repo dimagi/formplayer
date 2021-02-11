@@ -8,11 +8,11 @@ import org.commcare.formplayer.utils.TestContext;
 import org.javarosa.core.services.storage.IMetaData;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.Iterator;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,16 +26,11 @@ import java.io.IOException;
  *
  * @author ctsims
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class SnapshotTests extends BaseTestClass {
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        copySnapshotResources();
-    }
-
+    @BeforeEach
     private void copySnapshotResources() {
         try {
             File destDirectory = new File(getDatabaseFolderRoot());
@@ -44,7 +39,7 @@ public class SnapshotTests extends BaseTestClass {
                     , destDirectory);
         } catch (IOException exception) {
             exception.printStackTrace();
-            Assert.fail("Error moving snapshot data to test directory");
+            Assertions.fail("Error moving snapshot data to test directory");
         }
     }
 
@@ -52,7 +47,7 @@ public class SnapshotTests extends BaseTestClass {
     public void testUserSandbox() throws Exception {
         UserDB database = getUserDbConnector("snapshot", "snapshot_test", null);
         if (!database.databaseFileExists()) {
-            Assert.fail("Snapshot UserDB Missing for tests you may need to rebuild the snapshot " +
+            Assertions.fail("Snapshot UserDB Missing for tests you may need to rebuild the snapshot " +
                     "with the CreateSnapshotDbs Gradle Task ");
         }
         //Try to enumerate records of each type

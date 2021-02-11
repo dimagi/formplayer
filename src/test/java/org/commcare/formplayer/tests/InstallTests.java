@@ -5,22 +5,23 @@ import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.commcare.formplayer.utils.TestContext;
 
 /**
  * Created by willpride on 1/14/16.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class InstallTests extends BaseTestClass {
 
     Log log = LogFactory.getLog(InstallTests.class);
 
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("casetestdomain", "casetestuser");

@@ -6,14 +6,16 @@ import org.commcare.formplayer.beans.*;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.services.locale.LocalizerManager;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -30,12 +32,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.commcare.formplayer.objects.QueryData;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.PrototypeUtils;
 import org.commcare.formplayer.utils.FileUtils;
@@ -46,11 +48,13 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.UUID;
 
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -63,7 +67,7 @@ public class BaseTestClass {
 
     private MockMvc mockFormController;
 
-    private MockMvc mockUtilController;
+    protected MockMvc mockUtilController;
 
     private MockMvc mockMenuController;
 
@@ -73,7 +77,7 @@ public class BaseTestClass {
     private StringRedisTemplate redisTemplate;
 
     @Autowired
-    protected FormSessionRepo formSessionRepoMock;
+    protected FormSessionService formSessionService;
 
     @Autowired
     private MenuSessionRepo menuSessionRepoMock;
@@ -98,6 +102,9 @@ public class BaseTestClass {
 
     @Autowired
     private NewFormResponseFactory newFormResponseFactoryMock;
+
+    @Autowired
+    protected FormplayerDatadog datadogMock;
 
     @Autowired
     protected FormplayerSentry ravenMock;
@@ -143,9 +150,10 @@ public class BaseTestClass {
 
     protected ObjectMapper mapper;
 
-    @Before
+    final Map<String, SerializableFormSession> sessionMap = new HashMap<String, SerializableFormSession>();
+
+    @BeforeEach
     public void setUp() throws Exception {
-        Mockito.reset(formSessionRepoMock);
         Mockito.reset(menuSessionRepoMock);
         Mockito.reset(xFormServiceMock);
         Mockito.reset(restoreFactoryMock);
@@ -158,6 +166,7 @@ public class BaseTestClass {
         Mockito.reset(formplayerInstallerFactory);
         Mockito.reset(queryRequester);
         Mockito.reset(syncRequester);
+        Mockito.reset(datadogMock);
         Mockito.reset(ravenMock);
         Mockito.reset(menuSessionFactory);
         Mockito.reset(menuSessionRunnerService);
@@ -167,7 +176,7 @@ public class BaseTestClass {
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer(this.getMockRestoreFileName());
-        Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
+        doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
         setupSubmitServiceMock();
         Mockito.doReturn(false)
                 .when(restoreFactoryMock).isRestoreXmlExpired();
@@ -179,6 +188,39 @@ public class BaseTestClass {
         new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
         MockTimezoneProvider tzProvider = new MockTimezoneProvider();
         DateUtils.setTimezoneProvider(tzProvider);
+
+        mockFormSessionService();
+    }
+
+    /*
+     * Setup mocking for the FormSessionService that allows saving and retrieving sessions.
+     * The 'persisted' sessions are cleared at the start of each test.
+     */
+    private void mockFormSessionService() {
+        sessionMap.clear();
+        doAnswer(new Answer<SerializableFormSession>() {
+            @Override
+            public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
+                SerializableFormSession session = (SerializableFormSession) invocation.getArguments()[0];
+                if (session.getId() == null) {
+                    // this is normally taken care of by Hibernate
+                    session.setId(UUID.randomUUID().toString());
+                }
+                sessionMap.put(session.getId(), session);
+                return session;
+            }
+        }).when(formSessionService).saveSession(any(SerializableFormSession.class));
+
+        when(formSessionService.getSessionById(anyString())).thenAnswer(new Answer<SerializableFormSession>() {
+            @Override
+            public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
+                String key = (String) invocation.getArguments()[0];
+                if (sessionMap.containsKey(key)) {
+                    return sessionMap.get(key);
+                }
+                throw new FormNotFoundException(key);
+            }
+        });
     }
 
     protected String getDatabaseFolderRoot() {
@@ -199,7 +241,7 @@ public class BaseTestClass {
                 .when(submitServiceMock).submitForm(anyString(), anyString());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws SQLException {
         if(customConnector != null) {
             customConnector.closeConnection();
@@ -263,15 +305,22 @@ public class BaseTestClass {
         restoreFactoryMock.setUsername(username);
     }
 
+    private <T extends AuthenticatedRequestBean> T populateFromSession(T bean, String sessionId) {
+        SerializableFormSession session = formSessionService.getSessionById(sessionId);
+        bean.setUsername(session.getUsername());
+        bean.setDomain(session.getDomain());
+        bean.setSessionId(sessionId);
+        return bean;
+    }
+
     FormEntryNavigationResponseBean nextScreen(String sessionId) throws Exception {
         return nextScreen(sessionId, false);
     }
 
     FormEntryNavigationResponseBean nextScreen(String sessionId, boolean promptMode) throws Exception {
-        SessionRequestBean questionsBean = new SessionRequestBean();
+        SessionRequestBean questionsBean = populateFromSession(new SessionRequestBean(), sessionId);
         questionsBean.setSessionId(sessionId);
-        questionsBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        questionsBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+
 
         if (promptMode) {
             return generateMockQuery(ControllerType.FORM,
@@ -289,10 +338,7 @@ public class BaseTestClass {
     }
 
     FormEntryNavigationResponseBean previousScreen(String sessionId) throws Exception {
-        SessionRequestBean questionsBean = new SessionRequestBean();
-        questionsBean.setSessionId(sessionId);
-        questionsBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        questionsBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        SessionRequestBean questionsBean = populateFromSession(new SessionRequestBean(), sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_PREV_INDEX,
@@ -304,6 +350,7 @@ public class BaseTestClass {
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         AnswerQuestionRequestBean answerQuestionBean = mapper.readValue(requestPayload,
                 AnswerQuestionRequestBean.class);
+        answerQuestionBean.setSessionId(sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_ANSWER_QUESTION,
@@ -311,11 +358,9 @@ public class BaseTestClass {
                 FormEntryResponseBean.class);
     }
 
-    FormEntryResponseBean changeLanguage(String locale) throws Exception {
-        ChangeLocaleRequestBean changeLocaleBean = new ChangeLocaleRequestBean();
+    FormEntryResponseBean changeLanguage(String locale, String sessionId) throws Exception {
+        ChangeLocaleRequestBean changeLocaleBean = populateFromSession(new ChangeLocaleRequestBean(), sessionId);
         changeLocaleBean.setLocale(locale);
-        changeLocaleBean.setUsername(formSessionRepoMock.findOneWrapped("sessionid").getUsername());
-        changeLocaleBean.setDomain(formSessionRepoMock.findOneWrapped("sessionid").getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_CHANGE_LANGUAGE,
@@ -325,8 +370,7 @@ public class BaseTestClass {
 
     FormEntryResponseBean answerQuestionGetResult(String index, String answer, String sessionId) throws Exception {
         AnswerQuestionRequestBean answerQuestionBean = new AnswerQuestionRequestBean(index, answer, sessionId);
-        answerQuestionBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        answerQuestionBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        populateFromSession(answerQuestionBean, sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_ANSWER_QUESTION,
@@ -335,10 +379,7 @@ public class BaseTestClass {
     }
 
     GetInstanceResponseBean getInstance(String sessionId) throws Exception {
-        SessionRequestBean sessionRequestBean = new SessionRequestBean();
-        sessionRequestBean.setSessionId(sessionId);
-        sessionRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        sessionRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        SessionRequestBean sessionRequestBean = populateFromSession(new SessionRequestBean(), sessionId);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.GET,
                 Constants.URL_GET_INSTANCE,
@@ -384,12 +425,9 @@ public class BaseTestClass {
     }
 
     SubmitResponseBean submitForm(Map<String, Object> answers, String sessionId, boolean prevalidated) throws Exception {
-        SubmitRequestBean submitRequestBean = new SubmitRequestBean();
-        submitRequestBean.setSessionId(sessionId);
+        SubmitRequestBean submitRequestBean = populateFromSession(new SubmitRequestBean(), sessionId);
         submitRequestBean.setAnswers(answers);
         submitRequestBean.setPrevalidated(prevalidated);
-        submitRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        submitRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
         return generateMockQuery(ControllerType.FORM,
                 RequestType.POST,
                 Constants.URL_SUBMIT_FORM,
@@ -429,9 +467,7 @@ public class BaseTestClass {
         String newRepeatRequestPayload = FileUtils.getFile(this.getClass(), "requests/new_repeat/new_repeat.json");
         RepeatRequestBean newRepeatRequestBean = mapper.readValue(newRepeatRequestPayload,
                 RepeatRequestBean.class);
-        newRepeatRequestBean.setSessionId(sessionId);
-        newRepeatRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        newRepeatRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        populateFromSession(newRepeatRequestBean, sessionId);
 
         return generateMockQuery(
                 ControllerType.FORM,
@@ -448,9 +484,7 @@ public class BaseTestClass {
 
         RepeatRequestBean deleteRepeatRequest = mapper.readValue(newRepeatRequestPayload,
                 RepeatRequestBean.class);
-        deleteRepeatRequest.setSessionId(sessionId);
-        deleteRepeatRequest.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        deleteRepeatRequest.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        populateFromSession(deleteRepeatRequest, sessionId);
         return generateMockQuery(
                 ControllerType.FORM,
                 RequestType.POST,
@@ -465,8 +499,7 @@ public class BaseTestClass {
                 FileUtils.getFile(this.getClass(), "requests/evaluate_xpath/evaluate_xpath.json"),
                 EvaluateXPathRequestBean.class
         );
-        evaluateXPathRequestBean.setUsername(formSessionRepoMock.findOneWrapped(sessionId).getUsername());
-        evaluateXPathRequestBean.setDomain(formSessionRepoMock.findOneWrapped(sessionId).getDomain());
+        populateFromSession(evaluateXPathRequestBean, sessionId);
         evaluateXPathRequestBean.setSessionId(sessionId);
         evaluateXPathRequestBean.setXpath(xPath);
         evaluateXPathRequestBean.setDebugOutputLevel(Constants.BASIC_NO_TRACE);

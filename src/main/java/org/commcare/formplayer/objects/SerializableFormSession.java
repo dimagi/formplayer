@@ -1,7 +1,8 @@
 package org.commcare.formplayer.objects;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -11,25 +12,68 @@ import java.util.Map;
 @Entity
 @Table(name = "formplayer_sessions")
 public class SerializableFormSession implements Serializable{
+    @Id
+    @GeneratedValue( generator = "uuid" )
+    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
+
+    @Column(name="instancexml")
     private String instanceXml;
+
+    @Column(name="formxml")
     private String formXml;
+
     private String username;
+
+    @Column(name="initlang")
     private String initLang;
-    private int sequenceId;
+
+    @Column(name="sequenceid")
+    @Convert(converter = IntStringConverter.class)
+    private Integer sequenceId;
+
+    @Column(name="sessiondata")
+    @Convert(converter = ByteArrayConverter.class)
     private Map<String, String> sessionData;
+
     private String domain;
+
+    @Column(name="posturl")
     private String postUrl;
+
+    @Column(name="menu_session_id")
     private String menuSessionId;
     private String title;
+
+    @Column(name="dateopened")
     private String dateOpened;
+
+    @Column(name="onequestionperscreen")
     private boolean oneQuestionPerScreen;
+
+    @Column(name="asuser")
     private String asUser;
+
+    @Column(name="currentindex")
     private String currentIndex = "0";
+
+    @Column(name="appid")
     private String appId;
+
+    @Column(name="functioncontext")
+    @Convert(converter = ByteArrayConverter.class)
     private Map<String, FunctionHandler[]> functionContext;
+
+    @Column(name="inpromptmode")
     private boolean inPromptMode;
+
+    @Column(name="caseid")
     private String restoreAsCaseId;
+
+    public SerializableFormSession() { }
+    public SerializableFormSession(String id) {
+        this.id = id;
+    }
 
     public String getInstanceXml() {
         return instanceXml;
@@ -45,16 +89,6 @@ public class SerializableFormSession implements Serializable{
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public int hashCode(){
-        return id.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof SerializableFormSession && obj.hashCode() == hashCode();
     }
 
     @Override
@@ -197,5 +231,13 @@ public class SerializableFormSession implements Serializable{
 
     public String getRestoreAsCaseId() {
         return restoreAsCaseId;
+    }
+
+    public void incrementSequence() {
+        if (sequenceId == null) {
+            sequenceId = 0;
+        } else {
+            sequenceId += 1;
+        }
     }
 }
