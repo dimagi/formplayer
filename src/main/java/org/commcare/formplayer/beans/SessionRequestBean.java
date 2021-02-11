@@ -27,6 +27,14 @@ public class SessionRequestBean extends AuthenticatedRequestBean {
         }
     }
 
+    @Deprecated
+    @JsonSetter(value = "sessionId")
+    public void setSessionCamelCaseId(String sessionId) {
+        if (this.sessionId == null) {
+            setSessionId(sessionId);
+        }
+    }
+
     @Override
     public String toString(){
         return "SessionRequestBean [sessionId=" + sessionId + "]";
