@@ -14,10 +14,10 @@ cache:
 before_script:
   - cp .travis/application.example.properties config/application.properties
   - cp .travis/travis.gradle.properties gradle.properties
-  - psql -c 'create database commcarehq;' -U postgres
-  - psql -c 'create database formplayer;' -U postgres
   - psql -c "create user commcarehq with password 'commcarehq'" -U postgres
   - psql -c 'ALTER USER commcarehq CREATEDB' -U postgres
+  - psql -c 'create database commcarehq owner commcarehq;' -U postgres
+  - psql -c 'create database formplayer owner commcarehq;' -U postgres
   - curl -X PUT localhost:5984/commcarehq
   - curl -X PUT localhost:5984/_config/admins/commcarehq -d '"commcarehq"'
 script:
