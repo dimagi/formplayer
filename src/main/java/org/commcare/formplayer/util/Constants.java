@@ -117,6 +117,7 @@ public class Constants {
     // Datadog metrics
     public static final String DATADOG_REQUESTS = "requests";
     public static final String DATADOG_TIMINGS = "timings";
+    public static final String DATADOG_DISTRIBUTION_TIMINGS = "distribution.timings";
     public static final String DATADOG_GRANULAR_TIMINGS = "granular.timings";
     public static final String DATADOG_RESTORE_COUNT = "restore.count";
 

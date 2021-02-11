@@ -60,6 +60,12 @@ public class FormplayerDatadog {
         datadogClient.increment(aspect, datadogTags);
     }
 
+    public void recordDistribution(String aspect, final long value, List<Tag> additionalTags) {
+        List<String> tagsToSend = formattedTags(additionalTags);
+        String[] datadogTags = tagsToSend.toArray(new String[tagsToSend.size()]);
+        datadogClient.recordDistributionValue(aspect, value, datadogTags);
+    }
+
     // Private Helpers
     private List<String> formattedTags(List<Tag> transientTags) {
         List<String> formattedTags = new ArrayList<>();

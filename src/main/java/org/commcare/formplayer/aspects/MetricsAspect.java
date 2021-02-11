@@ -100,7 +100,7 @@ public class MetricsAspect {
 
         datadog.increment(Constants.DATADOG_REQUESTS, datadogArgs);
         datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
-
+        datadog.recordDistribution(Constants.DATADOG_DISTRIBUTION_TIMINGS, timer.durationInMs(), datadogArgs);
 
         long intolerableRequestThreshold = 60 * 1000;
 
