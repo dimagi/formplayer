@@ -29,7 +29,7 @@ public class IncompleteSessionController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
     @UserLock
     @UserRestore
-    public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+    public NewFormResponse openIncompleteForm(@RequestBody SessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionService.getSessionById(incompleteSessionRequestBean.getSessionId());
         storageFactory.configure(session);
@@ -38,7 +38,7 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     @UserRestore
-    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
+    public GetSessionsResponse getSessions(@RequestBody AuthenticatedRequestBean getSessionRequest,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
@@ -57,7 +57,7 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
     public NotificationMessage deleteIncompleteForm(
-            @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+            @RequestBody SessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         deleteSession(incompleteSessionRequestBean.getSessionId());
         return new NotificationMessage("Successfully deleted incomplete form.", false, NotificationMessage.Tag.incomplete_form);

@@ -305,7 +305,7 @@ public class BaseTestClass {
         restoreFactoryMock.setUsername(username);
     }
 
-    private <T extends AuthenticatedRequestBean> T populateFromSession(T bean, String sessionId) {
+    private <T extends SessionRequestBean> T populateFromSession(T bean, String sessionId) {
         SerializableFormSession session = formSessionService.getSessionById(sessionId);
         bean.setUsername(session.getUsername());
         bean.setDomain(session.getDomain());
