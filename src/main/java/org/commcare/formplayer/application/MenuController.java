@@ -4,13 +4,11 @@ import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.InstallRequestBean;
-import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
-import org.commcare.formplayer.beans.menus.UpdateRequestBean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -62,18 +60,6 @@ public class MenuController extends AbstractBaseController {
         BaseResponseBean baseResponseBean = runnerService.getNextMenu(performInstall(installRequestBean));
         logNotification(baseResponseBean.getNotification(), request);
         return baseResponseBean;
-    }
-
-    //@RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
-    //@UserLock
-    //@UserRestore
-    //@AppInstall
-    public NotificationMessage updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
-                                             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                             HttpServletRequest request) throws Exception {
-        NotificationMessage notificationMessage = performUpdate(updateRequestBean);
-        logNotification(notificationMessage, request);
-        return notificationMessage;
     }
 
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
@@ -182,10 +168,5 @@ public class MenuController extends AbstractBaseController {
         responseBean.setShouldRequestLocation(menuSession.locationRequestNeeded());
         responseBean.setShouldWatchLocation(menuSession.hereFunctionEvaluated());
         return responseBean;
-    }
-
-    private NotificationMessage performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
-        MenuSession currentSession = performInstall(updateRequestBean);
-        return currentSession.updateApp(updateRequestBean.getUpdateMode());
     }
 }

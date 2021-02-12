@@ -126,32 +126,6 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.breadcrumbs.add(SessionUtils.getAppTitle());
     }
 
-    public NotificationMessage updateApp(String updateMode) {
-        try {
-            if (this.engine.attemptAppUpdate(updateMode)) {
-                return new NotificationMessage("Application updated successfully.", false, NotificationMessage.Tag.update);
-            } else {
-                return new NotificationMessage("Application up to date.", false, NotificationMessage.Tag.update);
-            }
-        } catch (UnresolvedResourceException e) {
-            String message = "Update Failed! Couldn't find or install one of the remote resources";
-            log.error(message, e);
-            return new NotificationMessage(message, true, NotificationMessage.Tag.update);
-        } catch (UnfullfilledRequirementsException e) {
-            String message = "Update Failed! Formplayer is incompatible with the app";
-            log.error(message, e);
-            return new NotificationMessage(message, true, NotificationMessage.Tag.update);
-        } catch (InstallCancelledException e) {
-            String message = "Update Failed! Update was cancelled";
-            log.error(message, e);
-            return new NotificationMessage(message, true, NotificationMessage.Tag.update);
-        } catch (ResourceInitializationException e) {
-            String message = "Update Failed! Couldn't initialize one of the resources";
-            log.error(message, e);
-            return new NotificationMessage(message, true, NotificationMessage.Tag.update);
-        }
-    }
-
     private static String resolveInstallReference(String installReference, String appId, String host, String domain) {
         if (installReference == null || installReference.equals("")) {
             if (appId == null || "".equals(appId)) {

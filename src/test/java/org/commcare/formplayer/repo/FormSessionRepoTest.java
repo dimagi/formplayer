@@ -1,7 +1,6 @@
 package org.commcare.formplayer.repo;
 
 import com.google.common.collect.ImmutableMap;
-
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.utils.JpaTestUtils;
@@ -9,15 +8,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
-import java.util.Date;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import javax.persistence.EntityManager;
+import java.time.Instant;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@EnableJpaAuditing
 public class FormSessionRepoTest {
 
     @Autowired
@@ -53,6 +54,13 @@ public class FormSessionRepoTest {
         SerializableFormSession loaded = JpaTestUtils.unwrapProxy(
                 formSessionRepo.getOne(session.getId())
         );
-        assertThat(loaded).usingRecursiveComparison().isEqualTo(session);
+        assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "version").isEqualTo(session);
+        Instant dateCreated = loaded.getDateCreated();
+        assertThat(dateCreated).isNotNull();
+        assertThat(loaded.getVersion()).isEqualTo(1);
+
+        formSessionRepo.saveAndFlush(loaded);
+        assertThat(loaded.getDateCreated()).isEqualTo(dateCreated);
+        assertThat(loaded.getVersion()).isEqualTo(2);
     }
 }
