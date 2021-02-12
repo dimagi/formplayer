@@ -4,6 +4,7 @@ import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 
 import com.timgroup.statsd.StatsDClient;
 import io.sentry.event.Event;
+import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,7 +74,13 @@ public class LockAspect {
         AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
 
 
-        username = getLockKeyForAuthenticatedBean(bean, formSessionService);
+        try {
+            username = getLockKeyForAuthenticatedBean(bean, formSessionService);
+        } catch (Exception ex) {
+            logLockError(bean, joinPoint, "_missing_username");
+            throw ex;
+        }
+
 
         Lock lock;
 
@@ -101,13 +108,14 @@ public class LockAspect {
         }
     }
 
-    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionService formSessionService) {
-        String username;
+    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionService formSessionService) throws Exception {
         if (bean.getUsernameDetail() != null) {
-            username = TableBuilder.scrubName(bean.getUsernameDetail());
+            return TableBuilder.scrubName(bean.getUsernameDetail());
         }
-        else {
-            SerializableFormSession formSession = formSessionService.getSessionById(bean.getSessionId());
+        else if (bean instanceof SessionRequestBean){
+            String username;
+            String sessionId = ((SessionRequestBean) bean).getSessionId();
+            SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
             String tempUser = formSession.getUsername();
             String restoreAs = formSession.getAsUser();
             String restoreAsCaseId = formSession.getRestoreAsCaseId();
@@ -118,8 +126,9 @@ public class LockAspect {
             } else {
                 username = tempUser;
             }
+            return username;
         }
-        return username;
+        throw new Exception("Unable to get username for locking");
     }
 
     private void logLockError(AuthenticatedRequestBean bean, ProceedingJoinPoint joinPoint, String lockIssue) {
