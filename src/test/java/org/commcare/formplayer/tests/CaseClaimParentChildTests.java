@@ -74,9 +74,32 @@ public class CaseClaimParentChildTests extends BaseTestClass {
         testParentSearchResults(queryData, selections);
         testParentSelection(queryData, selections);
 
+        testChildSearchNormal(queryData, new ArrayList<>(selections), "search_command.m6");
         testChildSearchFirst(queryData, new ArrayList<>(selections), "search_command.m7");
         testChildSeeMore(queryData, new ArrayList<>(selections));
         testChildSkipToResults(queryData, new ArrayList<>(selections));
+    }
+
+    private void testChildSearchNormal(QueryData queryData, ArrayList<String> selections, String searchKey) throws Exception {
+        selections.add(INDEX_SONGS_SEARCH_FIRST_SHOWS);
+        EntityListResponse entityListResponse = sessionNavigateWithQuery(selections,
+                "case_claim_spf_parent",
+                queryData,
+                false,
+                EntityListResponse.class);
+
+        // clicking search moves user to search screen
+        selections.add("action 0");
+
+        sessionNavigateWithQuery(selections,
+                "case_claim_spf_parent",
+                queryData,
+                false,
+                QueryResponseBean.class);
+        queryData.setExecute(searchKey, true);
+
+        testChildSearchResult(queryData, selections);
+        testChildSelection(queryData, selections);
     }
 
     @Test
