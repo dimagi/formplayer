@@ -102,7 +102,7 @@ public class WebAppContext implements WebMvcConfigurer {
     private String ravenDsn;
 
     @Value("${detailed_tagging.domains}")
-    private List<String> domainsWithDetailedMetrics;
+    private List<String> domainsWithDetailedTagging;
 
     @Value("${detailed_tagging.tag_names}")
     private List<String> detailedTagNames;
@@ -251,7 +251,7 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
-        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedMetrics, detailedTagNames);
+        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedTagging, detailedTagNames);
         return datadog;
     }
 
