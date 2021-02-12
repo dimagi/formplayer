@@ -45,6 +45,7 @@ import javax.servlet.http.Cookie;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -607,6 +608,15 @@ public class BaseTestClass {
                 Constants.URL_MENU_NAVIGATION,
                 sessionNavigationBean,
                 clazz);
+    }
+
+    <T> T sessionNavigateWithQuery(ArrayList<String> selections,
+                                   String testName,
+                                   QueryData queryData,
+                                   boolean forceManualAction,
+                                   Class<T> clazz) throws Exception {
+        return sessionNavigateWithQuery(selections.toArray(new String[selections.size()]),
+                testName, queryData, forceManualAction, clazz);
     }
 
     <T> T sessionNavigateWithQuery(String[] selections,
