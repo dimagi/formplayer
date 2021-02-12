@@ -57,7 +57,6 @@ branches:
   - caseSearchItemsetFix #Shubham Feb 5
   - caseSearchCache #Shubham Feb 9
   - gh/add-case-list-name # Graham Feb 10
-  - gh/distribution-timings # Graham Feb 11
   - sk/remove-install-reference+autoLaunchRevamp
   - autoLaunchRevamp #Shubham Feb 9
   - sk/remove-install-reference  # SK Feb 12
