@@ -101,6 +101,12 @@ public class WebAppContext implements WebMvcConfigurer {
     @Value("${sentry.dsn:}")
     private String ravenDsn;
 
+    @Value("${detailed_tagging.domains}")
+    private List<String> domainsWithDetailedMetrics;
+
+    @Value("${detailed_tagging.tag_names}")
+    private List<String> detailedTagNames;
+
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
         configurer.enable();
@@ -245,7 +251,7 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
-        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient());
+        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedMetrics, detailedTagNames);
         return datadog;
     }
 
