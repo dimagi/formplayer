@@ -28,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -204,7 +205,7 @@ public class BaseTestClass {
                 SerializableFormSession session = (SerializableFormSession) invocation.getArguments()[0];
                 if (session.getId() == null) {
                     // this is normally taken care of by Hibernate
-                    session.setId(UUID.randomUUID().toString());
+                    ReflectionTestUtils.setField(session,"id",UUID.randomUUID().toString());
                 }
                 sessionMap.put(session.getId(), session);
                 return session;

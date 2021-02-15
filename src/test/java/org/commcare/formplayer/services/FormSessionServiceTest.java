@@ -79,23 +79,23 @@ public class FormSessionServiceTest {
 
         // save a session
         SerializableFormSession session = new SerializableFormSession(sessionId);
-        session.setSequenceId(1);
+        session.incrementSequence();
         formSessionService.saveSession(session);
 
         // cache is populated on save
-        assertEquals(1, getCachedSession(sessionId).get().getSequenceId());
+        assertEquals(0, getCachedSession(sessionId).get().getSequenceId());
 
         // get session hits the cache (repo is mocked)
         session = formSessionService.getSessionById(sessionId);
-        assertEquals(1, session.getSequenceId());
+        assertEquals(0, session.getSequenceId());
 
         // update session
-        session.setSequenceId(2);
+        session.incrementSequence();
         formSessionService.saveSession(session);
 
         // cache and find return updated session
-        assertEquals(2, getCachedSession(sessionId).get().getSequenceId());
-        assertEquals(2, formSessionService.getSessionById(sessionId).getSequenceId());
+        assertEquals(1, getCachedSession(sessionId).get().getSequenceId());
+        assertEquals(1, formSessionService.getSessionById(sessionId).getSequenceId());
     }
 
     @Test

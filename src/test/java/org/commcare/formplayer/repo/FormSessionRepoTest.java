@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
 import java.time.Instant;
@@ -29,25 +30,16 @@ public class FormSessionRepoTest {
 
     @Test
     public void testSaveAndLoad() {
-        SerializableFormSession session = new SerializableFormSession();
+        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
+        SerializableFormSession session = new SerializableFormSession(
+                "domain", "appId", "username", "asUser", "restoreAsCaseId",
+                "/a/domain/receiver", null, "title", true, "en", false,
+                ImmutableMap.of("a", "1", "b",  "2"),
+                ImmutableMap.of("count", functionHandlers)
+        );
         session.setInstanceXml("xml");
         session.setFormXml("form xml");
-        session.setUsername("username");
-        session.setSessionData(ImmutableMap.of("a", "1", "b",  "2"));
-        session.setSequenceId(1);
-        session.setInitLang("en");
-        session.setDomain("domain");
-        session.setPostUrl("/a/domain/receiver");
-        session.setTitle("title");
-        session.setDateOpened(new Date().toString());
-        session.setOneQuestionPerScreen(true);
-        session.setCurrentIndex("a0");
-        session.setAsUser("asUser");
-        session.setAppId("appId");
-        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
-        session.setFunctionContext(ImmutableMap.of("count", functionHandlers));
-        session.setInPromptMode(false);
-        session.setRestoreAsCaseId("restoreAsCaseId");
+        session.incrementSequence();
 
         formSessionRepo.saveAndFlush(session);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
