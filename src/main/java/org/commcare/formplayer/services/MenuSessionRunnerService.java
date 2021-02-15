@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
@@ -396,6 +397,15 @@ public class MenuSessionRunnerService {
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
+            Screen nextScreen = menuSession.getNextScreen();
+            if (nextScreen instanceof EntityScreen) {
+                EntityScreen entityScreen = (EntityScreen)nextScreen;
+                Action autoLaunchAction = entityScreen.getAutoLaunchAction();
+                if (autoLaunchAction != null) {
+                    SessionWrapper session = menuSession.getSessionWrapper();
+                    session.executeStackOperations(autoLaunchAction.getStackOperations(), session.getEvaluationContext());
+                }
+            }
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
