@@ -63,4 +63,29 @@ public class FormSessionRepoTest {
         assertThat(loaded.getDateCreated()).isEqualTo(dateCreated);
         assertThat(loaded.getVersion()).isEqualTo(2);
     }
+
+    @Test
+    public void testUpdateableFields() {
+        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
+        SerializableFormSession session = new SerializableFormSession(
+                "domain", "appId", "username", "asUser", "restoreAsCaseId",
+                "/a/domain/receiver", null, "title", true, "en", false,
+                ImmutableMap.of("a", "1", "b",  "2"),
+                ImmutableMap.of("count", functionHandlers)
+        );
+        session.incrementSequence();
+
+        // save session
+        formSessionRepo.saveAndFlush(session);
+        int version = session.getVersion();
+
+        // update field that should not get updated in the DB
+        ReflectionTestUtils.setField(session,"domain","newdomain");
+        formSessionRepo.saveAndFlush(session);
+        entityManager.refresh(session);
+
+        // check that version is updated
+        assertThat(session.getVersion()).isGreaterThan(version);
+        assertThat(session.getDomain()).isEqualTo("domain");
+    }
 }

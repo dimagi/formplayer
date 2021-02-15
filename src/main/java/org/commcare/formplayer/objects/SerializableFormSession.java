@@ -24,63 +24,72 @@ public class SerializableFormSession implements Serializable{
     @Version
     private int version;
 
-    @Column(name="instancexml")
-    private String instanceXml;
-
-    @Column(name="formxml")
-    private String formXml;
-
-    private String username;
-
-    @Column(name="initlang")
-    private String initLang;
-
-    @Column(name="sequenceid")
-    @Convert(converter = IntStringConverter.class)
-    private Integer sequenceId;
-
-    @Column(name="sessiondata")
-    @Convert(converter = ByteArrayConverter.class)
-    private Map<String, String> sessionData;
-
-    private String domain;
-
-    @Column(name="posturl")
-    private String postUrl;
-
-    @Column(name="menu_session_id")
-    private String menuSessionId;
-    private String title;
-
-    // legacy field to be removed once `dateCreated` is fully populated
-    @Column(name="dateopened")
+    /**
+     * Deprecated: to be removed once `dateCreated` is fully populated
+     */
+    @Column(name="dateopened", updatable=false)
     private String dateOpened;
 
     @CreatedDate
     @Column(name="datecreated")
     private Instant dateCreated;
 
-    @Column(name="onequestionperscreen")
-    private boolean oneQuestionPerScreen;
+    @Column(updatable=false)
+    private String domain;
 
-    @Column(name="asuser")
+    @Column(name="asuser", updatable=false)
     private String asUser;
 
-    @Column(name="currentindex")
-    private String currentIndex = "0";
-
-    @Column(name="appid")
+    @Column(name="appid", updatable=false)
     private String appId;
 
+    @Column(name="caseid", updatable=false)
+    private String restoreAsCaseId;
+
+    @Column(name="posturl", updatable=false)
+    private String postUrl;
+
+    @Column(name="menu_session_id", updatable=false)
+    private String menuSessionId;
+
+    @Column(updatable=false)
+    private String title;
+
+    @Column(name="onequestionperscreen", updatable=false)
+    private boolean oneQuestionPerScreen;
+
+    @Column(name="formxml", updatable=false)
+    private String formXml;
+
+    @Column(name="instancexml")
+    private String instanceXml;
+
+    @Column(updatable=false)
+    private String username;
+
+    @Column(name="initlang")
+    private String initLang;
+
+    /**
+     * Deprecated. To be replaced by ``version``
+     */
+    @Column(name="sequenceid")
+    @Convert(converter=IntStringConverter.class)
+    private Integer sequenceId;
+
+    @Column(name="sessiondata")
+    @Convert(converter=ByteArrayConverter.class)
+    private Map<String, String> sessionData;
+
+    @Column(name="currentindex")
+    private String currentIndex;
+
     @Column(name="functioncontext")
-    @Convert(converter = ByteArrayConverter.class)
+    @Convert(converter=ByteArrayConverter.class)
     private Map<String, FunctionHandler[]> functionContext;
 
     @Column(name="inpromptmode")
     private boolean inPromptMode;
-
-    @Column(name="caseid")
-    private String restoreAsCaseId;
 
     public SerializableFormSession() { }
     public SerializableFormSession(String id) {
