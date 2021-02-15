@@ -1,5 +1,6 @@
 package org.commcare.formplayer.beans;
 
+import org.commcare.formplayer.objects.FormSessionListDetailsView;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.sandbox.SqlStorage;
@@ -18,14 +19,14 @@ public class SessionListItem {
     private String sessionId;
     private String caseName;
 
-    public SessionListItem(SqlStorage<Case> caseStorage, SerializableFormSession session){
+    public SessionListItem(SqlStorage<Case> caseStorage, FormSessionListDetailsView session){
         this.title = session.getTitle();
         this.dateOpened = FormplayerDateUtils.convertJavaDateStringToISO(session.getDateOpened());
         this.sessionId = session.getId();
         this.caseName = loadCaseName(caseStorage, session);
     }
 
-    private String loadCaseName(SqlStorage<Case> caseStorage, SerializableFormSession session) {
+    private String loadCaseName(SqlStorage<Case> caseStorage, FormSessionListDetailsView session) {
         String caseId = session.getSessionData().get("case_id");
         try {
             return SessionUtils.tryLoadCaseName(caseStorage, caseId);

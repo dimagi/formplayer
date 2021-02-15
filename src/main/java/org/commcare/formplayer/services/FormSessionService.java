@@ -5,6 +5,7 @@ import io.sentry.event.Event;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.objects.FormSessionListDetailsView;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.util.Constants;
@@ -15,6 +16,8 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -87,8 +90,8 @@ public class FormSessionService {
         return session.get();
     }
 
-    public List<SerializableFormSession> getSessionsForUser(String username) {
-        return formSessionRepo.findUserSessions(username);
+    public List<FormSessionListDetailsView> getSessionsForUser(String username) {
+        return formSessionRepo.findByUsername(username, Sort.by(Sort.Direction.DESC, "dateCreated"));
     }
 
     @CachePut(key = "#session.id")

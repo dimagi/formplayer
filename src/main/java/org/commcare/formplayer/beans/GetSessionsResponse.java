@@ -1,5 +1,6 @@
 package org.commcare.formplayer.beans;
 
+import org.commcare.formplayer.objects.FormSessionListDetailsView;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.cases.model.Case;
@@ -17,7 +18,7 @@ public class GetSessionsResponse {
 
     public GetSessionsResponse(){}
 
-    public GetSessionsResponse(SqlStorage<Case> caseStorage, ArrayList<SerializableFormSession> sessionList){
+    public GetSessionsResponse(SqlStorage<Case> caseStorage, ArrayList<FormSessionListDetailsView> sessionList){
         sessions = new SessionListItem[sessionList.size()];
         for (int i = 0; i < sessionList.size(); i++){
             sessions[i] = new SessionListItem(caseStorage, sessionList.get(i));
