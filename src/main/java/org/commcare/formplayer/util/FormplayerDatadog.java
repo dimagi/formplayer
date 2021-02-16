@@ -80,11 +80,10 @@ public class FormplayerDatadog {
      * @param value - value of the tag (e.g., test_domain)
      */
     public void addRequestScopedTag(String name, String value) {
-        // ensure tag is eligible for this domain before adding
-        if (shouldAddTag(name)) {
-            Tag tag = new Tag(name, value);
-            requestScopedTags.put(name, tag);
-        }
+        // get correct value to send (only send unique tag value if domain is eligible)
+        String valueToSend = getTagValueToSend(name, value);
+        Tag tag = new Tag(name, valueToSend);
+        requestScopedTags.put(name, tag);
     }
 
     /**
@@ -135,11 +134,11 @@ public class FormplayerDatadog {
         HashSet<String> transientKeys = new HashSet<String>();
         
         for (Tag tag : transientTags) {
-            if (shouldAddTag(tag.name)) {
-                formattedTags.add(tag.formatted());
-                // keep track of transient tag names
-                transientKeys.add(tag.name);
-            }
+            String tagValueToSend = getTagValueToSend(tag.name, tag.value);
+            Tag tempTag = new Tag(tag.name, tagValueToSend);
+            formattedTags.add(tempTag.formatted());
+            // keep track of transient tag names
+            transientKeys.add(tempTag.name);
         }
 
         // append request scoped tags
@@ -153,17 +152,24 @@ public class FormplayerDatadog {
     }
 
     /**
-     * Determines if the tag name is eligible for the current domain
-     * NOTE: if the domain is not set and it is a detailed tag, this will return false
-     * @param tagName - tag.name
-     * @return boolean representing if tag should be added or not
+     * Returns the appropriate tag value to send to datadog
+     * Necessary because only ceratin domains are eligible for detailed tags
+     * @param tagName - tag identifier
+     * @param tagValue - tag value
+     * @return String representing tag to send
      */
-    private boolean shouldAddTag(String tagName) {
+    private String getTagValueToSend(String tagName, String tagValue) {
+        // if a non-null tag value is provided for a detailed tag, but the domain is not eligible
+        // return _other as the value to differentiate between tag values that are null and show up as N/A in datadog
+        String defaultValue = "_other";
         if (getDetailedTagNames().contains(tagName)) {
-             return domain != null && getDomainsWithDetailedTagging().contains(this.domain);
+            if (domain != null && getDomainsWithDetailedTagging().contains(this.domain)) {
+                return tagValue;
+            } else {
+                return defaultValue;
+            }
         } else {
-            // not a detailed metric, can add
-            return true;
+            return tagValue;
         }
     }
 

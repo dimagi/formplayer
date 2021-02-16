@@ -119,22 +119,22 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    public void testDoNotAddRequestScopedDetailedTagForIneligibleDomain() {
+    public void testAddRequestScopedDetailedTagForIneligibleDomain() {
         String domain = "ineligible_domain";
         datadog.setDomain(domain);
         datadog.addRequestScopedTag("detailed_tag", "test_value");
         datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, Collections.emptyList());
-        // expect no tags
-        String[] args = {};
+        String expectedTag = "detailed_tag:_other";
+        String[] args = {expectedTag};
         verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
     }
 
     @Test
-    public void testDoNotAddRequestScopedDetailedTagForNullDomain() {
+    public void testAddRequestScopedDetailedTagForNullDomain() {
         datadog.addRequestScopedTag("detailed_tag", "test_value");
         datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, Collections.emptyList());
-        // expect no tags
-        String[] args = {};
+        String expectedTag = "detailed_tag:_other";
+        String[] args = {expectedTag};
         verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
     }
 
@@ -151,25 +151,25 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    public void testDoNotAddTransientDetailedTagForIneligibleDomain() {
+    public void testAddTransientDetailedTagForIneligibleDomain() {
         // detailed tags should not be added if domain is ineligible
         String domain = "ineligible_domain";
         datadog.setDomain(domain);
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
         datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, transientTags);
-        // expect no tags
-        String[] args = {};
+        String expectedTag = "detailed_tag:_other";
+        String[] args = {expectedTag};
         verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
     }
 
     @Test
-    public void testDoNotAddTransientDetailedTagForNullDomain() {
+    public void testAddTransientDetailedTagForNullDomain() {
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
         datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, transientTags);
-        // expect no tags
-        String[] args = {};
+        String expectedTag = "detailed_tag:_other";
+        String[] args = {expectedTag};
         verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
     }
 
