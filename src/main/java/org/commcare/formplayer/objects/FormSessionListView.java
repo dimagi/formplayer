@@ -6,14 +6,11 @@ import java.util.Map;
 /**
  * Projection of SerializableFormSession with only fields
  * required by the ``get_session`` view
- *
- * This is a temporary projection that can be removed once the
- * ``dateOpened`` field is no longer required.
  */
-public interface FormSessionListDetailsViewRaw {
+public interface FormSessionListView {
     String getId();
     String getTitle();
     String getDateOpened();
     Instant getDateCreated();
-    byte[] getSessionData();
+    Map<String, String> getSessionData();
 }

@@ -1,8 +1,8 @@
 package org.commcare.formplayer.repo;
 
 import com.google.common.collect.ImmutableMap;
-import org.commcare.formplayer.objects.FormSessionListDetailsView;
-import org.commcare.formplayer.objects.FormSessionListDetailsViewRaw;
+import org.commcare.formplayer.objects.FormSessionListView;
+import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.utils.JpaTestUtils;
@@ -82,7 +82,7 @@ public class FormSessionRepoTest {
         session.setTitle("More Momo");
         session.setSessionData(sessionData);
         formSessionRepo.save(session);
-        List<FormSessionListDetailsView> userSessions = formSessionRepo.findByUsername(
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsername(
                 "momo", Sort.by(Sort.Direction.DESC, "dateCreated")
         );
         assertThat(userSessions).hasSize(1);
@@ -105,7 +105,7 @@ public class FormSessionRepoTest {
         session.setTitle("More Momo");
         session.setSessionData(sessionData);
         formSessionRepo.save(session);
-        List<FormSessionListDetailsViewRaw> userSessions = formSessionRepo.findUserSessions("momo");
+        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessions("momo");
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
         assertThat(userSessions.get(0).getDateOpened()).isEqualTo(dateOpened);

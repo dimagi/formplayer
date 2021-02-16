@@ -3,7 +3,7 @@ package org.commcare.formplayer.application;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.*;
-import org.commcare.formplayer.objects.FormSessionListDetailsView;
+import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,12 +43,12 @@ public class IncompleteSessionController extends AbstractBaseController{
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
-        List<FormSessionListDetailsView> formplayerSessions = formSessionService.getSessionsForUser(scrubbedUsername);
+        List<FormSessionListView> formplayerSessions = formSessionService.getSessionsForUser(scrubbedUsername);
 
-        ArrayList<FormSessionListDetailsView> sessions = new ArrayList<>();
+        ArrayList<FormSessionListView> sessions = new ArrayList<>();
         Set<String> formplayerSessionIds = new HashSet<>();
 
-        for (FormSessionListDetailsView serializableFormSession : formplayerSessions) {
+        for (FormSessionListView serializableFormSession : formplayerSessions) {
             sessions.add(serializableFormSession);
             formplayerSessionIds.add(serializableFormSession.getId());
         }

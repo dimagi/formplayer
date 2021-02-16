@@ -3,8 +3,8 @@ package org.commcare.formplayer.services;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
-import org.commcare.formplayer.objects.FormSessionListDetailsView;
-import org.commcare.formplayer.objects.FormSessionListDetailsViewRaw;
+import org.commcare.formplayer.objects.FormSessionListView;
+import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.junit.jupiter.api.AfterEach;
@@ -132,10 +132,10 @@ public class FormSessionServiceTest {
         backingMap.put("dateCreated", Instant.now());
         backingMap.put("sessionData", SerializationUtils.serialize(sessionData));
 
-        FormSessionListDetailsViewRaw rawView = createProjection(FormSessionListDetailsViewRaw.class, backingMap);
+        FormSessionListViewRaw rawView = createProjection(FormSessionListViewRaw.class, backingMap);
 
         when(formSessionRepo.findUserSessions(anyString())).thenReturn(ImmutableList.of(rawView));
-        List<FormSessionListDetailsView> sessions = formSessionService.getSessionsForUser("username");
+        List<FormSessionListView> sessions = formSessionService.getSessionsForUser("username");
 
         HashMap<String, Object> expected = new HashMap<>(backingMap);
         expected.put("sessionData", sessionData);
