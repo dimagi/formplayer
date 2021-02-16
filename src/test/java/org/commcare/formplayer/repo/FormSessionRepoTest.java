@@ -2,6 +2,7 @@ package org.commcare.formplayer.repo;
 
 import com.google.common.collect.ImmutableMap;
 import org.commcare.formplayer.objects.FormSessionListDetailsView;
+import org.commcare.formplayer.objects.FormSessionListDetailsViewRaw;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.utils.JpaTestUtils;
@@ -11,11 +12,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.util.SerializationUtils;
 
 import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,6 +90,28 @@ public class FormSessionRepoTest {
         assertThat(userSessions.get(0).getDateOpened()).isEqualTo(dateOpened);
         assertThat(userSessions.get(0).getDateCreated()).isEqualTo(session.getDateCreated());
         assertThat(userSessions.get(0).getSessionData()).isEqualTo(sessionData);
+        assertThat(userSessions.get(0).getId()).isEqualTo(session.getId());
+    }
+
+    @Test
+    public void testGetListViewRaw() {
+        ImmutableMap<String, String> sessionData = ImmutableMap.of("a", "1", "b", "2");
+        String dateOpened = new Date().toString();
+
+        SerializableFormSession session = new SerializableFormSession();
+        session.setSequenceId(0);
+        session.setUsername("momo");
+        session.setDateOpened(dateOpened);
+        session.setTitle("More Momo");
+        session.setSessionData(sessionData);
+        formSessionRepo.save(session);
+        List<FormSessionListDetailsViewRaw> userSessions = formSessionRepo.findUserSessions("momo");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
+        assertThat(userSessions.get(0).getDateOpened()).isEqualTo(dateOpened);
+        assertThat(userSessions.get(0).getDateCreated()).isEqualTo(session.getDateCreated());
+        Map<String, String> dbSessionData = (Map<String, String>) SerializationUtils.deserialize(userSessions.get(0).getSessionData());
+        assertThat(dbSessionData).isEqualTo(sessionData);
         assertThat(userSessions.get(0).getId()).isEqualTo(session.getId());
     }
 }
