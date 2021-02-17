@@ -159,8 +159,8 @@ public class FormplayerDatadog {
      * @return String representing tag to send
      */
     private String getTagValueToSend(String tagName, String tagValue) {
-        // if a non-null tag value is provided for a detailed tag, but the domain is not eligible
-        // return _other as the value to differentiate between tag values that are null and show up as N/A in datadog
+        // if a domain is ineligible for detailed tags, instead of sending an empty tag value, send "_other"
+        // this differentiates between intentionally and unintentionally empty tag values ("_other" vs "N/A", respectively)
         String defaultValue = "_other";
         if (getDetailedTagNames().contains(tagName)) {
             if (domain != null && getDomainsWithDetailedTagging().contains(this.domain)) {
