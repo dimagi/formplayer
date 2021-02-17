@@ -95,8 +95,7 @@ public class FormSession {
         loadInstanceXml(formDef, session.getInstanceXml());
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         setupJavaRosaObjects();
-
-        if (session.isOneQuestionPerScreen() || session.isInPromptMode()) {
+        if (session.getOneQuestionPerScreen() || session.getInPromptMode()) {
             FormIndex formIndex = JsonActionUtils.indexFromString(session.getCurrentIndex(), this.formDef);
             formController.jumpToIndex(formIndex);
             formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
@@ -124,11 +123,22 @@ public class FormSession {
                        String caseId) throws Exception {
 
         this.formDef = formDef;
-        session = new SerializableFormSession(
-                domain, appId, TableBuilder.scrubName(username), asUser, caseId,
-                postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
-                locale, inPromptMode, sessionData, functionContext
-        );
+        session = new SerializableFormSession();
+        session.setUsername(TableBuilder.scrubName(username));
+        session.setInitLang(locale);
+        session.setDomain(domain);
+        session.setTitle(formDef.getTitle());
+        session.setDateOpened(new Date().toString());
+        session.setOneQuestionPerScreen(oneQuestionPerScreen);
+        session.setCurrentIndex("0");
+        session.setAsUser(asUser);
+        session.setAppId(appId);
+        session.setMenuSessionId(menuSessionId);
+        session.setPostUrl(postUrl);
+        session.setSessionData(sessionData);
+        session.setInPromptMode(inPromptMode);
+        session.setFunctionContext(functionContext);
+        session.setRestoreAsCaseId(caseId);
 
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
@@ -314,7 +324,7 @@ public class FormSession {
     }
 
     public JSONArray getFormTree() {
-        if (session.isOneQuestionPerScreen()) {
+        if (session.getOneQuestionPerScreen()) {
             return JsonActionUtils.getOneQuestionPerScreenJSON(formController.getFormEntryController().getModel(),
                     formController.getFormEntryController(),
                     formController.getFormIndex());
@@ -484,13 +494,13 @@ public class FormSession {
                 formEntryModel,
                 answer != null ? answer.toString() : null,
                 answerIndex,
-                session.isOneQuestionPerScreen(),
+                session.getOneQuestionPerScreen(),
                 session.getCurrentIndex(),
                 false,
                 true);
 
         FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
-        if (!session.isInPromptMode() || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {
+        if (!session.getInPromptMode() || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {
             return response;
         }
         return getNextFormNavigation();
