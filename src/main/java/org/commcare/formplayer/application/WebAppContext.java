@@ -101,10 +101,10 @@ public class WebAppContext implements WebMvcConfigurer {
     @Value("${sentry.dsn:}")
     private String ravenDsn;
 
-    @Value("${detailed_tagging.domains}")
+    @Value("${detailed_tagging.domains:}")
     private List<String> domainsWithDetailedTagging;
 
-    @Value("${detailed_tagging.tag_names}")
+    @Value("${detailed_tagging.tag_names:}")
     private List<String> detailedTagNames;
 
     @Override
