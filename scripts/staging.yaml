@@ -59,7 +59,7 @@ branches:
   - gh/add-case-list-name # Graham Feb 10
   - sk/remove-install-reference+autoLaunchRevamp
   - autoLaunchRevamp #Shubham Feb 9
-  # - gh/detailed-tagging-support # Graham Feb 17
+  - gh/detailed-tagging-support # Graham Feb 17
 submodules:
   libs/commcare:
     trunk: formplayer
