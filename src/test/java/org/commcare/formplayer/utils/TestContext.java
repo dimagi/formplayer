@@ -30,6 +30,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import java.time.Duration;
+import java.util.ArrayList;
+
 
 public class TestContext {
 
@@ -115,7 +117,7 @@ public class TestContext {
 
     @Bean
     public FormplayerDatadog datadog() {
-        return Mockito.spy(new FormplayerDatadog(datadogStatsDClient()));
+        return Mockito.spy(new FormplayerDatadog(datadogStatsDClient(), new ArrayList<String>(), new ArrayList<String>()));
     }
 
     @Bean
