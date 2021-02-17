@@ -59,7 +59,6 @@ branches:
   - gh/add-case-list-name # Graham Feb 10
   - sk/remove-install-reference+autoLaunchRevamp
   - autoLaunchRevamp #Shubham Feb 9
-  - gh/distribution-timings # Graham Feb 11
   - gh/detailed-tagging-support # Graham Feb 17
 submodules:
   libs/commcare:
