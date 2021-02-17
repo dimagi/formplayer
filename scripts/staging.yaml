@@ -62,6 +62,7 @@ branches:
   - gh/distribution-timings # Graham Feb 11
   - sk/remove-install-reference  # SK Feb 12
   - sk/fix-version  # SK Feb 16
+  - gh/detailed-tagging-support # Graham Feb 17
 submodules:
   libs/commcare:
     trunk: formplayer
