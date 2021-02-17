@@ -1,6 +1,10 @@
 package org.commcare.formplayer.services;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.objects.FormSessionListView;
+import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.junit.jupiter.api.AfterEach;
@@ -21,15 +25,16 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.util.SerializationUtils;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 
 import static java.util.Optional.ofNullable;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.commcare.formplayer.utils.JpaTestUtils.createProjection;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -115,6 +120,28 @@ public class FormSessionServiceTest {
 
         formSessionService.purge();
         assertFalse(getCachedSession(sessionId).isPresent());
+    }
+
+    @Test
+    public void testGetSessionsForUser() {
+        ImmutableMap<String, String> sessionData = ImmutableMap.of("a", "1", "b", "2");
+        Map<String, Object> backingMap = new HashMap<>();
+        backingMap.put("id", "Dave");
+        backingMap.put("title", "Matthews");
+        backingMap.put("dateOpened", new Date().toString());
+        backingMap.put("dateCreated", Instant.now());
+        backingMap.put("sessionData", SerializationUtils.serialize(sessionData));
+
+        FormSessionListViewRaw rawView = createProjection(FormSessionListViewRaw.class, backingMap);
+
+        when(formSessionRepo.findUserSessions(anyString())).thenReturn(ImmutableList.of(rawView));
+        List<FormSessionListView> sessions = formSessionService.getSessionsForUser("username");
+
+        HashMap<String, Object> expected = new HashMap<>(backingMap);
+        expected.put("sessionData", sessionData);
+        assertThat(sessions).hasSize(1);
+        assertThat(sessions.get(0)).extracting("id", "title", "dateOpened", "dateCreated", "sessionData")
+                .containsAll(expected.values());
     }
 
     private Optional<SerializableFormSession> getCachedSession(String sessionId) {
