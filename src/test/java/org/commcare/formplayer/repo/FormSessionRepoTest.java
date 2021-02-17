@@ -18,7 +18,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.EntityManager;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,16 +40,7 @@ public class FormSessionRepoTest {
 
     @Test
     public void testSaveAndLoad() {
-        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
-        SerializableFormSession session = new SerializableFormSession(
-                "domain", "appId", "username", "asUser", "restoreAsCaseId",
-                "/a/domain/receiver", null, "title", true, "en", false,
-                ImmutableMap.of("a", "1", "b",  "2"),
-                ImmutableMap.of("count", functionHandlers)
-        );
-        session.setInstanceXml("xml");
-        session.setFormXml("form xml");
-        session.incrementSequence();
+        SerializableFormSession session = getSession();
 
         formSessionRepo.saveAndFlush(session);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
@@ -73,8 +63,7 @@ public class FormSessionRepoTest {
      */
     @Test
     public void testDeleteSession__nullVersion() {
-        SerializableFormSession session = new SerializableFormSession();
-        session.incrementSequence();
+        SerializableFormSession session = getSession();
         formSessionRepo.saveAndFlush(session);
         entityManager.clear();
 
@@ -87,15 +76,9 @@ public class FormSessionRepoTest {
 
     @Test
     public void testGetListView() {
-        ImmutableMap<String, String> sessionData = ImmutableMap.of("a", "1", "b", "2");
-        String dateOpened = new Date().toString();
-
-        SerializableFormSession session = new SerializableFormSession();
-        session.setSequenceId(0);
-        session.setUsername("momo");
-        session.setDateOpened(dateOpened);
-        session.setTitle("More Momo");
-        session.setSessionData(sessionData);
+        SerializableFormSession session = getSession();
+        Map<String, String> sessionData = session.getSessionData();
+        String dateOpened = session.getDateOpened();
         formSessionRepo.save(session);
         List<FormSessionListView> userSessions = formSessionRepo.findByUsername(
                 "momo", Sort.by(Sort.Direction.DESC, "dateCreated")
@@ -110,15 +93,9 @@ public class FormSessionRepoTest {
 
     @Test
     public void testGetListViewRaw() {
-        ImmutableMap<String, String> sessionData = ImmutableMap.of("a", "1", "b", "2");
-        String dateOpened = new Date().toString();
-
-        SerializableFormSession session = new SerializableFormSession();
-        session.setSequenceId(0);
-        session.setUsername("momo");
-        session.setDateOpened(dateOpened);
-        session.setTitle("More Momo");
-        session.setSessionData(sessionData);
+        SerializableFormSession session = getSession();
+        Map<String, String> sessionData = session.getSessionData();
+        String dateOpened = session.getDateOpened();
         formSessionRepo.save(session);
         List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessions("momo");
         assertThat(userSessions).hasSize(1);
@@ -132,14 +109,7 @@ public class FormSessionRepoTest {
 
     @Test
     public void testUpdateableFields() {
-        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
-        SerializableFormSession session = new SerializableFormSession(
-                "domain", "appId", "username", "asUser", "restoreAsCaseId",
-                "/a/domain/receiver", null, "title", true, "en", false,
-                ImmutableMap.of("a", "1", "b",  "2"),
-                ImmutableMap.of("count", functionHandlers)
-        );
-        session.incrementSequence();
+        SerializableFormSession session = getSession();
 
         // save session
         formSessionRepo.saveAndFlush(session);
@@ -153,5 +123,19 @@ public class FormSessionRepoTest {
         // check that version is updated
         assertThat(session.getVersion()).isGreaterThan(version);
         assertThat(session.getDomain()).isEqualTo("domain");
+    }
+
+    private SerializableFormSession getSession() {
+        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
+        SerializableFormSession session = new SerializableFormSession(
+                "domain", "appId", "momo", "asUser", "restoreAsCaseId",
+                "/a/domain/receiver", null, "More Momo", true, "en", false,
+                ImmutableMap.of("a", "1", "b", "2"),
+                ImmutableMap.of("count", functionHandlers)
+        );
+        session.setInstanceXml("xml");
+        session.setFormXml("form xml");
+        session.incrementSequence();
+        return session;
     }
 }
