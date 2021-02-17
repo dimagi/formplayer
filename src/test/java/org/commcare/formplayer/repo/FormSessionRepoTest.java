@@ -10,10 +10,14 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,6 +31,9 @@ public class FormSessionRepoTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     public void testSaveAndLoad() {
@@ -54,6 +61,24 @@ public class FormSessionRepoTest {
         formSessionRepo.saveAndFlush(loaded);
         assertThat(loaded.getDateCreated()).isEqualTo(dateCreated);
         assertThat(loaded.getVersion()).isEqualTo(2);
+    }
+
+    /**
+     * Test that the session is deleted correctly even if ``version`` is null
+     * as is the case with legacy data.
+     */
+    @Test
+    public void testDeleteSession__nullVersion() {
+        SerializableFormSession session = new SerializableFormSession();
+        session.incrementSequence();
+        formSessionRepo.saveAndFlush(session);
+        entityManager.clear();
+
+        jdbcTemplate.update("update formplayer_sessions set version = null where id = ?", session.getId());
+        formSessionRepo.deleteSessionById(session.getId());
+
+        Optional<SerializableFormSession> byId = formSessionRepo.findById(session.getId());
+        assertThat(byId).isEmpty();
     }
 
     @Test

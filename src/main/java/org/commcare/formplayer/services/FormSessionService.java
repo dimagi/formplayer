@@ -98,6 +98,8 @@ public class FormSessionService {
 
     @CacheEvict
     public void deleteSessionById(String id) {
-        formSessionRepo.deleteById(id);
+        // Replace code below with this line once the 'version' column is fully populated.
+        //  formSessionRepo.deleteById(id);
+        formSessionRepo.deleteSessionById(id);
     }
 }

@@ -24,7 +24,7 @@ public class SerializableFormSession implements Serializable{
 
     @Getter
     @Version
-    private int version;
+    private Integer version;
 
     /**
      * Deprecated: to be removed once `dateCreated` is fully populated
