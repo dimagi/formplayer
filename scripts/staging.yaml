@@ -58,7 +58,7 @@ branches:
   - caseSearchCache #Shubham Feb 9
   - sk/remove-install-reference+autoLaunchRevamp
   - autoLaunchRevamp #Shubham Feb 9
-  - gh/detailed-tagging-support # Graham Feb 17
+  # - gh/detailed-tagging-support # Graham Feb 17
 submodules:
   libs/commcare:
     trunk: formplayer
