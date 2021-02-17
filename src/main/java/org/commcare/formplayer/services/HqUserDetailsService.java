@@ -6,6 +6,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.auth.HqSessionKeyBean;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
+import org.commcare.formplayer.exceptions.SessionAuthException;
+import org.commcare.formplayer.exceptions.SessionAuthForbiddenException;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.exceptions.UserDetailsException;
 import org.commcare.formplayer.util.Constants;
@@ -17,6 +19,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 
 @Service
 public class HqUserDetailsService {
@@ -34,7 +39,7 @@ public class HqUserDetailsService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public HqUserDetailsBean getUserDetails(String domain, String sessionKey) {
+    public HqUserDetailsBean getUserDetails(String domain, String sessionKey) throws SessionAuthException {
         HttpHeaders headers = new HttpHeaders();
         String data = null;
         try {
@@ -50,6 +55,8 @@ public class HqUserDetailsService {
             return userDetails;
         } catch(HttpClientErrorException.NotFound nfe) {
             throw new SessionAuthUnavailableException();
+        } catch (HttpClientErrorException.Forbidden ex) {
+            throw new SessionAuthForbiddenException();
         }
     }
 

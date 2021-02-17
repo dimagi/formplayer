@@ -2,6 +2,7 @@ package org.commcare.formplayer.application;
 
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.exceptions.SessionAuthException;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.lang3.StringUtils;
@@ -127,9 +128,9 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
 
             try {
                 setUserDetails(request);
-            } catch(SessionAuthUnavailableException saue) {
-                throw AuthorizationFailureException.AuthFailed("User session unavailable",
-                        HttpServletResponse.SC_UNAUTHORIZED);
+            } catch(SessionAuthException saue) {
+                throw AuthorizationFailureException.AuthFailed("Use session authentication failed.",
+                        saue.getResponseCode());
             }
             JSONObject data = RequestUtils.getPostData(request);
 
@@ -205,7 +206,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
         request.setUserDetails(userDetailsBean);
     }
 
-    private void setUserDetails(FormplayerHttpRequest request) {
+    private void setUserDetails(FormplayerHttpRequest request) throws SessionAuthException {
         request.setUserDetails(userDetailsService.getUserDetails(request.getDomain(), getSessionId(request)));
 
     }
