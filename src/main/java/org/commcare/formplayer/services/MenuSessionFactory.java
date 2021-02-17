@@ -86,12 +86,11 @@ public class MenuSessionFactory {
     public MenuSession buildSession(String username,
                                     String domain,
                                     String appId,
-                                    String installReference,
                                     String locale,
                                     boolean oneQuestionPerScreen,
                                     String asUser,
                                     boolean preview) throws Exception {
-        return new MenuSession(username, domain, appId, installReference, locale,
+        return new MenuSession(username, domain, appId, locale,
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
     }
 

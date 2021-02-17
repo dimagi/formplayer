@@ -23,7 +23,6 @@ public class Constants {
     public final static String URL_SYNC_DB = "sync-db";
     public final static String URL_LIST_SESSIONS = "sessions";
     public final static String URL_GET_SESSION = "get_session";
-    public static final String URL_INSTALL = "install";
     public static final String URL_UPDATE = "update";
     public static final String URL_INITIAL_MENU_NAVIGATION = "navigate_menu_start";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
