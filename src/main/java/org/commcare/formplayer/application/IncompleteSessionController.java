@@ -43,7 +43,9 @@ public class IncompleteSessionController extends AbstractBaseController{
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
-        List<FormSessionListView> formplayerSessions = formSessionService.getSessionsForUser(scrubbedUsername);
+        List<FormSessionListView> formplayerSessions = formSessionService.getSessionsForUser(
+                scrubbedUsername, getSessionRequest.getDomain()
+        );
 
         ArrayList<FormSessionListView> sessions = new ArrayList<>();
         Set<String> formplayerSessionIds = new HashSet<>();

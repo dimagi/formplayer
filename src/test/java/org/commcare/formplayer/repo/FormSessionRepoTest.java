@@ -40,25 +40,7 @@ public class FormSessionRepoTest {
 
     @Test
     public void testSaveAndLoad() {
-        SerializableFormSession session = new SerializableFormSession();
-        session.setInstanceXml("xml");
-        session.setFormXml("form xml");
-        session.setUsername("username");
-        session.setSessionData(ImmutableMap.of("a", "1", "b",  "2"));
-        session.setSequenceId(1);
-        session.setInitLang("en");
-        session.setDomain("domain");
-        session.setPostUrl("/a/domain/receiver");
-        session.setTitle("title");
-        session.setDateOpened(new Date().toString());
-        session.setOneQuestionPerScreen(true);
-        session.setCurrentIndex("a0");
-        session.setAsUser("asUser");
-        session.setAppId("appId");
-        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
-        session.setFunctionContext(ImmutableMap.of("count", functionHandlers));
-        session.setInPromptMode(false);
-        session.setRestoreAsCaseId("restoreAsCaseId");
+        SerializableFormSession session = getSession();
 
         formSessionRepo.saveAndFlush(session);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
@@ -81,8 +63,7 @@ public class FormSessionRepoTest {
      */
     @Test
     public void testDeleteSession__nullVersion() {
-        SerializableFormSession session = new SerializableFormSession();
-        session.incrementSequence();
+        SerializableFormSession session = getSession();
         formSessionRepo.saveAndFlush(session);
         entityManager.clear();
 
@@ -95,18 +76,12 @@ public class FormSessionRepoTest {
 
     @Test
     public void testGetListView() {
-        ImmutableMap<String, String> sessionData = ImmutableMap.of("a", "1", "b", "2");
-        String dateOpened = new Date().toString();
-
-        SerializableFormSession session = new SerializableFormSession();
-        session.setSequenceId(0);
-        session.setUsername("momo");
-        session.setDateOpened(dateOpened);
-        session.setTitle("More Momo");
-        session.setSessionData(sessionData);
+        SerializableFormSession session = getSession();
+        String dateOpened = session.getDateOpened();
+        Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
-        List<FormSessionListView> userSessions = formSessionRepo.findByUsername(
-                "momo", Sort.by(Sort.Direction.DESC, "dateCreated")
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomain(
+                "momo", "domain", Sort.by(Sort.Direction.DESC, "dateCreated")
         );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
@@ -117,18 +92,29 @@ public class FormSessionRepoTest {
     }
 
     @Test
-    public void testGetListViewRaw() {
-        ImmutableMap<String, String> sessionData = ImmutableMap.of("a", "1", "b", "2");
-        String dateOpened = new Date().toString();
+    public void testGetListView_filterByDomain() {
+        formSessionRepo.save(getSession("domain1", "session1"));
+        formSessionRepo.save(getSession("domain2", "session2"));
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomain(
+                "momo", "domain1", Sort.by(Sort.Direction.DESC, "dateCreated")
+        );
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session1");
 
-        SerializableFormSession session = new SerializableFormSession();
-        session.setSequenceId(0);
-        session.setUsername("momo");
-        session.setDateOpened(dateOpened);
-        session.setTitle("More Momo");
-        session.setSessionData(sessionData);
+        userSessions = formSessionRepo.findByUsernameAndDomain(
+                "momo", "domain2", Sort.by(Sort.Direction.DESC, "dateCreated")
+        );
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session2");
+    }
+
+    @Test
+    public void testGetListViewRaw() {
+        SerializableFormSession session = getSession();
+        String dateOpened = session.getDateOpened();
+        Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
-        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessions("momo");
+        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessions("momo", "domain");
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
         assertThat(userSessions.get(0).getDateOpened()).isEqualTo(dateOpened);
@@ -136,5 +122,47 @@ public class FormSessionRepoTest {
         Map<String, String> dbSessionData = (Map<String, String>) SerializationUtils.deserialize(userSessions.get(0).getSessionData());
         assertThat(dbSessionData).isEqualTo(sessionData);
         assertThat(userSessions.get(0).getId()).isEqualTo(session.getId());
+    }
+
+    @Test
+    public void testGetListViewRaw_filterByDomain() {
+        formSessionRepo.save(getSession("domain1", "session1"));
+        formSessionRepo.save(getSession("domain2", "session2"));
+        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessions("momo", "domain1");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session1");
+
+        userSessions = formSessionRepo.findUserSessions("momo", "domain2");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session2");
+    }
+
+    private SerializableFormSession getSession() {
+        return getSession("domain", "More Momo");
+    }
+
+    private SerializableFormSession getSession(String domain, String title) {
+        SerializableFormSession session = new SerializableFormSession();
+        session.setInstanceXml("xml");
+        session.setFormXml("form xml");
+        session.setUsername("momo");
+        session.setSessionData(ImmutableMap.of("a", "1", "b",  "2"));
+        session.setSequenceId(1);
+        session.setInitLang("en");
+        session.setDomain(domain);
+        session.setPostUrl("/a/domain/receiver");
+        session.setTitle(title);
+        session.setDateOpened(new Date().toString());
+        session.setOneQuestionPerScreen(true);
+        session.setCurrentIndex("a0");
+        session.setAsUser("asUser");
+        session.setAppId("appId");
+        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
+        session.setFunctionContext(ImmutableMap.of("count", functionHandlers));
+        session.setInPromptMode(false);
+        session.setRestoreAsCaseId("restoreAsCaseId");
+
+        session.incrementSequence();
+        return session;
     }
 }

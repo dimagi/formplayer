@@ -93,11 +93,11 @@ public class FormSessionService {
         return session.get();
     }
 
-    public List<FormSessionListView> getSessionsForUser(String username) {
+    public List<FormSessionListView> getSessionsForUser(String username, String domain) {
         // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
-        // return formSessionRepo.findByUsername(username, Sort.by(Sort.Direction.DESC, "dateCreated"));
+        // return formSessionRepo.findByUsernameAndDomain(username, domain, Sort.by(Sort.Direction.DESC, "dateCreated"));
 
-        List<FormSessionListViewRaw> userSessionsRaw = formSessionRepo.findUserSessions(username);
+        List<FormSessionListViewRaw> userSessionsRaw = formSessionRepo.findUserSessions(username, domain);
         return userSessionsRaw.stream().map((session) -> new FormSessionListView() {
             @Override
             public String getId() {

@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface FormSessionRepo extends JpaRepository<SerializableFormSession, String> {
-    List<FormSessionListView> findByUsername(String username, Sort sort);
+    List<FormSessionListView> findByUsernameAndDomain(String username, String domain, Sort sort);
 
     /**
      * @deprecated: to be removed once custom sorting is no longer required (once
@@ -22,11 +22,11 @@ public interface FormSessionRepo extends JpaRepository<SerializableFormSession, 
     @Deprecated
     @Query(
             value = "SELECT id, title, dateopened, datecreated, sessiondata " +
-                    "FROM formplayer_sessions WHERE username = :username " +
+                    "FROM formplayer_sessions WHERE username = :username AND domain = :domain " +
                     "ORDER BY dateopened\\:\\:timestamptz DESC",
             nativeQuery = true
     )
-    List<FormSessionListViewRaw> findUserSessions(@Param("username") String username);
+    List<FormSessionListViewRaw> findUserSessions(@Param("username") String username, @Param("domain") String domain);
 /**
      * @deprecated: remove this once the ``version`` column is fully populated
      * @param id

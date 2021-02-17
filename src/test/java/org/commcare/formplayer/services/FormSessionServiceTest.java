@@ -134,8 +134,8 @@ public class FormSessionServiceTest {
 
         FormSessionListViewRaw rawView = createProjection(FormSessionListViewRaw.class, backingMap);
 
-        when(formSessionRepo.findUserSessions(anyString())).thenReturn(ImmutableList.of(rawView));
-        List<FormSessionListView> sessions = formSessionService.getSessionsForUser("username");
+        when(formSessionRepo.findUserSessions(anyString(), anyString())).thenReturn(ImmutableList.of(rawView));
+        List<FormSessionListView> sessions = formSessionService.getSessionsForUser("username", "domain");
 
         HashMap<String, Object> expected = new HashMap<>(backingMap);
         expected.put("sessionData", sessionData);
