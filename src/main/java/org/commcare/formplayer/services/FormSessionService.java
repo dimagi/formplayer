@@ -99,7 +99,7 @@ public class FormSessionService {
         if (asUser == null) {
             // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
             // return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain);
-            userSessionsRaw = formSessionRepo.findUserSessions(username, domain);
+            userSessionsRaw = formSessionRepo.findUserSessionsNullAsUser(username, domain);
         } else {
             // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
             // return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser);

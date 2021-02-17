@@ -46,7 +46,7 @@ public interface FormSessionRepo extends JpaRepository<SerializableFormSession, 
                     "ORDER BY dateopened\\:\\:timestamptz DESC",
             nativeQuery = true
     )
-    List<FormSessionListViewRaw> findUserSessions(
+    List<FormSessionListViewRaw> findUserSessionsNullAsUser(
             @Param("username") String username,
             @Param("domain") String domain);
 /**

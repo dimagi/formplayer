@@ -1,6 +1,5 @@
 package org.commcare.formplayer.repo;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.commcare.formplayer.objects.FormSessionListView;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.lang.Nullable;
 import org.springframework.util.SerializationUtils;
@@ -134,7 +132,7 @@ public class FormSessionRepoTest {
         String dateOpened = session.getDateOpened();
         Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
-        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessions("momo", "domain");
+        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain");
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
         assertThat(userSessions.get(0).getDateOpened()).isEqualTo(dateOpened);
@@ -148,11 +146,11 @@ public class FormSessionRepoTest {
     public void testGetListViewRaw_filterByDomain() {
         formSessionRepo.save(getSession("domain1", "session1"));
         formSessionRepo.save(getSession("domain2", "session2"));
-        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessions("momo", "domain1");
+        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain1");
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session1");
 
-        userSessions = formSessionRepo.findUserSessions("momo", "domain2");
+        userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain2");
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session2");
     }
@@ -170,7 +168,7 @@ public class FormSessionRepoTest {
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user2");
 
-        userSessions = formSessionRepo.findUserSessions("momo", "domain1");
+        userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain1");
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session_momo");
     }
