@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.lang.Nullable;
 import org.springframework.util.SerializationUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -80,7 +81,7 @@ public class FormSessionRepoTest {
         String dateOpened = session.getDateOpened();
         Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
-        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomain(
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNull(
                 "momo", "domain", Sort.by(Sort.Direction.DESC, "dateCreated")
         );
         assertThat(userSessions).hasSize(1);
@@ -95,13 +96,13 @@ public class FormSessionRepoTest {
     public void testGetListView_filterByDomain() {
         formSessionRepo.save(getSession("domain1", "session1"));
         formSessionRepo.save(getSession("domain2", "session2"));
-        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomain(
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNull(
                 "momo", "domain1", Sort.by(Sort.Direction.DESC, "dateCreated")
         );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session1");
 
-        userSessions = formSessionRepo.findByUsernameAndDomain(
+        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNull(
                 "momo", "domain2", Sort.by(Sort.Direction.DESC, "dateCreated")
         );
         assertThat(userSessions).hasSize(1);
@@ -137,11 +138,54 @@ public class FormSessionRepoTest {
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session2");
     }
 
+    @Test
+    public void testGetListViewRaw_filterByAsUser() {
+        formSessionRepo.save(getSession("domain1", "session_user1", "asUser1"));
+        formSessionRepo.save(getSession("domain1", "session_user2", "asUser2"));
+        formSessionRepo.save(getSession("domain1", "session_momo", null));
+        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsAsUser("momo", "domain1", "asUser1");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user1");
+
+        userSessions = formSessionRepo.findUserSessionsAsUser("momo", "domain1", "asUser2");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user2");
+
+        userSessions = formSessionRepo.findUserSessions("momo", "domain1");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_momo");
+    }
+
+    @Test
+    public void testGetListView_filterByAsUser() {
+        formSessionRepo.save(getSession("domain1", "session_user1", "asUser1"));
+        formSessionRepo.save(getSession("domain1", "session_user2", "asUser2"));
+        formSessionRepo.save(getSession("domain1", "session_momo", null));
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUser("momo", "domain1", "asUser1",
+                Sort.by(Sort.Direction.DESC, "dateCreated"));
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user1");
+
+        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUser("momo", "domain1", "asUser2",
+                Sort.by(Sort.Direction.DESC, "dateCreated"));
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user2");
+
+        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNull("momo", "domain1",
+                Sort.by(Sort.Direction.DESC, "dateCreated"));
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_momo");
+    }
+
     private SerializableFormSession getSession() {
-        return getSession("domain", "More Momo");
+        return getSession("domain", "More Momo", null);
     }
 
     private SerializableFormSession getSession(String domain, String title) {
+        return getSession(domain, title, null);
+    }
+
+    private SerializableFormSession getSession(String domain, String title, @Nullable String asUser) {
         SerializableFormSession session = new SerializableFormSession();
         session.setInstanceXml("xml");
         session.setFormXml("form xml");
@@ -155,7 +199,7 @@ public class FormSessionRepoTest {
         session.setDateOpened(new Date().toString());
         session.setOneQuestionPerScreen(true);
         session.setCurrentIndex("a0");
-        session.setAsUser("asUser");
+        session.setAsUser(asUser);
         session.setAppId("appId");
         FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
         session.setFunctionContext(ImmutableMap.of("count", functionHandlers));

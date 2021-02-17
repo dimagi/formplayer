@@ -44,7 +44,7 @@ public class IncompleteSessionController extends AbstractBaseController{
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
         List<FormSessionListView> formplayerSessions = formSessionService.getSessionsForUser(
-                scrubbedUsername, getSessionRequest.getDomain()
+                scrubbedUsername, getSessionRequest.getDomain(), getSessionRequest.getRestoreAs()
         );
 
         ArrayList<FormSessionListView> sessions = new ArrayList<>();

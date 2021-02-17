@@ -18,6 +18,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.SerializationUtils;
 
@@ -93,11 +94,17 @@ public class FormSessionService {
         return session.get();
     }
 
-    public List<FormSessionListView> getSessionsForUser(String username, String domain) {
-        // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
-        // return formSessionRepo.findByUsernameAndDomain(username, domain, Sort.by(Sort.Direction.DESC, "dateCreated"));
-
-        List<FormSessionListViewRaw> userSessionsRaw = formSessionRepo.findUserSessions(username, domain);
+    public List<FormSessionListView> getSessionsForUser(String username, String domain, @Nullable String asUser) {
+        List<FormSessionListViewRaw> userSessionsRaw;
+        if (asUser == null) {
+            // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
+            // return formSessionRepo.findByUsernameAndDomainAndAsUserIsNull(username, domain, Sort.by(Sort.Direction.DESC, "dateCreated"));
+            userSessionsRaw = formSessionRepo.findUserSessions(username, domain);
+        } else {
+            // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
+            // return formSessionRepo.findByUsernameAndDomainAndAsUser(username, domain, asUser, Sort.by(Sort.Direction.DESC, "dateCreated"));
+            userSessionsRaw = formSessionRepo.findUserSessionsAsUser(username, domain, asUser);
+        }
         return userSessionsRaw.stream().map((session) -> new FormSessionListView() {
             @Override
             public String getId() {

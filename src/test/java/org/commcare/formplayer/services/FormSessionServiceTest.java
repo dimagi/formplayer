@@ -122,6 +122,9 @@ public class FormSessionServiceTest {
         assertFalse(getCachedSession(sessionId).isPresent());
     }
 
+    /**
+     * Test that the conversion from FormSessionListViewRaw to FormSessionListView works as expected
+     */
     @Test
     public void testGetSessionsForUser() {
         ImmutableMap<String, String> sessionData = ImmutableMap.of("a", "1", "b", "2");
@@ -135,7 +138,7 @@ public class FormSessionServiceTest {
         FormSessionListViewRaw rawView = createProjection(FormSessionListViewRaw.class, backingMap);
 
         when(formSessionRepo.findUserSessions(anyString(), anyString())).thenReturn(ImmutableList.of(rawView));
-        List<FormSessionListView> sessions = formSessionService.getSessionsForUser("username", "domain");
+        List<FormSessionListView> sessions = formSessionService.getSessionsForUser("username", "domain", null);
 
         HashMap<String, Object> expected = new HashMap<>(backingMap);
         expected.put("sessionData", sessionData);
