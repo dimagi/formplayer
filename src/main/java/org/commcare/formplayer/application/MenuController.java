@@ -50,18 +50,6 @@ public class MenuController extends AbstractBaseController {
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
-    @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
-    @UserLock
-    @UserRestore
-    @AppInstall
-    public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
-                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                           HttpServletRequest request) throws Exception {
-        BaseResponseBean baseResponseBean = runnerService.getNextMenu(performInstall(installRequestBean));
-        logNotification(baseResponseBean.getNotification(), request);
-        return baseResponseBean;
-    }
-
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
     @UserLock
     @UserRestore

@@ -22,7 +22,7 @@ public class SerializableFormSession implements Serializable{
     private String id;
 
     @Version
-    private int version;
+    private Integer version;
 
     @Column(name="instancexml")
     private String instanceXml;
@@ -257,7 +257,7 @@ public class SerializableFormSession implements Serializable{
         return dateCreated;
     }
 
-    public int getVersion() {
+    public Integer getVersion() {
         return version;
     }
 }
