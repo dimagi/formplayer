@@ -98,11 +98,11 @@ public class FormSessionService {
         List<FormSessionListViewRaw> userSessionsRaw;
         if (asUser == null) {
             // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
-            // return formSessionRepo.findByUsernameAndDomainAndAsUserIsNull(username, domain, Sort.by(Sort.Direction.DESC, "dateCreated"));
+            // return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain);
             userSessionsRaw = formSessionRepo.findUserSessions(username, domain);
         } else {
             // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
-            // return formSessionRepo.findByUsernameAndDomainAndAsUser(username, domain, asUser, Sort.by(Sort.Direction.DESC, "dateCreated"));
+            // return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser);
             userSessionsRaw = formSessionRepo.findUserSessionsAsUser(username, domain, asUser);
         }
         return userSessionsRaw.stream().map((session) -> new FormSessionListView() {

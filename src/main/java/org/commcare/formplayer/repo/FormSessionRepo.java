@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface FormSessionRepo extends JpaRepository<SerializableFormSession, String> {
-    List<FormSessionListView> findByUsernameAndDomainAndAsUser(String username, String domain, String asUser, Sort sort);
-    List<FormSessionListView> findByUsernameAndDomainAndAsUserIsNull(String username, String domain, Sort sort);
+    List<FormSessionListView> findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(String username, String domain, String asUser);
+    List<FormSessionListView> findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(String username, String domain);
 
     /**
      * @deprecated: to be removed once custom sorting is no longer required (once
