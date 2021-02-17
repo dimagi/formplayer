@@ -151,8 +151,9 @@ public class MenuSessionRunnerService {
             );
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             sentry.addTag(Constants.MODULE_TAG, "case_list");
+            // using getBestTitle to eliminate risk of showing private information
             String caseListName = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
-            datadog.addTag(Constants.MODULE_NAME_TAG, caseListName);
+            datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
