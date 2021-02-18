@@ -50,13 +50,11 @@
 trunk: master
 name: autostaging
 branches:
-#   - ce/tracing+autoLaunchRevamp
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - caseClaimHint #Shubham Feb 4
   - caseSearchItemsetFix #Shubham Feb 5
   - caseSearchCache #Shubham Feb 9
-  - sk/remove-install-reference+autoLaunchRevamp
   - autoLaunchRevamp #Shubham Feb 9
 submodules:
   libs/commcare:
