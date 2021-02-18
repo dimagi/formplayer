@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
+import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
+
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
@@ -75,9 +77,6 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.session = session;
-        session.setInstallReference(
-                resolveInstallReference(session.getInstallReference(), session.getAppId(), host, session.getDomain())
-        );
         this.engine = installService.configureApplication(session.getInstallReference(), session.getPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
@@ -87,23 +86,23 @@ public class MenuSession implements HereFunctionHandlerListener {
         initializeBreadcrumbs();
     }
 
-    public MenuSession(String username, String domain, String appId, String installReference, String locale,
+    public MenuSession(String username, String domain, String appId, String locale,
                        InstallService installService, RestoreFactory restoreFactory, String host,
                        boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
-        String resolveInstallReference = resolveInstallReference(installReference, appId, host, domain);
+        String resolvedInstallReference = resolveInstallReference(appId, host, domain);
         this.session = new SerializableMenuSession(
                 UUID.randomUUID().toString(),
                 TableBuilder.scrubName(username),
                 domain,
                 appId,
-                resolveInstallReference,
+                resolvedInstallReference,
                 locale,
                 null,
                 oneQuestionPerScreen,
                 asUser,
                 preview
         );
-        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(resolveInstallReference, preview);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(resolvedInstallReference, preview);
         this.engine = install.first;
         if (install.second && !preview && !restoreFactory.getHasRestored()) {
             this.sandbox = restoreFactory.performTimedSync();
@@ -124,36 +123,6 @@ public class MenuSession implements HereFunctionHandlerListener {
     private void initializeBreadcrumbs() {
         this.breadcrumbs = new ArrayList<>();
         this.breadcrumbs.add(SessionUtils.getAppTitle());
-    }
-
-    private static String resolveInstallReference(String installReference, String appId, String host, String domain) {
-        if (installReference == null || installReference.equals("")) {
-            if (appId == null || "".equals(appId)) {
-                throw new RuntimeException("Can't install - either installReference or app_id must be non-null");
-            }
-            return host + getReferenceToLatest(appId, domain);
-        } else {
-            return installReference;
-        }
-    }
-
-    /**
-     * Given an app id this returns a URI that will return a CCZ from HQ
-     *
-     * @param appId An id of the application of the CCZ needed
-     * @return An HQ URI to download the CCZ
-     */
-    private static String getReferenceToLatest(String appId, String domain) {
-        URIBuilder builder;
-        try {
-            builder = new URIBuilder("/a/" + domain + "/apps/api/download_ccz/");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Unable to instantiate URIBuilder");
-        }
-        builder.addParameter("app_id", appId);
-        builder.addParameter("latest", Constants.CCZ_LATEST_SAVED);
-        return builder.toString();
     }
 
     /**

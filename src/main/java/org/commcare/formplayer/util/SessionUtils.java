@@ -1,5 +1,6 @@
 package org.commcare.formplayer.util;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.commcare.formplayer.beans.CaseBean;
 import org.commcare.formplayer.hq.CaseAPIs;
 import org.apache.commons.logging.Log;
@@ -15,6 +16,7 @@ import org.javarosa.xpath.XPathException;
 
 import org.commcare.formplayer.sandbox.SqlStorage;
 
+import java.net.URISyntaxException;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
@@ -89,5 +91,30 @@ public class SessionUtils {
         } catch (NoLocalizedTextException nlte) {
             return "CommCare";
         }
+    }
+
+    public static String resolveInstallReference(String appId, String host, String domain){
+        if(appId == null || "".equals(appId)){
+            throw new RuntimeException("app_id required for install");
+        }
+        return host + getReferenceToLatest(appId, domain);
+    }
+
+    /**
+     * Given an app id this returns a URI that will return a CCZ from HQ
+     * @param appId An id of the application of the CCZ needed
+     * @return      An HQ URI to download the CCZ
+     */
+    public static String getReferenceToLatest(String appId, String domain) {
+        URIBuilder builder;
+        try {
+            builder = new URIBuilder("/a/" + domain + "/apps/api/download_ccz/");
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Unable to instantiate URIBuilder");
+        }
+        builder.addParameter("app_id", appId);
+        builder.addParameter("latest", Constants.CCZ_LATEST_SAVED);
+        return builder.toString();
     }
 }
