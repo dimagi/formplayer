@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.SerializationUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -191,6 +192,24 @@ public class FormSessionRepoTest {
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session_momo");
     }
 
+    @Test
+    public void testUpdateableFields() {
+        SerializableFormSession session = getSession();
+
+        // save session
+        formSessionRepo.saveAndFlush(session);
+        int version = session.getVersion();
+
+        // update field that should not get updated in the DB
+        ReflectionTestUtils.setField(session,"domain","newdomain");
+        formSessionRepo.saveAndFlush(session);
+        entityManager.refresh(session);
+
+        // check that version is updated
+        assertThat(session.getVersion()).isGreaterThan(version);
+        assertThat(session.getDomain()).isEqualTo("domain");
+    }
+
     private SerializableFormSession getSession() {
         return getSession("domain", "More Momo", null);
     }
@@ -200,26 +219,15 @@ public class FormSessionRepoTest {
     }
 
     private SerializableFormSession getSession(String domain, String title, @Nullable String asUser) {
-        SerializableFormSession session = new SerializableFormSession();
+        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
+        SerializableFormSession session = new SerializableFormSession(
+                domain, "appId", "momo", asUser, "restoreAsCaseId",
+                "/a/domain/receiver", null, title, true, "en", false,
+                ImmutableMap.of("a", "1", "b", "2"),
+                ImmutableMap.of("count", functionHandlers)
+        );
         session.setInstanceXml("xml");
         session.setFormXml("form xml");
-        session.setUsername("momo");
-        session.setSessionData(ImmutableMap.of("a", "1", "b",  "2"));
-        session.setSequenceId(1);
-        session.setInitLang("en");
-        session.setDomain(domain);
-        session.setPostUrl("/a/domain/receiver");
-        session.setTitle(title);
-        session.setDateOpened(new Date().toString());
-        session.setOneQuestionPerScreen(true);
-        session.setCurrentIndex("a0");
-        session.setAsUser(asUser);
-        session.setAppId("appId");
-        FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
-        session.setFunctionContext(ImmutableMap.of("count", functionHandlers));
-        session.setInPromptMode(false);
-        session.setRestoreAsCaseId("restoreAsCaseId");
-
         session.incrementSequence();
         return session;
     }
