@@ -23,7 +23,7 @@ services:
   - redis-server
   - couchdb
 addons:
-  postgresql: "9.4"
+  postgresql: "9.6"
 env:
   global:
   - MALLOC_ARENA_MAX=1
