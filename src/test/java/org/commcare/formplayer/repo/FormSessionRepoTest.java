@@ -1,6 +1,7 @@
 package org.commcare.formplayer.repo;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.FunctionHandler;
@@ -10,17 +11,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.SerializationUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.EntityManager;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -77,11 +78,11 @@ public class FormSessionRepoTest {
     @Test
     public void testGetListView() {
         SerializableFormSession session = getSession();
-        Map<String, String> sessionData = session.getSessionData();
         String dateOpened = session.getDateOpened();
+        Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
-        List<FormSessionListView> userSessions = formSessionRepo.findByUsername(
-                "momo", Sort.by(Sort.Direction.DESC, "dateCreated")
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
+                "momo", "domain"
         );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
@@ -92,12 +93,47 @@ public class FormSessionRepoTest {
     }
 
     @Test
+    public void testGetListView_Ordering() {
+        // create and save 3 sessions, reverse order of creation, extract IDs
+        Iterator<String> sessionIdIterator = Stream.of(getSession(), getSession(), getSession()).map((session) -> {
+            formSessionRepo.save(session);
+            return session;
+        }).map(SerializableFormSession::getId).collect(Collectors.toCollection(LinkedList::new))
+                .descendingIterator();
+        ArrayList<String> sessionIds = Lists.newArrayList(sessionIdIterator);
+
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
+                "momo", "domain"
+        );
+        assertThat(userSessions).extracting("id").containsExactlyElementsOf(
+                sessionIds
+        );
+    }
+
+    @Test
+    public void testGetListView_filterByDomain() {
+        formSessionRepo.save(getSession("domain1", "session1"));
+        formSessionRepo.save(getSession("domain2", "session2"));
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
+                "momo", "domain1"
+        );
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session1");
+
+        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
+                "momo", "domain2"
+        );
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session2");
+    }
+
+    @Test
     public void testGetListViewRaw() {
         SerializableFormSession session = getSession();
-        Map<String, String> sessionData = session.getSessionData();
         String dateOpened = session.getDateOpened();
+        Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
-        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessions("momo");
+        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain");
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
         assertThat(userSessions.get(0).getDateOpened()).isEqualTo(dateOpened);
@@ -105,6 +141,55 @@ public class FormSessionRepoTest {
         Map<String, String> dbSessionData = (Map<String, String>) SerializationUtils.deserialize(userSessions.get(0).getSessionData());
         assertThat(dbSessionData).isEqualTo(sessionData);
         assertThat(userSessions.get(0).getId()).isEqualTo(session.getId());
+    }
+
+    @Test
+    public void testGetListViewRaw_filterByDomain() {
+        formSessionRepo.save(getSession("domain1", "session1"));
+        formSessionRepo.save(getSession("domain2", "session2"));
+        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain1");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session1");
+
+        userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain2");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session2");
+    }
+
+    @Test
+    public void testGetListViewRaw_filterByAsUser() {
+        formSessionRepo.save(getSession("domain1", "session_user1", "asUser1"));
+        formSessionRepo.save(getSession("domain1", "session_user2", "asUser2"));
+        formSessionRepo.save(getSession("domain1", "session_momo", null));
+        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsAsUser("momo", "domain1", "asUser1");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user1");
+
+        userSessions = formSessionRepo.findUserSessionsAsUser("momo", "domain1", "asUser2");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user2");
+
+        userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain1");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_momo");
+    }
+
+    @Test
+    public void testGetListView_filterByAsUser() {
+        formSessionRepo.save(getSession("domain1", "session_user1", "asUser1"));
+        formSessionRepo.save(getSession("domain1", "session_user2", "asUser2"));
+        formSessionRepo.save(getSession("domain1", "session_momo", null));
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc("momo", "domain1", "asUser1");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user1");
+
+        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc("momo", "domain1", "asUser2");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user2");
+
+        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc("momo", "domain1");
+        assertThat(userSessions).hasSize(1);
+        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_momo");
     }
 
     @Test
@@ -126,10 +211,18 @@ public class FormSessionRepoTest {
     }
 
     private SerializableFormSession getSession() {
+        return getSession("domain", "More Momo", null);
+    }
+
+    private SerializableFormSession getSession(String domain, String title) {
+        return getSession(domain, title, null);
+    }
+
+    private SerializableFormSession getSession(String domain, String title, @Nullable String asUser) {
         FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
         SerializableFormSession session = new SerializableFormSession(
-                "domain", "appId", "momo", "asUser", "restoreAsCaseId",
-                "/a/domain/receiver", null, "More Momo", true, "en", false,
+                domain, "appId", "momo", asUser, "restoreAsCaseId",
+                "/a/domain/receiver", null, title, true, "en", false,
                 ImmutableMap.of("a", "1", "b", "2"),
                 ImmutableMap.of("count", functionHandlers)
         );

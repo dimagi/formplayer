@@ -8,12 +8,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface FormSessionRepo extends JpaRepository<SerializableFormSession, String> {
-    List<FormSessionListView> findByUsername(String username, Sort sort);
+    List<FormSessionListView> findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(String username, String domain, String asUser);
+    List<FormSessionListView> findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(String username, String domain);
 
     /**
      * @deprecated: to be removed once custom sorting is no longer required (once
@@ -22,11 +24,31 @@ public interface FormSessionRepo extends JpaRepository<SerializableFormSession, 
     @Deprecated
     @Query(
             value = "SELECT id, title, dateopened, datecreated, sessiondata " +
-                    "FROM formplayer_sessions WHERE username = :username " +
+                    "FROM formplayer_sessions WHERE username = :username AND domain = :domain " +
+                    "AND asuser = :asuser " +
                     "ORDER BY dateopened\\:\\:timestamptz DESC",
             nativeQuery = true
     )
-    List<FormSessionListViewRaw> findUserSessions(@Param("username") String username);
+    List<FormSessionListViewRaw> findUserSessionsAsUser(
+            @Param("username") String username,
+            @Param("domain") String domain,
+            @Param("asuser") String asUser);
+
+    /**
+     * @deprecated: to be removed once custom sorting is no longer required (once
+     * the dateCreated field is fully populated)
+     */
+    @Deprecated
+    @Query(
+            value = "SELECT id, title, dateopened, datecreated, sessiondata " +
+                    "FROM formplayer_sessions WHERE username = :username AND domain = :domain " +
+                    "AND asuser is null " +
+                    "ORDER BY dateopened\\:\\:timestamptz DESC",
+            nativeQuery = true
+    )
+    List<FormSessionListViewRaw> findUserSessionsNullAsUser(
+            @Param("username") String username,
+            @Param("domain") String domain);
 /**
      * @deprecated: remove this once the ``version`` column is fully populated
      * @param id
