@@ -107,11 +107,6 @@ public class WebAppContext implements WebMvcConfigurer {
     @Value("${detailed_tagging.tag_names:}")
     private List<String> detailedTagNames;
 
-    @Override
-    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
-        configurer.enable();
-    }
-
     @Bean
     public SimpleMappingExceptionResolver exceptionResolver() {
         SimpleMappingExceptionResolver exceptionResolver = new SimpleMappingExceptionResolver();
