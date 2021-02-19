@@ -49,7 +49,7 @@
 
 trunk: master
 name: autostaging
-branches: []
+branches:
   - ce/tracing+autoLaunchRevamp # Cal Feb 18
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
@@ -60,7 +60,7 @@ branches: []
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches: []
+    branches:
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
