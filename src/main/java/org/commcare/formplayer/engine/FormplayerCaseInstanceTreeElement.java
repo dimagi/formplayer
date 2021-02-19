@@ -146,10 +146,11 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
             }
 
             matchingCases = formplayerCaseIndexTable.getCasesMatchingIndex(indexName, value);
-        }
-        if (op instanceof IndexedSetMemberLookup) {
+        } else if (op instanceof IndexedSetMemberLookup) {
             IndexedSetMemberLookup sop = (IndexedSetMemberLookup)op;
             matchingCases = formplayerCaseIndexTable.getCasesMatchingValueSet(indexName, sop.valueSet);
+        } else {
+            throw new IllegalArgumentException("No optimization path found for optimization type");
         }
 
         //Clear the most recent index and wipe it, because there is no way it is going to be useful
