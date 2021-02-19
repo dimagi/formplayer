@@ -58,6 +58,7 @@ branches:
   - caseSearchCache #Shubham Feb 9
   - autoLaunchRevamp #Shubham Feb 9
   - gh/add-module-name # Graham Feb 19
+  - jls/debug # Jenny Feb 19
 submodules:
   libs/commcare:
     trunk: formplayer
