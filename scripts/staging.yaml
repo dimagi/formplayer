@@ -68,3 +68,4 @@ submodules:
       - caseClaimHint #Shubham Feb 4
       - caseSearchItemsetFix #Shubham Feb 5
       - autoLaunchRevamp #Shubham Feb 9
+      - jls/debug # Jenny Feb 19
