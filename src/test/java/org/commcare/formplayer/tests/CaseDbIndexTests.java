@@ -42,5 +42,7 @@ public class CaseDbIndexTests extends BaseTestClass {
         evaluate("instance('casedb')/casedb/case[@case_id = 'test_case_id']/index/missing", "", ec);
         evaluate("instance('casedb')/casedb/case[@case_type = 'unit_test_child'][index/parent = 'test_case_id_2']/@case_id",
                 "test_case_id_child_2", ec);
+        evaluate("count(instance('casedb')/casedb/case[@case_type = 'unit_test_child'][index/parent != 'test_case_id_2'])",
+                "3", ec);
     }
 }
