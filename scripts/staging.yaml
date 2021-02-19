@@ -60,10 +60,10 @@ branches: []
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches:
-      - ce/tag-triggers # Cal Nov 16
-      - ce/index-state-category # Cal Nov 16
-      - ce/ensure-session # Cal Nov 20
+    branches: []
+      #- ce/tag-triggers # Cal Nov 16
+      #- ce/index-state-category # Cal Nov 16
+      #- ce/ensure-session # Cal Nov 20
       #- caseClaimHint #Shubham Feb 4
       #- caseSearchItemsetFix #Shubham Feb 5
       #- autoLaunchRevamp #Shubham Feb 9
