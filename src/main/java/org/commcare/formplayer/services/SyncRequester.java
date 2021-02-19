@@ -17,6 +17,7 @@ public class SyncRequester {
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED));
         HttpEntity<String> entity = new HttpEntity<>(params, headers);
         RestTemplate restTemplate = new RestTemplate();
+        log.info(String.format("[jls] sending request"));
         ResponseEntity<String> response =
                 restTemplate.exchange(url,
                         HttpMethod.POST,
