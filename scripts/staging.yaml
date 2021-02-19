@@ -50,13 +50,13 @@
 trunk: master
 name: autostaging
 branches:
-  - ce/tracing+autoLaunchRevamp # Cal Feb 18
-  - ce/tracing # Cal Oct 23
-  - ce/negative-index # Cal Feb 2
-  - caseClaimHint #Shubham Feb 4
-  - caseSearchItemsetFix #Shubham Feb 5
-  - caseSearchCache #Shubham Feb 9
-  - autoLaunchRevamp #Shubham Feb 9
+  #- ce/tracing+autoLaunchRevamp # Cal Feb 18
+  #- ce/tracing # Cal Oct 23
+  #- ce/negative-index # Cal Feb 2
+  #- caseClaimHint #Shubham Feb 4
+  #- caseSearchItemsetFix #Shubham Feb 5
+  #- caseSearchCache #Shubham Feb 9
+  #- autoLaunchRevamp #Shubham Feb 9
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -64,6 +64,6 @@ submodules:
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
-      - caseClaimHint #Shubham Feb 4
-      - caseSearchItemsetFix #Shubham Feb 5
-      - autoLaunchRevamp #Shubham Feb 9
+      #- caseClaimHint #Shubham Feb 4
+      #- caseSearchItemsetFix #Shubham Feb 5
+      #- autoLaunchRevamp #Shubham Feb 9
