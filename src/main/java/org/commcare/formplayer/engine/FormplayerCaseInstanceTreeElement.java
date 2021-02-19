@@ -68,7 +68,8 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
             //If the current key is an index fetch, we actually can't do it in bulk,
             //so we need to stop
             if (profiles.elementAt(i).getKey().startsWith(Case.INDEX_CASE_INDEX_PRE) ||
-                    !(profiles.elementAt(i) instanceof IndexedValueLookup)) {
+                    !(profiles.elementAt(i) instanceof IndexedValueLookup ||
+                      profiles.elementAt(i) instanceof NegativeIndexedValueLookup)) {
                 break;
             }
             keysToBatch++;
