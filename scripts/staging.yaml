@@ -49,7 +49,7 @@
 
 trunk: master
 name: autostaging
-branches:
+branches: []
   #- ce/tracing+autoLaunchRevamp # Cal Feb 18
   #- ce/tracing # Cal Oct 23
   #- ce/negative-index # Cal Feb 2
