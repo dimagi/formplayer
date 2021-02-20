@@ -49,24 +49,24 @@
 
 trunk: master
 name: autostaging
-branches:
-  - ce/tracing+autoLaunchRevamp # Cal Feb 18
-  - ce/tracing # Cal Oct 23
-  - ce/negative-index # Cal Feb 2
-  - caseClaimHint #Shubham Feb 4
-  - caseSearchItemsetFix #Shubham Feb 5
+branches: []
+  #- ce/tracing+autoLaunchRevamp # Cal Feb 18
+  #- ce/tracing # Cal Oct 23
+  #- ce/negative-index # Cal Feb 2
+  #- caseClaimHint #Shubham Feb 4
+  #- caseSearchItemsetFix #Shubham Feb 5
   #- caseSearchCache #Shubham Feb 9
-  - autoLaunchRevamp #Shubham Feb 9
-  - gh/add-module-name # Graham Feb 19
-  - jls/debug # Jenny Feb 19
+  #- autoLaunchRevamp #Shubham Feb 9
+  #- gh/add-module-name # Graham Feb 19
+  #- jls/debug # Jenny Feb 19
 submodules:
   libs/commcare:
     trunk: formplayer
-    branches:
-      - ce/tag-triggers # Cal Nov 16
-      - ce/index-state-category # Cal Nov 16
-      - ce/ensure-session # Cal Nov 20
-      - caseClaimHint #Shubham Feb 4
-      - caseSearchItemsetFix #Shubham Feb 5
-      - autoLaunchRevamp #Shubham Feb 9
-      - jls/debug # Jenny Feb 19
+    branches: []
+      #- ce/tag-triggers # Cal Nov 16
+      #- ce/index-state-category # Cal Nov 16
+      #- ce/ensure-session # Cal Nov 20
+      #- caseClaimHint #Shubham Feb 4
+      #- caseSearchItemsetFix #Shubham Feb 5
+      #- autoLaunchRevamp #Shubham Feb 9
+      #- jls/debug # Jenny Feb 19
