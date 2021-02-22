@@ -1,7 +1,7 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
-import io.sentry.event.Event;
+import io.sentry.SentryLevel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
@@ -79,7 +79,7 @@ public class FormSessionService {
         } catch (Exception e) {
             log.error("Exception purge form sessions", e);
             if (raven != null) {
-                raven.sendRavenException(e, Event.Level.ERROR);
+                raven.sendRavenException(e, SentryLevel.ERROR);
             }
         }
         return deletedRows;

@@ -121,11 +121,6 @@ public class TestContext {
     }
 
     @Bean
-    public FormplayerSentry raven() {
-        return Mockito.spy(new FormplayerSentry(null));
-    }
-
-    @Bean
     public LockRegistry userLockRegistry() {
         return Mockito.spy(MockLockRegistry.class);
     }

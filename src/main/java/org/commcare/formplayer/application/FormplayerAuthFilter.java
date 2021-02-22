@@ -1,5 +1,6 @@
 package org.commcare.formplayer.application;
 
+import io.sentry.Sentry;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
@@ -14,7 +15,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.commcare.formplayer.services.FallbackSentryReporter;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerHttpRequest;
@@ -47,9 +47,6 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     @Autowired
     private FormSessionService formSessionService;
 
-    @Autowired
-    FallbackSentryReporter sentryReporter;
-
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
 
@@ -75,10 +72,10 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                         ace.getResponseCode(),
                         ace.getLog()), ace);
 
-                sentryReporter.sendEvent(
-                    sentryReporter.getEventForException(ace)
-                            .withMessage(ace.getLog())
-                            .withTag("uri",req.getRequestURI()));
+                Sentry.withScope(scope -> {
+                    scope.setTag("uri",req.getRequestURI());
+                    Sentry.captureException(ace);
+                });
             } else {
                 logger.warn(String.format("Request to %s - Authorization Failed[%d] - %s",
                         req.getRequestURI(),

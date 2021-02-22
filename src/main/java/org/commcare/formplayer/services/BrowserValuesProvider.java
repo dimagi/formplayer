@@ -1,6 +1,6 @@
 package org.commcare.formplayer.services;
 
-import io.sentry.event.Event;
+import io.sentry.SentryLevel;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.javarosa.core.model.utils.TimezoneProvider;
@@ -33,7 +33,7 @@ public class BrowserValuesProvider extends TimezoneProvider {
         try {
             checkTzDiscrepancy(bean, timezoneFromBrowser, new Date());
         } catch (TzDiscrepancyException e) {
-            raven.sendRavenException(e, Event.Level.WARNING);
+            raven.sendRavenException(e, SentryLevel.WARNING);
         }
     }
 

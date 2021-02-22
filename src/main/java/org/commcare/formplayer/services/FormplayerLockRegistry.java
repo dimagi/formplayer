@@ -1,7 +1,7 @@
 package org.commcare.formplayer.services;
 
+import io.sentry.SentryLevel;
 import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
-import io.sentry.event.Event;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
@@ -97,7 +97,7 @@ public class FormplayerLockRegistry implements LockRegistry {
             log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
             Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
             e.setStackTrace(ownerThread.getStackTrace());
-            raven.sendRavenException(new Exception(e), Event.Level.WARNING);
+            raven.sendRavenException(new Exception(e), SentryLevel.WARNING);
         }
     }
 

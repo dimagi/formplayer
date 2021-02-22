@@ -1,28 +1,20 @@
 package org.commcare.formplayer.aspects;
 
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import io.sentry.event.Breadcrumb;
-import io.sentry.event.Event;
+import io.sentry.SentryLevel;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.services.FormSessionService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
-import org.commcare.formplayer.exceptions.FormNotFoundException;
-import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 
 import javax.servlet.http.HttpServletRequest;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 
 /**
@@ -169,9 +161,10 @@ public class MetricsAspect {
     }
 
     private void sendTimingWarningToSentry(SimpleTimer timer, String category) {
+        // TODO: replace with a log statement?
         raven.newBreadcrumb()
                 .setCategory(category)
-                .setLevel(Breadcrumb.Level.WARNING)
+                .setLevel(SentryLevel.WARNING)
                 .setData("duration", timer.formatDuration())
                 .record();
 
@@ -179,6 +172,6 @@ public class MetricsAspect {
         if (sentryMessages.containsKey(category)) {
             message = sentryMessages.get(category);
         }
-        raven.sendRavenException(new Exception(message), Event.Level.WARNING);
+        raven.sendRavenException(new Exception(message), SentryLevel.WARNING);
     }
 }
