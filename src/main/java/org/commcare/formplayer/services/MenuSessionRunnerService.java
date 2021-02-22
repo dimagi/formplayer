@@ -501,10 +501,17 @@ public class MenuSessionRunnerService {
 
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
+        // Calling getFormTree has side effects and must be done before the instanceXML is serialized
+        String formTreeJson = formEntrySession.getFormTree().toString();
 
         menuSessionRepo.save(menuSession.serialize());
-        formSessionService.saveSession(formEntrySession.serialize());
-        NewFormResponse response = new NewFormResponse(formEntrySession);
+        SerializableFormSession serializedSession = formEntrySession.serialize();
+        formSessionService.saveSession(serializedSession);
+        NewFormResponse response = new NewFormResponse(
+                formTreeJson, formEntrySession.getLanguages(), serializedSession.getTitle(),
+                serializedSession.getId(), serializedSession.getSequenceId(),
+                serializedSession.getInstanceXml()
+        );
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
 

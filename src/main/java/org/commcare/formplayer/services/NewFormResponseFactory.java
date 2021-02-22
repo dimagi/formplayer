@@ -83,9 +83,16 @@ public class NewFormResponseFactory {
                 bean.getRestoreAsCaseId()
         );
 
+        // Calling getFormTree has side effects and must be done before the instanceXML is serialized
+        String formTreeJson = formSession.getFormTree().toString();
 
-        formSessionService.saveSession(formSession.serialize());
-        NewFormResponse response = new NewFormResponse(formSession);
+        SerializableFormSession serializedSession = formSession.serialize();
+        formSessionService.saveSession(serializedSession);
+        NewFormResponse response = new NewFormResponse(
+                formTreeJson, formSession.getLanguages(), serializedSession.getTitle(),
+                serializedSession.getId(), serializedSession.getSequenceId(),
+                serializedSession.getInstanceXml()
+        );
 
         if (bean.getNavMode() != null && bean.getNavMode().equals(Constants.NAV_MODE_PROMPT)) {
             response.setEvent(response.getTree()[0]);
@@ -96,7 +103,14 @@ public class NewFormResponseFactory {
 
     public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
         FormSession formSession = getFormSession(session);
-        return new NewFormResponse(formSession);
+        // Calling getFormTree has side effects and must be done before the instanceXML is serialized
+        String formTreeJson = formSession.getFormTree().toString();
+        SerializableFormSession serializedSession = formSession.serialize();
+        return new NewFormResponse(
+                formTreeJson, formSession.getLanguages(), serializedSession.getTitle(),
+                serializedSession.getId(), serializedSession.getSequenceId(),
+                serializedSession.getInstanceXml()
+        );
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
