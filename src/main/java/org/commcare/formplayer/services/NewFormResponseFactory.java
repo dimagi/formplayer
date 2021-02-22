@@ -103,13 +103,11 @@ public class NewFormResponseFactory {
 
     public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
         FormSession formSession = getFormSession(session);
-        // Calling getFormTree has side effects and must be done before the instanceXML is serialized
         String formTreeJson = formSession.getFormTree().toString();
-        SerializableFormSession serializedSession = formSession.serialize();
         return new NewFormResponse(
-                formTreeJson, formSession.getLanguages(), serializedSession.getTitle(),
-                serializedSession.getId(), serializedSession.getSequenceId(),
-                serializedSession.getInstanceXml()
+                formTreeJson, formSession.getLanguages(), session.getTitle(),
+                session.getId(), session.getSequenceId(),
+                session.getInstanceXml()
         );
     }
 
