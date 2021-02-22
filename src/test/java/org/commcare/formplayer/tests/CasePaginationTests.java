@@ -39,7 +39,7 @@ public class CasePaginationTests extends BaseTestClass {
     public void testSort() throws Exception {
         EntityListResponse entityListResponse =
                 sessionNavigate("requests/navigators/pagination_navigator.json", EntityListResponse.class);
-        assert entityListResponse.getEntities().length == EntityListResponse.CASE_LENGTH_LIMIT;
+        assert entityListResponse.getEntities().length == 20;
         String previousName = "";
         for (EntityBean entity: entityListResponse.getEntities()) {
             String currentName = (String) entity.getData()[0];
@@ -52,9 +52,9 @@ public class CasePaginationTests extends BaseTestClass {
     public void testPagination() throws Exception {
         EntityListResponse entityListResponse =
                 sessionNavigate("requests/navigators/pagination_navigator.json", EntityListResponse.class);
-        assert entityListResponse.getEntities().length == EntityListResponse.CASE_LENGTH_LIMIT;
+        assert entityListResponse.getEntities().length == 20;
         assert entityListResponse.getCurrentPage() == 0;
-        assert entityListResponse.getPageCount() == 8;
+        assert entityListResponse.getPageCount() == 4;
 
         EntityDetailListResponse details =
                 getDetails("requests/get_details/pagination_navigator_details.json", EntityDetailListResponse.class);
@@ -63,9 +63,9 @@ public class CasePaginationTests extends BaseTestClass {
 
         EntityListResponse entityListResponse2 =
                 sessionNavigate("requests/navigators/pagination_navigator_1.json", EntityListResponse.class);
-        assert entityListResponse2.getEntities().length == 2;
-        assert entityListResponse2.getCurrentPage() == 7;
-        assert entityListResponse2.getPageCount() == 8;
+        assert entityListResponse2.getEntities().length == 12;
+        assert entityListResponse2.getCurrentPage() == 4;
+        assert entityListResponse2.getPageCount() == 5;
 
         EntityDetailListResponse details2 =
                 getDetails("requests/get_details/pagination_navigator_details_1.json", EntityDetailListResponse.class);
@@ -109,7 +109,7 @@ public class CasePaginationTests extends BaseTestClass {
     public void testSearchAndPagination() throws Exception {
         EntityListResponse entityListResponse =
                 sessionNavigate("requests/navigators/search_paginate_navigator.json", EntityListResponse.class);
-        assert entityListResponse.getEntities().length == 10;
+        assert entityListResponse.getEntities().length == 5;
         assert entityListResponse.getPageCount() == 2;
         assert entityListResponse.getCurrentPage() == 1;
     }

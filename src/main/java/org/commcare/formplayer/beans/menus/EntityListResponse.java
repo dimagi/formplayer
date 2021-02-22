@@ -47,7 +47,7 @@ public class EntityListResponse extends MenuBean {
     private int currentPage;
     private final String type = "entities";
 
-    public static int DEFAULT_CASES_PER_PAGE = 10;
+    private static int DEFAULT_CASES_PER_PAGE = 10;
 
     private boolean usesCaseTiles;
     private int maxWidth;
@@ -100,7 +100,7 @@ public class EntityListResponse extends MenuBean {
                 // we're doing pagination
                 setCurrentPage(offset / casesPerPage);
                 setPageCount((int)Math.ceil((double)entityList.size() / casesPerPage));
-                entityList = paginateEntities(entityList, offset);
+                entityList = paginateEntities(entityList, casesPerPage, offset);
             }
             entities = new EntityBean[entityList.size()];
             entityList.toArray(entities);
@@ -169,20 +169,20 @@ public class EntityListResponse extends MenuBean {
         return full;
     }
 
-    private List<EntityBean> paginateEntities(List<EntityBean> matched,
+    private List<EntityBean> paginateEntities(List<EntityBean> matched, int casesPerPage,
                                               int offset) {
         if (offset > matched.size()) {
             throw new RuntimeException("Pagination offset " + offset +
                     " exceeded case list length: " + matched.size());
         }
 
-        int end = offset + DEFAULT_CASES_PER_PAGE;
-        int length = DEFAULT_CASES_PER_PAGE;
+        int end = offset + casesPerPage;
+        int length = casesPerPage;
         if (end > matched.size()) {
             end = matched.size();
             length = end - offset;
         }
-        setPageCount((int)Math.ceil((double)matched.size() / DEFAULT_CASES_PER_PAGE));
+        setPageCount((int)Math.ceil((double)matched.size() / casesPerPage));
         matched = matched.subList(offset, offset + length);
         return matched;
     }
