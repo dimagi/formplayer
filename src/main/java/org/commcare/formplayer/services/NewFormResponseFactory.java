@@ -1,17 +1,17 @@
 package org.commcare.formplayer.services;
 
+import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NewSessionRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.apache.commons.io.IOUtils;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.session.FormSession;
+import org.commcare.formplayer.util.Constants;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.session.FormSession;
-import org.commcare.formplayer.util.Constants;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -83,22 +83,25 @@ public class NewFormResponseFactory {
                 bean.getRestoreAsCaseId()
         );
 
-        // Calling getFormTree has side effects and must be done before the instanceXML is serialized
-        String formTreeJson = formSession.getFormTree().toString();
-
-        SerializableFormSession serializedSession = formSession.serialize();
-        formSessionService.saveSession(serializedSession);
-        NewFormResponse response = new NewFormResponse(
-                formTreeJson, formSession.getLanguages(), serializedSession.getTitle(),
-                serializedSession.getId(), serializedSession.getSequenceId(),
-                serializedSession.getInstanceXml()
-        );
-
+        NewFormResponse response = getResponse(formSession);
         if (bean.getNavMode() != null && bean.getNavMode().equals(Constants.NAV_MODE_PROMPT)) {
             response.setEvent(response.getTree()[0]);
             response.setTree(null);
         }
         return response;
+    }
+
+    public NewFormResponse getResponse(FormSession formEntrySession) throws Exception {
+        // Calling getFormTree has side effects and must be done before the instanceXML is serialized
+        String formTreeJson = formEntrySession.getFormTree().toString();
+
+        SerializableFormSession serializedSession = formEntrySession.serialize();
+        formSessionService.saveSession(serializedSession);
+        return new NewFormResponse(
+                formTreeJson, formEntrySession.getLanguages(), serializedSession.getTitle(),
+                serializedSession.getId(), serializedSession.getSequenceId(),
+                serializedSession.getInstanceXml()
+        );
     }
 
     public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
