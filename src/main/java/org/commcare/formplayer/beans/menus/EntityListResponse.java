@@ -4,7 +4,6 @@ import org.commcare.cases.entity.Entity;
 import org.commcare.cases.entity.EntitySortNotificationInterface;
 import org.commcare.cases.entity.EntitySorter;
 import org.commcare.cases.entity.NodeEntityFactory;
-import org.commcare.cases.entity.*;
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
@@ -48,7 +47,7 @@ public class EntityListResponse extends MenuBean {
     private int currentPage;
     private final String type = "entities";
 
-    public static int CASE_LENGTH_LIMIT = 10;
+    public static int DEFAULT_CASES_PER_PAGE = 10;
 
     private boolean usesCaseTiles;
     private int maxWidth;
@@ -62,7 +61,8 @@ public class EntityListResponse extends MenuBean {
                               int offset,
                               String searchText,
                               int sortIndex,
-                              boolean isFuzzySearchEnabled) {
+                              boolean isFuzzySearchEnabled,
+                              int casesPerPage) {
         SessionWrapper session = nextScreen.getSession();
         Detail detail = nextScreen.getShortDetail();
         EntityDatum neededDatum = (EntityDatum)session.getNeededDatum();
@@ -91,10 +91,15 @@ public class EntityListResponse extends MenuBean {
         } else {
             Vector<TreeReference> references = nextScreen.getReferences();
             List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
-            if (entityList.size() > CASE_LENGTH_LIMIT && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
+
+            if(casesPerPage == 0){
+                casesPerPage = DEFAULT_CASES_PER_PAGE;
+            }
+
+            if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
-                setCurrentPage(offset / CASE_LENGTH_LIMIT);
-                setPageCount((int)Math.ceil((double)entityList.size() / CASE_LENGTH_LIMIT));
+                setCurrentPage(offset / casesPerPage);
+                setPageCount((int)Math.ceil((double)entityList.size() / casesPerPage));
                 entityList = paginateEntities(entityList, offset);
             }
             entities = new EntityBean[entityList.size()];
@@ -171,13 +176,13 @@ public class EntityListResponse extends MenuBean {
                     " exceeded case list length: " + matched.size());
         }
 
-        int end = offset + CASE_LENGTH_LIMIT;
-        int length = CASE_LENGTH_LIMIT;
+        int end = offset + DEFAULT_CASES_PER_PAGE;
+        int length = DEFAULT_CASES_PER_PAGE;
         if (end > matched.size()) {
             end = matched.size();
             length = end - offset;
         }
-        setPageCount((int)Math.ceil((double)matched.size() / CASE_LENGTH_LIMIT));
+        setPageCount((int)Math.ceil((double)matched.size() / DEFAULT_CASES_PER_PAGE));
         matched = matched.subList(offset, offset + length);
         return matched;
     }
