@@ -43,7 +43,7 @@ public class CasePaginationTests extends BaseTestClass {
         String previousName = "";
         for (EntityBean entity: entityListResponse.getEntities()) {
             String currentName = (String) entity.getData()[0];
-            assert previousName.compareTo(currentName) < 0;
+            assert previousName.toLowerCase().compareTo(currentName.toLowerCase()) <= 0;
             previousName = currentName;
         }
     }
