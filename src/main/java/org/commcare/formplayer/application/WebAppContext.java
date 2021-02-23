@@ -55,9 +55,6 @@ import java.util.Properties;
 @EnableSchedulerLock(defaultLockAtMostFor = "10m")
 public class WebAppContext implements WebMvcConfigurer {
 
-    @Value("${commcarehq.environment}")
-    private String environment;
-
     @Value("${commcarehq.host}")
     private String hqHost;
 

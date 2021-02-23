@@ -63,9 +63,6 @@ public class MenuSessionRunnerService {
     @Value("${commcarehq.host}")
     private String host;
 
-    @Value("${commcarehq.environment}")
-    private String hqEnvironment;
-
     @Autowired
     private QueryRequester queryRequester;
 

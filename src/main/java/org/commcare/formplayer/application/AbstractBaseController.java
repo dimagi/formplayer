@@ -82,9 +82,6 @@ public abstract class AbstractBaseController {
     @Autowired
     protected FormSendCalloutHandler formSendCalloutHandler;
 
-    @Value("${commcarehq.environment}")
-    private String hqEnvironment;
-
     @Autowired
     protected MenuSessionFactory menuSessionFactory;
 
