@@ -82,10 +82,18 @@ public class RequestUtils {
         return Base64.encodeBase64String(sha256_HMAC.doFinal(data.getBytes("UTF-8")));
     }
 
-    public static FormplayerHttpRequest getCurrentRequest() {
+    public static HttpServletRequest getCurrentRequest() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
-            return (FormplayerHttpRequest) ((ServletRequestAttributes) attributes).getRequest();
+            return ((ServletRequestAttributes) attributes).getRequest();
+        }
+        return null;
+    }
+
+    public static FormplayerHttpRequest getFormplayerRequest() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request instanceof FormplayerHttpRequest) {
+            return (FormplayerHttpRequest) request;
         }
         return null;
     }

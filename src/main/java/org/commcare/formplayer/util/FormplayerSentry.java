@@ -151,7 +151,7 @@ public class FormplayerSentry {
         }
 
         Sentry.withScope(scope -> {
-            FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
+            FormplayerHttpRequest request = RequestUtils.getFormplayerRequest();
             configureScope(request);
 
             SentryEvent event = new SentryEvent();

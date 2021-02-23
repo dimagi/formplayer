@@ -5,17 +5,23 @@ import io.sentry.spring.SentryUserProvider;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Component
 class FormplayerSentryUserProvider implements SentryUserProvider {
     public User provideUser() {
         User user = new User();
-        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
+        HttpServletRequest request = RequestUtils.getCurrentRequest();
         if (request != null) {
-            HqUserDetailsBean userDetails = request.getUserDetails();
-            if (userDetails != null) {
-                user.setId(String.valueOf(userDetails.getDjangoUserId()));
-                user.setUsername(userDetails.getUsername());
-                user.setIpAddress(request.getRemoteAddr());
+            user.setIpAddress(request.getRemoteAddr());
+
+            if (request instanceof FormplayerHttpRequest) {
+                FormplayerHttpRequest formplayerRequest = (FormplayerHttpRequest) request;
+                HqUserDetailsBean userDetails = formplayerRequest.getUserDetails();
+                if (userDetails != null) {
+                    user.setId(String.valueOf(userDetails.getDjangoUserId()));
+                    user.setUsername(userDetails.getUsername());
+                }
             }
         }
 

@@ -615,7 +615,7 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
+        FormplayerHttpRequest request = RequestUtils.getFormplayerRequest();
         if (request == null) {
             throw new RuntimeException(String.format(
                     "HMAC Auth not available outside of a web request %s", requestPath
