@@ -133,7 +133,7 @@ public class MenuSessionRunnerService {
                     menuSession.getSessionWrapper(),
                     menuSession.getId()
             );
-            datadog.addTag(Constants.MODULE_TAG, "menu");
+            datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
             sentry.addTag(Constants.MODULE_TAG, "menu");
         } else if (nextScreen instanceof EntityScreen) {
             // We're looking at a case list or detail screen
@@ -150,7 +150,7 @@ public class MenuSessionRunnerService {
                     sortIndex,
                     storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
-            datadog.addTag(Constants.MODULE_TAG, "case_list");
+            datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             sentry.addTag(Constants.MODULE_TAG, "case_list");
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
@@ -162,7 +162,7 @@ public class MenuSessionRunnerService {
                     (QueryScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
-            datadog.addTag(Constants.MODULE_TAG, "case_search");
+            datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
             sentry.addTag(Constants.MODULE_TAG, "case_search");
         } else {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
@@ -490,7 +490,7 @@ public class MenuSessionRunnerService {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
-            datadog.addTag(Constants.MODULE_TAG, "form");
+            datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
             sentry.addTag(Constants.MODULE_TAG, "form");
             return formResponseBean;
         } else {

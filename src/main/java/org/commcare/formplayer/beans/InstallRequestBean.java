@@ -7,20 +7,11 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * Created by willpride on 2/4/16.
  */
 public class InstallRequestBean extends AuthenticatedRequestBean {
-    private String installReference;
     private String password;
     private String appId;
     private String locale;
     private boolean oneQuestionPerScreen;
     private boolean preview;
-
-    public String getInstallReference() {
-        return installReference;
-    }
-
-    public void setInstallReference(String installReference) {
-        this.installReference = installReference;
-    }
 
     public String getPassword() {
         return password;
@@ -41,8 +32,7 @@ public class InstallRequestBean extends AuthenticatedRequestBean {
     }
 
     public String toString() {
-        return "InstallRequestBean: [installReference=" + installReference +
-                ", username=" + username + ", domain=" + domain + ", appId=" + appId +
+        return "InstallRequestBean: [username=" + username + ", domain=" + domain + ", appId=" + appId +
                 ", oneQuestionPerScreen: " + oneQuestionPerScreen + "]";
     }
 

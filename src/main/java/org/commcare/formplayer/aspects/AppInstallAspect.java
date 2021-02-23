@@ -38,7 +38,7 @@ public class AppInstallAspect {
         raven.newBreadcrumb()
                 .setData(
                         "appId", requestBean.getAppId(),
-                        "installReference", requestBean.getInstallReference(),
+                        "domain", requestBean.getDomain(),
                         "locale", requestBean.getLocale()
                 )
                 .setCategory("app_info")

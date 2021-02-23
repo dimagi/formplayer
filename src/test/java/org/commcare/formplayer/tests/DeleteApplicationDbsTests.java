@@ -38,7 +38,7 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
     public void testDeleteApplicationDbsView() throws Exception {
         // Create application db by making an install request
         SQLiteDB db = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid");
-        CommandListResponseBean menuResponseBean = doInstall("requests/install/install.json");
+        doInstall("requests/install/install.json");
 
         File file = new File(db.getDatabaseFileForDebugPurposes());
         assert file.exists();

@@ -248,16 +248,14 @@ public abstract class AbstractBaseController {
 
     @Trace
     protected MenuSession performInstall(InstallRequestBean bean) throws Exception {
-        if ((bean.getAppId() == null || "".equals(bean.getAppId())) &&
-                bean.getInstallReference() == null || "".equals(bean.getInstallReference())) {
-            throw new RuntimeException("Either app_id or installReference must be non-null.");
+        if (bean.getAppId() == null || bean.getAppId().isEmpty()) {
+            throw new RuntimeException("App_id must not be null.");
         }
 
         return menuSessionFactory.buildSession(
                 bean.getUsername(),
                 bean.getDomain(),
                 bean.getAppId(),
-                bean.getInstallReference(),
                 bean.getLocale(),
                 bean.getOneQuestionPerScreen(),
                 bean.getRestoreAs(),

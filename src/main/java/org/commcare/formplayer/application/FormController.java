@@ -141,7 +141,7 @@ public class FormController extends AbstractBaseController{
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
 
         // add tags for future datadog/sentry requests
-        datadog.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+        datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
         raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
         FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
@@ -164,7 +164,7 @@ public class FormController extends AbstractBaseController{
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
 
         // add tags for future datadog/sentry requests
-        datadog.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+        datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
         raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
         // package additional args to pass to category timing helper
