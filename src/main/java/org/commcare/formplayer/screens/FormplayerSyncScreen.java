@@ -8,10 +8,8 @@ import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.SyncScreen;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Hashtable;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Screen to make a sync request to HQ after a case claim
@@ -38,26 +36,18 @@ public class FormplayerSyncScreen extends SyncScreen {
             Hashtable<String, String> params = syncPost.getEvaluatedParams(sessionWrapper.getEvaluationContext());
             UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
             // hack because HQ isn't accepting the first query param key properly
-            addQueryParam(builder, "buffer", "buffer");
+            builder.queryParam("buffer", "buffer");
             if (asUser != null) {
-                addQueryParam(builder, "commcare_login_as", asUser);
+                builder.queryParam("commcare_login_as", URLEncoder.encode(asUser));
             }
             for (String key: params.keySet()){
-                addQueryParam(builder, key, params.get(key));
+                builder.queryParam(key, URLEncoder.encode(params.get(key)));
             }
             builder.build(true);
             builtQuery = builder.toUriString();
         } else {
             // expected a sync entry; clear session and show vague 'session error' message to user
             throw new RuntimeException("Initialized sync request while not on sync screen");
-        }
-    }
-
-    private void addQueryParam(UriComponentsBuilder builder, String name, String value) {
-        try {
-            builder.queryParam(name, URLEncoder.encode(value, UTF_8.toString()));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Could not encode query parameter " + name + ": " + value);
         }
     }
 
