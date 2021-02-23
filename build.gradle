@@ -80,7 +80,7 @@ dependencies {
     implementation group: 'redis.clients', name: 'jedis'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.3'
+    implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.11.0'
     implementation group: 'io.sentry', name: 'sentry', version: '1.7.28'
     implementation group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'
     implementation group: 'org.json', name: 'json', version: '20201115'
