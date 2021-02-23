@@ -5,28 +5,13 @@ import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.protocol.Message;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.utils.URIBuilder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
-import javax.validation.constraints.NotNull;
-import java.net.URISyntaxException;
-
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FormplayerSentry {
-
-    private static final Log log = LogFactory.getLog(FormplayerSentry.class);
-
-    public static final String APP_URL_EXTRA = "app_url";
-    public static final String APP_DOWNLOAD_URL_EXTRA = "app_download";
-
-    @Value("${commcarehq.host}")
-    private String host;
 
     public static class BreadcrumbRecorder {
         Breadcrumb breadcrumb;
@@ -78,31 +63,6 @@ public class FormplayerSentry {
     }
     public BreadcrumbRecorder newBreadcrumb() {
         return new BreadcrumbRecorder();
-    }
-
-    public void configureAppUrls(@NotNull String domain, @NotNull String appId) {
-        Sentry.configureScope(scope -> {
-            scope.setExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL(domain, appId));
-            scope.setExtra(APP_URL_EXTRA, getAppURL(domain, appId));
-        });
-    }
-
-    private String getAppURL(String domain, String appId) {
-        return host + "/a/" + domain + "/apps/view/" + appId + "/";
-    }
-
-    private String getAppDownloadURL(String domain, String appId) {
-        String baseURL = host + "/a/" + domain + "/apps/api/download_ccz/";
-        URIBuilder builder;
-        try {
-            builder = new URIBuilder(baseURL);
-        } catch (URISyntaxException e) {
-            log.info("Unable to build app download URL");
-            return "unknown";
-        }
-        builder.addParameter("app_id", appId);
-        builder.addParameter("latest", Constants.CCZ_LATEST_SAVED);
-        return builder.toString();
     }
 
     /**
