@@ -53,10 +53,14 @@ branches:
   - ce/tracing+autoLaunchRevamp # Cal Feb 18
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
-  - caseClaimHint #Shubham Feb 4
   - caseSearchItemsetFix #Shubham Feb 5
   - caseSearchCache #Shubham Feb 9
   - autoLaunchRevamp #Shubham Feb 9
+  - gh/add-module-name # Graham Feb 19
+  - sk/upgrade-spring # Simon Feb 22
+  - sk/fix-repeat-bug # Simon Feb 22
+  - jls/encode-case-claim-params # Jenny Feb 22
+  - ce/eof-nav # Cal Feb 23
 submodules:
   libs/commcare:
     trunk: formplayer
