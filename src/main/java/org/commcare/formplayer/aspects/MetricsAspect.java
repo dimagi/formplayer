@@ -1,5 +1,6 @@
 package org.commcare.formplayer.aspects;
 
+import io.sentry.Sentry;
 import io.sentry.SentryLevel;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -172,6 +173,6 @@ public class MetricsAspect {
         if (sentryMessages.containsKey(category)) {
             message = sentryMessages.get(category);
         }
-        raven.sendRavenException(new Exception(message), SentryLevel.WARNING);
+        Sentry.captureMessage(message, SentryLevel.WARNING)
     }
 }

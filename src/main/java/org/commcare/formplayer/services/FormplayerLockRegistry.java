@@ -97,7 +97,7 @@ public class FormplayerLockRegistry implements LockRegistry {
             log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
             Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
             e.setStackTrace(ownerThread.getStackTrace());
-            raven.sendRavenException(new Exception(e), SentryLevel.WARNING);
+            raven.captureException(new Exception(e), SentryLevel.WARNING);
         }
     }
 

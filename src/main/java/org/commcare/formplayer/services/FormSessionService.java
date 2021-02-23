@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
+import io.sentry.Sentry;
 import io.sentry.SentryLevel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,9 +47,6 @@ public class FormSessionService {
     @Autowired(required = false)
     private StatsDClient datadogStatsDClient;
 
-    @Autowired(required = false)
-    private FormplayerSentry raven;
-
     @CacheEvict(allEntries = true)
     public int purge() {
         // Modeled on https://stackoverflow.com/a/6730401/2820312
@@ -78,9 +76,6 @@ public class FormSessionService {
             }
         } catch (Exception e) {
             log.error("Exception purge form sessions", e);
-            if (raven != null) {
-                raven.sendRavenException(e, SentryLevel.ERROR);
-            }
         }
         return deletedRows;
     }

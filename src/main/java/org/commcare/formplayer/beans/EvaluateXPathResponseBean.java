@@ -77,7 +77,7 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
         } catch(Exception e) {
             ApplicationConfigException ace =
                     new ApplicationConfigException("Unexpected error evaluating expression", e);
-            raven.sendRavenException(ace, SentryLevel.INFO);
+            raven.captureException(ace, SentryLevel.INFO);
 
             status= Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
             output = ace.getMessage();

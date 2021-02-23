@@ -8,15 +8,13 @@ import io.sentry.protocol.Message;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.NotNull;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -24,20 +22,11 @@ public class FormplayerSentry {
 
     private static final Log log = LogFactory.getLog(FormplayerSentry.class);
 
-    private final String AS_USER = "as_user";
-    private final String URI = "uri";
-    private final String APP_URL_EXTRA = "app_url";
-    private final String APP_DOWNLOAD_URL_EXTRA = "app_download";
-    private final String USER_SYNC_TOKEN = "sync_token";
-    private final String USER_SANDBOX_PATH = "sandbox_path";
-
-    private String appId = "UNKNOWN";
+    public static final String APP_URL_EXTRA = "app_url";
+    public static final String APP_DOWNLOAD_URL_EXTRA = "app_download";
 
     @Value("${commcarehq.host}")
     private String host;
-
-    @Autowired
-    private RestoreFactory restoreFactory;
 
     public static class BreadcrumbRecorder {
         Breadcrumb breadcrumb;
@@ -91,6 +80,13 @@ public class FormplayerSentry {
         return new BreadcrumbRecorder();
     }
 
+    public void configureAppUrls(@NotNull String domain, @NotNull String appId) {
+        Sentry.configureScope(scope -> {
+            scope.setExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL(domain, appId));
+            scope.setExtra(APP_URL_EXTRA, getAppURL(domain, appId));
+        });
+    }
+
     private String getAppURL(String domain, String appId) {
         return host + "/a/" + domain + "/apps/view/" + appId + "/";
     }
@@ -109,63 +105,20 @@ public class FormplayerSentry {
         return builder.toString();
     }
 
-    private void configureScope(FormplayerHttpRequest request) {
-        Sentry.configureScope(scope -> {
-            String username = "unknown";
-            String synctoken = "unknown";
-            String sandboxPath = "unknown";
-            if (restoreFactory != null && restoreFactory.isConfigured()) {
-                username = restoreFactory.getEffectiveUsername();
-                synctoken = restoreFactory.getSyncToken();
-                sandboxPath = restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes();
-            }
-
-            scope.setTag(AS_USER, username);
-            scope.setExtra(USER_SYNC_TOKEN, synctoken);
-            scope.setExtra(USER_SANDBOX_PATH, sandboxPath);
-
-            if (request != null) {
-                scope.setTag(URI, request.getRequestURI());
-
-                String domain = request.getDomain();
-                if (domain != null) {
-                    scope.setTag(Constants.DOMAIN_TAG, domain);
-                    if (appId != null) {
-                        scope.setExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL(domain, appId));
-                        scope.setExtra(APP_URL_EXTRA, getAppURL(domain, appId));
-                    }
-                }
-            }
-        });
-    }
-    public void sendRavenException(Exception exception) {
-        sendRavenException(exception, SentryLevel.ERROR);
-    }
-
-    public void sendRavenException(Exception exception, SentryLevel level) {
+    /**
+     * Special method to allow capturing exceptions at levels other than ERROR
+     */
+    public void captureException(Exception exception, SentryLevel level) {
         if (!Sentry.isEnabled()) {
             return;
         }
 
-        Sentry.withScope(scope -> {
-            FormplayerHttpRequest request = RequestUtils.getFormplayerRequest();
-            configureScope(request);
-
-            SentryEvent event = new SentryEvent();
-            Message message = new Message();
-            message.setMessage(exception.getMessage());
-            event.setMessage(message);
-            event.setLevel(level);
-            event.setThrowable(exception);
-            Sentry.captureEvent(event);
-        });
-    }
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
+        SentryEvent event = new SentryEvent();
+        Message message = new Message();
+        message.setMessage(exception.getMessage());
+        event.setMessage(message);
+        event.setLevel(level);
+        event.setThrowable(exception);
+        Sentry.captureEvent(event);
     }
 }

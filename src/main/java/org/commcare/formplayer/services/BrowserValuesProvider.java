@@ -33,7 +33,7 @@ public class BrowserValuesProvider extends TimezoneProvider {
         try {
             checkTzDiscrepancy(bean, timezoneFromBrowser, new Date());
         } catch (TzDiscrepancyException e) {
-            raven.sendRavenException(e, SentryLevel.WARNING);
+            raven.captureException(e, SentryLevel.WARNING);
         }
     }
 

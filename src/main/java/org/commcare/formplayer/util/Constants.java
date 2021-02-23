@@ -121,6 +121,7 @@ public class Constants {
 
     // Datadog/Sentry tags
     public static final String DOMAIN_TAG = "domain";
+    public static final String URI = "uri";
     public static final String FORM_NAME_TAG = "form_name";
     public static final String MODULE_TAG = "module";
     public static final String REQUEST_TAG = "request";
@@ -131,6 +132,11 @@ public class Constants {
     public static final String RESTORE_BLOCKED_TIME_TAG = "restore_blocked_time";
     public static final String INSTALL_BLOCKED_TIME_TAG = "install_blocked_time";
     public static final String SUBMIT_BLOCKED_TIME_TAG = "submit_blocked_time";
+
+    public static final String AS_USER = "as_user";
+    public static final String USER_SYNC_TOKEN = "sync_token";
+    public static final String USER_SANDBOX_PATH = "sandbox_path";
+
 
     public static final class TimingCategories {
         public static final String WAIT_ON_LOCK = "wait_on_lock";

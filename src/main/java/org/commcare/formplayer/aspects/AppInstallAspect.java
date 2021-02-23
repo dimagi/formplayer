@@ -41,6 +41,7 @@ public class AppInstallAspect {
                 )
                 .setCategory("app_info")
                 .record();
-        raven.setAppId(requestBean.getAppId());
+
+        raven.configureAppUrls(requestBean.getDomain(), requestBean.getAppId());
     }
 }

@@ -1,12 +1,16 @@
 package org.commcare.formplayer.application;
 
 import io.sentry.Sentry;
+import org.apache.commons.lang3.StringUtils;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.apache.commons.lang3.StringUtils;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.HqUserDetailsService;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerHttpRequest;
+import org.commcare.formplayer.util.RequestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +19,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.commcare.formplayer.services.HqUserDetailsService;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
-import org.commcare.formplayer.util.RequestUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.Cookie;
