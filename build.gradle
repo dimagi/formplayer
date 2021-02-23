@@ -111,7 +111,7 @@ dependencies {
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path-assert', version: '2.5.0'
     testImplementation group: 'com.google.guava', name: 'guava', version: '30.1-jre'
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.7.7'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.8.0'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.7.7'
     testImplementation group: 'org.mockito', name: 'mockito-inline', version: '3.7.7'
 
