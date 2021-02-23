@@ -23,7 +23,7 @@ public class SerializableFormSession implements Serializable{
     private String id;
 
     @Getter
-    @Version
+//    @Version
     private Integer version;
 
     /**
@@ -158,6 +158,7 @@ public class SerializableFormSession implements Serializable{
         } else {
             sequenceId += 1;
         }
+        version = sequenceId;
     }
 
     @Override

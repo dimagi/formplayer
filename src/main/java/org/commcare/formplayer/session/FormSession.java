@@ -7,6 +7,7 @@ import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -532,7 +533,6 @@ public class FormSession {
         }
         return responseBean;
     }
-
 
     public void setIsAtFirstIndex(boolean isAtFirstIndex) {
         this.isAtFirstIndex = isAtFirstIndex;
