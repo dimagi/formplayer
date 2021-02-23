@@ -174,7 +174,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
         JSONObject body = RequestUtils.getPostData(request);
         request.setRequestValidatedWithHMAC(true);
         if (body.has("username") && body.has("domain")) {
-            setDomain(request);
+            setDomain(request, body);
             setSmsUserDetails(request);
         } else {
             // Otherwise, get username and domain from FormSession
@@ -222,7 +222,10 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     }
 
     private void setDomain(FormplayerHttpRequest request) {
-        JSONObject data = RequestUtils.getPostData(request);
+        setDomain(request, RequestUtils.getPostData(request));
+    }
+
+    private void setDomain(FormplayerHttpRequest request, JSONObject data) {
         if (data.getString("domain") == null) {
             throw new RuntimeException("No domain specified for the request: " + request.getRequestURI());
         }
