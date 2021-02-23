@@ -24,7 +24,6 @@ public class FormplayerSentry {
 
     private static final Log log = LogFactory.getLog(FormplayerSentry.class);
 
-    private final String HQ_HOST_TAG = "HQHost";
     private final String AS_USER = "as_user";
     private final String URI = "uri";
     private final String APP_URL_EXTRA = "app_url";
@@ -120,8 +119,6 @@ public class FormplayerSentry {
                 synctoken = restoreFactory.getSyncToken();
                 sandboxPath = restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes();
             }
-
-            scope.setTag(HQ_HOST_TAG, host);
 
             scope.setTag(AS_USER, username);
             scope.setExtra(USER_SYNC_TOKEN, synctoken);

@@ -46,9 +46,6 @@ import java.util.ArrayList;
  */
 public abstract class AbstractBaseController {
 
-    @Value("${commcarehq.host}")
-    protected String host;
-
     @Autowired
     private QueryRequester queryRequester;
 

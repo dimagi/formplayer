@@ -60,9 +60,6 @@ public class MenuSessionRunnerService {
     @Autowired
     private InstallService installService;
 
-    @Value("${commcarehq.host}")
-    private String host;
-
     @Autowired
     private QueryRequester queryRequester;
 
