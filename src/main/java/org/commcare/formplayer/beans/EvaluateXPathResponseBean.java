@@ -36,8 +36,7 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
     //Jackson requires the default constructor
     public EvaluateXPathResponseBean(){}
 
-    public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath, String debugTraceLevel,
-                                     FormplayerSentry raven) throws XPathSyntaxException {
+    public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath, String debugTraceLevel) throws XPathSyntaxException {
         status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         KXmlSerializer serializer = new KXmlSerializer();
@@ -77,7 +76,7 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
         } catch(Exception e) {
             ApplicationConfigException ace =
                     new ApplicationConfigException("Unexpected error evaluating expression", e);
-            raven.captureException(ace, SentryLevel.INFO);
+            FormplayerSentry.captureException(ace, SentryLevel.INFO);
 
             status= Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
             output = ace.getMessage();

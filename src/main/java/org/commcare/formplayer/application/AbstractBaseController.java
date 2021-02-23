@@ -74,9 +74,6 @@ public abstract class AbstractBaseController {
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
-    protected FormplayerSentry raven;
-
-    @Autowired
     protected FormSendCalloutHandler formSendCalloutHandler;
 
     @Autowired
@@ -103,7 +100,7 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
-        raven.captureException(exception, SentryLevel.INFO);
+        FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -150,7 +147,7 @@ public abstract class AbstractBaseController {
     public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
-        raven.captureException(exception, SentryLevel.INFO);
+        FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
@@ -158,7 +155,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     @ResponseStatus(HttpStatus.LOCKED)
     public ExceptionResponseBean handleLockError(FormplayerHttpRequest req, Exception exception) {
-        raven.captureException(exception, SentryLevel.INFO);
+        FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
     }
 
@@ -194,7 +191,7 @@ public abstract class AbstractBaseController {
                 Sentry.captureException(new RuntimeException(notification.getMessage()));
                 incrementDatadogCounter(Constants.DATADOG_ERRORS_NOTIFICATIONS, req, notification.getTag());
             } else if (notification != null && notification.getType() == NotificationMessage.Type.app_error.name()) {
-                raven.captureException(new ApplicationConfigException(notification.getMessage()), SentryLevel.INFO);
+                FormplayerSentry.captureException(new ApplicationConfigException(notification.getMessage()), SentryLevel.INFO);
                 incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req, notification.getTag());
             }
         } catch (Exception e) {

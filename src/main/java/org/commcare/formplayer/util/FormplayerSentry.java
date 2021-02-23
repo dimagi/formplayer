@@ -5,12 +5,7 @@ import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.protocol.Message;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.stereotype.Component;
 
-@Component
-@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FormplayerSentry {
 
     public static class BreadcrumbRecorder {
@@ -61,14 +56,14 @@ public class FormplayerSentry {
             Sentry.addBreadcrumb(breadcrumb);
         }
     }
-    public BreadcrumbRecorder newBreadcrumb() {
+    public static BreadcrumbRecorder newBreadcrumb() {
         return new BreadcrumbRecorder();
     }
 
     /**
      * Special method to allow capturing exceptions at levels other than ERROR
      */
-    public void captureException(Exception exception, SentryLevel level) {
+    public static void captureException(Exception exception, SentryLevel level) {
         if (!Sentry.isEnabled()) {
             return;
         }

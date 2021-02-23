@@ -65,7 +65,6 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.SimpleTimer;
 
 /**
@@ -93,9 +92,6 @@ public class FormController extends AbstractBaseController{
 
     @Autowired
     private FormplayerDatadog datadog;
-
-    @Autowired
-    private FormplayerSentry raven;
 
     @Resource(name="redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;

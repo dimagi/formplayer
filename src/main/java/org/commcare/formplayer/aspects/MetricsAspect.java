@@ -32,9 +32,6 @@ public class MetricsAspect {
     private FormplayerDatadog datadog;
 
     @Autowired
-    private FormplayerSentry raven;
-
-    @Autowired
     private HttpServletRequest request;
 
     @Autowired
@@ -162,8 +159,7 @@ public class MetricsAspect {
     }
 
     private void sendTimingWarningToSentry(SimpleTimer timer, String category) {
-        // TODO: replace with a log statement?
-        raven.newBreadcrumb()
+        FormplayerSentry.newBreadcrumb()
                 .setCategory(category)
                 .setLevel(SentryLevel.WARNING)
                 .setData("duration", timer.formatDuration())
@@ -173,6 +169,6 @@ public class MetricsAspect {
         if (sentryMessages.containsKey(category)) {
             message = sentryMessages.get(category);
         }
-        Sentry.captureMessage(message, SentryLevel.WARNING)
+        Sentry.captureMessage(message, SentryLevel.WARNING);
     }
 }

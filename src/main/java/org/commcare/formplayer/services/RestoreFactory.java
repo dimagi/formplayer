@@ -105,9 +105,6 @@ public class RestoreFactory {
     private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
 
     @Autowired
-    private FormplayerSentry raven;
-
-    @Autowired
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
@@ -436,7 +433,7 @@ public class RestoreFactory {
     }
 
     private void recordSentryData(final String restoreUrl) {
-        raven.newBreadcrumb()
+        FormplayerSentry.newBreadcrumb()
                 .setData("restoreUrl", restoreUrl)
                 .setCategory("restore")
                 .setMessage("Restoring from URL " + restoreUrl)

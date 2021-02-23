@@ -4,7 +4,6 @@ import io.sentry.SentryLevel;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.javarosa.core.model.utils.TimezoneProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -14,9 +13,6 @@ import java.util.TimeZone;
  * Created by amstone326 on 1/8/18.
  */
 public class BrowserValuesProvider extends TimezoneProvider {
-
-    @Autowired
-    protected FormplayerSentry raven;
 
     private int timezoneOffsetMillis = -1;
     private TimeZone timezoneFromBrowser = null;
@@ -33,7 +29,7 @@ public class BrowserValuesProvider extends TimezoneProvider {
         try {
             checkTzDiscrepancy(bean, timezoneFromBrowser, new Date());
         } catch (TzDiscrepancyException e) {
-            raven.captureException(e, SentryLevel.WARNING);
+            FormplayerSentry.captureException(e, SentryLevel.WARNING);
         }
     }
 

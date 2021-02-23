@@ -41,9 +41,6 @@ public class LockAspect {
     private StatsDClient datadogStatsDClient;
 
     @Autowired
-    private FormplayerSentry raven;
-
-    @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
@@ -102,7 +99,7 @@ public class LockAspect {
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
                     logLockError(bean, joinPoint, "_expired");
-                    raven.captureException(e, SentryLevel.WARNING);
+                    FormplayerSentry.captureException(e, SentryLevel.WARNING);
                 }
             }
         }

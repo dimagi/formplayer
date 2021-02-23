@@ -20,9 +20,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class FormplayerLockRegistry implements LockRegistry {
 
-    @Autowired
-    private FormplayerSentry raven;
-
     private final FormplayerReentrantLock[] lockTable;
     // Lock objects for accessing the FormplayerReentrantLock table above
     // These objects do not change
@@ -97,7 +94,7 @@ public class FormplayerLockRegistry implements LockRegistry {
             log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
             Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
             e.setStackTrace(ownerThread.getStackTrace());
-            raven.captureException(new Exception(e), SentryLevel.WARNING);
+            FormplayerSentry.captureException(new Exception(e), SentryLevel.WARNING);
         }
     }
 

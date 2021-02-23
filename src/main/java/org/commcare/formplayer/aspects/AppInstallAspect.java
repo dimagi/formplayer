@@ -29,9 +29,6 @@ public class AppInstallAspect {
     @Autowired
     protected FormplayerStorageFactory storageFactory;
 
-    @Autowired
-    private FormplayerSentry raven;
-
     @Value("${commcarehq.host}")
     private String host;
 
@@ -44,7 +41,7 @@ public class AppInstallAspect {
         final InstallRequestBean requestBean = (InstallRequestBean) args[0];
         storageFactory.configure(requestBean);
 
-        raven.newBreadcrumb()
+        FormplayerSentry.newBreadcrumb()
                 .setData(
                         "appId", requestBean.getAppId(),
                         "domain", requestBean.getDomain(),
