@@ -58,7 +58,6 @@ branches:
   - autoLaunchRevamp #Shubham Feb 9
   - gh/add-module-name # Graham Feb 19
   - sk/upgrade-spring # Simon Feb 22
-  - sk/fix-repeat-bug # Simon Feb 22
   - jls/encode-case-claim-params # Jenny Feb 22
   - ce/eof-nav # Cal Feb 23
 submodules:
