@@ -8,10 +8,8 @@ import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.Action;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
@@ -29,7 +27,6 @@ import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
@@ -240,32 +237,10 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-            // Advance the session in case auto launch is set
-            if (nextScreen instanceof EntityScreen) {
-                EntityScreen entityScreen = (EntityScreen)nextScreen;
-                if (entityScreen.getAutoLaunchAction() != null) {
-                    menuSession.handleInput(selection, needsDetail, confirmed, true);
-                    nextScreen = menuSession.getNextScreen(needsDetail);
-                }
-            }
 
-            String queryKey = menuSession.getSessionWrapper().getCommand();
-            if (nextScreen instanceof FormplayerQueryScreen) {
-                FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
-                formplayerQueryScreen.refreshItemSetChoices();
-                boolean autoSearch = formplayerQueryScreen.doDefaultSearch() && !forceManualAction;
-                if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
-                    notificationMessage = doQuery(
-                            (FormplayerQueryScreen)nextScreen,
-                            menuSession,
-                            queryData == null ? null : queryData.getInputs(queryKey),
-                            autoSearch
-                    );
-                } else if (queryData != null) {
-                    answerQueryPrompts((FormplayerQueryScreen)nextScreen,
-                            queryData.getInputs(queryKey));
-                }
-            }
+            // Advance the session in case auto launch is set
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed);
+            notificationMessage = handleQueryScreen(nextScreen, menuSession, forceManualAction, queryData);
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
                         (FormplayerSyncScreen)nextScreen,
@@ -310,6 +285,42 @@ public class MenuSessionRunnerService {
                     true);
             return responseBean;
         }
+    }
+
+    private NotificationMessage handleQueryScreen(Screen nextScreen, MenuSession menuSession,
+                                                  boolean forceManualAction, QueryData queryData)
+            throws CommCareSessionException {
+        if (nextScreen instanceof FormplayerQueryScreen) {
+            FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
+            formplayerQueryScreen.refreshItemSetChoices();
+            boolean autoSearch = formplayerQueryScreen.doDefaultSearch() && !forceManualAction;
+            String queryKey = menuSession.getSessionWrapper().getCommand();
+            if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
+                return doQuery(
+                        (FormplayerQueryScreen)nextScreen,
+                        menuSession,
+                        queryData == null ? null : queryData.getInputs(queryKey),
+                        autoSearch
+                );
+            } else if (queryData != null) {
+                answerQueryPrompts((FormplayerQueryScreen)nextScreen,
+                        queryData.getInputs(queryKey));
+            }
+        }
+        return null;
+    }
+
+    private Screen handleAutoLaunch(Screen nextScreen, MenuSession menuSession,
+                                    String selection, boolean needsDetail, boolean confirmed)
+            throws CommCareSessionException {
+        if (nextScreen instanceof EntityScreen) {
+            EntityScreen entityScreen = (EntityScreen)nextScreen;
+            if (entityScreen.getAutoLaunchAction() != null) {
+                menuSession.handleInput(selection, needsDetail, confirmed, true);
+                nextScreen = menuSession.getNextScreen(needsDetail);
+            }
+        }
+        return nextScreen;
     }
 
     // Sets the query fields and refreshes any itemset choices based on them
@@ -398,14 +409,8 @@ public class MenuSessionRunnerService {
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
             Screen nextScreen = menuSession.getNextScreen();
-            if (nextScreen instanceof EntityScreen) {
-                EntityScreen entityScreen = (EntityScreen)nextScreen;
-                Action autoLaunchAction = entityScreen.getAutoLaunchAction();
-                if (autoLaunchAction != null) {
-                    SessionWrapper session = menuSession.getSessionWrapper();
-                    session.executeStackOperations(autoLaunchAction.getStackOperations(), session.getEvaluationContext());
-                }
-            }
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false);
+            handleQueryScreen(nextScreen, menuSession, false, new QueryData());
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
