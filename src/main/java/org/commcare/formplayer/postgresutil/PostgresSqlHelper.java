@@ -1,6 +1,8 @@
 package org.commcare.formplayer.postgresutil;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
+import org.commcare.formplayer.services.ConnectionHandler;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.util.Pair;
 import org.javarosa.core.services.storage.Persistable;
@@ -12,8 +14,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import static org.commcare.modern.database.TableBuilder.scrubName;
 
 /**
  * @author $|-|!˅@M
@@ -50,6 +56,56 @@ public class PostgresSqlHelper {
         return i;
     }
 
+    /**
+     * Performs upsert, i.e. we'll first try to insert the new value and if it already exists, we'll update it.
+     * https://www.postgresql.org/docs/devel/sql-insert.html#SQL-ON-CONFLICT
+     *
+     * @param connection    Database Connection
+     * @param tableName     name of table
+     * @param persistable   persistable to update with
+     * @param id            sql record to update
+     * @param currentSchema Database schema
+     */
+    public static void upsertToTable(Connection connection, String tableName, Persistable persistable, int id, String currentSchema) {
+        StringBuilder query = new StringBuilder();
+        query.append("INSERT INTO ")
+                .append(currentSchema)
+                .append(".")
+                .append(tableName)
+                .append(" (")
+                .append(DatabaseHelper.ID_COL);
+
+        HashMap<String, Object> map = DatabaseHelper.getMetaFieldsAndValues(persistable);
+        String[] fieldNames = map.keySet().toArray(new String[map.keySet().size()]);
+        Object[] values = map.values().toArray(new Object[map.values().size()]);
+        Object[] params = ArrayUtils.addAll(values, values);
+        for (String field: fieldNames) {
+            query.append(", ")
+                    .append(field);
+        }
+
+        query.append(") VALUES (").append(id);
+
+        for (Object obj: values) {
+            query.append(", ?");
+        }
+        query.append(") ON CONFLICT (")
+                .append(DatabaseHelper.ID_COL)
+                .append(") Do UPDATE SET ");
+        for (String fieldName : fieldNames) {
+            query.append(fieldName).append(" = ?").append(", ");
+        }
+        query.deleteCharAt(query.lastIndexOf(","));
+        query.append(";");
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString())){
+            setPreparedStatementArgs(preparedStatement, persistable, params);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        }
+    }
+
 
     /**
      * Update entry under id with persistable p
@@ -60,28 +116,7 @@ public class PostgresSqlHelper {
      * @param id          sql record to update
      */
     public static void updateToTable(Connection connection, String tableName, Persistable persistable, int id, String currentSchema) {
-        String queryStart = "UPDATE " + currentSchema + "." + tableName + " SET ";
-        String queryEnd = " WHERE " + DatabaseHelper.ID_COL + " = ?;";
-
-        HashMap<String, Object> map = DatabaseHelper.getMetaFieldsAndValues(persistable);
-        String[] fieldNames = map.keySet().toArray(new String[map.keySet().size()]);
-        Object[] values = map.values().toArray(new Object[map.values().size()]);
-
-        StringBuilder stringBuilder = new StringBuilder(queryStart);
-        for (String fieldName : fieldNames) {
-            stringBuilder.append(fieldName).append(" = ?").append(", ");
-        }
-        stringBuilder.deleteCharAt(stringBuilder.lastIndexOf(","));
-
-        String query = stringBuilder.append(queryEnd).toString();
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
-            int lastArgIndex = setPreparedStatementArgs(preparedStatement, persistable, values);
-            preparedStatement.setInt(lastArgIndex, id);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new SQLiteRuntimeException(e);
-        }
+        upsertToTable(connection, tableName, persistable, id, currentSchema);
     }
 
     public static void setArgumentToSqlStatement(PreparedStatement preparedStatement, Object arg, int index) throws SQLException {

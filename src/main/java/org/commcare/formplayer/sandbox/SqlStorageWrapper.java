@@ -19,7 +19,7 @@ import java.util.Vector;
 /**
  * @author $|-|!˅@M
  */
-class SqlStorageWrapper<T extends Persistable>
+public class SqlStorageWrapper<T extends Persistable>
         implements IStorageUtilityIndexed<T>, Iterable<T> {
 
     SqlStorage<T> sqliteStorage;
