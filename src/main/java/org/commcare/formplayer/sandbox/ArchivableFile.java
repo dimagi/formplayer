@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.zip.GZIPInputStream;
 
+import org.javarosa.core.model.condition.RequestAbandonedException;
 import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.commcare.formplayer.exceptions.SqlArchiveLockException;
 
@@ -71,6 +72,9 @@ public class ArchivableFile extends File {
             int len;
             while ((len = gis.read(buffer)) != -1) {
                 fos.write(buffer, 0, len);
+                if (Thread.interrupted()) {
+                    throw new RequestAbandonedException();
+                }
             }
         }
     }

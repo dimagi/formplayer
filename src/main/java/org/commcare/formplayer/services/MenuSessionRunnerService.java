@@ -83,6 +83,9 @@ public class MenuSessionRunnerService {
     @Autowired
     private FormplayerDatadog datadog;
 
+    @Autowired
+    protected NewFormResponseFactory newFormResponseFactory;
+
     @Resource(name = "redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
 
@@ -488,14 +491,12 @@ public class MenuSessionRunnerService {
 
 
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
+        menuSessionRepo.save(menuSession.serialize());
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
-        menuSessionRepo.save(menuSession.serialize());
-        formSessionService.saveSession(formEntrySession.serialize());
-        NewFormResponse response = new NewFormResponse(formEntrySession);
+        NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
-
         return response;
     }
 
