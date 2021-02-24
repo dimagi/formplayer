@@ -76,6 +76,9 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
 
+        // test hint
+        assert queryResponseBean.getDisplays()[1].getHint().contentEquals("This is a hint");
+
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "1");
         QueryData queryData = new QueryData();

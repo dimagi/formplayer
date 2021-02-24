@@ -5,6 +5,8 @@ import io.sentry.event.Event;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.objects.FormSessionListView;
+import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.util.Constants;
@@ -16,10 +18,15 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.SerializationUtils;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @CacheConfig(cacheNames = {"form_session"})
@@ -87,8 +94,43 @@ public class FormSessionService {
         return session.get();
     }
 
-    public List<SerializableFormSession> getSessionsForUser(String username) {
-        return formSessionRepo.findUserSessions(username);
+    public List<FormSessionListView> getSessionsForUser(String username, String domain, @Nullable String asUser) {
+        List<FormSessionListViewRaw> userSessionsRaw;
+        if (asUser == null) {
+            // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
+            // return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain);
+            userSessionsRaw = formSessionRepo.findUserSessionsNullAsUser(username, domain);
+        } else {
+            // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
+            // return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser);
+            userSessionsRaw = formSessionRepo.findUserSessionsAsUser(username, domain, asUser);
+        }
+        return userSessionsRaw.stream().map((session) -> new FormSessionListView() {
+            @Override
+            public String getId() {
+                return session.getId();
+            }
+
+            @Override
+            public String getTitle() {
+                return session.getTitle();
+            }
+
+            @Override
+            public String getDateOpened() {
+                return session.getDateOpened();
+            }
+
+            @Override
+            public Instant getDateCreated() {
+                return session.getDateCreated();
+            }
+
+            @Override
+            public Map<String, String> getSessionData() {
+                return (Map<String, String>) SerializationUtils.deserialize(session.getSessionData());
+            }
+        }).collect(Collectors.toList());
     }
 
     @CachePut(key = "#session.id")
@@ -98,6 +140,8 @@ public class FormSessionService {
 
     @CacheEvict
     public void deleteSessionById(String id) {
-        formSessionRepo.deleteById(id);
+        // Replace code below with this line once the 'version' column is fully populated.
+        //  formSessionRepo.deleteById(id);
+        formSessionRepo.deleteSessionById(id);
     }
 }

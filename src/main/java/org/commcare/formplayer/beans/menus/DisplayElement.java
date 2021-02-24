@@ -32,6 +32,9 @@ public class DisplayElement {
     @Nullable
     String[] itemsetChoices;
 
+    @Nullable
+    private String hint;
+
     public DisplayElement() {
     }
 
@@ -60,6 +63,10 @@ public class DisplayElement {
         this.receive = receive;
         this.value = value;
         this.itemsetChoices = itemsetChoices;
+
+        if (displayUnit.getHintText() != null) {
+            this.hint = displayUnit.getHintText().evaluate(ec);
+        }
     }
 
     public String getText() {
@@ -118,5 +125,10 @@ public class DisplayElement {
 
     public String[] getItemsetChoices() {
         return itemsetChoices;
+    }
+
+    @Nullable
+    public String getHint() {
+        return hint;
     }
 }
