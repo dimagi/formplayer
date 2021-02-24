@@ -4,6 +4,7 @@ import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.postgresutil.PostgresApplicationDB;
 import org.commcare.formplayer.postgresutil.PostgresDB;
+import org.commcare.formplayer.sandbox.SqlStorageWrapper;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -112,7 +113,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqlStorage(this.postgresDB, type, name);
+        return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name);
     }
 
     public String getUsername() {
