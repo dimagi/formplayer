@@ -50,16 +50,22 @@
 trunk: master
 name: autostaging
 branches:
-  - ce/no-json-validation # Cal Jan 18
-  - ce/tracing+skipToSearchResults
-  - ce/tracing # Cal Oct 23
-  - skipToSearchResults # Shubham Jan 25
-  - gh/form-name-to-datadog # Graham Jan 28 (poorly named)
+#  - ce/tracing+autoLaunchRevamp # Cal Feb 18
+#  - ce/tracing # Cal Oct 23
+  - ce/negative-index # Cal Feb 2
+  - caseClaimHint #Shubham Feb 4
+  - caseSearchItemsetFix #Shubham Feb 5
+  - caseSearchCache #Shubham Feb 9
+  - autoLaunchRevamp #Shubham Feb 9
+  - gh/add-module-name # Graham Feb 19
+  - sk/upgrade-spring # Simon Feb 22
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
       - ce/tag-triggers # Cal Nov 16
-      - skipToSearchResults # Shubham Jan 25
-      #- ce/index-state-category # Cal Nov 16
-      #- ce/ensure-session # Cal Nov 20
+      - ce/index-state-category # Cal Nov 16
+      - ce/ensure-session # Cal Nov 20
+      - caseClaimHint #Shubham Feb 4
+      - caseSearchItemsetFix #Shubham Feb 5
+      - autoLaunchRevamp #Shubham Feb 9

@@ -1,201 +1,168 @@
 package org.commcare.formplayer.objects;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 
-/**
- * Created by willpride on 1/19/16.
- */
 @Entity
-@Table(name = "formplayer_sessions")
+@Table(name="formplayer_sessions")
+@EntityListeners(AuditingEntityListener.class)
 public class SerializableFormSession implements Serializable{
+    @Getter
+    @Id
+    @GeneratedValue( generator="uuid" )
+    @GenericGenerator(name="uuid", strategy="org.hibernate.id.UUIDGenerator")
     private String id;
-    private String instanceXml;
-    private String formXml;
-    private String username;
-    private String initLang;
-    private int sequenceId;
-    private Map<String, String> sessionData;
-    private String domain;
-    private String postUrl;
-    private String menuSessionId;
-    private String title;
+
+    @Getter
+    @Version
+    private Integer version;
+
+    /**
+     * Deprecated: to be removed once `dateCreated` is fully populated
+     */
+    @Getter
+    @Column(name="dateopened", updatable=false)
     private String dateOpened;
-    private boolean oneQuestionPerScreen;
+
+    @Getter
+    @CreatedDate
+    @Column(name="datecreated")
+    private Instant dateCreated;
+
+    @Getter
+    @Column(updatable=false)
+    private String domain;
+
+    @Getter
+    @Column(name="asuser", updatable=false)
     private String asUser;
-    private String currentIndex = "0";
+
+    @Getter
+    @Column(name="appid", updatable=false)
     private String appId;
-    private Map<String, FunctionHandler[]> functionContext;
-    private boolean inPromptMode;
+
+    @Getter
+    @Column(name="caseid", updatable=false)
     private String restoreAsCaseId;
 
-    public String getInstanceXml() {
-        return instanceXml;
-    }
+    @Getter
+    @Column(name="posturl", updatable=false)
+    private String postUrl;
 
-    public void setInstanceXml(String instanceXml) {
-        this.instanceXml = instanceXml;
-    }
+    @Getter
+    @Column(name="menu_session_id", updatable=false)
+    private String menuSessionId;
 
-    public String getId() {
-        return id;
-    }
+    @Getter
+    @Column(updatable=false)
+    private String title;
 
-    public void setId(String id) {
+    @Getter
+    @Column(name="onequestionperscreen", updatable=false)
+    private boolean oneQuestionPerScreen;
+
+    @Getter
+    @Setter
+    @Column(name="formxml", updatable=false)
+    private String formXml;
+
+    @Getter
+    @Setter
+    @Column(name="instancexml")
+    private String instanceXml;
+
+    @Getter
+    @Column(updatable=false)
+    private String username;
+
+    @Getter
+    @Setter
+    @Column(name="initlang")
+    private String initLang;
+
+    /**
+     * Deprecated. To be replaced by ``version``
+     */
+    @Getter
+    @Column(name="sequenceid")
+    @Convert(converter=IntStringConverter.class)
+    private Integer sequenceId;
+
+    @Getter
+    @Column(name="sessiondata")
+    @Convert(converter=ByteArrayConverter.class)
+    private Map<String, String> sessionData;
+
+    @Getter
+    @Setter
+    @Column(name="currentindex")
+    private String currentIndex;
+
+    @Getter
+    @Column(name="functioncontext")
+    @Convert(converter=ByteArrayConverter.class)
+    private Map<String, FunctionHandler[]> functionContext;
+
+    @Getter
+    @Column(name="inpromptmode")
+    private boolean inPromptMode;
+
+    public SerializableFormSession() { }
+    public SerializableFormSession(String id) {
         this.id = id;
     }
 
-    @Override
-    public int hashCode(){
-        return id.hashCode();
+    public SerializableFormSession(
+            String domain,
+            String appId,
+            String username,
+            String asUser,
+            String restoreAsCaseId,
+            String postUrl,
+            String menuSessionId,
+            String title,
+            boolean oneQuestionPerScreen,
+            String initLang,
+            boolean inPromptMode,
+            Map<String, String> sessionData,
+            Map<String, FunctionHandler[]> functionContext) {
+        this.domain = domain;
+        this.asUser = asUser;
+        this.appId = appId;
+        this.restoreAsCaseId = restoreAsCaseId;
+        this.postUrl = postUrl;
+        this.menuSessionId = menuSessionId;
+        this.title = title;
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
+        this.username = username;
+        this.initLang = initLang;
+        this.sessionData = sessionData;
+        this.functionContext = functionContext;
+        this.inPromptMode = inPromptMode;
+        this.dateOpened = new Date().toString();
+        this.currentIndex = "0";
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof SerializableFormSession && obj.hashCode() == hashCode();
+    public void incrementSequence() {
+        if (sequenceId == null) {
+            sequenceId = 0;
+        } else {
+            sequenceId += 1;
+        }
     }
 
     @Override
     public String toString(){
         return "Session [id=" + id + ", sequence=" + sequenceId + ", username=" + username
                 + " domain=" + domain + ", instance=" + instanceXml + "]";
-    }
-
-    public String getFormXml() {
-        return formXml;
-    }
-
-    public void setFormXml(String formXml) {
-        this.formXml = formXml;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getInitLang() {
-        return initLang;
-    }
-
-    public void setInitLang(String initLang) {
-        this.initLang = initLang;
-    }
-
-    public int getSequenceId() {
-        return sequenceId;
-    }
-
-    public void setSequenceId(int sequenceId) {
-        this.sequenceId = sequenceId;
-    }
-
-    public Map<String, String> getSessionData() {
-        return sessionData;
-    }
-
-    public void setSessionData(Map<String, String> sessionData) {
-        this.sessionData = sessionData;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    public void setPostUrl(String postUrl) {
-        this.postUrl = postUrl;
-    }
-
-    public String getPostUrl() {
-        return postUrl;
-    }
-
-    public String getMenuSessionId() {
-        return menuSessionId;
-    }
-
-    public void setMenuSessionId(String menuSessionId) {
-        this.menuSessionId = menuSessionId;
-    }
-
-    public String getDateOpened() {
-        return dateOpened;
-    }
-
-    public void setDateOpened(String dateOpened) {
-        this.dateOpened = dateOpened;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public boolean getOneQuestionPerScreen() {
-        return oneQuestionPerScreen;
-    }
-
-    public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
-        this.oneQuestionPerScreen = oneQuestionPerScreen;
-    }
-
-    public String getCurrentIndex() {
-        return currentIndex;
-    }
-
-    public void setCurrentIndex(String currentIndex) {
-        this.currentIndex = currentIndex;
-    }
-
-    public String getAsUser() {
-        return asUser;
-    }
-
-    public void setAsUser(String asUser) {
-        this.asUser = asUser;
-    }
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
-
-    public Map<String, FunctionHandler[]> getFunctionContext() {
-        return functionContext;
-    }
-
-    public void setFunctionContext(Map<String, FunctionHandler[]> functionContext) {
-        this.functionContext = functionContext;
-    }
-
-    public boolean getInPromptMode() {
-        return inPromptMode;
-    }
-
-    public void setInPromptMode(boolean inPromptMode) {
-        this.inPromptMode = inPromptMode;
-    }
-
-    public void setRestoreAsCaseId(String restoreAsCaseId) {
-        this.restoreAsCaseId = restoreAsCaseId;
-    }
-
-    public String getRestoreAsCaseId() {
-        return restoreAsCaseId;
     }
 }

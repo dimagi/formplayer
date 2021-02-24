@@ -9,8 +9,12 @@ import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.util.Constants;
+
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -23,12 +27,9 @@ import java.util.Map;
  */
 public class FormplayerSentry {
 
-    public static final String FORM_NAME = "form_name";
-
     private static final Log log = LogFactory.getLog(FormplayerSentry.class);
 
     private final String HQ_HOST_TAG = "HQHost";
-    private final String DOMAIN_TAG = "domain";
     private final String AS_USER = "as_user";
     private final String URI = "uri";
     private final String APP_URL_EXTRA = "app_url";
@@ -49,9 +50,6 @@ public class FormplayerSentry {
 
     @Autowired
     private RestoreFactory restoreFactory;
-
-    @Autowired(required = false)
-    private FormplayerHttpRequest request;
 
     public FormplayerSentry(SentryClient sentryClient) {
         this.sentryClient = sentryClient;
@@ -182,11 +180,12 @@ public class FormplayerSentry {
             synctoken = restoreFactory.getSyncToken();
             sandboxPath = restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes();
         }
+        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
         return (
                 new EventBuilder()
                 .withEnvironment(environment)
                 .withTag(HQ_HOST_TAG, host)
-                .withTag(DOMAIN_TAG, domain)
+                .withTag(Constants.DOMAIN_TAG, domain)
                 .withTag(AS_USER, username)
                 .withTag(URI, request == null ? null : request.getRequestURI())
                 .withExtra(APP_DOWNLOAD_URL_EXTRA, getAppDownloadURL())
@@ -204,6 +203,7 @@ public class FormplayerSentry {
         if (sentryClient == null) {
             return;
         }
+        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
         if (request != null) {
             setDomain(request.getDomain());
 

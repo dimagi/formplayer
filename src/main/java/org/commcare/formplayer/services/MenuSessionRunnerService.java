@@ -26,14 +26,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.FormplayerSentry;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -69,7 +70,7 @@ public class MenuSessionRunnerService {
     private SyncRequester syncRequester;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    protected FormSessionService formSessionService;
 
     @Autowired
     protected MenuSessionRepo menuSessionRepo;
@@ -85,6 +86,12 @@ public class MenuSessionRunnerService {
 
     @Autowired
     private RedisTemplate redisVolatilityDict;
+
+    @Autowired
+    private FormplayerDatadog datadog;
+
+    @Autowired
+    private FormplayerSentry sentry;
 
     @Resource(name = "redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
@@ -122,6 +129,8 @@ public class MenuSessionRunnerService {
                     menuSession.getSessionWrapper(),
                     menuSession.getId()
             );
+            datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
+            sentry.addTag(Constants.MODULE_TAG, "menu");
         } else if (nextScreen instanceof EntityScreen) {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
@@ -137,6 +146,8 @@ public class MenuSessionRunnerService {
                     sortIndex,
                     storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
+            datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
+            sentry.addTag(Constants.MODULE_TAG, "case_list");
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
@@ -147,6 +158,8 @@ public class MenuSessionRunnerService {
                     (QueryScreen)nextScreen,
                     menuSession.getSessionWrapper()
             );
+            datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
+            sentry.addTag(Constants.MODULE_TAG, "case_search");
         } else {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
         }
@@ -224,32 +237,10 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-            // Advance the session in case auto launch is set
-            if (nextScreen instanceof EntityScreen) {
-                EntityScreen entityScreen = (EntityScreen)nextScreen;
-                if (entityScreen.getAutoLaunchAction() != null) {
-                    menuSession.handleInput(selection, needsDetail, confirmed, true);
-                    nextScreen = menuSession.getNextScreen(needsDetail);
-                }
-            }
 
-            String queryKey = menuSession.getSessionWrapper().getCommand();
-            if (nextScreen instanceof FormplayerQueryScreen) {
-                FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
-                formplayerQueryScreen.refreshItemSetChoices();
-                boolean autoSearch = formplayerQueryScreen.doDefaultSearch() && !forceManualAction;
-                if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
-                    notificationMessage = doQuery(
-                            (FormplayerQueryScreen)nextScreen,
-                            menuSession,
-                            queryData == null ? null : queryData.getInputs(queryKey),
-                            autoSearch
-                    );
-                } else if (queryData != null) {
-                    answerQueryPrompts((FormplayerQueryScreen)nextScreen,
-                            queryData.getInputs(queryKey));
-                }
-            }
+            // Advance the session in case auto launch is set
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed);
+            notificationMessage = handleQueryScreen(nextScreen, menuSession, forceManualAction, queryData);
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
                         (FormplayerSyncScreen)nextScreen,
@@ -294,6 +285,42 @@ public class MenuSessionRunnerService {
                     true);
             return responseBean;
         }
+    }
+
+    private NotificationMessage handleQueryScreen(Screen nextScreen, MenuSession menuSession,
+                                                  boolean forceManualAction, QueryData queryData)
+            throws CommCareSessionException {
+        if (nextScreen instanceof FormplayerQueryScreen) {
+            FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
+            formplayerQueryScreen.refreshItemSetChoices();
+            boolean autoSearch = formplayerQueryScreen.doDefaultSearch() && !forceManualAction;
+            String queryKey = menuSession.getSessionWrapper().getCommand();
+            if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
+                return doQuery(
+                        (FormplayerQueryScreen)nextScreen,
+                        menuSession,
+                        queryData == null ? null : queryData.getInputs(queryKey),
+                        autoSearch
+                );
+            } else if (queryData != null) {
+                answerQueryPrompts((FormplayerQueryScreen)nextScreen,
+                        queryData.getInputs(queryKey));
+            }
+        }
+        return null;
+    }
+
+    private Screen handleAutoLaunch(Screen nextScreen, MenuSession menuSession,
+                                    String selection, boolean needsDetail, boolean confirmed)
+            throws CommCareSessionException {
+        if (nextScreen instanceof EntityScreen) {
+            EntityScreen entityScreen = (EntityScreen)nextScreen;
+            if (entityScreen.getAutoLaunchAction() != null) {
+                menuSession.handleInput(selection, needsDetail, confirmed, true);
+                nextScreen = menuSession.getNextScreen(needsDetail);
+            }
+        }
+        return nextScreen;
     }
 
     // Sets the query fields and refreshes any itemset choices based on them
@@ -381,6 +408,9 @@ public class MenuSessionRunnerService {
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
+            Screen nextScreen = menuSession.getNextScreen();
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false);
+            handleQueryScreen(nextScreen, menuSession, false, new QueryData());
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
@@ -485,6 +515,8 @@ public class MenuSessionRunnerService {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
+            sentry.addTag(Constants.MODULE_TAG, "form");
             return formResponseBean;
         } else {
             return null;
@@ -503,14 +535,12 @@ public class MenuSessionRunnerService {
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
-        menuSessionRepo.save(new SerializableMenuSession(menuSession));
+        menuSessionRepo.save(menuSession.serialize());
+        formSessionService.saveSession(formEntrySession.serialize());
         NewFormResponse response = new NewFormResponse(formEntrySession);
-
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
 
-
-        formSessionRepo.save(formEntrySession.serialize());
         return response;
     }
 

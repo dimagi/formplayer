@@ -3,32 +3,21 @@ package org.commcare.formplayer.utils;
 import com.timgroup.statsd.StatsDClient;
 
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
-import org.commcare.formplayer.mocks.MockFormSessionRepo;
 import org.commcare.formplayer.mocks.MockLockRegistry;
 import org.commcare.formplayer.mocks.MockMenuSessionRepo;
 import org.commcare.formplayer.mocks.TestInstallService;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.services.InstallService;
-import org.commcare.formplayer.services.MenuSessionFactory;
-import org.commcare.formplayer.services.MenuSessionRunnerService;
-import org.commcare.formplayer.services.NewFormResponseFactory;
-import org.commcare.formplayer.services.QueryRequester;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.services.SubmitService;
-import org.commcare.formplayer.services.SyncRequester;
-import org.commcare.formplayer.services.XFormService;
+import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHttpRequest;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +30,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import java.time.Duration;
+import java.util.ArrayList;
+
 
 public class TestContext {
 
@@ -66,10 +57,8 @@ public class TestContext {
         return internalResourceViewResolver;
     }
 
-    @Bean
-    public FormSessionRepo formSessionRepo() {
-        return Mockito.spy(MockFormSessionRepo.class);
-    }
+    @MockBean
+    public FormSessionService formSessionService;
 
     @Bean
     public MenuSessionRepo menuSessionRepo() {
@@ -124,6 +113,11 @@ public class TestContext {
     @Bean
     public SubmitService submitService() {
         return Mockito.mock(SubmitService.class);
+    }
+
+    @Bean
+    public FormplayerDatadog datadog() {
+        return Mockito.spy(new FormplayerDatadog(datadogStatsDClient(), new ArrayList<String>(), new ArrayList<String>()));
     }
 
     @Bean

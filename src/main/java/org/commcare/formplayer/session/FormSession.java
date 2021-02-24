@@ -1,49 +1,9 @@
 package org.commcare.formplayer.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.UserSandbox;
-import org.commcare.modern.database.TableBuilder;
-import org.commcare.util.CommCarePlatform;
-import org.commcare.util.engine.CommCareConfigEngine;
-import org.javarosa.core.model.FormDef;
-import org.javarosa.core.model.FormIndex;
-import org.javarosa.core.model.GroupDef;
-import org.javarosa.core.model.IFormElement;
-import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.javarosa.core.model.instance.FormInstance;
-import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.model.utils.DateUtils;
-import org.javarosa.core.services.PrototypeManager;
-import org.javarosa.core.services.storage.StorageManager;
-import org.javarosa.core.util.UnregisteredLocaleException;
-import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.engine.FunctionExtensions;
-import org.javarosa.form.api.FormController;
-import org.javarosa.form.api.FormEntryController;
-import org.javarosa.form.api.FormEntryModel;
-import org.javarosa.model.xform.XFormSerializingVisitor;
-import org.javarosa.xform.parse.XFormParser;
-import org.javarosa.xform.schema.FormInstanceLoader;
-import org.javarosa.xpath.XPathException;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.stereotype.Component;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
-
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
@@ -54,7 +14,33 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
+import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
+import org.commcare.modern.database.TableBuilder;
+import org.commcare.util.CommCarePlatform;
+import org.commcare.util.engine.CommCareConfigEngine;
+import org.javarosa.core.model.FormDef;
+import org.javarosa.core.model.FormIndex;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.model.utils.DateUtils;
+import org.javarosa.core.services.storage.StorageManager;
+import org.javarosa.core.util.UnregisteredLocaleException;
+import org.javarosa.engine.FunctionExtensions;
+import org.javarosa.form.api.FormController;
+import org.javarosa.form.api.FormEntryController;
+import org.javarosa.form.api.FormEntryModel;
+import org.javarosa.model.xform.XFormSerializingVisitor;
+import org.javarosa.xform.parse.XFormParser;
+import org.javarosa.xpath.XPathException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Date;
+import java.util.Map;
+
 
 /**
  *
@@ -68,6 +54,7 @@ import org.commcare.formplayer.util.FormplayerSentry;
  */
 public class FormSession {
 
+    private final SerializableFormSession session;
     Log log = LogFactory.getLog(FormSession.class);
 
     private FormDef formDef;
@@ -75,26 +62,9 @@ public class FormSession {
     private FormEntryController formEntryController;
     private FormController formController;
     private UserSqlSandbox sandbox;
-    private int sequenceId;
-    private String dateOpened;
-    private String locale;
-    private Map<String, String> sessionData;
-    private String postUrl;
-    private String title;
     private String[] langs;
-    private String uuid;
-    private final String username;
-    private String domain;
-    private String menuSessionId;
-    private boolean oneQuestionPerScreen;
-    private String currentIndex = "-1";
     private boolean isAtLastIndex = false;
-    private String asUser;
-    private String appId;
-    private Map<String, FunctionHandler[]> functionContext;
     private boolean isAtFirstIndex;
-    private boolean inPromptMode;
-    private String restoreAsCaseId;
 
     private FormVolatilityRecord sessionVolatilityRecord;
     private boolean shouldAutoSubmit;
@@ -105,60 +75,36 @@ public class FormSession {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
         formController = new FormController(formEntryController, false);
-        title = formDef.getTitle();
         langs = formEntryModel.getLanguages();
         initLocale();
     }
 
-    // Session object for ongoing sessions
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
                        FormSendCalloutHandler formSendCalloutHandler,
-                       FormplayerStorageFactory storageFactory,
-                       FormplayerSentry raven) throws Exception{
+                       FormplayerStorageFactory storageFactory) throws Exception{
 
+        this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
         //so suppress continuous syncs. Eventually this should likely go into the bean connector
         // for FormController endpoints rather than this config.
         restoreFactory.setPermitAggressiveSyncs(false);
 
-        this.username = session.getUsername();
-        this.asUser = session.getAsUser();
-        this.appId = session.getAppId();
-        this.domain = session.getDomain();
         this.sandbox = restoreFactory.getSandbox();
-        this.postUrl = session.getPostUrl();
-        this.sessionData = session.getSessionData();
-        this.oneQuestionPerScreen = session.getOneQuestionPerScreen();
-        this.locale = session.getInitLang();
-        this.currentIndex = session.getCurrentIndex();
-        this.uuid = session.getId();
-        this.sequenceId = session.getSequenceId();
-        this.menuSessionId = session.getMenuSessionId();
-        this.dateOpened = session.getDateOpened();
-        this.formDef = new FormDef();
-        deserializeFormDef(session.getFormXml());
-        this.formDef = FormInstanceLoader.loadInstance(formDef, IOUtils.toInputStream(session.getInstanceXml()));
-        this.inPromptMode = session.getInPromptMode();
+        this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
+        loadInstanceXml(formDef, session.getInstanceXml());
         formDef.setSendCalloutHandler(formSendCalloutHandler);
-        this.functionContext = session.getFunctionContext();
-        this.restoreAsCaseId = session.getRestoreAsCaseId();
         setupJavaRosaObjects();
-        if (this.oneQuestionPerScreen || this.inPromptMode) {
-            FormIndex formIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
+
+        if (session.isOneQuestionPerScreen() || session.isInPromptMode()) {
+            FormIndex formIndex = JsonActionUtils.indexFromString(session.getCurrentIndex(), this.formDef);
             formController.jumpToIndex(formIndex);
-            formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(this.currentIndex, formDef));
+            formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
         }
         setupFunctionContext();
         initialize(false, session.getSessionData(), storageFactory.getStorageManager());
-        this.postUrl = session.getPostUrl();
-
-        if (raven != null) {
-            raven.addTag(FormplayerSentry.FORM_NAME, this.title);
-        }
     }
 
-    // New FormSession constructor
     public FormSession(UserSqlSandbox sandbox,
                        FormDef formDef,
                        String username,
@@ -176,25 +122,16 @@ public class FormSession {
                        FormplayerStorageFactory storageFactory,
                        boolean inPromptMode,
                        String caseId) throws Exception {
-        this.username = TableBuilder.scrubName(username);
+
         this.formDef = formDef;
+        session = new SerializableFormSession(
+                domain, appId, TableBuilder.scrubName(username), asUser, caseId,
+                postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
+                locale, inPromptMode, sessionData, functionContext
+        );
+
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
-        this.sessionData = sessionData;
-        this.domain = domain;
-        this.postUrl = postUrl;
-        this.locale = locale;
-        this.uuid = UUID.randomUUID().toString();
-        this.sequenceId = 0;
-        this.postUrl = postUrl;
-        this.menuSessionId = menuSessionId;
-        this.oneQuestionPerScreen = oneQuestionPerScreen;
-        this.asUser = asUser;
-        this.appId = appId;
-        this.currentIndex = "0";
-        this.functionContext = functionContext;
-        this.inPromptMode = inPromptMode;
-        this.restoreAsCaseId = caseId;
         setupJavaRosaObjects();
         setupFunctionContext();
         if(instanceContent != null){
@@ -203,11 +140,13 @@ public class FormSession {
         } else {
             initialize(true, sessionData, storageFactory.getStorageManager());
         }
-        
-        if (this.oneQuestionPerScreen) {
+
+        if (oneQuestionPerScreen) {
             stepToNextIndex();
-            this.currentIndex = formController.getFormIndex().toString();
+            session.setCurrentIndex(formController.getFormIndex().toString());
         }
+        // must be done after formDef is initialized
+        session.setFormXml(FormDefStringSerializer.serialize(formDef));
     }
 
     /**
@@ -215,11 +154,11 @@ public class FormSession {
      * (in particular, now() and today()) but could be extended in the future.
      */
     private void setupFunctionContext() {
-        if (functionContext == null || functionContext.size() < 1) {
+        if (session.getFunctionContext() == null || session.getFunctionContext().size() < 1) {
             return;
         }
-        for (String outerKey: functionContext.keySet()) {
-            FunctionHandler[] functionHandlers = functionContext.get(outerKey);
+        for (String outerKey: session.getFunctionContext().keySet()) {
+            FunctionHandler[] functionHandlers = session.getFunctionContext().get(outerKey);
             if(outerKey.equals("static-date")) {
                 for (FunctionHandler functionHandler: functionHandlers) {
                     String funcName = functionHandler.getName();
@@ -246,14 +185,14 @@ public class FormSession {
     }
 
     private void initLocale(){
-        if(locale == null){
-            this.locale = this.langs[0];
+        if(session.getInitLang() == null){
+            session.setInitLang(this.langs[0]);
         }
         try {
-            formEntryController.setLanguage(this.locale);
+            formEntryController.setLanguage(session.getInitLang());
         } catch (UnregisteredLocaleException e) {
-            log.error("Couldn't find locale " + this.locale
-                    + " for user " + username);
+            log.error("Couldn't find locale " + session.getInitLang()
+                    + " for user " + session.getUsername());
         }
     }
 
@@ -261,7 +200,7 @@ public class FormSession {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        formDef.initialize(newInstance, sessionWrapper.getIIF(), locale, false);
+        formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 
         setVolatilityIndicators();
         setAutoSubmitFlag();
@@ -370,16 +309,12 @@ public class FormSession {
         return formEntryController;
     }
 
-    public String getTitle(){
-        return title;
-    }
-
     public String[] getLanguages(){
         return langs;
     }
 
     public JSONArray getFormTree() {
-        if (oneQuestionPerScreen) {
+        if (session.isOneQuestionPerScreen()) {
             return JsonActionUtils.getOneQuestionPerScreenJSON(formController.getFormEntryController().getModel(),
                     formController.getFormEntryController(),
                     formController.getFormIndex());
@@ -389,7 +324,7 @@ public class FormSession {
 
 
     public String getSessionId(){
-        return uuid;
+        return session.getId();
     }
 
     public String getXmlns(){
@@ -401,19 +336,11 @@ public class FormSession {
     }
 
     public int getSequenceId() {
-        return sequenceId;
-    }
-
-    public void setSequenceId(int sequenceId) {
-        this.sequenceId = sequenceId;
+        return session.getSequenceId();
     }
 
     public String getLocale() {
-        return locale;
-    }
-
-    public void setLocale(String locale) {
-        this.locale = locale;
+        return session.getInitLang();
     }
 
     public UserSandbox getSandbox(){
@@ -426,83 +353,27 @@ public class FormSession {
         return getInstanceXml();
     }
 
-    public Map<String, String> getSessionData(){
-        return sessionData;
-    }
-
-    private String serializeFormDef() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream serializedStream = new DataOutputStream(baos);
-        formDef.writeExternal(serializedStream);
-        return Base64.encodeBase64String(baos.toByteArray());
-    }
-
-    private void deserializeFormDef(String serializedFormDef) throws IOException, DeserializationException {
-        byte [] sessionBytes = Base64.decodeBase64(serializedFormDef);
-        DataInputStream inputStream =
-                new DataInputStream(new ByteArrayInputStream(sessionBytes));
-        formDef.readExternal(inputStream, PrototypeManager.getDefault());
-    }
-
-
     public SerializableFormSession serialize() throws IOException {
-        SerializableFormSession serializableFormSession = new SerializableFormSession();
-        serializableFormSession.setInstanceXml(getInstanceXml());
-        serializableFormSession.setId(getSessionId());
-        serializableFormSession.setFormXml(serializeFormDef());
-        serializableFormSession.setUsername(username);
-        serializableFormSession.setSessionData(getSessionData());
-        serializableFormSession.setSequenceId(getSequenceId());
-        serializableFormSession.setInitLang(getLocale());
-        serializableFormSession.setSessionData(getSessionData());
-        serializableFormSession.setDomain(getDomain());
-        serializableFormSession.setPostUrl(getPostUrl());
-        serializableFormSession.setMenuSessionId(menuSessionId);
-        serializableFormSession.setTitle(getTitle());
-        serializableFormSession.setDateOpened(new Date().toString());
-        serializableFormSession.setOneQuestionPerScreen(oneQuestionPerScreen);
-        serializableFormSession.setCurrentIndex(currentIndex);
-        serializableFormSession.setAsUser(asUser);
-        serializableFormSession.setAppId(appId);
-        serializableFormSession.setFunctionContext(functionContext);
-        serializableFormSession.setInPromptMode(inPromptMode);
-        serializableFormSession.setRestoreAsCaseId(restoreAsCaseId);
-        return serializableFormSession;
-    }
-
-    public String getDomain() {
-        return domain;
+        session.incrementSequence();
+        session.setInstanceXml(getInstanceXml());
+        return session;
     }
 
     public String getPostUrl() {
-        return postUrl;
+        return session.getPostUrl();
     }
 
     public String getUsername(){
-        return username;
+        return session.getUsername();
     }
 
     public String getMenuSessionId() {
-        return menuSessionId;
-    }
-
-    public void setCurrentIndex(String index) {
-        this.currentIndex = index;
-    }
-
-    public String getCurrentIndex() {
-        return currentIndex;
+        return session.getMenuSessionId();
     }
 
     public void setIsAtLastIndex(boolean isAtLastIndex) {
         this.isAtLastIndex = isAtLastIndex;
     }
-
-    public boolean getIsAtLastIndex() {
-        return isAtLastIndex;
-    }
-
-    public FormDef getFormDef() { return formDef; }
 
     private void moveToNextView() {
         if (formController.getEvent() != FormEntryController.EVENT_END_OF_FORM) {
@@ -590,14 +461,13 @@ public class FormSession {
         boolean isEndOfForm = event == FormEntryController.EVENT_END_OF_FORM;
         setIsAtLastIndex(isEndOfForm);
         if (!isEndOfForm) {
-            setCurrentIndex(formController.getFormIndex().toString());
+            session.setCurrentIndex(formController.getFormIndex().toString());
         }
     }
 
     public void stepToPreviousIndex() {
         moveToPreviousView();
-        int event = formController.getEvent();
-        setCurrentIndex(formController.getFormIndex().toString());
+        session.setCurrentIndex(formController.getFormIndex().toString());
     }
 
     public FormEntryResponseBean getCurrentJSON() throws IOException {
@@ -607,32 +477,33 @@ public class FormSession {
 
     public FormEntryResponseBean answerQuestionToJSON(Object answer, String answerIndex) throws IOException {
         if (answerIndex == null) {
-            answerIndex = getCurrentIndex();
+            answerIndex = session.getCurrentIndex();
         }
 
         JSONObject jsonObject = JsonActionUtils.questionAnswerToJson(formEntryController,
                 formEntryModel,
                 answer != null ? answer.toString() : null,
                 answerIndex,
-                oneQuestionPerScreen,
-                currentIndex,
-                false);
+                session.isOneQuestionPerScreen(),
+                session.getCurrentIndex(),
+                false,
+                true);
 
         FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
-        if (!inPromptMode || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {
+        if (!session.isInPromptMode() || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {
             return response;
         }
         return getNextFormNavigation();
     }
 
     public FormEntryNavigationResponseBean getFormNavigation() throws IOException {
-        JSONObject resp = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel, currentIndex);
+        JSONObject resp = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel, session.getCurrentIndex());
         FormEntryNavigationResponseBean responseBean
                 = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
         responseBean.setIsAtLastIndex(isAtLastIndex);
         responseBean.setIsAtFirstIndex(isAtFirstIndex);
-        responseBean.setTitle(title);
-        responseBean.setCurrentIndex(currentIndex);
+        responseBean.setTitle(session.getTitle());
+        responseBean.setCurrentIndex(session.getCurrentIndex());
         responseBean.setEvent(responseBean.getTree()[0]);
         return responseBean;
     }
@@ -642,16 +513,16 @@ public class FormSession {
      *  (currently only used by SMS)
      */
     public FormEntryNavigationResponseBean getNextFormNavigation() throws IOException {
-        formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(this.currentIndex, formDef));
+        formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
         int nextEvent = formEntryController.stepToNextEvent();
-        this.currentIndex = formController.getFormIndex().toString();
+        session.setCurrentIndex(formController.getFormIndex().toString());
         JSONObject resp = JsonActionUtils.getPromptJson(formEntryModel);
         FormEntryNavigationResponseBean responseBean
                 = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
         responseBean.setIsAtLastIndex(isAtLastIndex);
         responseBean.setIsAtFirstIndex(isAtFirstIndex);
-        responseBean.setTitle(title);
-        responseBean.setCurrentIndex(currentIndex);
+        responseBean.setTitle(session.getTitle());
+        responseBean.setCurrentIndex(session.getCurrentIndex());
         responseBean.setInstanceXml(null);
         responseBean.setTree(null);
         responseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
@@ -662,51 +533,17 @@ public class FormSession {
         return responseBean;
     }
 
-    public String getDateOpened() {
-        return dateOpened;
-    }
-
-    public void setDateOpened(String dateOpened) {
-        this.dateOpened = dateOpened;
-    }
-
-    public String getAsUser() {
-        return asUser;
-    }
-
-    public void setAsUser(String asUser) {
-        this.asUser = asUser;
-    }
-
-    public boolean getOneQuestionPerScreen() {
-        return oneQuestionPerScreen;
-    }
-
-    public void reload(FormDef formDef, String postUrl, StorageManager storageManager) throws IOException {
-        if(getInstanceXml() != null){
-            loadInstanceXml(formDef, getInstanceXml());
-            initialize(false, sessionData, storageManager);
-        } else {
-            initialize(true, sessionData, storageManager);
-        }
-        if (this.oneQuestionPerScreen) {
-            FormIndex firstIndex = JsonActionUtils.indexFromString(currentIndex, this.formDef);
-            IFormElement element = formEntryController.getModel().getForm().getChild(firstIndex);
-            while (element instanceof GroupDef && !formEntryController.isFieldListHost(firstIndex)) {
-                firstIndex =  formController.getNextFormIndex(firstIndex, false, true);
-                element = formEntryController.getModel().getForm().getChild(firstIndex);
-            }
-            this.currentIndex = firstIndex.toString();
-        }
-        this.postUrl = postUrl;
-    }
 
     public void setIsAtFirstIndex(boolean isAtFirstIndex) {
         this.isAtFirstIndex = isAtFirstIndex;
     }
 
     public void changeLocale(String locale) {
-        this.locale = locale;
+        session.setInitLang(locale);
         formEntryController.setLanguage(locale);
+    }
+
+    public SerializableFormSession getSerializableSession() {
+        return session;
     }
 }

@@ -3,6 +3,7 @@ package org.commcare.formplayer.application;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.*;
+import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,25 +30,27 @@ public class IncompleteSessionController extends AbstractBaseController{
     @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
     @UserLock
     @UserRestore
-    public NewFormResponse openIncompleteForm(@RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+    public NewFormResponse openIncompleteForm(@RequestBody SessionRequestBean incompleteSessionRequestBean,
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        SerializableFormSession session = formSessionRepo.findOneWrapped(incompleteSessionRequestBean.getSessionId());
+        SerializableFormSession session = formSessionService.getSessionById(incompleteSessionRequestBean.getSessionId());
         storageFactory.configure(session);
         return newFormResponseFactory.getResponse(session);
     }
 
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     @UserRestore
-    public GetSessionsResponse getSessions(@RequestBody GetSessionsBean getSessionRequest,
+    public GetSessionsResponse getSessions(@RequestBody AuthenticatedRequestBean getSessionRequest,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
-        List<SerializableFormSession> formplayerSessions = formSessionRepo.findUserSessions(scrubbedUsername);
+        List<FormSessionListView> formplayerSessions = formSessionService.getSessionsForUser(
+                scrubbedUsername, getSessionRequest.getDomain(), getSessionRequest.getRestoreAs()
+        );
 
-        ArrayList<SerializableFormSession> sessions = new ArrayList<>();
+        ArrayList<FormSessionListView> sessions = new ArrayList<>();
         Set<String> formplayerSessionIds = new HashSet<>();
 
-        for (SerializableFormSession serializableFormSession : formplayerSessions) {
+        for (FormSessionListView serializableFormSession : formplayerSessions) {
             sessions.add(serializableFormSession);
             formplayerSessionIds.add(serializableFormSession.getId());
         }
@@ -57,14 +60,14 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
     public NotificationMessage deleteIncompleteForm(
-            @RequestBody IncompleteSessionRequestBean incompleteSessionRequestBean,
+            @RequestBody SessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         deleteSession(incompleteSessionRequestBean.getSessionId());
         return new NotificationMessage("Successfully deleted incomplete form.", false, NotificationMessage.Tag.incomplete_form);
     }
 
     protected void deleteSession(String id) {
-        formSessionRepo.deleteById(id);
+        formSessionService.deleteSessionById(id);
     }
 
 }

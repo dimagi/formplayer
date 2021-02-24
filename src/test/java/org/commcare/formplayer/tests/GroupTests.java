@@ -5,11 +5,10 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.commcare.formplayer.utils.TestContext;
 
 import static org.mockito.Matchers.any;
@@ -18,11 +17,11 @@ import static org.mockito.Matchers.any;
  * Fills out the "Basic Tests > Groups" Form from the QA plan.
  * Provides coverage of fixtures, group expansion, selects from itemsets, conditional selects
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class GroupTests extends BaseTestClass{
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("grouptestdomain", "grouptestuser");

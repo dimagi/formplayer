@@ -14,9 +14,7 @@ import org.commcare.formplayer.aspects.SetBrowserValuesAspect;
 import org.commcare.formplayer.aspects.UserRestoreAspect;
 import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.impl.PostgresFormSessionRepo;
 import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
 import org.commcare.formplayer.services.BrowserValuesProvider;
 import org.commcare.formplayer.services.FallbackSentryReporter;
@@ -28,6 +26,7 @@ import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.services.SyncRequester;
 import org.commcare.formplayer.services.XFormService;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +45,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -100,6 +100,12 @@ public class WebAppContext implements WebMvcConfigurer {
 
     @Value("${sentry.dsn:}")
     private String ravenDsn;
+
+    @Value("${detailed_tagging.domains:}")
+    private List<String> domainsWithDetailedTagging;
+
+    @Value("${detailed_tagging.tag_names:}")
+    private List<String> detailedTagNames;
 
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
@@ -218,11 +224,6 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public FormSessionRepo formSessionRepo(){
-        return new PostgresFormSessionRepo();
-    }
-
-    @Bean
     public MenuSessionRepo menuSessionRepo(){
         return new PostgresMenuSessionRepo();
     }
@@ -245,6 +246,13 @@ public class WebAppContext implements WebMvcConfigurer {
                 .setData("environment", environment)
                 .record();
         return raven;
+    }
+
+    @Bean
+    @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public FormplayerDatadog datadog() {
+        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedTagging, detailedTagNames);
+        return datadog;
     }
 
     @Bean
@@ -322,5 +330,9 @@ public class WebAppContext implements WebMvcConfigurer {
                         .usingDbTime() // Works on Postgres, MySQL, MariaDb, MS SQL, Oracle, DB2, HSQL and H2
                         .build()
         );
+    }
+
+    @Bean public RequestContextListener requestContextListener(){
+        return new RequestContextListener();
     }
 }
