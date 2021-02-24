@@ -33,8 +33,7 @@ public class FormplayerRedisLockRegistryTest {
         this.redisson.getKeys().deleteByPattern(REDIS_KEY_PREFIX + "*");
     }
 
-    @Test
-    public void testSingleThreadLockUnlock() throws InterruptedException {
+    public void testSingleThreadLockUnlock1() throws InterruptedException {
         final CountDownLatch waitForThread = new CountDownLatch(1);
         final CountDownLatch waitForCheck = new CountDownLatch(1);
 
@@ -83,6 +82,57 @@ public class FormplayerRedisLockRegistryTest {
 //        assert(!lock.isLocked());
 //        lockMetadata = bucket.get();
 //        assert(lockMetadata == null);
+    }
+
+    @Test
+    public void testSingleThreadLockUnlock() throws InterruptedException {
+        final CountDownLatch waitForThread = new CountDownLatch(1);
+        final CountDownLatch waitForCheck = new CountDownLatch(1);
+
+        final String lockName = REDIS_KEY_PREFIX + "lock1";
+
+        FormplayerRedisLockRegistry.FormplayerRedisLock formplayerRedisLock = registry.obtain(lockName);
+
+        RLock finalLock = formplayerRedisLock.getRLock();
+        Thread t = new Thread() {
+            public void run() {
+                try {
+                    assert(finalLock.tryLock(1, TimeUnit.SECONDS));
+                    waitForThread.countDown();
+
+                    waitForCheck.await();
+                    finalLock.unlock();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+
+            };
+        };
+
+        t.start();
+
+        waitForThread.await();
+
+        RLock rLock = formplayerRedisLock.getRLock();
+        // Check that lock is locked.
+        assert(formplayerRedisLock.getRLock().isLocked());
+        assert(rLock.isHeldByThread((t.getId())));
+
+        RBucket<FormplayerRedisLockRegistry.LockMetadata> bucket = this.redisson.getBucket(lockName);
+        FormplayerRedisLockRegistry.LockMetadata lockMetadata = bucket.get();
+        assert(lockMetadata.lockId == lockName &&
+                lockMetadata.serverName == SERVER_NAME &&
+                lockMetadata.serverThreadId == t.getId());
+
+        waitForCheck.countDown();
+
+        t.join();
+
+        assert(!rLock.isLocked());
+        lockMetadata = bucket.get();
+        assert(lockMetadata == null);
+
     }
 
 }
