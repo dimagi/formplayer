@@ -13,24 +13,27 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 
 public class FormplayerRedisLockRegistry implements LockRegistry {
 
     CountDownLatch latch = new CountDownLatch(1);
-    private static final String REDIS_TOPIC_EVICT = "EVICT";
+    public static final String REDIS_TOPIC_EVICT = "EVICT";
 
     private final Map<String, FormplayerRedisLock> locks = new ConcurrentHashMap<>();
 
     private final RedissonClient redisson;
     private final String serverName;
+    private final String redisPrefix;
+    private final String redisIpcTopic;
 
     private int tryLockDurationInSeconds;
     private int nonEvictionDurationInSeconds;
 
-    public FormplayerRedisLockRegistry(String serverName, String redisIpcTopic, int tryLockDurationInSeconds,
+    public FormplayerRedisLockRegistry(String serverName, String redisPrefix, String redisIpcTopic, int tryLockDurationInSeconds,
                                        int nonEvictionDurationInSeconds) {
         this.serverName = serverName;
+        this.redisPrefix = redisPrefix;
+        this.redisIpcTopic = redisPrefix + redisIpcTopic;
         this.tryLockDurationInSeconds = tryLockDurationInSeconds;
         this.nonEvictionDurationInSeconds = nonEvictionDurationInSeconds;
 
@@ -39,15 +42,15 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
         config.useSingleServer().setAddress("redis://127.0.0.1:6379");
         this.redisson = Redisson.create(config);
 
-        RTopic topic = redisson.getTopic(redisIpcTopic);
+        RTopic topic = redisson.getTopic(this.redisIpcTopic);
 
         FormplayerRedisLockRegistry registry = this;
         topic.addListener(RedisTopicMessage.class, new MessageListener<RedisTopicMessage>() {
             @Override
             public void onMessage(CharSequence channel, RedisTopicMessage redisTopicMessage) {
-                int x = 3;
                 try {
-                    registry.receiveEvictMessage(redisTopicMessage, serverName);
+                    if (redisTopicMessage.action.equals(REDIS_TOPIC_EVICT))
+                        registry.receiveEvictMessage(redisTopicMessage, serverName);
                 } catch(Exception e) {
                     // TODO: Handle
                 }
@@ -62,17 +65,15 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
     }
 
     public FormplayerRedisLock obtain(Object lockKey, boolean writeLock) {
-        // TODO: Check lockKey type string
         return this.locks.computeIfAbsent(lockKey.toString(), k -> {
-            RReadWriteLock rwLock = this.redisson.getReadWriteLock((String) lockKey);
-            LockMetadata lockMetadata = new LockMetadata(lockKey.toString(),
-                    this.serverName);
+            RReadWriteLock rwLock = this.redisson.getReadWriteLock(this.lockNameToRedisLockKey(lockKey.toString()));
+            LockMetadata lockMetadata = new LockMetadata(lockKey.toString(), this.serverName);
             if (writeLock) {
-                return new FormplayerRedisLock(rwLock, lockMetadata, this.redisson, this, REDIS_TOPIC_EVICT,
-                        this.tryLockDurationInSeconds, this.nonEvictionDurationInSeconds);
+                return new FormplayerRedisLock(rwLock.writeLock(), lockMetadata, this.redisson, this, this.redisIpcTopic,
+                        this.lockNameToRedisBucketKey(lockKey.toString()), this.tryLockDurationInSeconds, this.nonEvictionDurationInSeconds);
             }
-            return new FormplayerRedisLock(rwLock, lockMetadata, this.redisson, this, REDIS_TOPIC_EVICT,
-                    this.tryLockDurationInSeconds, this.nonEvictionDurationInSeconds);
+            return new FormplayerRedisLock(rwLock.readLock(), lockMetadata, this.redisson, this, this.redisIpcTopic,
+                    this.lockNameToRedisBucketKey(lockKey.toString()), this.tryLockDurationInSeconds, this.nonEvictionDurationInSeconds);
         });
     }
 
@@ -80,25 +81,52 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
         this.locks.remove(lock.getId());
     }
 
+    public String lockNameToRedisLockKey(String lockName) {
+        return this.redisPrefix + "LOCK_" + lockName;
+    }
+
+    public String lockNameToRedisBucketKey(String lockName) {
+        return this.redisPrefix + "BUCKET_" + lockName;
+    }
+
     public void sendEvictMessage(LockMetadata lockMetadata, String redisIpcTopic) {
         RTopic topic = this.redisson.getTopic(redisIpcTopic);
-        topic.publish(new RedisTopicMessage(redisIpcTopic, lockMetadata));
+        topic.publish(new RedisTopicMessage(REDIS_TOPIC_EVICT, lockMetadata));
     }
 
     public void receiveEvictMessage(RedisTopicMessage msg, String serverName) {
-        if (msg.action != REDIS_TOPIC_EVICT) return;
+        if (!msg.action.equals(REDIS_TOPIC_EVICT)) return;
 
+        // TODO: Better logging
+
+        // Servername check from reported lock metadata
         LockMetadata lockMetadata = msg.lockMetadata;
-        if (lockMetadata != null && lockMetadata.serverName == serverName) {
-            FormplayerRedisLock lock = this.locks.get(lockMetadata.lockId);
-            Thread ownerThread = lock.getOwner();
-            if (ownerThread.getId() == lockMetadata.serverThreadId) {
-                if (this.redisson.getLock(lockMetadata.lockId).isHeldByThread(ownerThread.getId()) &&
-                        ownerThread.isAlive()) {
-                    ownerThread.interrupt();
-                }
-            }
+        if (lockMetadata == null || !lockMetadata.serverName.equals(serverName)) {
+            return;
         }
+
+        FormplayerRedisLock lock = this.locks.get(lockMetadata.lockId);
+
+        if (lock == null) {
+            // This is a special case if we removed the lock from locks before we unlocking
+            return;
+        }
+        if ((System.currentTimeMillis() - lock.getLockedAt()) <= this.nonEvictionDurationInSeconds) {
+            return;
+        }
+
+        Thread ownerThread = lock.getOwner();
+        if (ownerThread.getId() != lockMetadata.serverThreadId) {
+            // TODO: Re-evaulate if this is needed.
+            return;
+        }
+
+        if (!ownerThread.isAlive() ||
+                !this.locks.get(lockMetadata.lockId).getRLock().isHeldByThread(ownerThread.getId())) {
+            return;
+        }
+
+        ownerThread.interrupt();
     }
 
     public static class LockMetadata implements Serializable {
@@ -133,22 +161,24 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
 
     public static class FormplayerRedisLock implements Lock {
 
-        public final RReadWriteLock lock;
+        public final RLock lock;
         private final LockMetadata lockMetadata;
         private final RedissonClient redisson;
         private final FormplayerRedisLockRegistry registry;
         private final String redisIpcTopic;
+        private final String redisBucketName;
         private Thread ownerThread;
 
         private final int tryLockDurationInSeconds;
         private final int nonEvictionDurationInSeconds;
         private final int lockTryTimes = 3;
 
-        public FormplayerRedisLock(RReadWriteLock lock,
+        public FormplayerRedisLock(RLock lock,
                                    LockMetadata lockMetadata,
                                    RedissonClient redisson,
                                    FormplayerRedisLockRegistry registry,
                                    String redisIpcTopic,
+                                   String redisBucketName,
                                    int tryLockDurationInSeconds,
                                    int nonEvictionDurationInSeconds) {
             this.lock = lock;
@@ -156,6 +186,7 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
             this.redisson = redisson;
             this.registry = registry;
             this.redisIpcTopic = redisIpcTopic;
+            this.redisBucketName = redisBucketName;
             this.tryLockDurationInSeconds = tryLockDurationInSeconds;
             this.nonEvictionDurationInSeconds = nonEvictionDurationInSeconds;
         }
@@ -185,18 +216,19 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
             boolean didLock = false;
             for (int i = 0; i < this.lockTryTimes; i++) {
                 try {
-                    didLock = this.lock.writeLock().tryLock(time, unit);
+                    // TODO: This is in a for loop so consider adjusting lock duration.
+                    didLock = this.lock.tryLock(time, unit);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
-                RBucket<LockMetadata> bucket = this.redisson.getBucket(lockMetadata.lockId);
+                RBucket<LockMetadata> bucket = this.redisson.getBucket(this.redisBucketName);
                 if (didLock) {
                     // TODO: Check if there is something in bucket already
                     this.lockMetadata.setLockedAt(System.currentTimeMillis());
                     this.lockMetadata.setServerThreadId(Thread.currentThread().getId());
                     this.ownerThread = Thread.currentThread();
-                    // bucket.set(this.lockMetadata, this.nonEvictionDurationInSeconds, TimeUnit.SECONDS);
+                    bucket.set(this.lockMetadata);
                     return didLock;
                 } else {
                     LockMetadata retrievedlockMetadata = bucket.get();
@@ -216,15 +248,12 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
 
         @Override
         public void unlock() {
-            // Use a freshly acquired RLock to check if it's held (`isHeldByCurrentThread` not a method
-            // of redis read and write locks)
-            RLock rLock = this.redisson.getLock(this.lockMetadata.lockId);
-            if (rLock.isHeldByCurrentThread()) {
-                RBucket<LockMetadata> bucket = this.redisson.getBucket(this.lockMetadata.lockId);
+            if (this.lock.isHeldByCurrentThread()) {
+                RBucket<LockMetadata> bucket = this.redisson.getBucket(this.redisBucketName);
                 LockMetadata retrievedlockMetadata = bucket.getAndDelete();
                 this.registry.removeLock(this);
                 // TODO: log
-                rLock.unlock();
+                this.lock.unlock();
             }
         }
 
@@ -234,7 +263,7 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
         }
 
         public RLock getRLock() {
-            return (RLock) this.lock.writeLock();
+            return (RLock) this.lock;
         }
 
         public String getId() {
@@ -243,6 +272,10 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
 
         public long getThreadId() {
             return this.lockMetadata.serverThreadId;
+        }
+
+        public long getLockedAt() {
+            return this.lockMetadata.lockedAt;
         }
 
         public Thread getOwner() {
