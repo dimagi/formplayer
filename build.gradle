@@ -89,7 +89,7 @@ dependencies {
     //Unmanaged Dependencies
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.11.0'
     implementation group: 'io.sentry', name: 'sentry', version: '1.7.28'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.4'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
     implementation group: 'org.json', name: 'json', version: '20201115'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.14.0'
