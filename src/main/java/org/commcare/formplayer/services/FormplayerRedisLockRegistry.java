@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.redisson.Redisson;
 import org.redisson.api.*;
 import org.redisson.api.listener.MessageListener;
@@ -26,8 +27,8 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
     private final String redisPrefix;
     private final String redisIpcTopic;
 
-    private int tryLockDurationInSeconds;
-    private int nonEvictionDurationInSeconds;
+    private final int tryLockDurationInSeconds;
+    private final int nonEvictionDurationInSeconds;
 
     public FormplayerRedisLockRegistry(String serverName, String redisPrefix, String redisIpcTopic, int tryLockDurationInSeconds,
                                        int nonEvictionDurationInSeconds) {
@@ -206,9 +207,8 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
             try {
                 return tryLock(tryLockDurationInSeconds, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                throw new InterruptedRuntimeException(e);
             }
-            return false;
         }
 
         @Override
@@ -251,7 +251,8 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
             if (this.lock.isHeldByCurrentThread()) {
                 RBucket<LockMetadata> bucket = this.redisson.getBucket(this.redisBucketName);
                 LockMetadata retrievedlockMetadata = bucket.getAndDelete();
-                this.registry.removeLock(this);
+                this.lockMetadata.setServerThreadId(-1);
+                this.lockMetadata.setLockedAt(-1);
                 // TODO: log
                 this.lock.unlock();
             }
