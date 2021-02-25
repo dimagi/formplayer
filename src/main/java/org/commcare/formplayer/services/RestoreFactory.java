@@ -106,9 +106,6 @@ public class RestoreFactory {
     private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
 
     @Autowired
-    private FormplayerSentry raven;
-
-    @Autowired
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
@@ -443,7 +440,7 @@ public class RestoreFactory {
     }
 
     private void recordSentryData(final String restoreUrl) {
-        raven.newBreadcrumb()
+        FormplayerSentry.newBreadcrumb()
                 .setData("restoreUrl", restoreUrl)
                 .setCategory("restore")
                 .setMessage("Restoring from URL " + restoreUrl)
@@ -622,7 +619,7 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        FormplayerHttpRequest request = RequestUtils.getCurrentRequest();
+        FormplayerHttpRequest request = RequestUtils.getFormplayerRequest();
         if (request == null) {
             throw new RuntimeException(String.format(
                     "HMAC Auth not available outside of a web request %s", requestPath

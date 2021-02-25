@@ -29,9 +29,6 @@ public class CategoryTimingHelper {
     @Autowired
     private StatsDClient datadogStatsDClient;
 
-    @Autowired
-    private FormplayerSentry raven;
-
     public class RecordingTimer extends SimpleTimer {
         private CategoryTimingHelper parent;
         private String category, sentryMessage, domain;
@@ -78,7 +75,7 @@ public class CategoryTimingHelper {
      * NOTE: if adding a new tag, add a constant for the tag name 
      */
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
-        raven.newBreadcrumb()
+        FormplayerSentry.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)
                 .setData(Constants.DURATION_TAG, timing.formatDuration())

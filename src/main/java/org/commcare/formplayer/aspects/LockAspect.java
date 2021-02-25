@@ -1,10 +1,10 @@
 package org.commcare.formplayer.aspects;
 
+import io.sentry.SentryLevel;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 
 import com.timgroup.statsd.StatsDClient;
 import datadog.trace.api.Trace;
-import io.sentry.event.Event;
 import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
@@ -40,9 +40,6 @@ public class LockAspect {
 
     @Autowired
     private StatsDClient datadogStatsDClient;
-
-    @Autowired
-    private FormplayerSentry raven;
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
@@ -103,7 +100,7 @@ public class LockAspect {
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
                     logLockError(bean, joinPoint, "_expired");
-                    raven.sendRavenException(e, Event.Level.WARNING);
+                    FormplayerSentry.captureException(e, SentryLevel.WARNING);
                 }
             }
         }

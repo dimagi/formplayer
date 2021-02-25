@@ -8,6 +8,7 @@ import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.SyncScreen;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
 import java.util.Hashtable;
 
 /**
@@ -37,13 +38,13 @@ public class FormplayerSyncScreen extends SyncScreen {
             // hack because HQ isn't accepting the first query param key properly
             builder.queryParam("buffer", "buffer");
             if (asUser != null) {
-                builder.queryParam("commcare_login_as", asUser);
+                builder.queryParam("commcare_login_as", URLEncoder.encode(asUser));
             }
-            for(String key: params.keySet()){
-                builder.queryParam(key, params.get(key));
+            for (String key: params.keySet()){
+                builder.queryParam(key, URLEncoder.encode(params.get(key)));
             }
+            builder.build(true);
             builtQuery = builder.toUriString();
-            builder.build();
         } else {
             // expected a sync entry; clear session and show vague 'session error' message to user
             throw new RuntimeException("Initialized sync request while not on sync screen");

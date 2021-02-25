@@ -1,5 +1,6 @@
 package org.commcare.formplayer.aspects;
 
+import io.sentry.Sentry;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
@@ -12,6 +13,7 @@ import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
@@ -63,10 +65,19 @@ public class UserRestoreAspect {
         HqAuth auth = getHqAuth((String) args[1]);
 
         configureRestoreFactory(requestBean, auth);
+        configureSentryScope(restoreFactory);
 
         if (requestBean.isMustRestore()) {
             restoreFactory.performTimedSync();
         }
+    }
+
+    private void configureSentryScope(RestoreFactory restoreFactory) {
+        Sentry.configureScope(scope -> {
+            scope.setTag(Constants.AS_USER, restoreFactory.getEffectiveUsername());
+            scope.setExtra(Constants.USER_SYNC_TOKEN, restoreFactory.getSyncToken());
+            scope.setExtra(Constants.USER_SANDBOX_PATH, restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes());
+        });
     }
 
     private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) throws Exception {
