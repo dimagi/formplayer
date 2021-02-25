@@ -1,7 +1,8 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
-import io.sentry.event.Event;
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
@@ -10,7 +11,6 @@ import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
@@ -18,6 +18,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.SerializationUtils;
 
@@ -44,9 +45,6 @@ public class FormSessionService {
 
     @Autowired(required = false)
     private StatsDClient datadogStatsDClient;
-
-    @Autowired(required = false)
-    private FormplayerSentry raven;
 
     @CacheEvict(allEntries = true)
     public int purge() {
@@ -77,9 +75,6 @@ public class FormSessionService {
             }
         } catch (Exception e) {
             log.error("Exception purge form sessions", e);
-            if (raven != null) {
-                raven.sendRavenException(e, Event.Level.ERROR);
-            }
         }
         return deletedRows;
     }
@@ -93,11 +88,17 @@ public class FormSessionService {
         return session.get();
     }
 
-    public List<FormSessionListView> getSessionsForUser(String username) {
-        // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
-        // return formSessionRepo.findByUsername(username, Sort.by(Sort.Direction.DESC, "dateCreated"));
-
-        List<FormSessionListViewRaw> userSessionsRaw = formSessionRepo.findUserSessions(username);
+    public List<FormSessionListView> getSessionsForUser(String username, String domain, @Nullable String asUser) {
+        List<FormSessionListViewRaw> userSessionsRaw;
+        if (asUser == null) {
+            // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
+            // return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain);
+            userSessionsRaw = formSessionRepo.findUserSessionsNullAsUser(username, domain);
+        } else {
+            // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
+            // return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser);
+            userSessionsRaw = formSessionRepo.findUserSessionsAsUser(username, domain, asUser);
+        }
         return userSessionsRaw.stream().map((session) -> new FormSessionListView() {
             @Override
             public String getId() {

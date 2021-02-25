@@ -133,6 +133,15 @@ public class Constants {
     public static final String INSTALL_BLOCKED_TIME_TAG = "install_blocked_time";
     public static final String SUBMIT_BLOCKED_TIME_TAG = "submit_blocked_time";
 
+    //.Sentry tags
+    public static final String URI = "uri";
+    public static final String AS_USER = "as_user";
+    public static final String USER_SYNC_TOKEN = "sync_token";
+    public static final String USER_SANDBOX_PATH = "sandbox_path";
+    public static final String APP_URL_EXTRA = "app_url";
+    public static final String APP_DOWNLOAD_URL_EXTRA = "app_download";
+
+
     public static final class TimingCategories {
         public static final String WAIT_ON_LOCK = "wait_on_lock";
         public static final String SUBMIT_FORM_TO_HQ = "submit_form_to_hq";

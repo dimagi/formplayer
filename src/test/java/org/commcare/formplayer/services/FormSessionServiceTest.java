@@ -84,23 +84,23 @@ public class FormSessionServiceTest {
 
         // save a session
         SerializableFormSession session = new SerializableFormSession(sessionId);
-        session.setSequenceId(1);
+        session.incrementSequence();
         formSessionService.saveSession(session);
 
         // cache is populated on save
-        assertEquals(1, getCachedSession(sessionId).get().getSequenceId());
+        assertEquals(0, getCachedSession(sessionId).get().getSequenceId());
 
         // get session hits the cache (repo is mocked)
         session = formSessionService.getSessionById(sessionId);
-        assertEquals(1, session.getSequenceId());
+        assertEquals(0, session.getSequenceId());
 
         // update session
-        session.setSequenceId(2);
+        session.incrementSequence();
         formSessionService.saveSession(session);
 
         // cache and find return updated session
-        assertEquals(2, getCachedSession(sessionId).get().getSequenceId());
-        assertEquals(2, formSessionService.getSessionById(sessionId).getSequenceId());
+        assertEquals(1, getCachedSession(sessionId).get().getSequenceId());
+        assertEquals(1, formSessionService.getSessionById(sessionId).getSequenceId());
     }
 
     @Test
@@ -122,6 +122,9 @@ public class FormSessionServiceTest {
         assertFalse(getCachedSession(sessionId).isPresent());
     }
 
+    /**
+     * Test that the conversion from FormSessionListViewRaw to FormSessionListView works as expected
+     */
     @Test
     public void testGetSessionsForUser() {
         ImmutableMap<String, String> sessionData = ImmutableMap.of("a", "1", "b", "2");
@@ -134,8 +137,8 @@ public class FormSessionServiceTest {
 
         FormSessionListViewRaw rawView = createProjection(FormSessionListViewRaw.class, backingMap);
 
-        when(formSessionRepo.findUserSessions(anyString())).thenReturn(ImmutableList.of(rawView));
-        List<FormSessionListView> sessions = formSessionService.getSessionsForUser("username");
+        when(formSessionRepo.findUserSessionsNullAsUser(anyString(), anyString())).thenReturn(ImmutableList.of(rawView));
+        List<FormSessionListView> sessions = formSessionService.getSessionsForUser("username", "domain", null);
 
         HashMap<String, Object> expected = new HashMap<>(backingMap);
         expected.put("sessionData", sessionData);
