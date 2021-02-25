@@ -145,6 +145,7 @@ public class MenuSessionRunnerService {
             // using getBestTitle to eliminate risk of showing private information
             String caseListName = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
             datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
+            Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
