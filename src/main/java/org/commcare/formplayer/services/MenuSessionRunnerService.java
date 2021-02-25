@@ -473,8 +473,12 @@ public class MenuSessionRunnerService {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            // update datadog/sentry metrics
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
             Sentry.setTag(Constants.MODULE_TAG, "form");
+            String formName = formResponseBean.getTitle();
+            datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, formName);
+            Sentry.setTag(Constants.FORM_NAME_TAG, formName);
             return formResponseBean;
         } else {
             return null;
