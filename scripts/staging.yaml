@@ -59,6 +59,7 @@ branches:
   - gh/add-module-name # Graham Feb 19
   - sk/upgrade-spring # Simon Feb 22
   - ce/eof-nav # Cal Feb 23
+  - dynamicPaginationLimit # Shubham Feb 25
 submodules:
   libs/commcare:
     trunk: formplayer
