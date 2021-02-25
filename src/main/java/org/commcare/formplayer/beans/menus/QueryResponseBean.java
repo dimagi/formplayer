@@ -52,6 +52,7 @@ public class QueryResponseBean extends MenuBean {
                     session.getEvaluationContext(),
                     key,
                     queryPromptItem.getInput(),
+                    queryPromptItem.getReceive(),
                     currentAnswer,
                     choicesAndAnswerIndex.first);
             count++;
