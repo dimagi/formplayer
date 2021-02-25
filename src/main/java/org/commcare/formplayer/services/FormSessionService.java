@@ -1,7 +1,8 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
-import io.sentry.event.Event;
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
@@ -10,7 +11,6 @@ import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
@@ -46,9 +46,6 @@ public class FormSessionService {
     @Autowired(required = false)
     private StatsDClient datadogStatsDClient;
 
-    @Autowired(required = false)
-    private FormplayerSentry raven;
-
     @CacheEvict(allEntries = true)
     public int purge() {
         // Modeled on https://stackoverflow.com/a/6730401/2820312
@@ -78,9 +75,6 @@ public class FormSessionService {
             }
         } catch (Exception e) {
             log.error("Exception purge form sessions", e);
-            if (raven != null) {
-                raven.sendRavenException(e, Event.Level.ERROR);
-            }
         }
         return deletedRows;
     }

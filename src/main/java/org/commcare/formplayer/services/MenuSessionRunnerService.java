@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import io.sentry.Sentry;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.menus.*;
@@ -8,7 +9,6 @@ import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
@@ -20,7 +20,6 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +27,6 @@ import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
@@ -36,7 +34,6 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
-import org.commcare.formplayer.util.FormplayerSentry;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -58,12 +55,6 @@ public class MenuSessionRunnerService {
 
     @Autowired
     private InstallService installService;
-
-    @Value("${commcarehq.host}")
-    private String host;
-
-    @Value("${commcarehq.environment}")
-    private String hqEnvironment;
 
     @Autowired
     private QueryRequester queryRequester;
@@ -91,9 +82,6 @@ public class MenuSessionRunnerService {
 
     @Autowired
     private FormplayerDatadog datadog;
-
-    @Autowired
-    private FormplayerSentry sentry;
 
     @Autowired
     protected NewFormResponseFactory newFormResponseFactory;
@@ -135,7 +123,7 @@ public class MenuSessionRunnerService {
                     menuSession.getId()
             );
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "menu");
-            sentry.addTag(Constants.MODULE_TAG, "menu");
+            Sentry.setTag(Constants.MODULE_TAG, "menu");
         } else if (nextScreen instanceof EntityScreen) {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
@@ -152,7 +140,7 @@ public class MenuSessionRunnerService {
                     storageFactory.getPropertyManager().isFuzzySearchEnabled()
             );
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
-            sentry.addTag(Constants.MODULE_TAG, "case_list");
+            Sentry.setTag(Constants.MODULE_TAG, "case_list");
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
@@ -164,7 +152,7 @@ public class MenuSessionRunnerService {
                     menuSession.getSessionWrapper()
             );
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_search");
-            sentry.addTag(Constants.MODULE_TAG, "case_search");
+            Sentry.setTag(Constants.MODULE_TAG, "case_search");
         } else {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
         }
@@ -486,7 +474,7 @@ public class MenuSessionRunnerService {
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
-            sentry.addTag(Constants.MODULE_TAG, "form");
+            Sentry.setTag(Constants.MODULE_TAG, "form");
             return formResponseBean;
         } else {
             return null;

@@ -2,40 +2,21 @@ package org.commcare.formplayer.application;
 
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
-
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.config.MeterFilter;
-import org.commcare.formplayer.aspects.AppInstallAspect;
-import org.commcare.formplayer.aspects.ConfigureStorageFromSessionAspect;
-import org.commcare.formplayer.aspects.LockAspect;
-import org.commcare.formplayer.aspects.LoggingAspect;
-import org.commcare.formplayer.aspects.MetricsAspect;
-import org.commcare.formplayer.aspects.SetBrowserValuesAspect;
-import org.commcare.formplayer.aspects.UserRestoreAspect;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+import org.commcare.formplayer.aspects.*;
 import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
-import org.commcare.formplayer.services.BrowserValuesProvider;
-import org.commcare.formplayer.services.FallbackSentryReporter;
-import org.commcare.formplayer.services.FormattedQuestionsService;
-import org.commcare.formplayer.services.FormplayerFormSendCalloutHandler;
-import org.commcare.formplayer.services.FormplayerLockRegistry;
-import org.commcare.formplayer.services.QueryRequester;
-import org.commcare.formplayer.services.SubmitService;
-import org.commcare.formplayer.services.SyncRequester;
-import org.commcare.formplayer.services.XFormService;
-import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -49,24 +30,15 @@ import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
-import java.time.Duration;
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import javax.sql.DataSource;
-
-import io.sentry.SentryClientFactory;
-import io.sentry.dsn.InvalidDsnException;
-
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
-import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -83,12 +55,6 @@ import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 @EnableSchedulerLock(defaultLockAtMostFor = "10m")
 public class WebAppContext implements WebMvcConfigurer {
 
-    @Value("${commcarehq.environment}")
-    private String environment;
-
-    @Value("${commcarehq.host}")
-    private String hqHost;
-
     @Value("${redis.hostname:#{null}}")
     private String redisHostName;
 
@@ -97,9 +63,6 @@ public class WebAppContext implements WebMvcConfigurer {
 
     @Value("${redis.password:#{null}}")
     private String redisPassword;
-
-    @Value("${sentry.dsn:}")
-    private String ravenDsn;
 
     @Value("${detailed_tagging.domains:}")
     private List<String> domainsWithDetailedTagging;
@@ -228,30 +191,12 @@ public class WebAppContext implements WebMvcConfigurer {
         return new XFormService();
     }
 
-    @Bean(destroyMethod="cleanup")
-    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public FormplayerSentry raven() {
-        FormplayerSentry raven;
-        try {
-            raven = new FormplayerSentry(SentryClientFactory.sentryClient(ravenDsn));
-        } catch (InvalidDsnException e) {
-            raven = new FormplayerSentry(null);
-        }
-        raven.newBreadcrumb()
-                .setData("environment", environment)
-                .record();
-        return raven;
-    }
-
     @Bean
     @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
         FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedTagging, detailedTagNames);
         return datadog;
     }
-
-    @Bean
-    public FallbackSentryReporter sentryReporter() { return new FallbackSentryReporter(); }
 
     @Bean FormattedQuestionsService formattedQuestionsService() {
         return new FormattedQuestionsService();
