@@ -51,6 +51,7 @@ import javax.servlet.http.Cookie;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -644,6 +645,15 @@ public class BaseTestClass {
                 Constants.URL_MENU_NAVIGATION,
                 sessionNavigationBean,
                 clazz);
+    }
+
+    <T> T sessionNavigateWithQuery(ArrayList<String> selections,
+                                   String testName,
+                                   QueryData queryData,
+                                   boolean forceManualAction,
+                                   Class<T> clazz) throws Exception {
+        return sessionNavigateWithQuery(selections.toArray(new String[selections.size()]),
+                testName, queryData, forceManualAction, clazz);
     }
 
     <T> T sessionNavigateWithQuery(String[] selections,
