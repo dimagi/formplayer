@@ -22,6 +22,8 @@ import javax.annotation.Resource;
 @Component
 public class QueryRequester {
 
+    private static final long CACHE_TIMEOUT_IN_MINUTES = 5;
+
     @Autowired
     private RedisTemplate redisTemplateString;
 
@@ -64,7 +66,7 @@ public class QueryRequester {
     }
 
     private void cacheResponse(String uri, String responseBody) {
-        caseSearchCache.set(getCacheKey(uri), responseBody, 2, TimeUnit.MINUTES);
+        caseSearchCache.set(getCacheKey(uri), responseBody, CACHE_TIMEOUT_IN_MINUTES, TimeUnit.MINUTES);
     }
 
     private String getCacheKey(String uri) {
