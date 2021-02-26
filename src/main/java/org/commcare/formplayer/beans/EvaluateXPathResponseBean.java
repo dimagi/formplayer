@@ -1,5 +1,6 @@
 package org.commcare.formplayer.beans;
 
+import io.sentry.SentryLevel;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.trace.AccumulatingReporter;
@@ -15,7 +16,6 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.kxml2.io.KXmlSerializer;
 
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
-import io.sentry.event.Event;
 
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
@@ -36,8 +36,7 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
     //Jackson requires the default constructor
     public EvaluateXPathResponseBean(){}
 
-    public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath, String debugTraceLevel,
-                                     FormplayerSentry raven) throws XPathSyntaxException {
+    public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath, String debugTraceLevel) throws XPathSyntaxException {
         status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         KXmlSerializer serializer = new KXmlSerializer();
@@ -77,7 +76,7 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
         } catch(Exception e) {
             ApplicationConfigException ace =
                     new ApplicationConfigException("Unexpected error evaluating expression", e);
-            raven.sendRavenException(ace, Event.Level.INFO);
+            FormplayerSentry.captureException(ace, SentryLevel.INFO);
 
             status= Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
             output = ace.getMessage();

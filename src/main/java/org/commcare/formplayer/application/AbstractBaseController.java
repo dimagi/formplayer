@@ -1,7 +1,8 @@
 package org.commcare.formplayer.application;
 
 import com.timgroup.statsd.StatsDClient;
-import io.sentry.event.Event;
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,7 +29,6 @@ import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xpath.XPathException;
 import org.javarosa.xpath.XPathTypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
@@ -45,9 +45,6 @@ import java.util.ArrayList;
  * autowired beans used in both MenuController and FormController
  */
 public abstract class AbstractBaseController {
-
-    @Value("${commcarehq.host}")
-    protected String host;
 
     @Autowired
     private QueryRequester queryRequester;
@@ -77,13 +74,7 @@ public abstract class AbstractBaseController {
     protected StatsDClient datadogStatsDClient;
 
     @Autowired
-    protected FormplayerSentry raven;
-
-    @Autowired
     protected FormSendCalloutHandler formSendCalloutHandler;
-
-    @Value("${commcarehq.environment}")
-    private String hqEnvironment;
 
     @Autowired
     protected MenuSessionFactory menuSessionFactory;
@@ -109,7 +100,7 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
-        raven.sendRavenException(exception, Event.Level.INFO);
+        FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return getPrettyExceptionResponse(exception, request);
     }
 
@@ -131,7 +122,7 @@ public abstract class AbstractBaseController {
     public ExceptionResponseBean handleHttpRequestError(FormplayerHttpRequest req, HttpClientErrorException exception) {
         incrementDatadogCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
         log.error(String.format("Exception %s making external request %s.", exception, req));
-        raven.sendRavenException(exception, Event.Level.INFO);
+        Sentry.captureException(exception);
         return new ExceptionResponseBean(exception.getResponseBodyAsString(), req.getRequestURL().toString());
     }
 
@@ -156,7 +147,7 @@ public abstract class AbstractBaseController {
     public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
-        raven.sendRavenException(exception, Event.Level.INFO);
+        FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
 
@@ -164,7 +155,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     @ResponseStatus(HttpStatus.LOCKED)
     public ExceptionResponseBean handleLockError(FormplayerHttpRequest req, Exception exception) {
-        raven.sendRavenException(exception, Event.Level.INFO);
+        FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
     }
 
@@ -181,7 +172,7 @@ public abstract class AbstractBaseController {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
-        raven.sendRavenException(exception);
+        Sentry.captureException(exception);
         String message = exception.getMessage();
         if (exception instanceof ClientAbortException) {
             // We can't actually return anything since the client has bailed. To avoid errors return null
@@ -197,10 +188,10 @@ public abstract class AbstractBaseController {
     void logNotification(@Nullable NotificationMessage notification, HttpServletRequest req) {
         try {
             if (notification != null && notification.getType() == NotificationMessage.Type.error.name()) {
-                raven.sendRavenException(new RuntimeException(notification.getMessage()));
+                Sentry.captureException(new RuntimeException(notification.getMessage()));
                 incrementDatadogCounter(Constants.DATADOG_ERRORS_NOTIFICATIONS, req, notification.getTag());
             } else if (notification != null && notification.getType() == NotificationMessage.Type.app_error.name()) {
-                raven.sendRavenException(new ApplicationConfigException(notification.getMessage()),Event.Level.INFO);
+                FormplayerSentry.captureException(new ApplicationConfigException(notification.getMessage()), SentryLevel.INFO);
                 incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req, notification.getTag());
             }
         } catch (Exception e) {

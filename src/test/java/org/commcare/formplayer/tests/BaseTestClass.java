@@ -113,9 +113,6 @@ public class BaseTestClass {
     protected FormplayerDatadog datadogMock;
 
     @Autowired
-    protected FormplayerSentry ravenMock;
-
-    @Autowired
     protected LockRegistry userLockRegistry;
 
     @Autowired
@@ -173,7 +170,6 @@ public class BaseTestClass {
         Mockito.reset(queryRequester);
         Mockito.reset(syncRequester);
         Mockito.reset(datadogMock);
-        Mockito.reset(ravenMock);
         Mockito.reset(menuSessionFactory);
         Mockito.reset(menuSessionRunnerService);
         MockitoAnnotations.initMocks(this);
