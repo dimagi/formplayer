@@ -31,8 +31,6 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.stereotype.Component;
 import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
@@ -50,6 +48,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
+import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
+
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
@@ -59,21 +59,12 @@ import java.util.*;
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
  */
 public class MenuSession implements HereFunctionHandlerListener {
+    private final SerializableMenuSession session;
     private FormplayerConfigEngine engine;
     private UserSqlSandbox sandbox;
     private SessionWrapper sessionWrapper;
-    private String installReference;
-    private final String username;
-    private final String domain;
-
-    private String locale;
-    private String uuid;
-    private String asUser;
 
     private final Log log = LogFactory.getLog(MenuSession.class);
-    private String appId;
-    private boolean oneQuestionPerScreen;
-    private boolean preview;
     ArrayList<String> breadcrumbs;
     private ArrayList<String> selections = new ArrayList<>();
 
@@ -85,44 +76,41 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
-        this.username = TableBuilder.scrubName(session.getUsername());
-        this.domain = session.getDomain();
-        this.asUser = session.getAsUser();
-        this.locale = session.getLocale();
-        this.uuid = session.getId();
-        this.installReference = session.getInstallReference();
-        resolveInstallReference(installReference, appId, host);
-        this.engine = installService.configureApplication(this.installReference, session.getPreview()).first;
+        this.session = session;
+        this.engine = installService.configureApplication(session.getInstallReference(), session.getPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
-        SessionUtils.setLocale(this.locale);
+        SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
-        this.appId = session.getAppId();
         initializeBreadcrumbs();
     }
 
-    public MenuSession(String username, String domain, String appId, String installReference, String locale,
+    public MenuSession(String username, String domain, String appId, String locale,
                        InstallService installService, RestoreFactory restoreFactory, String host,
                        boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
-        this.username = TableBuilder.scrubName(username);
-        this.domain = domain;
-        this.appId = appId;
-        this.asUser = asUser;
-        resolveInstallReference(installReference, appId, host);
-        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(this.installReference, preview);
+        String resolvedInstallReference = resolveInstallReference(appId, host, domain);
+        this.session = new SerializableMenuSession(
+                UUID.randomUUID().toString(),
+                TableBuilder.scrubName(username),
+                domain,
+                appId,
+                resolvedInstallReference,
+                locale,
+                null,
+                oneQuestionPerScreen,
+                asUser,
+                preview
+        );
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(resolvedInstallReference, preview);
         this.engine = install.first;
         if (install.second && !preview && !restoreFactory.getHasRestored()) {
             this.sandbox = restoreFactory.performTimedSync();
         }
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
-        this.locale = locale;
-        SessionUtils.setLocale(this.locale);
-        this.uuid = UUID.randomUUID().toString();
-        this.oneQuestionPerScreen = oneQuestionPerScreen;
+        SessionUtils.setLocale(locale);
         initializeBreadcrumbs();
-        this.preview = preview;
     }
 
     public void resetSession() {
@@ -134,61 +122,6 @@ public class MenuSession implements HereFunctionHandlerListener {
     private void initializeBreadcrumbs() {
         this.breadcrumbs = new ArrayList<>();
         this.breadcrumbs.add(SessionUtils.getAppTitle());
-    }
-
-    public NotificationMessage updateApp(String updateMode) {
-        try {
-            if (this.engine.attemptAppUpdate(updateMode)) {
-                return new NotificationMessage("Application updated successfully.", false, NotificationMessage.Tag.update);
-            } else {
-                return new NotificationMessage("Application up to date.", false, NotificationMessage.Tag.update);
-            }
-        } catch (UnresolvedResourceException e) {
-            String message = "Update Failed! Couldn't find or install one of the remote resources";
-            log.error(message, e);
-            return new NotificationMessage(message, true, NotificationMessage.Tag.update);
-        } catch (UnfullfilledRequirementsException e) {
-            String message = "Update Failed! Formplayer is incompatible with the app";
-            log.error(message, e);
-            return new NotificationMessage(message, true, NotificationMessage.Tag.update);
-        } catch (InstallCancelledException e) {
-            String message = "Update Failed! Update was cancelled";
-            log.error(message, e);
-            return new NotificationMessage(message, true, NotificationMessage.Tag.update);
-        } catch (ResourceInitializationException e) {
-            String message = "Update Failed! Couldn't initialize one of the resources";
-            log.error(message, e);
-            return new NotificationMessage(message, true, NotificationMessage.Tag.update);
-        }
-    }
-
-    private void resolveInstallReference(String installReference, String appId, String host){
-        if (installReference == null || installReference.equals("")) {
-            if(appId == null || "".equals(appId)){
-                throw new RuntimeException("Can't install - either installReference or app_id must be non-null");
-            }
-            this.installReference = host + getReferenceToLatest(appId);
-        } else {
-            this.installReference = installReference;
-        }
-    }
-
-    /**
-     * Given an app id this returns a URI that will return a CCZ from HQ
-     * @param appId An id of the application of the CCZ needed
-     * @return      An HQ URI to download the CCZ
-     */
-    private String getReferenceToLatest(String appId) {
-        URIBuilder builder;
-        try {
-            builder = new URIBuilder("/a/" + this.domain + "/apps/api/download_ccz/");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Unable to instantiate URIBuilder");
-        }
-        builder.addParameter("app_id", appId);
-        builder.addParameter("latest", Constants.CCZ_LATEST_SAVED);
-        return builder.toString();
     }
 
     /**
@@ -316,8 +249,8 @@ public class MenuSession implements HereFunctionHandlerListener {
             queryScreen.init(sessionWrapper);
             return queryScreen;
         } else if (next.equalsIgnoreCase(SessionFrame.STATE_SYNC_REQUEST)) {
-            String username = asUser != null ?
-                    StringUtils.getFullUsername(asUser, domain) : null;
+            String username = session.getAsUser() != null ?
+                    StringUtils.getFullUsername(session.getAsUser(), session.getDomain()) : null;
             FormplayerSyncScreen syncScreen = new FormplayerSyncScreen(username);
             syncScreen.init(sessionWrapper);
             return syncScreen;
@@ -385,17 +318,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, username, domain,
-                sessionData, postUrl, locale, uuid,
-                null, oneQuestionPerScreen,
-                asUser, appId, null, formSendCalloutHandler, storageFactory, false, null);
-    }
-
-    public void reloadSession(FormSession formSession) throws Exception {
-        String formXmlns = formSession.getXmlns();
-        FormDef formDef = engine.loadFormByXmlns(formXmlns);
-        String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
-        formSession.reload(formDef, postUrl, engine.getPlatform().getStorageManager());
+        return new FormSession(sandbox, formDef, session.getUsername(), session.getDomain(),
+                sessionData, postUrl, session.getLocale(), session.getId(),
+                null, session.getOneQuestionPerScreen(),
+                session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory, false, null);
     }
 
     private byte[] serializeSession(CommCareSession session){
@@ -420,23 +346,11 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     public String getId() {
-        return uuid;
-    }
-
-    public void setId(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getDomain() {
-        return domain;
+        return session.getId();
     }
 
     public String getAppId() {
-        return appId;
+        return session.getAppId();
     }
 
     public String getCommCareVersionString() {
@@ -447,46 +361,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         return "" + this.engine.getPlatform().getCurrentProfile().getVersion();
     }
 
-    public String getInstallReference() {
-        return installReference;
-    }
-
-    public byte[] getCommcareSession(){
-        return serializeSession(sessionWrapper);
-    }
-
-    public String getLocale() {
-        return locale;
-    }
-
-    public String getAsUser() {
-        return asUser;
-    }
-
-    public void setAsUser(String asUser) {
-        this.asUser = asUser;
-    }
-
-    public boolean isOneQuestionPerScreen() {
-        return oneQuestionPerScreen;
-    }
-
-    public void setOneQuestionPerScreen(boolean oneQuestionPerScreen) {
-        this.oneQuestionPerScreen = oneQuestionPerScreen;
-    }
-
     public String[] getBreadcrumbs() {
         String[] ret = new String[breadcrumbs.size()];
         breadcrumbs.toArray(ret);
         return ret;
-    }
-
-    public boolean getPreview() {
-        return preview;
-    }
-
-    public void setPreview(boolean preview) {
-        this.preview = preview;
     }
 
     public String[] getSelections() {
@@ -529,4 +407,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         ec.addFunctionHandler(new FormplayerHereFunctionHandler(this, currentBrowserLocation));
         return ec;
     }
+
+    public SerializableMenuSession serialize() {
+        session.setCommcareSession(serializeSession(sessionWrapper));
+        return session;
+    }
+
 }

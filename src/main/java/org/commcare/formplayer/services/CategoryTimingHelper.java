@@ -21,9 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CategoryTimingHelper {
 
-    public static final String DOMAIN = "domain";
-    public static final String FORM_NAME = "form_name";
-
     private final Log log = LogFactory.getLog(CategoryTimingHelper.class);
 
     @Autowired
@@ -31,9 +28,6 @@ public class CategoryTimingHelper {
 
     @Autowired
     private StatsDClient datadogStatsDClient;
-
-    @Autowired
-    private FormplayerSentry raven;
 
     public class RecordingTimer extends SimpleTimer {
         private CategoryTimingHelper parent;
@@ -57,7 +51,7 @@ public class CategoryTimingHelper {
         }
 
         public void record() {
-            parent.recordCategoryTiming(this, category, sentryMessage, Collections.singletonMap(DOMAIN, domain));
+            parent.recordCategoryTiming(this, category, sentryMessage, Collections.singletonMap(Constants.DOMAIN_TAG, domain));
         }
     }
 
@@ -81,16 +75,16 @@ public class CategoryTimingHelper {
      * NOTE: if adding a new tag, add a constant for the tag name 
      */
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
-        raven.newBreadcrumb()
+        FormplayerSentry.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)
-                .setData("duration", timing.formatDuration())
+                .setData(Constants.DURATION_TAG, timing.formatDuration())
                 .record();
 
         List<String> datadogArgs = new ArrayList<>();
-        datadogArgs.add("category:" + category);
-        datadogArgs.add("request:" + RequestUtils.getRequestEndpoint(request));
-        datadogArgs.add("duration:" + timing.getDurationBucket());
+        datadogArgs.add(Constants.CATEGORY_TAG + ":" + category);
+        datadogArgs.add(Constants.REQUEST_TAG + ":" + RequestUtils.getRequestEndpoint(request));
+        datadogArgs.add(Constants.DURATION_TAG + ":" + timing.getDurationBucket());
         if (extras != null) {
             for (Map.Entry<String, String> entry : extras.entrySet()) {
                 datadogArgs.add(entry.getKey() + ":" + entry.getValue());

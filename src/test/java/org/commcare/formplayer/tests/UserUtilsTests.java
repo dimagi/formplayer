@@ -1,18 +1,10 @@
 package org.commcare.formplayer.tests;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.commcare.formplayer.util.UserUtils;
-import org.commcare.formplayer.utils.TestContext;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-/**
- * Created by benrudolph on 2/7/17.
- */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = TestContext.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class UserUtilsTests {
 
     @Test

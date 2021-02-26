@@ -9,18 +9,18 @@ import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Hashtable;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
@@ -29,11 +29,12 @@ import static org.mockito.Mockito.when;
 /**
  * Regression tests for fixed behaviors
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class CaseClaimTests extends BaseTestClass {
 
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
@@ -74,6 +75,9 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
+
+        // test hint
+        assert queryResponseBean.getDisplays()[1].getHint().contentEquals("This is a hint");
 
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("state", "1");

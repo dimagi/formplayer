@@ -1,30 +1,21 @@
 package org.commcare.formplayer.aspects;
 
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.beans.SessionResponseBean;
-import io.sentry.event.Breadcrumb;
-import io.sentry.event.Event;
-import com.timgroup.statsd.StatsDClient;
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
-import org.commcare.formplayer.exceptions.FormNotFoundException;
-import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.repo.FormSessionRepo;
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.InstallService;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 
 import javax.servlet.http.HttpServletRequest;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 
 /**
@@ -38,10 +29,7 @@ public class MetricsAspect {
     private static final String TOLERABLE_REQUEST = "tolerable_request";
 
     @Autowired
-    protected StatsDClient datadogStatsDClient;
-
-    @Autowired
-    private FormplayerSentry raven;
+    private FormplayerDatadog datadog;
 
     @Autowired
     private HttpServletRequest request;
@@ -56,7 +44,7 @@ public class MetricsAspect {
     private InstallService installService;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     private Map<String, Long> tolerableRequestThresholds;
 
@@ -65,9 +53,9 @@ public class MetricsAspect {
     public MetricsAspect() {
         // build slow request thresholds
         this.tolerableRequestThresholds = new HashMap<>();
-        this.tolerableRequestThresholds.put("answer", Long.valueOf(5 * 1000));
-        this.tolerableRequestThresholds.put("submit-all", Long.valueOf(20 * 1000));
-        this.tolerableRequestThresholds.put("navigate_menu", Long.valueOf(20 * 1000));
+        this.tolerableRequestThresholds.put(Constants.ANSWER_REQUEST, Long.valueOf(5 * 1000));
+        this.tolerableRequestThresholds.put(Constants.SUBMIT_ALL_REQUEST, Long.valueOf(20 * 1000));
+        this.tolerableRequestThresholds.put(Constants.NAV_MENU_REQUEST, Long.valueOf(20 * 1000));
 
         this.sentryMessages = new HashMap<>();
         this.sentryMessages.put(INTOLERABLE_REQUEST, "This request took a long time");
@@ -78,28 +66,12 @@ public class MetricsAspect {
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         String domain = "<unknown>";
-        String formName = null;
 
-        SimpleTimer fetchTimer = null;
         String requestPath = RequestUtils.getRequestEndpoint(request);
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
-            // only tag metrics with form_name if one of these requests
-            if (requestPath.equals("submit-all")) {
-                String sessionId = bean.getSessionId();
-                if (sessionId != null) {
-                    try {
-                        fetchTimer = new SimpleTimer();
-                        fetchTimer.start();
-                        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(bean.getSessionId());
-                        formName = serializableFormSession.getTitle();
-                        fetchTimer.end();
-                    } catch (FormNotFoundException e) {
-
-                    }
-                }
-            }
+            datadog.setDomain(domain);
         }
 
         SimpleTimer timer = new SimpleTimer();
@@ -107,46 +79,26 @@ public class MetricsAspect {
         Object result = joinPoint.proceed();
         timer.end();
 
-        List<String> datadogArgs = new ArrayList<>();
-        datadogArgs.add("domain:" + domain);
-        datadogArgs.add("request:" + requestPath);
-        datadogArgs.add("duration:" + timer.getDurationBucket());
-        datadogArgs.add("unblocked_time:" + getUnblockedTimeBucket(timer));
-        datadogArgs.add("blocked_time:" + getBlockedTimeBucket());
-        datadogArgs.add("restore_blocked_time:" + getRestoreBlockedTimeBucket());
-        datadogArgs.add("install_blocked_time:" + getInstallBlockedTimeBucket());
-        datadogArgs.add("submit_blocked_time:" + getSubmitBlockedTimeBucket());
+        List<FormplayerDatadog.Tag> datadogArgs = new ArrayList<>();
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.REQUEST_TAG, requestPath));
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.DURATION_TAG, timer.getDurationBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.UNBLOCKED_TIME_TAG, getUnblockedTimeBucket(timer)));
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.BLOCKED_TIME_TAG, getBlockedTimeBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.RESTORE_BLOCKED_TIME_TAG, getRestoreBlockedTimeBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.INSTALL_BLOCKED_TIME_TAG, getInstallBlockedTimeBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.SUBMIT_BLOCKED_TIME_TAG, getSubmitBlockedTimeBucket()));
 
-        // optional datadog args
-        if (formName != null) {
-            datadogArgs.add("form_name:" + formName);
-        }
+        datadog.increment(Constants.DATADOG_REQUESTS, datadogArgs);
+        datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
 
-        datadogStatsDClient.increment(
-                Constants.DATADOG_REQUESTS,
-                datadogArgs.toArray(new String[datadogArgs.size()])
-        );
-
-        datadogStatsDClient.recordExecutionTime(
-                Constants.DATADOG_TIMINGS,
-                timer.durationInMs(),
-                datadogArgs.toArray(new String[datadogArgs.size()])
-        );
-
-        if (fetchTimer != null) {
-            datadogStatsDClient.recordExecutionTime(
-                    "fetch_form_session",
-                    fetchTimer.durationInMs(),
-                    datadogArgs.toArray(new String[datadogArgs.size()])
-            );
-        }
 
         long intolerableRequestThreshold = 60 * 1000;
 
         if (timer.durationInMs() >= intolerableRequestThreshold) {
             sendTimingWarningToSentry(timer, INTOLERABLE_REQUEST);
         } else if (tolerableRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
-            // limit slow requests sent to sentry, send 1 for every 100 requests
+            // limit tolerable requests sent to sentry
             int chanceOfSending = 1000;
             Random random = new Random();
             if (random.nextInt(chanceOfSending) == 0) {
@@ -207,9 +159,9 @@ public class MetricsAspect {
     }
 
     private void sendTimingWarningToSentry(SimpleTimer timer, String category) {
-        raven.newBreadcrumb()
+        FormplayerSentry.newBreadcrumb()
                 .setCategory(category)
-                .setLevel(Breadcrumb.Level.WARNING)
+                .setLevel(SentryLevel.WARNING)
                 .setData("duration", timer.formatDuration())
                 .record();
 
@@ -217,6 +169,6 @@ public class MetricsAspect {
         if (sentryMessages.containsKey(category)) {
             message = sentryMessages.get(category);
         }
-        raven.sendRavenException(new Exception(message), Event.Level.WARNING);
+        Sentry.captureMessage(message, SentryLevel.WARNING);
     }
 }

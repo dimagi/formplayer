@@ -33,6 +33,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -53,6 +56,7 @@ import org.commcare.formplayer.util.UserUtils;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -99,12 +103,6 @@ public class RestoreFactory {
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
     private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
-
-    @Autowired(required = false)
-    private FormplayerHttpRequest request;
-
-    @Autowired
-    private FormplayerSentry raven;
 
     @Autowired
     protected StatsDClient datadogStatsDClient;
@@ -194,7 +192,7 @@ public class RestoreFactory {
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
-        extras.put(CategoryTimingHelper.DOMAIN, domain);
+        extras.put(Constants.DOMAIN_TAG, domain);
 
         SimpleTimer completeRestoreTimer = new SimpleTimer();
         completeRestoreTimer.start();
@@ -258,7 +256,7 @@ public class RestoreFactory {
 
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
-        extras.put(CategoryTimingHelper.DOMAIN, domain);
+        extras.put(Constants.DOMAIN_TAG, domain);
 
         int maxRetries = 2;
         int counter = 0;
@@ -435,7 +433,7 @@ public class RestoreFactory {
     }
 
     private void recordSentryData(final String restoreUrl) {
-        raven.newBreadcrumb()
+        FormplayerSentry.newBreadcrumb()
                 .setData("restoreUrl", restoreUrl)
                 .setCategory("restore")
                 .setMessage("Restoring from URL " + restoreUrl)
@@ -614,7 +612,12 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        if (!request.getRequestValidatedWithHMAC()) {
+        FormplayerHttpRequest request = RequestUtils.getFormplayerRequest();
+        if (request == null) {
+            throw new RuntimeException(String.format(
+                    "HMAC Auth not available outside of a web request %s", requestPath
+            ));
+        } else if (!request.getRequestValidatedWithHMAC()) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }

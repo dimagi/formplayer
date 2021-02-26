@@ -20,20 +20,6 @@ public class SerializableMenuSession {
 
     public SerializableMenuSession(){}
 
-    public SerializableMenuSession(MenuSession session) {
-        this.uuid = session.getId();
-        this.username = session.getUsername();
-        this.domain = session.getDomain();
-        this.appId = session.getAppId();
-        this.installReference = session.getInstallReference();
-        this.locale = session.getLocale();
-        this.commcareSession = session.getCommcareSession();
-        this.asUser = session.getAsUser();
-        this.oneQuestionPerScreen = session.isOneQuestionPerScreen();
-        this.preview = session.getPreview();
-
-    }
-
     public SerializableMenuSession(String id, String username, String domain, String appId,
                                    String installReference, String locale, byte[] commcareSession,
                                    boolean oneQuestionPerScreen,
