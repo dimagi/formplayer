@@ -1,19 +1,20 @@
 package org.commcare.formplayer.aspects;
 
+import io.sentry.SentryLevel;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 
 import com.timgroup.statsd.StatsDClient;
-import io.sentry.event.Event;
+import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.services.FormplayerLockRegistry.FormplayerReentrantLock;
@@ -40,16 +41,13 @@ public class LockAspect {
     private StatsDClient datadogStatsDClient;
 
     @Autowired
-    private FormplayerSentry raven;
-
-    @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
     private HttpServletRequest request;
 
     @Autowired
-    private FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     // needs to be accessible from WebAppContext.exceptionResolver
     public class LockError extends Exception {}
@@ -73,7 +71,13 @@ public class LockAspect {
         AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
 
 
-        username = getLockKeyForAuthenticatedBean(bean, formSessionRepo);
+        try {
+            username = getLockKeyForAuthenticatedBean(bean, formSessionService);
+        } catch (Exception ex) {
+            logLockError(bean, joinPoint, "_missing_username");
+            throw ex;
+        }
+
 
         Lock lock;
 
@@ -95,19 +99,20 @@ public class LockAspect {
                 } catch (IllegalStateException e) {
                     // Lock was released after expiration
                     logLockError(bean, joinPoint, "_expired");
-                    raven.sendRavenException(e, Event.Level.WARNING);
+                    FormplayerSentry.captureException(e, SentryLevel.WARNING);
                 }
             }
         }
     }
 
-    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionRepo formSessionRepo) {
-        String username;
+    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionService formSessionService) throws Exception {
         if (bean.getUsernameDetail() != null) {
-            username = TableBuilder.scrubName(bean.getUsernameDetail());
+            return TableBuilder.scrubName(bean.getUsernameDetail());
         }
-        else {
-            SerializableFormSession formSession = formSessionRepo.findOneWrapped(bean.getSessionId());
+        else if (bean instanceof SessionRequestBean){
+            String username;
+            String sessionId = ((SessionRequestBean) bean).getSessionId();
+            SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
             String tempUser = formSession.getUsername();
             String restoreAs = formSession.getAsUser();
             String restoreAsCaseId = formSession.getRestoreAsCaseId();
@@ -118,8 +123,9 @@ public class LockAspect {
             } else {
                 username = tempUser;
             }
+            return username;
         }
-        return username;
+        throw new Exception("Unable to get username for locking");
     }
 
     private void logLockError(AuthenticatedRequestBean bean, ProceedingJoinPoint joinPoint, String lockIssue) {

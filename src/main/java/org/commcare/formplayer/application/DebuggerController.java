@@ -10,8 +10,6 @@ import org.commcare.formplayer.beans.debugger.MenuDebuggerContentResponseBean;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +31,6 @@ import java.util.List;
 /**
  * Controller class for all routes pertaining to the CloudCare Debugger
  */
-@Api(value = "Debugger Controller", description = "Operations involving the CloudCare Debugger")
 @RestController
 public class DebuggerController extends AbstractBaseController {
 
@@ -48,26 +45,26 @@ public class DebuggerController extends AbstractBaseController {
     @Resource(name="redisTemplate")
     private ListOperations<String, XPathQueryItem> listOperations;
 
-    @ApiOperation(value = "Get formatted questions and instance xml")
     @RequestMapping(value = Constants.URL_DEBUGGER_FORMATTED_QUESTIONS, method = RequestMethod.POST)
     @UserRestore
     @ConfigureStorageFromSession
     public DebuggerFormattedQuestionsResponseBean getFormattedQuesitons(
             @RequestBody SessionRequestBean debuggerRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(debuggerRequest.getSessionId());
+        SerializableFormSession serializableFormSession = formSessionService.getSessionById(debuggerRequest.getSessionId());
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SerializableMenuSession serializableMenuSession = menuSessionRepo.findOneWrapped(serializableFormSession.getMenuSessionId());
+        String instanceXml = formSession.getInstanceXml();
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
                 debuggerRequest.getDomain(),
                 serializableMenuSession.getAppId(),
                 formSession.getXmlns(),
-                formSession.getInstanceXml()
+                instanceXml
         );
         return new DebuggerFormattedQuestionsResponseBean(
                 serializableMenuSession.getAppId(),
                 formSession.getXmlns(),
-                formSession.getInstanceXml(),
+                instanceXml,
                 response.getFormattedQuestions(),
                 response.getQuestionList(),
                 FunctionUtils.xPathFuncList(),
@@ -76,7 +73,6 @@ public class DebuggerController extends AbstractBaseController {
         );
     }
 
-    @ApiOperation(value = "Get content needed for the menu debugger")
     @RequestMapping(value = Constants.URL_DEBUGGER_MENU_CONTENT, method = RequestMethod.POST)
     @UserRestore
     @AppInstall
@@ -97,7 +93,6 @@ public class DebuggerController extends AbstractBaseController {
         );
     }
 
-    @ApiOperation(value = "Evaluate the given XPath under the current context")
     @RequestMapping(value = Constants.URL_EVALUATE_MENU_XPATH, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
@@ -113,8 +108,7 @@ public class DebuggerController extends AbstractBaseController {
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 menuSession.getSessionWrapper().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),
-                evaluateXPathRequestBean.getDebugOutputLevel(),
-                raven
+                evaluateXPathRequestBean.getDebugOutputLevel()
         );
 
         cacheMenuXPathQuery(
@@ -128,7 +122,6 @@ public class DebuggerController extends AbstractBaseController {
         return evaluateXPathResponseBean;
     }
 
-    @ApiOperation(value = "Evaluate the given XPath under the current context")
     @RequestMapping(value = Constants.URL_EVALUATE_XPATH, method = RequestMethod.POST)
     @ResponseBody
     @UserLock
@@ -136,13 +129,12 @@ public class DebuggerController extends AbstractBaseController {
     @ConfigureStorageFromSession
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionRepo.findOneWrapped(evaluateXPathRequestBean.getSessionId());
+        SerializableFormSession serializableFormSession = formSessionService.getSessionById(evaluateXPathRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),
-                evaluateXPathRequestBean.getDebugOutputLevel(),
-                raven
+                evaluateXPathRequestBean.getDebugOutputLevel()
         );
 
         cacheFormXPathQuery(

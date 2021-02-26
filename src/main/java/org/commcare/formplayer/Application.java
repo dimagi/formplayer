@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -27,8 +28,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @SpringBootApplication
-@EnableJpaRepositories(basePackages = {"repo.*", "objects.*"})
-@EntityScan("objects.*")
+@EnableJpaRepositories(basePackages = {"org.commcare.formplayer.repo"})
+@EntityScan("org.commcare.formplayer.objects")
+@EnableCaching
 public class Application {
 
     // Allows logging of sensitive data.

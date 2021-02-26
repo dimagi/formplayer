@@ -1,7 +1,6 @@
 package org.commcare.formplayer.beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.Api;
 
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.CommCareSession;
@@ -13,7 +12,6 @@ import org.commcare.suite.model.SessionDatum;
 /**
  * Created by willpride on 4/13/16.
  */
-@Api(description = "A menu command")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Command {
     private int index;

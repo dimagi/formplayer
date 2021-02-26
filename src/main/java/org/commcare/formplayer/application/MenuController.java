@@ -4,15 +4,11 @@ import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.beans.InstallRequestBean;
-import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
-import org.commcare.formplayer.beans.menus.UpdateRequestBean;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +35,6 @@ import org.commcare.formplayer.util.Constants;
  * Controller (API endpoint) containing all session navigation functionality.
  * This includes module, form, case, and session (incomplete form) selection.
  */
-@Api(value = "Menu Controllers", description = "Operations for navigating CommCare Menus and Cases")
 @RestController
 @EnableAutoConfiguration
 public class MenuController extends AbstractBaseController {
@@ -55,32 +50,6 @@ public class MenuController extends AbstractBaseController {
 
     private final Log log = LogFactory.getLog(MenuController.class);
 
-    @ApiOperation(value = "Install the application at the given reference")
-    @RequestMapping(value = Constants.URL_INSTALL, method = RequestMethod.POST)
-    @UserLock
-    @UserRestore
-    @AppInstall
-    public BaseResponseBean installRequest(@RequestBody InstallRequestBean installRequestBean,
-                                           @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                           HttpServletRequest request) throws Exception {
-        BaseResponseBean baseResponseBean = runnerService.getNextMenu(performInstall(installRequestBean));
-        logNotification(baseResponseBean.getNotification(), request);
-        return baseResponseBean;
-    }
-
-    //@ApiOperation(value = "Update the application at the given reference")
-    //@RequestMapping(value = Constants.URL_UPDATE, method = RequestMethod.POST)
-    //@UserLock
-    //@UserRestore
-    //@AppInstall
-    public NotificationMessage updateRequest(@RequestBody UpdateRequestBean updateRequestBean,
-                                             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
-                                             HttpServletRequest request) throws Exception {
-        NotificationMessage notificationMessage = performUpdate(updateRequestBean);
-        logNotification(notificationMessage, request);
-        return notificationMessage;
-    }
-
     @RequestMapping(value = Constants.URL_GET_DETAILS, method = RequestMethod.POST)
     @UserLock
     @UserRestore
@@ -93,10 +62,11 @@ public class MenuController extends AbstractBaseController {
             BaseResponseBean baseResponseBean = runnerService.advanceSessionWithSelections(menuSession,
                     sessionNavigationBean.getSelections(),
                     null,
-                    sessionNavigationBean.getQueryDictionary(),
+                    sessionNavigationBean.getQueryData(),
                     sessionNavigationBean.getOffset(),
                     sessionNavigationBean.getSearchText(),
-                    sessionNavigationBean.getSortIndex()
+                    sessionNavigationBean.getSortIndex(),
+                    sessionNavigationBean.isForceManualAction()
             );
             logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
@@ -116,10 +86,11 @@ public class MenuController extends AbstractBaseController {
                 menuSession,
                 commitSelections,
                 detailSelection,
-                sessionNavigationBean.getQueryDictionary(),
+                sessionNavigationBean.getQueryData(),
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
-                sessionNavigationBean.getSortIndex()
+                sessionNavigationBean.getSortIndex(),
+                sessionNavigationBean.isForceManualAction()
         );
         logNotification(baseResponseBean.getNotification(),request);
 
@@ -171,10 +142,11 @@ public class MenuController extends AbstractBaseController {
                 menuSession,
                 selections,
                 null,
-                sessionNavigationBean.getQueryDictionary(),
+                sessionNavigationBean.getQueryData(),
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
-                sessionNavigationBean.getSortIndex()
+                sessionNavigationBean.getSortIndex(),
+                sessionNavigationBean.isForceManualAction()
         );
         logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
@@ -184,10 +156,5 @@ public class MenuController extends AbstractBaseController {
         responseBean.setShouldRequestLocation(menuSession.locationRequestNeeded());
         responseBean.setShouldWatchLocation(menuSession.hereFunctionEvaluated());
         return responseBean;
-    }
-
-    private NotificationMessage performUpdate(UpdateRequestBean updateRequestBean) throws Exception {
-        MenuSession currentSession = performInstall(updateRequestBean);
-        return currentSession.updateApp(updateRequestBean.getUpdateMode());
     }
 }

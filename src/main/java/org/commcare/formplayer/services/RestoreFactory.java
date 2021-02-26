@@ -33,6 +33,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -52,6 +56,7 @@ import org.commcare.formplayer.util.UserUtils;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -59,9 +64,15 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
@@ -75,6 +86,7 @@ public class RestoreFactory {
 
     private String asUsername;
     private String username;
+    private String scrubbed_username;
     private String domain;
     private HqAuth hqAuth;
 
@@ -91,12 +103,6 @@ public class RestoreFactory {
     private static final String DEVICE_ID_SLUG = "WebAppsLogin";
 
     private static final String ORIGIN_TOKEN_SLUG = "OriginToken";
-
-    @Autowired(required = false)
-    private FormplayerHttpRequest request;
-
-    @Autowired
-    private FormplayerSentry raven;
 
     @Autowired
     protected StatsDClient datadogStatsDClient;
@@ -148,7 +154,7 @@ public class RestoreFactory {
         this.setHqAuth(auth);
         this.hasRestored = false;
         this.configured = true;
-        sqLiteDB = new UserDB(domain, username, null);
+        sqLiteDB = new UserDB(domain, scrubbed_username, null);
         log.info(String.format("configuring RestoreFactory with CaseID with arguments " +
                 "username = %s, caseId = %s, domain = %s", username, caseId, domain));
     }
@@ -160,7 +166,7 @@ public class RestoreFactory {
         this.hqAuth = auth;
         this.hasRestored = false;
         this.configured = true;
-        sqLiteDB = new UserDB(domain, username, asUsername);
+        sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
@@ -173,8 +179,8 @@ public class RestoreFactory {
         this.setUseLiveQuery(useLiveQuery);
         this.hasRestored = false;
         this.configured = true;
-        sqLiteDB = new UserDB(domain, username, asUsername);
-        log.info(String.format("configuring RestoreFactory with arguments " +
+        sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
+        log.info(String.format("configuring RestoreFactory from authed request with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s",
                 username, asUsername, domain, useLiveQuery));
     }
@@ -184,6 +190,12 @@ public class RestoreFactory {
         return performTimedSync(true, false);
     }
     public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
+        // create extras to send to category timing helper
+        Map<String, String> extras = new HashMap<>();
+        extras.put(Constants.DOMAIN_TAG, domain);
+
+        SimpleTimer completeRestoreTimer = new SimpleTimer();
+        completeRestoreTimer.start();
         // Create parent dirs if needed
         if(getSqlSandbox().getLoggedInUser() != null){
             getSQLiteDB().createDatabaseFolder();
@@ -196,7 +208,7 @@ public class RestoreFactory {
                 getSQLiteDB().deleteDatabaseFile();
                 // this line has the effect of clearing the sync token
                 // from the restore URL that's used
-                sqLiteDB = new UserDB(domain, username, asUsername);
+                sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
                 return performTimedSync(shouldPurge, skipFixtures);
             }
             throw e;
@@ -206,8 +218,20 @@ public class RestoreFactory {
             purgeTimer.start();
             FormRecordProcessorHelper.purgeCases(sandbox);
             purgeTimer.end();
-            categoryTimingHelper.recordCategoryTiming(purgeTimer, Constants.TimingCategories.PURGE_CASES);
+            categoryTimingHelper.recordCategoryTiming(
+                    purgeTimer,
+                    Constants.TimingCategories.PURGE_CASES,
+                    null,
+                    extras
+            );
         }
+        completeRestoreTimer.end();
+        categoryTimingHelper.recordCategoryTiming(
+                completeRestoreTimer,
+                Constants.TimingCategories.COMPLETE_RESTORE,
+                null,
+                extras
+        );
         return sandbox;
     }
 
@@ -229,6 +253,11 @@ public class RestoreFactory {
     private UserSqlSandbox restoreUser(boolean skipFixtures) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
+
+        // create extras to send to category timing helper
+        Map<String, String> extras = new HashMap<>();
+        extras.put(Constants.DOMAIN_TAG, domain);
+
         int maxRetries = 2;
         int counter = 0;
         while (true) {
@@ -247,7 +276,12 @@ public class RestoreFactory {
                 setAutoCommit(true);
 
                 parseTimer.end();
-                categoryTimingHelper.recordCategoryTiming(parseTimer, Constants.TimingCategories.PARSE_RESTORE);
+                categoryTimingHelper.recordCategoryTiming(
+                        parseTimer,
+                        Constants.TimingCategories.PARSE_RESTORE,
+                        null,
+                        extras
+                );
                 sandbox.writeSyncToken();
                 return sandbox;
             } catch (InvalidStructureException | SQLiteRuntimeException e) {
@@ -390,16 +424,16 @@ public class RestoreFactory {
 
     public InputStream getRestoreXml(boolean skipFixtures) {
         ensureValidParameters();
-        Pair<String, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders(skipFixtures);
-        recordSentryData(restoreUrlAndHeaders.first);
-        log.info("Restoring from URL " + restoreUrlAndHeaders.first);
+        Pair<URI, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders(skipFixtures);
+        recordSentryData(restoreUrlAndHeaders.first.toString());
+        log.info("Restoring from URL " + restoreUrlAndHeaders.first.toString());
         InputStream restoreStream = getRestoreXmlHelper(restoreUrlAndHeaders.first, restoreUrlAndHeaders.second);
         setLastSyncTime();
         return restoreStream;
     }
 
     private void recordSentryData(final String restoreUrl) {
-        raven.newBreadcrumb()
+        FormplayerSentry.newBreadcrumb()
                 .setData("restoreUrl", restoreUrl)
                 .setCategory("restore")
                 .setMessage("Restoring from URL " + restoreUrl)
@@ -420,7 +454,7 @@ public class RestoreFactory {
     }
 
     private String lastSyncKey() {
-        return "last-sync-time:" + domain + ":" + username + ":" + asUsername;
+        return "last-sync-time:" + domain + ":" + scrubbed_username + ":" + asUsername;
     }
 
     /**
@@ -477,11 +511,11 @@ public class RestoreFactory {
         );
     }
 
-    private InputStream getRestoreXmlHelper(String restoreUrl, HttpHeaders headers) {
+    private InputStream getRestoreXmlHelper(URI restoreUrl, HttpHeaders headers) {
         ResponseEntity<org.springframework.core.io.Resource> response;
         String status = "error";
-        log.info("Restoring at domain: " + domain + " with url: " + restoreUrl);
-        downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE);
+        log.info("Restoring at domain: " + domain + " with url: " + restoreUrl.toString());
+        downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
         downloadRestoreTimer.start();
         try {
             response = restTemplate.exchange(
@@ -566,11 +600,11 @@ public class RestoreFactory {
                 Duration.ofSeconds(60));
         headers.set("X-CommCareHQ-Origin-Token", originToken);
     }
-    public Pair<String, HttpHeaders> getRestoreUrlAndHeaders() {
+    public Pair<URI, HttpHeaders> getRestoreUrlAndHeaders() {
         return getRestoreUrlAndHeaders(false);
     }
 
-    public Pair<String, HttpHeaders> getRestoreUrlAndHeaders(boolean skipFixtures) {
+    public Pair<URI, HttpHeaders> getRestoreUrlAndHeaders(boolean skipFixtures) {
         if (caseId != null) {
             return getCaseRestoreUrlAndHeaders();
         }
@@ -578,7 +612,12 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        if (!request.getRequestValidatedWithHMAC()) {
+        FormplayerHttpRequest request = RequestUtils.getFormplayerRequest();
+        if (request == null) {
+            throw new RuntimeException(String.format(
+                    "HMAC Auth not available outside of a web request %s", requestPath
+            ));
+        } else if (!request.getRequestValidatedWithHMAC()) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
@@ -598,7 +637,17 @@ public class RestoreFactory {
         }
     }
 
-    public Pair<String, HttpHeaders> getCaseRestoreUrlAndHeaders() {
+    private void builderQueryParamEncoded(UriComponentsBuilder builder, String name, String value)
+            throws UnsupportedEncodingException {
+        try {
+            builder.queryParam(name,
+                    URLEncoder.encode(value, UTF_8.toString()));
+        } catch (UnsupportedEncodingException e) {
+            throw new UnsupportedEncodingException(String.format("Unable to encode '%s'", name));
+        }
+    }
+
+    public Pair<URI, HttpHeaders> getCaseRestoreUrlAndHeaders() {
         StringBuilder builder = new StringBuilder();
         builder.append("/a/");
         builder.append(domain);
@@ -607,44 +656,60 @@ public class RestoreFactory {
         builder.append("/");
         HttpHeaders headers = getHmacHeaders(builder.toString());
         String fullUrl = host + builder.toString();
-        return new Pair<> (fullUrl, headers);
+        return new Pair<> (UriComponentsBuilder.fromUriString(fullUrl).build(true).toUri(), headers);
     }
-    public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders() {
+    public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders() {
         return getUserRestoreUrlAndHeaders(false);
     }
 
-    public Pair<String, HttpHeaders> getUserRestoreUrlAndHeaders(boolean skipFixtures) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("/a/");
-        builder.append(domain);
-        builder.append("/phone/restore/?version=2.0");
+    public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders(boolean skipFixtures) {
+        // URI
+        String restoreUrl = "/a/" + domain + "/phone/restore/?version=2.0";
+        String uri = host + restoreUrl;
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(uri);
         String syncToken = getSyncToken();
-        if (syncToken != null && !"".equals(syncToken)) {
-            builder.append("&since=").append(syncToken);
+        // Add query params.
+        try {
+            if (syncToken != null && !"".equals(syncToken)) {
+                builderQueryParamEncoded(builder, "since", syncToken);
+            }
+            builderQueryParamEncoded(builder, "device_id", getSyncDeviceId());
+            if (useLiveQuery) {
+                builderQueryParamEncoded(builder, "case_sync", "livequery");
+            }
+            if( asUsername != null) {
+                String unEncodedAsUsername = asUsername;
+                if (!asUsername.contains("@")) {
+                    unEncodedAsUsername += "@" + domain + ".commcarehq.org";
+                }
+                builderQueryParamEncoded(builder, "as", unEncodedAsUsername);
+            } else if (getHqAuth() == null && username != null) {
+                // HQ requesting to force a sync for a user
+                builderQueryParamEncoded(builder, "as", username);
+            }
+            if (skipFixtures) {
+                builderQueryParamEncoded(builder, "skip_fixtures", "true");
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(String.format("Restore Error: " + e.getMessage()));
         }
-        builder.append("&device_id=").append(getSyncDeviceId());
 
-        if (useLiveQuery) {
-            builder.append("&case_sync=livequery");
-        }
-
-        if( asUsername != null) {
-            builder.append("&as=").append(asUsername).append("@").append(domain).append(".commcarehq.org");
-        }
-        if (skipFixtures) {
-            builder.append("&skip_fixtures=true");
-        }
-        String restoreUrl = builder.toString();
+        // Headers
         HttpHeaders headers;
         if (getHqAuth() == null) {
-            // Need to do HMAC auth
-            headers = getHmacHeaders(restoreUrl);
+            // Do HMAC auth which requires only the path and query components of the URL
+            UriComponentsBuilder authPath = builder.cloneBuilder();
+            authPath.scheme(null);
+            authPath.host(null);
+            authPath.userInfo(null);
+            authPath.port(null);
+            headers = getHmacHeaders(authPath.build(true).toUriString());
         } else {
             headers = getHqAuth().getAuthHeaders();
             headers.add("x-openrosa-version", "2.0");
             addOriginTokenHeader(headers);
         }
-        String fullUrl = host + restoreUrl;
+        URI fullUrl = builder.build(true).toUri();
         return new Pair<>(fullUrl, headers);
     }
 
@@ -659,7 +724,7 @@ public class RestoreFactory {
         StringBuilder builder = new StringBuilder();
         builder.append(storageFactory.getAppId());
         builder.append("_").append(domain);
-        builder.append("_").append(username);
+        builder.append("_").append(scrubbed_username);
         if (asUsername != null) {
             builder.append("_").append(asUsername);
         }
@@ -705,7 +770,8 @@ public class RestoreFactory {
     }
 
     public void setUsername(String username) {
-        this.username = TableBuilder.scrubName(username);
+        this.username = username;
+        this.scrubbed_username = TableBuilder.scrubName(username);
     }
 
     public String getDomain() {

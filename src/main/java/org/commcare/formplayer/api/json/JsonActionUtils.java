@@ -83,7 +83,7 @@ public class JsonActionUtils {
         return new JSONObject().put(ApiConstants.QUESTION_EVENT_KEY,
                 PromptToJson.parseQuestionType(model, new JSONObject()));
     }
-
+             
     /**
      * Answer the question, return the updated JSON representation of the question tree
      *
@@ -97,9 +97,12 @@ public class JsonActionUtils {
                                                   FormEntryModel model, String answer,
                                                   FormEntryPrompt prompt,
                                                   boolean oneQuestionPerScreen,
-                                                  FormIndex navIndex) {
+                                                  FormIndex navIndex,
+                                                  boolean skipValidation,
+                                                  boolean returnTree) {
         JSONObject ret = new JSONObject();
         IAnswerData answerData;
+        int result;
 
         if (answer == null || answer.equals("None")) {
             answerData = null;
@@ -113,7 +116,14 @@ public class JsonActionUtils {
                 return ret;
             }
         }
-        int result = controller.answerQuestion(prompt.getIndex(), answerData);
+
+        IAnswerData currentAnswerData = model.getForm().getInstance().resolveReference(prompt.getIndex().getReference()).getValue();
+        if (skipValidation && answerData != null && currentAnswerData != null && answerData.uncast().getValue().equals(currentAnswerData.uncast().getValue())) {
+            result = FormEntryController.ANSWER_OK;
+        } else {
+            result = controller.answerQuestion(prompt.getIndex(), answerData);
+        }
+
         if (result == FormEntryController.ANSWER_REQUIRED_BUT_EMPTY) {
             ret.put(ApiConstants.RESPONSE_STATUS_KEY, "validation-error");
             ret.put(ApiConstants.ERROR_TYPE_KEY, "required");
@@ -122,13 +132,14 @@ public class JsonActionUtils {
             ret.put(ApiConstants.ERROR_TYPE_KEY, "constraint");
             ret.put(ApiConstants.ERROR_REASON_KEY, prompt.getConstraintText());
         } else if (result == FormEntryController.ANSWER_OK) {
-            if (oneQuestionPerScreen) {
-                ret.put(ApiConstants.QUESTION_TREE_KEY, getOneQuestionPerScreenJSON(
-                    model, controller, navIndex));
-            } else {
-                ret.put(ApiConstants.QUESTION_TREE_KEY, getFullFormJSON(model, controller));
+            if (returnTree) {
+                if (oneQuestionPerScreen) {
+                    ret.put(ApiConstants.QUESTION_TREE_KEY, getOneQuestionPerScreenJSON(
+                                                                                        model, controller, navIndex));
+                } else {
+                    ret.put(ApiConstants.QUESTION_TREE_KEY, getFullFormJSON(model, controller));
+                }
             }
-
             ret.put(ApiConstants.RESPONSE_STATUS_KEY, "accepted");
         }
         return ret;
@@ -147,11 +158,13 @@ public class JsonActionUtils {
                                                   FormEntryModel model, String answer,
                                                   String ansIndex,
                                                   boolean oneQuestionPerScreen,
-                                                  String navIndex) {
+                                                  String navIndex,
+                                                  boolean skipValidation,
+                                                  boolean returnTree) {
         FormIndex answerIndex = indexFromString(ansIndex, model.getForm());
         FormEntryPrompt prompt = model.getQuestionPrompt(answerIndex);
         FormIndex navigationIndex = indexFromString(navIndex, model.getForm());
-        return questionAnswerToJson(controller, model, answer, prompt, oneQuestionPerScreen, navigationIndex);
+        return questionAnswerToJson(controller, model, answer, prompt, oneQuestionPerScreen, navigationIndex, skipValidation, returnTree);
     }
 
     /**

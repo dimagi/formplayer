@@ -10,8 +10,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation for methods whose request and response should not be logged
  */
-@Component
-@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Target(value = ElementType.METHOD)
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface NoLogging {
 }

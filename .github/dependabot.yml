@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "daily"
+    labels:
+    - product/invisible
+    - dependencies
+  - package-ecosystem: pip
+    directory: "/scripts"
+    schedule:
+      interval: daily
+    labels:
+    - product/invisible
+    - dependencies

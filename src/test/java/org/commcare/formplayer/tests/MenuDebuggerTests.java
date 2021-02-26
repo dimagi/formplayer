@@ -1,19 +1,20 @@
 package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class MenuDebuggerTests extends BaseTestClass{
 
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("loaddomain", "loaduser");
@@ -25,8 +26,8 @@ public class MenuDebuggerTests extends BaseTestClass{
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateMenuXPath(
                "requests/evaluate_xpath/evaluate_xpath_menu.json"
         );
-        Assert.assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXPathResponseBean.getStatus());
+        Assertions.assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXPathResponseBean.getStatus());
         // Hack to not have to parse the XML returned
-        Assert.assertTrue(evaluateXPathResponseBean.getOutput().contains("15"));
+        Assertions.assertTrue(evaluateXPathResponseBean.getOutput().contains("15"));
     }
 }

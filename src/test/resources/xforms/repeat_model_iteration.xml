@@ -1,0 +1,57 @@
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    <h:head>
+        <h:title>Repeat Groups</h:title>
+        <model>
+            <instance>
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/531F5743-637E-4E98-9987-3441386B0DE1" uiVersion="1" version="51" name="Repeat Groups">
+                    <here_are_some_songs/>
+                    <song_ids/>
+                    <song_repeats ids="" count="" current_index="">
+                        <item id="" index="" jr:template="">
+                            <song_artist/>
+                            <song_artist_performs_this_one/>
+                        </item>
+                    </song_repeats>
+                    <orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/><orx:drift/></orx:meta></data>
+            </instance><instance id="commcaresession" src="jr://instance/session"/>
+            <instance src="jr://instance/casedb" id="casedb"/>
+            <bind nodeset="/data/here_are_some_songs"/>
+            <bind nodeset="/data/song_ids"/>
+            <bind nodeset="/data/song_repeats/@current_index" calculate="count(/data/song_repeats/item)"/>
+            <bind nodeset="/data/song_repeats/item"/>
+            <bind nodeset="/data/song_repeats/item/song_artist" calculate="instance('casedb')/casedb/case[@case_type = 'song'][@case_id = current()/..]/artist"/>
+            <bind nodeset="/data/song_repeats/item/song_artist_performs_this_one"/>
+            <setvalue event="xforms-ready" ref="/data/song_ids" value="&quot;07f299a5-1a2d-489f-914b-12053bf5b832 5a0a39d4-291f-44e4-8f90-2fe6b8713a62&quot;"/>
+            <setvalue event="xforms-ready" ref="/data/song_repeats/@ids" value="join(' ', /data/song_ids)"/>
+            <setvalue event="xforms-ready" ref="/data/song_repeats/@count" value="count-selected(/data/song_repeats/@ids)"/>
+            <setvalue event="jr-insert" ref="/data/song_repeats/item/@index" value="int(/data/song_repeats/@current_index)"/>
+            <setvalue event="jr-insert" ref="/data/song_repeats/item/@id" value="selected-at(/data/song_repeats/@ids, ../@index)"/>
+            <itext>
+                <translation lang="en" default="">
+                    <text id="here_are_some_songs-label">
+                        <value>Here are some songs</value>
+                    </text>
+                    <text id="song_repeats/item-label">
+                        <value>song repeats</value>
+                    </text>
+                    <text id="song_repeats/item/song_artist_performs_this_one-label">
+                        <value><output value="/data/song_repeats/item/song_artist"/> performs this one </value>
+                    </text>
+                </translation>
+            </itext>
+            <setvalue ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid" event="xforms-ready"/><setvalue ref="/data/meta/timeStart" value="now()" event="xforms-ready"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue ref="/data/meta/timeEnd" value="now()" event="xforms-revalidate"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue ref="/data/meta/username" value="instance('commcaresession')/session/context/username" event="xforms-ready"/><setvalue ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid" event="xforms-ready"/><setvalue ref="/data/meta/instanceID" value="uuid()" event="xforms-ready"/><setvalue ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion" event="xforms-ready"/><setvalue ref="/data/meta/drift" value="if(count(instance('commcaresession')/session/context/drift) = 1, instance('commcaresession')/session/context/drift, '')" event="xforms-revalidate"/></model>
+    </h:head>
+    <h:body>
+        <trigger ref="/data/here_are_some_songs" appearance="minimal">
+            <label ref="jr:itext('here_are_some_songs-label')"/>
+        </trigger>
+        <group>
+            <label ref="jr:itext('song_repeats/item-label')"/>
+            <repeat jr:count="/data/song_repeats/@count" jr:noAddRemove="true()" nodeset="/data/song_repeats/item">
+                <trigger ref="/data/song_repeats/item/song_artist_performs_this_one" appearance="minimal">
+                    <label ref="jr:itext('song_repeats/item/song_artist_performs_this_one-label')"/>
+                </trigger>
+            </repeat>
+        </group>
+    </h:body>
+</h:html>

@@ -1,7 +1,7 @@
 package org.commcare.formplayer.services;
 
+import io.sentry.SentryLevel;
 import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
-import io.sentry.event.Event;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
@@ -20,9 +20,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class FormplayerLockRegistry implements LockRegistry {
 
-    @Autowired
-    private FormplayerSentry raven;
-
     private final FormplayerReentrantLock[] lockTable;
     // Lock objects for accessing the FormplayerReentrantLock table above
     // These objects do not change
@@ -33,7 +30,7 @@ public class FormplayerLockRegistry implements LockRegistry {
     private final Log log = LogFactory.getLog(FormplayerLockRegistry.class);
 
     public FormplayerLockRegistry() {
-        this(0xFF);
+        this(0xFFFF);
     }
 
     public FormplayerLockRegistry(int mask) {
@@ -97,7 +94,7 @@ public class FormplayerLockRegistry implements LockRegistry {
             log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
             Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
             e.setStackTrace(ownerThread.getStackTrace());
-            raven.sendRavenException(new Exception(e), Event.Level.WARNING);
+            FormplayerSentry.captureException(new Exception(e), SentryLevel.WARNING);
         }
     }
 

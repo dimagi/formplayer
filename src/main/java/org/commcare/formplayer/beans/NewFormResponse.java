@@ -17,13 +17,15 @@ public class NewFormResponse extends SessionResponseBean {
     private QuestionBean event;
     public NewFormResponse(){}
 
-    public NewFormResponse(FormSession fes) throws IOException {
-        this.tree = new ObjectMapper().readValue(fes.getFormTree().toString(), QuestionBean[].class);
-        this.langs = fes.getLanguages();
-        this.title = fes.getTitle();
-        this.sessionId = fes.getSessionId();
-        this.sequenceId = fes.getSequenceId();
-        this.instanceXml = new InstanceXmlBean(fes);
+    public NewFormResponse(String formTreeJson, String[] languages,
+                           String title, String sessionId, int sequenceId,
+                           String instanceXml) throws IOException {
+        this.tree = new ObjectMapper().readValue(formTreeJson, QuestionBean[].class);
+        this.langs = languages;
+        this.title = title;
+        this.sessionId = sessionId;
+        this.sequenceId = sequenceId;
+        this.instanceXml = new InstanceXmlBean(instanceXml);
     }
 
     public QuestionBean[] getTree(){

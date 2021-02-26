@@ -2,10 +2,9 @@ package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.commcare.formplayer.utils.TestContext;
 
 import static org.mockito.Matchers.any;
@@ -13,7 +12,7 @@ import static org.mockito.Matchers.any;
 /**
  * Created by willpride on 1/14/16.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class NewFormTests extends BaseTestClass{
 

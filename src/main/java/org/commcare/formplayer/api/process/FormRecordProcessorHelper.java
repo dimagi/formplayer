@@ -124,9 +124,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         removedCaseCount = casesRemoved.size();
 
         FormplayerCaseIndexTable indexTable = new FormplayerCaseIndexTable(sandbox);
-        for (int recordId : casesRemoved) {
-            indexTable.clearCaseIndices(recordId);
-        }
+        indexTable.clearCaseIndices(casesRemoved);
 
 
         SqlStorage<Ledger> stockStorage = sandbox.getLedgerStorage();

@@ -1,10 +1,16 @@
 package org.commcare.formplayer.application;
 
+import io.sentry.Sentry;
+import org.apache.commons.lang3.StringUtils;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.apache.commons.lang3.StringUtils;
+import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.HqUserDetailsService;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerHttpRequest;
+import org.commcare.formplayer.util.RequestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +19,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.commcare.formplayer.repo.FormSessionRepo;
-import org.commcare.formplayer.services.FallbackSentryReporter;
-import org.commcare.formplayer.services.HqUserDetailsService;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
-import org.commcare.formplayer.util.RequestUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.Cookie;
@@ -45,10 +45,7 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     HqUserDetailsService userDetailsService;
 
     @Autowired
-    FormSessionRepo formSessionRepo;
-
-    @Autowired
-    FallbackSentryReporter sentryReporter;
+    private FormSessionService formSessionService;
 
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
@@ -70,15 +67,13 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                         e);
             }
             if (ace.shouldReport()) {
-                logger.error(String.format("Request to %s - Authorization Failed[%d] Unexpectedly - %s",
-                        req.getRequestURI(),
-                        ace.getResponseCode(),
-                        ace.getLog()), ace);
-
-                sentryReporter.sendEvent(
-                    sentryReporter.getEventForException(ace)
-                            .withMessage(ace.getLog())
-                            .withTag("uri",req.getRequestURI()));
+                Sentry.withScope(scope -> {
+                    scope.setTag("uri", req.getRequestURI());
+                    logger.error(String.format("Request to %s - Authorization Failed[%d] Unexpectedly - %s",
+                            req.getRequestURI(),
+                            ace.getResponseCode(),
+                            ace.getLog()), ace);
+                });
             } else {
                 logger.warn(String.format("Request to %s - Authorization Failed[%d] - %s",
                         req.getRequestURI(),
@@ -179,12 +174,12 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
         JSONObject body = RequestUtils.getPostData(request);
         request.setRequestValidatedWithHMAC(true);
         if (body.has("username") && body.has("domain")) {
-            setDomain(request);
+            setDomain(request, body);
             setSmsUserDetails(request);
         } else {
             // Otherwise, get username and domain from FormSession
             String sessionId = body.getString("session-id");
-            SerializableFormSession formSession = formSessionRepo.findOneWrapped(sessionId);
+            SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
             request.setDomain(formSession.getDomain());
             HqUserDetailsBean userDetailsBean = new HqUserDetailsBean(
                     new String[] {formSession.getDomain()},
@@ -227,7 +222,10 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
     }
 
     private void setDomain(FormplayerHttpRequest request) {
-        JSONObject data = RequestUtils.getPostData(request);
+        setDomain(request, RequestUtils.getPostData(request));
+    }
+
+    private void setDomain(FormplayerHttpRequest request, JSONObject data) {
         if (data.getString("domain") == null) {
             throw new RuntimeException("No domain specified for the request: " + request.getRequestURI());
         }
