@@ -3,10 +3,10 @@ package org.commcare.formplayer.tests;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
 
@@ -15,11 +15,12 @@ import java.util.HashMap;
 /**
  * Regression tests for fixed behaviors
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class ParentChildTest extends BaseTestClass{
 
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("parentchilddomain", "parentchildusername");

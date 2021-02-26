@@ -2,22 +2,23 @@ package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.commcare.formplayer.sqlitedb.ApplicationDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.utils.TestContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.io.File;
 
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class DeleteApplicationDbsTests extends BaseTestClass{
 
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("casetestdomain", "casetestuser");
@@ -37,7 +38,7 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
     public void testDeleteApplicationDbsView() throws Exception {
         // Create application db by making an install request
         SQLiteDB db = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid");
-        CommandListResponseBean menuResponseBean = doInstall("requests/install/install.json");
+        doInstall("requests/install/install.json");
 
         File file = new File(db.getDatabaseFileForDebugPurposes());
         assert file.exists();

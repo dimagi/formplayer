@@ -100,15 +100,6 @@ public class AuthenticatedRequestBean {
         this.timezoneFromBrowser = offset;
     }
 
-    @JsonGetter(value = "session-id")
-    public String getSessionId() {
-        return sessionId;
-    }
-    @JsonSetter(value = "session-id")
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
     @JsonGetter(value = "restoreAsCaseId")
     public String getRestoreAsCaseId() {
         return restoreAsCaseId;

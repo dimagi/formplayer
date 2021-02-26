@@ -1,17 +1,23 @@
 package org.commcare.formplayer.tests;
 
+import com.google.common.collect.ImmutableMap;
 import org.commcare.formplayer.beans.*;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class FormEntryTest extends BaseTestClass{
 
@@ -39,9 +45,9 @@ public class FormEntryTest extends BaseTestClass{
 
         QuestionBean[] tree = response.getTree();
 
-        Assert.assertTrue(getInstanceResponse.getOutput().contains("ben rudolph"));
-        Assert.assertTrue(getInstanceResponse.getOutput().contains("William Pride"));
-        Assert.assertNotNull(getInstanceResponse.getXmlns());
+        assertTrue(getInstanceResponse.getOutput().contains("ben rudolph"));
+        assertTrue(getInstanceResponse.getOutput().contains("William Pride"));
+        assertNotNull(getInstanceResponse.getXmlns());
 
         QuestionBean textBean = tree[1];
         assert textBean.getAnswer().equals("William Pride");
@@ -180,5 +186,47 @@ public class FormEntryTest extends BaseTestClass{
     public void testNoQuestions() throws Exception {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/no_questions.xml");
         assert newSessionResponse.getTree().length == 0;
+    }
+
+    @Test
+    public void testSubmitAnswerValidation() throws Exception {
+        configureRestoreFactory("test", "test");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/constraints_minimal.xml");
+        String sessionId = newSessionResponse.getSessionId();
+
+        Map<String, Object> answers = ImmutableMap.of("0", "", "1", "test", "2", "");
+        SubmitResponseBean submitResponseBean = submitForm(answers, sessionId);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, submitResponseBean.getStatus());
+        assertEquals(2, submitResponseBean.getErrors().size());
+        assertEquals(new ErrorBean("validation-error", "required"), submitResponseBean.getErrors().get("0"));
+        assertEquals(new ErrorBean("validation-error", "constraint"), submitResponseBean.getErrors().get("1"));
+    }
+
+    @Test
+    public void testSubmitAnswerValidation_afterAnswer() throws Exception {
+        configureRestoreFactory("test", "test");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/constraints_minimal.xml");
+        String sessionId = newSessionResponse.getSessionId();
+
+        FormEntryResponseBean response = answerQuestionGetResult("0", null, sessionId);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, response.getStatus());
+        response = answerQuestionGetResult("1", "test", sessionId);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, response.getStatus());
+
+        Map<String, Object> answers = ImmutableMap.of("1", "not test");
+        SubmitResponseBean submitResponseBean = submitForm(answers, sessionId);
+        assertEquals(Constants.SYNC_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
+        assertEquals(0, submitResponseBean.getErrors().size());
+    }
+
+    @Test
+    public void testSubmitAnswerValidation_prevalidate() throws Exception {
+        configureRestoreFactory("test", "test");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/constraints_minimal.xml");
+        String sessionId = newSessionResponse.getSessionId();
+
+        Map<String, Object> answers = new HashMap();
+        SubmitResponseBean submitResponseBean = submitForm(answers, sessionId, false);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, submitResponseBean.getStatus());
     }
 }

@@ -1,8 +1,10 @@
 package org.commcare.formplayer.aspects;
 
+import io.sentry.Sentry;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,10 +12,11 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
-import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.RestoreFactory;
 
@@ -32,7 +35,7 @@ public class UserRestoreAspect {
     protected RestoreFactory restoreFactory;
 
     @Autowired
-    protected FormSessionRepo formSessionRepo;
+    private FormSessionService formSessionService;
 
     @Autowired
     CategoryTimingHelper categoryTimingHelper;
@@ -58,13 +61,22 @@ public class UserRestoreAspect {
         HqAuth auth = getHqAuth((String) args[1]);
 
         configureRestoreFactory(requestBean, auth);
+        configureSentryScope(restoreFactory);
 
         if (requestBean.isMustRestore()) {
             restoreFactory.performTimedSync();
         }
     }
 
-    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) {
+    private void configureSentryScope(RestoreFactory restoreFactory) {
+        Sentry.configureScope(scope -> {
+            scope.setTag(Constants.AS_USER, restoreFactory.getEffectiveUsername());
+            scope.setExtra(Constants.USER_SYNC_TOKEN, restoreFactory.getSyncToken());
+            scope.setExtra(Constants.USER_SANDBOX_PATH, restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes());
+        });
+    }
+
+    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) throws Exception {
         if (requestBean.getRestoreAsCaseId() != null) {
             // SMS user filling out a form as a case
             restoreFactory.configure(requestBean.getDomain(), requestBean.getRestoreAsCaseId(), auth);
@@ -73,15 +85,18 @@ public class UserRestoreAspect {
         if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
             // Normal restore path
             restoreFactory.configure(requestBean, auth, requestBean.getUseLiveQuery());
-        } else {
+        } else if (requestBean instanceof SessionRequestBean){
             // SMS users don't submit username and domain with each request, so obtain from session
-            SerializableFormSession formSession = formSessionRepo.findOneWrapped(requestBean.getSessionId());
+            String sessionId = ((SessionRequestBean) requestBean).getSessionId();
+            SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
 
             if (formSession.getRestoreAsCaseId() != null) {
                 restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId(), auth);
             } else {
                 restoreFactory.configure(formSession.getUsername(), formSession.getDomain(), formSession.getAsUser(), auth);
             }
+        } else {
+            throw new Exception("Unable to configure restore factory");
         }
     }
 
