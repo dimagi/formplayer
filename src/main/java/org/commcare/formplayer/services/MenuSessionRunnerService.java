@@ -233,7 +233,9 @@ public class MenuSessionRunnerService {
 
             // Advance the session in case auto launch is set
             nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed);
-            notificationMessage = handleQueryScreen(nextScreen, menuSession, forceManualAction, queryData);
+            boolean forceSearch = i < selections.length;
+            boolean disallowSearch = forceManualAction && !forceSearch;
+            notificationMessage = handleQueryScreen(nextScreen, menuSession, queryData, forceSearch, disallowSearch);
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
                         (FormplayerSyncScreen)nextScreen,
@@ -280,13 +282,13 @@ public class MenuSessionRunnerService {
         }
     }
 
-    private NotificationMessage handleQueryScreen(Screen nextScreen, MenuSession menuSession,
-                                                  boolean forceManualAction, QueryData queryData)
+    private NotificationMessage handleQueryScreen(Screen nextScreen, MenuSession menuSession, QueryData queryData,
+                                                  boolean forceSearch, boolean disallowSearch)
             throws CommCareSessionException {
         if (nextScreen instanceof FormplayerQueryScreen) {
             FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
             formplayerQueryScreen.refreshItemSetChoices();
-            boolean autoSearch = formplayerQueryScreen.doDefaultSearch() && !forceManualAction;
+            boolean autoSearch = forceSearch || (formplayerQueryScreen.doDefaultSearch() && !disallowSearch);
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
                 return doQuery(
@@ -403,7 +405,7 @@ public class MenuSessionRunnerService {
         if (executeAndRebuildSession(menuSession)) {
             Screen nextScreen = menuSession.getNextScreen();
             nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false);
-            handleQueryScreen(nextScreen, menuSession, false, new QueryData());
+            handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
