@@ -12,10 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.lang.Nullable;
-import org.springframework.util.SerializationUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.lang.Nullable;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.SerializationUtils;
 
 import javax.persistence.EntityManager;
 import java.time.Instant;
@@ -51,11 +51,11 @@ public class FormSessionRepoTest {
         assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "version").isEqualTo(session);
         Instant dateCreated = loaded.getDateCreated();
         assertThat(dateCreated).isNotNull();
-        assertThat(loaded.getVersion()).isEqualTo(1);
+        assertThat(loaded.getVersion()).isEqualTo(0);
 
         formSessionRepo.saveAndFlush(loaded);
         assertThat(loaded.getDateCreated()).isEqualTo(dateCreated);
-        assertThat(loaded.getVersion()).isEqualTo(2);
+//        assertThat(loaded.getVersion()).isEqualTo(1);  Restore this once @Version annotation is added back
     }
 
     /**
@@ -199,6 +199,8 @@ public class FormSessionRepoTest {
         // save session
         formSessionRepo.saveAndFlush(session);
         int version = session.getVersion();
+
+        session.incrementSequence();
 
         // update field that should not get updated in the DB
         ReflectionTestUtils.setField(session,"domain","newdomain");

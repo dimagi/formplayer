@@ -12,7 +12,6 @@ import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHttpRequest;
-import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.mockito.Mockito;
@@ -118,11 +117,6 @@ public class TestContext {
     @Bean
     public FormplayerDatadog datadog() {
         return Mockito.spy(new FormplayerDatadog(datadogStatsDClient(), new ArrayList<String>(), new ArrayList<String>()));
-    }
-
-    @Bean
-    public FormplayerSentry raven() {
-        return Mockito.spy(new FormplayerSentry(null));
     }
 
     @Bean

@@ -27,7 +27,13 @@ public class DisplayElement {
     private String value;
 
     @Nullable
+    private String receive;
+
+    @Nullable
     String[] itemsetChoices;
+
+    @Nullable
+    private String hint;
 
     public DisplayElement() {
     }
@@ -44,7 +50,7 @@ public class DisplayElement {
 
 
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id, @Nullable String input,
-                          @Nullable String value, @Nullable String[] itemsetChoices) {
+                          @Nullable String receive, @Nullable String value, @Nullable String[] itemsetChoices) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if (displayUnit.getImageURI() != null) {
@@ -54,8 +60,13 @@ public class DisplayElement {
             this.audioUri = displayUnit.getAudioURI().evaluate(ec);
         }
         this.input = input;
+        this.receive = receive;
         this.value = value;
         this.itemsetChoices = itemsetChoices;
+
+        if (displayUnit.getHintText() != null) {
+            this.hint = displayUnit.getHintText().evaluate(ec);
+        }
     }
 
     public String getText() {
@@ -108,7 +119,16 @@ public class DisplayElement {
         return input;
     }
 
+    public String getReceive() {
+        return receive;
+    }
+
     public String[] getItemsetChoices() {
         return itemsetChoices;
+    }
+
+    @Nullable
+    public String getHint() {
+        return hint;
     }
 }

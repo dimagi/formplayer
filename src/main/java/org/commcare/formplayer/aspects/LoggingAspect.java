@@ -23,9 +23,6 @@ public class LoggingAspect {
 
     private final Log log = LogFactory.getLog(LoggingAspect.class);
 
-    @Autowired
-    private FormplayerSentry raven;
-
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping) " +
             "&& !@annotation(org.commcare.formplayer.annotations.NoLogging)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -43,7 +40,7 @@ public class LoggingAspect {
 
         if (requestBean != null && requestBean instanceof AuthenticatedRequestBean) {
             final AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean) requestBean;
-            raven.newBreadcrumb()
+            FormplayerSentry.newBreadcrumb()
                     .setData(
                             "path", requestPath,
                             "domain", authenticatedRequestBean.getDomain(),

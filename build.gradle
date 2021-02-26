@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.2.0.RELEASE'
+    id 'org.springframework.boot' version '2.4.2'
     id "com.gorylenko.gradle-git-properties" version "2.2.4"
     id "io.freefair.lombok" version "5.3.0"
 }
@@ -68,7 +68,6 @@ dependencies {
     implementation group: 'org.apache.httpcomponents', name: 'httpclient'
     implementation group: 'org.flywaydb', name: 'flyway-core'
     implementation group: 'org.postgresql', name: 'postgresql'
-    implementation group: 'org.springframework.boot', name: 'spring-boot'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter'
@@ -78,22 +77,24 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache'
     implementation group: 'org.xerial', name: 'sqlite-jdbc'
     implementation group: 'redis.clients', name: 'jedis'
+    implementation group: 'io.micrometer', name: 'micrometer-registry-statsd'
+    implementation group: 'org.springframework', name: 'spring-web'
+    implementation group: 'org.springframework', name: 'spring-jdbc'
+    implementation group: 'org.springframework.data', name: 'spring-data-jpa'
+    implementation group: 'org.springframework.data', name: 'spring-data-redis'
+    implementation group: 'org.springframework.data', name: 'spring-data-commons'
+    implementation group: 'org.springframework.integration', name: 'spring-integration-redis'
+    runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.3'
-    implementation group: 'io.sentry', name: 'sentry', version: '1.7.28'
-    implementation group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'
+    implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.11.0'
+    implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: '4.1.0'
+    implementation group: 'io.sentry', name: 'sentry-logback', version: '4.1.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
     implementation group: 'org.json', name: 'json', version: '20201115'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
-    implementation group: 'org.springframework', name: 'spring-web', version: '5.2.0.RELEASE'
-    implementation group: 'org.springframework', name: 'spring-jdbc', version: '5.2.0.RELEASE'
-    implementation group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.2.0.RELEASE'
-    implementation group: 'org.springframework.data', name: 'spring-data-redis', version: '2.2.0.RELEASE'
-    implementation group: 'org.springframework.data', name: 'spring-data-commons', version: '2.2.0.RELEASE'
-    implementation group: 'org.springframework.integration', name: 'spring-integration-redis', version: '5.2.0.RELEASE'
-    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.14.0'
-    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.14.0'
-    implementation group: 'io.micrometer', name: 'micrometer-registry-statsd', version: '1.3.0'
+    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.20.0'
+    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.20.0'
     runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache', version: '2.8.8'
 
     implementation fileTree(dir: 'libs', include: '*.jar')
@@ -102,23 +103,21 @@ dependencies {
 
     testImplementation project(path: ':commcare', configuration: 'api')
 
+    // #### DEV / TEST DEPENDENCIES
     //Versions managed by Spring Dependency Management
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
-
-    //Unmanaged Dependencies
-    testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
-    testImplementation group: 'com.jayway.jsonpath', name: 'json-path-assert', version: '2.5.0'
-    testImplementation group: 'com.google.guava', name: 'guava', version: '30.1-jre'
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.7.7'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.7.7'
-    testImplementation group: 'org.mockito', name: 'mockito-inline', version: '3.7.7'
-
-    testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0'
-
+    testImplementation group: 'com.jayway.jsonpath', name: 'json-path'
+    testImplementation group: 'com.jayway.jsonpath', name: 'json-path-assert'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
+    testImplementation group: 'org.mockito', name: 'mockito-core'
+    testImplementation group: 'org.mockito', name: 'mockito-inline'
+    testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert'
     developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'
 
+    //Unmanaged Dependencies
+    testImplementation group: 'com.google.guava', name: 'guava', version: '30.1-jre'
 }
 
 test {

@@ -2,6 +2,7 @@ package org.commcare.formplayer.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.form.api.FormEntryController;
@@ -64,7 +65,6 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.SimpleTimer;
 
 /**
@@ -93,9 +93,6 @@ public class FormController extends AbstractBaseController{
     @Autowired
     private FormplayerDatadog datadog;
 
-    @Autowired
-    private FormplayerSentry raven;
-
     @Resource(name="redisVolatilityDict")
     private ValueOperations<String, FormVolatilityRecord> volatilityCache;
 
@@ -123,8 +120,8 @@ public class FormController extends AbstractBaseController{
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(changeLocaleBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         formEntrySession.changeLocale(changeLocaleBean.getLocale());
-        updateSession(formEntrySession);
         FormEntryResponseBean responseBean = formEntrySession.getCurrentJSON();
+        updateSession(formEntrySession);
         responseBean.setTitle(serializableFormSession.getTitle());
         return responseBean;
     }
@@ -140,7 +137,7 @@ public class FormController extends AbstractBaseController{
 
         // add tags for future datadog/sentry requests
         datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
-        raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+        Sentry.setTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
         FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
                 answerQuestionBean.getFormIndex());
@@ -163,7 +160,7 @@ public class FormController extends AbstractBaseController{
 
         // add tags for future datadog/sentry requests
         datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
-        raven.addTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+        Sentry.setTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
         // package additional args to pass to category timing helper
         Map<String, String> extras = new HashMap<String, String>();
