@@ -2,7 +2,6 @@ package org.commcare.formplayer.application;
 
 import com.timgroup.statsd.StatsDClient;
 import datadog.trace.api.Trace;
-import io.sentry.event.Event;
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
 import org.apache.catalina.connector.ClientAbortException;
