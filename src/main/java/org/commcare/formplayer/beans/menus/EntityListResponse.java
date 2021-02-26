@@ -96,7 +96,7 @@ public class EntityListResponse extends MenuBean {
             if(casesPerPage == 0){
                 casesPerPage = DEFAULT_CASES_PER_PAGE;
             }
-            casesPerPage = Math.max(casesPerPage, MAX_CASES_PER_PAGE);
+            casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
 
             if (entityList.size() > casesPerPage && !(detail.getNumEntitiesToDisplayPerRow() > 1)) {
                 // we're doing pagination
