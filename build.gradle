@@ -93,7 +93,7 @@ dependencies {
     implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
     implementation group: 'org.json', name: 'json', version: '20201115'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
-    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.20.0'
+    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.20.1'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.20.0'
     runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache', version: '2.8.8'
 
