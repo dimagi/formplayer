@@ -56,8 +56,8 @@ branches:
   - caseSearchItemsetFix #Shubham Feb 5
   - caseSearchCache #Shubham Feb 9
   - autoLaunchRevamp #Shubham Feb 9
-  - gh/add-module-name # Graham Feb 19
   - ce/eof-nav # Cal Feb 23
+  - gh/add-case-list-name # Graham Feb 26
 submodules:
   libs/commcare:
     trunk: formplayer
