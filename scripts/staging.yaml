@@ -59,6 +59,7 @@ branches:
   - ce/eof-nav # Cal Feb 23
   - gh/add-case-list-name # Graham Feb 26
   - gh/add-form-name-to-nav-menu # Graham Feb 26
+  - dynamicPaginationLimit # Shubham March 2
 submodules:
   libs/commcare:
     trunk: formplayer
