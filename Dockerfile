@@ -1,24 +1,26 @@
-FROM openjdk:8-jre-slim
+FROM adoptopenjdk:8-jre-hotspot as builder
+WORKDIR application
+ARG JAR_FILE=build/libs/*.jar
+COPY ${JAR_FILE} formplayer.jar
+RUN java -Djarmode=layertools -jar formplayer.jar extract
+
+FROM adoptopenjdk:8-jre-hotspot
 LABEL maintainer="Dimagi <devops@dimagi.com>"
+WORKDIR application
 
-# Environment variable WEB_HOST is used for setting where Django is
-# running; either in another container ("web") or on the Docker host
-# machine ("dockerhost").
-#
-# /formplayer/set_webhost adds the IP address of the host machine to
-# /etc/hosts and sets the hostname "webhost" as an alias to HQ.
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+    # required to provide `route` command for custom entrypoint
+    net-tools; \
+    rm -rf /var/lib/apt/lists/*
 
-WORKDIR /formplayer
+COPY --from=builder application/dependencies/ ./
+COPY --from=builder application/snapshot-dependencies/ ./
+COPY --from=builder application/spring-boot-loader/ ./
+COPY --from=builder application/application/ ./
 
-# Using wget instead of ADD to download formplayer because the connection got
-# dropped repeatedly in testing, and wget -c handles that gracefully
-RUN apt-get update && apt-get install -y wget
-RUN wget -c -O formplayer.jar \
-    https://jenkins.dimagi.com/job/formplayer/lastStableBuild/artifact/build/libs/formplayer.jar
-
-COPY config/application.docker.properties /formplayer/application.properties
-COPY config/set_webhost /formplayer/
-
-EXPOSE 8010
-
-CMD ./set_webhost $WEB_HOST && java -jar formplayer.jar
+COPY scripts/docker_entrypoint.sh /entrypoint
+RUN chmod +x /entrypoint
+ENTRYPOINT ["/entrypoint"]
+CMD ["java", "org.springframework.boot.loader.JarLauncher"]
