@@ -69,3 +69,4 @@ submodules:
       - ce/ensure-session # Cal Nov 20
       - caseSearchItemsetFix #Shubham Feb 5
       - autoLaunchRevamp #Shubham Feb 9
+      - kev/cc-ui-translations-repeat # Kevin Mar 2
