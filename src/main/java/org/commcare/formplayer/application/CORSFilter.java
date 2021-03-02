@@ -17,12 +17,20 @@ public class CORSFilter {
     @Value("${commcarehq.host}")
     private String hqHost;
 
+    @Value("${commcarehq.alternate.origins}")
+    private String[] alternateOrigins;
+
     @Bean
     public FilterRegistrationBean corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.addAllowedOrigin(hqHost);
+        if (alternateOrigins != null) {
+            for (String origin : alternateOrigins) {
+                config.addAllowedOrigin(origin);
+            }
+        }
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
