@@ -60,6 +60,7 @@ branches:
   - dynamicPaginationLimit # Shubham March 2
   - ce/eof-nav # Cal Feb 23
   - gh/add-case-list-name # Graham Feb 26
+  - kev/cc-ui-translations-repeat # Kevin Mar 2
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -69,4 +70,3 @@ submodules:
       - ce/ensure-session # Cal Nov 20
       - caseSearchItemsetFix #Shubham Feb 5
       - autoLaunchRevamp #Shubham Feb 9
-      - kev/cc-ui-translations-repeat # Kevin Mar 2
