@@ -10,6 +10,7 @@ import org.commcare.formplayer.util.Constants;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
+import org.javarosa.core.services.locale.Localization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -97,11 +98,21 @@ public class NewFormResponseFactory {
 
         SerializableFormSession serializedSession = formEntrySession.serialize();
         formSessionService.saveSession(serializedSession);
-        return new NewFormResponse(
+        NewFormResponse response = new NewFormResponse(
                 formTreeJson, formEntrySession.getLanguages(), serializedSession.getTitle(),
                 serializedSession.getId(), serializedSession.getSequenceId(),
                 serializedSession.getInstanceXml()
         );
+
+        String[] translationKey = {"repeat.dialog.add.new"};
+        for (String key : translationKey) {
+            String translation = Localization.getWithDefault(key, null);
+            if (translation != null) {
+                response.addToTranslation(key, translation);
+            }
+        }
+
+        return response;
     }
 
     public NewFormResponse getResponse(SerializableFormSession session) throws Exception {

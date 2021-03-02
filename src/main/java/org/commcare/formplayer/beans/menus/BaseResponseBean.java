@@ -4,6 +4,8 @@ import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.formplayer.util.SessionUtils;
 
+import java.util.HashMap;
+
 /**
  * Base class for responses being sent to the front end. Params are:
  * title - self explanatory
@@ -20,6 +22,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     private String appId;
     private String appVersion;
     private String[] selections;
+    private HashMap<String, String> translations;
 
     public BaseResponseBean() {}
 
@@ -97,5 +100,20 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
 
     public void setSelections(String[] selections) {
         this.selections = selections;
+    }
+
+    public HashMap<String, String> getTranslations() {
+        return translations;
+    }
+
+    public void setTranslations(HashMap<String, String> translations) {
+        this.translations = translations;
+    }
+
+    public void addToTranslation(String key, String value) {
+        if (this.translations == null) {
+            this.translations = new HashMap<String, String>();
+        }
+        this.translations.put(key, value);
     }
 }
