@@ -3,6 +3,7 @@ package org.commcare.formplayer.repo;
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -14,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface FormSessionRepo extends JpaRepository<SerializableFormSession, String> {
-    List<FormSessionListView> findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(String username, String domain, String asUser);
-    List<FormSessionListView> findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(String username, String domain);
+    List<FormSessionListView> findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(String username, String domain, String asUser, Pageable page);
+    List<FormSessionListView> findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(String username, String domain, Pageable page);
 
     /**
      * @deprecated: to be removed once custom sorting is no longer required (once

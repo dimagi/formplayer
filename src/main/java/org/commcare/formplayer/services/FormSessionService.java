@@ -1,10 +1,13 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
+
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.beans.FormsSessionsRequestBean;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.FormSessionListViewRaw;
@@ -17,6 +20,8 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -33,6 +38,9 @@ import java.util.stream.Collectors;
 public class FormSessionService {
 
     private final Log log = LogFactory.getLog(FormSessionService.class);
+
+    private static int DEFAULT_FORMS_PER_PAGE = 10;
+    private static int MAX_FORMS_PER_PAGE = 100;
 
     @Autowired
     private FormSessionRepo formSessionRepo;
@@ -88,16 +96,23 @@ public class FormSessionService {
         return session.get();
     }
 
-    public List<FormSessionListView> getSessionsForUser(String username, String domain, @Nullable String asUser) {
-        List<FormSessionListViewRaw> userSessionsRaw;
+    public List<FormSessionListView> getSessionsForUser(String username, FormsSessionsRequestBean formsSessionsRequest) {
+        String domain = formsSessionsRequest.getDomain();
+        String asUser = formsSessionsRequest.getRestoreAs();
+        int pageSize = getPageSize(formsSessionsRequest);
+
+        List<FormSessionListView> userSessionsRaw;
+        int pageNumber = formsSessionsRequest.getOffset()/pageSize;
+        Pageable page = PageRequest.of(pageNumber, pageSize);
+
         if (asUser == null) {
             // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
             // return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain);
-            userSessionsRaw = formSessionRepo.findUserSessionsNullAsUser(username, domain);
+            userSessionsRaw = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain, page);
         } else {
             // Replace blow code with this line once we can remove custom ordering on ``dateOpened``
             // return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser);
-            userSessionsRaw = formSessionRepo.findUserSessionsAsUser(username, domain, asUser);
+            userSessionsRaw = formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser, page);
         }
         return userSessionsRaw.stream().map((session) -> new FormSessionListView() {
             @Override
@@ -122,9 +137,18 @@ public class FormSessionService {
 
             @Override
             public Map<String, String> getSessionData() {
-                return (Map<String, String>) SerializationUtils.deserialize(session.getSessionData());
+                return session.getSessionData();
             }
         }).collect(Collectors.toList());
+    }
+
+    private int getPageSize(FormsSessionsRequestBean formsSessionsRequest) {
+        int pageSize = formsSessionsRequest.getPageSize();
+        if (pageSize == 0) {
+            pageSize = DEFAULT_FORMS_PER_PAGE;
+        }
+        pageSize = Math.min(pageSize, MAX_FORMS_PER_PAGE);
+        return pageSize;
     }
 
     @CachePut(key = "#session.id")
