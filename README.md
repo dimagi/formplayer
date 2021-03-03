@@ -87,7 +87,7 @@ In order to set breakpoints, step through code, and link the runtime with source
 4. De-select "Use auto-import" and "Create directories for empty content roots automatically" and *select* "Use gradle wrapper"
 5. Click "OK"
 
-After following these steps IntelliJ may need further configuration to work smoothly with Gradle.
+After following these steps IntelliJ may need further configuration to work smoothly with Gradle. You might also want to install the [Lombok plugin](https://plugins.jetbrains.com/plugin/6317-lombok) for your IDE to resolve Lombok references. 
 
 Note: You can also use Android Studio as your IDE and follow the same steps as above.
 
