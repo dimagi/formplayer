@@ -18,6 +18,7 @@ before_script:
 script:
   - ./gradlew copyTestResources
   - ./gradlew test
+  - ./gradlew bootJar
 services:
   - postgresql
   - redis-server
@@ -28,5 +29,14 @@ env:
   global:
   - MALLOC_ARENA_MAX=1
   - GRADLE_OPTS="-Xmx512m"
+  # DOCKER_USER
+  - secure: "eM8zMvbzOqMIA/WI9YeDeYmRKFuFWEJw+gcnzvJMV4eMzjjrntkI/g9T0S384PZo11LLQ4q9eUpOZAtDxdsKGNCQaG7c9C+tw8yZXTbo0un2vVzj75TDcSPxDlimRCvtgWJOk4/NPoZQSwFmftHfuBFoVy+GhjaRmZEXJla2LtTDVT7fmZs2RzRTynfpX2/oaDy/ifE5SVRDZQa053ni4gInpvCnatnqyOyVWYudqAClPXOb+hEEfmwKM/T2kAg6GiZl84oJB1+4g4ZDWA/VfouLz6d3OTrrUFblX9jwJVwATYer6CcFvYAY2B5Z6KgJyxB+V8ADDL02/karyBiVeB2/YO1T6qv2P1k5FN3r+JIuv1xI5wtUyybrx91Z3bI0lgX2h5HRY8W6IX9ynjJ1icvmHOirh1l4BDpRqXc8NvG2BimxhdBUmfobueaPJ9DRJzMBuxOxzRaCUhkbeGQA4W23U0B1ZVIYXG5/tcVgV8R8xFq7a6Ebnp97AJTFgIyFjOOCYSwtAdubfrOvqDvbJVbBmuZxYh7fczM6+dy36EVAw3Sw8v/OkF2gKl/g2EcxTqyj+oB1xjfZgRfKgsTvchps9Bxem9G2Mzu3BHx8ZCAx39LUNHAHF5KzeZ6y7mO4hAcuYmiQ7jhIiJleOT0rnptjaXD8RdTlnxc7HwM3CSY="
+  # DOCKER_PASSWORD
+  - secure: "aTB1lSoH62hWsRHdJ0IWRk3lkVQT5124ZSH9JXGHnYlNQZ3iQtvOQeQECE7jKoMzpmqWA9SF5n613bEsgRQ89AF7lJgDGk0qiWNEBc1Eku75YYLQ7kpAW+DMfuU7TVZz8GY0zbfEDNBRCjXkVZ5h7XgYmarxRztZtgQhzNgRQL+W6Q4ZKMcpqImkbflUI3iREeF4w2B8RAR5SNnacmYzeY8x1Eqq1NUBnATYvxvyJl8PgrW12EO6pZfl1ulNic4vlPm5Kg0Thfly5NbbwmNagaSGW34pul15qkedF5yuAA+DAaK5As7ueuHc0H+Hxt0LKXztcav4o8TE1KMDJUe3KL0XpOPft8tFnmkK4wiqbHFmlCzZCPi/u6rPRMbqxtIg/ICXoKRrNFh5qBSPHY+e/CxKFiDrAYdYppvpZny+NNKY3FtUZoZtECgGYX5CMy1ZAyzQVn3R68TUUIyfUa6TQEdx7X9R+y9laaNSIB23jHUNj6nDPSkGUgNwNNtExpG7dfpBvORSVSWQtSjFugF/MDGK/lL/ButXodWgCFR5hXft1IyLyMyXHt+nyGIwT/9K/Wfl/P48XhkKIo/g1cW5DKiSgafNM1iJ231YH6oqrEp2nuGtQ2nOk3z/r0kgrX684BRdwlAiJbm5KSTOb2B4AtXkm75SAlmBR0+TIHE7X9g="
 after_failure:
   - cat /home/travis/build/dimagi/formplayer/build/reports/tests/test/index.html
+deploy:
+  provider: script
+  script: bash scripts/docker_deploy.sh
+  on:
+    branch: master
