@@ -94,6 +94,8 @@ dependencies {
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.14.0'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.20.0'
     implementation group: 'io.micrometer', name: 'micrometer-registry-statsd', version: '1.6.4'
+    implementation 'io.micrometer:micrometer-core:1.6.4'
+    implementation 'io.micrometer:micrometer-registry-datadog:1.6.4'
     runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache', version: '2.8.8'
 
     implementation fileTree(dir: 'libs', include: '*.jar')

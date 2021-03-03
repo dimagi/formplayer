@@ -6,15 +6,19 @@ import org.javarosa.core.services.storage.EntityFilter;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
-import java.io.InputStream;
-import java.util.Collection;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
+import java.util.concurrent.Callable;
+
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.datadog.DatadogConfig;
+import io.micrometer.datadog.DatadogMeterRegistry;
 
 /**
  * @author $|-|!˅@M
@@ -22,82 +26,146 @@ import java.util.Vector;
 public class SqlStorageWrapper<T extends Persistable>
         implements IStorageUtilityIndexed<T>, Iterable<T> {
 
-    SqlStorage<T> sqliteStorage;
-    SqlStorage<T> postgresStorage;
+    private SqlStorage<T> sqliteStorage;
+    private SqlStorage<T> postgresStorage;
+    private DatadogMeterRegistry meterRegistry;
 
     public SqlStorageWrapper(ConnectionHandler sqliteConnection, ConnectionHandler postgresConnection, Class<T> prototype, String tableName) {
         sqliteStorage = new SqlStorage<T>(sqliteConnection, prototype, tableName);
         postgresStorage = new SqlStorage<T>(postgresConnection, prototype, tableName);
+        initMeterRegistry();
     }
 
+    public void initMeterRegistry() {
+        meterRegistry = new DatadogMeterRegistry(new DatadogConfig() {
+            @Override
+            public String get(String key) {
+                return null;
+            }
 
-    public void rebuildTable(T prototypeInstance) {
-        sqliteStorage.rebuildTable(prototypeInstance);
-        postgresStorage.rebuildTable(prototypeInstance);
+            @Override
+            public String apiKey() {
+                return "API_KEY";
+            }
+
+            @Override
+            public Duration step() {
+                return Duration.ofSeconds(10);
+            }
+
+            @Override
+            public String applicationKey() {
+                return "APPLICATION_KEY";
+            }
+        }, Clock.SYSTEM);
     }
 
-    public void executeStatements(String[] statements) {
-        sqliteStorage.executeStatements(statements);
-        postgresStorage.executeStatements(statements);
+    private void compareRunnable(String tag, Runnable sqliteOperation, Runnable postgresOperation) {
+        Timer sqliteTimer = meterRegistry.timer("timer.sqlite." + tag);
+        sqliteTimer.record(sqliteOperation);
+
+        Timer postgresTimer = meterRegistry.timer("timer.postgres." + tag);
+        postgresTimer.record(postgresOperation);
     }
 
-    public void basicInsert(Map<String, Object> contentVals) {
-        sqliteStorage.basicInsert(contentVals);
-        postgresStorage.basicInsert(contentVals);
-    }
+    private <RESULT> RESULT compareCallable(String tag, Callable<RESULT> sqliteOperation, Callable<RESULT> postgresOperation) {
+        RESULT result = null;
+        try {
+            Timer sqliteTimer = meterRegistry.timer("timer.sqlite." + tag);
+            result = sqliteTimer.recordCallable(sqliteOperation);
 
-    public void insertOrReplace(Map<String, Object> contentVals) {
-        sqliteStorage.insertOrReplace(contentVals);
-        postgresStorage.insertOrReplace(contentVals);
+            Timer postgresTimer = meterRegistry.timer("timer.postgres." + tag);
+            postgresTimer.recordCallable(postgresOperation);
+            // TODO compare result with sqlite
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     @Override
     public void write(Persistable p) {
-        sqliteStorage.write(p);
-        postgresStorage.write(p);
+        compareRunnable(
+                "write",
+                () -> sqliteStorage.write(p),
+                () -> postgresStorage.write(p)
+        );
     }
 
     @Override
     public T read(int id) {
-        postgresStorage.read(id);
-        return sqliteStorage.read(id);
+        return compareCallable(
+              "read",
+                () -> sqliteStorage.read(id),
+                () -> postgresStorage.read(id)
+        );
     }
 
     @Override
     public Vector<Integer> getIDsForValue(String fieldName, Object value) {
-        postgresStorage.getIDsForValue(fieldName, value);
-        return sqliteStorage.getIDsForValue(fieldName, value);
+        return compareCallable(
+                "getIds.singleValue",
+                () -> sqliteStorage.getIDsForValue(fieldName, value),
+                () -> postgresStorage.getIDsForValue(fieldName, value)
+        );
     }
 
     @Override
     public List<Integer> getIDsForValues(String[] fieldNames, Object[] values) {
-        postgresStorage.getIDsForValues(fieldNames, values);
-        return sqliteStorage.getIDsForValues(fieldNames, values);
+        return compareCallable(
+                "getIds.multiValues",
+                () -> sqliteStorage.getIDsForValues(fieldNames, values),
+                () -> postgresStorage.getIDsForValues(fieldNames, values)
+        );
     }
 
     @Override
     public List<Integer> getIDsForValues(String[] fieldNames, Object[] values, LinkedHashSet<Integer> returnSet) {
-        postgresStorage.getIDsForValues(fieldNames, values, returnSet);
-        return sqliteStorage.getIDsForValues(fieldNames, values, returnSet);
+        return compareCallable(
+                "getIds.multiValues.returnSet",
+                () -> sqliteStorage.getIDsForValues(fieldNames, values, returnSet),
+                () -> postgresStorage.getIDsForValues(fieldNames, values, returnSet)
+        );
     }
 
     @Override
     public T getRecordForValue(String fieldName, Object value)
             throws NoSuchElementException, InvalidIndexException {
-        postgresStorage.getRecordForValue(fieldName, value);
-        return sqliteStorage.getRecordForValue(fieldName, value);
+        T result;
+        try {
+            Timer sqliteTimer = meterRegistry.timer("timer.sqlite.getRecord.singleValue");
+            result = sqliteTimer.recordCallable(
+                    () -> sqliteStorage.getRecordForValue(fieldName, value)
+            );
+
+            Timer postgresTimer = meterRegistry.timer("timer.postgres.getRecord.singleValue");
+            postgresTimer.recordCallable(
+                    () -> postgresStorage.getRecordForValue(fieldName, value)
+            );
+        } catch (NoSuchElementException | InvalidIndexException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     @Override
     public Vector<T> getRecordsForValues(String[] metaFieldNames, Object[] values) {
-        postgresStorage.getRecordsForValues(metaFieldNames, values);
-        return sqliteStorage.getRecordsForValues(metaFieldNames, values);
+        return compareCallable(
+                "getRecord.multiValue",
+                () -> sqliteStorage.getRecordsForValues(metaFieldNames, values),
+                () -> postgresStorage.getRecordsForValues(metaFieldNames, values)
+        );
     }
 
     @Override
     public int add(T e) {
-        postgresStorage.add(e);
-        return sqliteStorage.add(e);
+        return compareCallable(
+                "add",
+                () -> sqliteStorage.add(e),
+                () -> postgresStorage.add(e)
+        );
     }
 
     @Override
@@ -107,8 +175,11 @@ public class SqlStorageWrapper<T extends Persistable>
 
     @Override
     public boolean exists(int id) {
-        postgresStorage.exists(id);
-        return sqliteStorage.exists(id);
+        return compareCallable(
+                "exists",
+                () -> sqliteStorage.exists(id),
+                () -> postgresStorage.exists(id)
+        );
     }
 
     @Override
@@ -119,134 +190,136 @@ public class SqlStorageWrapper<T extends Persistable>
 
     @Override
     public int getNumRecords() {
-        sqliteStorage.getNumRecords();
-        return postgresStorage.getNumRecords();
+        return compareCallable(
+                "numRecords",
+                () -> sqliteStorage.getNumRecords(),
+                () -> postgresStorage.getNumRecords()
+        );
     }
 
     @Override
     public JdbcSqlStorageIterator<T> iterate() {
-        postgresStorage.iterate();
-        return sqliteStorage.iterate();
+        return compareCallable(
+                "iterate",
+                () -> sqliteStorage.iterate(),
+                () -> postgresStorage.iterate()
+        );
     }
 
     @Override
     public JdbcSqlStorageIterator<T> iterate(boolean includeData) {
-        postgresStorage.iterate(includeData);
-        return sqliteStorage.iterate(includeData);
-    }
-
-    public JdbcSqlStorageIterator<T> iterate(boolean includeData, String[] metaDataToInclude) {
-        postgresStorage.iterate(includeData, metaDataToInclude);
-        return sqliteStorage.iterate(includeData, metaDataToInclude);
+        return compareCallable(
+                "iterate.includeData",
+                () -> sqliteStorage.iterate(includeData),
+                () -> postgresStorage.iterate(includeData)
+        );
     }
 
     @Override
     public boolean isEmpty() {
-        postgresStorage.isEmpty();
-        return sqliteStorage.isEmpty();
+        return compareCallable(
+                "isEmpty",
+                () -> sqliteStorage.isEmpty(),
+                () -> postgresStorage.isEmpty()
+        );
     }
 
     @Override
     public byte[] readBytes(int id) {
-        postgresStorage.readBytes(id);
-        return sqliteStorage.readBytes(id);
+        return compareCallable(
+                "readBytes",
+                () -> sqliteStorage.readBytes(id),
+                () -> postgresStorage.readBytes(id)
+        );
     }
 
     @Override
     public void update(int id, Persistable p) {
-        postgresStorage.update(id, p);
-        sqliteStorage.update(id, p);
+        compareRunnable(
+                "update",
+                () -> sqliteStorage.update(id, p),
+                () -> postgresStorage.update(id, p)
+        );
     }
 
     @Override
     public void remove(int id) {
-        postgresStorage.remove(id);
-        sqliteStorage.remove(id);
+        compareRunnable(
+                "removeId",
+                () -> sqliteStorage.remove(id),
+                () -> postgresStorage.remove(id)
+        );
     }
 
     @Override
     public void remove(Persistable p) {
-        postgresStorage.remove(p);
-        sqliteStorage.remove(p);
+        compareRunnable(
+                "removeResource",
+                () -> sqliteStorage.remove(p),
+                () -> postgresStorage.remove(p)
+        );
     }
 
     @Override
     public void removeAll() {
-        postgresStorage.removeAll();
-        sqliteStorage.removeAll();
+        compareRunnable(
+                "removeAll",
+                () -> sqliteStorage.removeAll(),
+                () -> postgresStorage.removeAll()
+        );
     }
 
 
     public Vector<Integer> removeAll(Vector<Integer> toRemove) {
-        postgresStorage.removeAll(toRemove);
-        return sqliteStorage.removeAll(toRemove);
+        return compareCallable(
+                "removeAll.ids",
+                () -> sqliteStorage.removeAll(toRemove),
+                () -> postgresStorage.removeAll(toRemove)
+        );
     }
 
     // not yet implemented
     @Override
     public Vector<Integer> removeAll(EntityFilter ef) {
-        postgresStorage.removeAll(ef);
-        return sqliteStorage.removeAll(ef);
+        return compareCallable(
+                "removeAll.entityFilter",
+                () -> sqliteStorage.removeAll(ef),
+                () -> postgresStorage.removeAll(ef)
+        );
     }
 
     @Override
     public Iterator<T> iterator() {
-        postgresStorage.iterator();
-        return sqliteStorage.iterator();
-    }
-
-    public void getIDsForValues(String[] namesToMatch, String[] valuesToMatch, LinkedHashSet<Integer> ids) {
-        postgresStorage.getIDsForValues(namesToMatch, valuesToMatch, ids);
-        sqliteStorage.getIDsForValues(namesToMatch, valuesToMatch, ids);
-    }
-
-    /**
-     * @param dbEntryId Set the deserialized persistable's id to the database entry id.
-     *                  Doing so now is more effecient then during writes
-     */
-    public T newObject(InputStream serializedObjectInputStream, int dbEntryId) {
-        postgresStorage.newObject(serializedObjectInputStream, dbEntryId);
-        return sqliteStorage.newObject(serializedObjectInputStream, dbEntryId);
-    }
-
-    /**
-     * @param dbEntryId Set the deserialized persistable's id to the database entry id.
-     *                  Doing so now is more effecient then during writes
-     */
-    public T newObject(byte[] serializedObjectAsBytes, int dbEntryId) {
-        postgresStorage.newObject(serializedObjectAsBytes, dbEntryId);
-        return sqliteStorage.newObject(serializedObjectAsBytes, dbEntryId);
+        return compareCallable(
+                "iterator",
+                () -> sqliteStorage.iterator(),
+                () -> postgresStorage.iterator()
+        );
     }
 
     public void bulkRead(LinkedHashSet<Integer> cuedCases, HashMap<Integer, T> recordMap) throws RequestAbandonedException {
-        postgresStorage.bulkRead(cuedCases, recordMap);
-        sqliteStorage.bulkRead(cuedCases, recordMap);
+        compareRunnable(
+                "bulkRead",
+                () -> sqliteStorage.bulkRead(cuedCases, recordMap),
+                () -> postgresStorage.bulkRead(cuedCases, recordMap)
+        );
     }
 
     @Override
     public String[] getMetaDataForRecord(int recordId, String[] metaFieldNames) {
-        postgresStorage.getMetaDataForRecord(recordId, metaFieldNames);
-        return sqliteStorage.getMetaDataForRecord(recordId, metaFieldNames);
+        return compareCallable(
+                "getMetaData",
+                () -> sqliteStorage.getMetaDataForRecord(recordId, metaFieldNames),
+                () -> postgresStorage.getMetaDataForRecord(recordId, metaFieldNames)
+        );
     }
 
     @Override
     public void bulkReadMetadata(LinkedHashSet<Integer> recordIds, String[] metaFieldNames, HashMap<Integer, String[]> metadataMap) {
-        postgresStorage.bulkReadMetadata(recordIds, metaFieldNames, metadataMap);
-        sqliteStorage.bulkReadMetadata(recordIds, metaFieldNames, metadataMap);
-    }
-
-
-    /**
-     * Retrieves a set of the models in storage based on a list of values matching one if the
-     * indexes of this storage
-     */
-    public List<T> getBulkRecordsForIndex(String indexName, Collection<String> matchingValues) {
-        postgresStorage.getBulkRecordsForIndex(indexName, matchingValues);
-        return sqliteStorage.getBulkRecordsForIndex(indexName, matchingValues);
-    }
-
-    public String getMetaDataFieldForRecord(int recordId, String rawFieldName) {
-        postgresStorage.getMetaDataFieldForRecord(recordId, rawFieldName);
-        return sqliteStorage.getMetaDataFieldForRecord(recordId, rawFieldName);
+        compareRunnable(
+                "bulkReadMetadata",
+                () -> sqliteStorage.bulkReadMetadata(recordIds, metaFieldNames, metadataMap),
+                () -> postgresStorage.bulkReadMetadata(recordIds, metaFieldNames, metadataMap)
+        );
     }
 }
