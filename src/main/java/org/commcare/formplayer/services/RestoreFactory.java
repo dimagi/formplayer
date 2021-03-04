@@ -86,7 +86,7 @@ public class RestoreFactory {
 
     private String asUsername;
     private String username;
-    private String scrubbed_username;
+    private String scrubbedUsername;
     private String domain;
     private HqAuth hqAuth;
 
@@ -154,7 +154,7 @@ public class RestoreFactory {
         this.setHqAuth(auth);
         this.hasRestored = false;
         this.configured = true;
-        sqLiteDB = new UserDB(domain, scrubbed_username, null);
+        sqLiteDB = new UserDB(domain, scrubbedUsername, null);
         log.info(String.format("configuring RestoreFactory with CaseID with arguments " +
                 "username = %s, caseId = %s, domain = %s", username, caseId, domain));
     }
@@ -166,7 +166,7 @@ public class RestoreFactory {
         this.hqAuth = auth;
         this.hasRestored = false;
         this.configured = true;
-        sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
+        sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
     }
@@ -179,7 +179,7 @@ public class RestoreFactory {
         this.setUseLiveQuery(useLiveQuery);
         this.hasRestored = false;
         this.configured = true;
-        sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
+        sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
         log.info(String.format("configuring RestoreFactory from authed request with arguments " +
                 "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s",
                 username, asUsername, domain, useLiveQuery));
@@ -208,7 +208,7 @@ public class RestoreFactory {
                 getSQLiteDB().deleteDatabaseFile();
                 // this line has the effect of clearing the sync token
                 // from the restore URL that's used
-                sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
+                sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
                 return performTimedSync(shouldPurge, skipFixtures);
             }
             throw e;
@@ -454,7 +454,7 @@ public class RestoreFactory {
     }
 
     private String lastSyncKey() {
-        return "last-sync-time:" + domain + ":" + scrubbed_username + ":" + asUsername;
+        return "last-sync-time:" + domain + ":" + scrubbedUsername + ":" + asUsername;
     }
 
     /**
@@ -724,7 +724,7 @@ public class RestoreFactory {
         StringBuilder builder = new StringBuilder();
         builder.append(storageFactory.getAppId());
         builder.append("_").append(domain);
-        builder.append("_").append(scrubbed_username);
+        builder.append("_").append(scrubbedUsername);
         if (asUsername != null) {
             builder.append("_").append(asUsername);
         }
@@ -771,7 +771,7 @@ public class RestoreFactory {
 
     public void setUsername(String username) {
         this.username = username;
-        this.scrubbed_username = TableBuilder.scrubName(username);
+        this.scrubbedUsername = TableBuilder.scrubName(username);
     }
 
     public String getDomain() {
@@ -796,6 +796,10 @@ public class RestoreFactory {
 
     public void setAsUsername(String asUsername) {
         this.asUsername = asUsername;
+    }
+
+    public String getScrubbedUsername() {
+        return scrubbedUsername;
     }
 
     public boolean isUseLiveQuery() {

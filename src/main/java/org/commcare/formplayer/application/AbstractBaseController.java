@@ -47,7 +47,7 @@ import java.util.ArrayList;
 public abstract class AbstractBaseController {
 
     @Autowired
-    private QueryRequester queryRequester;
+    private CaseSearchHelper caseSearchHelper;
 
     @Autowired
     private SyncRequester syncRequester;

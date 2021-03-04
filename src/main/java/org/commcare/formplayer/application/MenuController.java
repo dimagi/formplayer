@@ -3,7 +3,6 @@ package org.commcare.formplayer.application;
 import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
-import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
@@ -26,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.formplayer.services.QueryRequester;
+import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.SyncRequester;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
@@ -40,7 +39,7 @@ import org.commcare.formplayer.util.Constants;
 public class MenuController extends AbstractBaseController {
 
     @Autowired
-    private QueryRequester queryRequester;
+    private CaseSearchHelper caseSearchHelper;
 
     @Autowired
     private SyncRequester syncRequester;

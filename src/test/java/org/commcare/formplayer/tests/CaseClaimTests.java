@@ -12,7 +12,9 @@ import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +42,9 @@ public class CaseClaimTests extends BaseTestClass {
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
     }
 
+    @Autowired
+    CacheManager cacheManager;
+
     @Override
     protected String getMockRestoreFileName() {
         return "restores/caseclaim.xml";
@@ -53,12 +58,15 @@ public class CaseClaimTests extends BaseTestClass {
         configureQueryMock();
         configureSyncMock();
 
-        // forceManualAction false and default Search on should result in search results right away
+        // forceManualAction false and default Search ON should result in search results right away
         EntityListResponse responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 null,
                 false,
                 EntityListResponse.class);
+
+//        assert cacheManager.getCache("case_search")
+//                .get("caseclaimusername" + "http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case") != null;
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");

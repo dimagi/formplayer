@@ -21,7 +21,7 @@ import java.util.Map;
 @Service
 public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler {
 
-    private final Log log = LogFactory.getLog(QueryRequester.class);
+    private final Log log = LogFactory.getLog(FormplayerFormSendCalloutHandler.class);
 
     @Autowired
     RestoreFactory restoreFactory;

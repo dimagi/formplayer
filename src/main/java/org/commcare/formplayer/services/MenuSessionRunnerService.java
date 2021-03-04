@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import io.sentry.Sentry;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.menus.*;
@@ -18,6 +19,7 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -35,8 +37,6 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Arrays;
@@ -57,7 +57,7 @@ public class MenuSessionRunnerService {
     private InstallService installService;
 
     @Autowired
-    private QueryRequester queryRequester;
+    private CaseSearchHelper caseSearchHelper;
 
     @Autowired
     private SyncRequester syncRequester;
@@ -350,9 +350,13 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        String responseString = queryRequester.makeQueryRequest(screen.getUriString(autoSearch), restoreFactory.getUserHeaders());
-        boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
-        if (success) {
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(
+                restoreFactory.getScrubbedUsername(),
+                screen,
+                screen.getUriString(autoSearch),
+                restoreFactory.getUserHeaders());
+
+        if (searchDataInstance != null) {
             if (screen.getCurrentMessage() != null) {
                 notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
             }

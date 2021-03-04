@@ -28,7 +28,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
@@ -245,6 +244,11 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return new FormplayerArchiveFileRoot();
+    }
+
+    @Bean
+    public CaseSearchHelper caseSearchHelper() {
+        return new CaseSearchHelper();
     }
 
     @Bean

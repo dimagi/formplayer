@@ -6,20 +6,20 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-
 public class QueryRequester {
 
-    private final Log log = LogFactory.getLog(QueryRequester.class);
+    private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
+    @Nullable
     public String makeQueryRequest(String uri, HttpHeaders headers) {
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response =
-                null;
+        ResponseEntity<String> response;
         try {
             response = restTemplate.exchange(
                     // Spring framework automatically encodes urls. This ensures we don't pass in an already
