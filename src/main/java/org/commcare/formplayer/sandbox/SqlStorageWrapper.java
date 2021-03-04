@@ -14,10 +14,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
-import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.datadog.DatadogConfig;
 import io.micrometer.datadog.DatadogMeterRegistry;
 
 /**
@@ -30,34 +29,11 @@ public class SqlStorageWrapper<T extends Persistable>
     private SqlStorage<T> postgresStorage;
     private DatadogMeterRegistry meterRegistry;
 
-    public SqlStorageWrapper(ConnectionHandler sqliteConnection, ConnectionHandler postgresConnection, Class<T> prototype, String tableName) {
+    public SqlStorageWrapper(ConnectionHandler sqliteConnection, ConnectionHandler postgresConnection,
+                             Class<T> prototype, String tableName, DatadogMeterRegistry meterRegistry) {
         sqliteStorage = new SqlStorage<T>(sqliteConnection, prototype, tableName);
         postgresStorage = new SqlStorage<T>(postgresConnection, prototype, tableName);
-        initMeterRegistry();
-    }
-
-    public void initMeterRegistry() {
-        meterRegistry = new DatadogMeterRegistry(new DatadogConfig() {
-            @Override
-            public String get(String key) {
-                return null;
-            }
-
-            @Override
-            public String apiKey() {
-                return "API_KEY";
-            }
-
-            @Override
-            public Duration step() {
-                return Duration.ofSeconds(10);
-            }
-
-            @Override
-            public String applicationKey() {
-                return "APPLICATION_KEY";
-            }
-        }, Clock.SYSTEM);
+        this.meterRegistry = meterRegistry;
     }
 
     private void compareRunnable(String tag, Runnable sqliteOperation, Runnable postgresOperation) {
@@ -71,12 +47,16 @@ public class SqlStorageWrapper<T extends Persistable>
     private <RESULT> RESULT compareCallable(String tag, Callable<RESULT> sqliteOperation, Callable<RESULT> postgresOperation) {
         RESULT result = null;
         try {
-            Timer sqliteTimer = meterRegistry.timer("timer.sqlite." + tag);
-            result = sqliteTimer.recordCallable(sqliteOperation);
+            long start = System.currentTimeMillis();
+            result = sqliteOperation.call();
+            long sqliteTime = System.currentTimeMillis() - start;
 
-            Timer postgresTimer = meterRegistry.timer("timer.postgres." + tag);
-            postgresTimer.recordCallable(postgresOperation);
-            // TODO compare result with sqlite
+            start = System.currentTimeMillis();
+            postgresOperation.call();
+            long postgresTime = System.currentTimeMillis() - start;
+
+            Timer diffTimer = meterRegistry.timer("storage.timing." + tag);
+            diffTimer.record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

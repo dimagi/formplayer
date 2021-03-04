@@ -23,6 +23,8 @@ import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.util.FormplayerPropertyManager;
 import org.commcare.formplayer.util.UserUtils;
 
+import io.micrometer.datadog.DatadogMeterRegistry;
+
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
  */
@@ -43,6 +45,9 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Autowired
     private FormSessionService formSessionService;
+
+    @Autowired
+    private DatadogMeterRegistry meterRegistry;
 
     public void configure(InstallRequestBean installRequestBean) {
         configure(
@@ -113,7 +118,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name);
+        return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name, meterRegistry);
     }
 
     public String getUsername() {
