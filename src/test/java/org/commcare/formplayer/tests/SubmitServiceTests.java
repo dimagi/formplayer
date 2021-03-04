@@ -1,6 +1,6 @@
 package org.commcare.formplayer.tests;
 
-import org.commcare.formplayer.application.RestTemplateConfig;
+import org.commcare.formplayer.web.client.RestTemplateConfig;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.RestoreFactory;
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
