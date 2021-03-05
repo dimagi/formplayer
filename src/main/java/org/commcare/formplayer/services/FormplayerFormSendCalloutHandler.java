@@ -3,6 +3,7 @@ package org.commcare.formplayer.services;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.web.client.WebClient;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -27,24 +28,16 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
     RestoreFactory restoreFactory;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private WebClient webClient;
 
     @Override
     public String performHttpCalloutForResponse(String url, Map<String, String> paramMap) {
-        ResponseEntity<String> response = null;
-
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
         for (String key: paramMap.keySet()) {
             builder.queryParam(key, paramMap.get(key));
         }
 
-        response = restTemplate.exchange(
-                builder.build().toUri(),
-                HttpMethod.GET,
-                new HttpEntity<String>(restoreFactory.getUserHeaders()),
-                String.class
-        );
-        String responseBody = response.getBody();
+        String responseBody = webClient.get(builder.build().toUri(), restoreFactory.getUserHeaders());
         log.info(String.format("Form HttpCallout to URL %s returned result %s", url, responseBody));
         return responseBody;
     }

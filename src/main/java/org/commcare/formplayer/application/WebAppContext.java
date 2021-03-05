@@ -12,7 +12,9 @@ import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
-import org.commcare.formplayer.services.*;
+import org.commcare.formplayer.services.BrowserValuesProvider;
+import org.commcare.formplayer.services.FormattedQuestionsService;
+import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +30,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
@@ -240,11 +241,6 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return new FormplayerArchiveFileRoot();
-    }
-
-    @Bean
-    public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
-        return new FormplayerFormSendCalloutHandler();
     }
 
     @Bean
