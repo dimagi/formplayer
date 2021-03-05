@@ -61,7 +61,6 @@ branches:
   - ce/eof-nav # Cal Feb 23
   - gh/add-case-list-name # Graham Feb 26
   - kev/cc-ui-translations-repeat # Kevin Mar 2
-  - sk/rest-template # SK Mar 5
 submodules:
   libs/commcare:
     trunk: formplayer
