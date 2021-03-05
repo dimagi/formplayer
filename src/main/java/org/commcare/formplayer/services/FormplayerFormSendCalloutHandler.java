@@ -38,18 +38,12 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
             builder.queryParam(key, paramMap.get(key));
         }
 
-        try {
-            response = restTemplate.exchange(
-                    // Spring framework automatically encodes urls. This ensures we don't pass in an already
-                    // encoded url.
-                    URLDecoder.decode(builder.toUriString(), "UTF-8"),
-                    HttpMethod.GET,
-                    new HttpEntity<String>(restoreFactory.getUserHeaders()),
-                    String.class
-            );
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        response = restTemplate.exchange(
+                builder.build().toUri(),
+                HttpMethod.GET,
+                new HttpEntity<String>(restoreFactory.getUserHeaders()),
+                String.class
+        );
         String responseBody = response.getBody();
         log.info(String.format("Form HttpCallout to URL %s returned result %s", url, responseBody));
         return responseBody;
