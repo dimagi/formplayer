@@ -248,11 +248,6 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public QueryRequester queryRequester() {
-        return new QueryRequester();
-    }
-
-    @Bean
     public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
         return new FormplayerFormSendCalloutHandler();
     }

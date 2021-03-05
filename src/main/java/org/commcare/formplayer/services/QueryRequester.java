@@ -1,23 +1,28 @@
 package org.commcare.formplayer.services;
 
+import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 
+@Component
+@CommonsLog
 public class QueryRequester {
 
-    private final Log log = LogFactory.getLog(QueryRequester.class);
+    @Autowired
+    private RestTemplate restTemplate;
 
     public String makeQueryRequest(String uri, HttpHeaders headers) {
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response =
                 null;
         try {

@@ -139,10 +139,8 @@ public class TestContext {
         return Mockito.spy(ArchiveFileRoot.class);
     }
 
-    @Bean
-    public QueryRequester queryRequester() {
-        return Mockito.mock(QueryRequester.class);
-    }
+    @MockBean
+    public QueryRequester queryRequester;
 
     @MockBean
     public SyncRequester syncRequester;
