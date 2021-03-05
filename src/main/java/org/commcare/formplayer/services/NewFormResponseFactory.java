@@ -7,6 +7,7 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.web.client.WebClient;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
@@ -24,7 +25,7 @@ import java.io.InputStreamReader;
 public class NewFormResponseFactory {
 
     @Autowired
-    private XFormService xFormService;
+    private WebClient webClient;
 
     @Autowired
     private RestoreFactory restoreFactory;
@@ -119,7 +120,7 @@ public class NewFormResponseFactory {
     }
 
     private String getFormXml(String formUrl) {
-        return xFormService.getFormXml(formUrl);
+        return webClient.get(formUrl, restoreFactory.getUserHeaders());
     }
 
     private static FormDef parseFormDef(String formXml) throws IOException {

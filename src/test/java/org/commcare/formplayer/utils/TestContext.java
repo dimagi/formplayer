@@ -12,6 +12,7 @@ import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHttpRequest;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.mockito.Mockito;
@@ -65,7 +66,7 @@ public class TestContext {
     }
 
     @MockBean
-    public XFormService newFormRequest;
+    public WebClient webClient;
 
     @Bean
     public ValueOperations<String, Long> redisTemplateLong() {
