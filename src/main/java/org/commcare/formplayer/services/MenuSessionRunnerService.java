@@ -36,6 +36,8 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SessionUtils;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -60,9 +62,6 @@ public class MenuSessionRunnerService {
 
     @Autowired
     private WebClient webClient;
-
-    @Autowired
-    private SyncRequester syncRequester;
 
     @Autowired
     protected FormSessionService formSessionService;
@@ -323,20 +322,16 @@ public class MenuSessionRunnerService {
     }
 
     private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
-        ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
-                screen.getBuiltQuery(),
-                restoreFactory.getUserHeaders());
-        if (responseEntity == null) {
-            return new NotificationMessage("Session error, expected sync block but didn't get one.", true, NotificationMessage.Tag.sync);
-        }
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            // Don't purge for case claim
-            restoreFactory.performTimedSync(false, false);
-            return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
-        } else {
+        try {
+            webClient.get(screen.getUrl(), screen.getBuiltQuery(), restoreFactory.getUserHeaders());
+        } catch (RestClientResponseException e) {
             return new NotificationMessage(
-                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true, NotificationMessage.Tag.sync);
+                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true, NotificationMessage.Tag.sync);
+        } catch (RestClientException e) {
+            return new NotificationMessage("Unknown error performing case claim", true, NotificationMessage.Tag.sync);
         }
+        restoreFactory.performTimedSync(false, false);
+        return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
     }
 
     /**

@@ -160,8 +160,8 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     private void configureSyncMock() {
-        when(syncRequester.makeSyncRequest(anyString(), anyString(), any(HttpHeaders.class)))
-                .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+        when(webClientMock.get(anyString(), anyString(), any(HttpHeaders.class)))
+                .thenReturn("");
     }
 
     private void configureQueryMock() {

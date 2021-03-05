@@ -1,14 +1,12 @@
 package org.commcare.formplayer.web.client;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.Arrays;
 
 @Component
 public class WebClient {
@@ -31,5 +29,12 @@ public class WebClient {
                 String.class
         );
         return response.getBody();
+    }
+
+    public String get(String url, String params, HttpHeaders headers) {
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED));
+        HttpEntity<String> entity = new HttpEntity<>(params, headers);
+        return restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
     }
 }

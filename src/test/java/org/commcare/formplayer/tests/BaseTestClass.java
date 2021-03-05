@@ -124,9 +124,6 @@ public class BaseTestClass {
     @Autowired
     protected MenuSessionRunnerService menuSessionRunnerService;
 
-    @Autowired
-    protected SyncRequester syncRequester;
-
     @InjectMocks
     protected FormController formController;
 
@@ -164,7 +161,6 @@ public class BaseTestClass {
         Mockito.reset(newFormResponseFactoryMock);
         Mockito.reset(storageFactoryMock);
         Mockito.reset(formplayerInstallerFactory);
-        Mockito.reset(syncRequester);
         Mockito.reset(datadogMock);
         Mockito.reset(menuSessionFactory);
         Mockito.reset(menuSessionRunnerService);

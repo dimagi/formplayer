@@ -138,9 +138,6 @@ public class TestContext {
         return Mockito.spy(ArchiveFileRoot.class);
     }
 
-    @MockBean
-    public SyncRequester syncRequester;
-
     @Bean
     public CategoryTimingHelper categoryTimingHelper() {
         return Mockito.spy(CategoryTimingHelper.class);

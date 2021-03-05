@@ -51,9 +51,6 @@ public abstract class AbstractBaseController {
     private WebClient webClient;
 
     @Autowired
-    private SyncRequester syncRequester;
-
-    @Autowired
     protected FormSessionService formSessionService;
 
     @Autowired
