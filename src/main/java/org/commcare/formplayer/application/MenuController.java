@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.formplayer.services.QueryRequester;
 import org.commcare.formplayer.services.SyncRequester;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
@@ -38,9 +37,6 @@ import org.commcare.formplayer.util.Constants;
 @RestController
 @EnableAutoConfiguration
 public class MenuController extends AbstractBaseController {
-
-    @Autowired
-    private QueryRequester queryRequester;
 
     @Autowired
     private SyncRequester syncRequester;

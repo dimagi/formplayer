@@ -76,9 +76,6 @@ import org.commcare.formplayer.util.SimpleTimer;
 public class FormController extends AbstractBaseController{
 
     @Autowired
-    private WebClient webClient;
-
-    @Autowired
     private SubmitService submitService;
 
     @Autowired

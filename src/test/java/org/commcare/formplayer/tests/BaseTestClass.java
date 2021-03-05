@@ -89,7 +89,7 @@ public class BaseTestClass {
     private MenuSessionRepo menuSessionRepoMock;
 
     @Autowired
-    private WebClient webClientMock;
+    protected WebClient webClientMock;
 
     @Autowired
     RestoreFactory restoreFactoryMock;
@@ -123,9 +123,6 @@ public class BaseTestClass {
 
     @Autowired
     protected MenuSessionRunnerService menuSessionRunnerService;
-
-    @Autowired
-    protected QueryRequester queryRequester;
 
     @Autowired
     protected SyncRequester syncRequester;
@@ -167,7 +164,6 @@ public class BaseTestClass {
         Mockito.reset(newFormResponseFactoryMock);
         Mockito.reset(storageFactoryMock);
         Mockito.reset(formplayerInstallerFactory);
-        Mockito.reset(queryRequester);
         Mockito.reset(syncRequester);
         Mockito.reset(datadogMock);
         Mockito.reset(menuSessionFactory);

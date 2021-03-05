@@ -9,6 +9,7 @@ import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
@@ -58,7 +59,7 @@ public class MenuSessionRunnerService {
     private InstallService installService;
 
     @Autowired
-    private QueryRequester queryRequester;
+    private WebClient webClient;
 
     @Autowired
     private SyncRequester syncRequester;
@@ -355,7 +356,7 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        String responseString = queryRequester.makeQueryRequest(screen.getUri(autoSearch), restoreFactory.getUserHeaders());
+        String responseString = webClient.get(screen.getUri(autoSearch), restoreFactory.getUserHeaders());
         boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
             if (screen.getCurrentMessage() != null) {

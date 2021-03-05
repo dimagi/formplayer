@@ -165,12 +165,12 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     private void configureQueryMock() {
-        when(queryRequester.makeQueryRequest(any(URI.class), any(HttpHeaders.class)))
+        when(webClientMock.get(any(URI.class), any(HttpHeaders.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
     }
 
     private void configureQueryMockOwned() {
-        when(queryRequester.makeQueryRequest(any(URI.class), any(HttpHeaders.class)))
+        when(webClientMock.get(any(URI.class), any(HttpHeaders.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response_owned.xml"));
     }
 }

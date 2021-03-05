@@ -21,6 +21,7 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerHttpRequest;
 import org.commcare.formplayer.util.FormplayerSentry;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.util.screen.CommCareSessionException;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -47,7 +48,7 @@ import java.util.ArrayList;
 public abstract class AbstractBaseController {
 
     @Autowired
-    private QueryRequester queryRequester;
+    private WebClient webClient;
 
     @Autowired
     private SyncRequester syncRequester;

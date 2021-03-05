@@ -139,9 +139,6 @@ public class TestContext {
     }
 
     @MockBean
-    public QueryRequester queryRequester;
-
-    @MockBean
     public SyncRequester syncRequester;
 
     @Bean

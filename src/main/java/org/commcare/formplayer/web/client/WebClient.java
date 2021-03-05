@@ -22,4 +22,14 @@ public class WebClient {
         );
         return response.getBody();
     }
+
+    public String get(URI uri, HttpHeaders headers) {
+        ResponseEntity<String> response = restTemplate.exchange(
+                uri,
+                HttpMethod.GET,
+                new HttpEntity<String>(headers),
+                String.class
+        );
+        return response.getBody();
+    }
 }
