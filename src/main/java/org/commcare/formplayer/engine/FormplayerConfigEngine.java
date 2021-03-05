@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipFile;
 
 /**
@@ -108,13 +109,13 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     @Override
     protected String downloadToTemp(String resource) {
+        File file = null;
         try {
-            File file = restTemplate.execute(resource, HttpMethod.GET, null, clientHttpResponse -> {
+            file = restTemplate.execute(resource, HttpMethod.GET, null, clientHttpResponse -> {
                 File ret = File.createTempFile("commcare_", ".ccz");
                 StreamUtils.copy(clientHttpResponse.getBody(), new FileOutputStream(ret));
                 return ret;
             });
-            return file.getAbsolutePath();
         } catch (HttpClientErrorException.BadRequest e) {
             handleInstallError(e.getResponseBodyAsString());
         } catch (HttpServerErrorException.ServiceUnavailable e) {
@@ -136,6 +137,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
             }
             throw new ApplicationConfigException(errorMessage);
         }
+        return Objects.requireNonNull(file).getAbsolutePath();
     }
 
     private String parseErrorFromResponse(String responseBody) {
@@ -153,6 +155,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         } catch (JSONException e ){
             return null;
         }
+        return null;
     }
 
     private void handleInstallError(String responseBody) {
