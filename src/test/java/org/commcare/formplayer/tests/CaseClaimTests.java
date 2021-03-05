@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.net.URI;
 import java.util.Hashtable;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -164,12 +165,12 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     private void configureQueryMock() {
-        when(queryRequester.makeQueryRequest(anyString(), any(HttpHeaders.class)))
+        when(queryRequester.makeQueryRequest(any(URI.class), any(HttpHeaders.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
     }
 
     private void configureQueryMockOwned() {
-        when(queryRequester.makeQueryRequest(anyString(), any(HttpHeaders.class)))
+        when(queryRequester.makeQueryRequest(any(URI.class), any(HttpHeaders.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response_owned.xml"));
     }
 }
