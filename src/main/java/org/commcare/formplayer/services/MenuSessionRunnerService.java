@@ -350,11 +350,9 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(
-                restoreFactory.getScrubbedUsername(),
+        ExternalDataInstance searchDataInstance = searchAndSetResult(
                 screen,
-                screen.getUriString(autoSearch),
-                restoreFactory.getUserHeaders());
+                screen.getUriString(autoSearch));
 
         if (searchDataInstance != null) {
             if (screen.getCurrentMessage() != null) {
@@ -370,6 +368,13 @@ public class MenuSessionRunnerService {
         log.info("Next screen after query: " + nextScreen);
         return notificationMessage;
     }
+
+    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, String uri) {
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(caseSearchHelper.getCacheKey(uri), screen, uri);
+        screen.setQueryDatum(searchDataInstance);
+        return searchDataInstance;
+    }
+
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {

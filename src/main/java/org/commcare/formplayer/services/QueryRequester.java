@@ -14,7 +14,7 @@ import java.net.URLDecoder;
 
 public class QueryRequester {
 
-    private final Log log = LogFactory.getLog(CaseSearchHelper.class);
+    private final Log log = LogFactory.getLog(QueryRequester.class);
 
     @Nullable
     public String makeQueryRequest(String uri, HttpHeaders headers) {
