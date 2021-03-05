@@ -18,25 +18,20 @@ public class WebClient {
     RestTemplate restTemplate;
 
     public String get(String url, HttpHeaders headers) {
-        ResponseEntity<String> response = restTemplate.exchange(
+        restTemplate.exchange(
                 RequestEntity.get(url).headers(headers).build(), String.class
-        );
-        return response.getBody();
+        ).getBody();
     }
 
     public String get(URI uri, HttpHeaders headers) {
-        ResponseEntity<String> response = restTemplate.exchange(
+        return restTemplate.exchange(
                 RequestEntity.get(uri).headers(headers).build(), String.class
-        );
-        return response.getBody();
+        ).getBody();
     }
 
     public String postFormData(String url, MultiValueMap<String, String> formData, HttpHeaders headers) {
-        RequestEntity<MultiValueMap<String, String>> request = RequestEntity.post(url)
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .accept(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(formData);
-        return restTemplate.exchange(request, String.class).getBody();
+        return restTemplate.exchange(
+                RequestEntity.post(url).headers(headers).body(formData), String.class
+        ).getBody();
     }
 }
