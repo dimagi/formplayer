@@ -253,11 +253,6 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public SyncRequester syncRequester() {
-        return new SyncRequester();
-    }
-
-    @Bean
     public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
         return new FormplayerFormSendCalloutHandler();
     }

@@ -144,10 +144,8 @@ public class TestContext {
         return Mockito.mock(QueryRequester.class);
     }
 
-    @Bean
-    public SyncRequester syncRequester() {
-        return Mockito.mock(SyncRequester.class);
-    }
+    @MockBean
+    public SyncRequester syncRequester;
 
     @Bean
     public CategoryTimingHelper categoryTimingHelper() {
