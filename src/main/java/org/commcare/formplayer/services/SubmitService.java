@@ -1,9 +1,11 @@
 package org.commcare.formplayer.services;
 
+import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.SimpleTimer;
+import org.commcare.formplayer.web.client.WebClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -21,6 +23,7 @@ import java.io.IOException;
  */
 @Service
 @RequestScope
+@CommonsLog
 public class SubmitService extends DefaultResponseErrorHandler {
 
     @Autowired
@@ -30,20 +33,15 @@ public class SubmitService extends DefaultResponseErrorHandler {
     private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
-    RestTemplate errorPassthroughRestTemplate;
-
-    private final Log log = LogFactory.getLog(SubmitService.class);
+    private WebClient webClient;
 
     private CategoryTimingHelper.RecordingTimer submitTimer;
 
-    public ResponseEntity<String> submitForm(String formXml, String submitUrl) {
+    public String submitForm(String formXml, String submitUrl) {
         submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ, restoreFactory.getDomain());
         submitTimer.start();
         try {
-            HttpEntity<?> entity = new HttpEntity<Object>(formXml, restoreFactory.getUserHeaders());
-            return errorPassthroughRestTemplate.exchange(submitUrl,
-                    HttpMethod.POST,
-                    entity, String.class);
+            return webClient.post(submitUrl, formXml, restoreFactory.getUserHeaders());
         } finally {
             submitTimer.end().record();
         }

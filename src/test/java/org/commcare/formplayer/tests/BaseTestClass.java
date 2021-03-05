@@ -226,12 +226,12 @@ public class BaseTestClass {
     }
 
     private void setupSubmitServiceMock() {
-        Mockito.doReturn(ResponseEntity.ok(
+        Mockito.doReturn(
                 "<OpenRosaResponse>" +
                         "<message nature='status'>" +
                         "OK" +
                         "</message>" +
-                        "</OpenRosaResponse>"))
+                        "</OpenRosaResponse>")
                 .when(submitServiceMock).submitForm(anyString(), anyString());
     }
 

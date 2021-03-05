@@ -2,9 +2,7 @@ package org.commcare.formplayer.web.client;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -29,9 +27,9 @@ public class WebClient {
         ).getBody();
     }
 
-    public String postFormData(String url, MultiValueMap<String, String> formData, HttpHeaders headers) {
+    public <T> String post(String url, T body, HttpHeaders headers) {
         return restTemplate.exchange(
-                RequestEntity.post(url).headers(headers).body(formData), String.class
+                RequestEntity.post(url).headers(headers).body(body), String.class
         ).getBody();
     }
 }

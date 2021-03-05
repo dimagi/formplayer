@@ -46,7 +46,7 @@ public class FormattedQuestionsService {
         body.add("xmlns", xmlns);
         body.add("appId", appId);
 
-        String responseBody = webclient.postFormData(
+        String responseBody = webclient.post(
                 getFormattedQuestionsUrl(host, domain), body, restoreFactory.getUserHeaders()
         );
         JSONObject responseJSON = new JSONObject(responseBody);

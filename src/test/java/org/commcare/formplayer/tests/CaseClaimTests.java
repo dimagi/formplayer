@@ -158,7 +158,7 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     private void configureSyncMock() {
-        when(webClientMock.postFormData(anyString(), any(), any(HttpHeaders.class)))
+        when(webClientMock.post(anyString(), any(), any(HttpHeaders.class)))
                 .thenReturn("");
     }
 

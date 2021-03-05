@@ -322,7 +322,7 @@ public class MenuSessionRunnerService {
 
     private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
         try {
-            webClient.postFormData(screen.getUrl(), screen.getQueryParams(), restoreFactory.getUserHeaders());
+            webClient.post(screen.getUrl(), screen.getQueryParams(), restoreFactory.getUserHeaders());
         } catch (RestClientResponseException e) {
             return new NotificationMessage(
                     String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true, NotificationMessage.Tag.sync);
