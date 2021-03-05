@@ -17,9 +17,6 @@ import java.util.Map;
 public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler {
 
     @Autowired
-    RestoreFactory restoreFactory;
-
-    @Autowired
     private WebClient webClient;
 
     @Override
@@ -29,7 +26,7 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
             builder.queryParam(key, paramMap.get(key));
         }
 
-        String responseBody = webClient.get(builder.build().toUri(), restoreFactory.getUserHeaders());
+        String responseBody = webClient.get(builder.build().toUri());
         log.info(String.format("Form HttpCallout to URL %s returned result %s", url, responseBody));
         return responseBody;
     }

@@ -120,7 +120,7 @@ public class NewFormResponseFactory {
     }
 
     private String getFormXml(String formUrl) {
-        return webClient.get(formUrl, restoreFactory.getUserHeaders());
+        return webClient.get(formUrl);
     }
 
     private static FormDef parseFormDef(String formXml) throws IOException {

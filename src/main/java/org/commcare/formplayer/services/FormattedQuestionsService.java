@@ -14,9 +14,6 @@ import org.springframework.util.MultiValueMap;
  */
 public class FormattedQuestionsService {
 
-    @Autowired
-    RestoreFactory restoreFactory;
-
     public class QuestionResponse {
         private String formattedQuestions;
         private JSONArray questionList;
@@ -46,9 +43,7 @@ public class FormattedQuestionsService {
         body.add("xmlns", xmlns);
         body.add("appId", appId);
 
-        String responseBody = webclient.post(
-                getFormattedQuestionsUrl(host, domain), body, restoreFactory.getUserHeaders()
-        );
+        String responseBody = webclient.post(getFormattedQuestionsUrl(host, domain), body);
         JSONObject responseJSON = new JSONObject(responseBody);
         return new QuestionResponse(
                 responseJSON.getString("form_data"),

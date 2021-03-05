@@ -382,7 +382,7 @@ public class BaseTestClass {
     }
 
     NewFormResponse startNewForm(String requestPath, String formPath) throws Exception {
-        when(webClientMock.get(anyString(), any()))
+        when(webClientMock.get(anyString()))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,

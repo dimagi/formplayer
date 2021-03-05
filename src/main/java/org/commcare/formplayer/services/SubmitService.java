@@ -41,7 +41,7 @@ public class SubmitService extends DefaultResponseErrorHandler {
         submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ, restoreFactory.getDomain());
         submitTimer.start();
         try {
-            return webClient.post(submitUrl, formXml, restoreFactory.getUserHeaders());
+            return webClient.post(submitUrl, formXml);
         } finally {
             submitTimer.end().record();
         }

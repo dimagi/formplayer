@@ -1,5 +1,6 @@
 package org.commcare.formplayer.web.client;
 
+import org.commcare.formplayer.services.RestoreFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
@@ -15,21 +16,24 @@ public class WebClient {
     @Autowired
     RestTemplate restTemplate;
 
-    public String get(String url, HttpHeaders headers) {
+    @Autowired
+    RestoreFactory restoreFactory;
+
+    public String get(String url) {
         return restTemplate.exchange(
-                RequestEntity.get(url).headers(headers).build(), String.class
+                RequestEntity.get(url).headers(restoreFactory.getUserHeaders()).build(), String.class
         ).getBody();
     }
 
-    public String get(URI uri, HttpHeaders headers) {
+    public String get(URI uri) {
         return restTemplate.exchange(
-                RequestEntity.get(uri).headers(headers).build(), String.class
+                RequestEntity.get(uri).headers(restoreFactory.getUserHeaders()).build(), String.class
         ).getBody();
     }
 
-    public <T> String post(String url, T body, HttpHeaders headers) {
+    public <T> String post(String url, T body) {
         return restTemplate.exchange(
-                RequestEntity.post(url).headers(headers).body(body), String.class
+                RequestEntity.post(url).headers(restoreFactory.getUserHeaders()).body(body), String.class
         ).getBody();
     }
 }
