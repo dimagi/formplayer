@@ -26,9 +26,11 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
     @Autowired
     RestoreFactory restoreFactory;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     @Override
     public String performHttpCalloutForResponse(String url, Map<String, String> paramMap) {
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = null;
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);

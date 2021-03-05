@@ -39,8 +39,10 @@ public class FormattedQuestionsService {
     @Value("${commcarehq.host}")
     private String host;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     public QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml) {
-        RestTemplate restTemplate = new RestTemplate();
         MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
 
         body.add("instanceXml", instanceXml);
@@ -54,16 +56,12 @@ public class FormattedQuestionsService {
                 entity,
                 String.class
         );
-        if (response.getStatusCode().value() == 200) {
-            String responseBody = response.getBody();
-            JSONObject responseJSON = new JSONObject(responseBody);
-            return new QuestionResponse(
-                    responseJSON.getString("form_data"),
-                    responseJSON.getJSONArray("form_questions")
-            );
-        } else {
-            throw new RuntimeException("Error fetching debugging context");
-        }
+        String responseBody = response.getBody();
+        JSONObject responseJSON = new JSONObject(responseBody);
+        return new QuestionResponse(
+                responseJSON.getString("form_data"),
+                responseJSON.getJSONArray("form_questions")
+        );
     }
 
     private String getFormattedQuestionsUrl(String host, String domain) {
