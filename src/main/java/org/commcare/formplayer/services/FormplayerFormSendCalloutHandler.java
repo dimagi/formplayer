@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -19,9 +20,8 @@ import java.util.Map;
  * Created by willpride on 10/4/17.
  */
 @Service
+@CommonsLog
 public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler {
-
-    private final Log log = LogFactory.getLog(QueryRequester.class);
 
     @Autowired
     RestoreFactory restoreFactory;
