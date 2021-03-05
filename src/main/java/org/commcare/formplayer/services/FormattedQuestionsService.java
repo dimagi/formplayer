@@ -1,15 +1,12 @@
 package org.commcare.formplayer.services;
 
+import org.commcare.formplayer.web.client.WebClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Service that gets HTML formatted questions to display to the user
@@ -40,7 +37,7 @@ public class FormattedQuestionsService {
     private String host;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private WebClient webclient;
 
     public QuestionResponse getFormattedQuestions(String domain, String appId, String xmlns, String instanceXml) {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
@@ -49,14 +46,9 @@ public class FormattedQuestionsService {
         body.add("xmlns", xmlns);
         body.add("appId", appId);
 
-        HttpEntity<?> entity = new HttpEntity<Object>(body, restoreFactory.getUserHeaders());
-        ResponseEntity<String> response = restTemplate.exchange(
-                getFormattedQuestionsUrl(host, domain),
-                HttpMethod.POST,
-                entity,
-                String.class
+        String responseBody = webclient.postFormData(
+                getFormattedQuestionsUrl(host, domain), body, restoreFactory.getUserHeaders()
         );
-        String responseBody = response.getBody();
         JSONObject responseJSON = new JSONObject(responseBody);
         return new QuestionResponse(
                 responseJSON.getString("form_data"),

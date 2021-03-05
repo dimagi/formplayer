@@ -18,7 +18,7 @@ public class WebClient {
     RestTemplate restTemplate;
 
     public String get(String url, HttpHeaders headers) {
-        restTemplate.exchange(
+        return restTemplate.exchange(
                 RequestEntity.get(url).headers(headers).build(), String.class
         ).getBody();
     }
