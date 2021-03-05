@@ -14,8 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.net.URI;
@@ -160,7 +158,7 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     private void configureSyncMock() {
-        when(webClientMock.get(anyString(), anyString(), any(HttpHeaders.class)))
+        when(webClientMock.postFormData(anyString(), any(), any(HttpHeaders.class)))
                 .thenReturn("");
     }
 

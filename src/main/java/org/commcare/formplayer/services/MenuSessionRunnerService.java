@@ -23,7 +23,6 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
@@ -323,7 +322,7 @@ public class MenuSessionRunnerService {
 
     private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
         try {
-            webClient.get(screen.getUrl(), screen.getBuiltQuery(), restoreFactory.getUserHeaders());
+            webClient.postFormData(screen.getUrl(), screen.getQueryParams(), restoreFactory.getUserHeaders());
         } catch (RestClientResponseException e) {
             return new NotificationMessage(
                     String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true, NotificationMessage.Tag.sync);
