@@ -64,10 +64,8 @@ public class TestContext {
         return Mockito.spy(MockMenuSessionRepo.class);
     }
 
-    @Bean
-    public XFormService newFormRequest() {
-        return Mockito.mock(XFormService.class);
-    }
+    @MockBean
+    public XFormService newFormRequest;
 
     @Bean
     public ValueOperations<String, Long> redisTemplateLong() {

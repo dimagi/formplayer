@@ -187,11 +187,6 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public XFormService xFormService(){
-        return new XFormService();
-    }
-
-    @Bean
     @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
         FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedTagging, detailedTagNames);
