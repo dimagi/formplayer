@@ -1,23 +1,19 @@
 package org.commcare.formplayer.engine;
 
-import org.commcare.formplayer.exceptions.ApplicationConfigException;
-import org.commcare.formplayer.exceptions.FormattedApplicationConfigException;
-import org.commcare.formplayer.installers.FormplayerInstallerFactory;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.exceptions.FormattedApplicationConfigException;
+import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.reference.JavaHttpRoot;
 import org.commcare.resources.model.InstallCancelledException;
 import org.commcare.resources.model.ResourceInitializationException;
 import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.util.engine.CommCareConfigEngine;
-import org.javarosa.core.io.BufferedInputStream;
-import org.javarosa.core.io.StreamsUtil;
 import org.javarosa.core.reference.InvalidReferenceException;
 import org.javarosa.core.reference.ReferenceManager;
 import org.javarosa.core.reference.ResourceReferenceFactory;
@@ -25,16 +21,18 @@ import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.HttpMethod;
+import org.springframework.util.StreamUtils;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 import java.util.zip.ZipFile;
 
@@ -44,11 +42,14 @@ import java.util.zip.ZipFile;
 public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     private final Log log = LogFactory.getLog(FormplayerConfigEngine.class);
+    private RestTemplate restTemplate;
 
     public FormplayerConfigEngine(IStorageIndexedFactory storageFactory,
                                   FormplayerInstallerFactory formplayerInstallerFactory,
-                                  ArchiveFileRoot formplayerArchiveFileRoot) {
+                                  ArchiveFileRoot formplayerArchiveFileRoot,
+                                  RestTemplate restTemplate) {
         super(storageFactory, formplayerInstallerFactory, System.out);
+        this.restTemplate = restTemplate;
         this.mArchiveRoot = formplayerArchiveFileRoot;
         ReferenceManager.instance().addReferenceFactory(formplayerArchiveFileRoot);
     }
@@ -107,95 +108,55 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
 
     @Override
     protected String downloadToTemp(String resource) {
-        FileOutputStream fos = null;
-        BufferedInputStream bis = null;
         try {
-            URL url = new URL(resource);
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-            conn.setInstanceFollowRedirects(true);  //you still need to handle redirect manully.
-            HttpURLConnection.setFollowRedirects(true);
-
-            if (conn.getResponseCode() == 400) {
-                handleInstallError(conn.getErrorStream());
-            } else if (conn.getResponseCode() == 503) {
-                throw new RuntimeException(
-                        "Server is too busy. Please try again in a moment."
-                );
-            } else if (conn.getResponseCode() == 500) {
-                String errorMessage = parseErrorFromResponse(conn);
-                if (StringUtils.isEmpty(errorMessage)) {
-                    errorMessage = "There are errors in your application. Please fix these errors in your application before using app preview.";
-                }
-                throw new ApplicationConfigException(errorMessage);
-            } else if (conn.getResponseCode() == 504) {
-                throw new RuntimeException(
-                        "Timed out fetching the CommCare application. Please submit a ticket if you continue to see this."
-                );
-            } else if (conn.getResponseCode() >= 400) {
-                throw new RuntimeException(
-                        "Formplayer encountered an unknown error. Please submit a ticket if you continue to see this."
-                );
-            }
-            InputStream result = conn.getInputStream();
-
-            File file = File.createTempFile("commcare_", ".ccz");
-
-            fos = new FileOutputStream(file);
-            bis = new BufferedInputStream(result);
-            StreamsUtil.writeFromInputToOutput(bis, fos);
+            File file = restTemplate.execute(resource, HttpMethod.GET, null, clientHttpResponse -> {
+                File ret = File.createTempFile("commcare_", ".ccz");
+                StreamUtils.copy(clientHttpResponse.getBody(), new FileOutputStream(ret));
+                return ret;
+            });
             return file.getAbsolutePath();
-        } catch (IOException e) {
-            log.error("Issue downloading or create stream for " + resource);
-            e.printStackTrace();
-            return null;
-        } finally {
-            try {
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (IOException e) {
-                log.error("Exception closing output stream " + fos, e);
+        } catch (HttpClientErrorException.BadRequest e) {
+            handleInstallError(e.getResponseBodyAsString());
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            throw new RuntimeException(
+                    "Server is too busy. Please try again in a moment."
+            );
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException(
+                    "Formplayer encountered an unknown error. Please submit a ticket if you continue to see this."
+            );
+        } catch (HttpServerErrorException.GatewayTimeout e) {
+            throw new RuntimeException(
+                    "Timed out fetching the CommCare application. Please submit a ticket if you continue to see this."
+            );
+        } catch (HttpServerErrorException.InternalServerError e) {
+            String errorMessage = parseErrorFromResponse(e.getResponseBodyAsString());
+            if (StringUtils.isEmpty(errorMessage)) {
+                errorMessage = "There are errors in your application. Please fix these errors in your application before using app preview.";
             }
-            try {
-                if (bis != null) {
-                    bis.close();
-                }
-            } catch (IOException e) {
-                log.error("Exception closing input stream " + bis, e);
-            }
+            throw new ApplicationConfigException(errorMessage);
         }
     }
 
-    private String parseErrorFromResponse(HttpURLConnection connection) {
-        if (connection.getErrorStream() != null) {
-            try {
-                String errorStr = new String(StreamsUtil.inputStreamToByteArray(connection.getErrorStream()));
-                JSONObject errorJson = new JSONObject(errorStr);
-                if (errorJson.has("errors")) {
-                    JSONArray errors = errorJson.getJSONArray("errors");
-                    String consolidatedErrorMessage = "";
-                    for (int i = 0; i < errors.length(); i++) {
-                        consolidatedErrorMessage += errors.getString(i);
-                        consolidatedErrorMessage += "\n";
-                    }
-                    return consolidatedErrorMessage;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    private void handleInstallError(InputStream errorStream) {
-        StringWriter writer = new StringWriter();
+    private String parseErrorFromResponse(String responseBody) {
         try {
-            IOUtils.copy(errorStream, writer, "utf-8");
-        } catch (IOException e) {
-            log.error("Unable to read error stream", e);
+            JSONObject errorJson = new JSONObject(responseBody);
+            if (errorJson.has("errors")) {
+                JSONArray errors = errorJson.getJSONArray("errors");
+                String consolidatedErrorMessage = "";
+                for (int i = 0; i < errors.length(); i++) {
+                    consolidatedErrorMessage += errors.getString(i);
+                    consolidatedErrorMessage += "\n";
+                }
+                return consolidatedErrorMessage;
+            }
+        } catch (JSONException e ){
+            return null;
         }
-        String errorMessage = writer.toString();
-        JSONObject errorJson = new JSONObject(errorMessage);
+    }
+
+    private void handleInstallError(String responseBody) {
+        JSONObject errorJson = new JSONObject(responseBody);
         if (errorJson.has("error_html")) {
             throw new FormattedApplicationConfigException(errorJson.getString("error_html"));
         }
