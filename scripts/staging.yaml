@@ -50,6 +50,7 @@
 trunk: master
 name: autostaging
 branches:
+  - ce/tracing+sk/rest-template
   - ce/tracing+autoLaunchRevamp+dynamicPaginationLimit
   - ce/tracing+autoLaunchRevamp # Cal Feb 18
   - ce/tracing # Cal Oct 23
