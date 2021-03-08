@@ -111,11 +111,6 @@ public class FormSessionService {
             }
 
             @Override
-            public String getDateOpened() {
-                return session.getDateOpened();
-            }
-
-            @Override
             public Instant getDateCreated() {
                 return session.getDateCreated();
             }

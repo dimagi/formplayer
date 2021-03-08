@@ -51,11 +51,11 @@ public class FormSessionRepoTest {
         assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "version").isEqualTo(session);
         Instant dateCreated = loaded.getDateCreated();
         assertThat(dateCreated).isNotNull();
-        assertThat(loaded.getVersion()).isEqualTo(0);
+        assertThat(loaded.getVersion()).isEqualTo(1);
 
         formSessionRepo.saveAndFlush(loaded);
         assertThat(loaded.getDateCreated()).isEqualTo(dateCreated);
-//        assertThat(loaded.getVersion()).isEqualTo(1);  Restore this once @Version annotation is added back
+        assertThat(loaded.getVersion()).isEqualTo(2);
     }
 
     /**
@@ -78,7 +78,6 @@ public class FormSessionRepoTest {
     @Test
     public void testGetListView() {
         SerializableFormSession session = getSession();
-        String dateOpened = session.getDateOpened();
         Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
         List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
@@ -86,7 +85,6 @@ public class FormSessionRepoTest {
         );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
-        assertThat(userSessions.get(0).getDateOpened()).isEqualTo(dateOpened);
         assertThat(userSessions.get(0).getDateCreated()).isEqualTo(session.getDateCreated());
         assertThat(userSessions.get(0).getSessionData()).isEqualTo(sessionData);
         assertThat(userSessions.get(0).getId()).isEqualTo(session.getId());
@@ -130,13 +128,11 @@ public class FormSessionRepoTest {
     @Test
     public void testGetListViewRaw() {
         SerializableFormSession session = getSession();
-        String dateOpened = session.getDateOpened();
         Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
         List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain");
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
-        assertThat(userSessions.get(0).getDateOpened()).isEqualTo(dateOpened);
         assertThat(userSessions.get(0).getDateCreated()).isEqualTo(session.getDateCreated());
         Map<String, String> dbSessionData = (Map<String, String>) SerializationUtils.deserialize(userSessions.get(0).getSessionData());
         assertThat(dbSessionData).isEqualTo(sessionData);
@@ -200,8 +196,6 @@ public class FormSessionRepoTest {
         formSessionRepo.saveAndFlush(session);
         int version = session.getVersion();
 
-        session.incrementSequence();
-
         // update field that should not get updated in the DB
         ReflectionTestUtils.setField(session,"domain","newdomain");
         formSessionRepo.saveAndFlush(session);
@@ -230,7 +224,6 @@ public class FormSessionRepoTest {
         );
         session.setInstanceXml("xml");
         session.setFormXml("form xml");
-        session.incrementSequence();
         return session;
     }
 }

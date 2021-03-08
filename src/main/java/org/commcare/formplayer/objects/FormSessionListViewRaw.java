@@ -13,7 +13,6 @@ import java.util.Map;
 public interface FormSessionListViewRaw {
     String getId();
     String getTitle();
-    String getDateOpened();
     Instant getDateCreated();
     byte[] getSessionData();
 }

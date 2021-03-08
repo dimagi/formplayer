@@ -84,23 +84,22 @@ public class FormSessionServiceTest {
 
         // save a session
         SerializableFormSession session = new SerializableFormSession(sessionId);
-        session.incrementSequence();
         formSessionService.saveSession(session);
 
         // cache is populated on save
-        assertEquals(0, getCachedSession(sessionId).get().getSequenceId());
+        assertEquals(session, getCachedSession(sessionId).get());
 
         // get session hits the cache (repo is mocked)
-        session = formSessionService.getSessionById(sessionId);
-        assertEquals(0, session.getSequenceId());
+        SerializableFormSession fetchedSession = formSessionService.getSessionById(sessionId);
+        assertEquals(session, fetchedSession);
 
         // update session
-        session.incrementSequence();
+        session.setInstanceXml("xml1");
         formSessionService.saveSession(session);
 
         // cache and find return updated session
-        assertEquals(1, getCachedSession(sessionId).get().getSequenceId());
-        assertEquals(1, formSessionService.getSessionById(sessionId).getSequenceId());
+        assertEquals("xml1", getCachedSession(sessionId).get().getInstanceXml());
+        assertEquals("xml1", formSessionService.getSessionById(sessionId).getInstanceXml());
     }
 
     @Test
@@ -131,7 +130,6 @@ public class FormSessionServiceTest {
         Map<String, Object> backingMap = new HashMap<>();
         backingMap.put("id", "Dave");
         backingMap.put("title", "Matthews");
-        backingMap.put("dateOpened", new Date().toString());
         backingMap.put("dateCreated", Instant.now());
         backingMap.put("sessionData", SerializationUtils.serialize(sessionData));
 
@@ -143,7 +141,7 @@ public class FormSessionServiceTest {
         HashMap<String, Object> expected = new HashMap<>(backingMap);
         expected.put("sessionData", sessionData);
         assertThat(sessions).hasSize(1);
-        assertThat(sessions.get(0)).extracting("id", "title", "dateOpened", "dateCreated", "sessionData")
+        assertThat(sessions.get(0)).extracting("id", "title", "dateCreated", "sessionData")
                 .containsAll(expected.values());
     }
 

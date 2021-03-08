@@ -20,7 +20,7 @@ public class SessionListItem {
 
     public SessionListItem(SqlStorage<Case> caseStorage, FormSessionListView session){
         this.title = session.getTitle();
-        this.dateOpened = FormplayerDateUtils.convertJavaDateStringToISO(session.getDateOpened());
+        this.dateOpened = session.getDateCreated().toString();
         this.sessionId = session.getId();
         this.caseName = loadCaseName(caseStorage, session);
     }

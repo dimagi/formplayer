@@ -99,7 +99,7 @@ public class NewFormResponseFactory {
         formSessionService.saveSession(serializedSession);
         return new NewFormResponse(
                 formTreeJson, formEntrySession.getLanguages(), serializedSession.getTitle(),
-                serializedSession.getId(), serializedSession.getSequenceId(),
+                serializedSession.getId(), serializedSession.getVersion(),
                 serializedSession.getInstanceXml()
         );
     }
@@ -109,7 +109,7 @@ public class NewFormResponseFactory {
         String formTreeJson = formSession.getFormTree().toString();
         return new NewFormResponse(
                 formTreeJson, formSession.getLanguages(), session.getTitle(),
-                session.getId(), session.getSequenceId(),
+                session.getId(), session.getVersion(),
                 session.getInstanceXml()
         );
     }
