@@ -23,7 +23,7 @@ public class SerializableFormSession implements Serializable{
 
     @Getter
     @Version
-    private Integer version;
+    private int version;
 
     @Getter
     @CreatedDate
