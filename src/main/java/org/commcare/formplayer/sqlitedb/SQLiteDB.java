@@ -1,5 +1,6 @@
 package org.commcare.formplayer.sqlitedb;
 
+import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sqlite.SQLiteConnection;
@@ -85,6 +86,7 @@ public class SQLiteDB implements ConnectionHandler {
         SqlSandboxUtils.deleteDatabaseFolder(dbArchivableFile.getParentFile());
     }
 
+    @Trace
     public boolean createDatabaseFolder() {
         return dbArchivableFile.getParentFile().mkdirs();
     }

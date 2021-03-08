@@ -22,6 +22,10 @@ import org.commcare.formplayer.services.RestoreFactory;
 
 import java.util.Arrays;
 
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
+import datadog.trace.api.interceptor.MutableSpan;
+
 /**
  * Aspect to configure the RestoreFactory
  */
@@ -85,6 +89,12 @@ public class UserRestoreAspect {
         if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
             // Normal restore path
             restoreFactory.configure(requestBean, auth, requestBean.getUseLiveQuery());
+            final Span span = GlobalTracer.get().activeSpan();
+            if (span != null && (span instanceof MutableSpan)) {
+                MutableSpan localRootSpan = ((MutableSpan) span).getLocalRootSpan();
+                localRootSpan.setTag("domain", requestBean.getDomain());
+                localRootSpan.setTag("user", requestBean.getUsername());
+            }
         } else if (requestBean instanceof SessionRequestBean){
             // SMS users don't submit username and domain with each request, so obtain from session
             String sessionId = ((SessionRequestBean) requestBean).getSessionId();
