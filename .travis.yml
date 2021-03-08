@@ -25,7 +25,6 @@ script:
 services:
   - postgresql
   - redis-server
-  - couchdb
   - docker
 addons:
   postgresql: "9.6"
