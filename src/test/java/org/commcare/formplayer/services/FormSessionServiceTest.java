@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.FormSessionListView;
-import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
 import org.junit.jupiter.api.AfterEach;
@@ -119,30 +118,6 @@ public class FormSessionServiceTest {
 
         formSessionService.purge();
         assertFalse(getCachedSession(sessionId).isPresent());
-    }
-
-    /**
-     * Test that the conversion from FormSessionListViewRaw to FormSessionListView works as expected
-     */
-    @Test
-    public void testGetSessionsForUser() {
-        ImmutableMap<String, String> sessionData = ImmutableMap.of("a", "1", "b", "2");
-        Map<String, Object> backingMap = new HashMap<>();
-        backingMap.put("id", "Dave");
-        backingMap.put("title", "Matthews");
-        backingMap.put("dateCreated", Instant.now());
-        backingMap.put("sessionData", SerializationUtils.serialize(sessionData));
-
-        FormSessionListViewRaw rawView = createProjection(FormSessionListViewRaw.class, backingMap);
-
-        when(formSessionRepo.findUserSessionsNullAsUser(anyString(), anyString())).thenReturn(ImmutableList.of(rawView));
-        List<FormSessionListView> sessions = formSessionService.getSessionsForUser("username", "domain", null);
-
-        HashMap<String, Object> expected = new HashMap<>(backingMap);
-        expected.put("sessionData", sessionData);
-        assertThat(sessions).hasSize(1);
-        assertThat(sessions.get(0)).extracting("id", "title", "dateCreated", "sessionData")
-                .containsAll(expected.values());
     }
 
     private Optional<SerializableFormSession> getCachedSession(String sessionId) {

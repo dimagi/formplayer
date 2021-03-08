@@ -3,7 +3,6 @@ package org.commcare.formplayer.repo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.commcare.formplayer.objects.FormSessionListView;
-import org.commcare.formplayer.objects.FormSessionListViewRaw;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.utils.JpaTestUtils;
@@ -15,7 +14,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.util.SerializationUtils;
 
 import javax.persistence.EntityManager;
 import java.time.Instant;
@@ -56,23 +54,6 @@ public class FormSessionRepoTest {
         formSessionRepo.saveAndFlush(loaded);
         assertThat(loaded.getDateCreated()).isEqualTo(dateCreated);
         assertThat(loaded.getVersion()).isEqualTo(2);
-    }
-
-    /**
-     * Test that the session is deleted correctly even if ``version`` is null
-     * as is the case with legacy data.
-     */
-    @Test
-    public void testDeleteSession__nullVersion() {
-        SerializableFormSession session = getSession();
-        formSessionRepo.saveAndFlush(session);
-        entityManager.clear();
-
-        jdbcTemplate.update("update formplayer_sessions set version = null where id = ?", session.getId());
-        formSessionRepo.deleteSessionById(session.getId());
-
-        Optional<SerializableFormSession> byId = formSessionRepo.findById(session.getId());
-        assertThat(byId).isEmpty();
     }
 
     @Test
@@ -123,51 +104,6 @@ public class FormSessionRepoTest {
         );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session2");
-    }
-
-    @Test
-    public void testGetListViewRaw() {
-        SerializableFormSession session = getSession();
-        Map<String, String> sessionData = session.getSessionData();
-        formSessionRepo.save(session);
-        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain");
-        assertThat(userSessions).hasSize(1);
-        assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
-        assertThat(userSessions.get(0).getDateCreated()).isEqualTo(session.getDateCreated());
-        Map<String, String> dbSessionData = (Map<String, String>) SerializationUtils.deserialize(userSessions.get(0).getSessionData());
-        assertThat(dbSessionData).isEqualTo(sessionData);
-        assertThat(userSessions.get(0).getId()).isEqualTo(session.getId());
-    }
-
-    @Test
-    public void testGetListViewRaw_filterByDomain() {
-        formSessionRepo.save(getSession("domain1", "session1"));
-        formSessionRepo.save(getSession("domain2", "session2"));
-        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain1");
-        assertThat(userSessions).hasSize(1);
-        assertThat(userSessions.get(0).getTitle()).isEqualTo("session1");
-
-        userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain2");
-        assertThat(userSessions).hasSize(1);
-        assertThat(userSessions.get(0).getTitle()).isEqualTo("session2");
-    }
-
-    @Test
-    public void testGetListViewRaw_filterByAsUser() {
-        formSessionRepo.save(getSession("domain1", "session_user1", "asUser1"));
-        formSessionRepo.save(getSession("domain1", "session_user2", "asUser2"));
-        formSessionRepo.save(getSession("domain1", "session_momo", null));
-        List<FormSessionListViewRaw> userSessions = formSessionRepo.findUserSessionsAsUser("momo", "domain1", "asUser1");
-        assertThat(userSessions).hasSize(1);
-        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user1");
-
-        userSessions = formSessionRepo.findUserSessionsAsUser("momo", "domain1", "asUser2");
-        assertThat(userSessions).hasSize(1);
-        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user2");
-
-        userSessions = formSessionRepo.findUserSessionsNullAsUser("momo", "domain1");
-        assertThat(userSessions).hasSize(1);
-        assertThat(userSessions.get(0).getTitle()).isEqualTo("session_momo");
     }
 
     @Test
