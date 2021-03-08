@@ -21,7 +21,6 @@ before_script:
 script:
   - ./gradlew copyTestResources
   - ./gradlew check
-  - ./gradlew codeCoverageReport
   - ./gradlew bootJar
 services:
   - postgresql
