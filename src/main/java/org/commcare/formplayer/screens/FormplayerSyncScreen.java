@@ -6,6 +6,8 @@ import org.commcare.suite.model.PostRequest;
 import org.commcare.suite.model.RemoteRequestEntry;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.SyncScreen;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URLEncoder;
@@ -17,8 +19,8 @@ import java.util.Hashtable;
 public class FormplayerSyncScreen extends SyncScreen {
 
     private String asUser;
-    private String builtQuery;
     private String url;
+    private MultiValueMap<String, String> queryParams;
 
     public FormplayerSyncScreen(String asUser) {
         super(null, null, System.out);
@@ -32,38 +34,27 @@ public class FormplayerSyncScreen extends SyncScreen {
         Entry commandEntry = sessionWrapper.getPlatform().getEntry(command);
         if (commandEntry instanceof RemoteRequestEntry) {
             PostRequest syncPost = ((RemoteRequestEntry)commandEntry).getPostRequest();
-            setUrl(syncPost.getUrl().toString());
+            url = syncPost.getUrl().toString();
             Hashtable<String, String> params = syncPost.getEvaluatedParams(sessionWrapper.getEvaluationContext());
-            UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
-            // hack because HQ isn't accepting the first query param key properly
-            builder.queryParam("buffer", "buffer");
+            queryParams = new LinkedMultiValueMap<String, String>();
             if (asUser != null) {
-                builder.queryParam("commcare_login_as", URLEncoder.encode(asUser));
+
+                queryParams.add("commcare_login_as", asUser);
             }
             for (String key: params.keySet()){
-                builder.queryParam(key, URLEncoder.encode(params.get(key)));
+                queryParams.add(key, params.get(key));
             }
-            builder.build(true);
-            builtQuery = builder.toUriString();
         } else {
             // expected a sync entry; clear session and show vague 'session error' message to user
             throw new RuntimeException("Initialized sync request while not on sync screen");
         }
     }
 
-    public String getBuiltQuery() {
-        return builtQuery;
-    }
-
-    public void setBuiltQuery(String builtQuery) {
-        this.builtQuery = builtQuery;
+    public MultiValueMap<String, String> getQueryParams() {
+        return queryParams;
     }
 
     public String getUrl() {
         return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 }

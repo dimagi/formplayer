@@ -14,10 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.net.URI;
 import java.util.Hashtable;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -159,17 +158,17 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     private void configureSyncMock() {
-        when(syncRequester.makeSyncRequest(anyString(), anyString(), any(HttpHeaders.class)))
-                .thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+        when(webClientMock.post(anyString(), any()))
+                .thenReturn("");
     }
 
     private void configureQueryMock() {
-        when(queryRequester.makeQueryRequest(anyString(), any(HttpHeaders.class)))
+        when(webClientMock.get(any(URI.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
     }
 
     private void configureQueryMockOwned() {
-        when(queryRequester.makeQueryRequest(anyString(), any(HttpHeaders.class)))
+        when(webClientMock.get(any(URI.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response_owned.xml"));
     }
 }

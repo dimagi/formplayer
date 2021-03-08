@@ -40,26 +40,6 @@ public class RestTemplateConfig {
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) throws URISyntaxException {
-        return getTemplate(builder);
-    }
-
-    @Bean
-    /**
-     * RestTemplate which will pass through invalid response codes, rather than
-     * throwing exceptions
-     */
-    public RestTemplate errorPassthroughRestTemplate(RestTemplateBuilder builder) throws URISyntaxException {
-        RestTemplate template = getTemplate(builder);
-        template.setErrorHandler(new DefaultResponseErrorHandler() {
-            @Override
-            protected boolean hasError(HttpStatus statusCode) {
-                return false;
-            }
-        });
-        return template;
-    }
-
-    private RestTemplate getTemplate(RestTemplateBuilder builder) throws URISyntaxException {
         builder = builder
                 .setConnectTimeout(Duration.ofMillis(Constants.CONNECT_TIMEOUT))
                 .setReadTimeout(Duration.ofMillis(Constants.READ_TIMEOUT))
