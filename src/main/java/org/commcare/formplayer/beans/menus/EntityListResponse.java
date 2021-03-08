@@ -33,7 +33,6 @@ import java.util.function.Predicate;
 public class EntityListResponse extends MenuBean {
     private EntityBean[] entities;
     private DisplayElement[] actions;
-    private String autolaunch;
     private String redoLast;
     private Style[] styles;
     private String[] headers;
@@ -70,7 +69,6 @@ public class EntityListResponse extends MenuBean {
         EvaluationContext ec = nextScreen.getEvalContext();
 
         this.actions = processActions(nextScreen.getSession());
-        this.autolaunch = processAutolaunch(nextScreen.getSession());
         this.redoLast = processRedoLast(nextScreen.getSession());
 
         // When detailSelection is not null it means we're processing a case detail, not a case list.
@@ -86,9 +84,6 @@ public class EntityListResponse extends MenuBean {
                 detail = longDetails[0];
             }
             entities = processEntitiesForCaseDetail(detail, reference, ec, neededDatum);
-        } else if (this.autolaunch != null) {
-            // This is a case list that the UI is going to skip, so don't bother processing entities
-            entities = new EntityBean[0];
         } else {
             Vector<TreeReference> references = nextScreen.getReferences();
             List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
@@ -341,14 +336,6 @@ public class EntityListResponse extends MenuBean {
 
     public DisplayElement[] getActions() {
         return actions;
-    }
-
-    public String getAutolaunch() {
-        return autolaunch;
-    }
-
-    public void setAutolaunch(String autolaunch) {
-        this.autolaunch = autolaunch;
     }
 
     private void setActions(DisplayElement[] actions) {
