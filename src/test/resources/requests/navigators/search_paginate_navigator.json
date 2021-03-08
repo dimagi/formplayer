@@ -5,6 +5,7 @@
   "app_id": "loadappid",
   "selections": [2, 1],
   "search_text": "t",
-  "offset": 10,
+  "offset": 15,
+  "cases_per_page": 15,
   "installReference": "archives/basic.ccz"
 }
