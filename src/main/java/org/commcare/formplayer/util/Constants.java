@@ -83,7 +83,6 @@ public class Constants {
     public static final String CCZ_LATEST_SAVED = "save";
 
     // Postgres tables
-    public static final String POSTGRES_SESSION_TABLE_NAME = "formplayer_sessions";
     public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
     // Token table generated from django rest framework
     public static final String POSTGRES_AUTH_TOKEN_TABLE_NAME = "authtoken_token";

@@ -6,6 +6,7 @@ import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.utils.JpaTestUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -16,9 +17,12 @@ import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +40,11 @@ public class FormSessionRepoTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    public void setUp() {
+        jdbcTemplate.execute("DELETE from formplayer_sessions");
+    }
 
     @Test
     public void testSaveAndLoad() {
@@ -140,6 +149,35 @@ public class FormSessionRepoTest {
         // check that version is updated
         assertThat(session.getVersion()).isGreaterThan(version);
         assertThat(session.getDomain()).isEqualTo("domain");
+    }
+
+    @Test
+    public void testDeleteByDateCreatedLessThan() {
+        Instant now = Instant.now();
+
+        List<SerializableFormSession> sessions = IntStream.range(0, 5)
+                .mapToObj(i -> getSession())
+                .collect(Collectors.toList());
+        List<SerializableFormSession> savedSessions = formSessionRepo.saveAll(sessions);
+        entityManager.flush();
+        entityManager.clear();
+
+        for (int i = 0; i < savedSessions.size(); i++) {
+            SerializableFormSession session = savedSessions.get(i);
+            jdbcTemplate.update(
+                    "UPDATE formplayer_sessions SET datecreated = ? where id = ?",
+                    Timestamp.from(now.minus(i, ChronoUnit.DAYS)), session.getId()
+            );
+        }
+        List<String> allIds = jdbcTemplate.queryForList("SELECT id FROM formplayer_sessions", String.class);
+        assertThat(allIds.size()).isEqualTo(5);
+
+        int deleted = formSessionRepo.deleteSessionsOlderThan(now.minus(2, ChronoUnit.DAYS));
+        assertThat(deleted).isEqualTo(2);
+        entityManager.flush();
+
+        List<String> remainingIds = jdbcTemplate.queryForList("SELECT id FROM formplayer_sessions", String.class);
+        assertThat(remainingIds.size()).isEqualTo(3);
     }
 
     private SerializableFormSession getSession() {
