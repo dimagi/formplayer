@@ -34,6 +34,7 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.SessionUtils;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -141,6 +142,10 @@ public class MenuSessionRunnerService {
             );
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
+            // using getBestTitle to eliminate risk of showing private information
+            String caseListName = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
+            datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
+            Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
@@ -473,8 +478,12 @@ public class MenuSessionRunnerService {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            // update datadog/sentry metrics
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
             Sentry.setTag(Constants.MODULE_TAG, "form");
+            String formName = formResponseBean.getTitle();
+            datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, formName);
+            Sentry.setTag(Constants.FORM_NAME_TAG, formName);
             return formResponseBean;
         } else {
             return null;

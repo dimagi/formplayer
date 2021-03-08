@@ -2,6 +2,8 @@ package org.commcare.formplayer.services;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.SimpleTimer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -10,8 +12,6 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.SimpleTimer;
 import org.springframework.web.context.annotation.RequestScope;
 
 import java.io.IOException;
