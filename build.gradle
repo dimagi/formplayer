@@ -25,6 +25,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'jacoco'
 
 jar {
     archiveBaseName = 'formplayer'
@@ -158,3 +159,12 @@ task copyScripts(type: Copy) {
 }
 
 assemble.dependsOn copyScripts
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
+}
+
+check.dependsOn jacocoTestReport
