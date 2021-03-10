@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -297,15 +299,14 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     }
 
     private void configureSyncMock() {
-        when(syncRequester.makeSyncRequest(anyString(), anyString(), any(HttpHeaders.class)))
-                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(webClientMock.post(anyString(), anyString())).thenReturn("");
     }
 
-    private void configureQueryMock() {
-        when(queryRequester.makeQueryRequest(eq("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=song"), any(HttpHeaders.class)))
+    private void configureQueryMock() throws URISyntaxException {
+        when(webClientMock.get(eq(new URI("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=song"))))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
 
-        when(queryRequester.makeQueryRequest(eq("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=show"), any(HttpHeaders.class)))
+        when(webClientMock.get(new URI("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=show")))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_child_response.xml"));
     }
 }

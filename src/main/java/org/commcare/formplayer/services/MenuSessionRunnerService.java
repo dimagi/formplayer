@@ -9,6 +9,7 @@ import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
@@ -22,7 +23,6 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
@@ -35,6 +35,8 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SessionUtils;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -58,10 +60,7 @@ public class MenuSessionRunnerService {
     private InstallService installService;
 
     @Autowired
-    private QueryRequester queryRequester;
-
-    @Autowired
-    private SyncRequester syncRequester;
+    private WebClient webClient;
 
     @Autowired
     protected FormSessionService formSessionService;
@@ -361,20 +360,16 @@ public class MenuSessionRunnerService {
     }
 
     private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
-        ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
-                screen.getBuiltQuery(),
-                restoreFactory.getUserHeaders());
-        if (responseEntity == null) {
-            return new NotificationMessage("Session error, expected sync block but didn't get one.", true, NotificationMessage.Tag.sync);
-        }
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            // Don't purge for case claim
-            restoreFactory.performTimedSync(false, false);
-            return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
-        } else {
+        try {
+            webClient.post(screen.getUrl(), screen.getQueryParams());
+        } catch (RestClientResponseException e) {
             return new NotificationMessage(
-                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true, NotificationMessage.Tag.sync);
+                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true, NotificationMessage.Tag.sync);
+        } catch (RestClientException e) {
+            return new NotificationMessage("Unknown error performing case claim", true, NotificationMessage.Tag.sync);
         }
+        restoreFactory.performTimedSync(false, false);
+        return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
     }
 
     /**
@@ -394,7 +389,7 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        String responseString = queryRequester.makeQueryRequest(screen.getUriString(skipDefaultPromptValues), restoreFactory.getUserHeaders());
+        String responseString = webClient.get(screen.getUri(skipDefaultPromptValues));
         boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
             if (screen.getCurrentMessage() != null) {
