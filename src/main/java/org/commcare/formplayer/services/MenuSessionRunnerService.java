@@ -305,7 +305,7 @@ public class MenuSessionRunnerService {
                         (FormplayerQueryScreen)nextScreen,
                         menuSession,
                         queryData == null ? null : queryData.getInputs(queryKey),
-                        autoSearch
+                        formplayerQueryScreen.doDefaultSearch()
                 );
             } else if (queryData != null) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen,
@@ -386,7 +386,7 @@ public class MenuSessionRunnerService {
     private NotificationMessage doQuery(FormplayerQueryScreen screen,
                                         MenuSession menuSession,
                                         Hashtable<String, String> queryDictionary,
-                                        boolean autoSearch) throws CommCareSessionException {
+                                        boolean skipDefaultPromptValues) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
         NotificationMessage notificationMessage = null;
 
@@ -394,7 +394,7 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        String responseString = queryRequester.makeQueryRequest(screen.getUriString(autoSearch), restoreFactory.getUserHeaders());
+        String responseString = queryRequester.makeQueryRequest(screen.getUriString(skipDefaultPromptValues), restoreFactory.getUserHeaders());
         boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
         if (success) {
             if (screen.getCurrentMessage() != null) {
