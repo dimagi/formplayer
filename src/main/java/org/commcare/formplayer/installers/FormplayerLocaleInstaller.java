@@ -70,10 +70,6 @@ public class FormplayerLocaleInstaller extends SimpleInstaller {
             problemList.addElement(new MissingMediaException(r, "Bad metadata, no locale",
                     MissingMediaException.MissingMediaExceptionType.NONE));
         }
-        if (localizedValues == null) {
-            problemList.addElement(new MissingMediaException(r, "Bad metadata, no locale values",
-                    MissingMediaException.MissingMediaExceptionType.NONE));
-        }
         return true;  // return value is never actually used
     }
 
