@@ -50,17 +50,18 @@
 trunk: master
 name: autostaging
 branches:
+  - ce/tracing+sk/rest-template
   - ce/tracing+autoLaunchRevamp+dynamicPaginationLimit
   - ce/tracing+autoLaunchRevamp # Cal Feb 18
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - caseSearchItemsetFix #Shubham Feb 5
-  - caseSearchCache #Shubham Feb 9
+#  - caseSearchCache #Shubham Feb 9
   - autoLaunchRevamp #Shubham Feb 9
   - dynamicPaginationLimit # Shubham March 2
   - ce/eof-nav # Cal Feb 23
-  - gh/add-case-list-name # Graham Feb 26
   - kev/cc-ui-translations-repeat # Kevin Mar 2
+  - sk/rest-template  # SK Mar 8
 submodules:
   libs/commcare:
     trunk: formplayer
