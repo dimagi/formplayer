@@ -16,7 +16,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -42,7 +41,6 @@ public class FormSessionService {
     private StatsDClient datadogStatsDClient;
 
     @CacheEvict(allEntries = true)
-    @Transactional
     public int purge() {
         Instant cutoff = Instant.now().minus(7, ChronoUnit.DAYS);
         log.info("Beginning state form session purge");
