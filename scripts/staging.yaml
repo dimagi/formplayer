@@ -60,7 +60,6 @@ branches:
   - autoLaunchRevamp #Shubham Feb 9
   - dynamicPaginationLimit # Shubham March 2
   - ce/eof-nav # Cal Feb 23
-  - kev/cc-ui-translations-repeat # Kevin Mar 2
   - sk/rest-template  # SK Mar 8
 submodules:
   libs/commcare:
