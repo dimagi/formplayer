@@ -7,7 +7,8 @@ import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.util.CommCarePlatform;
 
 /**
- * Base class for installers that do not require any action for unstage, revert, rollback, upgrade, cleanup.
+ * Base class for installers that do not require any action for:
+ *  unstage, revert, rollback, upgrade, uninstall, cleanup
  */
 public abstract class SimpleInstaller implements ResourceInstaller<CommCarePlatform> {
     public boolean requiresRuntimeInitialization() {
@@ -27,6 +28,10 @@ public abstract class SimpleInstaller implements ResourceInstaller<CommCarePlatf
     }
 
     public boolean upgrade(Resource r, CommCarePlatform platform) throws UnresolvedResourceException {
+        return true;
+    }
+
+    public boolean uninstall(Resource r, CommCarePlatform platform) throws UnresolvedResourceException {
         return true;
     }
 

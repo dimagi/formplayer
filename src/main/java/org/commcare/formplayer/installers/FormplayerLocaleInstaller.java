@@ -65,15 +65,6 @@ public class FormplayerLocaleInstaller extends SimpleInstaller {
     }
 
     @Override
-    public boolean uninstall(Resource r, CommCarePlatform platform) throws UnresolvedResourceException {
-        if (localizedValues != null) {
-            localizedValues.clear();
-            localizedValues = null;
-        }
-        return true;
-    }
-
-    @Override
     public boolean verifyInstallation(Resource r, Vector<MissingMediaException> problemList, CommCarePlatform platform) {
         if (locale == null) {
             problemList.addElement(new MissingMediaException(r, "Bad metadata, no locale",
