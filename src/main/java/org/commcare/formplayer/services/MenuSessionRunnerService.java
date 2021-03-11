@@ -370,7 +370,7 @@ public class MenuSessionRunnerService {
     }
 
     public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, String uri) {
-        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(caseSearchHelper.getCacheKey(uri), screen, uri);
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen, uri);
         screen.setQueryDatum(searchDataInstance);
         return searchDataInstance;
     }

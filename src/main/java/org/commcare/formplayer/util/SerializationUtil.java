@@ -6,7 +6,9 @@ import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.util.externalizable.Externalizable;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class SerializationUtil {
@@ -23,9 +25,23 @@ public class SerializationUtil {
         } catch (IOException e) {
             throw logAndWrap(e, type, "Totally non-sensical IO Exception");
         } catch (DeserializationException e) {
-            throw logAndWrap(e, type,"CommCare ran into an issue deserializing data");
+            throw logAndWrap(e, type, "CommCare ran into an issue deserializing data");
         }
         return t;
+    }
+
+
+    public static byte[] serialize(Externalizable t) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            t.writeExternal(new DataOutputStream(baos));
+            return baos.toByteArray();
+        } catch (IOException e) {
+            RuntimeException re = new RuntimeException("Error serializing: " + t.getClass().getName());
+            re.initCause(e);
+            Logger.log("Error:", e.getMessage());
+            throw re;
+        }
     }
 
     private static RuntimeException logAndWrap(Exception e, Class type, String message) {
