@@ -22,6 +22,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private boolean isPersistent;
     private int sortIndex;
     private boolean forceManualSearch;
+    private int casesPerPage;
 
     public String[] getSelections() {
         return selections;
@@ -106,5 +107,15 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "force_manual_action")
     public void setForceManualAction(boolean forceManualSearch) {
         this.forceManualSearch = forceManualSearch;
+    }
+
+    @JsonGetter(value = "cases_per_page")
+    public int getCasesPerPage() {
+        return casesPerPage;
+    }
+
+    @JsonSetter(value = "cases_per_page")
+    public void setCasesPerPage(int casesPerPage) {
+        this.casesPerPage = casesPerPage;
     }
 }

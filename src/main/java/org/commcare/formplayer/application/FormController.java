@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.web.client.WebClient;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -60,12 +61,12 @@ import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.SubmitService;
-import org.commcare.formplayer.services.XFormService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.SimpleTimer;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -74,9 +75,6 @@ import org.commcare.formplayer.util.SimpleTimer;
 @RestController
 @EnableAutoConfiguration
 public class FormController extends AbstractBaseController{
-
-    @Autowired
-    private XFormService xFormService;
 
     @Autowired
     private SubmitService submitService;
@@ -143,7 +141,7 @@ public class FormController extends AbstractBaseController{
                 answerQuestionBean.getFormIndex());
         updateSession(formEntrySession);
         responseBean.setTitle(serializableFormSession.getTitle());
-        responseBean.setSequenceId(formEntrySession.getSequenceId());
+        responseBean.setSequenceId(serializableFormSession.getVersion());
         responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
         return responseBean;
     }
@@ -198,27 +196,28 @@ public class FormController extends AbstractBaseController{
                         purgeCasesTimer.durationInMs() > 2 ?
                                 "Purging cases took some time" : "Probably didn't have to purge cases", extras);
 
-                ResponseEntity<String> submitResponse = submitService.submitForm(
-                        formEntrySession.getInstanceXml(),
-                        formEntrySession.getPostUrl()
-                );
-
-                if (!submitResponse.getStatusCode().is2xxSuccessful()) {
-                    if (submitResponse.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                        submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
-                    } else {
-                        submitResponseBean.setStatus("error");
-                        NotificationMessage notification = new NotificationMessage(
-                                "Form submission failed with error response" + submitResponse,
-                                true, NotificationMessage.Tag.submit);
-                        submitResponseBean.setNotification(notification);
-                        logNotification(notification, request);
-                        log.error("Submit response bean: " + submitResponseBean);
-                    }
+                String response;
+                try {
+                    response = submitService.submitForm(
+                            formEntrySession.getInstanceXml(),
+                            formEntrySession.getPostUrl()
+                    );
+                } catch (HttpClientErrorException.TooManyRequests e) {
+                    submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
+                    return submitResponseBean;
+                } catch (HttpClientErrorException e) {
+                    submitResponseBean.setStatus("error");
+                    NotificationMessage notification = new NotificationMessage(
+                            String.format("Form submission failed with error response: %s, %s, %s",
+                                    e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
+                            true, NotificationMessage.Tag.submit);
+                    submitResponseBean.setNotification(notification);
+                    logNotification(notification, request);
+                    log.error("Submit response bean: " + submitResponseBean);
                     return submitResponseBean;
                 }
 
-                parseSubmitResponseMessage(submitResponse.getBody(), submitResponseBean);
+                parseSubmitResponseMessage(response, submitResponseBean);
 
                 // Only delete session immediately after successful submit
                 deleteSession(submitRequestBean.getSessionId());

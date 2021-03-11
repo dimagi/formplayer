@@ -114,7 +114,7 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
     private void doAfter(JSONObject logLineJson, ContentCachingResponseWrapper responseWrapper) {
         String responseBody = new String(responseWrapper.getContentAsByteArray());
         logLineJson.put("date", this.currentTimeISO8601())
-                .put("responseBody", responseBody);
+                .put("responseBody", responseBody).put("responseCode", responseWrapper.getStatus());
     }
 
     private String currentTimeISO8601() {
