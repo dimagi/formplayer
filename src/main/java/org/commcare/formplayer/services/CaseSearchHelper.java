@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.util.SerializationUtil;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
@@ -12,6 +13,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 @CacheConfig(cacheNames = "case_search")
@@ -24,10 +26,10 @@ public class CaseSearchHelper {
     private RestoreFactory restoreFactory;
 
     @Autowired
-    QueryRequester queryRequester;
+    private WebClient webClient;
 
 
-    public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen, String uri) {
+    public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen, URI uri) {
         Cache cache = cacheManager.getCache("case_search");
         String cacheKey = getCacheKey(uri);
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
@@ -37,7 +39,7 @@ public class CaseSearchHelper {
             return screen.buildExternalDataInstance(copyOfRoot);
         }
 
-        String responseString = queryRequester.makeQueryRequest(uri, restoreFactory.getUserHeaders());
+        String responseString = webClient.get(uri);
         if (responseString != null) {
             Pair<ExternalDataInstance, String> dataInstanceWithError = screen.processResponse(
                     new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
@@ -52,7 +54,7 @@ public class CaseSearchHelper {
         return null;
     }
 
-    private String getCacheKey(String uri) {
+    private String getCacheKey(URI uri) {
         StringBuilder builder = new StringBuilder();
         builder.append(restoreFactory.getDomain());
         builder.append("_").append(restoreFactory.getScrubbedUsername());

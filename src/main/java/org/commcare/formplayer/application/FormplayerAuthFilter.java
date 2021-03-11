@@ -67,13 +67,20 @@ public class FormplayerAuthFilter extends OncePerRequestFilter {
                         e);
             }
             if (ace.shouldReport()) {
-                Sentry.withScope(scope -> {
-                    scope.setTag("uri", req.getRequestURI());
+                Runnable log = () -> {
                     logger.error(String.format("Request to %s - Authorization Failed[%d] Unexpectedly - %s",
                             req.getRequestURI(),
                             ace.getResponseCode(),
                             ace.getLog()), ace);
-                });
+                };
+                if (Sentry.isEnabled()) {
+                    Sentry.withScope(scope -> {
+                        scope.setTag("uri", req.getRequestURI());
+                        log.run();
+                    });
+                } else {
+                    log.run();
+                }
             } else {
                 logger.warn(String.format("Request to %s - Authorization Failed[%d] - %s",
                         req.getRequestURI(),

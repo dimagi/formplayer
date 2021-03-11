@@ -12,7 +12,10 @@ import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
-import org.commcare.formplayer.services.*;
+import org.commcare.formplayer.services.BrowserValuesProvider;
+import org.commcare.formplayer.services.CaseSearchHelper;
+import org.commcare.formplayer.services.FormattedQuestionsService;
+import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
@@ -186,11 +189,6 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public XFormService xFormService(){
-        return new XFormService();
-    }
-
-    @Bean
     @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
         FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedTagging, detailedTagNames);
@@ -251,22 +249,6 @@ public class WebAppContext implements WebMvcConfigurer {
         return new CaseSearchHelper();
     }
 
-    @Bean
-    public QueryRequester queryRequester() {
-        return new QueryRequester();
-    }
-
-    @Bean
-    public SyncRequester syncRequester() {
-        return new SyncRequester();
-    }
-
-    @Bean
-    public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
-        return new FormplayerFormSendCalloutHandler();
-    }
-
-    @Bean
     public LockProvider lockProvider(DataSource dataSource) {
         return new JdbcTemplateLockProvider(
                 JdbcTemplateLockProvider.Configuration.builder()

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.SimpleTimer;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * The InstallService handles configuring the application,
@@ -39,6 +40,9 @@ public class InstallService {
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     private final Log log = LogFactory.getLog(InstallService.class);
 
     CategoryTimingHelper.RecordingTimer installTimer;
@@ -55,7 +59,9 @@ public class InstallService {
                 // If the SQLiteDB exists then this was not an update
                 // Try reusing old install, fail quietly
                 try {
-                    FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
+                    FormplayerConfigEngine engine = new FormplayerConfigEngine(
+                            storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot, restTemplate
+                    );
                     engine.initEnvironment();
                     return new Pair<>(engine, false);
                 } catch (Exception e) {
@@ -72,7 +78,9 @@ public class InstallService {
             if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
                 throw new RuntimeException("Error instantiating folder " + sqliteDB.getDatabaseFileForDebugPurposes());
             }
-            FormplayerConfigEngine engine = new FormplayerConfigEngine(storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot);
+            FormplayerConfigEngine engine = new FormplayerConfigEngine(
+                    storageFactory, formplayerInstallerFactory, formplayerArchiveFileRoot, restTemplate
+            );
             if (reference.endsWith(".ccpr")) {
                 engine.initFromLocalFileResource(reference);
             } else {
