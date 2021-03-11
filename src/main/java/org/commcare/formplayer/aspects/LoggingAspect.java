@@ -23,7 +23,8 @@ public class LoggingAspect {
 
     private final Log log = LogFactory.getLog(LoggingAspect.class);
 
-    @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping) " +
+    @Around(value = "within(org.commcare.formplayer..*) " +
+            "&& @annotation(org.springframework.web.bind.annotation.RequestMapping) " +
             "&& !@annotation(org.commcare.formplayer.annotations.NoLogging)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature ms = (MethodSignature) joinPoint.getSignature();
