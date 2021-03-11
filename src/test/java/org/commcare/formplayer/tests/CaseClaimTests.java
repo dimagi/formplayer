@@ -34,15 +34,16 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = TestContext.class)
 public class CaseClaimTests extends BaseTestClass {
 
+    @Autowired
+    CacheManager cacheManager;
+
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
+        cacheManager.getCache("case_search").clear();
     }
-
-    @Autowired
-    CacheManager cacheManager;
 
     @Override
     protected String getMockRestoreFileName() {
@@ -64,8 +65,8 @@ public class CaseClaimTests extends BaseTestClass {
                 false,
                 EntityListResponse.class);
 
-//        assert cacheManager.getCache("case_search")
-//                .get("caseclaimusername" + "http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case") != null;
+        assert cacheManager.getCache("case_search")
+                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case") != null;
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
