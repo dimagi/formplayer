@@ -105,7 +105,15 @@ Lines your file is missing will begin with a `-`.
 
 ### Running in Docker
 
-If you want to run Formplayer in Docker as a service of CommCare HQ, follow these steps from your commcare-hq repository:
+If you want to run Formplayer in Docker as a service of CommCare HQ, follow these steps from
+your commcare-hq repository.
+
+If you are making changes to Formplayer you probably just want to run it from the shell and not
+in Docker. In that case you'll also need to stop the Formplayer Docker container if it is running:
+
+```
+docker stop hqservice_formplayer_1
+```
 
 #### Running CommCare HQ in Docker
 
