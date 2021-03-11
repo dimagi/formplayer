@@ -30,8 +30,9 @@ public class LoggingAspect {
         MethodSignature ms = (MethodSignature) joinPoint.getSignature();
         Method m = ms.getMethod();
         Object requestBean = null;
-        final String requestPath = m.getAnnotation(RequestMapping.class).value()[0]; //Should be only one
+        String requestPath = null;
         try {
+            requestPath = m.getAnnotation(RequestMapping.class).value()[0]; //Should be only one
             requestBean = joinPoint.getArgs()[0];
             log.info("Request to " + requestPath + " with bean " + requestBean);
         } catch(ArrayIndexOutOfBoundsException e) {
