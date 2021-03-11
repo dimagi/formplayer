@@ -9,7 +9,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Date;
 import java.util.Map;
 
 @Entity
@@ -23,15 +22,8 @@ public class SerializableFormSession implements Serializable{
     private String id;
 
     @Getter
-//    @Version
-    private Integer version;
-
-    /**
-     * Deprecated: to be removed once `dateCreated` is fully populated
-     */
-    @Getter
-    @Column(name="dateopened", updatable=false)
-    private String dateOpened;
+    @Version
+    private int version;
 
     @Getter
     @CreatedDate
@@ -89,14 +81,6 @@ public class SerializableFormSession implements Serializable{
     @Column(name="initlang")
     private String initLang;
 
-    /**
-     * Deprecated. To be replaced by ``version``
-     */
-    @Getter
-    @Column(name="sequenceid")
-    @Convert(converter=IntStringConverter.class)
-    private Integer sequenceId;
-
     @Getter
     @Column(name="sessiondata")
     @Convert(converter=ByteArrayConverter.class)
@@ -148,22 +132,12 @@ public class SerializableFormSession implements Serializable{
         this.sessionData = sessionData;
         this.functionContext = functionContext;
         this.inPromptMode = inPromptMode;
-        this.dateOpened = new Date().toString();
         this.currentIndex = "0";
-    }
-
-    public void incrementSequence() {
-        if (sequenceId == null) {
-            sequenceId = 0;
-        } else {
-            sequenceId += 1;
-        }
-        version = sequenceId;
     }
 
     @Override
     public String toString(){
-        return "Session [id=" + id + ", sequence=" + sequenceId + ", username=" + username
+        return "Session [id=" + id + ", version=" + version + ", username=" + username
                 + " domain=" + domain + ", instance=" + instanceXml + "]";
     }
 }
