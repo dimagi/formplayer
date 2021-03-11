@@ -1,5 +1,6 @@
 package org.commcare.formplayer.installers;
 
+import lombok.NonNull;
 import org.commcare.resources.ResourceInstallContext;
 import org.commcare.resources.model.*;
 import org.commcare.util.CommCarePlatform;
@@ -40,7 +41,7 @@ public class FormplayerLocaleInstaller extends SimpleInstaller {
     public FormplayerLocaleInstaller() {
     }
 
-    public FormplayerLocaleInstaller(String locale) {
+    public FormplayerLocaleInstaller(@NonNull String locale) {
         this.locale = locale;
     }
 
@@ -66,11 +67,7 @@ public class FormplayerLocaleInstaller extends SimpleInstaller {
 
     @Override
     public boolean verifyInstallation(Resource r, Vector<MissingMediaException> problemList, CommCarePlatform platform) {
-        if (locale == null) {
-            problemList.addElement(new MissingMediaException(r, "Bad metadata, no locale",
-                    MissingMediaException.MissingMediaExceptionType.NONE));
-        }
-        return true;  // return value is never actually used
+        return true;
     }
 
     @Override
