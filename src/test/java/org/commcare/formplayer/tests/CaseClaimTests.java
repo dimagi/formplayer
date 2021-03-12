@@ -11,11 +11,17 @@ import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.net.URI;
 import java.util.Hashtable;
@@ -30,6 +36,7 @@ import static org.mockito.Mockito.when;
  * Regression tests for fixed behaviors
  */
 @WebMvcTest
+@ContextConfiguration(classes = TestContext.class)
 public class CaseClaimTests extends BaseTestClass {
 
     @Autowired
