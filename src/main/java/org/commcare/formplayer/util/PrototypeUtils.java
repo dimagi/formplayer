@@ -1,9 +1,6 @@
 package org.commcare.formplayer.util;
 
-import org.commcare.formplayer.installers.FormplayerOfflineUserRestoreInstaller;
-import org.commcare.formplayer.installers.FormplayerProfileInstaller;
-import org.commcare.formplayer.installers.FormplayerSuiteInstaller;
-import org.commcare.formplayer.installers.FormplayerXFormInstaller;
+import org.commcare.formplayer.installers.*;
 import org.commcare.cases.instance.CaseDataInstance;
 import org.commcare.core.graph.model.*;
 import org.commcare.core.graph.suite.BubbleSeries;
@@ -90,6 +87,7 @@ public class PrototypeUtils {
                 FormplayerProfileInstaller.class.getName(),
                 FormplayerSuiteInstaller.class.getName(),
                 FormplayerXFormInstaller.class.getName(),
+                FormplayerLocaleInstaller.class.getName(),
                 GraphData.class.getName(),
                 SeriesData.class.getName(),
                 Graph.class.getName(),

@@ -10,7 +10,6 @@ import java.util.Map;
 public interface FormSessionListView {
     String getId();
     String getTitle();
-    String getDateOpened();
     Instant getDateCreated();
     Map<String, String> getSessionData();
 }
