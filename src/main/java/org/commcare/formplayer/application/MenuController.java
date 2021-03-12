@@ -18,10 +18,13 @@ import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import org.commcare.formplayer.services.CaseSearchHelper;
 
 /**
  * Controller (API endpoint) containing all session navigation functionality.
@@ -31,6 +34,7 @@ import org.commcare.formplayer.services.CaseSearchHelper;
 @EnableAutoConfiguration
 public class MenuController extends AbstractBaseController {
 
+    @Autowired
     private CategoryTimingHelper categoryTimingHelper;
 
     private final Log log = LogFactory.getLog(MenuController.class);
