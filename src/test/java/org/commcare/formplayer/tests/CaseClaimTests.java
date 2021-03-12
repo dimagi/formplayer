@@ -15,7 +15,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.net.URI;
@@ -31,7 +30,6 @@ import static org.mockito.Mockito.when;
  * Regression tests for fixed behaviors
  */
 @WebMvcTest
-@ContextConfiguration(classes = TestContext.class)
 public class CaseClaimTests extends BaseTestClass {
 
     @Autowired

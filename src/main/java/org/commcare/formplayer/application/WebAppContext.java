@@ -244,11 +244,6 @@ public class WebAppContext implements WebMvcConfigurer {
         return new FormplayerArchiveFileRoot();
     }
 
-    @Bean
-    public CaseSearchHelper caseSearchHelper() {
-        return new CaseSearchHelper();
-    }
-
     public LockProvider lockProvider(DataSource dataSource) {
         return new JdbcTemplateLockProvider(
                 JdbcTemplateLockProvider.Configuration.builder()

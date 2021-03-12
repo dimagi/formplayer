@@ -47,8 +47,8 @@ import java.util.ArrayList;
  */
 public abstract class AbstractBaseController {
 
-    @Autowired
-    private CaseSearchHelper caseSearchHelper;
+//    @Autowired
+//    protected CaseSearchHelper caseSearchHelper;
 
     private WebClient webClient;
 

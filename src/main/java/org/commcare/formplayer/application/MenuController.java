@@ -31,9 +31,6 @@ import org.commcare.formplayer.services.CaseSearchHelper;
 @EnableAutoConfiguration
 public class MenuController extends AbstractBaseController {
 
-    @Autowired
-    private CaseSearchHelper caseSearchHelper;
-
     private CategoryTimingHelper categoryTimingHelper;
 
     private final Log log = LogFactory.getLog(MenuController.class);
