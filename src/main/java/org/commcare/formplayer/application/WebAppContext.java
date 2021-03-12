@@ -1,6 +1,6 @@
 package org.commcare.formplayer.application;
 
-import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.config.MeterFilter;
@@ -73,11 +73,11 @@ public class WebAppContext implements WebMvcConfigurer {
 
     @Bean
     public StatsDClient datadogStatsDClient() {
-        return new NonBlockingStatsDClient(
-                "formplayer.metrics",
-                "localhost",
-                8125
-        );
+        return new NonBlockingStatsDClientBuilder()
+                .prefix("formplayer.metrics")
+                .hostname("localhost")
+                .port(8125)
+                .build();
     }
 
     @Bean
