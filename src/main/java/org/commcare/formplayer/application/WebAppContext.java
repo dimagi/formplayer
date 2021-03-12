@@ -10,8 +10,6 @@ import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.commcare.formplayer.aspects.*;
 import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.modern.reference.ArchiveFileRoot;
@@ -179,11 +177,6 @@ public class WebAppContext implements WebMvcConfigurer {
         template.setConnectionFactory(jedisConnFactory());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
-    }
-
-    @Bean
-    public MenuSessionRepo menuSessionRepo(){
-        return new PostgresMenuSessionRepo();
     }
 
     @Bean

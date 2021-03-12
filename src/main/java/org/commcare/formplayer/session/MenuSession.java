@@ -31,7 +31,7 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.commcare.formplayer.repo.SerializableMenuSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
@@ -91,7 +91,6 @@ public class MenuSession implements HereFunctionHandlerListener {
                        boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
         this.session = new SerializableMenuSession(
-                UUID.randomUUID().toString(),
                 TableBuilder.scrubName(username),
                 domain,
                 appId,

@@ -1,30 +1,61 @@
-package org.commcare.formplayer.repo;
+package org.commcare.formplayer.objects;
 
 import org.commcare.formplayer.session.MenuSession;
+import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import javax.persistence.*;
 
 /**
  * Created by willpride on 8/1/16.
  */
+
+@Entity
+@Table(name="menu_sessions")
+@EntityListeners(AuditingEntityListener.class)
 public class SerializableMenuSession {
 
+    @Id @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
     private String uuid;
+
+    @Column(name="username")
     private String username;
+
+    @Column(name="domain")
     private String domain;
+
+    @Column(name="appId")
     private String appId;
+
+    @Column(name="installReference")
     private String installReference;
+
+    @Column(name="locale")
     private String locale;
+
+    // Todo: Will this be large, should this be @Lob?
+    @Column(name="commcareSession")
     private byte[] commcareSession;
+
+    @Column(name="asUser")
     private String asUser;
+
+    @Column(name="oneQuestionPerScreen")
     private boolean oneQuestionPerScreen;
+
+    @Column(name="preview")
     private boolean preview;
 
     public SerializableMenuSession(){}
 
-    public SerializableMenuSession(String id, String username, String domain, String appId,
+    public SerializableMenuSession(String username, String domain, String appId,
                                    String installReference, String locale, byte[] commcareSession,
                                    boolean oneQuestionPerScreen,
                                    String asUser, boolean preview){
-        this.uuid = id;
         this.username = username;
         this.domain = domain;
         this.appId = appId;

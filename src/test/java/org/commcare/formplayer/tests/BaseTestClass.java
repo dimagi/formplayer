@@ -41,7 +41,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.SerializableMenuSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.utils.FileUtils;

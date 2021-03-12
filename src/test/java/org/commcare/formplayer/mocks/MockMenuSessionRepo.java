@@ -1,7 +1,7 @@
 package org.commcare.formplayer.mocks;
 
 import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.SerializableMenuSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
 
 /**
  * Created by willpride on 12/7/16.
