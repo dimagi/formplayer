@@ -44,25 +44,6 @@ public class Application {
         ReferenceHandler.setUseThreadLocalStrategy(true);
     }
 
-    /**
-     * This filter intercepts responses before they're dispatched and logs the request URL and response status
-     */
-    private class ResponseLoggingFilter extends GenericFilterBean {
-        @Override
-        public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
-            final HttpServletRequest httpRequest = (HttpServletRequest) request;
-            final HttpServletResponse httpResponse = (HttpServletResponse) response;
-            log.info("Got request URL: " + httpRequest.getRequestURL() + " , response code: " + httpResponse.getStatus());
-            filterChain.doFilter(request, response);
-        }
-    }
-
-    // Autowire the filter above
-    @Bean
-    public Filter loggingFilter() {
-        return new ResponseLoggingFilter();
-    }
-
     @Bean
     public Filter reqRespLoggingFilter() {
         return new RequestResponseLoggingFilter(null, enableSensitiveLogging);
