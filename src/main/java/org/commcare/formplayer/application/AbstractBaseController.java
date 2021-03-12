@@ -47,6 +47,7 @@ import java.util.ArrayList;
  */
 public abstract class AbstractBaseController {
 
+    @Autowired
     private WebClient webClient;
 
     @Autowired
