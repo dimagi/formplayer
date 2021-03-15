@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 2)
+@Order(1)
 public class FormplayerSentryFilter extends OncePerRequestFilter {
 
     @Override

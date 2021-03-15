@@ -6,13 +6,11 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.util.ContentCachingResponseWrapper;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -26,7 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+@Order(1)  // Place this directly after the security filter chain
 public class RequestResponseLoggingFilter extends GenericFilterBean {
 
     private Log log = LogFactory.getLog(RequestResponseLoggingFilter.class);
