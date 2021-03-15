@@ -1,9 +1,7 @@
 package org.commcare.formplayer.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.auth.UserDomainPreAuthPrincipal;
 import org.commcare.formplayer.beans.auth.HqSessionKeyBean;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
@@ -14,14 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
-public class HqUserDetailsService {
-    private final Log log = LogFactory.getLog(HqUserDetailsService.class);
-
+public class HqUserDetailsService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
     @Value("${commcarehq.host}")
     private String host;
 
@@ -47,6 +47,7 @@ public class HqUserDetailsService {
 
         try {
             HqUserDetailsBean userDetails = restTemplate.postForObject(getSessionDetailsUrl(), request, HqUserDetailsBean.class);
+            userDetails.setDomain(domain);
             return userDetails;
         } catch(HttpClientErrorException.NotFound nfe) {
             throw new SessionAuthUnavailableException();
@@ -59,5 +60,25 @@ public class HqUserDetailsService {
 
     private String getHmac(String data) throws Exception {
         return RequestUtils.getHmac(formplayerAuthKey, data);
+    }
+
+    /**
+     * Called during the authentication workflow to authenticate the user.
+     * @return UserDetails object
+     * @throws UsernameNotFoundException
+     */
+    @Override
+    public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {
+        final UserDomainPreAuthPrincipal principal = (UserDomainPreAuthPrincipal) token.getPrincipal();
+        final String sessionId = (String) token.getCredentials();
+        try {
+            HqUserDetailsBean userDetails = getUserDetails(principal.getDomain(), sessionId);
+            if (!userDetails.isAuthorized(principal.getDomain(), principal.getUsername())) {
+                throw new UsernameNotFoundException("Unable to authenticate user in requested domain");
+            }
+            return userDetails;
+        } catch (SessionAuthUnavailableException e) {
+            throw new UsernameNotFoundException("Unable to authenticate user");
+        }
     }
 }

@@ -8,19 +8,19 @@ public class HqUserDetailsTests {
 
     @Test
     public void testWebUserIsAuthorized() {
-        HqUserDetailsBean user = new HqUserDetailsBean(new String[]{"domain", "other-domain"}, "aragorn", false);
+        HqUserDetailsBean user = new HqUserDetailsBean("domain", new String[]{"domain", "other-domain"}, "aragorn", false);
 
         Assertions.assertTrue(user.isAuthorized("domain", "aragorn"));
         Assertions.assertFalse(user.isAuthorized("wrong-domain", "aragorn"));
         Assertions.assertFalse(user.isAuthorized("domain", "wrong-aragorn"));
 
-        HqUserDetailsBean superuser = new HqUserDetailsBean(new String[]{"domain", "other-domain"}, "aragorn", true);
+        HqUserDetailsBean superuser = new HqUserDetailsBean("domain", new String[]{"domain", "other-domain"}, "aragorn", true);
         Assertions.assertTrue(superuser.isAuthorized("wrong-domain", "wrong-aragorn"));
     }
 
     @Test
     public void testCommCareUserIsAuthorized() {
-        HqUserDetailsBean user = new HqUserDetailsBean(new String[]{"domain"}, "bilbo", false);
+        HqUserDetailsBean user = new HqUserDetailsBean("domain", new String[]{"domain"}, "bilbo", false);
 
         Assertions.assertTrue(user.isAuthorized("domain", "bilbo"));
         Assertions.assertFalse(user.isAuthorized("wrong-domain", "bilbo"));

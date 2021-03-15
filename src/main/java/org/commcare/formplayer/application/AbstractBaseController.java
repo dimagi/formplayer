@@ -12,6 +12,7 @@ import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.SessionNavigationBean;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.beans.exceptions.ExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.HTMLExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.RetryExceptionResponseBean;
@@ -20,8 +21,8 @@ import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
 import org.commcare.formplayer.util.FormplayerSentry;
+import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.util.screen.CommCareSessionException;
@@ -41,6 +42,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * Base Controller class containing exception handling logic and
@@ -96,14 +98,14 @@ public abstract class AbstractBaseController {
             UnresolvedResourceRuntimeException.class,
             NoLocalizedTextException.class})
     @ResponseBody
-    public ExceptionResponseBean handleApplicationError(FormplayerHttpRequest request, Exception exception) {
+    public ExceptionResponseBean handleApplicationError(HttpServletRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
         FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return getPrettyExceptionResponse(exception, request);
     }
 
-    private ExceptionResponseBean getPrettyExceptionResponse(Exception exception, FormplayerHttpRequest request) {
+    private ExceptionResponseBean getPrettyExceptionResponse(Exception exception, HttpServletRequest request) {
         String message = exception.getMessage();
         if (exception instanceof XPathTypeMismatchException && message.contains("instance(groups)")) {
             message = "The case sharing settings for your user are incorrect. " +
@@ -118,7 +120,7 @@ public abstract class AbstractBaseController {
      */
     @ExceptionHandler({HttpClientErrorException.class})
     @ResponseBody
-    public ExceptionResponseBean handleHttpRequestError(FormplayerHttpRequest req, HttpClientErrorException exception) {
+    public ExceptionResponseBean handleHttpRequestError(HttpServletRequest req, HttpClientErrorException exception) {
         incrementDatadogCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
         log.error(String.format("Exception %s making external request %s.", exception, req));
         Sentry.captureException(exception);
@@ -128,7 +130,7 @@ public abstract class AbstractBaseController {
     @ExceptionHandler({AsyncRetryException.class})
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     @ResponseBody
-    public RetryExceptionResponseBean handleAsyncRetryException(FormplayerHttpRequest req, AsyncRetryException exception) {
+    public RetryExceptionResponseBean handleAsyncRetryException(HttpServletRequest req, AsyncRetryException exception) {
         return new RetryExceptionResponseBean(
                 exception.getMessage(),
                 req.getRequestURL().toString(),
@@ -143,7 +145,7 @@ public abstract class AbstractBaseController {
      */
     @ExceptionHandler({FormattedApplicationConfigException.class})
     @ResponseBody
-    public HTMLExceptionResponseBean handleFormattedApplicationError(FormplayerHttpRequest req, Exception exception) {
+    public HTMLExceptionResponseBean handleFormattedApplicationError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
         FormplayerSentry.captureException(exception, SentryLevel.INFO);
@@ -153,21 +155,21 @@ public abstract class AbstractBaseController {
     @ExceptionHandler({LockAspect.LockError.class})
     @ResponseBody
     @ResponseStatus(HttpStatus.LOCKED)
-    public ExceptionResponseBean handleLockError(FormplayerHttpRequest req, Exception exception) {
+    public ExceptionResponseBean handleLockError(HttpServletRequest req, Exception exception) {
         FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return new ExceptionResponseBean("User lock timed out", req.getRequestURL().toString());
     }
 
     @ExceptionHandler({InterruptedRuntimeException.class})
     @ResponseBody
-    public ExceptionResponseBean handleInterruptException(FormplayerHttpRequest req, Exception exception) {
+    public ExceptionResponseBean handleInterruptException(HttpServletRequest req, Exception exception) {
         return new ExceptionResponseBean("An issue prevented us from processing your previous action, please try again",
                 req.getRequestURL().toString());
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public ExceptionResponseBean handleError(FormplayerHttpRequest req, Exception exception) {
+    public ExceptionResponseBean handleError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
@@ -198,22 +200,20 @@ public abstract class AbstractBaseController {
         }
     }
 
-    private void incrementDatadogCounter(String metric, FormplayerHttpRequest req) {
+    private void incrementDatadogCounter(String metric, HttpServletRequest req) {
         incrementDatadogCounter(metric, req, null);
     }
 
     private void incrementDatadogCounter(String metric, HttpServletRequest req, String tag) {
         String user = "unknown";
         String domain = "unknown";
-        if(req instanceof FormplayerHttpRequest) {
-            FormplayerHttpRequest formplayerRequest = ((FormplayerHttpRequest)req);
-            if (formplayerRequest.getUserDetails() != null) {
-                user = formplayerRequest.getUserDetails().getUsername();
-            }
-            if (formplayerRequest.getDomain() != null) {
-                domain = formplayerRequest.getDomain();
-            }
+
+        Optional<HqUserDetailsBean> userDetails = RequestUtils.getUserDetails();
+        if (userDetails.isPresent()) {
+            user = userDetails.get().getDomain();
+            domain = userDetails.get().getUsername();
         }
+
         ArrayList<String> tags = new ArrayList<>();
         tags.add("domain:" + domain);
         tags.add("user:" + user);

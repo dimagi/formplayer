@@ -32,9 +32,6 @@ public class MetricsAspect {
     private FormplayerDatadog datadog;
 
     @Autowired
-    private HttpServletRequest request;
-
-    @Autowired
     private RestoreFactory restoreFactory;
 
     @Autowired
@@ -67,7 +64,7 @@ public class MetricsAspect {
         Object[] args = joinPoint.getArgs();
         String domain = "<unknown>";
 
-        String requestPath = RequestUtils.getRequestEndpoint(request);
+        String requestPath = RequestUtils.getRequestEndpoint();
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();

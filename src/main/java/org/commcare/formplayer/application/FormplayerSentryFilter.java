@@ -2,8 +2,7 @@ package org.commcare.formplayer.application;
 
 import io.sentry.Sentry;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
-import org.springframework.core.Ordered;
+import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -15,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 2)
+@Order(1)
 public class FormplayerSentryFilter extends OncePerRequestFilter {
 
     @Override
@@ -27,12 +26,9 @@ public class FormplayerSentryFilter extends OncePerRequestFilter {
     private void configureSentryScope(HttpServletRequest request) {
         Sentry.configureScope(scope -> {
             scope.setTag(Constants.URI, request.getRequestURI());
-            if (request instanceof FormplayerHttpRequest) {
-                String domain = ((FormplayerHttpRequest) request).getDomain();
-                if (domain != null) {
-                    scope.setTag(Constants.DOMAIN_TAG, domain);
-                }
-            }
+            RequestUtils.getUserDetails().ifPresent(userDetails -> {
+                scope.setTag(Constants.DOMAIN_TAG, userDetails.getDomain());
+            });
         });
     }
 }

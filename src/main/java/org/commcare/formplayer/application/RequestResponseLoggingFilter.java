@@ -1,16 +1,14 @@
 package org.commcare.formplayer.application;
 
-import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.util.RequestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.util.ContentCachingResponseWrapper;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -24,7 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+@Order(1)  // Place this directly after the security filter chain
 public class RequestResponseLoggingFilter extends GenericFilterBean {
 
     private Log log = LogFactory.getLog(RequestResponseLoggingFilter.class);
@@ -102,13 +100,11 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
 
         logLineJson.put("sourceIpAddr", request.getRemoteAddr());
 
-        FormplayerHttpRequest formplayerHttpRequest = (FormplayerHttpRequest) request;
-        logLineJson.put("projectSpace", formplayerHttpRequest.getDomain());
-        logLineJson.put("requestUrl", new String(formplayerHttpRequest.getRequestURL()));
-
-        HqUserDetailsBean userDetailsBean = formplayerHttpRequest.getUserDetails();
-        String user = (userDetailsBean != null) ? formplayerHttpRequest.getUserDetails().getUsername() : null;
-        logLineJson.put("username" , user);
+        RequestUtils.getUserDetails().ifPresent(userDetails -> {
+            logLineJson.put("username", userDetails.getUsername());
+            logLineJson.put("projectSpace", userDetails.getDomain());
+        });
+        logLineJson.put("requestUrl", new String(((HttpServletRequest) request).getRequestURL()));
     }
 
     private void doAfter(JSONObject logLineJson, ContentCachingResponseWrapper responseWrapper) {
