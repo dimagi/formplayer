@@ -111,6 +111,7 @@ public class Constants {
 
     //Misc
     public static String HMAC_HEADER = "X-MAC-DIGEST";
+    public static String HMAC_REQUEST_ATTRIBUTE = "org.commcare.formplayer.hmacRequest";
 
     // Datadog metrics
     public static final String DATADOG_REQUESTS = "requests";

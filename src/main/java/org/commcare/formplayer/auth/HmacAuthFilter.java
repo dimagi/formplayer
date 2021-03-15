@@ -101,7 +101,7 @@ public class HmacAuthFilter extends GenericFilterBean {
             ));
             throw new BadCredentialsException("Invalid HMAC hash");
         }
-        request.setAttribute("hmac_request", true);
+        request.setAttribute(Constants.HMAC_REQUEST_ATTRIBUTE, true);
     }
 
     private HqUserDetailsBean getUserDetails(HttpServletRequest request) {

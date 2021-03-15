@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.parse.ParseUtils;
@@ -605,7 +606,7 @@ public class RestoreFactory {
             throw new RuntimeException(String.format(
                     "HMAC Auth not available outside of a web request %s", requestPath
             ));
-        } else if (!request.getRequestValidatedWithHMAC()) {
+        } else if (BooleanUtils.isNotTrue((Boolean) request.getAttribute(Constants.HMAC_REQUEST_ATTRIBUTE))) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
