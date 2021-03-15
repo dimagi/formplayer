@@ -3,12 +3,10 @@ package org.commcare.formplayer.application;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
+import org.commcare.formplayer.util.RequestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
@@ -102,12 +100,10 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
 
         logLineJson.put("sourceIpAddr", request.getRemoteAddr());
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            HqUserDetailsBean userDetails = (HqUserDetailsBean) authentication.getPrincipal();
+        RequestUtils.getUserDetails().ifPresent(userDetails -> {
             logLineJson.put("username", userDetails.getUsername());
             logLineJson.put("projectSpace", userDetails.getDomain());
-        }
+        });
         logLineJson.put("requestUrl", new String(((HttpServletRequest) request).getRequestURL()));
     }
 

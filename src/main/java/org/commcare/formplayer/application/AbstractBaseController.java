@@ -21,6 +21,7 @@ import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
+import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.models.RecordTooLargeException;
 import org.commcare.util.screen.CommCareSessionException;
@@ -33,8 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -42,6 +41,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * Base Controller class containing exception handling logic and
@@ -206,11 +206,11 @@ public abstract class AbstractBaseController {
     private void incrementDatadogCounter(String metric, HttpServletRequest req, String tag) {
         String user = "unknown";
         String domain = "unknown";
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            HqUserDetailsBean userDetails = (HqUserDetailsBean) authentication.getPrincipal();
-            user = userDetails.getUsername();
-            domain = userDetails.getDomain();
+
+        Optional<HqUserDetailsBean> userDetails = RequestUtils.getUserDetails();
+        if (userDetails.isPresent()) {
+            user = userDetails.get().getDomain();
+            domain = userDetails.get().getUsername();
         }
 
         ArrayList<String> tags = new ArrayList<>();

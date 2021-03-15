@@ -2,8 +2,12 @@ package org.commcare.formplayer.util;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -15,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Optional;
 
 /**
  * Utility function to deal with request objects.
@@ -89,5 +94,14 @@ public class RequestUtils {
             return ((ServletRequestAttributes) attributes).getRequest();
         }
         return null;
+    }
+
+    public static Optional<HqUserDetailsBean> getUserDetails() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
+            HqUserDetailsBean userDetails = (HqUserDetailsBean) authentication.getPrincipal();
+            return Optional.of(userDetails);
+        }
+        return Optional.empty();
     }
 }

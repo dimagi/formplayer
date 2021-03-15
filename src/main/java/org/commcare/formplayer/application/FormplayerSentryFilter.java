@@ -1,11 +1,9 @@
 package org.commcare.formplayer.application;
 
 import io.sentry.Sentry;
-import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -28,11 +26,9 @@ public class FormplayerSentryFilter extends OncePerRequestFilter {
     private void configureSentryScope(HttpServletRequest request) {
         Sentry.configureScope(scope -> {
             scope.setTag(Constants.URI, request.getRequestURI());
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null) {
-                HqUserDetailsBean userDetails = (HqUserDetailsBean) authentication.getPrincipal();
+            RequestUtils.getUserDetails().ifPresent(userDetails -> {
                 scope.setTag(Constants.DOMAIN_TAG, userDetails.getDomain());
-            }
+            });
         });
     }
 }
