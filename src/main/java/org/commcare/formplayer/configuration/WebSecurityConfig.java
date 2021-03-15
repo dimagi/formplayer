@@ -54,7 +54,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.requestCache().disable();  // only needed for login workflow
-        http.anonymous().disable();
         http.logout().disable();
         http.formLogin().disable();
         http.httpBasic().disable();
