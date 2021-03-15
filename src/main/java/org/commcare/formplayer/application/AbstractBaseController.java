@@ -11,6 +11,7 @@ import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.SessionNavigationBean;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.beans.exceptions.ExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.HTMLExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.RetryExceptionResponseBean;
@@ -33,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -197,22 +200,20 @@ public abstract class AbstractBaseController {
         }
     }
 
-    private void incrementDatadogCounter(String metric, FormplayerHttpRequest req) {
+    private void incrementDatadogCounter(String metric, HttpServletRequest req) {
         incrementDatadogCounter(metric, req, null);
     }
 
     private void incrementDatadogCounter(String metric, HttpServletRequest req, String tag) {
         String user = "unknown";
         String domain = "unknown";
-        if(req instanceof FormplayerHttpRequest) {
-            FormplayerHttpRequest formplayerRequest = ((FormplayerHttpRequest)req);
-            if (formplayerRequest.getUserDetails() != null) {
-                user = formplayerRequest.getUserDetails().getUsername();
-            }
-            if (formplayerRequest.getDomain() != null) {
-                domain = formplayerRequest.getDomain();
-            }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            HqUserDetailsBean userDetails = (HqUserDetailsBean) authentication.getPrincipal();
+            user = userDetails.getUsername();
+            domain = userDetails.getDomain();
         }
+
         ArrayList<String> tags = new ArrayList<>();
         tags.add("domain:" + domain);
         tags.add("user:" + user);

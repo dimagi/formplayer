@@ -3,6 +3,8 @@ package org.commcare.formplayer.util;
 import io.sentry.protocol.User;
 import io.sentry.spring.SentryUserProvider;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,13 +17,11 @@ class FormplayerSentryUserProvider implements SentryUserProvider {
         if (request != null) {
             user.setIpAddress(request.getRemoteAddr());
 
-            if (request instanceof FormplayerHttpRequest) {
-                FormplayerHttpRequest formplayerRequest = (FormplayerHttpRequest) request;
-                HqUserDetailsBean userDetails = formplayerRequest.getUserDetails();
-                if (userDetails != null) {
-                    user.setId(String.valueOf(userDetails.getDjangoUserId()));
-                    user.setUsername(userDetails.getUsername());
-                }
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null) {
+                HqUserDetailsBean userDetails = (HqUserDetailsBean) authentication.getPrincipal();
+                user.setId(String.valueOf(userDetails.getDjangoUserId()));
+                user.setUsername(userDetails.getUsername());
             }
         }
 
