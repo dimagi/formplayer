@@ -143,9 +143,6 @@ public class TestContext {
         return Mockito.spy(CategoryTimingHelper.class);
     }
 
-    @MockBean
-    public HttpServletRequest request;
-
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplateBuilder()

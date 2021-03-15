@@ -67,8 +67,9 @@ public class RequestUtils {
         return data;
     }
 
-    public static String getRequestEndpoint(HttpServletRequest request) {
-        return StringUtils.strip(request.getRequestURI(), "/");
+    public static String getRequestEndpoint() {
+        HttpServletRequest request = RequestUtils.getCurrentRequest();
+        return request == null ? "unknown" : StringUtils.strip(request.getRequestURI(), "/");
     }
 
     /**

@@ -44,9 +44,6 @@ public class LockAspect {
     private CategoryTimingHelper categoryTimingHelper;
 
     @Autowired
-    private HttpServletRequest request;
-
-    @Autowired
     private FormSessionService formSessionService;
 
     // needs to be accessible from WebAppContext.exceptionResolver
@@ -133,7 +130,7 @@ public class LockAspect {
                 Constants.DATADOG_ERRORS_LOCK,
                 "domain:" + bean.getDomain(),
                 "user:" + bean.getUsernameDetail(),
-                "request:" + RequestUtils.getRequestEndpoint(request),
+                "request:" + RequestUtils.getRequestEndpoint(),
                 "lock_issue:" + lockIssue
         );
     }

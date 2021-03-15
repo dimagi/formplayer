@@ -24,9 +24,6 @@ public class CategoryTimingHelper {
     private final Log log = LogFactory.getLog(CategoryTimingHelper.class);
 
     @Autowired
-    private HttpServletRequest request;
-
-    @Autowired
     private StatsDClient datadogStatsDClient;
 
     public class RecordingTimer extends SimpleTimer {
@@ -83,7 +80,7 @@ public class CategoryTimingHelper {
 
         List<String> datadogArgs = new ArrayList<>();
         datadogArgs.add(Constants.CATEGORY_TAG + ":" + category);
-        datadogArgs.add(Constants.REQUEST_TAG + ":" + RequestUtils.getRequestEndpoint(request));
+        datadogArgs.add(Constants.REQUEST_TAG + ":" + RequestUtils.getRequestEndpoint());
         datadogArgs.add(Constants.DURATION_TAG + ":" + timing.getDurationBucket());
         if (extras != null) {
             for (Map.Entry<String, String> entry : extras.entrySet()) {
@@ -99,7 +96,7 @@ public class CategoryTimingHelper {
 
 
         log.debug(String.format("Timing Event[%s][%s]: %dms",
-                RequestUtils.getRequestEndpoint(request),
+                RequestUtils.getRequestEndpoint(),
                 category,
                 timing.durationInMs()));
     }
