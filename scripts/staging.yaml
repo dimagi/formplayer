@@ -50,14 +50,10 @@
 trunk: master
 name: autostaging
 branches:
-  - ce/tracing+autoLaunchRevamp+dynamicPaginationLimit
-  - ce/tracing+autoLaunchRevamp # Cal Feb 18
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - caseSearchItemsetFix #Shubham Feb 5
 #  - caseSearchCache #Shubham Feb 9
-  - autoLaunchRevamp #Shubham Feb 9
-  - dynamicPaginationLimit # Shubham March 2
   - ce/eof-nav # Cal Feb 23
   - sk/security  # Simon Mar 15
 submodules:
