@@ -7,9 +7,11 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.web.client.WebClient;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
+import org.javarosa.core.services.locale.Localization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +26,7 @@ import java.io.InputStreamReader;
 public class NewFormResponseFactory {
 
     @Autowired
-    private XFormService xFormService;
+    private WebClient webClient;
 
     @Autowired
     private RestoreFactory restoreFactory;
@@ -97,11 +99,21 @@ public class NewFormResponseFactory {
 
         SerializableFormSession serializedSession = formEntrySession.serialize();
         formSessionService.saveSession(serializedSession);
-        return new NewFormResponse(
+        NewFormResponse response = new NewFormResponse(
                 formTreeJson, formEntrySession.getLanguages(), serializedSession.getTitle(),
-                serializedSession.getId(), serializedSession.getSequenceId(),
+                serializedSession.getId(), serializedSession.getVersion(),
                 serializedSession.getInstanceXml()
         );
+
+        String[] translationKey = {"repeat.dialog.add.new"};
+        for (String key : translationKey) {
+            String translation = Localization.getWithDefault(key, null);
+            if (translation != null) {
+                response.addToTranslation(key, translation);
+            }
+        }
+
+        return response;
     }
 
     public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
@@ -109,7 +121,7 @@ public class NewFormResponseFactory {
         String formTreeJson = formSession.getFormTree().toString();
         return new NewFormResponse(
                 formTreeJson, formSession.getLanguages(), session.getTitle(),
-                session.getId(), session.getSequenceId(),
+                session.getId(), session.getVersion(),
                 session.getInstanceXml()
         );
     }
@@ -119,7 +131,7 @@ public class NewFormResponseFactory {
     }
 
     private String getFormXml(String formUrl) {
-        return xFormService.getFormXml(formUrl);
+        return webClient.get(formUrl);
     }
 
     private static FormDef parseFormDef(String formXml) throws IOException {

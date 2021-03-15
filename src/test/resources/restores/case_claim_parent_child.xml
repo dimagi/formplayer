@@ -1,0 +1,179 @@
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+    <message nature="ota_restore_success">Successfully restored account shubham!</message>
+    <Sync xmlns="http://commcarehq.org/sync">
+        <restore_id>ffda7dca6c5111ebb8fa02815ebb940b</restore_id>
+    </Sync>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>shubham</username>
+        <password>sha1$uvTRQGiKsw69$fd362c6e0eb3976e548568273cdd548812244a48</password>
+        <uuid>9c3f4cae5974456194797c6b609fd326</uuid>
+        <date>2021-02-10</date>
+        <user_data>
+            <data key="color">red</data>
+            <data key="commcare_first_name">Shubham</data>
+            <data key="commcare_last_name"/>
+            <data key="commcare_phone_number"/>
+            <data key="commcare_profile"/>
+            <data key="commcare_project">bosco</data>
+            <data key="title"/>
+        </user_data>
+    </Registration>
+    <fixture id="user-groups" user_id="9c3f4cae5974456194797c6b609fd326">
+        <groups/>
+    </fixture>
+    <fixture id="item-list:case_search_choices" user_id="9c3f4cae5974456194797c6b609fd326">
+        <case_search_choices_list>
+            <case_search_choices>
+                <question>rating</question>
+                <name>*</name>
+                <value>1</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>rating</question>
+                <name>**</name>
+                <value>2</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>rating</question>
+                <name>***</name>
+                <value>3</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>rating</question>
+                <name>****</name>
+                <value>4</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>rating</question>
+                <name>*****</name>
+                <value>5</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:..(</name>
+                <value>1</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:(</name>
+                <value>2</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:-/</name>
+                <value>3</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:)</name>
+                <value>4</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:D</name>
+                <value>5</value>
+            </case_search_choices>
+        </case_search_choices_list>
+    </fixture>
+    <fixture id="item-list:numbers" user_id="9c3f4cae5974456194797c6b609fd326">
+        <numbers_list>
+            <numbers>
+                <index>5</index>
+            </numbers>
+            <numbers>
+                <index>4</index>
+            </numbers>
+            <numbers>
+                <index>3</index>
+            </numbers>
+            <numbers>
+                <index>2</index>
+            </numbers>
+            <numbers>
+                <index>1</index>
+            </numbers>
+        </numbers_list>
+    </fixture>
+    <fixture id="item-list:moons" user_id="9c3f4cae5974456194797c6b609fd326">
+        <moons_list/>
+    </fixture>
+    <schema id="commtrack:products">
+        <indices>
+            <index>@id</index>
+            <index>category</index>
+            <index>code</index>
+            <index>program_id</index>
+        </indices>
+    </schema>
+    <fixture id="commtrack:products" indexed="true" user_id="9c3f4cae5974456194797c6b609fd326">
+        <products/>
+    </fixture>
+    <fixture id="commtrack:programs" user_id="9c3f4cae5974456194797c6b609fd326">
+        <programs>
+            <program id="027faf1dcaa6dc4a053e8d3ad52f0264">
+                <name>Uncategorized</name>
+                <code>uncategorized</code>
+            </program>
+        </programs>
+    </fixture>
+    <schema id="locations">
+        <indices>
+            <index>@continent_id</index>
+            <index>@country_id</index>
+            <index>@facility_id</index>
+            <index>@id</index>
+            <index>@type</index>
+            <index>name</index>
+        </indices>
+    </schema>
+    <fixture id="locations" indexed="true" user_id="9c3f4cae5974456194797c6b609fd326">
+        <locations/>
+    </fixture>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="d29c08f5-943c-42ca-b0a5-f64cbddba087" user_id="9c3f4cae5974456194797c6b609fd326" date_modified="2021-02-10T17:33:10.692000Z">
+        <create>
+            <case_type>show</case_type>
+            <case_name>Mumbai</case_name>
+            <owner_id>9c3f4cae5974456194797c6b609fd326</owner_id>
+        </create>
+        <update>
+            <date_opened>2021-02-10</date_opened>
+        </update>
+        <index>
+            <parent case_type="song">192262cb-fbfa-46a4-ba91-a9d13659b0e0</parent>
+        </index>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="192262cb-fbfa-46a4-ba91-a9d13659b0e0" user_id="system" date_modified="2021-02-10T23:00:03.315373Z">
+        <create>
+            <case_type>song</case_type>
+            <case_name>Rubaroo</case_name>
+            <owner_id>9c3f4cae5974456194797c6b609fd326</owner_id>
+        </create>
+        <update>
+            <date_opened>2021-02-10</date_opened>
+            <artist>A R Rahman</artist>
+            <play_count>50</play_count>
+        </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="7c4b37cb3f464966a2039b40043ba67d" user_id="callcenter-system" date_modified="2021-02-10T19:52:23.413018Z">
+        <create>
+            <case_type>commcare-user</case_type>
+            <case_name>Shubham</case_name>
+            <owner_id>9c3f4cae5974456194797c6b609fd326</owner_id>
+        </create>
+        <update>
+            <external_id>9c3f4cae5974456194797c6b609fd326</external_id>
+            <date_opened>2021-02-10</date_opened>
+            <color>red</color>
+            <commcare_profile/>
+            <email/>
+            <first_name>Shubham</first_name>
+            <hq_user_id>9c3f4cae5974456194797c6b609fd326</hq_user_id>
+            <language/>
+            <last_device_id_used>WebAppsLogin*sgoyal@dimagi.com*as*shubham</last_device_id_used>
+            <last_name/>
+            <phone_number/>
+            <title/>
+            <username>shubham</username>
+        </update>
+    </case>
+</OpenRosaResponse>

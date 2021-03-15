@@ -1,5 +1,7 @@
 package org.commcare.formplayer.aspects;
 
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import io.sentry.Sentry;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.auth.HqAuth;
@@ -22,8 +24,6 @@ import org.commcare.formplayer.services.RestoreFactory;
 
 import java.util.Arrays;
 
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import datadog.trace.api.interceptor.MutableSpan;
 
 /**

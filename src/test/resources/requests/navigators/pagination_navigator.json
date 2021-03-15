@@ -4,5 +4,6 @@
   "domain": "loaddomain",
   "app_id": "loadappid",
   "selections": [2, 1],
-  "installReference": "archives/basic.ccz"
+  "installReference": "archives/basic.ccz",
+  "cases_per_page": 20
 }

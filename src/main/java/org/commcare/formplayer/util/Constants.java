@@ -83,7 +83,6 @@ public class Constants {
     public static final String CCZ_LATEST_SAVED = "save";
 
     // Postgres tables
-    public static final String POSTGRES_SESSION_TABLE_NAME = "formplayer_sessions";
     public static final String POSTGRES_TOKEN_TABLE_NAME = "django_session";
     // Token table generated from django rest framework
     public static final String POSTGRES_AUTH_TOKEN_TABLE_NAME = "authtoken_token";
@@ -123,6 +122,7 @@ public class Constants {
     public static final String DOMAIN_TAG = "domain";
     public static final String FORM_NAME_TAG = "form_name";
     public static final String MODULE_TAG = "module";
+    public static final String MODULE_NAME_TAG = "module_name";
     public static final String REQUEST_TAG = "request";
     public static final String CATEGORY_TAG = "category";
     public static final String DURATION_TAG = "duration";
