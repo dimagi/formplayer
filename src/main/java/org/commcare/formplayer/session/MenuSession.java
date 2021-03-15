@@ -1,5 +1,6 @@
 package org.commcare.formplayer.session;
 
+import datadog.trace.api.Trace;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
@@ -143,6 +144,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param allowAutoLaunch If this step is allowed to automatically launch an action,
      *                        assuming it has an autolaunch action specified.
      */
+    @Trace
     public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
@@ -162,9 +164,11 @@ public class MenuSession implements HereFunctionHandlerListener {
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
                 } else {
+                    log.info("Calling setDatum");
                     sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
                 }
             } else {
+                log.info("This is not an entity screen");
                 boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
             }
             Screen previousScreen = screen;
@@ -210,6 +214,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param needsDetail Whether a full entity screen is required for this request
      *                    or if a list of references is sufficient
      */
+    @Trace
     public Screen getNextScreen(boolean needsDetail) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
         if (next == null) {
@@ -250,6 +255,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         entityScreenCache.clear();
     }
 
+    @Trace
     private EntityScreen getEntityScreenForSession(boolean needsDetail) throws CommCareSessionException {
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
@@ -267,6 +273,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
     }
 
+    @Trace
     private EntityScreen createFreshEntityScreen(boolean needsDetail) throws CommCareSessionException {
         EntityScreen entityScreen = new EntityScreen(false, needsDetail, sessionWrapper);
         return entityScreen;
@@ -291,6 +298,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         }
     }
 
+    @Trace
     private HashMap<String, String> getSessionData() {
         OrderedHashtable<String, String> sessionData = sessionWrapper.getData();
         HashMap<String, String> ret = new HashMap<>();
@@ -300,6 +308,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return ret;
     }
 
+    @Trace
     public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
                                            FormplayerStorageFactory storageFactory) throws Exception {
         String formXmlns = sessionWrapper.getForm();
@@ -390,6 +399,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         return this.hereFunctionEvaluated;
     }
 
+    @Trace
     public EvaluationContext getEvalContextWithHereFuncHandler() {
         EvaluationContext ec = sessionWrapper.getEvaluationContext();
         ec.addFunctionHandler(new FormplayerHereFunctionHandler(this, currentBrowserLocation));
