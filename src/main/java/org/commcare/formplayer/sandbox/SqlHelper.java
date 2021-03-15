@@ -26,8 +26,6 @@ import java.util.Map;
  */
 public class SqlHelper {
 
-    public static final boolean SQL_DEBUG = false;
-
     public static void explainSql(Connection c, String sql, String[] args) {
         try (PreparedStatement preparedStatement = c.prepareStatement("EXPLAIN QUERY PLAN " + sql)){
             for (int i = 1; i <= args.length; i++) {
