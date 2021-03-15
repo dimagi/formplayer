@@ -3,8 +3,6 @@ package org.commcare.formplayer.application;
 import io.sentry.Sentry;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

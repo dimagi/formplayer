@@ -89,12 +89,4 @@ public class RequestUtils {
         }
         return null;
     }
-
-    public static FormplayerHttpRequest getFormplayerRequest() {
-        HttpServletRequest request = getCurrentRequest();
-        if (request instanceof FormplayerHttpRequest) {
-            return (FormplayerHttpRequest) request;
-        }
-        return null;
-    }
 }

@@ -48,6 +48,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -601,7 +602,7 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        FormplayerHttpRequest request = RequestUtils.getFormplayerRequest();
+        HttpServletRequest request = RequestUtils.getCurrentRequest();
         if (request == null) {
             throw new RuntimeException(String.format(
                     "HMAC Auth not available outside of a web request %s", requestPath
