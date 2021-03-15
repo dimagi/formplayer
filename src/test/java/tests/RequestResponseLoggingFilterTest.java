@@ -1,8 +1,8 @@
 package tests;
 
 import org.commcare.formplayer.application.RequestResponseLoggingFilter;
-import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.apache.commons.logging.Log;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
 import org.commcare.formplayer.utils.TestContext;
 
 import javax.servlet.FilterChain;
@@ -34,6 +33,7 @@ public class RequestResponseLoggingFilterTest {
     }
 
     @Test
+    @WithHqUser
     public void testDoFilter() throws IOException, ServletException {
         String restoreAs = "user1";
         String requestBody = String.format("{restoreAs: \"%s\"}", restoreAs);
@@ -42,7 +42,7 @@ public class RequestResponseLoggingFilterTest {
         String domain = "domain";
         String uri = "/test";
 
-        FormplayerHttpRequest request = this.getFormPlayerHttpRequest(requestBody, user, domain, uri);
+        HttpServletRequest request = this.getHttpRequest(requestBody, uri);
         MockHttpServletResponse response = this.getHttpServletResponse(responseBody);
         FilterChain filterChain = this.getFilterChain(responseBody);
 
@@ -61,8 +61,9 @@ public class RequestResponseLoggingFilterTest {
     }
 
     @Test
+    @WithHqUser
     public void testDoFilterNoLogging() throws IOException, ServletException {
-        FormplayerHttpRequest request = this.getFormPlayerHttpRequest("b", "u", "b", "u");
+        HttpServletRequest request = this.getHttpRequest("b", "u");
         MockHttpServletResponse response = this.getHttpServletResponse("b");
         FilterChain filterChain = this.getFilterChain("b");
 
@@ -72,16 +73,11 @@ public class RequestResponseLoggingFilterTest {
         verify(this.log, never()).info(Mockito.any());
     }
 
-    private FormplayerHttpRequest getFormPlayerHttpRequest(String body, String user, String domain,
-                                                           String uri) {
-        // Mock formplayerhttprequest with all content and user settings.
+    private HttpServletRequest getHttpRequest(String body, String uri) {
         MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
         mockHttpServletRequest.setContent(body.getBytes());
         mockHttpServletRequest.setRequestURI(uri);
-        FormplayerHttpRequest request = new FormplayerHttpRequest(mockHttpServletRequest);
-        request.setUserDetails(new HqUserDetailsBean(domain, new String[] {domain}, user, false));
-        request.setDomain(domain);
-        return request;
+        return mockHttpServletRequest;
     }
 
     private FilterChain getFilterChain(String responseBody) throws IOException, ServletException {
