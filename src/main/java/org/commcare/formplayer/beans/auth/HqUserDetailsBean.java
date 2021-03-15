@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -39,7 +40,7 @@ public class HqUserDetailsBean implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Arrays.stream(domains).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        return Collections.emptyList();
     }
 
     @Override
