@@ -57,12 +57,12 @@ public class RequestUtils {
         return body;
     }
 
-    public static JSONObject getPostData(FormplayerHttpRequest request) {
+    public static JSONObject getPostData(HttpServletRequest request) {
         JSONObject data = null;
         try {
             data = new JSONObject(getBody(request));
         } catch (IOException | JSONException a) {
-            throw new RuntimeException("Unreadable POST Body for the request: " + request.getRequestURI());
+            throw new RuntimeException("Unreadable POST Body for the request: " + request.getRequestURI(), a);
         }
         return data;
     }
