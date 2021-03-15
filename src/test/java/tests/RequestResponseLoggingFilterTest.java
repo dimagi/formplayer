@@ -79,7 +79,7 @@ public class RequestResponseLoggingFilterTest {
         mockHttpServletRequest.setContent(body.getBytes());
         mockHttpServletRequest.setRequestURI(uri);
         FormplayerHttpRequest request = new FormplayerHttpRequest(mockHttpServletRequest);
-        request.setUserDetails(new HqUserDetailsBean(new String[] {domain}, user, false));
+        request.setUserDetails(new HqUserDetailsBean(domain, new String[] {domain}, user, false));
         request.setDomain(domain);
         return request;
     }
