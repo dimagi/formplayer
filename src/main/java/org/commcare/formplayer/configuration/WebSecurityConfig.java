@@ -40,6 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().antMatchers("/**").authenticated();
         http.addFilterAt(getHmacAuthFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(sessionAuthFilter(), HmacAuthFilter.class);
+        http.cors();
     }
 
     private HmacAuthFilter getHmacAuthFilter() {
@@ -57,7 +58,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.logout().disable();
         http.formLogin().disable();
         http.httpBasic().disable();
-        http.cors().disable();
     }
 
     public CommCareSessionAuthFilter sessionAuthFilter() throws Exception {
