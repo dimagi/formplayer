@@ -97,12 +97,6 @@ public class Constants {
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
     public static final String COMMCARE_USER_SUFFIX = "commcarehq.org";
 
-    public static final Set<Pattern> AUTH_WHITELIST = new HashSet<Pattern>(Arrays.asList(
-            Pattern.compile(Constants.URL_SERVER_UP),
-            Pattern.compile(Constants.URL_VALIDATE_FORM),
-            Pattern.compile("favicon.ico")
-    ));
-
     public static final int USER_LOCK_TIMEOUT = 21;
     // 15 minutes in milliseconds
     public static final int LOCK_DURATION = 60 * 15 * 1000;
