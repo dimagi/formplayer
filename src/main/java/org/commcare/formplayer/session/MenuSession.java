@@ -279,7 +279,6 @@ public class MenuSession implements HereFunctionHandlerListener {
         try {
             form = XPathParseTool.parseXPath(datum.getValue());
         } catch (XPathSyntaxException e) {
-            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
         EvaluationContext ec = sessionWrapper.getEvaluationContext();

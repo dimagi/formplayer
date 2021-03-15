@@ -76,7 +76,6 @@ public class FormplayerGraphUtil {
                     "<body style=\"height: 90%; margin:0;\">" + titleHTML + errorHTML + chartHTML + "</body>" +
                     "</html>");
         } catch (JSONException e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
 

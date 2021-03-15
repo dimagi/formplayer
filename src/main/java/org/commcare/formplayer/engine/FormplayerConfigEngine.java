@@ -65,7 +65,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
                 }
             }
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.error("Error parsing app ID from URL", e);
         }
         return appId;
     }

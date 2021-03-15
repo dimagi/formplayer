@@ -66,7 +66,7 @@ public class UtilController extends AbstractBaseController {
         try {
             deleteRequest.clear();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error deleting application DBs", e);
             success = false;
         }
 

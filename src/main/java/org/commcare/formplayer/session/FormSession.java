@@ -408,7 +408,7 @@ public class FormSession {
                     }
                 } while (event != FormEntryController.EVENT_END_OF_FORM);
             } catch (XPathException e) {
-                e.printStackTrace();
+                log.error("Error evaluating moveToNextView", e);
             }
         }
     }

@@ -1,5 +1,6 @@
 package org.commcare.formplayer.util;
 
+import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.cases.entity.Entity;
 import org.commcare.cases.entity.NodeEntityFactory;
 import org.commcare.modern.util.Pair;
@@ -13,6 +14,7 @@ import java.util.Locale;
 /**
  * Filter entity list via all string-representable entity fields
  */
+@CommonsLog
 public class EntityStringFilterer {
     private final String[] searchTerms;
     private final ArrayList<Pair<Integer, Integer>> matchScores = new ArrayList<>();
@@ -42,7 +44,7 @@ public class EntityStringFilterer {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.warn("Interrupted while waiting for entity list", e);
             }
         }
 

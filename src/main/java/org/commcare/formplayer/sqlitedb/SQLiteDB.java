@@ -71,7 +71,7 @@ public class SQLiteDB implements ConnectionHandler {
                 connection.close();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.warn("Error closing connection", e);
         }
         connection = null;
     }

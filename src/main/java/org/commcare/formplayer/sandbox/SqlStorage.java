@@ -1,5 +1,6 @@
 package org.commcare.formplayer.sandbox;
 
+import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.TableBuilder;
@@ -39,6 +40,7 @@ import java.util.Vector;
  *
  * @author wspride
  */
+@CommonsLog
 public class SqlStorage<T extends Persistable>
         implements IStorageUtilityIndexed<T>, Iterable<T> {
 
@@ -261,14 +263,14 @@ public class SqlStorage<T extends Persistable>
                     preparedStatement.close();
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.warn("Error closing statement", e);
             }
             try {
                 if (resultSet != null) {
                     resultSet.close();
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.warn("Error closing resultSet", e);
             }
         }
         return -1;
@@ -345,7 +347,7 @@ public class SqlStorage<T extends Persistable>
                     preparedStatement.close();
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.warn("Error closing statement", e);
             }
         }
     }

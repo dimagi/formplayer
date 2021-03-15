@@ -1,5 +1,7 @@
 package org.commcare.formplayer.sandbox;
 
+import lombok.SneakyThrows;
+import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
 
 import org.commcare.modern.util.Pair;
@@ -24,10 +26,12 @@ import java.util.Map;
  * <p/>
  * Created by wpride1 on 8/11/15.
  */
+@CommonsLog
 public class SqlHelper {
 
     public static final boolean SQL_DEBUG = false;
 
+    @SneakyThrows
     public static void explainSql(Connection c, String sql, String[] args) {
         try (PreparedStatement preparedStatement = c.prepareStatement("EXPLAIN QUERY PLAN " + sql)){
             for (int i = 1; i <= args.length; i++) {
@@ -36,9 +40,6 @@ public class SqlHelper {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 dumpResultSet(resultSet);
             }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
@@ -120,7 +121,7 @@ public class SqlHelper {
                 try {
                     preparedStatement.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.warn("Error closing statement", e);
                 }
             }
         }

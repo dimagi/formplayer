@@ -62,7 +62,6 @@ public class LockAspect {
             try {
                 return joinPoint.proceed();
             } catch (Throwable throwable) {
-                throwable.printStackTrace();
                 throw new RuntimeException(throwable);
             }
         }

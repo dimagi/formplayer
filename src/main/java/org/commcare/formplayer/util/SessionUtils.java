@@ -110,7 +110,6 @@ public class SessionUtils {
         try {
             builder = new URIBuilder("/a/" + domain + "/apps/api/download_ccz/");
         } catch (URISyntaxException e) {
-            e.printStackTrace();
             throw new RuntimeException("Unable to instantiate URIBuilder");
         }
         builder.addParameter("app_id", appId);
