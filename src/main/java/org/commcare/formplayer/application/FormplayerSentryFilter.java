@@ -1,6 +1,7 @@
 package org.commcare.formplayer.application;
 
 import io.sentry.Sentry;
+import org.commcare.formplayer.filters.FilterOrder;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.core.annotation.Order;
@@ -14,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-@Order(1)
+@Order(FilterOrder.SENTRY)
 public class FormplayerSentryFilter extends OncePerRequestFilter {
 
     @Override

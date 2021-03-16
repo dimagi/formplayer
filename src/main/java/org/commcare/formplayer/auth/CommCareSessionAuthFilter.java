@@ -1,5 +1,6 @@
 package org.commcare.formplayer.auth;
 
+import io.sentry.Sentry;
 import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;

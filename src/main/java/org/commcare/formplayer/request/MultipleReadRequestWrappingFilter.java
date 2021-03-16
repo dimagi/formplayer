@@ -1,5 +1,6 @@
 package org.commcare.formplayer.request;
 
+import org.commcare.formplayer.filters.FilterOrder;
 import org.commcare.formplayer.util.MultipleReadHttpRequest;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -17,7 +18,7 @@ import java.io.IOException;
  * This is necessary since some of the authentication details are contained in the body.
  */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(FilterOrder.FIRST)
 public class MultipleReadRequestWrappingFilter extends OncePerRequestFilter {
 
     @Override

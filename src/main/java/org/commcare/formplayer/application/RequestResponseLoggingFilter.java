@@ -3,6 +3,7 @@ package org.commcare.formplayer.application;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.filters.FilterOrder;
 import org.commcare.formplayer.util.RequestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,7 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-@Order(1)  // Place this directly after the security filter chain
+@Order(FilterOrder.LOGGING)
 public class RequestResponseLoggingFilter extends GenericFilterBean {
 
     private Log log = LogFactory.getLog(RequestResponseLoggingFilter.class);
