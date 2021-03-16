@@ -22,32 +22,28 @@ public class SerializableMenuSession {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     private String uuid;
 
-    @Column(name="username")
     private String username;
 
-    @Column(name="domain")
     private String domain;
 
-    @Column(name="appId")
+    @Column(name="appid")
     private String appId;
 
-    @Column(name="installReference")
+    @Column(name="installreference")
     private String installReference;
 
     @Column(name="locale")
     private String locale;
 
-    // Todo: Will this be large, should this be @Lob?
-    @Column(name="commcareSession")
+    @Column(name="commcaresession")
     private byte[] commcareSession;
 
-    @Column(name="asUser")
+    @Column(name="asuser")
     private String asUser;
 
-    @Column(name="oneQuestionPerScreen")
+    @Transient
     private boolean oneQuestionPerScreen;
 
-    @Column(name="preview")
     private boolean preview;
 
     public SerializableMenuSession(){}
