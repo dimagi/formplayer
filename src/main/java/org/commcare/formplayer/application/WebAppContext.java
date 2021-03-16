@@ -1,6 +1,6 @@
 package org.commcare.formplayer.application;
 
-import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
 
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -40,16 +40,11 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.context.request.RequestContextListener;
-import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
-import org.springframework.web.servlet.view.JstlView;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -87,48 +82,17 @@ public class WebAppContext implements WebMvcConfigurer {
     private List<String> detailedTagNames;
 
     @Bean
-    public SimpleMappingExceptionResolver exceptionResolver() {
-        SimpleMappingExceptionResolver exceptionResolver = new SimpleMappingExceptionResolver();
-
-        Properties exceptionMappings = new Properties();
-
-        exceptionMappings.put("java.lang.Exception", "error/error");
-        exceptionMappings.put("java.lang.RuntimeException", "error/error");
-
-        exceptionResolver.setExceptionMappings(exceptionMappings);
-
-        Properties statusCodes = new Properties();
-
-        statusCodes.put("error/404", "404");
-        statusCodes.put("error/error", "500");
-
-        exceptionResolver.setStatusCodes(statusCodes);
-
-        return exceptionResolver;
-    }
-
-    @Bean
-    public ViewResolver viewResolver() {
-        InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
-        viewResolver.setViewClass(JstlView.class);
-        viewResolver.setPrefix("/WEB-INF/jsp/");
-        viewResolver.setSuffix(".jsp");
-
-        return viewResolver;
-    }
-
-    @Bean
     public static PropertySourcesPlaceholderConfigurer propertiesResolver() {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
     @Bean
     public StatsDClient datadogStatsDClient() {
-        return new NonBlockingStatsDClient(
-                "formplayer.metrics",
-                "localhost",
-                8125
-        );
+        return new NonBlockingStatsDClientBuilder()
+                .prefix("formplayer.metrics")
+                .hostname("localhost")
+                .port(8125)
+                .build();
     }
 
     @Bean
