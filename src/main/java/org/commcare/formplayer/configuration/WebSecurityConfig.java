@@ -62,6 +62,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public CommCareSessionAuthFilter sessionAuthFilter() throws Exception {
         CommCareSessionAuthFilter filter = new CommCareSessionAuthFilter();
         filter.setAuthenticationManager(authenticationManagerBean());
+        filter.setRequiresAuthenticationRequestMatcher(new CommCareSessionAuthFilter.SessionAuthRequestMatcher());
         return filter;
     }
 

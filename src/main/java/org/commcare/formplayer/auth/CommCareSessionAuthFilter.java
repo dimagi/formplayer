@@ -6,7 +6,10 @@ import org.commcare.formplayer.util.RequestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +22,18 @@ import javax.servlet.http.HttpServletRequest;
  */
 @CommonsLog
 public class CommCareSessionAuthFilter extends AbstractPreAuthenticatedProcessingFilter {
+
+    public static class SessionAuthRequestMatcher implements RequestMatcher {
+        @Override
+        public boolean matches(HttpServletRequest request) {
+            if (HttpMethod.valueOf(request.getMethod()) != HttpMethod.POST) {
+                return false;
+            }
+            Authentication currentUser = SecurityContextHolder.getContext().getAuthentication();
+            return currentUser == null;
+        }
+
+    }
 
     @Override
     protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
@@ -34,17 +49,15 @@ public class CommCareSessionAuthFilter extends AbstractPreAuthenticatedProcessin
 
     @Override
     protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-        if (HttpMethod.valueOf(request.getMethod()) == HttpMethod.POST) {
-            try {
-                JSONObject data = RequestUtils.getPostData(request);
-                String username = getUsername(data);
-                String domain = data.getString("domain");
-                if (username != null && domain != null) {
-                    return new UserDomainPreAuthPrincipal(username, domain);
-                }
-            } catch (Exception e){
-                return null;  // TODO: should sentry capture this?
+        try {
+            JSONObject data = RequestUtils.getPostData(request);
+            String username = getUsername(data);
+            String domain = data.getString("domain");
+            if (username != null && domain != null) {
+                return new UserDomainPreAuthPrincipal(username, domain);
             }
+        } catch (Exception e){
+            return null;
         }
         return null;
     }
