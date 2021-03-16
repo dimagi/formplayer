@@ -57,6 +57,7 @@ public class CommCareSessionAuthFilter extends AbstractPreAuthenticatedProcessin
                 return new UserDomainPreAuthPrincipal(username, domain);
             }
         } catch (Exception e){
+            logger.error("Unable to extract user details from request", e);
             return null;
         }
         return null;
