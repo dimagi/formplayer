@@ -6,6 +6,7 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeElement;
+import org.javarosa.core.util.externalizable.ExtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -37,7 +38,7 @@ public class CaseSearchHelper {
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
         if (cachedRoot != null) {
             // Deep copy to avoid concurrency issues
-            TreeElement copyOfRoot = SerializationUtil.deserialize(SerializationUtil.serialize(cachedRoot), TreeElement.class);
+            TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
             return screen.buildExternalDataInstance(copyOfRoot);
         }
 

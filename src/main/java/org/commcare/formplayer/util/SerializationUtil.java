@@ -30,20 +30,6 @@ public class SerializationUtil {
         return t;
     }
 
-
-    public static byte[] serialize(Externalizable t) {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            t.writeExternal(new DataOutputStream(baos));
-            return baos.toByteArray();
-        } catch (IOException e) {
-            RuntimeException re = new RuntimeException("Error serializing: " + t.getClass().getName());
-            re.initCause(e);
-            Logger.log("Error:", e.getMessage());
-            throw re;
-        }
-    }
-
     private static RuntimeException logAndWrap(Exception e, Class type, String message) {
         RuntimeException re = new RuntimeException(message + " while inflating type " + type.getName());
         re.initCause(e);
