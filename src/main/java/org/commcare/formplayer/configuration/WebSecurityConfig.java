@@ -32,6 +32,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
 
+    @Value("${formplayer.allowDoubleSlash:true}")
+    private boolean allowDoubleSlash;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         disableDefaults(http);
@@ -93,7 +96,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public HttpFirewall allowDoubleSlashHttpFirewall() {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
-        firewall.setAllowUrlEncodedDoubleSlash(true);
+        firewall.setAllowUrlEncodedDoubleSlash(allowDoubleSlash);
         return firewall;
     }
 
