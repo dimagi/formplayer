@@ -52,10 +52,9 @@ name: autostaging
 branches:
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
-  - caseSearchItemsetFix #Shubham Feb 5
-#  - caseSearchCache #Shubham Feb 9
   - ce/eof-nav # Cal Feb 23
   - sk/security  # Simon Mar 15
+  - inMemoryCaseSearchCache # Shubham Mar 17
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -63,5 +62,4 @@ submodules:
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
-      - caseSearchItemsetFix #Shubham Feb 5
-      - autoLaunchRevamp #Shubham Feb 9
+      - caseSearchCache # Shubham Mar 17
