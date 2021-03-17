@@ -10,6 +10,7 @@ import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHttpRequest;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.mockito.Mockito;
@@ -60,10 +61,8 @@ public class TestContext {
     @MockBean
     public MenuSessionService menuSessionService;
 
-    @Bean
-    public XFormService newFormRequest() {
-        return Mockito.mock(XFormService.class);
-    }
+    @MockBean
+    public WebClient webClient;
 
     @Bean
     public ValueOperations<String, Long> redisTemplateLong() {
@@ -133,16 +132,6 @@ public class TestContext {
     @Bean
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return Mockito.spy(ArchiveFileRoot.class);
-    }
-
-    @Bean
-    public QueryRequester queryRequester() {
-        return Mockito.mock(QueryRequester.class);
-    }
-
-    @Bean
-    public SyncRequester syncRequester() {
-        return Mockito.mock(SyncRequester.class);
     }
 
     @Bean

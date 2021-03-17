@@ -18,6 +18,7 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.*;
 import org.commcare.formplayer.utils.CheckedSupplier;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
@@ -52,6 +53,7 @@ import javax.servlet.http.Cookie;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -89,7 +91,7 @@ public class BaseTestClass {
     private MenuSessionService menuSessionService;
 
     @Autowired
-    private XFormService xFormServiceMock;
+    protected WebClient webClientMock;
 
     @Autowired
     RestoreFactory restoreFactoryMock;
@@ -124,12 +126,6 @@ public class BaseTestClass {
     @Autowired
     protected MenuSessionRunnerService menuSessionRunnerService;
 
-    @Autowired
-    protected QueryRequester queryRequester;
-
-    @Autowired
-    protected SyncRequester syncRequester;
-
     @InjectMocks
     protected FormController formController;
 
@@ -158,7 +154,7 @@ public class BaseTestClass {
 
     @BeforeEach
     public void setUp() throws Exception {
-        Mockito.reset(xFormServiceMock);
+        Mockito.reset(webClientMock);
         Mockito.reset(restoreFactoryMock);
         Mockito.reset(submitServiceMock);
         Mockito.reset(categoryTimingHelper);
@@ -167,8 +163,6 @@ public class BaseTestClass {
         Mockito.reset(newFormResponseFactoryMock);
         Mockito.reset(storageFactoryMock);
         Mockito.reset(formplayerInstallerFactory);
-        Mockito.reset(queryRequester);
-        Mockito.reset(syncRequester);
         Mockito.reset(datadogMock);
         Mockito.reset(menuSessionFactory);
         Mockito.reset(menuSessionRunnerService);
@@ -262,12 +256,12 @@ public class BaseTestClass {
     }
 
     private void setupSubmitServiceMock() {
-        Mockito.doReturn(ResponseEntity.ok(
+        Mockito.doReturn(
                 "<OpenRosaResponse>" +
                         "<message nature='status'>" +
                         "OK" +
                         "</message>" +
-                        "</OpenRosaResponse>"))
+                        "</OpenRosaResponse>")
                 .when(submitServiceMock).submitForm(anyString(), anyString());
     }
 
@@ -418,7 +412,7 @@ public class BaseTestClass {
     }
 
     NewFormResponse startNewForm(String requestPath, String formPath) throws Exception {
-        when(xFormServiceMock.getFormXml(anyString()))
+        when(webClientMock.get(anyString()))
                 .thenReturn(FileUtils.getFile(this.getClass(), formPath));
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
         NewSessionRequestBean newSessionRequestBean = mapper.readValue(requestPayload,
@@ -669,6 +663,15 @@ public class BaseTestClass {
                 Constants.URL_MENU_NAVIGATION,
                 sessionNavigationBean,
                 clazz);
+    }
+
+    <T> T sessionNavigateWithQuery(ArrayList<String> selections,
+                                   String testName,
+                                   QueryData queryData,
+                                   boolean forceManualAction,
+                                   Class<T> clazz) throws Exception {
+        return sessionNavigateWithQuery(selections.toArray(new String[selections.size()]),
+                testName, queryData, forceManualAction, clazz);
     }
 
     <T> T sessionNavigateWithQuery(String[] selections,
