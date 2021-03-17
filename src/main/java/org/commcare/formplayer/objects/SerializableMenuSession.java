@@ -15,11 +15,10 @@ import javax.persistence.*;
 
 @Entity
 @Table(name="menu_sessions")
-@EntityListeners(AuditingEntityListener.class)
 public class SerializableMenuSession {
 
-    @Id @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Id @GeneratedValue(generator="uuid")
+    @GenericGenerator(name="id", strategy = "org.hibernate.id.UUIDGenerator")
     private String uuid;
 
     private String username;
