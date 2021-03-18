@@ -19,6 +19,7 @@ public class FormplayerPropertyManager extends PropertyManager {
     public static final String FUZZY_SEARCH_ENABLED = "cc-fuzzy-search-enabled";
 
     public static final String SKIP_FIXTURES_AFTER_SUBMIT = "cc-skip-fixtures-after-submit";
+    public static final String AUTO_ADVANCE_MENU = "cc-auto-advance-menu";
 
     /**
      * Constructor for this PropertyManager
@@ -56,5 +57,9 @@ public class FormplayerPropertyManager extends PropertyManager {
 
     public boolean skipFixturesAfterSubmit() {
         return doesPropertyMatch(SKIP_FIXTURES_AFTER_SUBMIT, NO, YES);
+    }
+
+    public boolean isAutoAdvanceMenu() {
+        return doesPropertyMatch(AUTO_ADVANCE_MENU, NO, YES);
     }
 }
