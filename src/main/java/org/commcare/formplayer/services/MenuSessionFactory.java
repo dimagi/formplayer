@@ -31,6 +31,9 @@ public class MenuSessionFactory {
     @Autowired
     private InstallService installService;
 
+    @Autowired
+    protected FormplayerStorageFactory storageFactory;
+
     @Value("${commcarehq.host}")
     private String host;
 
@@ -76,7 +79,7 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else {
-                menuSession.handleInput(currentStep);
+                menuSession.handleInput(currentStep, storageFactory.getPropertyManager().isAutoAdvanceMenu());
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen();
             }

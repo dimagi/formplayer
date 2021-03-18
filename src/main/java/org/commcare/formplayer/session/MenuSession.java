@@ -1,16 +1,11 @@
 package org.commcare.formplayer.session;
 
-import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.utils.URIBuilder;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
-import org.commcare.resources.model.InstallCancelledException;
-import org.commcare.resources.model.ResourceInitializationException;
-import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.EntityDatum;
@@ -26,7 +21,6 @@ import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.util.MD5;
 import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
@@ -45,7 +39,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.*;
 
 import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
@@ -130,8 +123,8 @@ public class MenuSession implements HereFunctionHandlerListener {
      *
      * @param input The user step input
      */
-    public boolean handleInput(String input) throws CommCareSessionException {
-        return handleInput(input, true, false, false);
+    public boolean handleInput(String input, boolean autoAdvanceMenu) throws CommCareSessionException {
+        return handleInput(input, true, false, false, autoAdvanceMenu);
     }
 
     /**
@@ -143,7 +136,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param allowAutoLaunch If this step is allowed to automatically launch an action,
      *                        assuming it has an autolaunch action specified.
      */
-    public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch) throws CommCareSessionException {
+    public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch, boolean autoAdvanceMenu) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
@@ -158,7 +151,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 if (input.startsWith("action ") || (autoLaunch) || !confirmed) {
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
-                        return handleInput(input, true, confirmed, allowAutoLaunch);
+                        return handleInput(input, true, confirmed, allowAutoLaunch, autoAdvanceMenu);
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
                 } else {
@@ -169,6 +162,11 @@ public class MenuSession implements HereFunctionHandlerListener {
             }
             Screen previousScreen = screen;
             screen = getNextScreen(needsDetail);
+
+            if (screen instanceof MenuScreen && autoAdvanceMenu) {
+                ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
+            }
+
             if (addBreadcrumb) {
                 addTitle(input, previousScreen);
             }

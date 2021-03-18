@@ -229,7 +229,7 @@ public class MenuSessionRunnerService {
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -314,13 +314,17 @@ public class MenuSessionRunnerService {
         return null;
     }
 
+    private boolean isAutoAdvanceMenu() {
+        return storageFactory.getPropertyManager().isAutoAdvanceMenu();
+    }
+
     private Screen handleAutoLaunch(Screen nextScreen, MenuSession menuSession,
                                     String selection, boolean needsDetail, boolean confirmed)
             throws CommCareSessionException {
         if (nextScreen instanceof EntityScreen) {
             EntityScreen entityScreen = (EntityScreen)nextScreen;
             if (entityScreen.getAutoLaunchAction() != null) {
-                menuSession.handleInput(selection, needsDetail, confirmed, true);
+                menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
                 nextScreen = menuSession.getNextScreen(needsDetail);
             }
         }
