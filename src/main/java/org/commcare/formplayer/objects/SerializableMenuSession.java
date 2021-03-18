@@ -1,11 +1,6 @@
 package org.commcare.formplayer.objects;
 
-import org.commcare.formplayer.session.MenuSession;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import javax.persistence.*;
 
@@ -18,8 +13,8 @@ import javax.persistence.*;
 public class SerializableMenuSession {
 
     @Id @GeneratedValue(generator="uuid")
-    @GenericGenerator(name="id", strategy = "org.hibernate.id.UUIDGenerator")
-    private String uuid;
+    @GenericGenerator(name="uuid", strategy="org.hibernate.id.UUIDGenerator")
+    private String id;
 
     private String username;
 
@@ -63,11 +58,11 @@ public class SerializableMenuSession {
     }
 
     public String getId() {
-        return uuid;
+        return id;
     }
 
     public void setId(String uuid) {
-        this.uuid = uuid;
+        this.id = uuid;
     }
 
     public String getUsername() {
@@ -120,7 +115,7 @@ public class SerializableMenuSession {
 
     @Override
     public String toString(){
-        return "SerializedMenuSesison id=" + uuid + ", username=" + username +", domain=" + domain
+        return "SerializedMenuSesison id=" + id + ", username=" + username +", domain=" + domain
                 + ", ref=" + installReference +", appId=" + appId;
     }
 
