@@ -1,12 +1,13 @@
 package org.commcare.formplayer.sandbox;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.services.ConnectionHandler;
 import org.javarosa.core.model.condition.RequestAbandonedException;
 import org.javarosa.core.services.storage.EntityFilter;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -24,6 +25,7 @@ import io.micrometer.datadog.DatadogMeterRegistry;
  */
 public class SqlStorageWrapper<T extends Persistable>
         implements IStorageUtilityIndexed<T>, Iterable<T> {
+    private final Log log = LogFactory.getLog(SqlStorageWrapper.class);
 
     private SqlStorage<T> sqliteStorage;
     private SqlStorage<T> postgresStorage;
@@ -46,19 +48,31 @@ public class SqlStorageWrapper<T extends Persistable>
 
     private <RESULT> RESULT compareCallable(String tag, Callable<RESULT> sqliteOperation, Callable<RESULT> postgresOperation) {
         RESULT result = null;
+        long sqliteTime;
+        long postgresTime;
         try {
             long start = System.currentTimeMillis();
             result = sqliteOperation.call();
-            long sqliteTime = System.currentTimeMillis() - start;
+            sqliteTime = System.currentTimeMillis() - start;
+            meterRegistry
+                    .timer("storage.sqlite." + tag)
+                    .record(sqliteTime, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-            start = System.currentTimeMillis();
-            postgresOperation.call();
-            long postgresTime = System.currentTimeMillis() - start;
+        try {
+            long start = System.currentTimeMillis();
+            postgresOperation.call(); // TODO compare the results
+            postgresTime = System.currentTimeMillis() - start;
+            meterRegistry
+                    .timer("storage.postgres." + tag)
+                    .record(postgresTime, TimeUnit.MILLISECONDS);
 
             Timer diffTimer = meterRegistry.timer("storage.timing." + tag);
             diffTimer.record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Postgres " + tag + " operation failed with exception: " + e);
         }
         return result;
     }
@@ -112,20 +126,33 @@ public class SqlStorageWrapper<T extends Persistable>
     public T getRecordForValue(String fieldName, Object value)
             throws NoSuchElementException, InvalidIndexException {
         T result;
+        long sqliteTime;
+        long postgresTime;
         try {
-            Timer sqliteTimer = meterRegistry.timer("timer.sqlite.getRecord.singleValue");
-            result = sqliteTimer.recordCallable(
-                    () -> sqliteStorage.getRecordForValue(fieldName, value)
-            );
-
-            Timer postgresTimer = meterRegistry.timer("timer.postgres.getRecord.singleValue");
-            postgresTimer.recordCallable(
-                    () -> postgresStorage.getRecordForValue(fieldName, value)
-            );
+            long start = System.currentTimeMillis();
+            result = sqliteStorage.getRecordForValue(fieldName, value);
+            sqliteTime = System.currentTimeMillis() - start;
+            meterRegistry
+                    .timer("storage.sqlite.getRecord.singleValue")
+                    .record(sqliteTime, TimeUnit.MILLISECONDS);
         } catch (NoSuchElementException | InvalidIndexException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+
+        try {
+            long start = System.currentTimeMillis();
+            postgresStorage.getRecordForValue(fieldName, value);
+            postgresTime = System.currentTimeMillis() - start;
+            meterRegistry
+                    .timer("storage.postgres.getRecord.singleValue")
+                    .record(postgresTime, TimeUnit.MILLISECONDS);
+
+            Timer diffTimer = meterRegistry.timer("storage.timing.getRecord.singleValue");
+            diffTimer.record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("Postgres getRecordForValue operation failed with exception: " + e);
         }
         return result;
     }
