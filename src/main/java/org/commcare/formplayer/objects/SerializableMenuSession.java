@@ -47,7 +47,7 @@ public class SerializableMenuSession {
     public SerializableMenuSession(){}
 
     public SerializableMenuSession(String username, String domain, String appId,
-                                   String installReference, String locale, byte[] commcareSession,
+                                   String installReference, String locale,
                                    boolean oneQuestionPerScreen,
                                    String asUser, boolean preview){
         this.username = username;
@@ -55,7 +55,6 @@ public class SerializableMenuSession {
         this.appId = appId;
         this.installReference = installReference;
         this.locale = locale;
-        this.commcareSession = commcareSession;
         this.asUser = asUser;
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.preview = preview;

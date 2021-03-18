@@ -42,11 +42,11 @@ public class MenuSessionRepoTest {
                 "appId",
                 "archives/basic.ccz",
                 "en",
-                SessionSerializer.serialize(sessionWrapper),
                 true,
                 "asUser",
                 true
         );
+        session.setCommcareSession(SessionSerializer.serialize(sessionWrapper));
         menuSessionRepo.saveAndFlush(session);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         SerializableMenuSession loaded = JpaTestUtils.unwrapProxy(

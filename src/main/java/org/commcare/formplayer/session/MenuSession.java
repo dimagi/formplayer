@@ -84,7 +84,6 @@ public class MenuSession implements HereFunctionHandlerListener {
                 appId,
                 resolvedInstallReference,
                 locale,
-                null,
                 oneQuestionPerScreen,
                 asUser,
                 preview
