@@ -36,16 +36,17 @@ public class MenuSessionRepoTest {
 
     @Test
     public void testSaveAndLoad() {
-        SerializableMenuSession session = new SerializableMenuSession();
-        session.setCommcareSession(SessionSerializer.serialize(sessionWrapper));
-        session.setUsername("username");
-        session.setDomain("domain");
-        session.setAppId("appId");
-        session.setInstallReference("archives/basic.ccz");
-        session.setLocale("en");
-        session.setAsUser("asUser");
-        session.setOneQuestionPerScreen(true);
-        session.setPreview(true);
+        SerializableMenuSession session = new SerializableMenuSession(
+                "username",
+                "domain",
+                "appId",
+                "archives/basic.ccz",
+                "en",
+                SessionSerializer.serialize(sessionWrapper),
+                true,
+                "asUser",
+                true
+        );
         menuSessionRepo.saveAndFlush(session);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         SerializableMenuSession loaded = JpaTestUtils.unwrapProxy(

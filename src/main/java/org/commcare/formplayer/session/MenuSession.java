@@ -64,7 +64,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.session = session;
-        this.engine = installService.configureApplication(session.getInstallReference(), session.getPreview()).first;
+        this.engine = installService.configureApplication(session.getInstallReference(), session.isPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(
                 SessionSerializer.deserialize(engine.getPlatform(), session.getCommcareSession()),
@@ -295,7 +295,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, session.getUsername(), session.getDomain(),
                 sessionData, postUrl, session.getLocale(), session.getId(),
-                null, session.getOneQuestionPerScreen(),
+                null, session.isOneQuestionPerScreen(),
                 session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory, false, null);
     }
 
