@@ -19,30 +19,33 @@ public class SerializableMenuSession {
     @GenericGenerator(name="uuid", strategy="org.hibernate.id.UUIDGenerator")
     private String id;
 
+    @Column(updatable=false)
     private String username;
 
+    @Column(updatable=false)
     private String domain;
 
-    @Column(name="appid")
+    @Column(name="appid", updatable=false)
     private String appId;
 
-    @Column(name="installreference")
+    @Column(name="installreference", updatable=false)
     private String installReference;
 
-    @Column(name="locale")
+    @Column(name="locale", updatable=false)
     private String locale;
 
-    @Setter
-    @Column(name="commcaresession")
-    private byte[] commcareSession;
-
-    @Column(name="asuser")
+    @Column(name="asuser", updatable=false)
     private String asUser;
 
     @Transient
     private boolean oneQuestionPerScreen;
 
+    @Column(updatable=false)
     private boolean preview;
+
+    @Setter
+    @Column(name="commcaresession")
+    private byte[] commcareSession;
 
     public SerializableMenuSession(){}
 
