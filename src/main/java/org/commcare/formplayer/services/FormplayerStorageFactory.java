@@ -118,7 +118,14 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name, meterRegistry);
+        if (!sqLiteDB.tableExists(name) || postgresDB.tableExists(name)) {
+            // Using wrapper when
+            // - SQLITE table doesn't exists, meaning this is a fresh installation.
+            // - POSTGRES table exists, meaning app is already using dual wrapper.
+            return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name, meterRegistry);
+        } else {
+            return new SqlStorage(this.sqLiteDB, type, name);
+        }
     }
 
     public String getUsername() {

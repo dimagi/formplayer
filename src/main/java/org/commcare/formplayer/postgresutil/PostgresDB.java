@@ -7,6 +7,7 @@ import org.commcare.formplayer.sqlitedb.DBPath;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -69,6 +70,21 @@ public class PostgresDB implements ConnectionHandler {
         if (dbPath != null) {
             runQuery("DROP SCHEMA IF EXISTS " + getCurrentSchema() + " CASCADE;");
         }
+    }
+
+    public boolean tableExists(String name) {
+        String query = "SELECT to_regclass('" + getCurrentSchema() + "." + name + "');";
+        Connection connection = getConnection();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getObject(resultSet.findColumn("to_regclass")) != null;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private void runQuery(String query) {

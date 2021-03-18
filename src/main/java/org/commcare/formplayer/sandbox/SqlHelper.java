@@ -480,7 +480,7 @@ public class SqlHelper {
         }
     }
 
-    private static boolean isTableExist(Connection connection, String tableName) {
+    public static boolean isTableExist(Connection connection, String tableName) {
         ResultSet resultSet = null;
         try {
             DatabaseMetaData md = connection.getMetaData();
