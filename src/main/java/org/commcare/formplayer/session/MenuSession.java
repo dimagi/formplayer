@@ -1,22 +1,16 @@
 package org.commcare.formplayer.session;
 
-import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.utils.URIBuilder;
+import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
-import org.commcare.resources.model.InstallCancelledException;
-import org.commcare.resources.model.ResourceInitializationException;
-import org.commcare.resources.model.UnresolvedResourceException;
-import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
-import org.commcare.util.CommCarePlatform;
 import org.commcare.util.screen.*;
 import org.commcare.util.screen.MenuScreen;
 import org.javarosa.core.model.FormDef;
@@ -25,8 +19,6 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.condition.HereFunctionHandlerListener;
 import org.javarosa.core.util.MD5;
 import org.javarosa.core.util.OrderedHashtable;
-import org.javarosa.core.util.externalizable.DeserializationException;
-import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
@@ -41,11 +33,6 @@ import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.*;
 import org.commcare.formplayer.util.SessionUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.*;
 
 import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
@@ -79,7 +66,8 @@ public class MenuSession implements HereFunctionHandlerListener {
         this.session = session;
         this.engine = installService.configureApplication(session.getInstallReference(), session.getPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
-        this.sessionWrapper = new FormplayerSessionWrapper(deserializeSession(engine.getPlatform(), session.getCommcareSession()),
+        this.sessionWrapper = new FormplayerSessionWrapper(
+                SessionSerializer.deserialize(engine.getPlatform(), session.getCommcareSession()),
                 engine.getPlatform(), sandbox);
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
@@ -311,23 +299,6 @@ public class MenuSession implements HereFunctionHandlerListener {
                 session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory, false, null);
     }
 
-    private byte[] serializeSession(CommCareSession session) {
-        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-        DataOutputStream oos;
-        try {
-            oos = new DataOutputStream(baos);
-            session.serializeSessionState(oos);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return baos.toByteArray();
-    }
-
-    private CommCareSession deserializeSession(CommCarePlatform platform, byte[] bytes) throws DeserializationException, IOException {
-        DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes));
-        return CommCareSession.restoreSessionFromStream(platform, in);
-    }
-
     public SessionWrapper getSessionWrapper() {
         return sessionWrapper;
     }
@@ -396,7 +367,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     public SerializableMenuSession serialize() {
-        session.setCommcareSession(serializeSession(sessionWrapper));
+        session.setCommcareSession(SessionSerializer.serialize(sessionWrapper));
         return session;
     }
 
