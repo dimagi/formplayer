@@ -42,7 +42,6 @@ public class MenuSessionRepoTest {
                 "appId",
                 "archives/basic.ccz",
                 "en",
-                true,
                 "asUser",
                 true
         );

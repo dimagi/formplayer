@@ -60,6 +60,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     // Stores the entity screens created to manage state for the lifecycle of this request
     private Map<String, EntityScreen> entityScreenCache = new HashMap<>();
+    private boolean oneQuestionPerScreen;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
@@ -77,6 +78,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     public MenuSession(String username, String domain, String appId, String locale,
                        InstallService installService, RestoreFactory restoreFactory, String host,
                        boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
+        this.oneQuestionPerScreen = oneQuestionPerScreen;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
         this.session = new SerializableMenuSession(
                 TableBuilder.scrubName(username),
@@ -84,7 +86,6 @@ public class MenuSession implements HereFunctionHandlerListener {
                 appId,
                 resolvedInstallReference,
                 locale,
-                oneQuestionPerScreen,
                 asUser,
                 preview
         );
@@ -294,7 +295,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
         return new FormSession(sandbox, formDef, session.getUsername(), session.getDomain(),
                 sessionData, postUrl, session.getLocale(), session.getId(),
-                null, session.isOneQuestionPerScreen(),
+                null, oneQuestionPerScreen,
                 session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory, false, null);
     }
 

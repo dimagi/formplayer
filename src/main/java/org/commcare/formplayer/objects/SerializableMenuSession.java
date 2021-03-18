@@ -37,9 +37,6 @@ public class SerializableMenuSession {
     @Column(name="asuser", updatable=false)
     private String asUser;
 
-    @Transient
-    private boolean oneQuestionPerScreen;
-
     @Column(updatable=false)
     private boolean preview;
 
@@ -51,7 +48,6 @@ public class SerializableMenuSession {
 
     public SerializableMenuSession(String username, String domain, String appId,
                                    String installReference, String locale,
-                                   boolean oneQuestionPerScreen,
                                    String asUser, boolean preview){
         this.username = username;
         this.domain = domain;
@@ -59,7 +55,6 @@ public class SerializableMenuSession {
         this.installReference = installReference;
         this.locale = locale;
         this.asUser = asUser;
-        this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.preview = preview;
     }
 }
