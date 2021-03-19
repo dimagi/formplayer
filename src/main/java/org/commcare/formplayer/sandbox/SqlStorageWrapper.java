@@ -81,7 +81,7 @@ public class SqlStorageWrapper<T extends Persistable>
                 Assertions.assertThat(postgresResult).usingRecursiveComparison().isEqualTo(result);
                 meterRegistry.counter("storage.comparison.equals").increment();
             } catch (AssertionError e) {
-                meterRegistry.counter("storage.comparison.failures").increment();
+                meterRegistry.counter("storage.comparison.failures", tag, e.getMessage()).increment();
                 log.info("Different Results from postgres and sqlite operation : "+ tag + "  :: " + e);
             }
         } catch (Exception e) {
