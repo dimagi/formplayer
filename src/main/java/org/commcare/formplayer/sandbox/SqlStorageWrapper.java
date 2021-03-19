@@ -2,6 +2,7 @@ package org.commcare.formplayer.sandbox;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.assertj.core.api.Assertions;
 import org.commcare.formplayer.services.ConnectionHandler;
 import org.javarosa.core.model.condition.RequestAbandonedException;
 import org.javarosa.core.services.storage.EntityFilter;
@@ -47,6 +48,10 @@ public class SqlStorageWrapper<T extends Persistable>
     }
 
     private <RESULT> RESULT compareCallable(String tag, Callable<RESULT> sqliteOperation, Callable<RESULT> postgresOperation) {
+        return compareCallable(tag, sqliteOperation, postgresOperation, true);
+    }
+
+    private <RESULT> RESULT compareCallable(String tag, Callable<RESULT> sqliteOperation, Callable<RESULT> postgresOperation, boolean compare) {
         RESULT result = null;
         long sqliteTime;
         long postgresTime;
@@ -63,7 +68,7 @@ public class SqlStorageWrapper<T extends Persistable>
 
         try {
             long start = System.currentTimeMillis();
-            postgresOperation.call(); // TODO compare the results
+            RESULT postgresResult = postgresOperation.call();
             postgresTime = System.currentTimeMillis() - start;
             meterRegistry
                     .timer("storage.postgres." + tag)
@@ -71,6 +76,14 @@ public class SqlStorageWrapper<T extends Persistable>
 
             Timer diffTimer = meterRegistry.timer("storage.timing." + tag);
             diffTimer.record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
+
+            try {
+                Assertions.assertThat(postgresResult).usingRecursiveComparison().isEqualTo(result);
+                meterRegistry.counter("storage.comparison.equals").increment();
+            } catch (AssertionError e) {
+                meterRegistry.counter("storage.comparison.failures").increment();
+                log.info("Different Results from postgres and sqlite operation : "+ tag + "  :: " + e);
+            }
         } catch (Exception e) {
             log.error("Postgres " + tag + " operation failed with exception: " + e);
         }
@@ -209,7 +222,8 @@ public class SqlStorageWrapper<T extends Persistable>
         return compareCallable(
                 "iterate",
                 () -> sqliteStorage.iterate(),
-                () -> postgresStorage.iterate()
+                () -> postgresStorage.iterate(),
+                false // Unfortunately, there isn't an easy way to compare 2 Jdbciterators.
         );
     }
 
@@ -218,7 +232,8 @@ public class SqlStorageWrapper<T extends Persistable>
         return compareCallable(
                 "iterate.includeData",
                 () -> sqliteStorage.iterate(includeData),
-                () -> postgresStorage.iterate(includeData)
+                () -> postgresStorage.iterate(includeData),
+                false
         );
     }
 
