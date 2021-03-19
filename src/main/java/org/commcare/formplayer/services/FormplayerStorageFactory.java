@@ -36,6 +36,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private String domain;
     private String appId;
     private String asUsername;
+    private boolean usePostgres;
 
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
     private PostgresDB postgresDB = new PostgresDB(null);
@@ -100,6 +101,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.postgresDB.closeConnection();
         this.sqLiteDB = new ApplicationDB(domain, username, asUsername, appId);
         this.sqLiteDB.closeConnection();
+        this.usePostgres = canUsePostgres();
         this.propertyManager = new FormplayerPropertyManager(newStorage(PropertyManager.STORAGE_KEY, Property.class));
         storageManager = new StorageManager(this);
     }
@@ -118,10 +120,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        if (!sqLiteDB.tableExists(name) || postgresDB.tableExists(name)) {
-            // Using wrapper when
-            // - SQLITE table doesn't exists, meaning this is a fresh installation.
-            // - POSTGRES table exists, meaning app is already using dual wrapper.
+        if (usePostgres) {
             return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name, meterRegistry);
         } else {
             return new SqlStorage(this.sqLiteDB, type, name);
@@ -166,5 +165,14 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     public StorageManager getStorageManager() {
         return storageManager;
+    }
+
+    private boolean canUsePostgres() {
+        // Using postgres only when
+        // - SQLITE table doesn't exists, meaning this is a fresh installation.
+        // - POSTGRES table exists, meaning app is already using dual wrapper.
+        // For this we'll use the property table.
+        return !sqLiteDB.tableExists(PropertyManager.STORAGE_KEY) ||
+                postgresDB.tableExists(PropertyManager.STORAGE_KEY);
     }
 }
