@@ -4,6 +4,7 @@ import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.postgresutil.PostgresApplicationDB;
 import org.commcare.formplayer.postgresutil.PostgresDB;
+import org.commcare.formplayer.postgresutil.PostgresProperties;
 import org.commcare.formplayer.sandbox.SqlStorageWrapper;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
@@ -39,7 +40,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private boolean usePostgres;
 
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
-    private PostgresDB postgresDB = new PostgresDB(null);
 
     private FormplayerPropertyManager propertyManager;
     private StorageManager storageManager;
@@ -49,6 +49,11 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Autowired
     private DatadogMeterRegistry meterRegistry;
+
+    @Autowired
+    private PostgresProperties properties;
+
+    private PostgresDB postgresDB = new PostgresDB(null, properties);
 
     public void configure(InstallRequestBean installRequestBean) {
         configure(
@@ -97,7 +102,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.postgresDB = new PostgresApplicationDB(domain, username, asUsername, appId);
+        this.postgresDB = new PostgresApplicationDB(domain, username, asUsername, appId, properties);
         this.postgresDB.closeConnection();
         this.sqLiteDB = new ApplicationDB(domain, username, asUsername, appId);
         this.sqLiteDB.closeConnection();
