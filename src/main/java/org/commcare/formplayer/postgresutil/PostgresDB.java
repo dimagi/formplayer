@@ -17,9 +17,11 @@ import java.util.Properties;
 public class PostgresDB implements ConnectionHandler {
     private DBPath dbPath;
     private Connection connection;
+    private PostgresProperties properties;
 
-    public PostgresDB(DBPath dbPath) {
+    public PostgresDB(DBPath dbPath, PostgresProperties properties) {
         this.dbPath = dbPath;
+        this.properties = properties;
         if (dbPath != null) {
             // Create the schema before doing anything.
             runQuery("CREATE SCHEMA IF NOT EXISTS " + getCurrentSchema() + ";");
@@ -34,10 +36,10 @@ public class PostgresDB implements ConnectionHandler {
         try {
             Class.forName("org.postgresql.Driver");
             Properties props = new Properties();
-            props.setProperty("user", "commcarehq");
-            props.setProperty("password", "commcarehq");
+            props.setProperty("user", properties.getUsername());
+            props.setProperty("password", properties.getPassword());
             props.setProperty("currentSchema", getCurrentSchema());
-            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/formplayer", props);
+            return DriverManager.getConnection(properties.getUrl(), props);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

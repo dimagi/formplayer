@@ -5,8 +5,8 @@ package org.commcare.formplayer.postgresutil;
  */
 public class PostgresApplicationDB extends PostgresDB {
 
-    public PostgresApplicationDB(String domain, String username, String asUsername, String appId) {
-        super(new PostgresDBPath(domain, username, asUsername, appId));
+    public PostgresApplicationDB(String domain, String username, String asUsername, String appId, PostgresProperties properties) {
+        super(new PostgresDBPath(domain, username, asUsername, appId), properties);
     }
 
 }
