@@ -77,12 +77,14 @@ public class SqlStorageWrapper<T extends Persistable>
             Timer diffTimer = meterRegistry.timer("storage.timing." + tag);
             diffTimer.record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
 
-            try {
-                Assertions.assertThat(postgresResult).usingRecursiveComparison().isEqualTo(result);
-                meterRegistry.counter("storage.comparison.equals").increment();
-            } catch (AssertionError e) {
-                meterRegistry.counter("storage.comparison.failures", tag, e.getMessage()).increment();
-                log.info("Different Results from postgres and sqlite operation : "+ tag + "  :: " + e);
+            if (compare) {
+                try {
+                    Assertions.assertThat(postgresResult).usingRecursiveComparison().isEqualTo(result);
+                    meterRegistry.counter("storage.comparison.equals").increment();
+                } catch (AssertionError e) {
+                    meterRegistry.counter("storage.comparison.failures", tag, e.getMessage()).increment();
+                    log.info("Different Results from postgres and sqlite operation : " + tag + "  :: " + e);
+                }
             }
         } catch (Exception e) {
             log.error("Postgres " + tag + " operation failed with exception: " + e);
