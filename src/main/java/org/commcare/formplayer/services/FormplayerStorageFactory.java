@@ -126,7 +126,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
         if (usePostgres) {
-            return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name, meterRegistry);
+            boolean usePostgresResult = getDomain().contains("postgres");
+            return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name, meterRegistry, usePostgresResult);
         } else {
             return new SqlStorage(this.sqLiteDB, type, name);
         }
@@ -174,6 +175,6 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     private boolean canUsePostgres() {
         // Use domains names for now.
-        return "shivam-testing".equals(getDomain());
+        return getDomain().startsWith("dual-storage");
     }
 }
