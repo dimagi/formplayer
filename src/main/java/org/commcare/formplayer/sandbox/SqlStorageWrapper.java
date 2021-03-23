@@ -92,13 +92,29 @@ public class SqlStorageWrapper<T extends Persistable>
         return result;
     }
 
+    private void writePostgres(Runnable operation, Timer timer) {
+        long start = System.currentTimeMillis();
+        operation.run();
+        timer.record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
+    }
+
     @Override
     public void write(Persistable p) {
-        compareRunnable(
-                "write",
-                () -> sqliteStorage.write(p),
-                () -> postgresStorage.write(p)
-        );
+        Timer sqliteTimer = meterRegistry.timer("timer.sqlite.write");
+        sqliteTimer.record(() -> sqliteStorage.write(p));
+
+        // Retry postgres twice
+        Timer postgresTimer = meterRegistry.timer("timer.postgres.write");
+        Runnable postgresWrite = () -> postgresStorage.write(p);
+        try {
+            writePostgres(postgresWrite, postgresTimer);
+        } catch (Exception e) {
+            try {
+                writePostgres(postgresWrite, postgresTimer);
+            } catch (Exception ex) {
+                log.error("Postgres write failed with exception: " + ex);
+            }
+        }
     }
 
     @Override
