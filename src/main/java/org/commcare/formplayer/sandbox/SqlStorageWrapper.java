@@ -31,12 +31,15 @@ public class SqlStorageWrapper<T extends Persistable>
     private SqlStorage<T> sqliteStorage;
     private SqlStorage<T> postgresStorage;
     private MeterRegistry meterRegistry;
+    private boolean usePostgresResult;
 
     public SqlStorageWrapper(ConnectionHandler sqliteConnection, ConnectionHandler postgresConnection,
-                             Class<T> prototype, String tableName, MeterRegistry meterRegistry) {
+                             Class<T> prototype, String tableName, MeterRegistry meterRegistry,
+                             boolean usePostgresResult) {
         sqliteStorage = new SqlStorage<T>(sqliteConnection, prototype, tableName);
         postgresStorage = new SqlStorage<T>(postgresConnection, prototype, tableName);
         this.meterRegistry = meterRegistry;
+        this.usePostgresResult = usePostgresResult;
     }
 
     private void compareRunnable(String tag, Runnable sqliteOperation, Runnable postgresOperation) {
@@ -63,6 +66,7 @@ public class SqlStorageWrapper<T extends Persistable>
 
     private <RESULT> RESULT compareCallable(String tag, Callable<RESULT> sqliteOperation, Callable<RESULT> postgresOperation, boolean compare) {
         RESULT result = null;
+        RESULT postgresResult = null;
         long sqliteTime;
         long postgresTime;
         try {
@@ -78,7 +82,7 @@ public class SqlStorageWrapper<T extends Persistable>
 
         try {
             long start = System.currentTimeMillis();
-            RESULT postgresResult = postgresOperation.call();
+            postgresResult = postgresOperation.call();
             postgresTime = System.currentTimeMillis() - start;
             meterRegistry
                     .timer("storage.postgres." + tag)
@@ -93,7 +97,7 @@ public class SqlStorageWrapper<T extends Persistable>
         } catch (Exception e) {
             log.error("Postgres " + tag + " operation failed with exception: " + e);
         }
-        return result;
+        return usePostgresResult ? postgresResult : result;
     }
 
     private void writePostgres(Runnable operation, Timer timer) {
@@ -161,6 +165,7 @@ public class SqlStorageWrapper<T extends Persistable>
     public T getRecordForValue(String fieldName, Object value)
             throws NoSuchElementException, InvalidIndexException {
         T result;
+        T postgresResult = null;
         long sqliteTime;
         long postgresTime;
         try {
@@ -178,7 +183,7 @@ public class SqlStorageWrapper<T extends Persistable>
 
         try {
             long start = System.currentTimeMillis();
-            T postgresResult = postgresStorage.getRecordForValue(fieldName, value);
+            postgresResult = postgresStorage.getRecordForValue(fieldName, value);
             postgresTime = System.currentTimeMillis() - start;
             meterRegistry
                     .timer("storage.postgres.getRecord.singleValue")
@@ -191,7 +196,7 @@ public class SqlStorageWrapper<T extends Persistable>
         } catch (Exception e) {
             log.error("Postgres getRecordForValue operation failed with exception: " + e);
         }
-        return result;
+        return usePostgresResult ? postgresResult : result;
     }
 
     @Override
