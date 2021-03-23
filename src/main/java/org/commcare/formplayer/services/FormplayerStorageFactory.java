@@ -24,7 +24,7 @@ import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.util.FormplayerPropertyManager;
 import org.commcare.formplayer.util.UserUtils;
 
-import io.micrometer.datadog.DatadogMeterRegistry;
+import io.micrometer.core.instrument.MeterRegistry;
 
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
@@ -48,7 +48,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private FormSessionService formSessionService;
 
     @Autowired
-    private DatadogMeterRegistry meterRegistry;
+    private MeterRegistry meterRegistry;
 
     @Autowired
     private PostgresProperties properties;

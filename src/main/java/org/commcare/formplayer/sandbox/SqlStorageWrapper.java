@@ -18,8 +18,8 @@ import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.datadog.DatadogMeterRegistry;
 
 /**
  * @author $|-|!˅@M
@@ -30,10 +30,10 @@ public class SqlStorageWrapper<T extends Persistable>
 
     private SqlStorage<T> sqliteStorage;
     private SqlStorage<T> postgresStorage;
-    private DatadogMeterRegistry meterRegistry;
+    private MeterRegistry meterRegistry;
 
     public SqlStorageWrapper(ConnectionHandler sqliteConnection, ConnectionHandler postgresConnection,
-                             Class<T> prototype, String tableName, DatadogMeterRegistry meterRegistry) {
+                             Class<T> prototype, String tableName, MeterRegistry meterRegistry) {
         sqliteStorage = new SqlStorage<T>(sqliteConnection, prototype, tableName);
         postgresStorage = new SqlStorage<T>(postgresConnection, prototype, tableName);
         this.meterRegistry = meterRegistry;
@@ -45,6 +45,16 @@ public class SqlStorageWrapper<T extends Persistable>
 
         Timer postgresTimer = meterRegistry.timer("timer.postgres." + tag);
         postgresTimer.record(postgresOperation);
+    }
+
+    private <RESULT> void compareResult(RESULT first, RESULT second, String tag) {
+        try {
+            Assertions.assertThat(first).usingRecursiveComparison().isEqualTo(second);
+            meterRegistry.counter("storage.comparison.equals").increment();
+        } catch (AssertionError e) {
+            meterRegistry.counter("storage.comparison.failures", tag, e.getMessage()).increment();
+            log.info("Different Results from postgres and sqlite operation : " + tag + "  :: " + e);
+        }
     }
 
     private <RESULT> RESULT compareCallable(String tag, Callable<RESULT> sqliteOperation, Callable<RESULT> postgresOperation) {
@@ -78,13 +88,7 @@ public class SqlStorageWrapper<T extends Persistable>
             diffTimer.record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
 
             if (compare) {
-                try {
-                    Assertions.assertThat(postgresResult).usingRecursiveComparison().isEqualTo(result);
-                    meterRegistry.counter("storage.comparison.equals").increment();
-                } catch (AssertionError e) {
-                    meterRegistry.counter("storage.comparison.failures", tag, e.getMessage()).increment();
-                    log.info("Different Results from postgres and sqlite operation : " + tag + "  :: " + e);
-                }
+                compareResult(result, postgresResult, tag);
             }
         } catch (Exception e) {
             log.error("Postgres " + tag + " operation failed with exception: " + e);
@@ -174,7 +178,7 @@ public class SqlStorageWrapper<T extends Persistable>
 
         try {
             long start = System.currentTimeMillis();
-            postgresStorage.getRecordForValue(fieldName, value);
+            T postgresResult = postgresStorage.getRecordForValue(fieldName, value);
             postgresTime = System.currentTimeMillis() - start;
             meterRegistry
                     .timer("storage.postgres.getRecord.singleValue")
@@ -182,6 +186,8 @@ public class SqlStorageWrapper<T extends Persistable>
 
             Timer diffTimer = meterRegistry.timer("storage.timing.getRecord.singleValue");
             diffTimer.record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
+
+            compareResult(result, postgresResult, "getRecord.singleValue");
         } catch (Exception e) {
             log.error("Postgres getRecordForValue operation failed with exception: " + e);
         }
