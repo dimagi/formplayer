@@ -173,11 +173,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     }
 
     private boolean canUsePostgres() {
-        // Using postgres only when
-        // - SQLITE table doesn't exists, meaning this is a fresh installation.
-        // - POSTGRES table exists, meaning app is already using dual wrapper.
-        // For this we'll use the property table.
-        return !sqLiteDB.tableExists(PropertyManager.STORAGE_KEY) ||
-                postgresDB.tableExists(PropertyManager.STORAGE_KEY);
+        // Use domains names for now.
+        return "shivam-testing".equals(getDomain());
     }
 }
