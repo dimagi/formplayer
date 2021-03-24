@@ -55,7 +55,6 @@ branches:
   - ce/negative-index # Cal Feb 2
   - ce/eof-nav # Cal Feb 23
   - inMemoryCaseSearchCache # Shubham Mar 17
-  - beta # Shivam Mar 24
 submodules:
   libs/commcare:
     trunk: formplayer
