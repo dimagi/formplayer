@@ -194,6 +194,15 @@ public class SqlStorageWrapper<T extends Persistable>
     }
 
     @Override
+    public List<Integer> getIDsForValues(String[] metaFieldNames, Object[] values, String[] inverseFieldNames, Object[] inverseValues, LinkedHashSet<Integer> returnSet) {
+        return compareCallable(
+                "getIds.multiValues.inverseFields",
+                () -> sqliteStorage.getIDsForValues(metaFieldNames, values, inverseFieldNames, inverseValues, returnSet),
+                () -> postgresStorage.getIDsForValues(metaFieldNames, values, inverseFieldNames, inverseValues, returnSet)
+        );
+    }
+
+    @Override
     public T getRecordForValue(String fieldName, Object value)
             throws NoSuchElementException, InvalidIndexException {
         String tag = "getRecord.singleValue";
