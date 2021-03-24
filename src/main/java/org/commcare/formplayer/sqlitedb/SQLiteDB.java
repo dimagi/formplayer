@@ -2,6 +2,7 @@ package org.commcare.formplayer.sqlitedb;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.sandbox.SqlHelper;
 import org.sqlite.SQLiteConnection;
 import org.commcare.formplayer.sandbox.ArchivableFile;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
@@ -91,6 +92,10 @@ public class SQLiteDB implements ConnectionHandler {
 
     public boolean databaseFileExists() {
         return dbArchivableFile.exists();
+    }
+
+    public boolean tableExists(String tableName) {
+        return SqlHelper.isTableExist(getConnection(), tableName);
     }
 
     public boolean databaseFolderExists() {
