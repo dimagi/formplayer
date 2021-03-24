@@ -54,7 +54,6 @@ branches:
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - ce/eof-nav # Cal Feb 23
-  - sk/security  # Simon Mar 15
   - inMemoryCaseSearchCache # Shubham Mar 17
   - beta # Shivam Mar 24
 submodules:
