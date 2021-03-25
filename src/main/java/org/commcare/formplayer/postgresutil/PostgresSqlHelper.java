@@ -5,6 +5,7 @@ import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
 import org.commcare.formplayer.services.ConnectionHandler;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.util.Pair;
+import org.javarosa.core.services.Logger;
 import org.javarosa.core.services.storage.Persistable;
 
 import java.io.ByteArrayInputStream;
@@ -25,6 +26,14 @@ import static org.commcare.modern.database.TableBuilder.scrubName;
  * @author $|-|!˅@M
  */
 public class PostgresSqlHelper {
+
+    public static String getDropTableQuery(String storageKey, String schemaName) {
+        return "DROP TABLE IF EXISTS " +  schemaName + "." + storageKey;
+    }
+
+    public static String getSelectStatement(String columns, String tableName, String schemaName) {
+        return "Select " + columns + " FROM " + schemaName + "." + tableName;
+    }
 
     /**
      * @param preparedStatement the PreparedStatement to populate with arguments
@@ -168,6 +177,20 @@ public class PostgresSqlHelper {
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
         }
+    }
+
+    public static boolean isTableExists(Connection connection, String currentSchema, String tableName) {
+        String query = "SELECT to_regclass('" + currentSchema + "." + tableName + "');";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getObject(resultSet.findColumn("to_regclass")) != null;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 }

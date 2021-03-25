@@ -73,21 +73,6 @@ public class PostgresDB implements ConnectionHandler {
         }
     }
 
-    public boolean tableExists(String name) {
-        String query = "SELECT to_regclass('" + getCurrentSchema() + "." + name + "');";
-        Connection connection = getConnection();
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getObject(resultSet.findColumn("to_regclass")) != null;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     private void runQuery(String query) {
         Connection connection = getConnection();
         PreparedStatement preparedStatement = null;
