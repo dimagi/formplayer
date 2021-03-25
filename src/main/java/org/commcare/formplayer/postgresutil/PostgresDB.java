@@ -38,7 +38,6 @@ public class PostgresDB implements ConnectionHandler {
             Properties props = new Properties();
             props.setProperty("user", properties.getUsername());
             props.setProperty("password", properties.getPassword());
-            props.setProperty("currentSchema", getCurrentSchema());
             return DriverManager.getConnection(properties.getUrl(), props);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
