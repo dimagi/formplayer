@@ -95,7 +95,7 @@ public class EntityStorageCache {
         Pair<String, String[]> wherePair =
                 DatabaseHelper.createWhere(new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
                         new String[]{this.mCacheName, entityKey, cacheKey});
-        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
+        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second, isPostgres(), getCurrentSchema());
         //We need to clear this cache value if it exists first.
         HashMap<String, Object> contentValues = new HashMap<>();
         contentValues.put(COL_CACHE_NAME, mCacheName);
@@ -103,7 +103,7 @@ public class EntityStorageCache {
         contentValues.put(COL_CACHE_KEY, cacheKey);
         contentValues.put(COL_VALUE, value);
         contentValues.put(COL_TIMESTAMP, String.valueOf(timestamp));
-        SqlHelper.basicInsert(handler.getConnection(), TABLE_NAME, contentValues, handler instanceof PostgresDB);
+        SqlHelper.basicInsert(handler.getConnection(), TABLE_NAME, contentValues, isPostgres(), getCurrentSchema());
     }
 
     // Currently unused
@@ -112,7 +112,7 @@ public class EntityStorageCache {
         try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
                     TABLE_NAME,
                     new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
-                    new String[]{mCacheName, entityKey, cacheKey})) {
+                    new String[]{mCacheName, entityKey, cacheKey}, isPostgres(), getCurrentSchema())) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
                 if (resultSet.next()) {
@@ -133,7 +133,7 @@ public class EntityStorageCache {
         Pair<String, String[]> wherePair =
                 DatabaseHelper.createWhere(new String[]{COL_CACHE_NAME, COL_ENTITY_KEY},
                         new String[]{this.mCacheName, recordId});
-        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
+        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second, isPostgres(), getCurrentSchema());
     }
 
     /**
@@ -151,7 +151,7 @@ public class EntityStorageCache {
             SqlHelper.deleteFromTableWhere(handler.getConnection(),
                     TABLE_NAME,
                     MessageFormat.format("{0} = ? AND {1} IN {2}", COL_CACHE_NAME, COL_ENTITY_KEY, querySet.first),
-                    updated);
+                    updated, isPostgres(), getCurrentSchema());
         }
     }
 
@@ -162,6 +162,18 @@ public class EntityStorageCache {
         } catch (NumberFormatException nfe) {
             //TODO: Kill this cache key if this didn't work
             return -1;
+        }
+    }
+
+    private boolean isPostgres() {
+        return handler instanceof PostgresDB;
+    }
+
+    private String getCurrentSchema() {
+        if (isPostgres()) {
+            return ((PostgresDB) handler).getCurrentSchema();
+        } else {
+            return null;
         }
     }
 }
