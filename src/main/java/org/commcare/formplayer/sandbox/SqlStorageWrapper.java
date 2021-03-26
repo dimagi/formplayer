@@ -42,11 +42,24 @@ public class SqlStorageWrapper<T extends Persistable>
     }
 
     private void compareRunnable(String tag, Runnable sqliteOperation, Runnable postgresOperation) {
-        Timer sqliteTimer = meterRegistry.timer("timer.sqlite." + tag);
-        sqliteTimer.record(sqliteOperation);
+        long start = System.currentTimeMillis();
+        sqliteOperation.run();
+        long sqliteTime = System.currentTimeMillis() - start;
+        meterRegistry
+                .timer("storage.sqlite." + tag)
+                .record(sqliteTime, TimeUnit.MILLISECONDS);
 
-        Timer postgresTimer = meterRegistry.timer("timer.postgres." + tag);
-        postgresTimer.record(postgresOperation);
+        start = System.currentTimeMillis();
+        postgresOperation.run();
+        long postgresTime = System.currentTimeMillis() - start;
+        meterRegistry
+                .timer("storage.postgres." + tag)
+                .record(postgresTime, TimeUnit.MILLISECONDS);
+
+        // Record diff
+        meterRegistry
+                .timer("storage.diff." + tag)
+                .record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
     }
 
     private <RESULT> void compareResult(RESULT first, RESULT second, String tag) {
@@ -87,7 +100,7 @@ public class SqlStorageWrapper<T extends Persistable>
                     .timer("storage.postgres." + tag)
                     .record(postgresTime, TimeUnit.MILLISECONDS);
 
-            Timer diffTimer = meterRegistry.timer("storage.timing." + tag);
+            Timer diffTimer = meterRegistry.timer("storage.diff." + tag);
             diffTimer.record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
 
             if (compare) {
@@ -99,29 +112,49 @@ public class SqlStorageWrapper<T extends Persistable>
         return usePostgresResult ? postgresResult : result;
     }
 
-    private void writePostgres(Runnable operation, Timer timer) {
+    private long writePostgres(Runnable operation) {
         long start = System.currentTimeMillis();
         operation.run();
-        timer.record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
+        long postgresTime = System.currentTimeMillis() - start;
+        meterRegistry
+                .timer("storage.postgres.write")
+                .record(postgresTime, TimeUnit.MILLISECONDS);
+        return postgresTime;
     }
 
     @Override
     public void write(Persistable p) {
-        Timer sqliteTimer = meterRegistry.timer("timer.sqlite.write");
-        sqliteTimer.record(() -> sqliteStorage.write(p));
+        long start = System.currentTimeMillis();
+        sqliteStorage.write(p);
+        long sqliteTime = System.currentTimeMillis() - start;
+
+        meterRegistry
+                .timer("storage.sqlite.write")
+                .record(sqliteTime, TimeUnit.MILLISECONDS);
 
         // Retry postgres twice
-        Timer postgresTimer = meterRegistry.timer("timer.postgres.write");
+        long postgresTime;
         Runnable postgresWrite = () -> postgresStorage.write(p);
         try {
-            writePostgres(postgresWrite, postgresTimer);
+            postgresTime = writePostgres(postgresWrite);
         } catch (Exception e) {
+            meterRegistry
+                    .counter("storage.postgres.write.failures.once")
+                    .increment();
+            FormplayerSentry.captureException(new Exception(e), SentryLevel.ERROR);
             try {
-                writePostgres(postgresWrite, postgresTimer);
+                postgresTime = writePostgres(postgresWrite);
             } catch (Exception ex) {
+                meterRegistry
+                        .counter("storage.postgres.write.failures.twice")
+                        .increment();
                 FormplayerSentry.captureException(new Exception(ex), SentryLevel.ERROR);
+                return;
             }
         }
+        meterRegistry
+                .timer("storage.diff.write")
+                .record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -163,6 +196,7 @@ public class SqlStorageWrapper<T extends Persistable>
     @Override
     public T getRecordForValue(String fieldName, Object value)
             throws NoSuchElementException, InvalidIndexException {
+        String tag = "getRecord.singleValue";
         T result;
         T postgresResult = null;
         long sqliteTime;
@@ -172,7 +206,7 @@ public class SqlStorageWrapper<T extends Persistable>
             result = sqliteStorage.getRecordForValue(fieldName, value);
             sqliteTime = System.currentTimeMillis() - start;
             meterRegistry
-                    .timer("storage.sqlite.getRecord.singleValue")
+                    .timer("storage.sqlite." + tag)
                     .record(sqliteTime, TimeUnit.MILLISECONDS);
         } catch (NoSuchElementException | InvalidIndexException e) {
             throw e;
@@ -185,13 +219,13 @@ public class SqlStorageWrapper<T extends Persistable>
             postgresResult = postgresStorage.getRecordForValue(fieldName, value);
             postgresTime = System.currentTimeMillis() - start;
             meterRegistry
-                    .timer("storage.postgres.getRecord.singleValue")
+                    .timer("storage.postgres." + tag)
                     .record(postgresTime, TimeUnit.MILLISECONDS);
 
-            Timer diffTimer = meterRegistry.timer("storage.timing.getRecord.singleValue");
+            Timer diffTimer = meterRegistry.timer("storage.diff." + tag);
             diffTimer.record(postgresTime - sqliteTime, TimeUnit.MILLISECONDS);
 
-            compareResult(result, postgresResult, "getRecord.singleValue");
+            compareResult(result, postgresResult, tag);
         } catch (Exception e) {
             FormplayerSentry.captureException(new Exception(e), SentryLevel.WARNING);
         }
