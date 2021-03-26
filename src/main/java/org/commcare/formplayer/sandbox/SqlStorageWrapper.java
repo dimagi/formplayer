@@ -1,9 +1,8 @@
 package org.commcare.formplayer.sandbox;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.assertj.core.api.Assertions;
 import org.commcare.formplayer.services.ConnectionHandler;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.javarosa.core.model.condition.RequestAbandonedException;
 import org.javarosa.core.services.storage.EntityFilter;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
@@ -20,13 +19,13 @@ import java.util.concurrent.TimeUnit;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.sentry.SentryLevel;
 
 /**
  * @author $|-|!˅@M
  */
 public class SqlStorageWrapper<T extends Persistable>
         implements IStorageUtilityIndexed<T>, Iterable<T> {
-    private final Log log = LogFactory.getLog(SqlStorageWrapper.class);
 
     private SqlStorage<T> sqliteStorage;
     private SqlStorage<T> postgresStorage;
@@ -56,7 +55,7 @@ public class SqlStorageWrapper<T extends Persistable>
             meterRegistry.counter("storage.comparison.equals").increment();
         } catch (AssertionError e) {
             meterRegistry.counter("storage.comparison.failures", tag, e.getMessage()).increment();
-            log.info("Different Results from postgres and sqlite operation : " + tag + "  :: " + e);
+            FormplayerSentry.captureException(new Exception(e), SentryLevel.WARNING);
         }
     }
 
@@ -95,7 +94,7 @@ public class SqlStorageWrapper<T extends Persistable>
                 compareResult(result, postgresResult, tag);
             }
         } catch (Exception e) {
-            log.error("Postgres " + tag + " operation failed with exception: " + e);
+            FormplayerSentry.captureException(new Exception(e), SentryLevel.ERROR);
         }
         return usePostgresResult ? postgresResult : result;
     }
@@ -120,7 +119,7 @@ public class SqlStorageWrapper<T extends Persistable>
             try {
                 writePostgres(postgresWrite, postgresTimer);
             } catch (Exception ex) {
-                log.error("Postgres write failed with exception: " + ex);
+                FormplayerSentry.captureException(new Exception(ex), SentryLevel.ERROR);
             }
         }
     }
@@ -194,7 +193,7 @@ public class SqlStorageWrapper<T extends Persistable>
 
             compareResult(result, postgresResult, "getRecord.singleValue");
         } catch (Exception e) {
-            log.error("Postgres getRecordForValue operation failed with exception: " + e);
+            FormplayerSentry.captureException(new Exception(e), SentryLevel.WARNING);
         }
         return usePostgresResult ? postgresResult : result;
     }
