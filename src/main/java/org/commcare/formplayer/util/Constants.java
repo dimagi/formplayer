@@ -146,6 +146,12 @@ public class Constants {
         public static final String COMPLETE_RESTORE = "complete_restore";
         public static final String VALIDATE_SUBMISSION = "validate_submission";
         public static final String END_OF_FORM_NAV = "end_of_form_navigation";
+
+        public static final String GET_SESSION = "get_session";
+        public static final String INITIALIZE_SESSION = "initialize_session";
+        public static final String PROCESS_ANSWER = "process_answer";
+        public static final String UPDATE_SESSION = "update_session";
+        public static final String COMPILE_RESPONSE = "compile_response";
     }
 
     // Requests

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.web.client.WebClient;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -17,8 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -130,19 +127,44 @@ public class FormController extends AbstractBaseController{
     @ConfigureStorageFromSession
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
                                                 @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionService.getSessionById(answerQuestionBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+
+        SerializableFormSession serializableFormSession = FormplayerSentry.timedBreadcrumb(
+                Constants.TimingCategories.GET_SESSION,
+                () -> formSessionService.getSessionById(answerQuestionBean.getSessionId())
+        );
 
         // add tags for future datadog/sentry requests
         datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
         Sentry.setTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
-        FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
-                answerQuestionBean.getFormIndex());
+        FormSession formEntrySession = FormplayerSentry.timedBreadcrumb(
+                Constants.TimingCategories.INITIALIZE_SESSION,
+                () -> new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory)
+        );
+
+        FormEntryResponseBean responseBean = FormplayerSentry.timedBreadcrumb(
+                Constants.TimingCategories.PROCESS_ANSWER,
+                () -> formEntrySession.answerQuestionToJSON(
+                        answerQuestionBean.getAnswer(), answerQuestionBean.getFormIndex()
+                )
+        );
+
+        FormplayerSentry.timedBreadcrumb(
+                Constants.TimingCategories.GET_SESSION,
+                () -> formSessionService.getSessionById(answerQuestionBean.getSessionId())
+        );
+
         updateSession(formEntrySession);
-        responseBean.setTitle(serializableFormSession.getTitle());
-        responseBean.setSequenceId(serializableFormSession.getVersion());
-        responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
+
+        FormplayerSentry.timedBreadcrumb(
+                Constants.TimingCategories.COMPILE_RESPONSE,
+                () -> {
+                    responseBean.setTitle(serializableFormSession.getTitle());
+                    responseBean.setSequenceId(serializableFormSession.getVersion());
+                    responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
+                }
+        );
+
         return responseBean;
     }
 
@@ -464,8 +486,10 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
-
-    private void updateSession(FormSession formEntrySession) throws IOException {
-        formSessionService.saveSession(formEntrySession.serialize());
+    private void updateSession(FormSession formEntrySession) throws Exception {
+        FormplayerSentry.timedBreadcrumb(
+                Constants.TimingCategories.UPDATE_SESSION,
+                () -> formSessionService.saveSession(formEntrySession.serialize())
+        );
     }
 }
