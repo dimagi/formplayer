@@ -14,6 +14,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 
 /**
  * Auth filter that extracts the user details from the request (username, domain) along
@@ -28,6 +29,15 @@ public class CommCareSessionAuthFilter extends AbstractPreAuthenticatedProcessin
         @Override
         public boolean matches(HttpServletRequest request) {
             if (HttpMethod.valueOf(request.getMethod()) != HttpMethod.POST) {
+                return false;
+            }
+            if (request.getCookies() == null) {
+                return false;
+            }
+            boolean hasCookie = Arrays.stream(request.getCookies()).anyMatch(
+                    (cookie) -> Constants.POSTGRES_DJANGO_SESSION_ID.equals(cookie.getName())
+            );
+            if (!hasCookie) {
                 return false;
             }
             Authentication currentUser = SecurityContextHolder.getContext().getAuthentication();
