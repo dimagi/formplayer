@@ -102,11 +102,13 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
-        this.postgresDB = new PostgresApplicationDB(domain, username, asUsername, appId, properties);
-        this.postgresDB.closeConnection();
+        this.usePostgres = canUsePostgres();
+        if (usePostgres) {
+            this.postgresDB = new PostgresApplicationDB(domain, username, asUsername, appId, properties);
+            this.postgresDB.closeConnection();
+        }
         this.sqLiteDB = new ApplicationDB(domain, username, asUsername, appId);
         this.sqLiteDB.closeConnection();
-        this.usePostgres = canUsePostgres();
         this.propertyManager = new FormplayerPropertyManager(newStorage(PropertyManager.STORAGE_KEY, Property.class));
         storageManager = new StorageManager(this);
     }
