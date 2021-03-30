@@ -56,6 +56,7 @@ branches:
   - ce/eof-nav # Cal Feb 23
   - inMemoryCaseSearchCache # Shubham Mar 17
   - beta # Shivam Mar 25
+  - sr/menusession # Sravan March 30
 submodules:
   libs/commcare:
     trunk: formplayer
