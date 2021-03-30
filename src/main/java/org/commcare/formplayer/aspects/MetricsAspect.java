@@ -79,11 +79,6 @@ public class MetricsAspect {
         List<FormplayerDatadog.Tag> datadogArgs = new ArrayList<>();
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.REQUEST_TAG, requestPath));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.DURATION_TAG, timer.getDurationBucket()));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.UNBLOCKED_TIME_TAG, getUnblockedTimeBucket(timer)));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.BLOCKED_TIME_TAG, getBlockedTimeBucket()));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.RESTORE_BLOCKED_TIME_TAG, getRestoreBlockedTimeBucket()));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.INSTALL_BLOCKED_TIME_TAG, getInstallBlockedTimeBucket()));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.SUBMIT_BLOCKED_TIME_TAG, getSubmitBlockedTimeBucket()));
 
         if (timer.durationInSeconds() > 1) {
             datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
@@ -104,55 +99,6 @@ public class MetricsAspect {
         }
 
         return result;
-    }
-
-    private String getUnblockedTimeBucket(SimpleTimer timer) {
-        return Timing.getDurationBucket(timer.durationInSeconds() - getBlockedTime());
-    }
-
-    private String getBlockedTimeBucket() {
-        return Timing.getDurationBucket(getRestoreBlockedTime() +
-                getInstallBlockedTime() +
-                getSubmitBlockedTime());
-    }
-
-    private long getBlockedTime() {
-        return getRestoreBlockedTime() +
-                getInstallBlockedTime() +
-                getSubmitBlockedTime();
-    }
-
-    private String getRestoreBlockedTimeBucket() {
-        return Timing.getDurationBucket(getRestoreBlockedTime());
-    }
-
-    private long getRestoreBlockedTime() {
-        if (restoreFactory.getDownloadRestoreTimer() == null) {
-            return 0;
-        }
-        return restoreFactory.getDownloadRestoreTimer().durationInSeconds();
-    }
-
-    private String getInstallBlockedTimeBucket() {
-        return Timing.getDurationBucket(getInstallBlockedTime());
-    }
-
-    private long getInstallBlockedTime() {
-        if (installService.getInstallTimer() == null) {
-            return 0;
-        }
-        return installService.getInstallTimer().durationInSeconds();
-    }
-
-    private String getSubmitBlockedTimeBucket() {
-        return Timing.getDurationBucket(getSubmitBlockedTime());
-    }
-
-    private long getSubmitBlockedTime() {
-        if (submitService.getSubmitTimer() == null) {
-            return 0;
-        }
-        return submitService.getSubmitTimer().durationInSeconds();
     }
 
     private void sendTimingWarningToSentry(SimpleTimer timer, String category) {

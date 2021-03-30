@@ -121,11 +121,6 @@ public class Constants {
     public static final String REQUEST_TAG = "request";
     public static final String CATEGORY_TAG = "category";
     public static final String DURATION_TAG = "duration";
-    public static final String UNBLOCKED_TIME_TAG = "unblocked_time";
-    public static final String BLOCKED_TIME_TAG = "blocked_time";
-    public static final String RESTORE_BLOCKED_TIME_TAG = "restore_blocked_time";
-    public static final String INSTALL_BLOCKED_TIME_TAG = "install_blocked_time";
-    public static final String SUBMIT_BLOCKED_TIME_TAG = "submit_blocked_time";
 
     //.Sentry tags
     public static final String URI = "uri";
