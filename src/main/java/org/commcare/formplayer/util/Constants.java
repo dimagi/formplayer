@@ -108,7 +108,6 @@ public class Constants {
     public static String HMAC_REQUEST_ATTRIBUTE = "org.commcare.formplayer.hmacRequest";
 
     // Datadog metrics
-    public static final String DATADOG_REQUESTS = "requests";
     public static final String DATADOG_TIMINGS = "timings";
     public static final String DATADOG_GRANULAR_TIMINGS = "granular.timings";
     public static final String DATADOG_RESTORE_COUNT = "restore.count";

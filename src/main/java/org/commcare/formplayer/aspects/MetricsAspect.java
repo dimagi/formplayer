@@ -84,7 +84,6 @@ public class MetricsAspect {
             datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
         }
 
-        datadog.increment(Constants.DATADOG_REQUESTS, datadogArgs);
         datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
 
         FormplayerSentry.newBreadcrumb()
