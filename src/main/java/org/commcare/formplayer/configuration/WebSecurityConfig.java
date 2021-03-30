@@ -6,6 +6,7 @@ import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,6 +44,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers("/serverup", "/validate_form", "/favicon.ico")
             .permitAll();
+        // allow access to management endpoints
+        http.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll();
         http.authorizeRequests().antMatchers("/**").authenticated();
         http.addFilterAt(getHmacAuthFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(sessionAuthFilter(), HmacAuthFilter.class);
