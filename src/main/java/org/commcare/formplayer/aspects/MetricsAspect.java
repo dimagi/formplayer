@@ -77,7 +77,6 @@ public class MetricsAspect {
         timer.end();
 
         List<FormplayerDatadog.Tag> datadogArgs = new ArrayList<>();
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.REQUEST_TAG, requestPath));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.DURATION_TAG, timer.getDurationBucket()));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.UNBLOCKED_TIME_TAG, getUnblockedTimeBucket(timer)));
@@ -86,13 +85,14 @@ public class MetricsAspect {
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.INSTALL_BLOCKED_TIME_TAG, getInstallBlockedTimeBucket()));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.SUBMIT_BLOCKED_TIME_TAG, getSubmitBlockedTimeBucket()));
 
+        if (timer.durationInSeconds() > 1) {
+            datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
+        }
+
         datadog.increment(Constants.DATADOG_REQUESTS, datadogArgs);
         datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
 
-
-        long intolerableRequestThreshold = 60 * 1000;
-
-        if (timer.durationInMs() >= intolerableRequestThreshold) {
+        if (timer.durationInSeconds() >= 60) {
             sendTimingWarningToSentry(timer, INTOLERABLE_REQUEST);
         } else if (tolerableRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
             // limit tolerable requests sent to sentry
