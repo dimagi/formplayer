@@ -77,12 +77,9 @@ public class MetricsAspect {
         timer.end();
 
         List<FormplayerDatadog.Tag> datadogArgs = new ArrayList<>();
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.REQUEST_TAG, requestPath));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.DURATION_TAG, timer.getDurationBucket()));
-
-        if (timer.durationInSeconds() > 1) {
-            datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
-        }
 
         datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
 
