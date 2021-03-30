@@ -54,7 +54,7 @@ branches:
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - ce/eof-nav # Cal Feb 23
-  - inMemoryCaseSearchCache # Shubham Mar 17
+#  - inMemoryCaseSearchCache # Shubham Mar 17
   - beta # Shivam Mar 25
 submodules:
   libs/commcare:
@@ -63,4 +63,4 @@ submodules:
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
-      - caseSearchCache # Shubham Mar 17
+#      - caseSearchCache # Shubham Mar 17
