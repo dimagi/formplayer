@@ -149,11 +149,6 @@ public class FormController extends AbstractBaseController{
                 )
         );
 
-        FormplayerSentry.timedBreadcrumb(
-                Constants.TimingCategories.GET_SESSION,
-                () -> formSessionService.getSessionById(answerQuestionBean.getSessionId())
-        );
-
         updateSession(formEntrySession);
 
         FormplayerSentry.timedBreadcrumb(
