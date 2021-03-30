@@ -77,8 +77,6 @@ public class CategoryTimingHelper {
     private void recordDatadogMetrics(Timing timing, String category, Map<String, String> extras) {
         List<String> datadogArgs = new ArrayList<>();
         datadogArgs.add(Constants.CATEGORY_TAG + ":" + category);
-        datadogArgs.add(Constants.REQUEST_TAG + ":" + RequestUtils.getRequestEndpoint());
-        datadogArgs.add(Constants.DURATION_TAG + ":" + timing.getDurationBucket());
         if (extras != null) {
             for (Map.Entry<String, String> entry : extras.entrySet()) {
                 datadogArgs.add(entry.getKey() + ":" + entry.getValue());
