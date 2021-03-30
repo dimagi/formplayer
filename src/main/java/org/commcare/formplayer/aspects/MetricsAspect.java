@@ -87,6 +87,12 @@ public class MetricsAspect {
         datadog.increment(Constants.DATADOG_REQUESTS, datadogArgs);
         datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
 
+        FormplayerSentry.newBreadcrumb()
+                .setCategory("timing")
+                .setLevel(SentryLevel.WARNING)
+                .setData("duration", timer.formatDuration())
+                .record();
+
         if (timer.durationInSeconds() >= 60) {
             sendTimingWarningToSentry(timer, INTOLERABLE_REQUEST);
         } else if (tolerableRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
@@ -102,12 +108,6 @@ public class MetricsAspect {
     }
 
     private void sendTimingWarningToSentry(SimpleTimer timer, String category) {
-        FormplayerSentry.newBreadcrumb()
-                .setCategory(category)
-                .setLevel(SentryLevel.WARNING)
-                .setData("duration", timer.formatDuration())
-                .record();
-
         String message = "N/A";
         if (sentryMessages.containsKey(category)) {
             message = sentryMessages.get(category);
