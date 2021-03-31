@@ -67,6 +67,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.sentry.SentryLevel;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -218,6 +220,7 @@ public class RestoreFactory {
                         extras
                 );
             } catch (InvalidCaseGraphException e) {
+                FormplayerSentry.captureException(e, SentryLevel.INFO);
                 // if we have not already, do a fresh sync to try and resolve state
                 if (!isResponseTo412) {
                     handle412Sync(shouldPurge, skipFixtures);
