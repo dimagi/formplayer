@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -200,14 +201,20 @@ public class FormController extends AbstractBaseController{
             try {
                 restoreFactory.setAutoCommit(false);
 
-                SimpleTimer purgeCasesTimer = FormRecordProcessorHelper.processXML(
-                        new FormplayerTransactionParserFactory(
-                                restoreFactory.getSqlSandbox(),
-                                storageFactory.getPropertyManager().isBulkPerformanceEnabled()
-                        ),
-                        formEntrySession.submitGetXml(),
-                        storageFactory.getPropertyManager().isAutoPurgeEnabled()
-                ).getPurgeCasesTimer();
+                SimpleTimer purgeCasesTimer = null;
+
+                try {
+                    purgeCasesTimer = FormRecordProcessorHelper.processXML(
+                            new FormplayerTransactionParserFactory(
+                                    restoreFactory.getSqlSandbox(),
+                                    storageFactory.getPropertyManager().isBulkPerformanceEnabled()
+                            ),
+                            formEntrySession.submitGetXml(),
+                            storageFactory.getPropertyManager().isAutoPurgeEnabled()
+                    ).getPurgeCasesTimer();
+                } catch (InvalidCaseGraphException e) {
+                    log.error("Case purge failed during form submission due to " + e.getMessage());
+                }
 
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
