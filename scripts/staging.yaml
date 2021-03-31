@@ -51,6 +51,8 @@ trunk: master
 name: autostaging
 branches:
 #  - inMemoryCaseSearchCache+ce/tracing
+  - purgeLocks+sr/menusession+ce/tracing
+  - purgeLocks+ce/tracing
   - sr/menusession+ce/tracing
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
