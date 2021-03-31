@@ -185,7 +185,7 @@ public class RestoreFactory {
         return performTimedSync(true, false, false);
     }
 
-    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures, boolean responseTo412) throws Exception {
+    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures, boolean isResponseTo412) throws Exception {
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
         extras.put(Constants.DOMAIN_TAG, domain);
@@ -219,7 +219,7 @@ public class RestoreFactory {
                 );
             } catch (InvalidCaseGraphException e) {
                 // if we have not already, do a fresh sync to try and resolve state
-                if (!responseTo412) {
+                if (!isResponseTo412) {
                     handle412Sync(shouldPurge, skipFixtures);
                 } else {
                     // there are cycles even after a fresh sync

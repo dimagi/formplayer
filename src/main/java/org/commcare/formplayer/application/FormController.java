@@ -213,7 +213,13 @@ public class FormController extends AbstractBaseController{
                             storageFactory.getPropertyManager().isAutoPurgeEnabled()
                     ).getPurgeCasesTimer();
                 } catch (InvalidCaseGraphException e) {
-                    log.error("Case purge failed during form submission due to " + e.getMessage());
+                    submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR);
+                    NotificationMessage notification = new NotificationMessage("Form submission failed due to a cyclic case relationship",
+                            true, NotificationMessage.Tag.submit);
+                    submitResponseBean.setNotification(notification);
+                    logNotification(notification, request);
+                    log.error("Submission failed with structure exception " + e);
+                    return submitResponseBean;
                 }
 
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
@@ -281,7 +287,7 @@ public class FormController extends AbstractBaseController{
                 //validity of the form
 
                 boolean skipFixtures = storageFactory.getPropertyManager().skipFixturesAfterSubmit();
-                restoreFactory.performTimedSync(true, skipFixtures);
+                restoreFactory.performTimedSync(true, skipFixtures, false);
             }
 
             SimpleTimer navTimer = new SimpleTimer();
