@@ -80,19 +80,16 @@ public class MetricsAspect {
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.REQUEST_TAG, requestPath));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.DURATION_TAG, timer.getDurationBucket()));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.UNBLOCKED_TIME_TAG, getUnblockedTimeBucket(timer)));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.BLOCKED_TIME_TAG, getBlockedTimeBucket()));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.RESTORE_BLOCKED_TIME_TAG, getRestoreBlockedTimeBucket()));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.INSTALL_BLOCKED_TIME_TAG, getInstallBlockedTimeBucket()));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.SUBMIT_BLOCKED_TIME_TAG, getSubmitBlockedTimeBucket()));
 
-        datadog.increment(Constants.DATADOG_REQUESTS, datadogArgs);
         datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
 
+        FormplayerSentry.newBreadcrumb()
+                .setCategory("timing")
+                .setLevel(SentryLevel.WARNING)
+                .setData("duration", timer.formatDuration())
+                .record();
 
-        long intolerableRequestThreshold = 60 * 1000;
-
-        if (timer.durationInMs() >= intolerableRequestThreshold) {
+        if (timer.durationInSeconds() >= 60) {
             sendTimingWarningToSentry(timer, INTOLERABLE_REQUEST);
         } else if (tolerableRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
             // limit tolerable requests sent to sentry
@@ -106,62 +103,7 @@ public class MetricsAspect {
         return result;
     }
 
-    private String getUnblockedTimeBucket(SimpleTimer timer) {
-        return Timing.getDurationBucket(timer.durationInSeconds() - getBlockedTime());
-    }
-
-    private String getBlockedTimeBucket() {
-        return Timing.getDurationBucket(getRestoreBlockedTime() +
-                getInstallBlockedTime() +
-                getSubmitBlockedTime());
-    }
-
-    private long getBlockedTime() {
-        return getRestoreBlockedTime() +
-                getInstallBlockedTime() +
-                getSubmitBlockedTime();
-    }
-
-    private String getRestoreBlockedTimeBucket() {
-        return Timing.getDurationBucket(getRestoreBlockedTime());
-    }
-
-    private long getRestoreBlockedTime() {
-        if (restoreFactory.getDownloadRestoreTimer() == null) {
-            return 0;
-        }
-        return restoreFactory.getDownloadRestoreTimer().durationInSeconds();
-    }
-
-    private String getInstallBlockedTimeBucket() {
-        return Timing.getDurationBucket(getInstallBlockedTime());
-    }
-
-    private long getInstallBlockedTime() {
-        if (installService.getInstallTimer() == null) {
-            return 0;
-        }
-        return installService.getInstallTimer().durationInSeconds();
-    }
-
-    private String getSubmitBlockedTimeBucket() {
-        return Timing.getDurationBucket(getSubmitBlockedTime());
-    }
-
-    private long getSubmitBlockedTime() {
-        if (submitService.getSubmitTimer() == null) {
-            return 0;
-        }
-        return submitService.getSubmitTimer().durationInSeconds();
-    }
-
     private void sendTimingWarningToSentry(SimpleTimer timer, String category) {
-        FormplayerSentry.newBreadcrumb()
-                .setCategory(category)
-                .setLevel(SentryLevel.WARNING)
-                .setData("duration", timer.formatDuration())
-                .record();
-
         String message = "N/A";
         if (sentryMessages.containsKey(category)) {
             message = sentryMessages.get(category);
