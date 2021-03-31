@@ -220,7 +220,7 @@ public class RestoreFactory {
                         extras
                 );
             } catch (InvalidCaseGraphException e) {
-                FormplayerSentry.captureException(e, SentryLevel.INFO);
+                FormplayerSentry.captureException(e, SentryLevel.WARNING);
                 // if we have not already, do a fresh sync to try and resolve state
                 if (!isResponseTo412) {
                     handle412Sync(shouldPurge, skipFixtures);
