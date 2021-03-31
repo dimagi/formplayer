@@ -89,6 +89,8 @@ dependencies {
     runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache'
 
     //Unmanaged Dependencies
+
+    implementation group: 'com.datadoghq', name: 'dd-trace-ot', version: '0.75.0'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.11.0'
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: '4.3.0'
     implementation group: 'io.sentry', name: 'sentry-logback', version: '4.3.0'
