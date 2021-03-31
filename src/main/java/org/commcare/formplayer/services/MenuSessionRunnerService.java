@@ -8,6 +8,7 @@ import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.objects.QueryData;
 
+import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.web.client.WebClient;
@@ -67,7 +68,7 @@ public class MenuSessionRunnerService {
     protected FormSessionService formSessionService;
 
     @Autowired
-    protected MenuSessionRepo menuSessionRepo;
+    protected MenuSessionService menuSessionService;
 
     @Autowired
     protected MenuSessionFactory menuSessionFactory;
@@ -96,6 +97,7 @@ public class MenuSessionRunnerService {
         return getNextMenu(menuSession, null, 0, "", 0, null, 0);
     }
 
+    @Trace
     private BaseResponseBean getNextMenu(MenuSession menuSession,
                                          String detailSelection,
                                          int offset,
@@ -177,6 +179,7 @@ public class MenuSessionRunnerService {
         ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
     }
 
+    @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null,
@@ -196,6 +199,7 @@ public class MenuSessionRunnerService {
      *                        it is used to short circuit the normal TreeReference calculation by inserting a predicate that
      *                        is [@case_id = <detailSelection>].
      */
+    @Trace
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections,
                                                          String detailSelection,
@@ -342,6 +346,7 @@ public class MenuSessionRunnerService {
      * After a sync, we can either pop another menu/form to begin
      * or just return to the app menu.
      */
+    @Trace
     private BaseResponseBean doSyncGetNext(FormplayerSyncScreen nextScreen,
                                            MenuSession menuSession) throws Exception {
         NotificationMessage notificationMessage = doSync(nextScreen);
@@ -379,6 +384,7 @@ public class MenuSessionRunnerService {
      * <p>
      * Will do nothing if this wasn't a query screen.
      */
+    @Trace
     private NotificationMessage doQuery(FormplayerQueryScreen screen,
                                         MenuSession menuSession,
                                         Hashtable<String, String> queryDictionary,
@@ -407,6 +413,7 @@ public class MenuSessionRunnerService {
         return notificationMessage;
     }
 
+    @Trace
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
             Screen nextScreen = menuSession.getNextScreen();
@@ -511,6 +518,7 @@ public class MenuSessionRunnerService {
         return stepToFrame;
     }
 
+    @Trace
     private NewFormResponse startFormEntry(MenuSession menuSession) throws Exception {
         if (menuSession.getSessionWrapper().getForm() != null) {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
@@ -537,8 +545,9 @@ public class MenuSessionRunnerService {
     }
 
 
+    @Trace
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
-        menuSessionRepo.save(menuSession.serialize());
+        menuSessionService.saveSession(menuSession.serialize());
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
