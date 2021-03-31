@@ -40,7 +40,7 @@ public class FormplayerInstallerFactory extends InstallerFactory {
     }
 
     public ResourceInstaller getLocaleFileInstaller(String locale) {
-        return new LocaleFileInstaller(locale);
+        return new FormplayerLocaleInstaller(locale);
     }
 
     public ResourceInstaller getLoginImageInstaller() {

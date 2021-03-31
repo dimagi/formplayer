@@ -1,16 +1,22 @@
 package org.commcare.formplayer.services;
 
-import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
-import org.commcare.formplayer.auth.HqAuth;
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import com.timgroup.statsd.StatsDClient;
-import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
-import org.commcare.formplayer.exceptions.AsyncRetryException;
-import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.parse.ParseUtils;
+import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
+import org.commcare.formplayer.auth.HqAuth;
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
+import org.commcare.formplayer.exceptions.AsyncRetryException;
+import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
+import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.sqlitedb.SQLiteDB;
+import org.commcare.formplayer.sqlitedb.UserDB;
+import org.commcare.formplayer.util.*;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.util.Pair;
 import org.javarosa.core.api.ClassNameHasher;
@@ -26,16 +32,12 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -43,16 +45,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
-import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.sqlitedb.SQLiteDB;
-import org.commcare.formplayer.sqlitedb.UserDB;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
-import org.commcare.formplayer.util.FormplayerSentry;
-import org.commcare.formplayer.util.RequestUtils;
-import org.commcare.formplayer.util.SimpleTimer;
-import org.commcare.formplayer.util.UserUtils;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -68,8 +60,8 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -519,9 +511,7 @@ public class RestoreFactory {
         downloadRestoreTimer.start();
         try {
             response = restTemplate.exchange(
-                    restoreUrl,
-                    HttpMethod.GET,
-                    new HttpEntity<String>(headers),
+                    RequestEntity.get(restoreUrl).headers(headers).build(),
                     org.springframework.core.io.Resource.class
             );
             status = response.getStatusCode().toString();
@@ -612,12 +602,12 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        FormplayerHttpRequest request = RequestUtils.getFormplayerRequest();
+        HttpServletRequest request = RequestUtils.getCurrentRequest();
         if (request == null) {
             throw new RuntimeException(String.format(
                     "HMAC Auth not available outside of a web request %s", requestPath
             ));
-        } else if (!request.getRequestValidatedWithHMAC()) {
+        } else if (BooleanUtils.isNotTrue((Boolean) request.getAttribute(Constants.HMAC_REQUEST_ATTRIBUTE))) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }

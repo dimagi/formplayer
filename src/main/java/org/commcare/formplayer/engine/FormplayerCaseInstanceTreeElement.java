@@ -97,9 +97,6 @@ public class FormplayerCaseInstanceTreeElement extends CaseInstanceTreeElement i
         }
         long value = System.currentTimeMillis() - timeInMillis;
         log.debug("Case iterate took: " + value + "ms");
-        if (SqlHelper.SQL_DEBUG) {
-            System.out.println("Case iterate took: " + value + "ms");
-        }
     }
 
     @Override
