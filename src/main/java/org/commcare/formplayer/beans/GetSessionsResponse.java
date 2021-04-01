@@ -1,5 +1,8 @@
 package org.commcare.formplayer.beans;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.cases.model.Case;
@@ -34,10 +37,12 @@ public class GetSessionsResponse {
         this.sessions = sessions;
     }
 
+    @JsonSetter(value = "total_records")
     public void setTotalRecords(long totalRecords) {
         this.totalRecords = totalRecords;
     }
 
+    @JsonGetter(value = "total_records")
     public long getTotalRecords() {
         return totalRecords;
     }
