@@ -23,14 +23,16 @@ public class LoggingAspect {
 
     private final Log log = LogFactory.getLog(LoggingAspect.class);
 
-    @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping) " +
+    @Around(value = "within(org.commcare.formplayer..*) " +
+            "&& @annotation(org.springframework.web.bind.annotation.RequestMapping) " +
             "&& !@annotation(org.commcare.formplayer.annotations.NoLogging)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature ms = (MethodSignature) joinPoint.getSignature();
         Method m = ms.getMethod();
         Object requestBean = null;
-        final String requestPath = m.getAnnotation(RequestMapping.class).value()[0]; //Should be only one
+        String requestPath = null;
         try {
+            requestPath = m.getAnnotation(RequestMapping.class).value()[0]; //Should be only one
             requestBean = joinPoint.getArgs()[0];
             log.info("Request to " + requestPath + " with bean " + requestBean);
         } catch(ArrayIndexOutOfBoundsException e) {

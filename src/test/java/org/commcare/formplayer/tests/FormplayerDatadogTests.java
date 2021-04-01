@@ -70,19 +70,19 @@ public class FormplayerDatadogTests {
     @Test
     public void testTagUsedForIncrement() {
         datadog.addRequestScopedTag("form", "test-form");
-        datadog.increment(Constants.DATADOG_REQUESTS, Collections.emptyList());
+        datadog.increment("requests", Collections.emptyList());
         String expectedTag = "form:test-form";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).increment(Constants.DATADOG_REQUESTS, args);
+        verify(mockDatadogClient).increment("requests", args);
     }
 
     @Test
     public void testTagUsedForRecordExecutionTime() {
         datadog.addRequestScopedTag("form", "test-form");
-        datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, Collections.emptyList());
+        datadog.recordExecutionTime("requests", 100, Collections.emptyList());
         String expectedTag = "form:test-form";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
+        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
     @Test
@@ -90,10 +90,10 @@ public class FormplayerDatadogTests {
         datadog.addRequestScopedTag("form", "test-form");
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         transientTags.add(new FormplayerDatadog.Tag("form", "test-form-2"));
-        datadog.increment(Constants.DATADOG_REQUESTS, transientTags);
+        datadog.increment("requests", transientTags);
         String expectedTag = "form:test-form-2";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).increment(Constants.DATADOG_REQUESTS, args);
+        verify(mockDatadogClient).increment("requests", args);
     }
 
     @Test
@@ -101,10 +101,10 @@ public class FormplayerDatadogTests {
         datadog.addRequestScopedTag("form", "test-form");
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         transientTags.add(new FormplayerDatadog.Tag("form", "test-form-2"));
-        datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, transientTags);
+        datadog.recordExecutionTime("requests", 100, transientTags);
         String expectedTag = "form:test-form-2";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
+        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
     @Test
@@ -112,10 +112,10 @@ public class FormplayerDatadogTests {
         String domain = "eligible_domain";
         datadog.setDomain(domain);
         datadog.addRequestScopedTag("detailed_tag", "test_value");
-        datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, Collections.emptyList());
+        datadog.recordExecutionTime("requests", 100, Collections.emptyList());
         String expectedTag = "detailed_tag:test_value";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
+        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
     @Test
@@ -123,19 +123,19 @@ public class FormplayerDatadogTests {
         String domain = "ineligible_domain";
         datadog.setDomain(domain);
         datadog.addRequestScopedTag("detailed_tag", "test_value");
-        datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, Collections.emptyList());
+        datadog.recordExecutionTime("requests", 100, Collections.emptyList());
         String expectedTag = "detailed_tag:_other";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
+        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
     @Test
     public void testAddRequestScopedDetailedTagForNullDomain() {
         datadog.addRequestScopedTag("detailed_tag", "test_value");
-        datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, Collections.emptyList());
+        datadog.recordExecutionTime("requests", 100, Collections.emptyList());
         String expectedTag = "detailed_tag:_other";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
+        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
     @Test
@@ -144,10 +144,10 @@ public class FormplayerDatadogTests {
         datadog.setDomain(domain);
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
-        datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, transientTags);
+        datadog.recordExecutionTime("requests", 100, transientTags);
         String expectedTag = "detailed_tag:test_value";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
+        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
     @Test
@@ -157,20 +157,20 @@ public class FormplayerDatadogTests {
         datadog.setDomain(domain);
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
-        datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, transientTags);
+        datadog.recordExecutionTime("requests", 100, transientTags);
         String expectedTag = "detailed_tag:_other";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
+        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
     @Test
     public void testAddTransientDetailedTagForNullDomain() {
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
-        datadog.recordExecutionTime(Constants.DATADOG_REQUESTS, 100, transientTags);
+        datadog.recordExecutionTime("requests", 100, transientTags);
         String expectedTag = "detailed_tag:_other";
         String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime(Constants.DATADOG_REQUESTS, 100, args);
+        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
     }
 
 }

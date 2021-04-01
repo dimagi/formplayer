@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import io.sentry.Sentry;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.menus.*;
@@ -241,9 +242,8 @@ public class MenuSessionRunnerService {
 
             // Advance the session in case auto launch is set
             nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed);
-            boolean forceSearch = i < selections.length;
-            boolean disallowSearch = forceManualAction && !forceSearch;
-            notificationMessage = handleQueryScreen(nextScreen, menuSession, queryData, forceSearch, disallowSearch);
+            boolean replay = i < selections.length;
+            notificationMessage = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
                         (FormplayerSyncScreen)nextScreen,
@@ -292,19 +292,19 @@ public class MenuSessionRunnerService {
     }
 
     private NotificationMessage handleQueryScreen(Screen nextScreen, MenuSession menuSession, QueryData queryData,
-                                                  boolean forceSearch, boolean disallowSearch)
+                                                  boolean replay, boolean forceManualAction)
             throws CommCareSessionException {
         if (nextScreen instanceof FormplayerQueryScreen) {
             FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
             formplayerQueryScreen.refreshItemSetChoices();
-            boolean autoSearch = forceSearch || (formplayerQueryScreen.doDefaultSearch() && !disallowSearch);
+            boolean autoSearch = replay || (formplayerQueryScreen.doDefaultSearch() && !forceManualAction);
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
                 return doQuery(
                         (FormplayerQueryScreen)nextScreen,
                         menuSession,
                         queryData == null ? null : queryData.getInputs(queryKey),
-                        formplayerQueryScreen.doDefaultSearch()
+                        formplayerQueryScreen.doDefaultSearch() && !forceManualAction
                 );
             } else if (queryData != null) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen,
@@ -333,6 +333,7 @@ public class MenuSessionRunnerService {
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
+        screen.refreshItemSetChoices();
     }
 
 

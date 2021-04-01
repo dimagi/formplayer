@@ -11,18 +11,22 @@ import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.net.URI;
 import java.util.Hashtable;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -31,6 +35,9 @@ import static org.mockito.Mockito.when;
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class CaseClaimTests extends BaseTestClass {
+
+    @Captor
+    ArgumentCaptor<URI> uriCaptor;
 
     @Override
     @BeforeEach
@@ -131,6 +138,16 @@ public class CaseClaimTests extends BaseTestClass {
         assert commandResponse.getSelections().length == 2;
         assert commandResponse.getSelections()[1].equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
         assert caseStorage.getNumRecords() == 22;
+
+        // verify search uris
+        verify(webClientMock, times(3)).get(uriCaptor.capture());
+        List<URI> uris = uriCaptor.getAllValues();
+        // when default search, prompts doesn't get included
+        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case"));
+        // when default search but forceManualSearch, prompts should get included
+        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&name=Burt&case_type=case&state=ka"));
+        // when search happens as part of replaying a session, prompts should be same as the last search
+        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&name=Burt&case_type=case&state=ka"));
     }
 
     @Test

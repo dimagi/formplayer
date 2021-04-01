@@ -1,9 +1,9 @@
-FormPlayer
+Formplayer
 ===========
 
-FormPlayer is a RESTful XForm entry service written on the [Spring Framework](https://projects.spring.io/spring-framework/).
+Formplayer is a RESTful XForm entry service written on the [Spring Framework](https://projects.spring.io/spring-framework/).
 Given a [user restore](https://confluence.dimagi.com/display/commcarepublic/OTA+Restore+API) and
-an [XForm](http://dimagi.github.io/xform-spec/) FormPlayer enables form entry via JSON calls and responses (detailed below).
+an [XForm](http://dimagi.github.io/xform-spec/) Formplayer enables form entry via JSON calls and responses (detailed below).
 These files will often be hosted by a [CommCareHQ](https://www.github.com/dimagi/commcare-hq) server instance.
 Formplayer relies on the [CommCare](https://www.github.com/dimagi/commcare-core) libraries (included as subrepositories).
 Formplayer is built via [Gradle](https://spring.io/guides/gs/gradle/) (wrapper files included).
@@ -36,7 +36,7 @@ Make sure you have the formplayer database created. You will be asked to provide
 
     $ createdb formplayer -U commcarehq -h localhost  # Update connection info as necessary (the defaults are fine for running locally)
 
-If you are running postgres in Docker, you may need to run this in the docker shell, using `./scripts/docker bash postgres` from the commcarehq repository.
+If you are running postgres in Docker, you may need to run this in the Docker shell, using `./scripts/docker bash postgres` from the commcarehq repository.
 
 To run (with tests):
 
@@ -105,7 +105,15 @@ Lines your file is missing will begin with a `-`.
 
 ### Running in Docker
 
-If you want to run FormPlayer in Docker as a service of CommCare HQ, follow these steps from your commcare-hq repository:
+If you want to run Formplayer in Docker as a service of CommCare HQ, follow these steps from
+your commcare-hq repository.
+
+If you are making changes to Formplayer you probably just want to run it from the shell and not
+in Docker. In that case you'll also need to stop the Formplayer Docker container if it is running:
+
+```
+docker stop hqservice_formplayer_1
+```
 
 #### Running CommCare HQ in Docker
 
