@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -200,14 +201,28 @@ public class FormController extends AbstractBaseController{
             try {
                 restoreFactory.setAutoCommit(false);
 
-                SimpleTimer purgeCasesTimer = FormRecordProcessorHelper.processXML(
-                        new FormplayerTransactionParserFactory(
-                                restoreFactory.getSqlSandbox(),
-                                storageFactory.getPropertyManager().isBulkPerformanceEnabled()
-                        ),
-                        formEntrySession.submitGetXml(),
-                        storageFactory.getPropertyManager().isAutoPurgeEnabled()
-                ).getPurgeCasesTimer();
+                SimpleTimer purgeCasesTimer = null;
+
+                try {
+                    purgeCasesTimer = FormRecordProcessorHelper.processXML(
+                            new FormplayerTransactionParserFactory(
+                                    restoreFactory.getSqlSandbox(),
+                                    storageFactory.getPropertyManager().isBulkPerformanceEnabled()
+                            ),
+                            formEntrySession.submitGetXml(),
+                            storageFactory.getPropertyManager().isAutoPurgeEnabled()
+                    ).getPurgeCasesTimer();
+                } catch (InvalidCaseGraphException e) {
+                    submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR);
+                    NotificationMessage notification = new NotificationMessage(
+                            "Form submission failed due to a cyclic case relationship. Please contact the support desk to help resolve this issue.",
+                            true,
+                            NotificationMessage.Tag.submit);
+                    submitResponseBean.setNotification(notification);
+                    logNotification(notification, request);
+                    log.error("Submission failed with structure exception " + e);
+                    return submitResponseBean;
+                }
 
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
@@ -274,7 +289,7 @@ public class FormController extends AbstractBaseController{
                 //validity of the form
 
                 boolean skipFixtures = storageFactory.getPropertyManager().skipFixturesAfterSubmit();
-                restoreFactory.performTimedSync(true, skipFixtures);
+                restoreFactory.performTimedSync(true, skipFixtures, false);
             }
 
             SimpleTimer navTimer = new SimpleTimer();
