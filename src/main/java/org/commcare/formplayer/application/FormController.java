@@ -55,7 +55,7 @@ import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.repo.SerializableMenuSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.SubmitService;
@@ -65,6 +65,8 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.SimpleTimer;
 import org.springframework.web.client.HttpClientErrorException;
+
+import datadog.trace.api.Trace;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -296,7 +298,7 @@ public class FormController extends AbstractBaseController{
             navTimer.start();
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
+                Object nav = doEndOfFormNav(menuSessionService.getSessionById(formEntrySession.getMenuSessionId()));
                 if (nav != null) {
                     submitResponseBean.setNextScreen(nav);
                 }
@@ -325,6 +327,7 @@ public class FormController extends AbstractBaseController{
         formSessionService.deleteSessionById(id);
     }
 
+    @Trace
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
         MenuSession menuSession = menuSessionFactory.buildSession(serializedSession);
@@ -335,6 +338,7 @@ public class FormController extends AbstractBaseController{
      * Iterate over all answers and attempt to save them to check for validity.
      * Submit the complete XML instance to HQ if valid.
      */
+    @Trace
     private SubmitResponseBean validateSubmitAnswers(FormEntryController formEntryController,
                                        FormEntryModel formEntryModel,
                                        Map<String, Object> answers,
