@@ -268,6 +268,30 @@ public class SqlHelper {
         }
     }
 
+    /**
+     * @throws IllegalArgumentException when one or more of the fields we're selecting on
+     *                                  is not a valid key to select on for this object
+     */
+    public static PreparedStatement prepareTableSelectStatement(Connection c,
+                                                                String storageKey,
+                                                                String[] fields,
+                                                                Object[] values,
+                                                                String[] inverseFields,
+                                                                Object[] inverseValues) {
+        Pair<String, String[]> pair = DatabaseHelper.createWhere(fields, values, inverseFields, inverseValues, null);
+        try {
+            String queryString =
+                    "SELECT * FROM " + storageKey + " WHERE " + pair.first + ";";
+            PreparedStatement preparedStatement = c.prepareStatement(queryString);
+            for (int i = 0; i < pair.second.length; i++) {
+                preparedStatement.setString(i + 1, pair.second[i]);
+            }
+            return preparedStatement;
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        }
+    }
+
     private static void performInsert(Connection c,
                                       Pair<List<Object>, String> valsAndInsertStatement) {
         try (PreparedStatement preparedStatement = c.prepareStatement(valsAndInsertStatement.second)) {
