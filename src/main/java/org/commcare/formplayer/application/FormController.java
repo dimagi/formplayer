@@ -214,8 +214,10 @@ public class FormController extends AbstractBaseController{
                     ).getPurgeCasesTimer();
                 } catch (InvalidCaseGraphException e) {
                     submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR);
-                    NotificationMessage notification = new NotificationMessage("Form submission failed due to a cyclic case relationship",
-                            true, NotificationMessage.Tag.submit);
+                    NotificationMessage notification = new NotificationMessage(
+                            "Form submission failed due to a cyclic case relationship. Please contact the support desk to help resolve this issue.",
+                            true,
+                            NotificationMessage.Tag.submit);
                     submitResponseBean.setNotification(notification);
                     logNotification(notification, request);
                     log.error("Submission failed with structure exception " + e);
