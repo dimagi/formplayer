@@ -1,17 +1,20 @@
-package org.commcare.formplayer.sqlitedb;
+package org.commcare.formplayer.postgresutil;
 
-import java.io.File;
-
+import org.commcare.formplayer.sqlitedb.DBPath;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.modern.database.TableBuilder;
 
-public class ApplicationDBPath extends DBPath {
+/**
+ * @author $|-|!˅@M
+ */
+class PostgresDBPath extends DBPath {
 
     private String domain;
     private String username;
     private String asUsername;
     private String appId;
 
-    public ApplicationDBPath(String domain, String username, String asUsername, String appId) {
+    public PostgresDBPath(String domain, String username, String asUsername, String appId) {
         this.domain = domain;
         this.username = username;
         this.asUsername = asUsername;
@@ -20,7 +23,7 @@ public class ApplicationDBPath extends DBPath {
 
     @Override
     public String getDatabasePath() {
-        return UserDBPath.getUserDBPath(domain, username, asUsername) + File.separator + appId;
+        return TableBuilder.scrubName(domain + "_" + appId);
     }
 
     @Override
