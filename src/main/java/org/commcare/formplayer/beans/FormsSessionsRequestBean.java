@@ -1,15 +1,15 @@
 package org.commcare.formplayer.beans;
 
 public class FormsSessionsRequestBean extends AuthenticatedRequestBean {
-    private int offset;
+    private int pageNumber;
     private int pageSize;
 
-    public int getOffset() {
-        return offset;
+    public int getPageNumber() {
+        return pageNumber;
     }
 
-    public void setOffset(int offset) {
-        this.offset = offset;
+    public void setPageNumber(int pageNumber) {
+        this.pageNumber = pageNumber;
     }
 
     public int getPageSize() {

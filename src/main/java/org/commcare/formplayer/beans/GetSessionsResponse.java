@@ -13,15 +13,17 @@ import java.util.Arrays;
  */
 public class GetSessionsResponse {
 
+    private long totalRecords;
     private SessionListItem[] sessions;
 
     public GetSessionsResponse(){}
 
-    public GetSessionsResponse(SqlStorage<Case> caseStorage, ArrayList<FormSessionListView> sessionList){
+    public GetSessionsResponse(SqlStorage<Case> caseStorage, ArrayList<FormSessionListView> sessionList, long totalRecords){
         sessions = new SessionListItem[sessionList.size()];
         for (int i = 0; i < sessionList.size(); i++){
             sessions[i] = new SessionListItem(caseStorage, sessionList.get(i));
         }
+        this.totalRecords = totalRecords;
     }
 
     public SessionListItem[] getSessions() {
@@ -30,6 +32,14 @@ public class GetSessionsResponse {
 
     public void setSessions(SessionListItem[] sessions) {
         this.sessions = sessions;
+    }
+
+    public void setTotalRecords(long totalRecords) {
+        this.totalRecords = totalRecords;
+    }
+
+    public long getTotalRecords() {
+        return totalRecords;
     }
 
     @Override

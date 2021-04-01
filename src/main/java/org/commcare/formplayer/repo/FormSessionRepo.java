@@ -14,7 +14,9 @@ import java.util.List;
 
 public interface FormSessionRepo extends JpaRepository<SerializableFormSession, String> {
     List<FormSessionListView> findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(String username, String domain, String asUser, Pageable page);
+    long countByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(String username, String domain, String asUser);
     List<FormSessionListView> findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(String username, String domain, Pageable page);
+    long countByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(String username, String domain);
 
     @Modifying
     @Transactional

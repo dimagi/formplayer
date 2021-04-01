@@ -74,13 +74,24 @@ public class FormSessionService {
         String asUser = formsSessionsRequest.getRestoreAs();
         int pageSize = getPageSize(formsSessionsRequest);
 
-        int pageNumber = formsSessionsRequest.getOffset()/pageSize;
+        int pageNumber = formsSessionsRequest.getPageNumber();
         Pageable page = PageRequest.of(pageNumber, pageSize);
 
         if (asUser == null) {
              return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain, page);
         } else {
              return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser, page);
+        }
+    }
+
+    public long getNumberOfSessionsForUser(String username, FormsSessionsRequestBean formsSessionsRequest) {
+        String domain = formsSessionsRequest.getDomain();
+        String asUser = formsSessionsRequest.getRestoreAs();
+
+        if (asUser == null) {
+            return formSessionRepo.countByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain);
+        } else {
+            return formSessionRepo.countByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser);
         }
     }
 

@@ -19,15 +19,14 @@ import java.util.Set;
 
 /**
  * Controller class (API endpoint) containing all incomplete session management commands
- *
  */
 @RestController
 @EnableAutoConfiguration
-public class IncompleteSessionController extends AbstractBaseController{
+public class IncompleteSessionController extends AbstractBaseController {
 
     private final Log log = LogFactory.getLog(IncompleteSessionController.class);
 
-    @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
     public NewFormResponse openIncompleteForm(@RequestBody SessionRequestBean incompleteSessionRequestBean,
@@ -53,10 +52,12 @@ public class IncompleteSessionController extends AbstractBaseController{
             formplayerSessionIds.add(serializableFormSession.getId());
         }
 
-        return new GetSessionsResponse(restoreFactory.getSqlSandbox().getCaseStorage(), sessions);
+        return new GetSessionsResponse(restoreFactory.getSqlSandbox().getCaseStorage(),
+                sessions,
+                formSessionService.getNumberOfSessionsForUser(scrubbedUsername, getSessionRequest));
     }
 
-    @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION, method = RequestMethod.POST)
     public NotificationMessage deleteIncompleteForm(
             @RequestBody SessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {

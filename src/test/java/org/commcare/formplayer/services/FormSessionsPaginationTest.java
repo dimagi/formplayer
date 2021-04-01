@@ -50,7 +50,7 @@ public class FormSessionsPaginationTest {
         formsSessionsRequestBean.setDomain("domain");
         formsSessionsRequestBean.setRestoreAs("momo");
         formsSessionsRequestBean.setPageSize(5);
-        formsSessionsRequestBean.setOffset(15);
+        formsSessionsRequestBean.setPageNumber(4);
         List<FormSessionListView> formSessions = formSessionService.getSessionsForUser("momo", formsSessionsRequestBean);
         assert formSessions.size() == 3;
         formSessionService.purge();
