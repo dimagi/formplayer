@@ -39,7 +39,7 @@ public class FormSessionsPaginationTest {
         for (int i = 0; i < totalNumberOfForms; i++) {
             SerializableFormSession session = new SerializableFormSession(
                     "domain", "appId", "momo", "momo", "restoreAsCaseId",
-                    "/a/domain/receiver", null, "More momo", true, "en", false,
+                    "/a/domain/receiver", null, "More momo " + i, true, "en", false,
                     ImmutableMap.of("a", "1", "b", "2"),
                     null
             );
@@ -50,9 +50,13 @@ public class FormSessionsPaginationTest {
         formsSessionsRequestBean.setDomain("domain");
         formsSessionsRequestBean.setRestoreAs("momo");
         formsSessionsRequestBean.setPageSize(5);
-        formsSessionsRequestBean.setPageNumber(4);
+        formsSessionsRequestBean.setPageNumber(3);
         List<FormSessionListView> formSessions = formSessionService.getSessionsForUser("momo", formsSessionsRequestBean);
         assert formSessions.size() == 3;
+        for (int i = 0; i < formSessions.size(); i++) {
+            // first 3 records in latest first order
+            assert formSessions.get(i).getTitle().contentEquals("More momo " + (2-i));
+        }
         formSessionService.purge();
     }
 
