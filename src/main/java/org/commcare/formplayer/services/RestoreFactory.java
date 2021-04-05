@@ -2,9 +2,12 @@ package org.commcare.formplayer.services;
 
 import datadog.trace.api.Trace;
 import com.timgroup.statsd.StatsDClient;
+
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
 import org.commcare.formplayer.auth.HqAuth;
@@ -48,9 +51,11 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +67,8 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import io.sentry.SentryLevel;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -110,13 +117,13 @@ public class RestoreFactory {
     @Autowired
     private RedisTemplate redisTemplateLong;
 
-    @Resource(name="redisTemplateLong")
+    @Resource(name = "redisTemplateLong")
     private ValueOperations<String, Long> valueOperations;
 
     @Autowired
     private RedisTemplate redisTemplateString;
 
-    @Resource(name="redisTemplateString")
+    @Resource(name = "redisTemplateString")
     private ValueOperations<String, String> originTokens;
 
     @Autowired
@@ -172,17 +179,16 @@ public class RestoreFactory {
         this.configured = true;
         sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
         log.info(String.format("configuring RestoreFactory from authed request with arguments " +
-                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s",
+                        "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s",
                 username, asUsername, domain, useLiveQuery));
     }
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
     public UserSqlSandbox performTimedSync() throws Exception {
-        return performTimedSync(true, false);
+        return performTimedSync(true, false, false);
     }
 
-    @Trace
-    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures) throws Exception {
+    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures, boolean isResponseTo412) throws Exception {
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
         extras.put(Constants.DOMAIN_TAG, domain);
@@ -190,33 +196,40 @@ public class RestoreFactory {
         SimpleTimer completeRestoreTimer = new SimpleTimer();
         completeRestoreTimer.start();
         // Create parent dirs if needed
-        if(getSqlSandbox().getLoggedInUser() != null){
+        if (getSqlSandbox().getLoggedInUser() != null) {
             getSQLiteDB().createDatabaseFolder();
         }
         UserSqlSandbox sandbox;
         try {
-             sandbox = restoreUser(skipFixtures);
+            sandbox = restoreUser(skipFixtures);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().value() == 412) {
-                getSQLiteDB().deleteDatabaseFile();
-                // this line has the effect of clearing the sync token
-                // from the restore URL that's used
-                sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
-                return performTimedSync(shouldPurge, skipFixtures);
+                return handle412Sync(shouldPurge, skipFixtures);
             }
             throw e;
         }
         if (shouldPurge && sandbox != null) {
-            SimpleTimer purgeTimer = new SimpleTimer();
-            purgeTimer.start();
-            FormRecordProcessorHelper.purgeCases(sandbox);
-            purgeTimer.end();
-            categoryTimingHelper.recordCategoryTiming(
-                    purgeTimer,
-                    Constants.TimingCategories.PURGE_CASES,
-                    null,
-                    extras
-            );
+            try {
+                SimpleTimer purgeTimer = new SimpleTimer();
+                purgeTimer.start();
+                FormRecordProcessorHelper.purgeCases(sandbox);
+                purgeTimer.end();
+                categoryTimingHelper.recordCategoryTiming(
+                        purgeTimer,
+                        Constants.TimingCategories.PURGE_CASES,
+                        null,
+                        extras
+                );
+            } catch (InvalidCaseGraphException e) {
+                FormplayerSentry.captureException(e, SentryLevel.WARNING);
+                // if we have not already, do a fresh sync to try and resolve state
+                if (!isResponseTo412) {
+                    handle412Sync(shouldPurge, skipFixtures);
+                } else {
+                    // there are cycles even after a fresh sync
+                    throw e;
+                }
+            }
         }
         completeRestoreTimer.end();
         categoryTimingHelper.recordCategoryTiming(
@@ -228,15 +241,23 @@ public class RestoreFactory {
         return sandbox;
     }
 
+    private UserSqlSandbox handle412Sync(boolean shouldPurge, boolean skipFixtures) throws Exception {
+        getSQLiteDB().deleteDatabaseFile();
+        // this line has the effect of clearing the sync token
+        // from the restore URL that's used
+        sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
+        return performTimedSync(shouldPurge, skipFixtures, true);
+    }
+
     // This function will attempt to get the user DBs without syncing if they exist, sync if not
     @Trace
     public UserSqlSandbox getSandbox() throws Exception {
-        if(getSqlSandbox().getLoggedInUser() != null
-                && !isRestoreXmlExpired()){
+        if (getSqlSandbox().getLoggedInUser() != null
+                && !isRestoreXmlExpired()) {
             return getSqlSandbox();
         } else {
             getSQLiteDB().createDatabaseFolder();
-            return performTimedSync(false, false);
+            return performTimedSync(false, false, false);
         }
     }
 
@@ -391,7 +412,7 @@ public class RestoreFactory {
         if (lastSyncTime == null) {
             return isAggressive;
         }
-        
+
         Long delta = System.currentTimeMillis() - lastSyncTime;
 
         if (isAggressive) {
@@ -458,7 +479,7 @@ public class RestoreFactory {
      * Given an async restore xml response, this function throws an AsyncRetryException
      * with meta data about the async restore.
      *
-     * @param xml - Async restore response
+     * @param xml     - Async restore response
      * @param headers - HttpHeaders from the restore response
      */
     private void handleAsyncRestoreResponse(String xml, HttpHeaders headers) {
@@ -476,7 +497,7 @@ public class RestoreFactory {
 
         // Parse the xml into a utf-8 byte array
         try {
-            input = new ByteArrayInputStream(xml.getBytes("utf-8") );
+            input = new ByteArrayInputStream(xml.getBytes("utf-8"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Unable to parse async restore response.");
         }
@@ -595,6 +616,7 @@ public class RestoreFactory {
                 Duration.ofSeconds(60));
         headers.set("X-CommCareHQ-Origin-Token", originToken);
     }
+
     public Pair<URI, HttpHeaders> getRestoreUrlAndHeaders() {
         return getRestoreUrlAndHeaders(false);
     }
@@ -607,16 +629,16 @@ public class RestoreFactory {
     }
 
     private HttpHeaders getHmacHeaders(String requestPath) {
-        FormplayerHttpRequest request = RequestUtils.getFormplayerRequest();
+        HttpServletRequest request = RequestUtils.getCurrentRequest();
         if (request == null) {
             throw new RuntimeException(String.format(
                     "HMAC Auth not available outside of a web request %s", requestPath
             ));
-        } else if (!request.getRequestValidatedWithHMAC()) {
+        } else if (BooleanUtils.isNotTrue((Boolean)request.getAttribute(Constants.HMAC_REQUEST_ATTRIBUTE))) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
-        HttpHeaders headers = new HttpHeaders(){
+        HttpHeaders headers = new HttpHeaders() {
             {
                 add("x-openrosa-version", "2.0");
             }
@@ -651,8 +673,9 @@ public class RestoreFactory {
         builder.append("/");
         HttpHeaders headers = getHmacHeaders(builder.toString());
         String fullUrl = host + builder.toString();
-        return new Pair<> (UriComponentsBuilder.fromUriString(fullUrl).build(true).toUri(), headers);
+        return new Pair<>(UriComponentsBuilder.fromUriString(fullUrl).build(true).toUri(), headers);
     }
+
     public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders() {
         return getUserRestoreUrlAndHeaders(false);
     }
@@ -672,7 +695,7 @@ public class RestoreFactory {
             if (useLiveQuery) {
                 builderQueryParamEncoded(builder, "case_sync", "livequery");
             }
-            if( asUsername != null) {
+            if (asUsername != null) {
                 String unEncodedAsUsername = asUsername;
                 if (!asUsername.contains("@")) {
                     unEncodedAsUsername += "@" + domain + ".commcarehq.org";
@@ -727,13 +750,14 @@ public class RestoreFactory {
         return builder.toString();
     }
 
-    private String getSessionCacheValue(String[] selections){
+    private String getSessionCacheValue(String[] selections) {
         return String.join("|", selections);
     }
 
     /**
      * Adds a sequence of menu selections to the set of validated selections
      * for a given user session so that certain optimizations can skip validation
+     *
      * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
      */
     public void cacheSessionSelections(String[] selections) {
@@ -746,6 +770,7 @@ public class RestoreFactory {
     /**
      * Checks whether a sequence of menu selections has already been validated
      * for a given user session
+     *
      * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
      */
     public boolean isConfirmedSelection(String[] selections) {
@@ -756,7 +781,7 @@ public class RestoreFactory {
 
     @PreDestroy
     public void preDestroy() {
-        if(sqLiteDB != null) {
+        if (sqLiteDB != null) {
             sqLiteDB.closeConnection();
         }
     }
@@ -822,5 +847,7 @@ public class RestoreFactory {
         return caseId;
     }
 
-    public boolean isConfigured() { return this.configured; }
+    public boolean isConfigured() {
+        return this.configured;
+    }
 }

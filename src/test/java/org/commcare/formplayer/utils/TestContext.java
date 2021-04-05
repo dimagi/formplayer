@@ -11,7 +11,6 @@ import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.FormplayerHttpRequest;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -31,6 +30,7 @@ import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.util.ArrayList;
 
@@ -154,11 +154,6 @@ public class TestContext {
     @Bean
     public CategoryTimingHelper categoryTimingHelper() {
         return Mockito.spy(CategoryTimingHelper.class);
-    }
-
-    @Bean
-    public FormplayerHttpRequest request() {
-        return Mockito.mock(FormplayerHttpRequest.class);
     }
 
     @Bean
