@@ -25,9 +25,9 @@ class PostgresDBPath extends DBPath {
     public String getDatabasePath() {
         String user = username.replace("@", "$");
         if (asUsername == null) {
-            return TableBuilder.scrubName(domain + "_" + user + "_" + appId);
+            return TableBuilder.scrubName(user + "_" + appId);
         } else {
-            return TableBuilder.scrubName(domain + "_" + user + "_" + asUsername + "_" + appId);
+            return TableBuilder.scrubName(user + "_" + asUsername + "_" + appId);
         }
     }
 

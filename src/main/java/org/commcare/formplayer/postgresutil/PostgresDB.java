@@ -70,6 +70,7 @@ public class PostgresDB implements ConnectionHandler {
     public void deleteDatabase() {
         if (dbPath != null) {
             runQuery("DROP SCHEMA IF EXISTS " + getCurrentSchema() + " CASCADE;");
+            runQuery("CREATE SCHEMA IF NOT EXISTS " + getCurrentSchema() + ";");
         }
     }
 

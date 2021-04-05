@@ -6,6 +6,7 @@ import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.postgresutil.PostgresDB;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.util.Pair;
 import org.commcare.resources.model.UnresolvedResourceException;
@@ -73,6 +74,9 @@ public class InstallService {
             // Wipe out folder and attempt install
             sqliteDB.closeConnection();
             sqliteDB.deleteDatabaseFile();
+            PostgresDB postgresDB = storageFactory.getPostgresDB();
+            postgresDB.closeConnection();
+            postgresDB.deleteDatabase();
             installTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.APP_INSTALL, storageFactory.getDomain());
             installTimer.start();
             if (!sqliteDB.databaseFolderExists() && !sqliteDB.createDatabaseFolder()) {
