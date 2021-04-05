@@ -60,6 +60,7 @@ public class Constants {
     public static final String ANSWER_RESPONSE_STATUS_NEGATIVE = "validation-error";
     public static final String SYNC_RESPONSE_STATUS_POSITIVE = "success";
     public static final String SUBMIT_RESPONSE_TOO_MANY_REQUESTS = "too-many-requests";
+    public static final String SUBMIT_RESPONSE_CASE_CYCLE_ERROR = "case-cycle-error";
 
     //Debug output request types
     public static final String BASIC_NO_TRACE = "basic";
@@ -97,12 +98,6 @@ public class Constants {
     public static final String POSTGRES_DJANGO_SESSION_ID = "sessionid";
     public static final String COMMCARE_USER_SUFFIX = "commcarehq.org";
 
-    public static final Set<Pattern> AUTH_WHITELIST = new HashSet<Pattern>(Arrays.asList(
-            Pattern.compile(Constants.URL_SERVER_UP),
-            Pattern.compile(Constants.URL_VALIDATE_FORM),
-            Pattern.compile("favicon.ico")
-    ));
-
     public static final int USER_LOCK_TIMEOUT = 21;
     // 15 minutes in milliseconds
     public static final int LOCK_DURATION = 60 * 15 * 1000;
@@ -111,9 +106,9 @@ public class Constants {
 
     //Misc
     public static String HMAC_HEADER = "X-MAC-DIGEST";
+    public static String HMAC_REQUEST_ATTRIBUTE = "org.commcare.formplayer.hmacRequest";
 
     // Datadog metrics
-    public static final String DATADOG_REQUESTS = "requests";
     public static final String DATADOG_TIMINGS = "timings";
     public static final String DATADOG_GRANULAR_TIMINGS = "granular.timings";
     public static final String DATADOG_RESTORE_COUNT = "restore.count";
@@ -126,11 +121,6 @@ public class Constants {
     public static final String REQUEST_TAG = "request";
     public static final String CATEGORY_TAG = "category";
     public static final String DURATION_TAG = "duration";
-    public static final String UNBLOCKED_TIME_TAG = "unblocked_time";
-    public static final String BLOCKED_TIME_TAG = "blocked_time";
-    public static final String RESTORE_BLOCKED_TIME_TAG = "restore_blocked_time";
-    public static final String INSTALL_BLOCKED_TIME_TAG = "install_blocked_time";
-    public static final String SUBMIT_BLOCKED_TIME_TAG = "submit_blocked_time";
 
     //.Sentry tags
     public static final String URI = "uri";
@@ -151,6 +141,12 @@ public class Constants {
         public static final String COMPLETE_RESTORE = "complete_restore";
         public static final String VALIDATE_SUBMISSION = "validate_submission";
         public static final String END_OF_FORM_NAV = "end_of_form_navigation";
+
+        public static final String GET_SESSION = "get_session";
+        public static final String INITIALIZE_SESSION = "initialize_session";
+        public static final String PROCESS_ANSWER = "process_answer";
+        public static final String UPDATE_SESSION = "update_session";
+        public static final String COMPILE_RESPONSE = "compile_response";
     }
 
     // Requests

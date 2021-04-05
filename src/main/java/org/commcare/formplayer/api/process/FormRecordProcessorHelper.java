@@ -1,5 +1,6 @@
 package org.commcare.formplayer.api.process;
 
+import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
 import org.apache.commons.logging.Log;
@@ -59,7 +60,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
 
     public static TimingResult processXML(FormplayerTransactionParserFactory factory,
                                           String fileText,
-                                          boolean autoPurgeEnabled) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
+                                          boolean autoPurgeEnabled) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException, InvalidCaseGraphException {
         InputStream stream = new ByteArrayInputStream(fileText.getBytes("UTF-8"));
         process(stream, factory);
         SimpleTimer timer = new SimpleTimer();
@@ -76,7 +77,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
      * This is coped almost directly from commcare-android's CaseUtils class.
      * TODO They should be unified
      */
-    public static void purgeCases(UserSqlSandbox sandbox) {
+    public static void purgeCases(UserSqlSandbox sandbox) throws InvalidCaseGraphException {
         long start = System.currentTimeMillis();
         //We need to determine if we're using ownership for purging. For right now, only in sync mode
         Vector<String> owners = new Vector<>();

@@ -167,7 +167,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     public LinkedHashSet<Integer> getCasesMatchingIndex(String indexName, String targetValue) {
         String[] args = new String[]{indexName, targetValue};
 
-        if (SqlHelper.SQL_DEBUG) {
+        if (log.isTraceEnabled()) {
             String query = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ?", COL_CASE_RECORD_ID, TABLE_NAME, COL_INDEX_NAME, COL_INDEX_TARGET);
             SqlHelper.explainSql(connectionHandler.getConnection(), query, args);
         }
@@ -289,7 +289,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                         argIndex++;
                     }
 
-                    if (SqlHelper.SQL_DEBUG) {
+                    if (log.isTraceEnabled()) {
                         SqlHelper.explainSql(connectionHandler.getConnection(), query, querySet.second);
                     }
 

@@ -1,30 +1,24 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
-import org.commcare.formplayer.util.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CategoryTimingHelper {
 
     private final Log log = LogFactory.getLog(CategoryTimingHelper.class);
-
-    @Autowired
-    private HttpServletRequest request;
 
     @Autowired
     private StatsDClient datadogStatsDClient;
@@ -63,11 +57,11 @@ public class CategoryTimingHelper {
         return new RecordingTimer(this, category, domain);
     }
 
-    public void recordCategoryTiming(Timing timing, String category) {
-        recordCategoryTiming(timing, category, null);
-    }
-    public void recordCategoryTiming(Timing timing, String category, String sentryMessage) {
-        recordCategoryTiming(timing, category, sentryMessage, null);
+    private void logTiming(Timing timing, String category) {
+        log.debug(String.format("Timing Event[%s][%s]: %dms",
+                RequestUtils.getRequestEndpoint(),
+                category,
+                timing.durationInMs()));
     }
 
     /**
@@ -75,15 +69,15 @@ public class CategoryTimingHelper {
      * NOTE: if adding a new tag, add a constant for the tag name 
      */
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
-        FormplayerSentry.newBreadcrumb()
-                .setCategory(category)
-                .setMessage(sentryMessage)
-                .setData(Constants.DURATION_TAG, timing.formatDuration())
-                .record();
+        FormplayerSentry.timedBreadcrumb(timing, category, sentryMessage);
+        recordDatadogMetrics(timing, category, extras);
+        logTiming(timing, category);
+    }
 
+    private void recordDatadogMetrics(Timing timing, String category, Map<String, String> extras) {
         List<String> datadogArgs = new ArrayList<>();
         datadogArgs.add(Constants.CATEGORY_TAG + ":" + category);
-        datadogArgs.add(Constants.REQUEST_TAG + ":" + RequestUtils.getRequestEndpoint(request));
+        datadogArgs.add(Constants.REQUEST_TAG + ":" + RequestUtils.getRequestEndpoint());
         datadogArgs.add(Constants.DURATION_TAG + ":" + timing.getDurationBucket());
         if (extras != null) {
             for (Map.Entry<String, String> entry : extras.entrySet()) {
@@ -96,11 +90,5 @@ public class CategoryTimingHelper {
                 timing.durationInMs(),
                 datadogArgs.toArray(new String[datadogArgs.size()])
         );
-
-
-        log.debug(String.format("Timing Event[%s][%s]: %dms",
-                RequestUtils.getRequestEndpoint(request),
-                category,
-                timing.durationInMs()));
     }
 }
