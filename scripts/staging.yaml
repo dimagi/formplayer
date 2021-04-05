@@ -50,12 +50,12 @@
 trunk: master
 name: autostaging
 branches:
-  - inMemoryCaseSearchCache+ce/tracing
-  - sr/menusession+ce/tracing
-  - ce/tracing # Cal Oct 23
+#  - inMemoryCaseSearchCache+ce/tracing
+#  - sr/menusession+ce/tracing
+#  - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - ce/eof-nav # Cal Feb 23
-  - inMemoryCaseSearchCache # Shubham Mar 17
+#  - inMemoryCaseSearchCache # Shubham Mar 17
   - beta # Shivam Mar 25
   - sr/menusession # Sravan March 30
 submodules:
