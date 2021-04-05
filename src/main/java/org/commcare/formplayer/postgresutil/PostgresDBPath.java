@@ -23,7 +23,7 @@ class PostgresDBPath extends DBPath {
 
     @Override
     public String getDatabasePath() {
-        return TableBuilder.scrubName(domain + "_" + appId);
+        return TableBuilder.scrubName(domain + "_" + username + "_" + appId);
     }
 
     @Override
