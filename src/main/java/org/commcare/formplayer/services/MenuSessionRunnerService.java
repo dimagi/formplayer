@@ -336,6 +336,7 @@ public class MenuSessionRunnerService {
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
+        screen.refreshItemSetChoices();
     }
 
 
@@ -371,7 +372,7 @@ public class MenuSessionRunnerService {
         } catch (RestClientException e) {
             return new NotificationMessage("Unknown error performing case claim", true, NotificationMessage.Tag.sync);
         }
-        restoreFactory.performTimedSync(false, false);
+        restoreFactory.performTimedSync(false, false, false);
         return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
     }
 
