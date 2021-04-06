@@ -130,6 +130,30 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
         ownerThread.interrupt();
     }
 
+    public Integer getTimeLocked(String key) {
+        String redisBucketName = this.lockNameToRedisBucketKey(key);
+        RBucket<LockMetadata> bucket = this.redisson.getBucket(redisBucketName);
+        LockMetadata retrievedlockMetadata = bucket.get();
+        if (retrievedlockMetadata != null) {
+            return ((int) (System.currentTimeMillis() - retrievedlockMetadata.lockedAt));
+        }
+        return -1;
+    }
+
+    public boolean breakAnyExistingLocks(String key) {
+        RLock lock = this.redisson.getLock(this.lockNameToRedisLockKey(key));
+        if (!lock.isLocked()) {
+            return false;
+        } else {
+            RBucket<LockMetadata> bucket = this.redisson.getBucket(this.lockNameToRedisBucketKey(key));
+            LockMetadata retrievedlockMetadata = bucket.get();
+            if (retrievedlockMetadata != null) {
+                this.sendEvictMessage(retrievedlockMetadata, this.redisIpcTopic);
+            }
+            return true;
+        }
+    }
+
     public static class LockMetadata implements Serializable {
         public final String lockId;
         public final String serverName;
@@ -282,6 +306,7 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
         public Thread getOwner() {
             return this.ownerThread;
         }
+
     }
 
 
