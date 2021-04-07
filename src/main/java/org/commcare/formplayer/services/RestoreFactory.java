@@ -244,7 +244,7 @@ public class RestoreFactory {
         getSQLiteDB().deleteDatabaseFile();
         // this line has the effect of clearing the sync token
         // from the restore URL that's used
-        sqLiteDB = new UserDB(domain, scrubbed_username, asUsername);
+        sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
         return performTimedSync(shouldPurge, skipFixtures, true);
     }
 
