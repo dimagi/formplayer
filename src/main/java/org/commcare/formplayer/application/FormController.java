@@ -55,7 +55,7 @@ import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.repo.SerializableMenuSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.SubmitService;
@@ -298,7 +298,7 @@ public class FormController extends AbstractBaseController{
             navTimer.start();
             if (formEntrySession.getMenuSessionId() != null &&
                     !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                Object nav = doEndOfFormNav(menuSessionRepo.findOneWrapped(formEntrySession.getMenuSessionId()));
+                Object nav = doEndOfFormNav(menuSessionService.getSessionById(formEntrySession.getMenuSessionId()));
                 if (nav != null) {
                     submitResponseBean.setNextScreen(nav);
                 }

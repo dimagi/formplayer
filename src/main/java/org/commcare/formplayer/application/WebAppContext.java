@@ -16,8 +16,6 @@ import org.commcare.formplayer.aspects.SetBrowserValuesAspect;
 import org.commcare.formplayer.aspects.UserRestoreAspect;
 import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
 import org.commcare.formplayer.services.BrowserValuesProvider;
 import org.commcare.formplayer.services.FormattedQuestionsService;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
@@ -159,11 +157,6 @@ public class WebAppContext implements WebMvcConfigurer {
         template.setConnectionFactory(jedisConnFactory());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
-    }
-
-    @Bean
-    public MenuSessionRepo menuSessionRepo(){
-        return new PostgresMenuSessionRepo();
     }
 
     @Bean
