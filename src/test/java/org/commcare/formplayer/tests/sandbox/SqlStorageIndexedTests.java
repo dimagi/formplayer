@@ -115,6 +115,19 @@ public class SqlStorageIndexedTests {
                                                  new String[] {"c_case_id"},
                                                  new LinkedHashSet<>()
                                                  ).size(), 2);
+        assertEquals(caseStorage.getIDsForValues(new String[0],
+                                                 new String[0],
+                                                 new String[] {"case-id"},
+                                                 new String[] {"c_case_id"},
+                                                 new LinkedHashSet<>()
+                                                 ).size(), 2);
+        assertEquals(caseStorage.getIDsForValues(new String[] {"case-type"},
+                                                 new String[] {"case_type_ipsum"},
+                                                 new String[0],
+                                                 new String[0],
+                                                 new LinkedHashSet<>()
+                                                 ).size(), 3);
+
 
         caseStorage.remove(1);
 
