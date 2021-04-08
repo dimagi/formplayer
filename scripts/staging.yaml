@@ -56,7 +56,7 @@ branches:
   - ce/negative-index # Cal Feb 2
   - ce/eof-nav # Cal Feb 23
   - inMemoryCaseSearchCache # Shubham Mar 17
-  - beta # Shivam Mar 25
+  #- beta # Shivam Mar 25
   - sr/menusession # Sravan March 30
   - incompleteFormsPagination # Shubham April 6
 submodules:
