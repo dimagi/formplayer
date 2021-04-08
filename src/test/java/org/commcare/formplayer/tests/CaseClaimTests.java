@@ -14,7 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.net.URI;
@@ -36,6 +38,9 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = TestContext.class)
 public class CaseClaimTests extends BaseTestClass {
 
+    @Autowired
+    CacheManager cacheManager;
+
     @Captor
     ArgumentCaptor<URI> uriCaptor;
 
@@ -44,6 +49,7 @@ public class CaseClaimTests extends BaseTestClass {
     public void setUp() throws Exception {
         super.setUp();
         configureRestoreFactory("caseclaimdomain", "caseclaimusername");
+        cacheManager.getCache("case_search").clear();
     }
 
     @Override
@@ -59,12 +65,15 @@ public class CaseClaimTests extends BaseTestClass {
         configureQueryMock();
         configureSyncMock();
 
-        // forceManualAction false and default Search on should result in search results right away
+        // forceManualAction false and default Search ON should result in search results right away
         EntityListResponse responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 null,
                 false,
                 EntityListResponse.class);
+
+        assert cacheManager.getCache("case_search")
+                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case") != null;
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
