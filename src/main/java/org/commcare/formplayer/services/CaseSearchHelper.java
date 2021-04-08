@@ -1,5 +1,8 @@
 package org.commcare.formplayer.services;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
@@ -31,6 +34,7 @@ public class CaseSearchHelper {
     @Autowired
     private WebClient webClient;
 
+    private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
     public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen, URI uri) {
         Cache cache = cacheManager.getCache("case_search");
@@ -41,7 +45,7 @@ public class CaseSearchHelper {
             TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
             return screen.buildExternalDataInstance(copyOfRoot);
         }
-
+        log.info(String.format("Making case search request to url %s",  uri));
         String responseString = webClient.get(uri);
         if (responseString != null) {
             Pair<ExternalDataInstance, String> dataInstanceWithError = screen.processResponse(
