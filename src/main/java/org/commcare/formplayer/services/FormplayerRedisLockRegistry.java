@@ -238,7 +238,8 @@ public class FormplayerRedisLockRegistry implements LockRegistry {
         @Override
         public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
             boolean didLock = false;
-            for (int i = 0; i < this.lockTryTimes; i++) {
+            int lockTryTimes = 1;
+            for (int i = 0; i < /*this.*/lockTryTimes; i++) {
                 try {
                     // TODO: This is in a for loop so consider adjusting lock duration.
                     didLock = this.lock.tryLock(time, unit);

@@ -21,6 +21,7 @@ import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
 import org.commcare.formplayer.services.BrowserValuesProvider;
 import org.commcare.formplayer.services.FormattedQuestionsService;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
+import org.commcare.formplayer.services.FormplayerRedisLockRegistry;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
@@ -122,6 +123,11 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public FormplayerLockRegistry userLockRegistry() {
         return new FormplayerLockRegistry();
+    }
+
+    @Bean
+    public FormplayerRedisLockRegistry userRedisLockRegistry() {
+        return new FormplayerRedisLockRegistry("S", "TEST_PREFIX_", "topic_", 1, 3);
     }
 
     @Bean

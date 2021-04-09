@@ -127,6 +127,7 @@ public class MenuController extends AbstractBaseController {
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                     HttpServletRequest request) throws Exception {
         String[] selections = sessionNavigationBean.getSelections();
+        Thread.sleep(45000);
         MenuSession menuSession;
         menuSession = getMenuSessionFromBean(sessionNavigationBean);
         BaseResponseBean response = runnerService.advanceSessionWithSelections(
