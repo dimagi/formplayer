@@ -300,11 +300,12 @@ public class MenuSessionRunnerService {
             boolean autoSearch = replay || (formplayerQueryScreen.doDefaultSearch() && !forceManualAction);
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
+                Hashtable<String, String> inputs = queryData == null ? null : queryData.getInputs(queryKey);
                 return doQuery(
                         (FormplayerQueryScreen)nextScreen,
                         menuSession,
-                        queryData == null ? null : queryData.getInputs(queryKey),
-                        formplayerQueryScreen.doDefaultSearch() && !forceManualAction
+                        inputs,
+                        inputs == null && formplayerQueryScreen.doDefaultSearch() && !forceManualAction
                 );
             } else if (queryData != null) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen,
