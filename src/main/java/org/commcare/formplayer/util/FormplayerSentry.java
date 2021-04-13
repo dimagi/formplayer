@@ -83,38 +83,11 @@ public class FormplayerSentry {
         Sentry.captureEvent(event);
     }
 
-    public static void timedBreadcrumb(String category, Runnable timed) throws Exception {
-        timedBreadcrumb(category, () -> {
-            timed.run();
-            return null;
-        });
-    }
-
-    @SneakyThrows
-    public static <T> T timedBreadcrumb(String category, CheckedSupplier<T> timed) {
-        SimpleTimer timer = new SimpleTimer();
-        timer.start();
-        try {
-            return timed.get();
-        } finally {
-            timer.end();
-            timedBreadcrumb(timer, category, null);
-            logTiming(timer, category);
-        }
-    }
-
-    public static void timedBreadcrumb(Timing timing, String category, String sentryMessage) {
+    public static void recordTimingBreadcrumb(Timing timing, String category, String sentryMessage) {
         FormplayerSentry.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)
                 .setData(Constants.DURATION_TAG, timing.formatDuration())
                 .record();
-    }
-
-    private static void logTiming(Timing timing, String category) {
-        log.debug(String.format("Timing Event[%s][%s]: %dms",
-                RequestUtils.getRequestEndpoint(),
-                category,
-                timing.durationInMs()));
     }
 }

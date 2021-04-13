@@ -6,7 +6,6 @@ import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
-import org.commcare.formplayer.util.FormplayerSentry;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -129,7 +128,7 @@ public class FormController extends AbstractBaseController{
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
                                                 @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
 
-        SerializableFormSession serializableFormSession = FormplayerSentry.timedBreadcrumb(
+        SerializableFormSession serializableFormSession = categoryTimingHelper.timed(
                 Constants.TimingCategories.GET_SESSION,
                 () -> formSessionService.getSessionById(answerQuestionBean.getSessionId())
         );
@@ -138,12 +137,12 @@ public class FormController extends AbstractBaseController{
         datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
         Sentry.setTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
-        FormSession formEntrySession = FormplayerSentry.timedBreadcrumb(
+        FormSession formEntrySession = categoryTimingHelper.timed(
                 Constants.TimingCategories.INITIALIZE_SESSION,
                 () -> new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory)
         );
 
-        FormEntryResponseBean responseBean = FormplayerSentry.timedBreadcrumb(
+        FormEntryResponseBean responseBean = categoryTimingHelper.timed(
                 Constants.TimingCategories.PROCESS_ANSWER,
                 () -> formEntrySession.answerQuestionToJSON(
                         answerQuestionBean.getAnswer(), answerQuestionBean.getFormIndex()
@@ -152,7 +151,7 @@ public class FormController extends AbstractBaseController{
 
         updateSession(formEntrySession);
 
-        FormplayerSentry.timedBreadcrumb(
+        categoryTimingHelper.timed(
                 Constants.TimingCategories.COMPILE_RESPONSE,
                 () -> {
                     responseBean.setTitle(serializableFormSession.getTitle());
@@ -497,7 +496,7 @@ public class FormController extends AbstractBaseController{
     }
 
     private void updateSession(FormSession formEntrySession) throws Exception {
-        FormplayerSentry.timedBreadcrumb(
+        categoryTimingHelper.timed(
                 Constants.TimingCategories.UPDATE_SESSION,
                 () -> formSessionService.saveSession(formEntrySession.serialize())
         );
