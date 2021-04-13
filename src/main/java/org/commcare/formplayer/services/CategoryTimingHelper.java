@@ -91,7 +91,7 @@ public class CategoryTimingHelper {
      * NOTE: if adding a new tag, add a constant for the tag name 
      */
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
-        FormplayerSentry.timedBreadcrumb(timing, category, sentryMessage);
+        FormplayerSentry.recordTimingBreadcrumb(timing, category, sentryMessage);
         recordDatadogMetrics(timing, category, extras);
         logTiming(timing, category);
     }
