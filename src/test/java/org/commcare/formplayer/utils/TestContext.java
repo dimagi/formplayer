@@ -18,6 +18,8 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -42,15 +44,15 @@ public class TestContext {
     @Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
- 
+
         messageSource.setBasename("i18n/messages");
         messageSource.setUseCodeAsDefaultMessage(true);
- 
+
         return messageSource;
     }
 
     @Bean
-    public InternalResourceViewResolver viewResolver(){
+    public InternalResourceViewResolver viewResolver() {
         InternalResourceViewResolver internalResourceViewResolver = new InternalResourceViewResolver();
         internalResourceViewResolver.setPrefix("/WEB-INF/jsp/view/");
         internalResourceViewResolver.setSuffix(".jsp");
@@ -104,7 +106,7 @@ public class TestContext {
     }
 
     @Bean
-    public InstallService installService(){
+    public InstallService installService() {
         return Mockito.spy(TestInstallService.class);
     }
 
@@ -124,7 +126,7 @@ public class TestContext {
     }
 
     @Bean
-    public NewFormResponseFactory newFormResponseFactory(){
+    public NewFormResponseFactory newFormResponseFactory() {
         return Mockito.spy(NewFormResponseFactory.class);
     }
 
@@ -137,6 +139,17 @@ public class TestContext {
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return Mockito.spy(ArchiveFileRoot.class);
     }
+
+    @Bean
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager("case_search");
+    }
+
+    @Bean
+    public CaseSearchHelper caseSearchHelper() {
+        return new CaseSearchHelper();
+    }
+
 
     @Bean
     public CategoryTimingHelper categoryTimingHelper() {
@@ -161,8 +174,12 @@ public class TestContext {
     }
 
     @Bean
-    public MenuSessionRunnerService menuSessionRunnerService() {return Mockito.spy(MenuSessionRunnerService.class);}
+    public MenuSessionRunnerService menuSessionRunnerService() {
+        return Mockito.spy(MenuSessionRunnerService.class);
+    }
 
     @Bean
-    public MenuSessionFactory menuSessionFactory() {return Mockito.spy(MenuSessionFactory.class);}
+    public MenuSessionFactory menuSessionFactory() {
+        return Mockito.spy(MenuSessionFactory.class);
+    }
 }
