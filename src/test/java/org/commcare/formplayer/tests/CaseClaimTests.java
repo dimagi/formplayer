@@ -149,14 +149,14 @@ public class CaseClaimTests extends BaseTestClass {
         assert caseStorage.getNumRecords() == 22;
 
         // verify search uris
-        verify(webClientMock, times(3)).get(uriCaptor.capture());
+        verify(webClientMock, times(2)).get(uriCaptor.capture());
         List<URI> uris = uriCaptor.getAllValues();
         // when default search, prompts doesn't get included
         assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case"));
         // when default search but forceManualSearch, prompts should get included
+        // Subsequently when search happens as part of replaying a session, prompts should be same as the last search
+        // and therefore be served through cache. Therefore there are only 2 http calls here instead of 3
         assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&name=Burt&case_type=case&state=ka"));
-        // when search happens as part of replaying a session, prompts should be same as the last search
-        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&name=Burt&case_type=case&state=ka"));
     }
 
     @Test
