@@ -2,6 +2,7 @@ package org.commcare.formplayer.repo;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -11,12 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -71,7 +74,7 @@ public class FormSessionRepoTest {
         Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
         List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
-                "momo", "domain"
+                "momo", "domain", PageRequest.of(0, 10)
         );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
@@ -91,7 +94,7 @@ public class FormSessionRepoTest {
         ArrayList<String> sessionIds = Lists.newArrayList(sessionIdIterator);
 
         List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
-                "momo", "domain"
+                "momo", "domain", PageRequest.of(0, 10)
         );
         assertThat(userSessions).extracting("id").containsExactlyElementsOf(
                 sessionIds
@@ -103,13 +106,13 @@ public class FormSessionRepoTest {
         formSessionRepo.save(getSession("domain1", "session1"));
         formSessionRepo.save(getSession("domain2", "session2"));
         List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
-                "momo", "domain1"
+                "momo", "domain1", PageRequest.of(0, 10)
         );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session1");
 
         userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
-                "momo", "domain2"
+                "momo", "domain2", PageRequest.of(0, 10)
         );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session2");
@@ -120,15 +123,18 @@ public class FormSessionRepoTest {
         formSessionRepo.save(getSession("domain1", "session_user1", "asUser1"));
         formSessionRepo.save(getSession("domain1", "session_user2", "asUser2"));
         formSessionRepo.save(getSession("domain1", "session_momo", null));
-        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc("momo", "domain1", "asUser1");
+        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(
+                "momo", "domain1", "asUser1", PageRequest.of(0, 10));
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user1");
 
-        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc("momo", "domain1", "asUser2");
+        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(
+                "momo", "domain1", "asUser2", PageRequest.of(0, 10));
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user2");
 
-        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc("momo", "domain1");
+        userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
+                "momo", "domain1", PageRequest.of(0, 10));
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session_momo");
     }
@@ -142,7 +148,7 @@ public class FormSessionRepoTest {
         int version = session.getVersion();
 
         // update field that should not get updated in the DB
-        ReflectionTestUtils.setField(session,"domain","newdomain");
+        ReflectionTestUtils.setField(session, "domain", "newdomain");
         formSessionRepo.saveAndFlush(session);
         entityManager.refresh(session);
 
