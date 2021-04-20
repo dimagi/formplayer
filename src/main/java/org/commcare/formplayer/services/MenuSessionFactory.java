@@ -68,7 +68,7 @@ public class MenuSessionFactory {
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
                 for (StackFrameStep step: steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
-                        if (referencesContainStep(step.getValue())) {
+                        if (entityScreen.referencesContainStep(step.getValue())) {
                             currentStep = step.getValue();
                         }
                         break;
