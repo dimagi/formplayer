@@ -9,7 +9,6 @@ import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
-import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
@@ -42,7 +41,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.utils.FileUtils;
@@ -86,7 +85,7 @@ public class BaseTestClass {
     protected FormSessionService formSessionService;
 
     @Autowired
-    private MenuSessionService menuSessionService;
+    private MenuSessionRepo menuSessionRepoMock;
 
     @Autowired
     protected WebClient webClientMock;
@@ -148,10 +147,10 @@ public class BaseTestClass {
     protected ObjectMapper mapper;
 
     final Map<String, SerializableFormSession> sessionMap = new HashMap<String, SerializableFormSession>();
-    final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<String, SerializableMenuSession>();
 
     @BeforeEach
     public void setUp() throws Exception {
+        Mockito.reset(menuSessionRepoMock);
         Mockito.reset(webClientMock);
         Mockito.reset(restoreFactoryMock);
         Mockito.reset(submitServiceMock);
@@ -184,7 +183,6 @@ public class BaseTestClass {
         DateUtils.setTimezoneProvider(tzProvider);
 
         mockFormSessionService();
-        mockMenuSessionService();
     }
 
     /*
@@ -214,33 +212,6 @@ public class BaseTestClass {
                     return sessionMap.get(key);
                 }
                 throw new FormNotFoundException(key);
-            }
-        });
-    }
-
-    private void mockMenuSessionService() {
-        menuSessionMap.clear();
-        doAnswer(new Answer<SerializableMenuSession>() {
-            @Override
-            public SerializableMenuSession answer(InvocationOnMock invocation) throws Throwable {
-                SerializableMenuSession session = (SerializableMenuSession) invocation.getArguments()[0];
-                if (session.getId() == null) {
-                    // this is normally taken care of by Hibernate
-                    ReflectionTestUtils.setField(session,"id",UUID.randomUUID().toString());
-                }
-                menuSessionMap.put(session.getId(), session);
-                return session;
-            }
-        }).when(menuSessionService).saveSession(any(SerializableMenuSession.class));
-
-        when(menuSessionService.getSessionById(anyString())).thenAnswer(new Answer<SerializableMenuSession>() {
-            @Override
-            public SerializableMenuSession answer(InvocationOnMock invocation) throws Throwable {
-                String key = (String) invocation.getArguments()[0];
-                if (menuSessionMap.containsKey(key)) {
-                    return menuSessionMap.get(key);
-                }
-                throw new MenuNotFoundException(key);
             }
         });
     }
@@ -546,7 +517,7 @@ public class BaseTestClass {
     }
 
     EvaluateXPathResponseBean evaluateMenuXPath(String menuSessionId, String xpath) throws Exception {
-        SerializableMenuSession menuSession = menuSessionService.getSessionById(menuSessionId);
+        SerializableMenuSession menuSession = menuSessionRepoMock.findOneWrapped(menuSessionId);
 
         EvaluateXPathMenuRequestBean evaluateXPathRequestBean = new EvaluateXPathMenuRequestBean();
         evaluateXPathRequestBean.setUsername(menuSession.getUsername());

@@ -56,7 +56,7 @@ public abstract class AbstractBaseController {
     protected FormSessionService formSessionService;
 
     @Autowired
-    protected MenuSessionService menuSessionService;
+    protected MenuSessionRepo menuSessionRepo;
 
     @Autowired
     protected InstallService installService;
