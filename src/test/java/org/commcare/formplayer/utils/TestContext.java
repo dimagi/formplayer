@@ -4,8 +4,10 @@ import com.timgroup.statsd.StatsDClient;
 
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.mocks.MockLockRegistry;
+import org.commcare.formplayer.mocks.MockMenuSessionRepo;
 import org.commcare.formplayer.mocks.TestInstallService;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
+import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
@@ -60,8 +62,10 @@ public class TestContext {
     @MockBean
     public FormSessionService formSessionService;
 
-    @MockBean
-    public MenuSessionService menuSessionService;
+    @Bean
+    public MenuSessionRepo menuSessionRepo() {
+        return Mockito.spy(MockMenuSessionRepo.class);
+    }
 
     @MockBean
     public WebClient webClient;

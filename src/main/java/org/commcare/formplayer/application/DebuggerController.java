@@ -17,7 +17,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
-import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.repo.SerializableMenuSession;
 import org.commcare.formplayer.services.FormattedQuestionsService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
@@ -53,7 +53,7 @@ public class DebuggerController extends AbstractBaseController {
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(debuggerRequest.getSessionId());
         FormSession formSession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
-        SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(serializableFormSession.getMenuSessionId());
+        SerializableMenuSession serializableMenuSession = menuSessionRepo.findOneWrapped(serializableFormSession.getMenuSessionId());
         String instanceXml = formSession.getInstanceXml();
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
                 debuggerRequest.getDomain(),
