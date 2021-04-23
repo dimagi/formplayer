@@ -6,9 +6,6 @@
     "app_version": "2.0",
     "device_id": "cloudcare",
     "user_id": "84c246edf58bfa69e03bdecc39692e1f",
-    "additional_filters": {
-      "footprint": true
-    },
     "domain": "test",
     "host": "http://localhost:8000",
     "user_data": {
