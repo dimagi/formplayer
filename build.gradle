@@ -5,9 +5,9 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.4.2'
+    id 'org.springframework.boot' version '2.4.5'
     id "com.gorylenko.gradle-git-properties" version "2.2.4"
-    id "io.freefair.lombok" version "5.3.0"
+    id "io.freefair.lombok" version "5.3.3.3"
 }
 
 springBoot {
@@ -25,6 +25,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'jacoco'
 
 jar {
     archiveBaseName = 'formplayer'
@@ -75,6 +76,7 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-autoconfigure'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation group: 'org.xerial', name: 'sqlite-jdbc'
     implementation group: 'redis.clients', name: 'jedis'
     implementation group: 'io.micrometer', name: 'micrometer-registry-statsd'
@@ -84,18 +86,18 @@ dependencies {
     implementation group: 'org.springframework.data', name: 'spring-data-redis'
     implementation group: 'org.springframework.data', name: 'spring-data-commons'
     implementation group: 'org.springframework.integration', name: 'spring-integration-redis'
-    runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache'
 
     //Unmanaged Dependencies
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.11.0'
-    implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: '4.1.0'
-    implementation group: 'io.sentry', name: 'sentry-logback', version: '4.1.0'
+    implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: '4.3.0'
+    implementation group: 'io.sentry', name: 'sentry-logback', version: '4.3.0'
     implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
-    implementation group: 'org.json', name: 'json', version: '20201115'
+    implementation group: 'org.json', name: 'json', version: '20210307'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
-    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.20.0'
-    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.20.0'
+    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.23.0'
+    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.23.0'
     runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache', version: '2.8.8'
+
 
     implementation fileTree(dir: 'libs', include: '*.jar')
     implementation project(path: ':commcare', configuration: 'api')
@@ -108,6 +110,7 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path'
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path-assert'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
@@ -117,7 +120,7 @@ dependencies {
     developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'
 
     //Unmanaged Dependencies
-    testImplementation group: 'com.google.guava', name: 'guava', version: '30.1-jre'
+    testImplementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
 }
 
 test {
@@ -136,6 +139,7 @@ test {
             System.out.flush()
         }
     }
+    finalizedBy jacocoTestReport // report is always generated after tests run
 }
 
 task CreateSnapshotDbs(type: Test) {
@@ -158,3 +162,11 @@ task copyScripts(type: Copy) {
 }
 
 assemble.dependsOn copyScripts
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+}

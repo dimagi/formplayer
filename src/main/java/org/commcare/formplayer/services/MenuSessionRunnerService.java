@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import io.sentry.Sentry;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.menus.*;
@@ -9,6 +10,7 @@ import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
@@ -18,11 +20,11 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
@@ -34,9 +36,11 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.SessionUtils;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Arrays;
@@ -57,10 +61,10 @@ public class MenuSessionRunnerService {
     private InstallService installService;
 
     @Autowired
-    private QueryRequester queryRequester;
+    private CaseSearchHelper caseSearchHelper;
 
     @Autowired
-    private SyncRequester syncRequester;
+    private WebClient webClient;
 
     @Autowired
     protected FormSessionService formSessionService;
@@ -92,7 +96,7 @@ public class MenuSessionRunnerService {
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, 0, "", 0, null);
+        return getNextMenu(menuSession, null, 0, "", 0, null, 0);
     }
 
     private BaseResponseBean getNextMenu(MenuSession menuSession,
@@ -100,7 +104,8 @@ public class MenuSessionRunnerService {
                                          int offset,
                                          String searchText,
                                          int sortIndex,
-                                         QueryData queryData) throws Exception {
+                                         QueryData queryData,
+                                         int casesPerPage) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -128,7 +133,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
-                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData);
+                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData, casesPerPage);
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
@@ -137,10 +142,15 @@ public class MenuSessionRunnerService {
                     offset,
                     searchText,
                     sortIndex,
-                    storageFactory.getPropertyManager().isFuzzySearchEnabled()
+                    storageFactory.getPropertyManager().isFuzzySearchEnabled(),
+                    casesPerPage
             );
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "case_list");
             Sentry.setTag(Constants.MODULE_TAG, "case_list");
+            // using getBestTitle to eliminate risk of showing private information
+            String caseListName = SessionUtils.getBestTitle(menuSession.getSessionWrapper());
+            datadog.addRequestScopedTag(Constants.MODULE_NAME_TAG, caseListName);
+            Sentry.setTag(Constants.MODULE_NAME_TAG, caseListName);
         } else if (nextScreen instanceof FormplayerQueryScreen) {
             ((FormplayerQueryScreen)nextScreen).refreshItemSetChoices();
             String queryKey = menuSession.getSessionWrapper().getCommand();
@@ -173,7 +183,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null,
-                0, null, 0, false);
+                0, null, 0, false, 0);
     }
 
     /**
@@ -196,7 +206,8 @@ public class MenuSessionRunnerService {
                                                          int offset,
                                                          String searchText,
                                                          int sortIndex,
-                                                         boolean forceManualAction) throws Exception {
+                                                         boolean forceManualAction,
+                                                         int casesPerPage) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -207,10 +218,12 @@ public class MenuSessionRunnerService {
                     offset,
                     searchText,
                     sortIndex,
-                    queryData
+                    queryData,
+                    casesPerPage
             );
         }
         NotificationMessage notificationMessage = null;
+        boolean rebuildSession = false;
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
@@ -219,8 +232,7 @@ public class MenuSessionRunnerService {
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
-            boolean allowAutoLaunch = i == selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, allowAutoLaunch);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -230,23 +242,11 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-            String queryKey = menuSession.getSessionWrapper().getCommand();
-            if (nextScreen instanceof FormplayerQueryScreen) {
-                FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
-                formplayerQueryScreen.refreshItemSetChoices();
-                boolean autoSearch = formplayerQueryScreen.doDefaultSearch() && !forceManualAction;
-                if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
-                    notificationMessage = doQuery(
-                            (FormplayerQueryScreen)nextScreen,
-                            menuSession,
-                            queryData == null ? null : queryData.getInputs(queryKey),
-                            autoSearch
-                    );
-                } else if (queryData != null) {
-                    answerQueryPrompts((FormplayerQueryScreen)nextScreen,
-                            queryData.getInputs(queryKey));
-                }
-            }
+
+            // Advance the session in case auto launch is set
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed);
+            boolean replay = i < selections.length;
+            notificationMessage = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
                         (FormplayerSyncScreen)nextScreen,
@@ -254,6 +254,14 @@ public class MenuSessionRunnerService {
                 if (syncResponse != null) {
                     return syncResponse;
                 }
+            }
+
+            if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
+                // we don't have a resolution, try rebuilding session to execute any pending ops
+                executeAndRebuildSession(menuSession);
+                rebuildSession = true;
+            } else {
+                menuSession.addSelection(selection);
             }
         }
 
@@ -263,7 +271,8 @@ public class MenuSessionRunnerService {
                 offset,
                 searchText,
                 sortIndex,
-                queryData
+                queryData,
+                casesPerPage
         );
         restoreFactory.cacheSessionSelections(selections);
 
@@ -272,16 +281,53 @@ public class MenuSessionRunnerService {
                 nextResponse.setNotification(notificationMessage);
             }
             log.info("Returning menu: " + nextResponse);
+
+            if (rebuildSession) {
+                nextResponse.setSelections(menuSession.getSelections());
+            }
             return nextResponse;
         } else {
-            BaseResponseBean responseBean = resolveFormGetNext(menuSession);
-            if (responseBean == null) {
-                responseBean = new BaseResponseBean(null,
-                        new NotificationMessage(null, false, NotificationMessage.Tag.selection),
-                        true);
-            }
+            BaseResponseBean responseBean = new BaseResponseBean(null,
+                    new NotificationMessage(null, false, NotificationMessage.Tag.selection),
+                    true);
             return responseBean;
         }
+    }
+
+    private NotificationMessage handleQueryScreen(Screen nextScreen, MenuSession menuSession, QueryData queryData,
+                                                  boolean replay, boolean forceManualAction)
+            throws CommCareSessionException {
+        if (nextScreen instanceof FormplayerQueryScreen) {
+            FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
+            formplayerQueryScreen.refreshItemSetChoices();
+            boolean autoSearch = replay || (formplayerQueryScreen.doDefaultSearch() && !forceManualAction);
+            String queryKey = menuSession.getSessionWrapper().getCommand();
+            if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
+                return doQuery(
+                        (FormplayerQueryScreen)nextScreen,
+                        menuSession,
+                        queryData == null ? null : queryData.getInputs(queryKey),
+                        formplayerQueryScreen.doDefaultSearch() && !forceManualAction
+                );
+            } else if (queryData != null) {
+                answerQueryPrompts((FormplayerQueryScreen)nextScreen,
+                        queryData.getInputs(queryKey));
+            }
+        }
+        return null;
+    }
+
+    private Screen handleAutoLaunch(Screen nextScreen, MenuSession menuSession,
+                                    String selection, boolean needsDetail, boolean confirmed)
+            throws CommCareSessionException {
+        if (nextScreen instanceof EntityScreen) {
+            EntityScreen entityScreen = (EntityScreen)nextScreen;
+            if (entityScreen.getAutoLaunchAction() != null) {
+                menuSession.handleInput(selection, needsDetail, confirmed, true);
+                nextScreen = menuSession.getNextScreen(needsDetail);
+            }
+        }
+        return nextScreen;
     }
 
     // Sets the query fields and refreshes any itemset choices based on them
@@ -290,6 +336,7 @@ public class MenuSessionRunnerService {
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
+        screen.refreshItemSetChoices();
     }
 
 
@@ -317,20 +364,16 @@ public class MenuSessionRunnerService {
     }
 
     private NotificationMessage doSync(FormplayerSyncScreen screen) throws Exception {
-        ResponseEntity<String> responseEntity = syncRequester.makeSyncRequest(screen.getUrl(),
-                screen.getBuiltQuery(),
-                restoreFactory.getUserHeaders());
-        if (responseEntity == null) {
-            return new NotificationMessage("Session error, expected sync block but didn't get one.", true, NotificationMessage.Tag.sync);
-        }
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            // Don't purge for case claim
-            restoreFactory.performTimedSync(false, false);
-            return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
-        } else {
+        try {
+            webClient.post(screen.getUrl(), screen.getQueryParams());
+        } catch (RestClientResponseException e) {
             return new NotificationMessage(
-                    String.format("Case claim failed. Message: %s", responseEntity.getBody()), true, NotificationMessage.Tag.sync);
+                    String.format("Case claim failed. Message: %s", e.getResponseBodyAsString()), true, NotificationMessage.Tag.sync);
+        } catch (RestClientException e) {
+            return new NotificationMessage("Unknown error performing case claim", true, NotificationMessage.Tag.sync);
         }
+        restoreFactory.performTimedSync(false, false, false);
+        return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
     }
 
     /**
@@ -342,7 +385,7 @@ public class MenuSessionRunnerService {
     private NotificationMessage doQuery(FormplayerQueryScreen screen,
                                         MenuSession menuSession,
                                         Hashtable<String, String> queryDictionary,
-                                        boolean autoSearch) throws CommCareSessionException {
+                                        boolean skipDefaultPromptValues) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
         NotificationMessage notificationMessage = null;
 
@@ -350,9 +393,11 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        String responseString = queryRequester.makeQueryRequest(screen.getUriString(autoSearch), restoreFactory.getUserHeaders());
-        boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
-        if (success) {
+        ExternalDataInstance searchDataInstance = searchAndSetResult(
+                screen,
+                screen.getUri(skipDefaultPromptValues));
+
+        if (searchDataInstance != null) {
             if (screen.getCurrentMessage() != null) {
                 notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
             }
@@ -367,8 +412,18 @@ public class MenuSessionRunnerService {
         return notificationMessage;
     }
 
+    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri) {
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen, uri);
+        screen.setQueryDatum(searchDataInstance);
+        return searchDataInstance;
+    }
+
+
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
+            Screen nextScreen = menuSession.getNextScreen();
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false);
+            handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
@@ -473,8 +528,12 @@ public class MenuSessionRunnerService {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            // update datadog/sentry metrics
             datadog.addRequestScopedTag(Constants.MODULE_TAG, "form");
             Sentry.setTag(Constants.MODULE_TAG, "form");
+            String formName = formResponseBean.getTitle();
+            datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, formName);
+            Sentry.setTag(Constants.FORM_NAME_TAG, formName);
             return formResponseBean;
         } else {
             return null;

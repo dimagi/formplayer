@@ -336,10 +336,6 @@ public class FormSession {
         return metaData.toString();
     }
 
-    public int getSequenceId() {
-        return session.getSequenceId();
-    }
-
     public String getLocale() {
         return session.getInitLang();
     }
@@ -355,7 +351,6 @@ public class FormSession {
     }
 
     public SerializableFormSession serialize() throws IOException {
-        session.incrementSequence();
         session.setInstanceXml(getInstanceXml());
         return session;
     }

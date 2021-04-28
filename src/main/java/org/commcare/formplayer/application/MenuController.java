@@ -1,17 +1,18 @@
 package org.commcare.formplayer.application;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
-import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.SessionNavigationBean;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.session.MenuSession;
+import org.commcare.formplayer.util.Constants;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
@@ -25,12 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.formplayer.services.QueryRequester;
-import org.commcare.formplayer.services.SyncRequester;
-import org.commcare.formplayer.session.MenuSession;
-import org.commcare.formplayer.util.Constants;
-
 /**
  * Controller (API endpoint) containing all session navigation functionality.
  * This includes module, form, case, and session (incomplete form) selection.
@@ -38,12 +33,6 @@ import org.commcare.formplayer.util.Constants;
 @RestController
 @EnableAutoConfiguration
 public class MenuController extends AbstractBaseController {
-
-    @Autowired
-    private QueryRequester queryRequester;
-
-    @Autowired
-    private SyncRequester syncRequester;
 
     @Autowired
     private CategoryTimingHelper categoryTimingHelper;
@@ -66,7 +55,8 @@ public class MenuController extends AbstractBaseController {
                     sessionNavigationBean.getOffset(),
                     sessionNavigationBean.getSearchText(),
                     sessionNavigationBean.getSortIndex(),
-                    sessionNavigationBean.isForceManualAction()
+                    sessionNavigationBean.isForceManualAction(),
+                    sessionNavigationBean.getCasesPerPage()
             );
             logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
@@ -90,7 +80,8 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
-                sessionNavigationBean.isForceManualAction()
+                sessionNavigationBean.isForceManualAction(),
+                sessionNavigationBean.getCasesPerPage()
         );
         logNotification(baseResponseBean.getNotification(),request);
 
@@ -146,7 +137,8 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getOffset(),
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
-                sessionNavigationBean.isForceManualAction()
+                sessionNavigationBean.isForceManualAction(),
+                sessionNavigationBean.getCasesPerPage()
         );
         logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);

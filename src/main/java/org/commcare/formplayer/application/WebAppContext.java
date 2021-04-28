@@ -1,22 +1,35 @@
 package org.commcare.formplayer.application;
 
-import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.config.MeterFilter;
+
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
-import org.commcare.formplayer.aspects.*;
+
+import org.commcare.formplayer.aspects.AppInstallAspect;
+import org.commcare.formplayer.aspects.ConfigureStorageFromSessionAspect;
+import org.commcare.formplayer.aspects.LockAspect;
+import org.commcare.formplayer.aspects.LoggingAspect;
+import org.commcare.formplayer.aspects.MetricsAspect;
+import org.commcare.formplayer.aspects.SetBrowserValuesAspect;
+import org.commcare.formplayer.aspects.UserRestoreAspect;
 import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
-import org.commcare.formplayer.services.*;
+import org.commcare.formplayer.services.BrowserValuesProvider;
+import org.commcare.formplayer.services.FormattedQuestionsService;
+import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -27,18 +40,16 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.context.request.RequestContextListener;
-import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
-import org.springframework.web.servlet.view.JstlView;
 
-import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
+
+import javax.sql.DataSource;
+
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.config.MeterFilter;
 
 
 //have to exclude this to use two DataSources (HQ and Formplayer dbs)
@@ -71,48 +82,17 @@ public class WebAppContext implements WebMvcConfigurer {
     private List<String> detailedTagNames;
 
     @Bean
-    public SimpleMappingExceptionResolver exceptionResolver() {
-        SimpleMappingExceptionResolver exceptionResolver = new SimpleMappingExceptionResolver();
-
-        Properties exceptionMappings = new Properties();
-
-        exceptionMappings.put("java.lang.Exception", "error/error");
-        exceptionMappings.put("java.lang.RuntimeException", "error/error");
-
-        exceptionResolver.setExceptionMappings(exceptionMappings);
-
-        Properties statusCodes = new Properties();
-
-        statusCodes.put("error/404", "404");
-        statusCodes.put("error/error", "500");
-
-        exceptionResolver.setStatusCodes(statusCodes);
-
-        return exceptionResolver;
-    }
-
-    @Bean
-    public ViewResolver viewResolver() {
-        InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
-        viewResolver.setViewClass(JstlView.class);
-        viewResolver.setPrefix("/WEB-INF/jsp/");
-        viewResolver.setSuffix(".jsp");
-
-        return viewResolver;
-    }
-
-    @Bean
     public static PropertySourcesPlaceholderConfigurer propertiesResolver() {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
     @Bean
     public StatsDClient datadogStatsDClient() {
-        return new NonBlockingStatsDClient(
-                "formplayer.metrics",
-                "localhost",
-                8125
-        );
+        return new NonBlockingStatsDClientBuilder()
+                .prefix("formplayer.metrics")
+                .hostname("localhost")
+                .port(8125)
+                .build();
     }
 
     @Bean
@@ -187,11 +167,6 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public XFormService xFormService(){
-        return new XFormService();
-    }
-
-    @Bean
     @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
         FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedTagging, detailedTagNames);
@@ -245,21 +220,6 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     public ArchiveFileRoot formplayerArchiveFileRoot() {
         return new FormplayerArchiveFileRoot();
-    }
-
-    @Bean
-    public QueryRequester queryRequester() {
-        return new QueryRequester();
-    }
-
-    @Bean
-    public SyncRequester syncRequester() {
-        return new SyncRequester();
-    }
-
-    @Bean
-    public FormplayerFormSendCalloutHandler formSendCalloutHandler() {
-        return new FormplayerFormSendCalloutHandler();
     }
 
     @Bean
