@@ -65,6 +65,8 @@ import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.SimpleTimer;
 import org.springframework.web.client.HttpClientErrorException;
 
+import datadog.trace.api.Trace;
+
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
  * opening a new form, question answering, and form submission.
@@ -324,6 +326,7 @@ public class FormController extends AbstractBaseController{
         formSessionService.deleteSessionById(id);
     }
 
+    @Trace
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
         MenuSession menuSession = menuSessionFactory.buildSession(serializedSession);
@@ -334,6 +337,7 @@ public class FormController extends AbstractBaseController{
      * Iterate over all answers and attempt to save them to check for validity.
      * Submit the complete XML instance to HQ if valid.
      */
+    @Trace
     private SubmitResponseBean validateSubmitAnswers(FormEntryController formEntryController,
                                        FormEntryModel formEntryModel,
                                        Map<String, Object> answers,
