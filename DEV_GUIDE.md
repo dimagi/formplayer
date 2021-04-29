@@ -32,6 +32,45 @@ In Formpayer the main features we make use of are:
 * [Caching](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-caching)
   * [Caching guide](https://spring.io/guides/gs/caching/)
   * [Caching reference](https://docs.spring.io/spring-framework/docs/current/reference/html/integration.html#cache)
+* [Security](https://docs.spring.io/spring-boot/docs/2.4.3/reference/html/spring-boot-features.html#boot-features-security)
+  * [Security guide](#security)
+  * [Spring security reference](https://docs.spring.io/spring-security/site/docs/5.4.5/reference/html5/#introduction)
+
+### Security
+All Formplayer endpoints other than "/serverup" and "/validate_form" are secured using Spring Security.
+
+Spring security is part of the Spring framework that provides filters and classes for securing an application.
+The primary mechanism is a set of request filters that apply the security policy to requests.
+
+The security policy is defined in the [WebSecurityConfig](src/main/java/org/commcare/formplayer/configuration/WebSecurityConfig.java)
+class.
+
+Formplayer uses two custom auth filters which are applied to each request. Each filter is responsible for
+separate authentication mechanisms and only one filter will be applied to each request.
+
+#### Django session auth
+The primary mode is to use the session token provided by Django. This is passed to Formplayer via the
+Django session cookie which is accessible to Formplayer since it is running under the same domain.
+
+Formplayer reads the session ID out of the request the `username` and `domain`. It then makes a request to
+CommCare HQ for the user details which it validates against the current request.
+
+CommCareSessionAuthFilter
+  - generates a `PreAuthenticatedAuthenticationToken` containing:
+    - credentials: session cookie value
+    - principal: UserDomainPreAuthPrincipal containing username and domain of the request
+  - Calls `HQUserDetailsService.loadUserDetails(token)` (via the `AuthenticationManager`)
+    - this makes the call the HQ and returns an `HqUserDetailsBean` or raises an exception
+  - If everything is successful the `HqUserDetailsBean` is placed into the security context.
+
+### HMAC auth
+
+This mode of authenticating requests is used when requests are performed outside the scope of a user session. For
+example, when CommCare HQ makes requests to Formplayer as part of an SMS interaction.
+
+The authentication for this mode is handled by the `HmacAuthFilter` which validates the HMAC in the `X-MAC-DIGEST`
+request header. If the HMAC is valid the filter constructs a `HqUserDetailsBean` from the request body or by
+fetching a session record from the DB. This user details bean is then placed in the security context.
 
 ### Glossary
 * [JPA](https://en.wikipedia.org/wiki/Jakarta_Persistence): Jakarta Persistence

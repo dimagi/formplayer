@@ -20,6 +20,7 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -39,8 +40,7 @@ import org.commcare.formplayer.util.SessionUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Arrays;
@@ -59,6 +59,9 @@ public class MenuSessionRunnerService {
 
     @Autowired
     private InstallService installService;
+
+    @Autowired
+    private CaseSearchHelper caseSearchHelper;
 
     @Autowired
     private WebClient webClient;
@@ -239,9 +242,9 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-
+            String nextInput = i == selections.length ? "" : selections[i];
             // Advance the session in case auto launch is set
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed);
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed, nextInput);
             boolean replay = i < selections.length;
             notificationMessage = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
             if (nextScreen instanceof FormplayerSyncScreen) {
@@ -319,10 +322,11 @@ public class MenuSessionRunnerService {
     }
 
     private Screen handleAutoLaunch(Screen nextScreen, MenuSession menuSession,
-                                    String selection, boolean needsDetail, boolean confirmed)
+                                    String selection, boolean needsDetail, boolean confirmed, String nextInput)
             throws CommCareSessionException {
         if (nextScreen instanceof EntityScreen) {
             EntityScreen entityScreen = (EntityScreen)nextScreen;
+            entityScreen.evaluateAutoLaunch(nextInput);
             if (entityScreen.getAutoLaunchAction() != null) {
                 menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
                 nextScreen = menuSession.getNextScreen(needsDetail);
@@ -337,6 +341,7 @@ public class MenuSessionRunnerService {
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
+        screen.refreshItemSetChoices();
     }
 
 
@@ -372,7 +377,7 @@ public class MenuSessionRunnerService {
         } catch (RestClientException e) {
             return new NotificationMessage("Unknown error performing case claim", true, NotificationMessage.Tag.sync);
         }
-        restoreFactory.performTimedSync(false, false);
+        restoreFactory.performTimedSync(false, false, false);
         return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
     }
 
@@ -393,9 +398,11 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        String responseString = webClient.get(screen.getUri(skipDefaultPromptValues));
-        boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
-        if (success) {
+        ExternalDataInstance searchDataInstance = searchAndSetResult(
+                screen,
+                screen.getUri(skipDefaultPromptValues));
+
+        if (searchDataInstance != null) {
             if (screen.getCurrentMessage() != null) {
                 notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
             }
@@ -410,10 +417,17 @@ public class MenuSessionRunnerService {
         return notificationMessage;
     }
 
+    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri) {
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen, uri);
+        screen.setQueryDatum(searchDataInstance);
+        return searchDataInstance;
+    }
+
+
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
             Screen nextScreen = menuSession.getNextScreen();
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false);
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
             handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());

@@ -1,6 +1,5 @@
 package org.commcare.formplayer.tests;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.commcare.formplayer.application.*;
@@ -22,6 +21,7 @@ import org.commcare.modern.util.Pair;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.services.locale.LocalizerManager;
+import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.*;
@@ -54,9 +54,9 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -802,6 +802,12 @@ public class BaseTestClass {
                 result.andReturn().getResponse().getContentAsString(),
                 clazz
         );
+    }
+
+    <T> T getNextScreenForEOFNavigation(SubmitResponseBean submitResponse, Class<T> clazz) throws IOException {
+        LinkedHashMap commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
+        String jsonString = new JSONObject(commandsRaw).toString();
+        return mapper.readValue(jsonString, clazz);
     }
 
     public class MockTimezoneProvider extends TimezoneProvider {

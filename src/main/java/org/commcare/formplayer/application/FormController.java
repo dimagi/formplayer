@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.web.client.WebClient;
+import org.commcare.cases.util.InvalidCaseGraphException;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.xml.util.InvalidStructureException;
@@ -17,8 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -130,19 +127,39 @@ public class FormController extends AbstractBaseController{
     @ConfigureStorageFromSession
     public FormEntryResponseBean answerQuestion(@RequestBody AnswerQuestionRequestBean answerQuestionBean,
                                                 @CookieValue(name=Constants.POSTGRES_DJANGO_SESSION_ID, required=false) String authToken) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionService.getSessionById(answerQuestionBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+
+        SerializableFormSession serializableFormSession = categoryTimingHelper.timed(
+                Constants.TimingCategories.GET_SESSION,
+                () -> formSessionService.getSessionById(answerQuestionBean.getSessionId())
+        );
 
         // add tags for future datadog/sentry requests
         datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
         Sentry.setTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
 
-        FormEntryResponseBean responseBean = formEntrySession.answerQuestionToJSON(answerQuestionBean.getAnswer(),
-                answerQuestionBean.getFormIndex());
+        FormSession formEntrySession = categoryTimingHelper.timed(
+                Constants.TimingCategories.INITIALIZE_SESSION,
+                () -> new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory)
+        );
+
+        FormEntryResponseBean responseBean = categoryTimingHelper.timed(
+                Constants.TimingCategories.PROCESS_ANSWER,
+                () -> formEntrySession.answerQuestionToJSON(
+                        answerQuestionBean.getAnswer(), answerQuestionBean.getFormIndex()
+                )
+        );
+
         updateSession(formEntrySession);
-        responseBean.setTitle(serializableFormSession.getTitle());
-        responseBean.setSequenceId(serializableFormSession.getVersion());
-        responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
+
+        categoryTimingHelper.timed(
+                Constants.TimingCategories.COMPILE_RESPONSE,
+                () -> {
+                    responseBean.setTitle(serializableFormSession.getTitle());
+                    responseBean.setSequenceId(serializableFormSession.getVersion());
+                    responseBean.setInstanceXml(new InstanceXmlBean(serializableFormSession.getInstanceXml()));
+                }
+        );
+
         return responseBean;
     }
 
@@ -183,14 +200,28 @@ public class FormController extends AbstractBaseController{
             try {
                 restoreFactory.setAutoCommit(false);
 
-                SimpleTimer purgeCasesTimer = FormRecordProcessorHelper.processXML(
-                        new FormplayerTransactionParserFactory(
-                                restoreFactory.getSqlSandbox(),
-                                storageFactory.getPropertyManager().isBulkPerformanceEnabled()
-                        ),
-                        formEntrySession.submitGetXml(),
-                        storageFactory.getPropertyManager().isAutoPurgeEnabled()
-                ).getPurgeCasesTimer();
+                SimpleTimer purgeCasesTimer = null;
+
+                try {
+                    purgeCasesTimer = FormRecordProcessorHelper.processXML(
+                            new FormplayerTransactionParserFactory(
+                                    restoreFactory.getSqlSandbox(),
+                                    storageFactory.getPropertyManager().isBulkPerformanceEnabled()
+                            ),
+                            formEntrySession.submitGetXml(),
+                            storageFactory.getPropertyManager().isAutoPurgeEnabled()
+                    ).getPurgeCasesTimer();
+                } catch (InvalidCaseGraphException e) {
+                    submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR);
+                    NotificationMessage notification = new NotificationMessage(
+                            "Form submission failed due to a cyclic case relationship. Please contact the support desk to help resolve this issue.",
+                            true,
+                            NotificationMessage.Tag.submit);
+                    submitResponseBean.setNotification(notification);
+                    logNotification(notification, request);
+                    log.error("Submission failed with structure exception " + e);
+                    return submitResponseBean;
+                }
 
                 categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
                         purgeCasesTimer.durationInMs() > 2 ?
@@ -257,7 +288,7 @@ public class FormController extends AbstractBaseController{
                 //validity of the form
 
                 boolean skipFixtures = storageFactory.getPropertyManager().skipFixturesAfterSubmit();
-                restoreFactory.performTimedSync(true, skipFixtures);
+                restoreFactory.performTimedSync(true, skipFixtures, false);
             }
 
             SimpleTimer navTimer = new SimpleTimer();
@@ -464,8 +495,10 @@ public class FormController extends AbstractBaseController{
         return responseBean;
     }
 
-
-    private void updateSession(FormSession formEntrySession) throws IOException {
-        formSessionService.saveSession(formEntrySession.serialize());
+    private void updateSession(FormSession formEntrySession) throws Exception {
+        categoryTimingHelper.timed(
+                Constants.TimingCategories.UPDATE_SESSION,
+                () -> formSessionService.saveSession(formEntrySession.serialize())
+        );
     }
 }
