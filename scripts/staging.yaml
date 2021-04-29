@@ -50,15 +50,12 @@
 trunk: master
 name: autostaging
 branches:
-  - inMemoryCaseSearchCache+ce/tracing
-  - sr/menusession+ce/tracing
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - ce/eof-nav # Cal Feb 23
-  - inMemoryCaseSearchCache # Shubham Mar 17
   #- beta # Shivam Mar 25
-  - sr/menusession # Sravan March 30
-  - incompleteFormsPagination # Shubham April 6
+  - caseSearchSkip # Shubham April 29
+  - autoOpenForm # Shubham April 29
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -66,4 +63,5 @@ submodules:
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
-      - caseSearchCache # Shubham Mar 17
+      - caseSearchSkip # Shubham April 29
+      - autoLaunchMenu # Shubham April 29
