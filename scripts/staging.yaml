@@ -50,6 +50,7 @@
 trunk: master
 name: autostaging
 branches:
+  - autoOpenForm+ce/tracing # Shubham April 29
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - ce/eof-nav # Cal Feb 23
