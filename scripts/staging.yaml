@@ -55,7 +55,6 @@ branches:
   - ce/negative-index # Cal Feb 2
   - ce/eof-nav # Cal Feb 23
   #- beta # Shivam Mar 25
-  - sr/menusession # Sravan March 30
   - caseSearchSkip # Shubham April 29
   - autoOpenForm # Shubham April 29
 submodules:
