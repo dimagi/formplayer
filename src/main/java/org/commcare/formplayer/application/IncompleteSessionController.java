@@ -19,15 +19,14 @@ import java.util.Set;
 
 /**
  * Controller class (API endpoint) containing all incomplete session management commands
- *
  */
 @RestController
 @EnableAutoConfiguration
-public class IncompleteSessionController extends AbstractBaseController{
+public class IncompleteSessionController extends AbstractBaseController {
 
     private final Log log = LogFactory.getLog(IncompleteSessionController.class);
 
-    @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION , method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_INCOMPLETE_SESSION, method = RequestMethod.POST)
     @UserLock
     @UserRestore
     public NewFormResponse openIncompleteForm(@RequestBody SessionRequestBean incompleteSessionRequestBean,
@@ -39,13 +38,11 @@ public class IncompleteSessionController extends AbstractBaseController{
 
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
     @UserRestore
-    public GetSessionsResponse getSessions(@RequestBody AuthenticatedRequestBean getSessionRequest,
+    public GetSessionsResponse getSessions(@RequestBody FormsSessionsRequestBean getSessionRequest,
                                            @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         String scrubbedUsername = TableBuilder.scrubName(getSessionRequest.getUsername());
 
-        List<FormSessionListView> formplayerSessions = formSessionService.getSessionsForUser(
-                scrubbedUsername, getSessionRequest.getDomain(), getSessionRequest.getRestoreAs()
-        );
+        List<FormSessionListView> formplayerSessions = formSessionService.getSessionsForUser(scrubbedUsername, getSessionRequest);
 
         ArrayList<FormSessionListView> sessions = new ArrayList<>();
         Set<String> formplayerSessionIds = new HashSet<>();
@@ -55,10 +52,12 @@ public class IncompleteSessionController extends AbstractBaseController{
             formplayerSessionIds.add(serializableFormSession.getId());
         }
 
-        return new GetSessionsResponse(restoreFactory.getSqlSandbox().getCaseStorage(), sessions);
+        return new GetSessionsResponse(restoreFactory.getSqlSandbox().getCaseStorage(),
+                sessions,
+                formSessionService.getNumberOfSessionsForUser(scrubbedUsername, getSessionRequest));
     }
 
-    @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION , method = RequestMethod.POST)
+    @RequestMapping(value = Constants.URL_DELETE_INCOMPLETE_SESSION, method = RequestMethod.POST)
     public NotificationMessage deleteIncompleteForm(
             @RequestBody SessionRequestBean incompleteSessionRequestBean,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {

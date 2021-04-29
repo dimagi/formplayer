@@ -21,6 +21,7 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -40,8 +41,7 @@ import org.commcare.formplayer.util.SessionUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Arrays;
@@ -60,6 +60,9 @@ public class MenuSessionRunnerService {
 
     @Autowired
     private InstallService installService;
+
+    @Autowired
+    private CaseSearchHelper caseSearchHelper;
 
     @Autowired
     private WebClient webClient;
@@ -396,9 +399,11 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        String responseString = webClient.get(screen.getUri(skipDefaultPromptValues));
-        boolean success = screen.processResponse(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
-        if (success) {
+        ExternalDataInstance searchDataInstance = searchAndSetResult(
+                screen,
+                screen.getUri(skipDefaultPromptValues));
+
+        if (searchDataInstance != null) {
             if (screen.getCurrentMessage() != null) {
                 notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
             }
@@ -411,6 +416,12 @@ public class MenuSessionRunnerService {
         Screen nextScreen = menuSession.getNextScreen();
         log.info("Next screen after query: " + nextScreen);
         return notificationMessage;
+    }
+
+    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri) {
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen, uri);
+        screen.setQueryDatum(searchDataInstance);
+        return searchDataInstance;
     }
 
     @Trace

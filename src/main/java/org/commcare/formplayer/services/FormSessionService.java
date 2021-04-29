@@ -3,6 +3,7 @@ package org.commcare.formplayer.services;
 import com.timgroup.statsd.StatsDClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.beans.FormsSessionsRequestBean;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -13,6 +14,8 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,9 @@ import java.util.Optional;
 public class FormSessionService {
 
     private final Log log = LogFactory.getLog(FormSessionService.class);
+
+    private static int DEFAULT_FORMS_PER_PAGE = 10;
+    private static int MAX_FORMS_PER_PAGE = 100;
 
     @Autowired
     private FormSessionRepo formSessionRepo;
@@ -63,12 +69,39 @@ public class FormSessionService {
         return session.get();
     }
 
-    public List<FormSessionListView> getSessionsForUser(String username, String domain, @Nullable String asUser) {
+    public List<FormSessionListView> getSessionsForUser(String username, FormsSessionsRequestBean formsSessionsRequest) {
+        String domain = formsSessionsRequest.getDomain();
+        String asUser = formsSessionsRequest.getRestoreAs();
+        int pageSize = getPageSize(formsSessionsRequest);
+
+        int pageNumber = formsSessionsRequest.getPageNumber();
+        Pageable page = PageRequest.of(pageNumber, pageSize);
+
         if (asUser == null) {
-             return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain);
+             return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain, page);
         } else {
-             return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser);
+             return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser, page);
         }
+    }
+
+    public long getNumberOfSessionsForUser(String username, FormsSessionsRequestBean formsSessionsRequest) {
+        String domain = formsSessionsRequest.getDomain();
+        String asUser = formsSessionsRequest.getRestoreAs();
+
+        if (asUser == null) {
+            return formSessionRepo.countByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain);
+        } else {
+            return formSessionRepo.countByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser);
+        }
+    }
+
+    private int getPageSize(FormsSessionsRequestBean formsSessionsRequest) {
+        int pageSize = formsSessionsRequest.getPageSize();
+        if (pageSize == 0) {
+            pageSize = DEFAULT_FORMS_PER_PAGE;
+        }
+        pageSize = Math.min(pageSize, MAX_FORMS_PER_PAGE);
+        return pageSize;
     }
 
     @CachePut(key = "#session.id")

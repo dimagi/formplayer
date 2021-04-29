@@ -1,9 +1,11 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
+import lombok.SneakyThrows;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.util.*;
+import org.commcare.formplayer.utils.CheckedSupplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -64,12 +66,32 @@ public class CategoryTimingHelper {
                 timing.durationInMs()));
     }
 
+    public void timed(String category, Runnable timed) {
+        timed(category, () -> {
+            timed.run();
+            return null;
+        });
+    }
+
+    @SneakyThrows
+    public <T> T timed(String category, CheckedSupplier<T> timed) {
+        SimpleTimer timer = new SimpleTimer();
+        timer.start();
+        try {
+            return timed.get();
+        } finally {
+            timer.end();
+            recordCategoryTiming(timer, category, null, null);
+            logTiming(timer, category);
+        }
+    }
+
     /**
      * @param extras - optional tag/value pairs to send to datadog
      * NOTE: if adding a new tag, add a constant for the tag name 
      */
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
-        FormplayerSentry.timedBreadcrumb(timing, category, sentryMessage);
+        FormplayerSentry.recordTimingBreadcrumb(timing, category, sentryMessage);
         recordDatadogMetrics(timing, category, extras);
         logTiming(timing, category);
     }
