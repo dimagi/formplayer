@@ -50,7 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-  - sr/menusession+ce/tracing
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - ce/eof-nav # Cal Feb 23
