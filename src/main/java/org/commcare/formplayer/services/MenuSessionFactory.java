@@ -83,7 +83,7 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else {
-                menuSession.handleInput(currentStep, storageFactory.getPropertyManager().isAutoAdvanceMenu());
+                menuSession.handleInput(currentStep, false, true, false, storageFactory.getPropertyManager().isAutoAdvanceMenu());
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(false);
             }
