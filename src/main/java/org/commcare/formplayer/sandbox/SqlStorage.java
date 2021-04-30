@@ -175,6 +175,19 @@ public class SqlStorage<T extends Persistable>
     }
 
     @Override
+    public List<Integer> getIDsForValues(String[] fieldNames, Object[] values, String[] inverseMatchFields, Object[] inverseMatchValues, LinkedHashSet<Integer> returnSet) {
+        Connection connection = this.getConnection();
+        try (PreparedStatement preparedStatement =
+             SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values, inverseMatchFields, inverseMatchValues)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
+            }
+        } catch (SQLException e) {
+            throw new SQLiteRuntimeException(e);
+        }
+    }
+
+    @Override
     public T getRecordForValue(String fieldName, Object value)
             throws NoSuchElementException, InvalidIndexException {
         return getRecordsForValues(new String[]{fieldName}, new Object[]{value}).get(0);
