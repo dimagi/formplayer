@@ -1,6 +1,7 @@
 package org.commcare.formplayer.sandbox;
 
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
+import org.commcare.formplayer.postgresutil.PostgresDB;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.util.Pair;
@@ -73,7 +74,7 @@ public class SqlStorage<T extends Persistable>
         this.prototype = (Class<T>)prototypeInstance.getClass();
 
         try {
-            SqlHelper.dropTable(getConnection(), tableName);
+            SqlHelper.dropTable(getConnection(), tableName, isPostgres(), getCurrentSchema());
             buildTableFromInstance(prototypeInstance);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -96,21 +97,33 @@ public class SqlStorage<T extends Persistable>
 
     public void basicInsert(Map<String, Object> contentVals) {
         Connection connection = getConnection();
-        SqlHelper.basicInsert(connection, tableName, contentVals);
+        SqlHelper.basicInsert(connection, tableName, contentVals, isPostgres(), getCurrentSchema());
     }
 
     public void insertOrReplace(Map<String, Object> contentVals) {
         Connection connection = getConnection();
-        SqlHelper.insertOrReplace(connection, tableName, contentVals);
+        SqlHelper.insertOrReplace(connection, tableName, contentVals, isPostgres(), getCurrentSchema());
     }
 
     private void buildTableFromInstance(T instance) throws ClassNotFoundException {
         Connection connection = getConnection();
-        SqlHelper.createTable(connection, tableName, instance);
+        SqlHelper.createTable(connection, tableName, instance, isPostgres(), getCurrentSchema());
     }
 
     public Connection getConnection() {
         return connectionHandler.getConnection();
+    }
+
+    public boolean isPostgres() {
+        return connectionHandler instanceof PostgresDB;
+    }
+
+    public String getCurrentSchema() {
+        if (isPostgres()) {
+            return ((PostgresDB) connectionHandler).getCurrentSchema();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -121,7 +134,7 @@ public class SqlStorage<T extends Persistable>
         }
         Connection connection;
         connection = getConnection();
-        int id = SqlHelper.insertToTable(connection, tableName, p);
+        int id = SqlHelper.insertToTable(connection, tableName, p, isPostgres(), getCurrentSchema());
         p.setID(id);
     }
 
@@ -143,7 +156,7 @@ public class SqlStorage<T extends Persistable>
     public Vector<Integer> getIDsForValue(String fieldName, Object value) {
         Connection connection = this.getConnection();
         try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
-                this.tableName, new String[]{fieldName}, new String[]{(String)value})) {
+                this.tableName, new String[]{fieldName}, new String[]{(String)value}, isPostgres(), getCurrentSchema())) {
 
             if (preparedStatement == null) {
                 return null;
@@ -165,7 +178,7 @@ public class SqlStorage<T extends Persistable>
     public List<Integer> getIDsForValues(String[] fieldNames, Object[] values, LinkedHashSet<Integer> returnSet) {
         Connection connection = this.getConnection();
         try (PreparedStatement preparedStatement =
-                     SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values)) {
+                     SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values, isPostgres(), getCurrentSchema())) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
             }
@@ -199,7 +212,7 @@ public class SqlStorage<T extends Persistable>
 
         try (PreparedStatement preparedStatement =
                      SqlHelper.prepareTableSelectStatement(connection, this.tableName,
-                             metaFieldNames, values)) {
+                             metaFieldNames, values, isPostgres(), getCurrentSchema())) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 Vector<T> resultObjects = new Vector<>();
                 while (resultSet.next()) {
@@ -219,10 +232,10 @@ public class SqlStorage<T extends Persistable>
     @Override
     public int add(T e) {
         Connection connection = getConnection();
-        int id = SqlHelper.insertToTable(connection, tableName, e);
+        int id = SqlHelper.insertToTable(connection, tableName, e, isPostgres(), getCurrentSchema());
         connection = getConnection();
         e.setID(id);
-        SqlHelper.updateId(connection, tableName, e);
+        SqlHelper.updateId(connection, tableName, e, isPostgres(), getCurrentSchema());
         return id;
     }
 
@@ -235,7 +248,7 @@ public class SqlStorage<T extends Persistable>
     public boolean exists(int id) {
         Connection connection = getConnection();
         try (PreparedStatement preparedStatement =
-                     SqlHelper.prepareIdSelectStatement(connection, this.tableName, id)) {
+                     SqlHelper.prepareIdSelectStatement(connection, this.tableName, id, isPostgres(), getCurrentSchema())) {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -300,7 +313,7 @@ public class SqlStorage<T extends Persistable>
     public JdbcSqlStorageIterator<T> iterate(boolean includeData, String[] metaDataToInclude) {
         try {
             String[] projection = getProjectedFieldsWithId(includeData, scrubMetadataNames(metaDataToInclude));
-            PreparedStatement preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(this.getConnection(), tableName, projection);
+            PreparedStatement preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(this.getConnection(), tableName, projection, isPostgres(), getCurrentSchema());
             ResultSet resultSet = preparedStatement.executeQuery();
             return new JdbcSqlStorageIterator<>(preparedStatement, resultSet, this, metaDataToInclude);
         } catch (SQLException e) {
@@ -343,11 +356,14 @@ public class SqlStorage<T extends Persistable>
         Connection connection;
         try {
             connection = getConnection();
-            preparedStatement = SqlHelper.prepareIdSelectStatement(connection, this.tableName, id);
+            preparedStatement = SqlHelper.prepareIdSelectStatement(connection, this.tableName, id, isPostgres(), getCurrentSchema());
             if (preparedStatement == null) {
                 return null;
             }
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (isPostgres()) {
+                    resultSet.next();
+                }
                 return resultSet.getBytes(org.commcare.modern.database.DatabaseHelper.DATA_COL);
             }
         } catch (SQLException e) {
@@ -366,13 +382,13 @@ public class SqlStorage<T extends Persistable>
     @Override
     public void update(int id, Persistable p) {
         Connection connection = getConnection();
-        SqlHelper.updateToTable(connection, tableName, p, id);
+        SqlHelper.updateToTable(connection, tableName, p, id, isPostgres(), getCurrentSchema());
     }
 
     @Override
     public void remove(int id) {
         Connection connection = getConnection();
-        SqlHelper.deleteIdFromTable(connection, tableName, id);
+        SqlHelper.deleteIdFromTable(connection, tableName, id, isPostgres(), getCurrentSchema());
     }
 
     @Override
@@ -383,7 +399,7 @@ public class SqlStorage<T extends Persistable>
     @Override
     public void removeAll() {
         Connection connection = getConnection();
-        SqlHelper.deleteAllFromTable(connection, tableName);
+        SqlHelper.deleteAllFromTable(connection, tableName, isPostgres(), getCurrentSchema());
     }
 
 
@@ -396,7 +412,7 @@ public class SqlStorage<T extends Persistable>
 
         for (Pair<String, String[]> whereParams : whereParamList) {
             SqlHelper.deleteFromTableWhere(getConnection(), tableName,
-                    DatabaseHelper.ID_COL + " IN " + whereParams.first, whereParams.second);
+                    DatabaseHelper.ID_COL + " IN " + whereParams.first, whereParams.second, isPostgres(), getCurrentSchema());
         }
 
         return toRemove;
@@ -432,7 +448,7 @@ public class SqlStorage<T extends Persistable>
         Connection connection = this.getConnection();
 
         try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
-                this.tableName, namesToMatch, valuesToMatch)) {
+                this.tableName, namesToMatch, valuesToMatch, isPostgres(), getCurrentSchema())) {
 
             if (preparedStatement == null) {
                 return;
@@ -493,7 +509,7 @@ public class SqlStorage<T extends Persistable>
                 try (PreparedStatement preparedStatement =
                              SqlHelper.prepareTableSelectStatement(connection,
                                      this.tableName, DatabaseHelper.ID_COL + " IN " + querySet.first,
-                                     querySet.second)) {
+                                     querySet.second, isPostgres(), getCurrentSchema())) {
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         while (resultSet.next()) {
                             if (Thread.interrupted()) {
@@ -519,7 +535,7 @@ public class SqlStorage<T extends Persistable>
         String[] projection = getProjectedFieldsWithId(false, scrubbedNames);
 
         try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(
-                getConnection(), tableName, recordIdString, projection
+                getConnection(), tableName, recordIdString, projection, isPostgres(), getCurrentSchema()
         )) {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -563,7 +579,7 @@ public class SqlStorage<T extends Persistable>
                              SqlHelper.prepareTableSelectStatementProjection(connection,
                                      this.tableName,
                                      DatabaseHelper.ID_COL + " IN " + querySet.first,
-                                     querySet.second, projection)) {
+                                     querySet.second, projection, isPostgres(), getCurrentSchema())) {
 
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         while (resultSet.next()) {
@@ -595,7 +611,7 @@ public class SqlStorage<T extends Persistable>
                 try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
                         tableName,
                         fieldName + " IN " + querySet.first,
-                        querySet.second)) {
+                        querySet.second, isPostgres(), getCurrentSchema())) {
 
                     try (ResultSet resultSet = selectStatement.executeQuery()) {
                         while (resultSet.next()) {
@@ -619,7 +635,7 @@ public class SqlStorage<T extends Persistable>
             try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
                     connectionHandler.getConnection(), tableName,
                     DatabaseHelper.ID_COL + "=?",
-                    new String[]{rid})) {
+                    new String[]{rid}, isPostgres(), getCurrentSchema())) {
                 try (ResultSet resultSet = selectStatement.executeQuery()) {
                     if (resultSet.next()) {
                         return resultSet.getString(scrubbedName);
