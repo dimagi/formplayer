@@ -1,5 +1,6 @@
 package org.commcare.formplayer.session;
 
+
 import datadog.trace.api.Trace;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
@@ -138,6 +139,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param allowAutoLaunch If this step is allowed to automatically launch an action,
      *                        assuming it has an autolaunch action specified.
      */
+    @Trace
     public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch, boolean autoAdvanceMenu) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
