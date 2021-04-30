@@ -129,7 +129,8 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     public IStorageUtilityIndexed newStorage(String name, Class type) {
         if (usePostgres) {
             boolean usePostgresResult = getDomain().contains("postgres");
-            return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name, meterRegistry, usePostgresResult);
+            boolean useOnlyPostgres = getDomain().contains("only");
+            return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name, meterRegistry, usePostgresResult, useOnlyPostgres);
         } else {
             return new SqlStorage(this.sqLiteDB, type, name);
         }

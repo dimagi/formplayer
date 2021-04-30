@@ -31,17 +31,28 @@ public class SqlStorageWrapper<T extends Persistable>
     private SqlStorage<T> postgresStorage;
     private MeterRegistry meterRegistry;
     private boolean usePostgresResult;
+    private boolean useOnlyPostgres;
 
     public SqlStorageWrapper(ConnectionHandler sqliteConnection, ConnectionHandler postgresConnection,
                              Class<T> prototype, String tableName, MeterRegistry meterRegistry,
-                             boolean usePostgresResult) {
+                             boolean usePostgresResult, boolean useOnlyPostgres) {
         sqliteStorage = new SqlStorage<T>(sqliteConnection, prototype, tableName);
         postgresStorage = new SqlStorage<T>(postgresConnection, prototype, tableName);
         this.meterRegistry = meterRegistry;
         this.usePostgresResult = usePostgresResult;
+        this.useOnlyPostgres = useOnlyPostgres;
     }
 
     private void compareRunnable(String tag, Runnable sqliteOperation, Runnable postgresOperation) {
+        if (useOnlyPostgres) {
+            long start = System.currentTimeMillis();
+            postgresOperation.run();
+            long postgresTime = System.currentTimeMillis() - start;
+            meterRegistry
+                    .timer("storage.postgres." + tag)
+                    .record(postgresTime, TimeUnit.MILLISECONDS);
+            return;
+        }
         long start = System.currentTimeMillis();
         sqliteOperation.run();
         long sqliteTime = System.currentTimeMillis() - start;
@@ -77,6 +88,19 @@ public class SqlStorageWrapper<T extends Persistable>
     }
 
     private <RESULT> RESULT compareCallable(String tag, Callable<RESULT> sqliteOperation, Callable<RESULT> postgresOperation, boolean compare) {
+        if (useOnlyPostgres) {
+            try {
+                long start = System.currentTimeMillis();
+                RESULT postgresResult = postgresOperation.call();
+                long postgresTime = System.currentTimeMillis() - start;
+                meterRegistry
+                        .timer("storage.postgres." + tag)
+                        .record(postgresTime, TimeUnit.MILLISECONDS);
+                return postgresResult;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
         RESULT result = null;
         RESULT postgresResult = null;
         long sqliteTime;
