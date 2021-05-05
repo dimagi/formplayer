@@ -3,9 +3,6 @@
   "lang": "en",
   "session-data": {
     "username": "test",
-    "additional_filters": {
-      "footprint": true
-    },
     "domain": "ui-tests",
     "user_id": "1310994c09a239d0eef6f9744a54321a",
     "session_name": "Basic Tests > Question Types",

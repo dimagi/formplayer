@@ -6,10 +6,6 @@
   "uses_sql_backend": true,
   "session_data": {
     "username": "test",
-    "additional_filters": {
-      "footprint": true,
-      "properties/case_type": "coverage_basic"
-    },
     "domain": "test",
     "user_id": "84c246edf58bfa69e03bdecc39692e1f",
     "user_data": {
