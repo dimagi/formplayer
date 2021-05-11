@@ -25,6 +25,7 @@ public class EntityDetailResponse {
     private EntityBean[] entities;
     protected Style[] styles;
     protected String[] headers;
+    protected String[] templateForms;
     protected String title;
     protected boolean isUseNodeset;
 
@@ -39,12 +40,12 @@ public class EntityDetailResponse {
     public EntityDetailResponse() {
     }
 
-    public EntityDetailResponse(EntityDetailSubscreen entityScreen, String title) {
+    public EntityDetailResponse(EntityDetailSubscreen entityScreen, String title, Detail detail) {
         this.title = title;
         this.details = processDetails(entityScreen.getData());
         this.headers = entityScreen.getHeaders();
         this.styles = entityScreen.getStyles();
-
+        this.templateForms = detail.getTemplateForms();
     }
 
     private static Object[] processDetails(Object[] data) {
@@ -65,7 +66,7 @@ public class EntityDetailResponse {
 
     // Constructor used for persistent case tile
     public EntityDetailResponse(Detail detail, EvaluationContext ec) {
-        this(new EntityDetailSubscreen(0, detail, ec, new String[]{}), "Details");
+        this(new EntityDetailSubscreen(0, detail, ec, new String[]{}), "Details", detail);
         processCaseTiles(detail);
         processStyles(detail);
     }
@@ -141,6 +142,14 @@ public class EntityDetailResponse {
 
     public void setHeaders(String[] headers) {
         this.headers = headers;
+    }
+
+    public String[] getTemplateForms() {
+        return templateForms;
+    }
+
+    public void setTemplateForms(String[] templateForms) {
+        this.templateForms = templateForms;
     }
 
     @Override
