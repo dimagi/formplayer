@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
 import org.commcare.cases.query.queryset.DualTableSingleMatchModelQuerySet;
+import org.commcare.formplayer.postgresutil.PostgresDB;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.database.TableBuilder;
@@ -97,7 +98,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
             contentValues.put(COL_INDEX_TYPE, ci.getTargetType());
             contentValues.put(COL_INDEX_TARGET, ci.getTarget());
             contentValues.put(COL_INDEX_RELATIONSHIP, ci.getRelationship());
-            SqlHelper.basicInsert(connectionHandler.getConnection(), TABLE_NAME, contentValues);
+            SqlHelper.basicInsert(connectionHandler.getConnection(), TABLE_NAME, contentValues, isPostgres(), getCurrentSchema());
         }
     }
 
@@ -110,7 +111,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         SqlHelper.deleteFromTableWhere(connectionHandler.getConnection(),
                 TABLE_NAME,
                 COL_CASE_RECORD_ID + "= CAST(? as INT)",
-                recordIdString);
+                recordIdString, isPostgres(), getCurrentSchema());
     }
 
     public void clearCaseIndices(Collection<Integer> idsToClear) {
@@ -122,7 +123,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
             SqlHelper.deleteFromTableWhere(connectionHandler.getConnection(),
                     TABLE_NAME,
                     COL_CASE_RECORD_ID + " IN " + whereParams.first,
-                    whereParams.second);
+                    whereParams.second, isPostgres(), getCurrentSchema());
         }
     }
 
@@ -133,7 +134,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
         try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectProjectionStatement(connectionHandler.getConnection(),
                     TABLE_NAME,
-                    projection)) {
+                    projection, isPostgres(), getCurrentSchema())) {
             try (ResultSet resultSet = selectStatement.executeQuery()) {
                 while (resultSet.next()) {
                     int caseRecordId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
@@ -176,7 +177,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 connectionHandler.getConnection(),
                     TABLE_NAME,
                     new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
-                    args)) {
+                    args, isPostgres(), getCurrentSchema())) {
             try(ResultSet resultSet = selectStatement.executeQuery()) {
                 LinkedHashSet<Integer> ret = new LinkedHashSet<>();
                 SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
@@ -207,7 +208,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 connectionHandler.getConnection(),
                     TABLE_NAME,
                     whereExpr,
-                    args)) {
+                    args, isPostgres(), getCurrentSchema())) {
             try (ResultSet resultSet = selectStatement.executeQuery()) {
                 LinkedHashSet<Integer> ret = new LinkedHashSet<>();
                 SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
@@ -226,7 +227,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 connectionHandler.getConnection(),
                 TABLE_NAME,
                 new String[]{COL_INDEX_NAME},
-                args)) {
+                args, isPostgres(), getCurrentSchema())) {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()){
                 while (resultSet.next()) {
@@ -322,4 +323,15 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         return sb.toString();
     }
 
+    private boolean isPostgres() {
+        return connectionHandler instanceof PostgresDB;
+    }
+
+    private String getCurrentSchema() {
+        if (isPostgres()) {
+            return ((PostgresDB) connectionHandler).getCurrentSchema();
+        } else {
+            return null;
+        }
+    }
 }
