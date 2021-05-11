@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.suite.model.EntityDatum;
@@ -33,6 +34,9 @@ public class MenuSessionFactory {
     @Autowired
     private InstallService installService;
 
+    @Autowired
+    protected FormplayerStorageFactory storageFactory;
+
     @Value("${commcarehq.host}")
     private String host;
 
@@ -43,6 +47,7 @@ public class MenuSessionFactory {
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
     */
+    @Trace
     public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
@@ -78,13 +83,14 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else {
-                menuSession.handleInput(currentStep, false, true, false);
+                menuSession.handleInput(currentStep, false, true, false, storageFactory.getPropertyManager().isAutoAdvanceMenu());
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(false);
             }
         }
     }
 
+    @Trace
     public MenuSession buildSession(String username,
                                     String domain,
                                     String appId,
@@ -96,6 +102,7 @@ public class MenuSessionFactory {
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
     }
 
+    @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
         return new MenuSession(serializableMenuSession, installService, restoreFactory, host);
     }
