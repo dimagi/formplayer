@@ -4,14 +4,14 @@ import java.io.File;
 
 import org.commcare.formplayer.util.Constants;
 
-class ApplicationDBPath extends DBPath {
+public class ApplicationDBPath extends DBPath {
 
     private String domain;
     private String username;
     private String asUsername;
     private String appId;
 
-    ApplicationDBPath(String domain, String username, String asUsername, String appId) {
+    public ApplicationDBPath(String domain, String username, String asUsername, String appId) {
         this.domain = domain;
         this.username = username;
         this.asUsername = asUsername;
