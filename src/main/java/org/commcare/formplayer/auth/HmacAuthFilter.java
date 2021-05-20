@@ -5,6 +5,8 @@ import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
+import org.commcare.util.JsonUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.core.log.LogMessage;
 import org.springframework.http.HttpMethod;
@@ -106,14 +108,15 @@ public class HmacAuthFilter extends GenericFilterBean {
 
     private HqUserDetailsBean getUserDetails(HttpServletRequest request) {
         JSONObject body = RequestUtils.getPostData(request);
+
         if (body.has("username") && body.has("domain")) {
             return new HqUserDetailsBean(
                     body.getString("domain"),
                     new String[]{body.getString("domain")},
                     body.getString("username"),
                     false,
-                    new String[]{},
-                    new String[]{}
+                    JsonUtils.toArray(body.optJSONArray("enabled_toggles")),
+                    JsonUtils.toArray(body.optJSONArray("enabled_previews"))
             );
         } else if (body.has("session-id")) {
             String sessionId = body.getString("session-id");
@@ -123,8 +126,8 @@ public class HmacAuthFilter extends GenericFilterBean {
                     new String[]{formSession.getDomain()},
                     formSession.getUsername(),
                     false,
-                    new String[]{},
-                    new String[]{}
+                    JsonUtils.toArray(body.optJSONArray("enabled_toggles")),
+                    JsonUtils.toArray(body.optJSONArray("enabled_previews"))
             );
         }
         throw new BadCredentialsException("Unable to extract user credentials from the request");
