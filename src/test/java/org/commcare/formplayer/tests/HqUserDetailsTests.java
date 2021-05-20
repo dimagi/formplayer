@@ -2,9 +2,15 @@ package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
+import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 
+@WebMvcTest
+@ContextConfiguration(classes = TestContext.class)
 public class HqUserDetailsTests {
 
     @Test
@@ -32,16 +38,13 @@ public class HqUserDetailsTests {
     }
 
     @Test
+    @WithHqUser
     public void testUserHasRole() {
-        String[] enabledToggles = new String[]{"toggle_a", "toggle_b"};
-        String[] enabledPreviews = new String[]{"preview_a", "preview_b"};
-        HqUserDetailsBean user = new HqUserDetailsBean("domain", new String[]{"domain"}, "bilbo",
-                false, enabledToggles, enabledPreviews);
-        Assertions.assertTrue(FeatureFlagChecker.INSTANCE.isPreviewEnabled("preview_a", user));
-        Assertions.assertTrue(FeatureFlagChecker.INSTANCE.isPreviewEnabled("preview_b", user));
-        Assertions.assertFalse(FeatureFlagChecker.INSTANCE.isPreviewEnabled("preview_c", user));
-        Assertions.assertTrue(FeatureFlagChecker.INSTANCE.isToggleEnabled("toggle_a", user));
-        Assertions.assertTrue(FeatureFlagChecker.INSTANCE.isToggleEnabled("toggle_b", user));
-        Assertions.assertFalse(FeatureFlagChecker.INSTANCE.isToggleEnabled("toggle_c", user));
+        Assertions.assertTrue(FeatureFlagChecker.isPreviewEnabled("preview_a"));
+        Assertions.assertTrue(FeatureFlagChecker.isPreviewEnabled("preview_b"));
+        Assertions.assertFalse(FeatureFlagChecker.isPreviewEnabled("preview_c"));
+        Assertions.assertTrue(FeatureFlagChecker.isToggleEnabled("toggle_a"));
+        Assertions.assertTrue(FeatureFlagChecker.isToggleEnabled("toggle_b"));
+        Assertions.assertFalse(FeatureFlagChecker.isToggleEnabled("toggle_c"));
     }
 }
