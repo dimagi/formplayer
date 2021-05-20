@@ -1,12 +1,12 @@
 package org.commcare.formplayer.auth;
 
-import lombok.Builder;
-import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
+import org.commcare.util.JsonUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.core.log.LogMessage;
 import org.springframework.http.HttpMethod;
@@ -25,13 +25,17 @@ import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.GenericFilterBean;
 
+import java.io.IOException;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import lombok.Builder;
+import lombok.extern.apachecommons.CommonsLog;
 
 /**
  * Request filter that performs HMAC auth if the request contains the
@@ -55,14 +59,13 @@ public class HmacAuthFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        if (this.requiresAuthenticationRequestMatcher.matches((HttpServletRequest) request)) {
+        if (this.requiresAuthenticationRequestMatcher.matches((HttpServletRequest)request)) {
             if (logger.isDebugEnabled()) {
                 logger.debug(LogMessage
-                        .of(() -> "Authenticating " + ((HttpServletRequest) request).getRequestURI()));
+                        .of(() -> "Authenticating " + ((HttpServletRequest)request).getRequestURI()));
             }
-            doAuthenticate((HttpServletRequest) request, (HttpServletResponse) response);
-        }
-        else {
+            doAuthenticate((HttpServletRequest)request, (HttpServletResponse)response);
+        } else {
             if (logger.isTraceEnabled()) {
                 logger.trace(LogMessage.format("Did not authenticate since request did not match [%s]",
                         this.requiresAuthenticationRequestMatcher));
@@ -80,8 +83,7 @@ public class HmacAuthFilter extends GenericFilterBean {
                     userDetails, userDetails.getDomain(), userDetails.getAuthorities());
             authenticationResult.setDetails(this.authenticationDetailsSource.buildDetails(request));
             successfulAuthentication(request, response, authenticationResult);
-        }
-        catch (AuthenticationException ex) {
+        } catch (AuthenticationException ex) {
             unsuccessfulAuthentication(request, response, ex);
         } catch (Exception e) {
             logger.error("Request Authorization with unexpected exception", e);
@@ -106,21 +108,26 @@ public class HmacAuthFilter extends GenericFilterBean {
 
     private HqUserDetailsBean getUserDetails(HttpServletRequest request) {
         JSONObject body = RequestUtils.getPostData(request);
+
         if (body.has("username") && body.has("domain")) {
             return new HqUserDetailsBean(
-                body.getString("domain"),
-                new String[] {body.getString("domain")},
-                body.getString("username"),
-                false
+                    body.getString("domain"),
+                    new String[]{body.getString("domain")},
+                    body.getString("username"),
+                    false,
+                    JsonUtils.toArray(body.optJSONArray("enabled_toggles")),
+                    JsonUtils.toArray(body.optJSONArray("enabled_previews"))
             );
         } else if (body.has("session-id")) {
             String sessionId = body.getString("session-id");
             SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
             return new HqUserDetailsBean(
-                formSession.getDomain(),
-                new String[] {formSession.getDomain()},
-                formSession.getUsername(),
-                false
+                    formSession.getDomain(),
+                    new String[]{formSession.getDomain()},
+                    formSession.getUsername(),
+                    false,
+                    JsonUtils.toArray(body.optJSONArray("enabled_toggles")),
+                    JsonUtils.toArray(body.optJSONArray("enabled_previews"))
             );
         }
         throw new BadCredentialsException("Unable to extract user credentials from the request");
