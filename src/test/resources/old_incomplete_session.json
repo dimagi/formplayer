@@ -4,11 +4,6 @@
     "app_version": "2.0",
     "device_id": "cloudcare",
     "user_id": "a99311a19ecedbcb426b8f0d9a25ed5e",
-    "additional_filters": {
-      "use_cache": "true",
-      "footprint": 1,
-      "hsph_hack": null
-    },
     "domain": "normal",
     "host": "http://localhost:8000",
     "user_data": {

@@ -4,9 +4,6 @@
   "domain": "test",
   "session-data": {
     "username": "test3",
-    "additional_filters": {
-      "footprint": true
-    },
     "domain": "test",
     "user_id": "84c246edf58bfa69e03bdecc39692e1f",
     "app_id": "10a706429116a3e55f1d1302cd3db69f",

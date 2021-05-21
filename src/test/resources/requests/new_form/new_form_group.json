@@ -4,9 +4,6 @@
   "username": "grouptestuser",
   "session-data": {
     "username": "grouptestuser",
-    "additional_filters": {
-      "footprint": true
-    },
     "domain": "grouptestdomain",
     "user_id": "grouptestappid",
     "app_id": "10a706429116a3e55f1d1302cd3db69f",

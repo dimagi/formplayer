@@ -22,6 +22,7 @@ import org.commcare.modern.util.Pair;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.services.locale.LocalizerManager;
+import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.*;
@@ -54,6 +55,7 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -829,6 +831,12 @@ public class BaseTestClass {
                 result.andReturn().getResponse().getContentAsString(),
                 clazz
         );
+    }
+
+    <T> T getNextScreenForEOFNavigation(SubmitResponseBean submitResponse, Class<T> clazz) throws IOException {
+        LinkedHashMap commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
+        String jsonString = new JSONObject(commandsRaw).toString();
+        return mapper.readValue(jsonString, clazz);
     }
 
     public class MockTimezoneProvider extends TimezoneProvider {

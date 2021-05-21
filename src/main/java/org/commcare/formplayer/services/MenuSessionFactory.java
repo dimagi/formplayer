@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.suite.model.StackFrameStep;
@@ -9,6 +10,7 @@ import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.Screen;
+import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -31,6 +33,9 @@ public class MenuSessionFactory {
     @Autowired
     private InstallService installService;
 
+    @Autowired
+    protected FormplayerStorageFactory storageFactory;
+
     @Value("${commcarehq.host}")
     private String host;
 
@@ -44,7 +49,7 @@ public class MenuSessionFactory {
     public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
-        Screen screen = menuSession.getNextScreen();
+        Screen screen = menuSession.getNextScreen(false);
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
@@ -60,25 +65,25 @@ public class MenuSessionFactory {
                 EntityScreen entityScreen = (EntityScreen) screen;
                 entityScreen.init(menuSession.getSessionWrapper());
                 if (entityScreen.shouldBeSkipped()) {
-                    screen = menuSession.getNextScreen();
+                    screen = menuSession.getNextScreen(false);
                     continue;
                 }
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
-                Set<String> entityIds = entityScreen.getReferenceMap().keySet();
                 for (StackFrameStep step: steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
-                        if (entityIds.contains(step.getValue())) {
+                        if (entityScreen.referencesContainStep(step.getValue())) {
                             currentStep = step.getValue();
                         }
+                        break;
                     }
                 }
             }
             if (currentStep == null) {
                 break;
             } else {
-                menuSession.handleInput(currentStep);
+                menuSession.handleInput(currentStep, false, true, false, storageFactory.getPropertyManager().isAutoAdvanceMenu());
                 menuSession.addSelection(currentStep);
-                screen = menuSession.getNextScreen();
+                screen = menuSession.getNextScreen(false);
             }
         }
     }

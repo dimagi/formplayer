@@ -31,14 +31,6 @@ public class SessionData {
     public void setUsername(String username) {
         this.username = username;
     }
-    @JsonGetter(value = "additional_filters")
-    public Map<String, String> getAdditionalFilters() {
-        return additionalFilters;
-    }
-    @JsonSetter(value = "additional_filters")
-    public void setAdditionalFilters(Map<String, String> additionalFilters) {
-        this.additionalFilters = additionalFilters;
-    }
 
     public String getDomain() {
         return domain;

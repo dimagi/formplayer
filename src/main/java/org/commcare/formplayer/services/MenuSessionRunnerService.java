@@ -232,7 +232,7 @@ public class MenuSessionRunnerService {
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -242,9 +242,9 @@ public class MenuSessionRunnerService {
             }
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
-
+            String nextInput = i == selections.length ? "" : selections[i];
             // Advance the session in case auto launch is set
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed);
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed, nextInput);
             boolean replay = i < selections.length;
             notificationMessage = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
             if (nextScreen instanceof FormplayerSyncScreen) {
@@ -317,13 +317,18 @@ public class MenuSessionRunnerService {
         return null;
     }
 
+    private boolean isAutoAdvanceMenu() {
+        return storageFactory.getPropertyManager().isAutoAdvanceMenu();
+    }
+
     private Screen handleAutoLaunch(Screen nextScreen, MenuSession menuSession,
-                                    String selection, boolean needsDetail, boolean confirmed)
+                                    String selection, boolean needsDetail, boolean confirmed, String nextInput)
             throws CommCareSessionException {
         if (nextScreen instanceof EntityScreen) {
             EntityScreen entityScreen = (EntityScreen)nextScreen;
+            entityScreen.evaluateAutoLaunch(nextInput);
             if (entityScreen.getAutoLaunchAction() != null) {
-                menuSession.handleInput(selection, needsDetail, confirmed, true);
+                menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
                 nextScreen = menuSession.getNextScreen(needsDetail);
             }
         }
@@ -422,7 +427,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
             Screen nextScreen = menuSession.getNextScreen();
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false);
+            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
             handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());

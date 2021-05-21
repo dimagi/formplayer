@@ -36,45 +36,56 @@ import java.lang.annotation.*;
  * <li>It will be populated with an {@link org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken} that uses
  * the username of either {@link #value()} or {@link #username()},
  * domains that are specified by {@link #domains()}, the 'current domain'
- * specified by {@link #domain()}, and superuser status specified by {@link #isSuperUser()}.
+ * specified by {@link #domain()},
+ * superuser status specified by {@link #isSuperUser()},
+ * list of enabled previews specified by {@link #enabledPreviews()} and
+ * list of enabled toggles specified by {@link #enabledToggles()}.
  * </ul>
- *
  */
-@Target({ ElementType.METHOD, ElementType.TYPE })
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
 @WithSecurityContext(factory = WithHqUserSecurityContextFactory.class)
 public @interface WithHqUser {
 
-	/**
-	 * Convenience mechanism for specifying the username. The default is "user". If
-	 * {@link #username()} is specified it will be used instead of {@link #value()}
-	 * @return
-	 */
-	String value() default "user";
+    /**
+     * Convenience mechanism for specifying the username. The default is "user". If
+     * {@link #username()} is specified it will be used instead of {@link #value()}
+     */
+    String value() default "user";
+
+    /**
+     * The username to be used. Note that {@link #value()} is a synonym for
+     * {@link #username()}, but if {@link #username()} is specified it will take
+     * precedence.
+     */
+    String username() default "";
+
+    /**
+     * The domains to use. The default is "domaim".
+     */
+    String[] domains() default {"domain"};
+
+    /**
+     * The domain the user details was created for. This represents the domain of the
+     * request. The default value is "domain".
+     */
+    String domain() default "domain";
+
+    /**
+     * Set whether of not the user is a superuser. Defaults to false.
+     */
+    boolean isSuperUser() default false;
 
 	/**
-	 * The username to be used. Note that {@link #value()} is a synonym for
-	 * {@link #username()}, but if {@link #username()} is specified it will take
-	 * precedence.
-	 * @return
+	 * List of enabled previews for the user. Defaults to a mock list of preview_a and preview_b
 	 */
-	String username() default "";
+	String[] enabledPreviews() default {"preview_a", "preview_b"};
+
 
 	/**
-	 * The domains to use. The default is "domaim".
+	 * List of enabled toggles for the user. Defaults to a mock list of toggle_a and toggle_b
 	 */
-	String[] domains() default { "domain" };
-
-	/**
-	 * The domain the user details was created for. This represents the domain of the
-	 * request. The default value is "domain".
-	 */
-	String domain() default "domain";
-
-	/**
-	 * Set whether of not the user is a superuser. Defaults to false.
-	 */
-	boolean isSuperUser() default false;
+    String[] enabledToggles() default {"toggle_a", "toggle_b"};
 }
