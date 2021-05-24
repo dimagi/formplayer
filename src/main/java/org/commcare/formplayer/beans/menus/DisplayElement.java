@@ -29,7 +29,8 @@ public class DisplayElement {
     @Nullable
     private String receive;
 
-    private Boolean hidden;
+    @Nullable
+    private String hidden;
 
     @Nullable
     String[] itemsetChoices;
@@ -52,7 +53,7 @@ public class DisplayElement {
 
 
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id, @Nullable String input,
-                          @Nullable String receive, Boolean hidden, @Nullable String value, @Nullable String[] itemsetChoices) {
+                          @Nullable String receive, @Nullable String hidden, @Nullable String value, @Nullable String[] itemsetChoices) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if (displayUnit.getImageURI() != null) {
@@ -126,7 +127,7 @@ public class DisplayElement {
         return receive;
     }
 
-    public Boolean getHidden() {
+    public String getHidden() {
         return hidden;
     }
 
