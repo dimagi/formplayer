@@ -54,8 +54,6 @@ branches:
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - sp/sqlite-postgres # Shivam April 30
-  - caseSearchSkip # Shubham April 29
-  - autoOpenForm # Shubham April 29
   - sr/rev-rev-menusession  # Sravan May 24
   - sr/claim-message # Sravan May 24
 submodules:
@@ -66,5 +64,3 @@ submodules:
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
-      - caseSearchSkip # Shubham April 29
-      - autoLaunchMenu # Shubham April 29
