@@ -56,6 +56,7 @@ branches:
   - sp/sqlite-postgres # Shivam April 30
   - caseSearchSkip # Shubham April 29
   - autoOpenForm # Shubham April 29
+  - sr/rev-rev-menusession  # Sravan May 24
 submodules:
   libs/commcare:
     trunk: formplayer
