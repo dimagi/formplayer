@@ -56,7 +56,7 @@ branches:
   - sp/sqlite-postgres # Shivam April 30
   - sr/rev-rev-menusession  # Sravan May 24
   - sr/claim-message # Sravan May 24
-  - sr/hidden-qa # Sravan May 25
+  - sr/hide-geo # Sravan May 25
 submodules:
   libs/commcare:
     trunk: formplayer
