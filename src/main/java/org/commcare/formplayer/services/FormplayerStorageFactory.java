@@ -3,6 +3,10 @@ package org.commcare.formplayer.services;
 import datadog.trace.api.Trace;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.postgresutil.PostgresApplicationDB;
+import org.commcare.formplayer.postgresutil.PostgresDB;
+import org.commcare.formplayer.postgresutil.PostgresProperties;
+import org.commcare.formplayer.sandbox.SqlStorageWrapper;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -21,6 +25,8 @@ import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.util.FormplayerPropertyManager;
 import org.commcare.formplayer.util.UserUtils;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer
  */
@@ -32,6 +38,7 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
     private String domain;
     private String appId;
     private String asUsername;
+    private boolean usePostgres;
 
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
 
@@ -40,6 +47,14 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Autowired
     private FormSessionService formSessionService;
+
+    @Autowired
+    private MeterRegistry meterRegistry;
+
+    @Autowired
+    private PostgresProperties properties;
+
+    private PostgresDB postgresDB = new PostgresDB(null, properties);
 
     public void configure(InstallRequestBean installRequestBean) {
         configure(
@@ -89,6 +104,11 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         this.asUsername = asUsername;
         this.domain = domain;
         this.appId = appId;
+        this.usePostgres = canUsePostgres();
+        if (usePostgres) {
+            this.postgresDB = new PostgresApplicationDB(domain, username, asUsername, appId, properties);
+            this.postgresDB.closeConnection();
+        }
         this.sqLiteDB = new ApplicationDB(domain, username, asUsername, appId);
         this.sqLiteDB.closeConnection();
         this.propertyManager = new FormplayerPropertyManager(newStorage(PropertyManager.STORAGE_KEY, Property.class));
@@ -109,7 +129,13 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
 
     @Override
     public IStorageUtilityIndexed newStorage(String name, Class type) {
-        return new SqlStorage(this.sqLiteDB, type, name);
+        if (usePostgres) {
+            boolean usePostgresResult = getDomain().contains("postgres");
+            boolean useOnlyPostgres = getDomain().contains("only");
+            return new SqlStorageWrapper(this.sqLiteDB, this.postgresDB, type, name, meterRegistry, usePostgresResult, useOnlyPostgres);
+        } else {
+            return new SqlStorage(this.sqLiteDB, type, name);
+        }
     }
 
     public String getUsername() {
@@ -140,11 +166,20 @@ public class FormplayerStorageFactory implements IStorageIndexedFactory {
         return sqLiteDB;
     }
 
+    public PostgresDB getPostgresDB() {
+        return postgresDB;
+    }
+
     public String getAsUsername() {
         return asUsername;
     }
 
     public StorageManager getStorageManager() {
         return storageManager;
+    }
+
+    private boolean canUsePostgres() {
+        // Use domains names for now.
+        return getDomain().startsWith("dual-storage");
     }
 }
