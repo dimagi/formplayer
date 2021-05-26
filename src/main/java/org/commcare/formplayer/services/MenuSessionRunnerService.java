@@ -568,7 +568,7 @@ public class MenuSessionRunnerService {
 
     private NotificationMessage establishVolatility(FormSession session) {
         FormVolatilityRecord newRecord = session.getSessionVolatilityRecord();
-        log.info("[jls] newRecord = " + newRecord);
+        log.info("[jls] newRecord for " + session.getUsername() + " = " + newRecord);
         if (volatilityCache != null && newRecord != null) {
             FormVolatilityRecord existingRecord = volatilityCache.get(newRecord.getKey());
             log.info("[jls] key was " + newRecord.getKey() + ", existingRecord is " + existingRecord);
@@ -581,6 +581,9 @@ public class MenuSessionRunnerService {
                 newRecord.write(volatilityCache);
             }
 
+            if (existingRecord != null) {
+                log.info("[jls] got an existingRecord, does it match? " + existingRecord.getUsername() + ", " + session.getUsername());
+            }
             if (existingRecord != null && !existingRecord.matchesUser(session)) {
                 log.info("[jls] getting notification if relevant, found " + existingRecord.getNotificationIfRelevant(restoreFactory.getLastSyncTime()));
                 return existingRecord.getNotificationIfRelevant(restoreFactory.getLastSyncTime());
