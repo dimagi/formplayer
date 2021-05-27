@@ -1,14 +1,10 @@
 package org.commcare.formplayer.util;
 
 import com.timgroup.statsd.StatsDClient;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Wrapper for the Datadog Java client
@@ -47,10 +43,8 @@ public class FormplayerDatadog {
 
     // Constructor, Getters, Setters
     public FormplayerDatadog(StatsDClient datadogClient,
-                             List<String> domainsWithDetailedTagging,
                              List<String> detailedTagNames) {
         this.datadogClient = datadogClient;
-        this.domainsWithDetailedTagging = new HashSet<>(domainsWithDetailedTagging);
         this.detailedTagNames = new HashSet<>(detailedTagNames);
         this.requestScopedTags = new HashMap<>();
     }
@@ -61,10 +55,6 @@ public class FormplayerDatadog {
 
     public Set<String> getDetailedTagNames() {
         return this.detailedTagNames;
-    }
-
-    public Set<String> getDomainsWithDetailedTagging() {
-        return this.domainsWithDetailedTagging;
     }
 
     public void setDomain(String domain) {
@@ -81,7 +71,7 @@ public class FormplayerDatadog {
      */
     public void addRequestScopedTag(String name, String value) {
         // get correct value to send (only send unique tag value if domain is eligible)
-        String valueToSend = getTagValueToSend(name, value);
+        String valueToSend = getTagValueToSend(name, value, FeatureFlagChecker.isToggleEnabled("detailed_tagging"));
         Tag tag = new Tag(name, valueToSend);
         requestScopedTags.put(name, tag);
     }
@@ -134,7 +124,7 @@ public class FormplayerDatadog {
         HashSet<String> transientKeys = new HashSet<String>();
         
         for (Tag tag : transientTags) {
-            String tagValueToSend = getTagValueToSend(tag.name, tag.value);
+            String tagValueToSend = getTagValueToSend(tag.name, tag.value, FeatureFlagChecker.isToggleEnabled("detailed_tagging"));
             Tag tempTag = new Tag(tag.name, tagValueToSend);
             formattedTags.add(tempTag.formatted());
             // keep track of transient tag names
@@ -158,12 +148,12 @@ public class FormplayerDatadog {
      * @param tagValue - tag value
      * @return String representing tag to send
      */
-    private String getTagValueToSend(String tagName, String tagValue) {
+    private String getTagValueToSend(String tagName, String tagValue, Boolean isDetailedTaggingEnabled) {
         // if a domain is ineligible for detailed tags, instead of sending an empty tag value, send "_other"
         // this differentiates between intentionally and unintentionally empty tag values ("_other" vs "N/A", respectively)
         String defaultValue = "_other";
         if (getDetailedTagNames().contains(tagName)) {
-            if (domain != null && getDomainsWithDetailedTagging().contains(this.domain)) {
+            if (domain != null && isDetailedTaggingEnabled) {
                 return tagValue;
             } else {
                 return defaultValue;

@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests;
 
 import com.timgroup.statsd.StatsDClient;
 
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,9 +31,8 @@ public class FormplayerDatadogTests {
     @BeforeEach
     public void setUp() throws Exception {
         mockDatadogClient = mock(StatsDClient.class);
-        List<String> eligibleDomainsForDetailedTagging = Arrays.asList("eligible_domain");
         List<String> detailedTagNames = Arrays.asList("detailed_tag");
-        datadog = new FormplayerDatadog(mockDatadogClient, eligibleDomainsForDetailedTagging, detailedTagNames);
+        datadog = new FormplayerDatadog(mockDatadogClient, detailedTagNames);
     }
 
     @Test
