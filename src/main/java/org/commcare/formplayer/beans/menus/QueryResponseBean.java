@@ -7,11 +7,14 @@ import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.QueryPrompt;
 import org.commcare.util.screen.QueryScreen;
+import org.javarosa.core.model.SelectChoice;
+import org.javarosa.core.model.utils.ItemSetUtils;
 import org.javarosa.core.util.OrderedHashtable;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * Created by willpride on 4/13/16.
@@ -43,9 +46,14 @@ public class QueryResponseBean extends MenuBean {
             String currentAnswer = currentAnswers.get(key);
 
             // Map the current Answer to the itemset index of the answer
-            Pair<String[], Integer> choicesAndAnswerIndex = queryPromptItem.getItemsetChoicesWithAnswerIndex(currentAnswer);
-            if (queryPromptItem.isSelectOne()) {
-                currentAnswer = choicesAndAnswerIndex.second == -1 ? null : String.valueOf(choicesAndAnswerIndex.second);
+            String[] choiceLabels = null;
+            if (queryPromptItem.getItemsetBinding() != null) {
+                String[] selectedChoices = currentAnswer.split(" ");
+                for (String selectedChoice : selectedChoices) {
+                    int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoice);
+                    currentAnswer = currentAnswer.replace(selectedChoice, (choiceIndex == -1 ? "" : String.valueOf(choiceIndex)));
+                }
+                choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
 
             displays[count] = new DisplayElement(queryPromptItem.getDisplay(),
@@ -54,7 +62,7 @@ public class QueryResponseBean extends MenuBean {
                     queryPromptItem.getInput(),
                     queryPromptItem.getReceive(),
                     currentAnswer,
-                    choicesAndAnswerIndex.first);
+                    choiceLabels);
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
@@ -71,11 +79,12 @@ public class QueryResponseBean extends MenuBean {
         return type;
     }
 
-    @JsonGetter(value="queryKey")
+    @JsonGetter(value = "queryKey")
     public String getQueryKey() {
         return queryKey;
     }
-    @JsonSetter(value="queryKey")
+
+    @JsonSetter(value = "queryKey")
     public void setQueryKey(String queryKey) {
         this.queryKey = queryKey;
     }
