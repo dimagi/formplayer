@@ -4,17 +4,15 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.modern.util.Pair;
+import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.QueryPrompt;
 import org.commcare.util.screen.QueryScreen;
-import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.utils.ItemSetUtils;
 import org.javarosa.core.util.OrderedHashtable;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Vector;
 
 /**
  * Created by willpride on 4/13/16.
@@ -47,8 +45,8 @@ public class QueryResponseBean extends MenuBean {
 
             // Map the current Answer to the itemset index of the answer
             String[] choiceLabels = null;
-            if (queryPromptItem.getItemsetBinding() != null) {
-                String[] selectedChoices = currentAnswer.split(" ");
+            if (queryPromptItem.isSelect()) {
+                String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(currentAnswer);
                 for (String selectedChoice : selectedChoices) {
                     int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoice);
                     currentAnswer = currentAnswer.replace(selectedChoice, (choiceIndex == -1 ? "" : String.valueOf(choiceIndex)));
