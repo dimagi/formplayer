@@ -112,7 +112,8 @@ public class CaseClaimTests extends BaseTestClass {
 
         // change selection
         inputs.put("name", "Burt");
-        inputs.put("state", "0 1");
+        inputs.put("state", "0 1"); // select both karnataka and rajasthan
+        inputs.put("district", "1"); // select kota
         queryData.setInputs("search_command.m1", inputs);
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
@@ -121,7 +122,14 @@ public class CaseClaimTests extends BaseTestClass {
                 QueryResponseBean.class);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
+
+        // check if we have districts corresponding to both karnataka and rajasthan states available
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Baran", "Hampi", "Kota"});
+
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0 1");
+
+        // dependent itemset prompts gets reset to blank on changing the value for itemset it depends on
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("");
 
 
         queryData.setExecute("search_command.m1", true);
