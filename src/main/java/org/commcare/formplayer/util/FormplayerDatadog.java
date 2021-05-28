@@ -67,7 +67,7 @@ public class FormplayerDatadog {
      */
     public void addRequestScopedTag(String name, String value) {
         // get correct value to send (only send unique tag value if domain is eligible)
-        String valueToSend = getTagValueToSend(name, value, FeatureFlagChecker.isToggleEnabled("detailed_tagging"));
+        String valueToSend = getTagValueToSend(name, value);
         Tag tag = new Tag(name, valueToSend);
         requestScopedTags.put(name, tag);
     }
@@ -120,7 +120,7 @@ public class FormplayerDatadog {
         HashSet<String> transientKeys = new HashSet<String>();
         
         for (Tag tag : transientTags) {
-            String tagValueToSend = getTagValueToSend(tag.name, tag.value, FeatureFlagChecker.isToggleEnabled("detailed_tagging"));
+            String tagValueToSend = getTagValueToSend(tag.name, tag.value);
             Tag tempTag = new Tag(tag.name, tagValueToSend);
             formattedTags.add(tempTag.formatted());
             // keep track of transient tag names
@@ -144,12 +144,12 @@ public class FormplayerDatadog {
      * @param tagValue - tag value
      * @return String representing tag to send
      */
-    private String getTagValueToSend(String tagName, String tagValue, Boolean isDetailedTaggingEnabled) {
+    private String getTagValueToSend(String tagName, String tagValue) {
         // if a domain is ineligible for detailed tags, instead of sending an empty tag value, send "_other"
         // this differentiates between intentionally and unintentionally empty tag values ("_other" vs "N/A", respectively)
         String defaultValue = "_other";
         if (getDetailedTagNames().contains(tagName)) {
-            if (isDetailedTaggingEnabled) {
+            if (FeatureFlagChecker.isToggleEnabled("detailed_tagging")) {
                 return tagValue;
             } else {
                 return defaultValue;
