@@ -145,14 +145,13 @@ public class FormplayerDatadog {
      * @return String representing tag to send
      */
     private String getTagValueToSend(String tagName, String tagValue) {
-        // if a domain is ineligible for detailed tags, instead of sending an empty tag value, send "_other"
+        // if a domain does not have the detailed tagging feature flag enabled, instead of sending an empty tag value, send "_other"
         // this differentiates between intentionally and unintentionally empty tag values ("_other" vs "N/A", respectively)
-        String defaultValue = "_other";
         if (getDetailedTagNames().contains(tagName)) {
             if (FeatureFlagChecker.isToggleEnabled("detailed_tagging")) {
                 return tagValue;
             } else {
-                return defaultValue;
+                return "_other";
             }
         } else {
             return tagValue;
