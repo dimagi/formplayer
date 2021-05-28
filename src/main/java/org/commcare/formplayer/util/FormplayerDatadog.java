@@ -57,10 +57,6 @@ public class FormplayerDatadog {
         return this.detailedTagNames;
     }
 
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
     // Tag Management Methods
 
     /**
@@ -153,7 +149,7 @@ public class FormplayerDatadog {
         // this differentiates between intentionally and unintentionally empty tag values ("_other" vs "N/A", respectively)
         String defaultValue = "_other";
         if (getDetailedTagNames().contains(tagName)) {
-            if (domain != null && isDetailedTaggingEnabled) {
+            if (isDetailedTaggingEnabled) {
                 return tagValue;
             } else {
                 return defaultValue;
