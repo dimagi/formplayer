@@ -164,4 +164,9 @@ public class Constants {
     // End Datadog metrics
 
     public static final String SCHEDULED_TASKS_PURGE = "scheduled_tasks.purge";
+
+    // Feature Flags/Toggles
+
+    // https://.commcarehq.org/hq/flags/edit/detailed_tagging/
+    public static final String TOGGLE_DETAILED_TAGGING = "DETAILED_TAGGING";
 }

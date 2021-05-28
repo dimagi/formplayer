@@ -6,6 +6,8 @@ import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 
 import java.util.*;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
+
 /**
  * Wrapper for the Datadog Java client
  * Provides the ability to set tags throughout the request that will be appended to every datadog request
@@ -148,7 +150,7 @@ public class FormplayerDatadog {
         // if a domain does not have the detailed tagging feature flag enabled, instead of sending an empty tag value, send "_other"
         // this differentiates between intentionally and unintentionally empty tag values ("_other" vs "N/A", respectively)
         if (getDetailedTagNames().contains(tagName)) {
-            if (FeatureFlagChecker.isToggleEnabled("detailed_tagging")) {
+            if (FeatureFlagChecker.isToggleEnabled(TOGGLE_DETAILED_TAGGING)) {
                 return tagValue;
             } else {
                 return "_other";
