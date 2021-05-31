@@ -30,6 +30,7 @@ public class QuestionBean {
     private String type;
     private String ix;
     private String[] choices;
+    private Object choices_captions;
     private String repeatable;
     private String exists;
     private String addChoice;
@@ -164,6 +165,14 @@ public class QuestionBean {
 
     public void setChoices(String[] choices) {
         this.choices = choices;
+    }
+
+    public Object getChoices_captions() {
+        return choices_captions;
+    }
+
+    public void setChoices_captions(Object choices_captions) {
+        this.choices_captions = choices_captions;
     }
 
     @Override

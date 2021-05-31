@@ -16,6 +16,7 @@ import org.joda.time.DateTimeZone;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Vector;
@@ -44,6 +45,9 @@ public class PromptToJson {
 
         if (prompt.getDataType() == Constants.DATATYPE_CHOICE || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
             questionJson.put("choices", parseSelect(prompt));
+            Vector<SelectChoice> selectChoices = prompt.getSelectChoices();
+            JSONArray captionsForChoices = parseCaptionsForChoices(prompt, selectChoices);
+            questionJson.put("choices_captions", captionsForChoices);
         }
     }
 
@@ -246,4 +250,20 @@ public class PromptToJson {
         }
         return "unrecognized";
     }
+
+    private static JSONArray parseCaptionsForChoices(FormEntryPrompt prompt, Vector<SelectChoice> selectChoices) {
+        JSONArray jsonArr = new JSONArray();
+        for (SelectChoice choice : selectChoices) {
+            String imagePath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_IMAGE);
+            String audioPath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_AUDIO);
+            String videoPath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_VIDEO);
+            JSONObject captionsForChoice = new JSONObject();
+            captionsForChoice.put("caption_image", jsonNullIfNull(imagePath));
+            captionsForChoice.put("caption_audio", jsonNullIfNull(audioPath));
+            captionsForChoice.put("caption_video", jsonNullIfNull(videoPath));
+            jsonArr.put(captionsForChoice);
+        }
+        return jsonArr;
+    }
+
 }
