@@ -299,10 +299,6 @@ public class EntityListResponse extends MenuBean {
         return ret;
     }
 
-    private static String processAutolaunch(SessionWrapper session) {
-        return formatActionsWithFilter(session, Action::isAutoLaunching);
-    }
-
     private static String processRedoLast(SessionWrapper session) {
         return formatActionsWithFilter(session, Action::isRedoLast);
     }

@@ -3,9 +3,6 @@
   "lang": "en",
   "session-data": {
     "username": "test",
-    "additional_filters": {
-      "footprint": true
-    },
     "domain": "test",
     "user_id": "84c246edf58bfa69e03bdecc39692e1f",
     "session_name": "User Fields > Untitled Form",

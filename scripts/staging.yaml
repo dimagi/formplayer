@@ -52,16 +52,19 @@ name: autostaging
 branches:
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
-  - ce/eof-nav # Cal Feb 23
-  #- beta # Shivam Mar 25
-  - caseSearchSkip # Shubham April 29
-  - autoOpenForm # Shubham April 29
+  - sp/sqlite-postgres # Shivam April 30
+  - sr/rev-rev-menusession  # Sravan May 24
+  - sr/claim-message # Sravan May 24
+  - sr/hide-geo # Sravan May 25
+  - jls/pragma-logging # Jenny May 26
+  - multiselect # Sravan May 31
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
+      - multiselect+ce/tag-triggers # Shubham May 31
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
-      - caseSearchSkip # Shubham April 29
-      - autoLaunchMenu # Shubham April 29
+      - sr/hidden-f # Sravan May 25
+      - multiselect # Sravan May 31

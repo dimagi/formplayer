@@ -8,6 +8,8 @@ plugins {
     id 'org.springframework.boot' version '2.4.5'
     id "com.gorylenko.gradle-git-properties" version "2.2.4"
     id "io.freefair.lombok" version "5.3.3.3"
+    id 'org.jetbrains.kotlin.jvm' version '1.4.32'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.4.32'
 }
 
 springBoot {
@@ -86,6 +88,8 @@ dependencies {
     implementation group: 'org.springframework.data', name: 'spring-data-redis'
     implementation group: 'org.springframework.data', name: 'spring-data-commons'
     implementation group: 'org.springframework.integration', name: 'spring-integration-redis'
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect'
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
 
