@@ -50,7 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-  - autoOpenForm+ce/tracing # Shubham April 29
   - ce/tracing # Cal Oct 23
   - ce/negative-index # Cal Feb 2
   - sp/sqlite-postgres # Shivam April 30
@@ -63,7 +62,7 @@ submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - autoLaunchMenu+ce/tag-triggers # Shubham April 29
+      - multiselect+ce/tag-triggers # Shubham May 31
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
