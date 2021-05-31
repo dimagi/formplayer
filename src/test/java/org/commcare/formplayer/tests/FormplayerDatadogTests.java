@@ -11,6 +11,7 @@ import org.commcare.formplayer.utils.TestContext;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
 import static org.mockito.Mockito.*;
 
 import java.util.*;
@@ -101,7 +102,7 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    @WithHqUser(enabledToggles = {"detailed_tagging"})
+    @WithHqUser(enabledToggles = {TOGGLE_DETAILED_TAGGING})
     public void testAddRequestScopedDetailedTagForEligibleDomain() {
         // detailed_tag was added to FormplayerDatadog in beforeTest
         datadog.addRequestScopedTag("detailed_tag", "test_value");
@@ -123,7 +124,7 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    @WithHqUser(enabledToggles = {"detailed_tagging"})
+    @WithHqUser(enabledToggles = {TOGGLE_DETAILED_TAGGING})
     public void testAddTransientDetailedTagForEligibleDomain() {
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
         // detailed_tag was added to FormplayerDatadog in beforeTest
