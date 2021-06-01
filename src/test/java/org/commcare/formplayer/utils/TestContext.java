@@ -113,7 +113,7 @@ public class TestContext {
 
     @Bean
     public FormplayerDatadog datadog() {
-        return Mockito.spy(new FormplayerDatadog(datadogStatsDClient(), new ArrayList<String>(), new ArrayList<String>()));
+        return Mockito.spy(new FormplayerDatadog(datadogStatsDClient(), new ArrayList<String>()));
     }
 
     @Bean

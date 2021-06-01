@@ -2,24 +2,19 @@ package org.commcare.formplayer.tests;
 
 import com.timgroup.statsd.StatsDClient;
 
+import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.utils.TestContext;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
@@ -30,9 +25,8 @@ public class FormplayerDatadogTests {
     @BeforeEach
     public void setUp() throws Exception {
         mockDatadogClient = mock(StatsDClient.class);
-        List<String> eligibleDomainsForDetailedTagging = Arrays.asList("eligible_domain");
-        List<String> detailedTagNames = Arrays.asList("detailed_tag");
-        datadog = new FormplayerDatadog(mockDatadogClient, eligibleDomainsForDetailedTagging, detailedTagNames);
+        List<String> detailedTagNames = Collections.singletonList("detailed_tag");
+        datadog = new FormplayerDatadog(mockDatadogClient, detailedTagNames);
     }
 
     @Test
@@ -108,9 +102,9 @@ public class FormplayerDatadogTests {
     }
 
     @Test
+    @WithHqUser(enabledToggles = {TOGGLE_DETAILED_TAGGING})
     public void testAddRequestScopedDetailedTagForEligibleDomain() {
-        String domain = "eligible_domain";
-        datadog.setDomain(domain);
+        // detailed_tag was added to FormplayerDatadog in beforeTest
         datadog.addRequestScopedTag("detailed_tag", "test_value");
         datadog.recordExecutionTime("requests", 100, Collections.emptyList());
         String expectedTag = "detailed_tag:test_value";
@@ -119,9 +113,9 @@ public class FormplayerDatadogTests {
     }
 
     @Test
+    @WithHqUser(enabledToggles = {})
     public void testAddRequestScopedDetailedTagForIneligibleDomain() {
-        String domain = "ineligible_domain";
-        datadog.setDomain(domain);
+        // detailed_tag was added to FormplayerDatadog in beforeTest
         datadog.addRequestScopedTag("detailed_tag", "test_value");
         datadog.recordExecutionTime("requests", 100, Collections.emptyList());
         String expectedTag = "detailed_tag:_other";
@@ -130,19 +124,10 @@ public class FormplayerDatadogTests {
     }
 
     @Test
-    public void testAddRequestScopedDetailedTagForNullDomain() {
-        datadog.addRequestScopedTag("detailed_tag", "test_value");
-        datadog.recordExecutionTime("requests", 100, Collections.emptyList());
-        String expectedTag = "detailed_tag:_other";
-        String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
-    }
-
-    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_DETAILED_TAGGING})
     public void testAddTransientDetailedTagForEligibleDomain() {
-        String domain = "eligible_domain";
-        datadog.setDomain(domain);
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
+        // detailed_tag was added to FormplayerDatadog in beforeTest
         transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
         datadog.recordExecutionTime("requests", 100, transientTags);
         String expectedTag = "detailed_tag:test_value";
@@ -151,21 +136,10 @@ public class FormplayerDatadogTests {
     }
 
     @Test
+    @WithHqUser(enabledToggles = {})
     public void testAddTransientDetailedTagForIneligibleDomain() {
-        // detailed tags should not be added if domain is ineligible
-        String domain = "ineligible_domain";
-        datadog.setDomain(domain);
         List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
-        transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
-        datadog.recordExecutionTime("requests", 100, transientTags);
-        String expectedTag = "detailed_tag:_other";
-        String[] args = {expectedTag};
-        verify(mockDatadogClient).recordExecutionTime("requests", 100, args);
-    }
-
-    @Test
-    public void testAddTransientDetailedTagForNullDomain() {
-        List<FormplayerDatadog.Tag> transientTags = new ArrayList<>();
+        // detailed_tag was added to FormplayerDatadog in beforeTest
         transientTags.add(new FormplayerDatadog.Tag("detailed_tag", "test_value"));
         datadog.recordExecutionTime("requests", 100, transientTags);
         String expectedTag = "detailed_tag:_other";

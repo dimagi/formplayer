@@ -73,9 +73,6 @@ public class WebAppContext implements WebMvcConfigurer {
     @Value("${redis.password:#{null}}")
     private String redisPassword;
 
-    @Value("${detailed_tagging.domains:}")
-    private List<String> domainsWithDetailedTagging;
-
     @Value("${detailed_tagging.tag_names:}")
     private List<String> detailedTagNames;
 
@@ -162,7 +159,7 @@ public class WebAppContext implements WebMvcConfigurer {
     @Bean
     @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
-        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedTagging, detailedTagNames);
+        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), detailedTagNames);
         return datadog;
     }
 
