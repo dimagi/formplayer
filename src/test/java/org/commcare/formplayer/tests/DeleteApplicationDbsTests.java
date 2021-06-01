@@ -1,7 +1,6 @@
 package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.sqlitedb.ApplicationDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.utils.TestContext;
@@ -27,27 +26,6 @@ public class DeleteApplicationDbsTests extends BaseTestClass{
     @Override
     protected String getMockRestoreFileName() {
         return "restores/casetiles.xml";
-    }
-
-    /**
-     * Ensures that when an application db exists that a delete db request
-     * will successfully delete it.
-     * @throws Exception
-     */
-    @Test
-    public void testDeleteApplicationDbsView() throws Exception {
-        // Create application db by making an install request
-        SQLiteDB db = new ApplicationDB("casetestdomain", "casetestuser", null, "casetestappid");
-        doInstall("requests/install/install.json");
-
-        File file = new File(db.getDatabaseFileForDebugPurposes());
-        assert file.exists();
-
-        NotificationMessage response = deleteApplicationDbs();
-        assert !response.isError();
-
-        file = new File(db.getDatabaseFileForDebugPurposes());
-        assert !file.exists();
     }
 
     /**
