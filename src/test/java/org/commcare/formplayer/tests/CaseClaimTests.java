@@ -42,7 +42,7 @@ public class CaseClaimTests extends BaseTestClass {
     CacheManager cacheManager;
 
     @Captor
-    ArgumentCaptor<URI> uriCaptor;
+    ArgumentCaptor<String> uriCaptor;
 
     @Override
     @BeforeEach
@@ -112,7 +112,8 @@ public class CaseClaimTests extends BaseTestClass {
 
         // change selection
         inputs.put("name", "Burt");
-        inputs.put("state", "0");
+        inputs.put("state", "0 1"); // select both karnataka and rajasthan
+        inputs.put("district", "1"); // select kota
         queryData.setInputs("search_command.m1", inputs);
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
@@ -121,7 +122,15 @@ public class CaseClaimTests extends BaseTestClass {
                 QueryResponseBean.class);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
-        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
+
+        // check if we have districts corresponding to both karnataka and rajasthan states available
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Baran", "Hampi", "Kota"});
+
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0 1");
+
+        // dependent itemset prompts gets reset to blank on changing the value for itemset it depends on
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("");
+
 
         queryData.setExecute("search_command.m1", true);
         responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
@@ -150,13 +159,13 @@ public class CaseClaimTests extends BaseTestClass {
 
         // verify search uris
         verify(webClientMock, times(2)).get(uriCaptor.capture());
-        List<URI> uris = uriCaptor.getAllValues();
+        List<String> uris = uriCaptor.getAllValues();
         // when default search, prompts doesn't get included
-        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case"));
+        assert uris.get(0).equals("http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case");
         // when default search but forceManualSearch, prompts should get included
         // Subsequently when search happens as part of replaying a session, prompts should be same as the last search
         // and therefore be served through cache. Therefore there are only 2 http calls here instead of 3
-        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&name=Burt&case_type=case&state=ka"));
+        assert uris.get(1).equals("http://localhost:8000/a/test/phone/search/?include_closed=False&name=Burt&case_type=case&state=ka&state=rj");
     }
 
     @Test
@@ -189,12 +198,12 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     private void configureQueryMock() {
-        when(webClientMock.get(any(URI.class)))
+        when(webClientMock.get(any(String.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
     }
 
     private void configureQueryMockOwned() {
-        when(webClientMock.get(any(URI.class)))
+        when(webClientMock.get(any(String.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response_owned.xml"));
     }
 }
