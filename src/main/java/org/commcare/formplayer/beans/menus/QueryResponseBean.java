@@ -47,10 +47,13 @@ public class QueryResponseBean extends MenuBean {
             String[] choiceLabels = null;
             if (queryPromptItem.isSelect()) {
                 String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(currentAnswer);
-                for (String selectedChoice : selectedChoices) {
-                    int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoice);
-                    currentAnswer = currentAnswer.replace(selectedChoice, (choiceIndex == -1 ? "" : String.valueOf(choiceIndex)));
+                String answerWithChoiceIndices = "";
+                for (int i = 0; i < selectedChoices.length; i++) {
+                    int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoices[i]);
+                    answerWithChoiceIndices += choiceIndex == -1 ? "" : String.valueOf(choiceIndex);
+                    answerWithChoiceIndices += i == selectedChoices.length -1 ? "" : " ";
                 }
+                currentAnswer = answerWithChoiceIndices;
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
 
