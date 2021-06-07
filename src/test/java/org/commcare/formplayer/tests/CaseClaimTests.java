@@ -107,8 +107,11 @@ public class CaseClaimTests extends BaseTestClass {
 
         // no value in queryDictionary should reset the value to empty
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Baran", "Kota"});
+
 
         // change selection
         inputs.put("name", "Burt");
@@ -127,9 +130,6 @@ public class CaseClaimTests extends BaseTestClass {
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Baran", "Hampi", "Kota"});
 
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0 1");
-
-        // dependent itemset prompts gets reset to blank on changing the value for itemset it depends on
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("");
 
 
         queryData.setExecute("search_command.m1", true);
