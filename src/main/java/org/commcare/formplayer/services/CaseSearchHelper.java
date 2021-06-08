@@ -36,7 +36,7 @@ public class CaseSearchHelper {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen, URI uri) {
+    public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen, String uri) {
         Cache cache = cacheManager.getCache("case_search");
         String cacheKey = getCacheKey(uri);
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
@@ -61,7 +61,7 @@ public class CaseSearchHelper {
         return null;
     }
 
-    private String getCacheKey(URI uri) {
+    private String getCacheKey(String uri) {
         StringBuilder builder = new StringBuilder();
         builder.append(restoreFactory.getDomain());
         builder.append("_").append(restoreFactory.getScrubbedUsername());

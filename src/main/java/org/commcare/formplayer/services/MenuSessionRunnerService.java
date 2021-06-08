@@ -408,7 +408,7 @@ public class MenuSessionRunnerService {
 
         ExternalDataInstance searchDataInstance = searchAndSetResult(
                 screen,
-                screen.getUri(skipDefaultPromptValues));
+                screen.buildUrl(skipDefaultPromptValues));
 
         if (searchDataInstance != null) {
             if (screen.getCurrentMessage() != null) {
@@ -425,7 +425,7 @@ public class MenuSessionRunnerService {
         return notificationMessage;
     }
 
-    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri) {
+    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, String uri) {
         ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen, uri);
         screen.setQueryDatum(searchDataInstance);
         return searchDataInstance;
