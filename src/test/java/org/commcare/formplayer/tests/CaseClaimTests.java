@@ -116,7 +116,6 @@ public class CaseClaimTests extends BaseTestClass {
         // change selection
         inputs.put("name", "Burt");
         inputs.put("state", "0 1"); // select both karnataka and rajasthan
-        inputs.put("district", "1"); // select kota
         queryData.setInputs("search_command.m1", inputs);
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
