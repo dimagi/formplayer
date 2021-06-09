@@ -448,6 +448,7 @@ public class MenuSessionRunnerService {
     private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException {
         menuSession.getSessionWrapper().syncState();
         if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
+            log.info("[jls] clearing volatiles");
             menuSession.getSessionWrapper().clearVolatiles();
             menuSessionFactory.rebuildSessionFromFrame(menuSession);
             return true;
@@ -569,6 +570,7 @@ public class MenuSessionRunnerService {
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
+        log.info("[jls] Establishing volatility");
         response.setNotification(establishVolatility(formEntrySession));
         response.setShouldAutoSubmit(formEntrySession.getAutoSubmitFlag());
         return response;
@@ -576,17 +578,24 @@ public class MenuSessionRunnerService {
 
     private NotificationMessage establishVolatility(FormSession session) {
         FormVolatilityRecord newRecord = session.getSessionVolatilityRecord();
+        log.info("[jls] newRecord for " + session.getUsername() + " = " + newRecord);
         if (volatilityCache != null && newRecord != null) {
             FormVolatilityRecord existingRecord = volatilityCache.get(newRecord.getKey());
+            log.info("[jls] key was " + newRecord.getKey() + ", existingRecord is " + existingRecord);
 
             //Overwrite any existing records unless they were from a submissions, since submission
             //records are more relevant
             if (existingRecord == null || !existingRecord.wasSubmitted()) {
+                log.info("[jls] Updating form opened");
                 newRecord.updateFormOpened(session);
                 newRecord.write(volatilityCache);
             }
 
+            if (existingRecord != null) {
+                log.info("[jls] got an existingRecord, does it match? " + existingRecord.getUsername() + ", " + session.getUsername());
+            }
             if (existingRecord != null && !existingRecord.matchesUser(session)) {
+                log.info("[jls] getting notification if relevant, found " + existingRecord.getNotificationIfRelevant(restoreFactory.getLastSyncTime()));
                 return existingRecord.getNotificationIfRelevant(restoreFactory.getLastSyncTime());
             }
         }
