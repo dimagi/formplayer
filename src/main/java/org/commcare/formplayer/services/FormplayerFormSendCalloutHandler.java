@@ -1,6 +1,5 @@
 package org.commcare.formplayer.services;
 
-import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.web.client.WebClient;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
+
+import lombok.extern.apachecommons.CommonsLog;
 
 /**
  * Created by willpride on 10/4/17.

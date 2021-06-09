@@ -1,14 +1,12 @@
 package org.commcare.formplayer.util;
 
 import com.timgroup.statsd.StatsDClient;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
+import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
 
 /**
  * Wrapper for the Datadog Java client
@@ -47,10 +45,8 @@ public class FormplayerDatadog {
 
     // Constructor, Getters, Setters
     public FormplayerDatadog(StatsDClient datadogClient,
-                             List<String> domainsWithDetailedTagging,
                              List<String> detailedTagNames) {
         this.datadogClient = datadogClient;
-        this.domainsWithDetailedTagging = new HashSet<>(domainsWithDetailedTagging);
         this.detailedTagNames = new HashSet<>(detailedTagNames);
         this.requestScopedTags = new HashMap<>();
     }
@@ -61,14 +57,6 @@ public class FormplayerDatadog {
 
     public Set<String> getDetailedTagNames() {
         return this.detailedTagNames;
-    }
-
-    public Set<String> getDomainsWithDetailedTagging() {
-        return this.domainsWithDetailedTagging;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
     }
 
     // Tag Management Methods
@@ -159,14 +147,13 @@ public class FormplayerDatadog {
      * @return String representing tag to send
      */
     private String getTagValueToSend(String tagName, String tagValue) {
-        // if a domain is ineligible for detailed tags, instead of sending an empty tag value, send "_other"
+        // if a domain does not have the detailed tagging feature flag enabled, instead of sending an empty tag value, send "_other"
         // this differentiates between intentionally and unintentionally empty tag values ("_other" vs "N/A", respectively)
-        String defaultValue = "_other";
         if (getDetailedTagNames().contains(tagName)) {
-            if (domain != null && getDomainsWithDetailedTagging().contains(this.domain)) {
+            if (FeatureFlagChecker.isToggleEnabled(TOGGLE_DETAILED_TAGGING)) {
                 return tagValue;
             } else {
-                return defaultValue;
+                return "_other";
             }
         } else {
             return tagValue;

@@ -5,9 +5,11 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.4.4'
+    id 'org.springframework.boot' version '2.4.5'
     id "com.gorylenko.gradle-git-properties" version "2.2.4"
-    id "io.freefair.lombok" version "5.3.0"
+    id "io.freefair.lombok" version "5.3.3.3"
+    id 'org.jetbrains.kotlin.jvm' version '1.4.32'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.4.32'
 }
 
 springBoot {
@@ -86,7 +88,8 @@ dependencies {
     implementation group: 'org.springframework.data', name: 'spring-data-redis'
     implementation group: 'org.springframework.data', name: 'spring-data-commons'
     implementation group: 'org.springframework.integration', name: 'spring-integration-redis'
-    runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache'
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect'
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.11.0'
@@ -95,9 +98,10 @@ dependencies {
     implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
     implementation group: 'org.json', name: 'json', version: '20210307'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
-    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.22.1'
-    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.22.1'
+    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.23.0'
+    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.23.0'
     runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache', version: '2.8.8'
+
 
     implementation fileTree(dir: 'libs', include: '*.jar')
     implementation project(path: ':commcare', configuration: 'api')
