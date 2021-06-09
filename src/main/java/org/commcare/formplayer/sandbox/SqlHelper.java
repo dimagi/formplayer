@@ -2,6 +2,10 @@ package org.commcare.formplayer.sandbox;
 
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
 
+import org.commcare.formplayer.postgresutil.PostgresDB;
+import org.commcare.formplayer.postgresutil.PostgresDatabaseHelper;
+import org.commcare.formplayer.postgresutil.PostgresSqlHelper;
+import org.commcare.formplayer.sqliteutil.SqliteSqlHelper;
 import org.commcare.modern.util.Pair;
 import org.commcare.modern.database.*;
 import org.javarosa.core.services.Logger;
@@ -76,8 +80,13 @@ public class SqlHelper {
         stream.println("}");
     }
 
-    public static void dropTable(Connection c, String storageKey) {
-        String sqlStatement = "DROP TABLE IF EXISTS " + storageKey;
+    public static void dropTable(Connection c, String storageKey, boolean isPostgres, String currentSchema) {
+        String sqlStatement;
+        if (isPostgres) {
+            sqlStatement = PostgresSqlHelper.getDropTableQuery(storageKey, currentSchema);
+        } else {
+            sqlStatement = "DROP TABLE IF EXISTS " + storageKey;
+        }
         try (PreparedStatement preparedStatement = c.prepareStatement(sqlStatement)) {
             preparedStatement.execute();
         } catch (SQLException e) {
@@ -85,8 +94,13 @@ public class SqlHelper {
         }
     }
 
-    public static void createTable(Connection c, String storageKey, Persistable p) {
-        String sqlStatement = DatabaseHelper.getTableCreateString(storageKey, p);
+    public static void createTable(Connection c, String storageKey, Persistable p, boolean isPostgres, String currentSchema) {
+        String sqlStatement;
+        if (isPostgres) {
+            sqlStatement = PostgresDatabaseHelper.getTableCreateString(storageKey, p, currentSchema);
+        } else {
+            sqlStatement = DatabaseHelper.getTableCreateString(storageKey, p);
+        }
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = c.prepareStatement(sqlStatement);
@@ -130,10 +144,16 @@ public class SqlHelper {
      * Note: Caller is responsible for ensuring the prepared statement is closed
      *
      */
-    public static PreparedStatement prepareIdSelectStatement(Connection c, String storageKey, int id) {
+    public static PreparedStatement prepareIdSelectStatement(Connection c, String storageKey, int id, boolean isPostgres, String currentSchema) {
+        String sqlStatement;
+        if (isPostgres) {
+            sqlStatement = PostgresSqlHelper.getSelectStatement("*", storageKey, currentSchema);
+        } else {
+            sqlStatement = "SELECT * FROM " + storageKey;
+        }
         try {
             PreparedStatement preparedStatement =
-                    c.prepareStatement("SELECT * FROM " + storageKey + " WHERE "
+                    c.prepareStatement(sqlStatement + " WHERE "
                             + DatabaseHelper.ID_COL + " = ?;");
             preparedStatement.setInt(1, id);
             return preparedStatement;
@@ -150,7 +170,9 @@ public class SqlHelper {
      */
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
                                                                           String storageKey,
-                                                                          String[] projections) {
+                                                                          String[] projections,
+                                                                          boolean isPostgres,
+                                                                          String currentSchema) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < projections.length; i++) {
             builder.append(projections[i]);
@@ -158,9 +180,14 @@ public class SqlHelper {
                 builder.append(", ");
             }
         }
-        String queryString = "SELECT " + builder.toString() + " FROM " + storageKey + ";";
+        String sqlStatement;
+        if (isPostgres) {
+            sqlStatement = PostgresSqlHelper.getSelectStatement(builder.toString(), storageKey, currentSchema) + ";";
+        } else {
+            sqlStatement = "SELECT " + builder.toString() + " FROM " + storageKey + ";";
+        }
         try {
-            return c.prepareStatement(queryString);
+            return c.prepareStatement(sqlStatement);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -176,7 +203,9 @@ public class SqlHelper {
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
                                                                           String storageKey,
                                                                           String recordId,
-                                                                          String[] projections) {
+                                                                          String[] projections,
+                                                                          boolean isPostgres,
+                                                                          String currentSchema) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < projections.length; i++) {
             builder.append(projections[i]);
@@ -184,9 +213,14 @@ public class SqlHelper {
                 builder.append(", ");
             }
         }
-        String queryString = "SELECT " + builder.toString() +
-                " FROM " + storageKey +
-                " WHERE " + DatabaseHelper.ID_COL + " = ?;";
+
+        String sqlStatement;
+        if (isPostgres) {
+            sqlStatement = PostgresSqlHelper.getSelectStatement(builder.toString(), storageKey, currentSchema);
+        } else {
+            sqlStatement = "SELECT " + builder.toString() + " FROM " + storageKey;
+        }
+        String queryString = sqlStatement + " WHERE " + DatabaseHelper.ID_COL + " = ?;";
         try {
             PreparedStatement preparedStatement = c.prepareStatement(queryString);
             preparedStatement.setString(1, recordId);
@@ -204,7 +238,9 @@ public class SqlHelper {
                                                                           String storageKey,
                                                                           String where,
                                                                           String values[],
-                                                                          String[] projections) {
+                                                                          String[] projections,
+                                                                          boolean isPostgres,
+                                                                          String currentSchema) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < projections.length; i++) {
             builder.append(projections[i]);
@@ -213,8 +249,13 @@ public class SqlHelper {
             }
         }
         try {
-            String queryString =
-                    "SELECT " + builder.toString() + " FROM " + storageKey + " WHERE " + where + ";";
+            String sqlStatement;
+            if (isPostgres) {
+                sqlStatement = PostgresSqlHelper.getSelectStatement(builder.toString(), storageKey, currentSchema);
+            } else {
+                sqlStatement = "SELECT " + builder.toString() + " FROM " + storageKey;
+            }
+            String queryString = sqlStatement + " WHERE " + where + ";";
             PreparedStatement preparedStatement = c.prepareStatement(queryString);
             for (int i = 0; i < values.length; i++) {
                 preparedStatement.setString(i + 1, values[i]);
@@ -232,11 +273,18 @@ public class SqlHelper {
     public static PreparedStatement prepareTableSelectStatement(Connection c,
                                                                 String storageKey,
                                                                 String[] fields,
-                                                                Object[] values) {
+                                                                Object[] values,
+                                                                boolean isPostgres,
+                                                                String currentSchema) {
         Pair<String, String[]> pair = DatabaseHelper.createWhere(fields, values, null);
         try {
-            String queryString =
-                    "SELECT * FROM " + storageKey + " WHERE " + pair.first + ";";
+            String sqlStatement;
+            if (isPostgres) {
+                sqlStatement = PostgresSqlHelper.getSelectStatement("*", storageKey, currentSchema);
+            } else {
+                sqlStatement = "SELECT * FROM " + storageKey;
+            }
+            String queryString = sqlStatement + " WHERE " + pair.first + ";";
             PreparedStatement preparedStatement = c.prepareStatement(queryString);
             for (int i = 0; i < pair.second.length; i++) {
                 preparedStatement.setString(i + 1, pair.second[i]);
@@ -254,10 +302,17 @@ public class SqlHelper {
     public static PreparedStatement prepareTableSelectStatement(Connection c,
                                                                 String storageKey,
                                                                 String where,
-                                                                String values[]) {
+                                                                String values[],
+                                                                boolean isPostgres,
+                                                                String currentSchema) {
         try {
-            String queryString =
-                    "SELECT * FROM " + storageKey + " WHERE " + where + ";";
+            String sqlStatement;
+            if (isPostgres) {
+                sqlStatement = PostgresSqlHelper.getSelectStatement("*", storageKey, currentSchema);
+            } else {
+                sqlStatement = "SELECT * FROM " + storageKey;
+            }
+            String queryString = sqlStatement + " WHERE " + where + ";";
             PreparedStatement preparedStatement = c.prepareStatement(queryString);
             for (int i = 0; i < values.length; i++) {
                 preparedStatement.setString(i + 1, values[i]);
@@ -293,12 +348,12 @@ public class SqlHelper {
     }
 
     private static void performInsert(Connection c,
-                                      Pair<List<Object>, String> valsAndInsertStatement) {
+                                      Pair<List<Object>, String> valsAndInsertStatement, boolean isPostgres) {
         try (PreparedStatement preparedStatement = c.prepareStatement(valsAndInsertStatement.second)) {
             int i = 1;
 
             for (Object val : valsAndInsertStatement.first) {
-                setArgumentToSqlStatement(preparedStatement, val, i++);
+                setArgumentToSqlStatement(preparedStatement, val, i++, isPostgres);
             }
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -308,25 +363,28 @@ public class SqlHelper {
 
     public static void basicInsert(Connection c,
                                    String storageKey,
-                                   Map<String, Object> contentVals) {
+                                   Map<String, Object> contentVals,
+                                   boolean isPostgres,
+                                   String currentSchema) {
         Pair<List<Object>, String> valsAndInsertStatement =
-                buildInsertStatement(storageKey, contentVals);
-        performInsert(c, valsAndInsertStatement);
+                buildInsertStatement(storageKey, contentVals, isPostgres, currentSchema);
+        performInsert(c, valsAndInsertStatement, isPostgres);
     }
 
     public static void insertOrReplace(Connection c,
                                        String storageKey,
-                                       Map<String, Object> contentValues) {
+                                       Map<String, Object> contentValues,
+                                       boolean isPostgres,
+                                       String currentSchema) {
         Pair<List<Object>, String> valsAndInsertStatement =
-                buildInsertOrReplaceStatement(storageKey, contentValues);
-        performInsert(c, valsAndInsertStatement);
+                buildInsertOrReplaceStatement(storageKey, contentValues, isPostgres, currentSchema);
+        performInsert(c, valsAndInsertStatement, isPostgres);
     }
 
-    private static Pair<List<Object>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, Object> contentVals,
+    private static Pair<List<Object>, String> buildInsertStatement(Map<String, Object> contentVals,
                                                                    String insertStatement) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(insertStatement).append(storageKey).append(" (");
+        StringBuilder stringBuilder = new StringBuilder(insertStatement);
+        stringBuilder.append(" (");
         List<Object> values = new ArrayList<>();
         String prefix = "";
         for (String key : contentVals.keySet()) {
@@ -347,62 +405,40 @@ public class SqlHelper {
     }
 
     private static Pair<List<Object>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, Object> contentVals) {
-        return buildInsertStatement(storageKey, contentVals, "INSERT INTO ");
-    }
-
-    private static Pair<List<Object>, String> buildInsertOrReplaceStatement(String storageKey,
-                                                                            Map<String, Object> contentVals) {
-        return buildInsertStatement(storageKey, contentVals, "INSERT OR REPLACE INTO ");
-    }
-
-    public static int insertToTable(Connection c, String storageKey, Persistable p) {
-        Pair<String, List<Object>> mPair = DatabaseHelper.getTableInsertData(storageKey, p);
-
-        try (PreparedStatement preparedStatement = c.prepareStatement(mPair.first)) {
-            for (int i = 0; i < mPair.second.size(); i++) {
-                Object obj = mPair.second.get(i);
-                setArgumentToSqlStatement(preparedStatement, obj, i+1);
-            }
-            int affectedRows = preparedStatement.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new SQLException("Creating user failed, no rows affected.");
-            }
-
-            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                try {
-                    if (generatedKeys.next()) {
-                        int id = generatedKeys.getInt(1);
-                        p.setID(id);
-                        return id;
-                    } else {
-                        throw new SQLException("Creating user failed, no ID obtained.");
-                    }
-                } finally {
-                    if (generatedKeys != null) {
-                        generatedKeys.close();
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new SQLiteRuntimeException(e);
+                                                                   Map<String, Object> contentVals,
+                                                                   boolean isPostgres,
+                                                                   String currentSchema) {
+        if (isPostgres) {
+            return buildInsertStatement(contentVals, "INSERT INTO " + currentSchema + "." + storageKey);
+        } else {
+            return buildInsertStatement(contentVals, "INSERT INTO " + storageKey);
         }
     }
 
-    private static void setArgumentToSqlStatement(PreparedStatement preparedStatement, Object arg, int index) throws SQLException {
-        if (arg instanceof String) {
-            preparedStatement.setString(index, (String)arg);
-        } else if (arg instanceof Blob) {
-            preparedStatement.setBlob(index, (Blob)arg);
-        } else if (arg instanceof Integer) {
-            preparedStatement.setInt(index, (Integer)arg);
-        } else if (arg instanceof Long) {
-            preparedStatement.setLong(index, (Long)arg);
-        } else if (arg instanceof byte[]) {
-            preparedStatement.setBinaryStream(index, new ByteArrayInputStream((byte[])arg), ((byte[])arg).length);
-        } else if(arg == null) {
-            preparedStatement.setNull(index, 0);
+    private static Pair<List<Object>, String> buildInsertOrReplaceStatement(String storageKey,
+                                                                            Map<String, Object> contentVals,
+                                                                            boolean isPostgres,
+                                                                            String currentSchema) {
+        if (isPostgres) {
+            return buildInsertStatement(contentVals, "INSERT OR REPLACE INTO " + currentSchema + "." + storageKey);
+        } else {
+            return buildInsertStatement(contentVals, "INSERT OR REPLACE INTO " + storageKey);
+        }
+    }
+
+    public static int insertToTable(Connection c, String storageKey, Persistable p, boolean isPostgres, String currentSchema) {
+        if (isPostgres) {
+            return PostgresSqlHelper.insertToTable(c, storageKey, p, currentSchema);
+        } else {
+            return SqliteSqlHelper.insertToTable(c, storageKey, p);
+        }
+    }
+
+    private static void setArgumentToSqlStatement(PreparedStatement preparedStatement, Object arg, int index, boolean isPostgres) throws SQLException {
+        if (isPostgres) {
+            PostgresSqlHelper.setArgumentToSqlStatement(preparedStatement, arg, index);
+        } else {
+            SqliteSqlHelper.setArgumentToSqlStatement(preparedStatement, arg, index);
         }
     }
 
@@ -413,7 +449,7 @@ public class SqlHelper {
      * @param storageKey name of table
      * @param p          persistable to be updated
      */
-    public static void updateId(Connection c, String storageKey, Persistable p) {
+    public static void updateId(Connection c, String storageKey, Persistable p, boolean isPostgres, String currentSchema) {
         HashMap<String, Object> map = DatabaseHelper.getMetaFieldsAndValues(p);
 
         String[] fieldNames = map.keySet().toArray(new String[map.keySet().size()]);
@@ -421,10 +457,16 @@ public class SqlHelper {
 
         Pair<String, String[]> where = org.commcare.modern.database.DatabaseHelper.createWhere(fieldNames, values, p);
 
-        String query = "UPDATE " + storageKey + " SET " + DatabaseHelper.DATA_COL + " = ? WHERE " + where.first + ";";
+        String sqlStatement;
+        if (isPostgres) {
+            sqlStatement = "UPDATE " + currentSchema + "." + storageKey;
+        } else {
+            sqlStatement = "UPDATE " + storageKey;
+        }
+        String query = sqlStatement + " SET " + DatabaseHelper.DATA_COL + " = ? WHERE " + where.first + ";";
 
         try (PreparedStatement preparedStatement = c.prepareStatement(query)){
-            setPreparedStatementArgs(preparedStatement, p, where.second);
+            setPreparedStatementArgs(preparedStatement, p, where.second, isPostgres);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
@@ -439,27 +481,11 @@ public class SqlHelper {
      * @param persistable persistable to update with
      * @param id          sql record to update
      */
-    public static void updateToTable(Connection connection, String tableName, Persistable persistable, int id) {
-        String queryStart = "UPDATE " + tableName + " SET " + DatabaseHelper.DATA_COL + " = ? ";
-        String queryEnd = " WHERE " + DatabaseHelper.ID_COL + " = ?;";
-
-        HashMap<String, Object> map = DatabaseHelper.getMetaFieldsAndValues(persistable);
-        String[] fieldNames = map.keySet().toArray(new String[map.keySet().size()]);
-        Object[] values = map.values().toArray(new Object[map.values().size()]);
-
-        StringBuilder stringBuilder = new StringBuilder(queryStart);
-        for (String fieldName : fieldNames) {
-            stringBuilder.append(", ").append(fieldName).append(" = ?");
-        }
-
-        String query = stringBuilder.append(queryEnd).toString();
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
-            int lastArgIndex = setPreparedStatementArgs(preparedStatement, persistable, values);
-            preparedStatement.setInt(lastArgIndex, id);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new SQLiteRuntimeException(e);
+    public static void updateToTable(Connection connection, String tableName, Persistable persistable, int id, boolean isPostgres, String currentSchema) {
+        if (isPostgres) {
+            PostgresSqlHelper.updateToTable(connection, tableName, persistable, id, currentSchema);
+        } else {
+            SqliteSqlHelper.updateToTable(connection, tableName, persistable, id);
         }
     }
 
@@ -472,32 +498,25 @@ public class SqlHelper {
      */
     public static int setPreparedStatementArgs(PreparedStatement preparedStatement,
                                                Persistable persistable,
-                                               Object[] values) throws SQLException {
-        byte[] blob = org.commcare.modern.database.TableBuilder.toBlob(persistable);
-        preparedStatement.setBinaryStream(1, new ByteArrayInputStream(blob), blob.length);
-        // offset to 2 since 1) SQLite is 1 indexed and 2) we set the first arg above
-        int i = 2;
-        for (Object obj : values) {
-            if (obj instanceof String) {
-                preparedStatement.setString(i, (String)obj);
-            } else if (obj instanceof Blob) {
-                preparedStatement.setBlob(i, (Blob)obj);
-            } else if (obj instanceof Integer) {
-                preparedStatement.setInt(i, (Integer)obj);
-            } else if (obj instanceof Long) {
-                preparedStatement.setLong(i, (Long)obj);
-            } else if (obj instanceof byte[]) {
-                preparedStatement.setBinaryStream(i, new ByteArrayInputStream((byte[])obj), ((byte[])obj).length);
-            } else if (obj == null) {
-                preparedStatement.setNull(i, 0);
-            }
-            i++;
+                                               Object[] values,
+                                               boolean isPostgres) throws SQLException {
+        if (isPostgres) {
+            return PostgresSqlHelper.setPreparedStatementArgs(preparedStatement, persistable, values);
+        } else {
+            return SqliteSqlHelper.setPreparedStatementArgs(preparedStatement, persistable, values);
         }
-        return i;
     }
 
-    public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String arg) {
-        String query = "DELETE FROM " + tableName + " WHERE " + whereClause + ";";
+    private static String getDeleteStatement(String tableName, boolean isPostgres, String currentSchema) {
+        if (isPostgres) {
+            return "DELETE FROM " + currentSchema + "." + tableName;
+        } else {
+            return "DELETE FROM " + tableName;
+        }
+    }
+
+    public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String arg, boolean isPostgres, String currentSchema) {
+        String query = getDeleteStatement(tableName, isPostgres, currentSchema) + " WHERE " + whereClause + ";";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
             preparedStatement.setString(1, arg);
@@ -507,8 +526,8 @@ public class SqlHelper {
         }
     }
 
-    public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String[] args) {
-        String query = "DELETE FROM " + tableName + " WHERE " + whereClause + ";";
+    public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String[] args, boolean isPostgres, String currentSchema) {
+        String query = getDeleteStatement(tableName, isPostgres, currentSchema) + " WHERE " + whereClause + ";";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
             for (int i = 1; i <= args.length; i++) {
@@ -527,8 +546,8 @@ public class SqlHelper {
      * @param tableName  name of table
      * @param id         sql record to update
      */
-    public static void deleteIdFromTable(Connection connection, String tableName, int id) {
-        String query = "DELETE FROM " + tableName + " WHERE " + DatabaseHelper.ID_COL + " = ?;";
+    public static void deleteIdFromTable(Connection connection, String tableName, int id, boolean isPostgres, String currentSchema) {
+        String query = getDeleteStatement(tableName, isPostgres, currentSchema) + " WHERE " + DatabaseHelper.ID_COL + " = ?;";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, id);
@@ -544,13 +563,16 @@ public class SqlHelper {
      * @param connection Database Connection
      * @param tableName  name of table
      */
-    public static void deleteAllFromTable(Connection connection, String tableName) {
-
-        if (!isTableExist(connection, tableName)) {
+    public static void deleteAllFromTable(Connection connection, String tableName, boolean isPostgres, String currentSchema) {
+        if (isPostgres) {
+            if (!PostgresSqlHelper.isTableExists(connection, currentSchema, tableName)) {
+                return;
+            }
+        } else if (!isTableExist(connection, tableName)) {
             return;
         }
 
-        String query = "DELETE FROM " + tableName;
+        String query = getDeleteStatement(tableName, isPostgres, currentSchema) + ";";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.execute();
         } catch (SQLException e) {
@@ -558,7 +580,7 @@ public class SqlHelper {
         }
     }
 
-    private static boolean isTableExist(Connection connection, String tableName) {
+    public static boolean isTableExist(Connection connection, String tableName) {
         ResultSet resultSet = null;
         try {
             DatabaseMetaData md = connection.getMetaData();
