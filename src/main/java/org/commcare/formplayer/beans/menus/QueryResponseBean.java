@@ -51,7 +51,7 @@ public class QueryResponseBean extends MenuBean {
                 for (int i = 0; i < selectedChoices.length; i++) {
                     int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoices[i]);
                     answerWithChoiceIndices += choiceIndex == -1 ? "" : String.valueOf(choiceIndex);
-                    answerWithChoiceIndices += i == selectedChoices.length -1 ? "" : " ";
+                    answerWithChoiceIndices += i == selectedChoices.length -1 ? "" : RemoteQuerySessionManager.MULTI_SELECT_DELIMITER;
                 }
                 currentAnswer = answerWithChoiceIndices;
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
