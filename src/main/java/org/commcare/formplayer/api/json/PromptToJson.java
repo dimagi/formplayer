@@ -16,7 +16,6 @@ import org.joda.time.DateTimeZone;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Vector;
@@ -33,7 +32,7 @@ public class PromptToJson {
      * @param questionJson the JSON object question representation being generated
      */
     public static void parseQuestion(FormEntryPrompt prompt, JSONObject questionJson) {
-        parseCaption(prompt, questionJson);
+        parseCaption(((FormEntryCaption)prompt), questionJson);
         questionJson.put("help", jsonNullIfNull(prompt.getHelpText()));
         questionJson.put("binding", jsonNullIfNull(prompt.getQuestion().getBind().getReference().toString()));
         questionJson.put("datatype", jsonNullIfNull(parseDataType(prompt)));
@@ -45,9 +44,9 @@ public class PromptToJson {
 
         if (prompt.getDataType() == Constants.DATATYPE_CHOICE || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
             questionJson.put("choices", parseSelect(prompt));
-            Vector<SelectChoice> selectChoices = prompt.getSelectChoices();
-            JSONArray captionsForChoices = parseCaptionsForChoices(prompt, selectChoices);
-            questionJson.put("choices_captions", captionsForChoices);
+            // this creates an improved choices object that contains both values and captions for each choice
+            JSONArray choicesWithCaptions = parseChoicesWithCaptions(prompt);
+            questionJson.put("choices_v2", choicesWithCaptions);
         }
     }
 
@@ -251,19 +250,33 @@ public class PromptToJson {
         return "unrecognized";
     }
 
-    private static JSONArray parseCaptionsForChoices(FormEntryPrompt prompt, Vector<SelectChoice> selectChoices) {
-        JSONArray jsonArr = new JSONArray();
+    private static JSONArray parseChoicesWithCaptions(FormEntryPrompt prompt) {
+        Vector<SelectChoice> selectChoices = prompt.getSelectChoices();
+        JSONArray choicesWithCaptions = new JSONArray();
         for (SelectChoice choice : selectChoices) {
-            String imagePath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_IMAGE);
-            String audioPath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_AUDIO);
-            String videoPath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_VIDEO);
-            JSONObject captionsForChoice = new JSONObject();
-            captionsForChoice.put("caption_image", jsonNullIfNull(imagePath));
-            captionsForChoice.put("caption_audio", jsonNullIfNull(audioPath));
-            captionsForChoice.put("caption_video", jsonNullIfNull(videoPath));
-            jsonArr.put(captionsForChoice);
+            JSONObject choiceWithCaptions = parseChoiceWithCaptions(choice, prompt);
+            choicesWithCaptions.put(choiceWithCaptions);
         }
-        return jsonArr;
+        return choicesWithCaptions;
+    }
+
+
+    private static JSONObject parseChoiceWithCaptions(SelectChoice choice, FormEntryPrompt prompt) {
+        String choiceValue = prompt.getSelectChoiceText(choice);
+        if (prompt.getControlType() == Constants.CONTROL_SELECT_MULTI && choice.getValue().contains(" ")) {
+            throw new ApplicationConfigException(String.format("Select answer options cannot contain spaces. " +
+                    "Question %s with answer %s", prompt, choiceValue));
+        }
+        String imagePath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_IMAGE);
+        String audioPath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_AUDIO);
+        String videoPath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_VIDEO);
+
+        JSONObject choicesAndCaptions = new JSONObject();
+        choicesAndCaptions.put("value", jsonNullIfNull(choiceValue));
+        choicesAndCaptions.put("caption_image", jsonNullIfNull(imagePath));
+        choicesAndCaptions.put("caption_audio", jsonNullIfNull(audioPath));
+        choicesAndCaptions.put("caption_video", jsonNullIfNull(videoPath));
+        return choicesAndCaptions;
     }
 
 }
