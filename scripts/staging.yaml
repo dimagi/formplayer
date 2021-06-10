@@ -55,7 +55,6 @@ branches:
   - sp/sqlite-postgres # Shivam April 30
   - sr/rev-rev-menusession  # Sravan May 24
   - sr/claim-message # Sravan May 24
-  - sr/hide-geo # Sravan May 25
   - jls/pragma-logging # Jenny May 26
   - multiselect # Sravan May 31
 submodules:
@@ -66,5 +65,4 @@ submodules:
       - ce/tag-triggers # Cal Nov 16
       - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
-      - sr/hidden-f # Sravan May 25
       - multiselect # Sravan May 31
