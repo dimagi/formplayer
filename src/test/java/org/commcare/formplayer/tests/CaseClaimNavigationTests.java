@@ -82,7 +82,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
     @Test
     public void testEofNavigation() throws Exception {
-        when(webClientMock.get(eq("https://www.commcarehq.org/a/shubhamgoyaltest/phone/search/?case_type=song&rating=5&commcare_blacklisted_owner_ids=fef71c7ff9d54471ab3cbd2c828b0e13")))
+        when(webClientMock.get(eq(new URI("https://www.commcarehq.org/a/shubhamgoyaltest/phone/search/?case_type=song&rating=5&commcare_blacklisted_owner_ids=fef71c7ff9d54471ab3cbd2c828b0e13"))))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
         String appName = APP_CASE_CLAIM_EOF_NAVIGATION;
         ArrayList<String> selections = new ArrayList<>();
@@ -135,7 +135,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         queryData.setInputs("search_command.m1", inputs);
 
         // return search results that doesn't have the selected case
-        when(webClientMock.get(eq("https://www.commcarehq.org/a/shubhamgoyaltest/phone/search/?case_type=song&rating=3&commcare_blacklisted_owner_ids=fef71c7ff9d54471ab3cbd2c828b0e13")))
+        when(webClientMock.get(eq(new URI("https://www.commcarehq.org/a/shubhamgoyaltest/phone/search/?case_type=song&rating=3&commcare_blacklisted_owner_ids=fef71c7ff9d54471ab3cbd2c828b0e13"))))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_child_response.xml"));
 
         // since the case claim has happened already, this should not redo the search and trigger the query above
@@ -369,10 +369,10 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     }
 
     private void configureQueryMock() throws URISyntaxException {
-        when(webClientMock.get(eq("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=song")))
+        when(webClientMock.get(eq(new URI("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=song"))))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
 
-        when(webClientMock.get("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=show"))
+        when(webClientMock.get(new URI("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=show")))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_child_response.xml"));
     }
 
