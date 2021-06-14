@@ -73,7 +73,7 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
 
         assert cacheManager.getCache("case_search")
-                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case") != null;
+                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False") != null;
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
@@ -169,11 +169,11 @@ public class CaseClaimTests extends BaseTestClass {
         verify(webClientMock, times(2)).get(uriCaptor.capture());
         List<URI> uris = uriCaptor.getAllValues();
         // when default search, prompts doesn't get included
-        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case"));
+        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False"));
         // when default search but forceManualSearch, prompts should get included
         // Subsequently when search happens as part of replaying a session, prompts should be same as the last search
         // and therefore be served through cache. Therefore there are only 2 http calls here instead of 3
-        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&name=Burt&case_type=case&state=ka&district=bang&district=hampi"));
+        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=bang&district=hampi&include_closed=False&name=Burt&state=ka"));
     }
 
     @Test
