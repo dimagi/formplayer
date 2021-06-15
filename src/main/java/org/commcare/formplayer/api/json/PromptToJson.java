@@ -272,7 +272,7 @@ public class PromptToJson {
         String videoPath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_VIDEO);
 
         JSONObject choicesAndCaptions = new JSONObject();
-        choicesAndCaptions.put("value", jsonNullIfNull(choiceValue));
+        choicesAndCaptions.put("value", choiceValue);
         choicesAndCaptions.put("caption_image", jsonNullIfNull(imagePath));
         choicesAndCaptions.put("caption_audio", jsonNullIfNull(audioPath));
         choicesAndCaptions.put("caption_video", jsonNullIfNull(videoPath));
