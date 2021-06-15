@@ -10,6 +10,7 @@ import org.commcare.util.screen.QueryScreen;
 import org.javarosa.core.model.utils.ItemSetUtils;
 import org.javarosa.core.util.OrderedHashtable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -47,13 +48,14 @@ public class QueryResponseBean extends MenuBean {
             String[] choiceLabels = null;
             if (queryPromptItem.isSelect()) {
                 String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(currentAnswer);
-                String answerWithChoiceIndices = "";
+                ArrayList<String> indicesForSelectedChoices = new ArrayList<>(selectedChoices.length);
                 for (int i = 0; i < selectedChoices.length; i++) {
                     int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoices[i]);
-                    answerWithChoiceIndices += choiceIndex == -1 ? "" : String.valueOf(choiceIndex);
-                    answerWithChoiceIndices += i == selectedChoices.length -1 ? "" : RemoteQuerySessionManager.MULTI_SELECT_DELIMITER;
+                    if (choiceIndex != -1) {
+                        indicesForSelectedChoices.add(String.valueOf(choiceIndex));
+                    }
                 }
-                currentAnswer = answerWithChoiceIndices;
+                currentAnswer = String.join(RemoteQuerySessionManager.MULTI_SELECT_DELIMITER, indicesForSelectedChoices);
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
 
