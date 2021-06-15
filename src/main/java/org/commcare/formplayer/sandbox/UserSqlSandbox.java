@@ -1,5 +1,6 @@
 package org.commcare.formplayer.sandbox;
 
+import datadog.trace.api.Trace;
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.StorageIndexedTreeElementModel;
@@ -187,6 +188,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
         return handler.getConnection();
     }
 
+    @Trace
     public void writeSyncToken() {
         User user = getLoggedInUser();
         user.setLastSyncToken(getSyncToken());
