@@ -6,10 +6,13 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.event.annotation.BeforeTestClass;
+import org.javarosa.core.services.locale.LocalizerManager;
+import org.javarosa.core.services.locale.Localization;
 
 import java.util.*;
 
@@ -21,6 +24,14 @@ import static org.springframework.test.util.AssertionErrors.assertNull;
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class FormEntryTest extends BaseTestClass{
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
+        LocalizerManager.getGlobalLocalizer().addAvailableLocale("default");
+        Localization.setLocale("default");
+    }
 
     //Integration test of form entry functions
     @Test
