@@ -64,6 +64,7 @@ public class QueryResponseBean extends MenuBean {
                     key,
                     queryPromptItem.getInput(),
                     queryPromptItem.getReceive(),
+                    queryPromptItem.getHidden(),
                     currentAnswer,
                     choiceLabels);
             count++;

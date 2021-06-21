@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.exceptions.SessionAuthUnavailableException;
 import org.commcare.formplayer.repo.FormSessionRepo;
+import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.util.Constants;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,10 @@ public class HqUserDetailsServiceTests {
     // mock this so we don't need to configure a DB
     @MockBean
     public FormSessionRepo formSessionRepo;
+
+    // mock this so we don't need to configure a DB
+    @MockBean
+    public MenuSessionRepo menuSessionRepo;
 
     @Autowired
     private ObjectMapper objectMapper;

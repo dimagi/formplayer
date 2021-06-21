@@ -16,8 +16,6 @@ import org.commcare.formplayer.aspects.SetBrowserValuesAspect;
 import org.commcare.formplayer.aspects.UserRestoreAspect;
 import org.commcare.formplayer.engine.FormplayerArchiveFileRoot;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.repo.impl.PostgresMenuSessionRepo;
 import org.commcare.formplayer.services.BrowserValuesProvider;
 import org.commcare.formplayer.services.FormattedQuestionsService;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
@@ -74,9 +72,6 @@ public class WebAppContext implements WebMvcConfigurer {
 
     @Value("${redis.password:#{null}}")
     private String redisPassword;
-
-    @Value("${detailed_tagging.domains:}")
-    private List<String> domainsWithDetailedTagging;
 
     @Value("${detailed_tagging.tag_names:}")
     private List<String> detailedTagNames;
@@ -162,14 +157,9 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public MenuSessionRepo menuSessionRepo(){
-        return new PostgresMenuSessionRepo();
-    }
-
-    @Bean
     @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
-        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), domainsWithDetailedTagging, detailedTagNames);
+        FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), detailedTagNames);
         return datadog;
     }
 
