@@ -1,5 +1,7 @@
 package org.commcare.formplayer.screens;
 
+import org.commcare.session.RemoteQuerySessionManager;
+import org.commcare.suite.model.QueryPrompt;
 import org.commcare.util.screen.QueryScreen;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -23,10 +25,18 @@ public class FormplayerQueryScreen extends QueryScreen {
      */
     public URI getUri(boolean skipDefaultPromptValues) {
         URL url = getBaseUrl();
-        Hashtable<String, String> params = getQueryParams(skipDefaultPromptValues);
+        Hashtable<String, String> queryParams = getQueryParams(skipDefaultPromptValues);
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url.toString());
-        for(String key: params.keySet()){
-            builder.queryParam(key, params.get(key));
+        for (String key : queryParams.keySet()) {
+            QueryPrompt prompt = userInputDisplays.get(key);
+            if (prompt != null && prompt.isSelect()) {
+                String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(queryParams.get(key));
+                for (String selectedChoice : selectedChoices) {
+                    builder.queryParam(key, selectedChoice);
+                }
+            } else {
+                builder.queryParam(key, queryParams.get(key));
+            }
         }
         return builder.build().toUri();
     }
