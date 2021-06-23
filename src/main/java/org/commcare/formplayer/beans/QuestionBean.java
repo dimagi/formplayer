@@ -29,7 +29,10 @@ public class QuestionBean {
     private HashMap<String, String> style = new HashMap<>();
     private String type;
     private String ix;
+    // DEPRECATED: if using the choices property, migrate to choices_v2 if possible
+    // choices_v2 contains caption data for each choice in addition to values
     private String[] choices;
+    private Object choices_v2;
     private String repeatable;
     private String exists;
     private String addChoice;
@@ -164,6 +167,14 @@ public class QuestionBean {
 
     public void setChoices(String[] choices) {
         this.choices = choices;
+    }
+
+    public Object getChoices_v2() {
+        return choices_v2;
+    }
+
+    public void setChoices_v2(Object choices_v2) {
+        this.choices_v2 = choices_v2;
     }
 
     @Override
