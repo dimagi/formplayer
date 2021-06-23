@@ -59,6 +59,5 @@ submodules:
     branches:
       - caseSearchMultiCases+ce/tag-triggers # Shubham June 15
       - ce/tag-triggers # Cal Nov 16
-      - ce/index-state-category # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
       - caseSearchMultiCases # Shubham June 15
