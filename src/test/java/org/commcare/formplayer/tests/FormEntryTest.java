@@ -2,36 +2,24 @@ package org.commcare.formplayer.tests;
 
 import com.google.common.collect.ImmutableMap;
 import org.commcare.formplayer.beans.*;
-import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
-import org.javarosa.core.services.locale.LocalizerManager;
-import org.javarosa.core.services.locale.Localization;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.util.AssertionErrors.assertNull;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class FormEntryTest extends BaseTestClass{
-
-    @Override
-    @BeforeEach
-    public void setUp() throws Exception {
-        super.setUp();
-        LocalizerManager.getGlobalLocalizer().addAvailableLocale("default");
-        Localization.setLocale("default");
-    }
 
     //Integration test of form entry functions
     @Test
@@ -240,26 +228,5 @@ public class FormEntryTest extends BaseTestClass{
         Map<String, Object> answers = new HashMap();
         SubmitResponseBean submitResponseBean = submitForm(answers, sessionId, false);
         assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, submitResponseBean.getStatus());
-    }
-
-    @Test
-    public void testQuestionBeanChoices() throws Exception {
-        NewFormResponse newFormResponse = sessionNavigate(new String[]{"0", "0"}, "multiple_choice_test", NewFormResponse.class);
-        QuestionBean[] questions = newFormResponse.getTree();
-        String[] choices = questions[0].getChoices();
-        assertEquals("With attachment", choices[0]);
-        assertEquals("Without attachment", choices[1]);
-    }
-
-    @Test
-    public void testQuestionBeanChoicesV2WithMultimedia() throws Exception {
-        NewFormResponse newFormResponse = sessionNavigate(new String[]{"0", "0"}, "multiple_choice_test", NewFormResponse.class);
-        QuestionBean[] questions = newFormResponse.getTree();
-        QuestionBean question = questions[0];
-        List<HashMap<String, String>> choices = ((List<HashMap<String, String>>)question.getChoices_v2());
-        assertEquals("With attachment", choices.get(0).get("value"));
-        assertEquals("jr://file/commcare/image/data/multiple_choice_test-with_attachment-39dky8.png", choices.get(0).get("caption_image"));
-        assertEquals("Without attachment", choices.get(1).get("value"));
-        assertNull("caption_image path is not null", choices.get(1).get("caption_image"));
     }
 }
