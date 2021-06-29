@@ -1,23 +1,24 @@
 package org.commcare.formplayer.tests;
 
-import org.commcare.formplayer.configuration.WebSecurityConfig;
-import org.commcare.formplayer.services.HqUserDetailsService;
+import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.FileUtils;
-import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.FilterChainProxy;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
@@ -38,12 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author $|-|!˅@M
  */
-@ExtendWith(SpringExtension.class)
-@WebMvcTest
-@ContextConfiguration(classes = { TestContext.class, FilterChainProxy.class, HqUserDetailsService.class, WebSecurityConfig.class })
-public class CsrfIntegrationTest extends BaseTestClass {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class CsrfIntegrationTest {
     @Value("${commcarehq.host}")
     private String host;
+
+    @LocalServerPort
+    private int port;
 
     @Autowired
     private FilterChainProxy springSecurityFilterChain;
@@ -51,10 +53,17 @@ public class CsrfIntegrationTest extends BaseTestClass {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    TestRestTemplate testRestTemplate;
+
+    protected MockMvc mockUtilController;
+
+    @InjectMocks
+    protected UtilController utilController;
+
+
     @BeforeEach
-    @Override
     public void setUp() throws Exception {
-        super.setUp();
         mockUserDetailResponse();
         mockUtilController = MockMvcBuilders
                 .standaloneSetup(utilController)
@@ -112,5 +121,22 @@ public class CsrfIntegrationTest extends BaseTestClass {
                         .contentType(MediaType.APPLICATION_JSON)
                         .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
         ).andExpect(status().isOk());
+    }
+
+    @Test
+    public void postApiCall_withHmacHeader_withoutCsrf_succeeds() throws Exception {
+        String payload = FileUtils.getFile(this.getClass(), "requests/delete_db/delete_db.json");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Cookie", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + "derp");
+        headers.add(Constants.HMAC_HEADER, "BHOwo3mPXbtWM91RO0g5HQOt+DtiiQVnCWMFsvjkWVc=");
+        HttpEntity<String> entity = new HttpEntity<>(payload, headers);
+
+        ResponseEntity<String> response = testRestTemplate.exchange(
+                "http://localhost:" + port + "/" + Constants.URL_DELETE_APPLICATION_DBS,
+                HttpMethod.POST, entity, String.class);
+
+        System.err.println(response.getStatusCode());
     }
 }
