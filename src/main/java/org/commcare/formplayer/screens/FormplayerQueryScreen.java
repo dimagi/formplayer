@@ -7,35 +7,37 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Hashtable;
+
+import com.google.common.collect.*;
 
 /**
  * Created by willpride on 8/7/16.
  */
 public class FormplayerQueryScreen extends QueryScreen {
 
-    public FormplayerQueryScreen(){
+    public FormplayerQueryScreen() {
         super(null, null, null);
     }
 
     /**
-     *
      * @param skipDefaultPromptValues don't apply the default value expressions for query prompts
      * @return case search url with search prompt values
      */
     public URI getUri(boolean skipDefaultPromptValues) {
         URL url = getBaseUrl();
-        Hashtable<String, String> queryParams = getQueryParams(skipDefaultPromptValues);
+        Multimap<String, String> queryParams = getQueryParams(skipDefaultPromptValues);
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url.toString());
         for (String key : queryParams.keySet()) {
             QueryPrompt prompt = userInputDisplays.get(key);
-            if (prompt != null && prompt.isSelect()) {
-                String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(queryParams.get(key));
-                for (String selectedChoice : selectedChoices) {
-                    builder.queryParam(key, selectedChoice);
+            for (String value : queryParams.get(key)) {
+                if (prompt != null && prompt.isSelect()) {
+                    String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(value);
+                    for (String selectedChoice : selectedChoices) {
+                        builder.queryParam(key, selectedChoice);
+                    }
+                } else {
+                    builder.queryParam(key, value);
                 }
-            } else {
-                builder.queryParam(key, queryParams.get(key));
             }
         }
         return builder.build().toUri();
