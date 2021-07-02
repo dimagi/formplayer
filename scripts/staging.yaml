@@ -54,6 +54,7 @@ branches:
   - jls/pragma-logging # Jenny May 26
   - multiCaseTypes # Shubham June 15
   - sp/csrf # Shivam June 30
+  - dedupForCaseInstance # Shubham July 2
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -62,3 +63,4 @@ submodules:
       - ce/tag-triggers # Cal Nov 16
       - ce/ensure-session # Cal Nov 20
       - caseSearchMultiCases # Shubham June 15
+      - dedupForCaseInstance # Shubham July 2
