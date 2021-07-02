@@ -449,6 +449,10 @@ public class MenuSessionRunnerService {
         return false;
     }
 
+    public void rebuildMenuSession(MenuSession menuSession) throws CommCareSessionException {
+        menuSessionFactory.rebuildSessionFromFrame(menuSession);
+    }
+
     protected static TreeReference getReference(SessionWrapper session, EntityDatum entityDatum) {
         EvaluationContext ec = session.getEvaluationContext();
         StackFrameStep stepToFrame = getStepToFrame(session);
