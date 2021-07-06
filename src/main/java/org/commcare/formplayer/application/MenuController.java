@@ -162,27 +162,10 @@ public class MenuController extends AbstractBaseController {
     public BaseResponseBean navigateToEndpoint(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                     HttpServletRequest request) throws Exception {
-        String endpointId = sessionNavigationBean.getEndpointId();
         MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
-        Endpoint endpoint = menuSession.getEndpoint(endpointId);
-        if (endpoint == null) {
-            throw new Exception("No endpoint provided to navigateToEndpoint");
-        }
-
-        SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
-        EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
-        HashMap<String, String> endpointArgs = new HashMap<>();
-        for (Map.Entry<String, String> arg : sessionNavigationBean.getEndpointArgs().entrySet()) {
-            endpointArgs.put(arg.getKey(), arg.getValue());
-        }
-        Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
-
-        sessionWrapper.executeStackOperations(endpoint.getStackOperations(), evalContext);
-        runnerService.rebuildMenuSession(menuSession);
-        sessionNavigationBean.setSelections(menuSession.getSelections());
-        System.out.println("SELECTIONS: " + String.join(", ", menuSession.getSelections()));
-
-        BaseResponseBean response = runnerService.advanceSessionWithSelections(menuSession, menuSession.getSelections());
+        BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
+                sessionNavigationBean.getEndpointId(),
+                sessionNavigationBean.getEndpointArgs());
         logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
     }

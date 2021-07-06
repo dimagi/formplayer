@@ -14,6 +14,7 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
+import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.suite.model.Text;
@@ -41,7 +42,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Arrays;
 
@@ -449,10 +452,6 @@ public class MenuSessionRunnerService {
         return false;
     }
 
-    public void rebuildMenuSession(MenuSession menuSession) throws CommCareSessionException {
-        menuSessionFactory.rebuildSessionFromFrame(menuSession);
-    }
-
     protected static TreeReference getReference(SessionWrapper session, EntityDatum entityDatum) {
         EvaluationContext ec = session.getEvaluationContext();
         StackFrameStep stepToFrame = getStepToFrame(session);
@@ -587,5 +586,23 @@ public class MenuSessionRunnerService {
             }
         }
         return null;
+    }
+
+    public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId, HashMap<String, String> endpointArgs)
+            throws Exception {
+        Endpoint endpoint = menuSession.getEndpoint(endpointId);
+        if (endpoint == null) {
+            throw new RuntimeException("No endpoint provided to navigateToEndpoint");
+        }
+        SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
+        EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
+        Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
+        sessionWrapper.executeStackOperations(endpoint.getStackOperations(), evalContext);
+        menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        String[] selections = menuSession.getSelections();
+
+        // reset session and play it back with derived selelctions
+        menuSession.resetSession();
+        return advanceSessionWithSelections(menuSession, selections);
     }
 }
