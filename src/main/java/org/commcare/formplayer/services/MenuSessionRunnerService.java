@@ -26,6 +26,7 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
@@ -588,7 +589,7 @@ public class MenuSessionRunnerService {
         return null;
     }
 
-    public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId, HashMap<String, String> endpointArgs)
+    public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId, @Nullable HashMap<String, String> endpointArgs)
             throws Exception {
         Endpoint endpoint = menuSession.getEndpoint(endpointId);
         if (endpoint == null) {
@@ -596,7 +597,17 @@ public class MenuSessionRunnerService {
         }
         SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
         EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
-        Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
+        try {
+            if (endpointArgs != null) {
+                Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
+            }
+        } catch (Endpoint.InvalidNumberOfEndpointArgumentsException e) {
+            throw new RuntimeException("Insufficient number of arguments supplied with this link." +
+                    " Expected number of arguments: " + endpoint.getArguments().size());
+        } catch (Endpoint.InvalidEndpointArgumentsException ieae) {
+            throw new RuntimeException("Argument " + ieae.getArgumentName() + " is not applicable for this link");
+        }
+
         sessionWrapper.executeStackOperations(endpoint.getStackOperations(), evalContext);
         menuSessionFactory.rebuildSessionFromFrame(menuSession);
         String[] selections = menuSession.getSelections();
