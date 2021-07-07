@@ -55,6 +55,7 @@ branches:
   - multiCaseTypes # Shubham June 15
   - sp/csrf # Shivam June 30
   - dedupForCaseInstance # Shubham July 2
+  - jls/smart-linking-mvp # Shubham July 7
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -64,3 +65,4 @@ submodules:
       - ce/ensure-session # Cal Nov 20
       - caseSearchMultiCases # Shubham June 15
       - dedupForCaseInstance # Shubham July 2
+      - master # Shubham July 7
