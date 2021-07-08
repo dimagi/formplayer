@@ -15,6 +15,7 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
+import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.suite.model.Text;
@@ -26,6 +27,7 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
@@ -42,7 +44,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Arrays;
 
@@ -600,5 +604,34 @@ public class MenuSessionRunnerService {
             }
         }
         return null;
+    }
+
+    public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId, @Nullable HashMap<String, String> endpointArgs)
+            throws Exception {
+        Endpoint endpoint = menuSession.getEndpoint(endpointId);
+        if (endpoint == null) {
+            throw new RuntimeException("No endpoint provided to navigateToEndpoint");
+        }
+        SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
+        EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
+        try {
+            if (endpointArgs != null) {
+                Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
+            }
+        } catch (Endpoint.InvalidNumberOfEndpointArgumentsException e) {
+            throw new RuntimeException("Insufficient number of arguments supplied with this link." +
+                    " Expected number of arguments: " + endpoint.getArguments().size());
+        } catch (Endpoint.InvalidEndpointArgumentsException ieae) {
+            throw new RuntimeException("Argument " + ieae.getArgumentName() + " is not applicable for this link");
+        }
+
+        restoreFactory.performTimedSync(false, false, false);
+        sessionWrapper.executeStackOperations(endpoint.getStackOperations(), evalContext);
+        menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        String[] selections = menuSession.getSelections();
+
+        // reset session and play it back with derived selelctions
+        menuSession.resetSession();
+        return advanceSessionWithSelections(menuSession, selections);
     }
 }
