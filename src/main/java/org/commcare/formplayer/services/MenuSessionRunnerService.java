@@ -608,6 +608,7 @@ public class MenuSessionRunnerService {
             throw new RuntimeException("Argument " + ieae.getArgumentName() + " is not applicable for this link");
         }
 
+        restoreFactory.performTimedSync(false, false, false);
         sessionWrapper.executeStackOperations(endpoint.getStackOperations(), evalContext);
         menuSessionFactory.rebuildSessionFromFrame(menuSession);
         String[] selections = menuSession.getSelections();
