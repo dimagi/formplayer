@@ -593,7 +593,7 @@ public class MenuSessionRunnerService {
             throws Exception {
         Endpoint endpoint = menuSession.getEndpoint(endpointId);
         if (endpoint == null) {
-            throw new RuntimeException("No endpoint provided to navigateToEndpoint");
+            throw new RuntimeException("This link does not exist. Your app may have changed so that the given link is no longer valid");
         }
         SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
         EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
