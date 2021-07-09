@@ -10,6 +10,8 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.HashMap;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
 /**
  * Do launch tests for very basic session endpoint definitions
  */
@@ -33,7 +35,6 @@ public class EndpointLaunchTest extends BaseTestClass {
 
     @Test
     public void testEndpoints() throws Exception {
-
         CommandListResponseBean commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "caselist",
                 null,
@@ -41,6 +42,7 @@ public class EndpointLaunchTest extends BaseTestClass {
         assert commandListResponse.getCommands().length == 2;
         assert commandListResponse.getCommands()[0].getDisplayText().contentEquals("Add Parent");
         assert commandListResponse.getCommands()[1].getDisplayText().contentEquals("Followup");
+        assertArrayEquals(commandListResponse.getSelections(), new String[]{"0"});
 
 
         NewFormResponse formResponse = sessionNavigateWithEndpoint(APP_NAME,
@@ -48,15 +50,17 @@ public class EndpointLaunchTest extends BaseTestClass {
                 null,
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Add Parent");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"0", "0"});
 
         HashMap<String, String> endpointArgs = new HashMap<>();
-        endpointArgs.put("case_id","94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18");
+        endpointArgs.put("case_id", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18");
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "followup",
                 endpointArgs,
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Followup");
         assert formResponse.getBreadcrumbs()[3].contentEquals("Batman Begins");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"0", "1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"});
 
         commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "parents",
@@ -65,26 +69,31 @@ public class EndpointLaunchTest extends BaseTestClass {
         assert commandListResponse.getCommands().length == 2;
         assert commandListResponse.getCommands()[0].getDisplayText().contentEquals("Add Child");
         assert commandListResponse.getCommands()[1].getDisplayText().contentEquals("Child Case List");
+        assertArrayEquals(commandListResponse.getSelections(), new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"});
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "add_child",
                 endpointArgs,
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Add Child");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "0"});
 
         // Since auto-advance is true, the endpoint endpoint advances to open the form from the case list
-        endpointArgs.put("case_id_child_case","f04bf0e8-2001-4885-a724-5497b34abe95");
+        endpointArgs.put("case_id_child_case", "f04bf0e8-2001-4885-a724-5497b34abe95");
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "child_case_list",
                 endpointArgs,
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Update Child");
         assert formResponse.getBreadcrumbs()[4].contentEquals("The Dark Knight");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "1", "f04bf0e8-2001-4885-a724-5497b34abe95"});
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "update_child",
                 endpointArgs,
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Update Child");
+        assert formResponse.getBreadcrumbs()[4].contentEquals("The Dark Knight");
+        assertArrayEquals(formResponse.getSelections(), new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "1", "f04bf0e8-2001-4885-a724-5497b34abe95"});
     }
 }

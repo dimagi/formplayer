@@ -285,10 +285,7 @@ public class MenuSessionRunnerService {
                 nextResponse.setNotification(notificationMessage);
             }
             log.info("Returning menu: " + nextResponse);
-
-            if (rebuildSession) {
-                nextResponse.setSelections(menuSession.getSelections());
-            }
+            nextResponse.setSelections(menuSession.getSelections());
             return nextResponse;
         } else {
             BaseResponseBean responseBean = new BaseResponseBean(null,
