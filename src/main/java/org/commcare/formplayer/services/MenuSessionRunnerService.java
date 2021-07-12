@@ -70,7 +70,7 @@ public class MenuSessionRunnerService {
     protected FormSessionService formSessionService;
 
     @Autowired
-    protected MenuSessionRepo menuSessionRepo;
+    protected MenuSessionService menuSessionService;
 
     @Autowired
     protected MenuSessionFactory menuSessionFactory;
@@ -357,7 +357,9 @@ public class MenuSessionRunnerService {
         BaseResponseBean postSyncResponse = resolveFormGetNext(menuSession);
         if (postSyncResponse != null) {
             // If not null, we have a form or menu to redirect to
-            postSyncResponse.setNotification(notificationMessage);
+            if (notificationMessage != null) {
+                postSyncResponse.setNotification(notificationMessage);
+            }
             return postSyncResponse;
         } else {
             // Otherwise, return use to the app root
@@ -378,7 +380,7 @@ public class MenuSessionRunnerService {
             return new NotificationMessage("Unknown error performing case claim", true, NotificationMessage.Tag.sync);
         }
         restoreFactory.performTimedSync(false, false, false);
-        return new NotificationMessage("Case claim successful.", false, NotificationMessage.Tag.sync);
+        return null;
     }
 
     /**
@@ -555,7 +557,7 @@ public class MenuSessionRunnerService {
 
 
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
-        menuSessionRepo.save(menuSession.serialize());
+        menuSessionService.saveSession(menuSession.serialize());
         FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
 
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);

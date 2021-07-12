@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
+import java.util.LinkedHashSet;
 import java.util.Vector;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -106,6 +107,27 @@ public class SqlStorageIndexedTests {
         readCase = caseStorage.getRecordForValue("case-id", "c_case_id");
         assertEquals(id, readCase.getID());
         assertEquals(caseStorage.getIDsForValue("case-type", "case_type_ipsum").size(), 3);
+
+        // Test inverse matching
+        assertEquals(caseStorage.getIDsForValues(new String[] {"case-type"},
+                                                 new String[] {"case_type_ipsum"},
+                                                 new String[] {"case-id"},
+                                                 new String[] {"c_case_id"},
+                                                 new LinkedHashSet<>()
+                                                 ).size(), 2);
+        assertEquals(caseStorage.getIDsForValues(new String[0],
+                                                 new String[0],
+                                                 new String[] {"case-id"},
+                                                 new String[] {"c_case_id"},
+                                                 new LinkedHashSet<>()
+                                                 ).size(), 2);
+        assertEquals(caseStorage.getIDsForValues(new String[] {"case-type"},
+                                                 new String[] {"case_type_ipsum"},
+                                                 new String[0],
+                                                 new String[0],
+                                                 new LinkedHashSet<>()
+                                                 ).size(), 3);
+
 
         caseStorage.remove(1);
 

@@ -14,7 +14,7 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.commcare.formplayer.repo.SerializableMenuSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
 
 import java.util.Set;

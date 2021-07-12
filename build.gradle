@@ -145,6 +145,7 @@ test {
 }
 
 task CreateSnapshotDbs(type: Test) {
+    useJUnitPlatform()
     environment('org.commcare.formplayer.test.snapshot.mode', 'write')
     filter {
         //specific test method

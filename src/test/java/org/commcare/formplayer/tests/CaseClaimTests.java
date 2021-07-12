@@ -139,6 +139,15 @@ public class CaseClaimTests extends BaseTestClass {
                 QueryResponseBean.class);
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
 
+        // Select an invalid choice in multi-select and verify it's removed from formplayer response
+        inputs.put("district", "0#,#2#,#1");
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
+
 
         queryData.setExecute("search_command.m1", true);
         responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
