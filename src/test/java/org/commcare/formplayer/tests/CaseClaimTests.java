@@ -58,6 +58,48 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testEmptySearch() throws Exception {
+        configureQueryMock();
+
+        // When no values are specified in queryData, Formplayer should return the default values
+        Hashtable<String, String> inputs = new Hashtable<>();
+        QueryData queryData = new QueryData();
+        queryData.setInputs("search_command.m1", inputs);
+        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
+
+
+        // Empty values in query Data should be propogated back as it is from Formplayer
+        inputs.put("name", "");
+        inputs.put("state", "");
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
+
+        // Empty params should be carried over to url as well
+        queryData.setExecute("search_command.m1", true);
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+        verify(webClientMock, times(1)).get(uriCaptor.capture());
+        List<URI> uris = uriCaptor.getAllValues();
+        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False&name=''&state=''"));
+    }
+
+    @Test
     public void testQueryScreen() throws Exception {
         UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
         SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
@@ -187,9 +229,6 @@ public class CaseClaimTests extends BaseTestClass {
 
     @Test
     public void testAlreadyOwnCase() throws Exception {
-
-        UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
-        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("name", "Burt");
         QueryData queryData = new QueryData();
