@@ -141,9 +141,12 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays().length == 3;
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
+        assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[1].isAllowBlankValue();
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
+        assert !queryResponseBean.getDisplays()[2].isAllowBlankValue();
 
         // test hint
         assert queryResponseBean.getDisplays()[1].getHint().contentEquals("This is a hint");
@@ -159,10 +162,10 @@ public class CaseClaimTests extends BaseTestClass {
                 true,
                 QueryResponseBean.class);
 
-        // no value in queryDictionary should reset the value to empty
-        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        // no value in queryDictionary should reset the value to null
+        assert queryResponseBean.getDisplays()[0].getValue() == null;
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Baran", "Kota"});
 

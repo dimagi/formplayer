@@ -38,6 +38,8 @@ public class DisplayElement {
     @Nullable
     private String hint;
 
+    private boolean allowBlankValue;
+
     public DisplayElement() {
     }
 
@@ -53,7 +55,8 @@ public class DisplayElement {
 
 
     public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id, @Nullable String input,
-                          @Nullable String receive, @Nullable String hidden, @Nullable String value, @Nullable String[] itemsetChoices) {
+                          @Nullable String receive, @Nullable String hidden, @Nullable String value,
+                          @Nullable String[] itemsetChoices, boolean allowBlankValue) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if (displayUnit.getImageURI() != null) {
@@ -71,6 +74,7 @@ public class DisplayElement {
         if (displayUnit.getHintText() != null) {
             this.hint = displayUnit.getHintText().evaluate(ec);
         }
+        this.allowBlankValue = allowBlankValue;
     }
 
     public String getText() {
@@ -133,6 +137,11 @@ public class DisplayElement {
 
     public String[] getItemsetChoices() {
         return itemsetChoices;
+    }
+
+    @JsonGetter(value = "allow_blank_value")
+    public boolean isAllowBlankValue() {
+        return allowBlankValue;
     }
 
     @Nullable
