@@ -61,17 +61,29 @@ public class CaseClaimTests extends BaseTestClass {
     public void testEmptySearch() throws Exception {
         configureQueryMock();
 
-        // When no values are specified in queryData, Formplayer should return the default values
-        Hashtable<String, String> inputs = new Hashtable<>();
-        QueryData queryData = new QueryData();
-        queryData.setInputs("search_command.m1", inputs);
+        // When no queryData, Formplayer should return the default values
         QueryResponseBean queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
-                queryData,
+                null,
                 true,
                 QueryResponseBean.class);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
+
+
+        // Empty query data should set all values as null
+        Hashtable<String, String> inputs = new Hashtable<>();
+        QueryData queryData = new QueryData();
+        queryData.setInputs("search_command.m1", inputs);
+        queryData.setExecute("search_command.m1", false);
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue() == null;
+        assert queryResponseBean.getDisplays()[1].getValue() == null;
         assert queryResponseBean.getDisplays()[2].getValue() == null;
 
 
@@ -96,7 +108,7 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
         verify(webClientMock, times(1)).get(uriCaptor.capture());
         List<URI> uris = uriCaptor.getAllValues();
-        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False&name=''&state=''"));
+        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False&name=&state="));
     }
 
     @Test
