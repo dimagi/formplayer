@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 /**
  * Created by willpride on 1/20/16.
  */
@@ -17,6 +19,7 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
 
     private String navMode;
 
+    @Nullable
     private Map<String, Object> answersToValidate;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
@@ -60,7 +63,7 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
         this.navMode = navMode;
     }
 
-
+    @Nullable
     public Map<String, Object> getAnswersToValidate() {
         return answersToValidate;
     }

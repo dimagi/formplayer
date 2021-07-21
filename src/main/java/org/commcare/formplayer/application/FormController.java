@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
@@ -361,29 +362,31 @@ public class FormController extends AbstractBaseController {
     // Iterate over all answers and attempt to save them to check for validity.
     private HashMap<String, ErrorBean> validateAnswers(FormEntryController formEntryController,
                                                        FormEntryModel formEntryModel,
-                                                       Map<String, Object> answers,
+                                                       @Nullable Map<String, Object> answers,
                                                        boolean skipValidation) {
         HashMap<String, ErrorBean> errors = new HashMap<>();
-        for (String key : answers.keySet()) {
-            int questionType = JsonActionUtils.getQuestionType(formEntryModel, key, formEntryModel.getForm());
-            if (!(questionType == FormEntryController.EVENT_QUESTION)) {
-                continue;
-            }
-            String answer = answers.get(key) == null ? null : answers.get(key).toString();
-            JSONObject answerResult =
-                    JsonActionUtils.questionAnswerToJson(formEntryController,
-                            formEntryModel,
-                            answer,
-                            key,
-                            false,
-                            null,
-                            skipValidation,
-                            false);
-            if (!answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
-                ErrorBean error = new ErrorBean();
-                error.setStatus(answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).toString());
-                error.setType(answerResult.getString(ApiConstants.ERROR_TYPE_KEY));
-                errors.put(key, error);
+        if (answers != null) {
+            for (String key : answers.keySet()) {
+                int questionType = JsonActionUtils.getQuestionType(formEntryModel, key, formEntryModel.getForm());
+                if (!(questionType == FormEntryController.EVENT_QUESTION)) {
+                    continue;
+                }
+                String answer = answers.get(key) == null ? null : answers.get(key).toString();
+                JSONObject answerResult =
+                        JsonActionUtils.questionAnswerToJson(formEntryController,
+                                formEntryModel,
+                                answer,
+                                key,
+                                false,
+                                null,
+                                skipValidation,
+                                false);
+                if (!answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
+                    ErrorBean error = new ErrorBean();
+                    error.setStatus(answerResult.get(ApiConstants.RESPONSE_STATUS_KEY).toString());
+                    error.setType(answerResult.getString(ApiConstants.ERROR_TYPE_KEY));
+                    errors.put(key, error);
+                }
             }
         }
         return errors;
