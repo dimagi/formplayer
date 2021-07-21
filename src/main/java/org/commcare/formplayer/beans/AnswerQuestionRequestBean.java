@@ -3,6 +3,8 @@ package org.commcare.formplayer.beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
+import java.util.Map;
+
 /**
  * Created by willpride on 1/20/16.
  */
@@ -14,6 +16,8 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
     private Object answer;
 
     private String navMode;
+
+    private Map<String, Object> answersToValidate;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public AnswerQuestionRequestBean(){}
@@ -54,5 +58,14 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
     @JsonSetter(value = "nav_mode")
     public void setNavMode(String navMode) {
         this.navMode = navMode;
+    }
+
+
+    public Map<String, Object> getAnswersToValidate() {
+        return answersToValidate;
+    }
+
+    public void setAnswersToValidate(Map<String, Object> answersToValidate) {
+        this.answersToValidate = answersToValidate;
     }
 }
