@@ -167,7 +167,8 @@ public class Constants {
     public static final String SCHEDULED_TASKS_PURGE = "scheduled_tasks.purge";
 
     // Feature Flags/Toggles
+    // These correspond to the names of StaticToggle objects in commcare-hq repo's corehq/toggles.py
 
-    // https://.commcarehq.org/hq/flags/edit/detailed_tagging/
     public static final String TOGGLE_DETAILED_TAGGING = "DETAILED_TAGGING";
+    public static final String TOGGLE_SESSION_ENDPOINTS = "SESSION_ENDPOINTS";
 }

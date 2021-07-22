@@ -4,12 +4,14 @@ import io.sentry.Sentry;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
@@ -588,6 +590,10 @@ public class MenuSessionRunnerService {
 
     public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId, @Nullable HashMap<String, String> endpointArgs)
             throws Exception {
+        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
+            throw new RuntimeException("Linking into applications has been disabled for this project.");
+        }
+
         Endpoint endpoint = menuSession.getEndpoint(endpointId);
         if (endpoint == null) {
             throw new RuntimeException("This link does not exist. Your app may have changed so that the given link is no longer valid");

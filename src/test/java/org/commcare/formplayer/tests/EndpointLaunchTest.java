@@ -1,16 +1,20 @@
 package org.commcare.formplayer.tests;
+import org.commcare.formplayer.utils.WithHqUser;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.web.util.NestedServletException;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Do launch tests for very basic session endpoint definitions
@@ -34,6 +38,18 @@ public class EndpointLaunchTest extends BaseTestClass {
     }
 
     @Test
+    @WithHqUser(enabledToggles = {})
+    public void testToggleOff() throws Exception {
+        assertThrows(NestedServletException.class, () -> {
+            CommandListResponseBean commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
+                    "nope",
+                    null,
+                    CommandListResponseBean.class);
+        });
+    }
+
+    @Test
+    @WithHqUser(enabledToggles = {TOGGLE_SESSION_ENDPOINTS})
     public void testEndpoints() throws Exception {
         CommandListResponseBean commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "caselist",
