@@ -14,6 +14,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.FilterChainProxy;
@@ -36,9 +37,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * @author $|-|!˅@M
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CsrfIntegrationTest {
     @Value("${commcarehq.host}")
@@ -137,6 +135,6 @@ public class CsrfIntegrationTest {
                 "http://localhost:" + port + "/" + Constants.URL_DELETE_APPLICATION_DBS,
                 HttpMethod.POST, entity, String.class);
 
-        System.err.println(response.getStatusCode());
+        assert response.getStatusCode() == HttpStatus.OK;
     }
 }
