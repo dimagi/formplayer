@@ -152,7 +152,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                     sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
                 }
             } else {
-                boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
             }
             Screen previousScreen = screen;
             screen = getNextScreen(needsDetail);
