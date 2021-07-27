@@ -55,7 +55,9 @@ public class QueryResponseBean extends MenuBean {
                         indicesForSelectedChoices.add(String.valueOf(choiceIndex));
                     }
                 }
-                currentAnswer = String.join(RemoteQuerySessionManager.MULTI_SELECT_DELIMITER, indicesForSelectedChoices);
+                if (indicesForSelectedChoices.size() > 0) {
+                    currentAnswer = String.join(RemoteQuerySessionManager.MULTI_SELECT_DELIMITER, indicesForSelectedChoices);
+                }
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
 
@@ -66,7 +68,8 @@ public class QueryResponseBean extends MenuBean {
                     queryPromptItem.getReceive(),
                     queryPromptItem.getHidden(),
                     currentAnswer,
-                    choiceLabels);
+                    choiceLabels,
+                    queryPromptItem.isAllowBlankValue());
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
