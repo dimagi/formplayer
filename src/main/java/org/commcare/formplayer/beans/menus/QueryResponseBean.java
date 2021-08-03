@@ -50,9 +50,13 @@ public class QueryResponseBean extends MenuBean {
                 String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(currentAnswer);
                 ArrayList<String> indicesForSelectedChoices = new ArrayList<>(selectedChoices.length);
                 for (int i = 0; i < selectedChoices.length; i++) {
-                    int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoices[i]);
-                    if (choiceIndex != -1) {
-                        indicesForSelectedChoices.add(String.valueOf(choiceIndex));
+                    if (selectedChoices[i].isEmpty()) {
+                        indicesForSelectedChoices.add("");
+                    } else {
+                        int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoices[i]);
+                        if (choiceIndex != -1) {
+                            indicesForSelectedChoices.add(String.valueOf(choiceIndex));
+                        }
                     }
                 }
                 if (indicesForSelectedChoices.size() > 0) {

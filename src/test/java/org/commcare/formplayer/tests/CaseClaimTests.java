@@ -109,6 +109,28 @@ public class CaseClaimTests extends BaseTestClass {
         verify(webClientMock, times(1)).get(uriCaptor.capture());
         List<URI> uris = uriCaptor.getAllValues();
         assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False&name=&state="));
+
+        inputs.put("state", "0");
+        inputs.put("district", "#,#1"); // select empty with a valid choice
+        queryData.setExecute("search_command.m1", false);
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("#,#1");
+
+        queryData.setExecute("search_command.m1", true);
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+        verify(webClientMock, times(2)).get(uriCaptor.capture());
+        uris = uriCaptor.getAllValues();
+        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=&district=hampi&include_closed=False&name=&state=ka"));
     }
 
     @Test
