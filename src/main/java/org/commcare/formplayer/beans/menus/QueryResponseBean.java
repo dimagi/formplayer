@@ -50,12 +50,18 @@ public class QueryResponseBean extends MenuBean {
                 String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(currentAnswer);
                 ArrayList<String> indicesForSelectedChoices = new ArrayList<>(selectedChoices.length);
                 for (int i = 0; i < selectedChoices.length; i++) {
-                    int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoices[i]);
-                    if (choiceIndex != -1) {
-                        indicesForSelectedChoices.add(String.valueOf(choiceIndex));
+                    if (selectedChoices[i].isEmpty()) {
+                        indicesForSelectedChoices.add("");
+                    } else {
+                        int choiceIndex = ItemSetUtils.getIndexOf(queryPromptItem.getItemsetBinding(), selectedChoices[i]);
+                        if (choiceIndex != -1) {
+                            indicesForSelectedChoices.add(String.valueOf(choiceIndex));
+                        }
                     }
                 }
-                currentAnswer = String.join(RemoteQuerySessionManager.MULTI_SELECT_DELIMITER, indicesForSelectedChoices);
+                if (indicesForSelectedChoices.size() > 0) {
+                    currentAnswer = String.join(RemoteQuerySessionManager.MULTI_SELECT_DELIMITER, indicesForSelectedChoices);
+                }
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }
 
@@ -66,7 +72,8 @@ public class QueryResponseBean extends MenuBean {
                     queryPromptItem.getReceive(),
                     queryPromptItem.getHidden(),
                     currentAnswer,
-                    choiceLabels);
+                    choiceLabels,
+                    queryPromptItem.isAllowBlankValue());
             count++;
         }
         setTitle(queryScreen.getScreenTitle());
