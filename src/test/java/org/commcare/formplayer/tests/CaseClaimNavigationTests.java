@@ -82,7 +82,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
     @Test
     public void testEofNavigation() throws Exception {
-        when(webClientMock.get(eq(new URI("https://www.commcarehq.org/a/shubhamgoyaltest/phone/search/?case_type=song&rating=5&commcare_blacklisted_owner_ids=fef71c7ff9d54471ab3cbd2c828b0e13"))))
+        when(webClientMock.get(eq(new URI("https://www.commcarehq.org/a/shubhamgoyaltest/phone/search/?rating=5&case_type=song&commcare_blacklisted_owner_ids=fef71c7ff9d54471ab3cbd2c828b0e13"))))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
         String appName = APP_CASE_CLAIM_EOF_NAVIGATION;
         ArrayList<String> selections = new ArrayList<>();
