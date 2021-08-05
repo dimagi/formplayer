@@ -54,6 +54,7 @@ branches:
   - dedupForCaseInstance # Shubham July 2
   - jls/smart-linking-mvp # Shubham July 7
   - blankValueSearch # Shubham July 14
+  - labelValidations # Shubham August 4
 submodules:
   libs/commcare:
     trunk: formplayer
