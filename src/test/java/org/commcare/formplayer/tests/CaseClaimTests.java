@@ -158,7 +158,7 @@ public class CaseClaimTests extends BaseTestClass {
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
-        assert caseStorage.getNumRecords() == 20;
+        assert caseStorage.getNumRecords() == 21;
 
         // When we sync afterwards, include new case and case-claim 
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
@@ -172,7 +172,7 @@ public class CaseClaimTests extends BaseTestClass {
         assert commandResponse.getCommands().length == 2;
         assert commandResponse.getSelections().length == 2;
         assert commandResponse.getSelections()[1].equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
-        assert caseStorage.getNumRecords() == 22;
+        assert caseStorage.getNumRecords() == 23;
 
         // verify search uris
         verify(webClientMock, times(2)).get(uriCaptor.capture());
