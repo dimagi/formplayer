@@ -616,7 +616,10 @@ public class MenuSessionRunnerService {
         menuSessionFactory.rebuildSessionFromFrame(menuSession);
         String[] selections = menuSession.getSelections();
 
-        // reset session and play it back with derived selelctions
+        // Cache selections so that playing back the session (below) won't get hung up on case details
+        restoreFactory.cacheSessionSelections(selections);
+
+        // reset session and play it back with derived selections
         menuSession.resetSession();
         return advanceSessionWithSelections(menuSession, selections);
     }
