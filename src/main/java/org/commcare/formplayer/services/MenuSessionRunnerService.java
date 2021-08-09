@@ -19,6 +19,7 @@ import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
+import org.commcare.suite.model.StackOperation;
 import org.commcare.suite.model.Text;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -617,7 +618,20 @@ public class MenuSessionRunnerService {
         }
 
         restoreFactory.performTimedSync(false, false, false);
-        sessionWrapper.executeStackOperations(endpoint.getStackOperations(), evalContext);
+
+        // Sync requests aren't run when executing operations, so stop and check for them after each operation
+        for (StackOperation op : endpoint.getStackOperations()) {
+            sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
+            Screen s = menuSession.getNextScreen();
+            if (s instanceof FormplayerSyncScreen) {
+                try {
+                    s.init(sessionWrapper);
+                    doSyncGetNext((FormplayerSyncScreen) s, menuSession);
+                } catch (CommCareSessionException ccse) {
+                    throw new RuntimeException("Unable to claim case.");
+                }
+            }
+        }
         menuSessionFactory.rebuildSessionFromFrame(menuSession);
         String[] selections = menuSession.getSelections();
 
