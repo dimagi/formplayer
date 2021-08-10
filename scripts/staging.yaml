@@ -52,6 +52,7 @@ name: autostaging
 branches:
   #- ce/tracing # Cal Oct 23
   - dedupForCaseInstance # Shubham July 2
+  - jls/smart-linking-mvp-endpoint-args-error+jls/smart-linking-mvp-claim-on-formplayer
   - jls/smart-linking-mvp # Shubham July 7
   - jls/smart-linking-mvp-claim-on-formplayer # Jenny August 9
   - jls/smart-linking-mvp-endpoint-args-error # Jenny Aug 10
