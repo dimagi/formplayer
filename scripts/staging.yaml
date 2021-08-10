@@ -54,6 +54,7 @@ branches:
   - dedupForCaseInstance # Shubham July 2
   - jls/smart-linking-mvp # Shubham July 7
   - jls/smart-linking-mvp-claim-on-formplayer # Jenny August 9
+  - jls/smart-linking-mvp-endpoint-args-error # Jenny Aug 10
   - blankValueSearch # Shubham July 14
 submodules:
   libs/commcare:
@@ -65,3 +66,4 @@ submodules:
       - caseSearchMultiCases # Shubham June 15
       - dedupForCaseInstance # Shubham July 2
       - allowBlankSearch # Shubham July 14
+      - jls/endpoint-args-error-formplayer # Jenny Aug 10
