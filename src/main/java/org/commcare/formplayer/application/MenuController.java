@@ -13,8 +13,11 @@ import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.modern.session.SessionWrapper;
+import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.Screen;
+import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -23,7 +26,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.commcare.suite.model.Endpoint;
 
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -148,5 +153,20 @@ public class MenuController extends AbstractBaseController {
         responseBean.setShouldRequestLocation(menuSession.locationRequestNeeded());
         responseBean.setShouldWatchLocation(menuSession.hereFunctionEvaluated());
         return responseBean;
+    }
+
+    @RequestMapping(value = Constants.URL_GET_ENDPOINT, method = RequestMethod.POST)
+    @UserLock
+    @UserRestore
+    @AppInstall
+    public BaseResponseBean navigateToEndpoint(@RequestBody SessionNavigationBean sessionNavigationBean,
+                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+                                                    HttpServletRequest request) throws Exception {
+        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
+        BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
+                sessionNavigationBean.getEndpointId(),
+                sessionNavigationBean.getEndpointArgs());
+        logNotification(response.getNotification(), request);
+        return setLocationNeeds(response, menuSession);
     }
 }
