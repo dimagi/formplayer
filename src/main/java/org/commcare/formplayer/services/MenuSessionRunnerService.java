@@ -604,11 +604,16 @@ public class MenuSessionRunnerService {
             if (endpointArgs != null) {
                 Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
             }
-        } catch (Endpoint.InvalidNumberOfEndpointArgumentsException e) {
-            throw new RuntimeException("Insufficient number of arguments supplied with this link." +
-                    " Expected number of arguments: " + endpoint.getArguments().size());
         } catch (Endpoint.InvalidEndpointArgumentsException ieae) {
-            throw new RuntimeException("Argument " + ieae.getArgumentName() + " is not applicable for this link");
+            String missingMessage = "";
+            if (ieae.hasMissingArguments()) {
+                missingMessage = String.format(" Missing arguments: %s.", String.join(", ", ieae.getMissingArguments()));
+            }
+            String unexpectedMessage = "";
+            if (ieae.hasUnexpectedArguments()) {
+                unexpectedMessage = String.format(" Unexpected arguments: %s.", String.join(", ", ieae.getUnexpectedArguments()));
+            }
+            throw new RuntimeException(String.format("Invalid arguments supplied for link.%s%s", missingMessage, unexpectedMessage));
         }
 
         restoreFactory.performTimedSync(false, false, false);
