@@ -47,7 +47,7 @@ public class QueryResponseBean extends MenuBean {
             // Map the current Answer to the itemset index of the answer
             String[] choiceLabels = null;
             if (queryPromptItem.isSelect()) {
-                String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(currentAnswer);
+                String[] selectedChoices = RemoteQuerySessionManager.extractMultipleChoices(currentAnswer);
                 ArrayList<String> indicesForSelectedChoices = new ArrayList<>(selectedChoices.length);
                 for (int i = 0; i < selectedChoices.length; i++) {
                     if (selectedChoices[i].isEmpty()) {
@@ -60,7 +60,7 @@ public class QueryResponseBean extends MenuBean {
                     }
                 }
                 if (indicesForSelectedChoices.size() > 0) {
-                    currentAnswer = String.join(RemoteQuerySessionManager.MULTI_SELECT_DELIMITER, indicesForSelectedChoices);
+                    currentAnswer = String.join(RemoteQuerySessionManager.ANSWER_DELIMITER, indicesForSelectedChoices);
                 }
                 choiceLabels = ItemSetUtils.getChoiceLabels(queryPromptItem.getItemsetBinding());
             }

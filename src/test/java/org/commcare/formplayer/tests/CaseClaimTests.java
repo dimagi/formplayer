@@ -110,15 +110,17 @@ public class CaseClaimTests extends BaseTestClass {
         List<URI> uris = uriCaptor.getAllValues();
         assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False&name=&state="));
 
+        // select empty with a valid choice
+        inputs.put("name", "#,#chris");
         inputs.put("state", "0");
-        inputs.put("district", "#,#1"); // select empty with a valid choice
+        inputs.put("district", "#,#1");
         queryData.setExecute("search_command.m1", false);
         queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
                 "caseclaim",
                 queryData,
                 true,
                 QueryResponseBean.class);
-        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("#,#chris");
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
         assert queryResponseBean.getDisplays()[2].getValue().contentEquals("#,#1");
 
@@ -130,7 +132,7 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
         verify(webClientMock, times(2)).get(uriCaptor.capture());
         uris = uriCaptor.getAllValues();
-        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=&district=hampi&include_closed=False&name=&state=ka"));
+        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=&district=hampi&include_closed=False&name=&name=chris&state=ka"));
     }
 
     @Test
