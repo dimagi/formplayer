@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.FunctionHandler;
+import org.commcare.formplayer.objects.FormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.utils.JpaTestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,9 @@ public class FormSessionRepoTest {
 
     @Autowired
     FormSessionRepo formSessionRepo;
+
+    @Autowired
+    FormDefinitionRepo formDefinitionRepo;
 
     @Autowired
     private EntityManager entityManager;
@@ -184,6 +188,25 @@ public class FormSessionRepoTest {
 
         List<String> remainingIds = jdbcTemplate.queryForList("SELECT id FROM formplayer_sessions", String.class);
         assertThat(remainingIds.size()).isEqualTo(3);
+    }
+
+    @Test
+    public void testFormDefinitionRelationship() {
+        FormDefinition formDef = new FormDefinition(
+                "appId",
+                "appVersion",
+                "formXmlns",
+                "formXml"
+        );
+        formDefinitionRepo.save(formDef);
+        SerializableFormSession session = getSession();
+        session.setFormDefinition(formDef);
+        formSessionRepo.save(session);
+        FormDefinition fetchedFormDef = session.getFormDefinition();
+        assertThat(fetchedFormDef.getAppId()).isEqualTo("appId");
+        assertThat(fetchedFormDef.getDateCreated()).isEqualTo(formDef.getDateCreated());
+        assertThat(fetchedFormDef.getAppVersion()).isEqualTo("appVersion");
+        assertThat(fetchedFormDef.getXmlns()).isEqualTo("formXmlns");
     }
 
     private SerializableFormSession getSession() {
