@@ -35,6 +35,7 @@ public class PromptToJson {
         parseCaption(prompt, questionJson);
         questionJson.put("help", jsonNullIfNull(prompt.getHelpText()));
         questionJson.put("binding", jsonNullIfNull(prompt.getQuestion().getBind().getReference().toString()));
+        questionJson.put("question_id", jsonNullIfNull(prompt.getQuestion().getBind().getReference().getNameLast()));
         questionJson.put("datatype", jsonNullIfNull(parseDataType(prompt)));
         questionJson.put("control", jsonNullIfNull(prompt.getControlType()));
         questionJson.put("required", prompt.isRequired() ? 1 : 0);
