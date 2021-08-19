@@ -2,10 +2,6 @@ package org.commcare.formplayer.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import org.commcare.formplayer.beans.menus.ErrorBean;
-
-import java.util.HashMap;
-
 /**
  * Created by willpride on 1/20/16.
  */
@@ -16,7 +12,6 @@ public class FormEntryResponseBean extends SessionResponseBean {
     private String reason;
     private String type;
     private QuestionBean event;
-    private HashMap<String, ErrorBean> errors;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
     public FormEntryResponseBean(){}
@@ -65,13 +60,5 @@ public class FormEntryResponseBean extends SessionResponseBean {
 
     public void setEvent(QuestionBean event) {
         this.event = event;
-    }
-
-    public HashMap<String, ErrorBean> getErrors() {
-        return errors;
-    }
-
-    public void setErrors(HashMap<String, ErrorBean> errors) {
-        this.errors = errors;
     }
 }
