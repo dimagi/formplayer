@@ -15,6 +15,8 @@
             <data key="commcare_project">test</data>
             <data key="commcare_last_name"/>
             <data key="commcare_phone_number"/>
+            <data key="commcare_location_id">7455e6f4780e4393a77c88568ce1e413</data>
+            <data key="commcare_location_ids">7455e6f4780e4393a77c88568ce1e413</data>
             <data key="commcare_first_name"/>
         </user_data>
     </Registration>
@@ -53,6 +55,60 @@
                 <name>Raj as than</name>
             </state>
         </state_list>
+    </fixture>
+    <fixture id="item-list:case_search_choices" user_id="d3c64e52a31b4be3bb06123cd6dec622">
+        <case_search_choices_list>
+            <case_search_choices>
+                <question>rating</question>
+                <name>*</name>
+                <value>1</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>rating</question>
+                <name>**</name>
+                <value>2</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>rating</question>
+                <name>***</name>
+                <value>3</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>rating</question>
+                <name>****</name>
+                <value>4</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>rating</question>
+                <name>*****</name>
+                <value>5</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:..(</name>
+                <value>1</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:(</name>
+                <value>2</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:-/</name>
+                <value>3</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:)</name>
+                <value>4</value>
+            </case_search_choices>
+            <case_search_choices>
+                <question>mood</question>
+                <name>:D</name>
+                <value>5</value>
+            </case_search_choices>
+        </case_search_choices_list>
     </fixture>
     <schema id="locations">
         <indices>
@@ -164,6 +220,19 @@
             <sample_choice_question>choice2</sample_choice_question>
             <sample_number_question>123</sample_number_question>
         </update>
+    </case>
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="f04bf0e8-2001-4885-a724-5497b34abe95" user_id="4bc2b147d2e03808b69351c6373defa0" date_modified="2021-02-03T10:08:41.591000Z">
+        <create>
+            <case_type>child_case</case_type>
+            <case_name>The Dark Knight</case_name>
+            <owner_id>4bc2b147d2e03808b69351c6373defa0</owner_id>
+        </create>
+        <update>
+            <date_opened>2021-02-03</date_opened>
+        </update>
+        <index>
+            <parent case_type="case">94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18</parent>
+        </index>
     </case>
     <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="f70977c4b27f44d391e118592ef8d08b" date_modified="2016-07-18T19:35:46.018000Z" user_id="4bc2b147d2e03808b69351c6373defa0">
         <create>
