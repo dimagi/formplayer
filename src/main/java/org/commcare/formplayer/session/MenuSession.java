@@ -157,7 +157,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 }
             } else {
                 log.info("This is not an entity screen");
-                boolean ret = screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
             }
             Screen previousScreen = screen;
             screen = getNextScreen(needsDetail);

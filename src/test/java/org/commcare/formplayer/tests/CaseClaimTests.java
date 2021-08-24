@@ -73,7 +73,7 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
 
         assert cacheManager.getCache("case_search")
-                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case") != null;
+                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False") != null;
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
@@ -107,8 +107,11 @@ public class CaseClaimTests extends BaseTestClass {
 
         // no value in queryDictionary should reset the value to empty
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Baran", "Kota"});
+
 
         // change selection
         inputs.put("name", "Burt");
@@ -120,8 +123,31 @@ public class CaseClaimTests extends BaseTestClass {
                 true,
                 QueryResponseBean.class);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
+
+        // check if we have districts corresponding to karnataka state
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
+
+
+        // multi-select test
+        inputs.put("district", "0#,#1"); // select 2 districts
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
+
+        // Select an invalid choice in multi-select and verify it's removed from formplayer response
+        inputs.put("district", "0#,#2#,#1");
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("0#,#1");
+
 
         queryData.setExecute("search_command.m1", true);
         responseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
@@ -152,11 +178,11 @@ public class CaseClaimTests extends BaseTestClass {
         verify(webClientMock, times(2)).get(uriCaptor.capture());
         List<URI> uris = uriCaptor.getAllValues();
         // when default search, prompts doesn't get included
-        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case"));
+        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False"));
         // when default search but forceManualSearch, prompts should get included
         // Subsequently when search happens as part of replaying a session, prompts should be same as the last search
         // and therefore be served through cache. Therefore there are only 2 http calls here instead of 3
-        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&name=Burt&case_type=case&state=ka"));
+        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=bang&district=hampi&include_closed=False&name=Burt&state=ka"));
     }
 
     @Test

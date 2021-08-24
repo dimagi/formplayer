@@ -68,7 +68,6 @@ public class MetricsAspect {
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
             AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
-            datadog.setDomain(domain);
         }
 
         SimpleTimer timer = new SimpleTimer();

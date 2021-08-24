@@ -102,6 +102,7 @@ dependencies {
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.23.0'
     implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.23.0'
+    implementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
     runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache', version: '2.8.8'
 
 
@@ -124,9 +125,6 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-inline'
     testRuntimeOnly group: 'org.skyscreamer', name: 'jsonassert'
     developmentOnly group: 'org.springframework.boot', name: 'spring-boot-devtools'
-
-    //Unmanaged Dependencies
-    testImplementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
 }
 
 test {
@@ -149,6 +147,7 @@ test {
 }
 
 task CreateSnapshotDbs(type: Test) {
+    useJUnitPlatform()
     environment('org.commcare.formplayer.test.snapshot.mode', 'write')
     filter {
         //specific test method

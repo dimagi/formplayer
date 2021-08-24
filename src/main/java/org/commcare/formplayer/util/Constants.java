@@ -49,7 +49,7 @@ public class Constants {
 
     // Change this version when a backwards incompatible change is made to the
     // mobile sqlite dbs.
-    public static final String SQLITE_DB_VERSION = "V6";
+    public static final String SQLITE_DB_VERSION = "V7";
 
     //Menus
     public static final String MENU_MODULE = "modules";
@@ -140,6 +140,7 @@ public class Constants {
         public static final String DOWNLOAD_RESTORE = "download_restore";
         public static final String COMPLETE_RESTORE = "complete_restore";
         public static final String VALIDATE_SUBMISSION = "validate_submission";
+        public static final String VALIDATE_ANSWERS = "validate_answers";
         public static final String END_OF_FORM_NAV = "end_of_form_navigation";
 
         public static final String GET_SESSION = "get_session";
@@ -164,4 +165,9 @@ public class Constants {
     // End Datadog metrics
 
     public static final String SCHEDULED_TASKS_PURGE = "scheduled_tasks.purge";
+
+    // Feature Flags/Toggles
+
+    // https://.commcarehq.org/hq/flags/edit/detailed_tagging/
+    public static final String TOGGLE_DETAILED_TAGGING = "DETAILED_TAGGING";
 }
