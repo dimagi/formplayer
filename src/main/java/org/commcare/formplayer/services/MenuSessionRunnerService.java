@@ -4,18 +4,22 @@ import io.sentry.Sentry;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.objects.QueryData;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
+import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
+import org.commcare.suite.model.StackOperation;
 import org.commcare.suite.model.Text;
 import org.commcare.util.screen.*;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -25,6 +29,7 @@ import org.javarosa.core.model.instance.TreeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
@@ -41,7 +46,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Arrays;
 
@@ -281,10 +288,7 @@ public class MenuSessionRunnerService {
                 nextResponse.setNotification(notificationMessage);
             }
             log.info("Returning menu: " + nextResponse);
-
-            if (rebuildSession) {
-                nextResponse.setSelections(menuSession.getSelections());
-            }
+            nextResponse.setSelections(menuSession.getSelections());
             return nextResponse;
         } else {
             BaseResponseBean responseBean = new BaseResponseBean(null,
@@ -583,5 +587,59 @@ public class MenuSessionRunnerService {
             }
         }
         return null;
+    }
+
+    public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId, @Nullable HashMap<String, String> endpointArgs)
+            throws Exception {
+        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
+            throw new RuntimeException("Linking into applications has been disabled for this project.");
+        }
+
+        Endpoint endpoint = menuSession.getEndpoint(endpointId);
+        if (endpoint == null) {
+            throw new RuntimeException("This link does not exist. Your app may have changed so that the given link is no longer valid");
+        }
+        SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
+        EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
+        try {
+            if (endpointArgs != null) {
+                Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
+            }
+        } catch (Endpoint.InvalidEndpointArgumentsException ieae) {
+            String missingMessage = "";
+            if (ieae.hasMissingArguments()) {
+                missingMessage = String.format(" Missing arguments: %s.", String.join(", ", ieae.getMissingArguments()));
+            }
+            String unexpectedMessage = "";
+            if (ieae.hasUnexpectedArguments()) {
+                unexpectedMessage = String.format(" Unexpected arguments: %s.", String.join(", ", ieae.getUnexpectedArguments()));
+            }
+            throw new RuntimeException(String.format("Invalid arguments supplied for link.%s%s", missingMessage, unexpectedMessage));
+        }
+
+        restoreFactory.performTimedSync(false, false, false);
+
+        // Sync requests aren't run when executing operations, so stop and check for them after each operation
+        for (StackOperation op : endpoint.getStackOperations()) {
+            sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
+            Screen s = menuSession.getNextScreen();
+            if (s instanceof FormplayerSyncScreen) {
+                try {
+                    s.init(sessionWrapper);
+                    doSyncGetNext((FormplayerSyncScreen) s, menuSession);
+                } catch (CommCareSessionException ccse) {
+                    throw new RuntimeException("Unable to claim case.");
+                }
+            }
+        }
+        menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        String[] selections = menuSession.getSelections();
+
+        // Cache selections so that playing back the session (below) won't get hung up on case details
+        restoreFactory.cacheSessionSelections(selections);
+
+        // reset session and play it back with derived selections
+        menuSession.resetSession();
+        return advanceSessionWithSelections(menuSession, selections);
     }
 }
