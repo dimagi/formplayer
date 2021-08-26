@@ -15,6 +15,12 @@ import java.util.Hashtable;
 
 /**
  * Screen to make a sync request to HQ after a case claim
+ *
+ * This ignores the OkHttpClient logic from SyncScreen.
+ * Calling handleInputAndUpdateSession directly causes okhttp3.Credentials
+ * to throw an error due to username being null. Instead of using handleInputAndUpdateSession
+ * to execute the sync request, formplayer just grabs the url from this screen and then
+ * posts is using WebClient - see MenuSessionRunnerService.doSync.
  */
 public class FormplayerSyncScreen extends SyncScreen {
 
@@ -38,7 +44,6 @@ public class FormplayerSyncScreen extends SyncScreen {
             Hashtable<String, String> params = syncPost.getEvaluatedParams(sessionWrapper.getEvaluationContext());
             queryParams = new LinkedMultiValueMap<String, String>();
             if (asUser != null) {
-
                 queryParams.add("commcare_login_as", asUser);
             }
             for (String key: params.keySet()){
