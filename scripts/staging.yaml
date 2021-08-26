@@ -53,6 +53,7 @@ branches:
   #- ce/tracing # Cal Oct 23
   - dedupForCaseInstance # Shubham July 2
   - jls/smart-linking-mvp # Shubham July 7
+  - jls/smart-linking-mvp-debug
   - blankValueSearch # Shubham July 14
   - questionIdToWebApps # Shubham Aug 24
 submodules:
