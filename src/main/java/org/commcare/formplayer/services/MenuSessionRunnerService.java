@@ -176,8 +176,7 @@ public class MenuSessionRunnerService {
 
         menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
         menuResponseBean.setAppId(menuSession.getAppId());
-        menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
-                ", App Version: " + menuSession.getAppVersion());
+        menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
         menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
         return menuResponseBean;
     }
@@ -545,6 +544,10 @@ public class MenuSessionRunnerService {
             String formName = formResponseBean.getTitle();
             datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, formName);
             Sentry.setTag(Constants.FORM_NAME_TAG, formName);
+            formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
+            formResponseBean.setAppId(menuSession.getAppId());
+            formResponseBean.setAppVersion(menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
+            formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             return formResponseBean;
         } else {
             return null;
