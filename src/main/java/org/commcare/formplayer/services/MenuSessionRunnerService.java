@@ -114,8 +114,10 @@ public class MenuSessionRunnerService {
                                          QueryData queryData,
                                          int casesPerPage) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
+        log.info("[jls] in getNextMenu");
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
+            log.info("[jls] nextScreen is null, starting form entry");
             String assertionFailure = getAssertionFailure(menuSession);
             if (assertionFailure != null) {
                 BaseResponseBean responseBean = new BaseResponseBean("App Configuration Error",
@@ -174,6 +176,7 @@ public class MenuSessionRunnerService {
             throw new Exception("Unable to recognize next screen: " + nextScreen);
         }
 
+        log.info("[jls] Setting app id to " + menuSession.getAppId());
         menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
         menuResponseBean.setAppId(menuSession.getAppId());
         menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
@@ -218,6 +221,7 @@ public class MenuSessionRunnerService {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
+        log.info("[jls] in advanceSessionWithSelections");
         if (selections == null) {
             return getNextMenu(
                     menuSession,
@@ -233,6 +237,7 @@ public class MenuSessionRunnerService {
         boolean rebuildSession = false;
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
+            log.info("[jls] next selection = " + selection);
 
             boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
 
@@ -272,6 +277,7 @@ public class MenuSessionRunnerService {
             }
         }
 
+        log.info("[jls] done with loop");
         nextResponse = getNextMenu(
                 menuSession,
                 detailSelection,
