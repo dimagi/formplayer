@@ -22,6 +22,7 @@ import org.commcare.modern.util.Pair;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
 import org.javarosa.core.services.locale.LocalizerManager;
+import org.javarosa.core.services.locale.Localization;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -181,6 +182,8 @@ public class BaseTestClass {
         restoreFactoryMock.getSQLiteDB().closeConnection();
         PrototypeUtils.setupThreadLocalPrototypes();
         LocalizerManager.setUseThreadLocalStrategy(true);
+        LocalizerManager.getGlobalLocalizer().addAvailableLocale("default");
+        Localization.setLocale("default");
         new SQLiteProperties().setDataDir(getDatabaseFolderRoot());
         MockTimezoneProvider tzProvider = new MockTimezoneProvider();
         DateUtils.setTimezoneProvider(tzProvider);
