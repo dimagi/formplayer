@@ -28,16 +28,8 @@ public class FormplayerQueryScreen extends QueryScreen {
         Multimap<String, String> queryParams = getQueryParams(skipDefaultPromptValues);
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url.toString());
         for (String key : queryParams.keySet()) {
-            QueryPrompt prompt = userInputDisplays.get(key);
             for (String value : queryParams.get(key)) {
-                if (prompt != null) {
-                    String[] choices = RemoteQuerySessionManager.extractMultipleChoices(value);
-                    for (String choice : choices) {
-                        builder.queryParam(key, choice);
-                    }
-                } else {
-                    builder.queryParam(key, value);
-                }
+                builder.queryParam(key, value);
             }
         }
         return builder.build().toUri();
