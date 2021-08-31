@@ -133,7 +133,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      */
     public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch, boolean autoAdvanceMenu) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
-        log.info("Screen " + screen + " handling input " + input);
+        log.info("Screen " + screen + " handling input " + input + " (and confirmed is " + confirmed + ")");
         if (screen == null) {
             return false;
         }
@@ -150,6 +150,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                     }
                     log.info("[jls] handling input " + input + " with an EntityScreen");
                     boolean retVal = screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                    // JLS: here, can I check screen.getHighlightedEntity and then call screen.updateSession (maybe only if confirmed)?
                     log.info("[jls] ...handleInputAndUpdateSession returned " + retVal);
                 } else {
                     sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
