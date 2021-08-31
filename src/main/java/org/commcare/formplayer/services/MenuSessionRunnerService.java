@@ -238,7 +238,9 @@ public class MenuSessionRunnerService {
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
+            log.info("[jls] in main loop, handling input " + selection);
             boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+            log.info("[jls] ...handleInput returned " + gotNextScreen);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -331,7 +333,9 @@ public class MenuSessionRunnerService {
             EntityScreen entityScreen = (EntityScreen)nextScreen;
             entityScreen.evaluateAutoLaunch(nextInput);
             if (entityScreen.getAutoLaunchAction() != null) {
-                menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+                log.info("[jls] in handleAutoLaunch, handling input " + selection);
+                boolean retVal = menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+                log.info("[jls] ...handleInput returned " + retVal);
                 nextScreen = menuSession.getNextScreen(needsDetail);
             }
         }
@@ -592,6 +596,7 @@ public class MenuSessionRunnerService {
 
     public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId, @Nullable HashMap<String, String> endpointArgs)
             throws Exception {
+        log.info("[jls] Evaluating endpoint with id " + endpointId);
         if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
             throw new RuntimeException("Linking into applications has been disabled for this project.");
         }
@@ -622,6 +627,7 @@ public class MenuSessionRunnerService {
 
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
+            //log.info("[jls] Executing operation: " + op);
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
             Screen s = menuSession.getNextScreen();
             if (s instanceof FormplayerSyncScreen) {
@@ -635,9 +641,13 @@ public class MenuSessionRunnerService {
         }
         menuSessionFactory.rebuildSessionFromFrame(menuSession);
         String[] selections = menuSession.getSelections();
+        log.info("[jls] selections consist of " + String.join(", ", selections));
 
         // Cache selections so that playing back the session (below) won't get hung up on case details
-        restoreFactory.cacheSessionSelections(selections);
+        for (int i = 1; i <= selections.length; i++) {
+            log.info("[jls] caching selections " + String.join(", ", Arrays.copyOfRange(selections, 0, i)));
+            restoreFactory.cacheSessionSelections(Arrays.copyOfRange(selections, 0, i));
+        }
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
