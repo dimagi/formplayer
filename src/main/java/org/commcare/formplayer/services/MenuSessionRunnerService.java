@@ -644,7 +644,9 @@ public class MenuSessionRunnerService {
         log.info("[jls] selections consist of " + String.join(", ", selections));
 
         // Cache selections so that playing back the session (below) won't get hung up on case details
-        restoreFactory.cacheSessionSelections(selections);
+        for (int i = 1; i <= selections.length; i++) {
+            restoreFactory.cacheSessionSelections(Arrays.copyOfRange(selections, 0, i));
+        }
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
