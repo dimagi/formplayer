@@ -645,6 +645,7 @@ public class MenuSessionRunnerService {
 
         // Cache selections so that playing back the session (below) won't get hung up on case details
         for (int i = 1; i <= selections.length; i++) {
+            log.info("[jls] caching selections " + String.join(", ", Arrays.copyOfRange(selections, 0, i)));
             restoreFactory.cacheSessionSelections(Arrays.copyOfRange(selections, 0, i));
         }
 
