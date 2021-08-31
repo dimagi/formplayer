@@ -58,6 +58,66 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testDefaultsOverride() throws Exception {
+        configureQueryMock();
+
+        // 1. No user inputs
+        Hashtable<String, String> inputs = new Hashtable<>();
+        QueryData queryData = new QueryData();
+        queryData.setInputs("search_command.m1", inputs);
+        queryData.setExecute("search_command.m1", true);
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+
+
+        // 2. Override default with an input not in defaults
+        inputs.put("case_type", "case4");
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+
+        // 3. Override default with an input that is present in defaults
+        inputs.put("case_type", "case2");
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+
+        // 4. Override default with multiple inputs one valid and other invalid
+        inputs.put("case_type", "case2#,#case4");
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+
+        // 5. Add an user input not present in defaults
+        inputs.put("name", "chris");
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+
+        verify(webClientMock, times(3)).get(uriCaptor.capture());
+        List<URI> uris = uriCaptor.getAllValues();
+        // 1 and 2
+        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False"));
+
+        // 3 and 4
+        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case2&include_closed=False"));
+
+        // 5
+        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case2&name=chris&include_closed=False"));
+    }
+
+    @Test
     public void testEmptySearch() throws Exception {
         configureQueryMock();
 
@@ -108,7 +168,7 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
         verify(webClientMock, times(1)).get(uriCaptor.capture());
         List<URI> uris = uriCaptor.getAllValues();
-        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False&name=&state="));
+        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&name=&include_closed=False&state="));
 
         // select empty with a valid choice
         inputs.put("name", "#,#chris");
@@ -132,7 +192,7 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
         verify(webClientMock, times(2)).get(uriCaptor.capture());
         uris = uriCaptor.getAllValues();
-        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=&district=hampi&include_closed=False&name=&name=chris&state=ka"));
+        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=&district=hampi&name=&name=chris&include_closed=False&state=ka"));
     }
 
     @Test
@@ -162,7 +222,7 @@ public class CaseClaimTests extends BaseTestClass {
                 null,
                 true,
                 QueryResponseBean.class);
-        assert queryResponseBean.getDisplays().length == 3;
+        assert queryResponseBean.getDisplays().length == 4;
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
         assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();
@@ -263,7 +323,7 @@ public class CaseClaimTests extends BaseTestClass {
         // when default search but forceManualSearch, prompts should get included
         // Subsequently when search happens as part of replaying a session, prompts should be same as the last search
         // and therefore be served through cache. Therefore there are only 2 http calls here instead of 3
-        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=bang&district=hampi&include_closed=False&name=Burt&state=ka"));
+        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=bang&district=hampi&name=Burt&include_closed=False&state=ka"));
     }
 
     @Test
