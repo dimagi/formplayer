@@ -68,4 +68,3 @@ submodules:
       - allowBlankSearch # Shubham July 14
       - defaultsOverride # Shubham Aug 31
       - revert-1029-revert-1021-jls/cli-fixes-formplayer # Jenny Aug 31
-      - jls/perhaps-fix-jenkins # Jenny Aug 31
