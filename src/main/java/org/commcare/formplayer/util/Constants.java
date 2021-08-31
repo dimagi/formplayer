@@ -26,6 +26,7 @@ public class Constants {
     public static final String URL_UPDATE = "update";
     public static final String URL_INITIAL_MENU_NAVIGATION = "navigate_menu_start";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
+    public static final String URL_GET_ENDPOINT = "get_endpoint";
     public static final String URL_GET_DETAILS = "get_details";
     public static final String URL_GET_SESSIONS = "get_sessions";
     public static final String URL_SERVER_UP = "serverup";
@@ -167,7 +168,8 @@ public class Constants {
     public static final String SCHEDULED_TASKS_PURGE = "scheduled_tasks.purge";
 
     // Feature Flags/Toggles
+    // These correspond to the names of StaticToggle objects in commcare-hq repo's corehq/toggles.py
 
-    // https://.commcarehq.org/hq/flags/edit/detailed_tagging/
     public static final String TOGGLE_DETAILED_TAGGING = "DETAILED_TAGGING";
+    public static final String TOGGLE_SESSION_ENDPOINTS = "SESSION_ENDPOINTS";
 }
