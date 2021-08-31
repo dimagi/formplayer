@@ -636,8 +636,11 @@ public class MenuSessionRunnerService {
         menuSessionFactory.rebuildSessionFromFrame(menuSession);
         String[] selections = menuSession.getSelections();
 
-        // Cache selections so that playing back the session (below) won't get hung up on case details
-        restoreFactory.cacheSessionSelections(selections);
+        // Cache selections so that playing back the session below won't get hung up on case details when it hits
+        // a case id, in MenuSession.handleInput. Any subset of selections that ends in a case id needs to be cached.
+        for (int i = 1; i <= selections.length; i++) {
+            restoreFactory.cacheSessionSelections(Arrays.copyOfRange(selections, 0, i));
+        }
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
