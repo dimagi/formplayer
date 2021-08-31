@@ -20,8 +20,11 @@ import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Hashtable;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.Matchers.any;
@@ -58,63 +61,79 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
-    public void testDefaultsOverride() throws Exception {
+    public void testDefaultsOverrideWithNoUserInputs() throws Exception {
         configureQueryMock();
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                getQueryDataWithInput(null, null),
+                true,
+                EntityListResponse.class);
+        verifyUri(1, "http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False");
+    }
 
-        // 1. No user inputs
+    @Test
+    public void testDefaultsOverrideWithInvalidUserInputs() throws Exception {
+        configureQueryMock();
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                getQueryDataWithInput("case_type", "case4"),
+                true,
+                EntityListResponse.class);
+        verifyUri(1, "http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False");
+    }
+
+    @Test
+    public void testDefaultsOverrideWithValidUserInputs() throws Exception {
+        configureQueryMock();
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                getQueryDataWithInput("case_type", "case2"),
+                true,
+                EntityListResponse.class);
+        verifyUri(1, "http://localhost:8000/a/test/phone/search/?case_type=case2&include_closed=False");
+    }
+
+    @Test
+    public void testDefaultsOverrideWithMultipleUserInputs() throws Exception {
+        configureQueryMock();
+        // Override default with multiple inputs one valid and other invalid
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                getQueryDataWithInput("case_type", "case2#,#case4"),
+                true,
+                EntityListResponse.class);
+        verifyUri(1, "http://localhost:8000/a/test/phone/search/?case_type=case2&include_closed=False");
+    }
+
+    @Test
+    public void testDefaultsOverrideWithInputWithoutDefault() throws Exception {
+        configureQueryMock();
+        // Add a user input for a param that has no defaults
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                getQueryDataWithInput("name", "chris"),
+                true,
+                EntityListResponse.class);
+        verifyUri(1, "http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&name=chris&include_closed=False");
+    }
+
+    private void verifyUri(int noOfTimes, String... uri) throws URISyntaxException {
+        verify(webClientMock, times(noOfTimes)).get(uriCaptor.capture());
+        List<URI> uris = uriCaptor.getAllValues();
+        for (int i = 0; i < uri.length; i++) {
+            assert uris.get(i).equals(new URI(uri[i]));
+        }
+    }
+
+    private QueryData getQueryDataWithInput(@Nullable String key, @Nullable String value) {
         Hashtable<String, String> inputs = new Hashtable<>();
+        if (key != null) {
+            inputs.put(key, value);
+        }
         QueryData queryData = new QueryData();
         queryData.setInputs("search_command.m1", inputs);
         queryData.setExecute("search_command.m1", true);
-        sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                true,
-                EntityListResponse.class);
-
-
-        // 2. Override default with an input not in defaults
-        inputs.put("case_type", "case4");
-        sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                true,
-                EntityListResponse.class);
-
-        // 3. Override default with an input that is present in defaults
-        inputs.put("case_type", "case2");
-        sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                true,
-                EntityListResponse.class);
-
-        // 4. Override default with multiple inputs one valid and other invalid
-        inputs.put("case_type", "case2#,#case4");
-        sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                true,
-                EntityListResponse.class);
-
-        // 5. Add an user input not present in defaults
-        inputs.put("name", "chris");
-        sessionNavigateWithQuery(new String[]{"1", "action 1"},
-                "caseclaim",
-                queryData,
-                true,
-                EntityListResponse.class);
-
-        verify(webClientMock, times(3)).get(uriCaptor.capture());
-        List<URI> uris = uriCaptor.getAllValues();
-        // 1 and 2
-        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False"));
-
-        // 3 and 4
-        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case2&include_closed=False"));
-
-        // 5
-        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case2&name=chris&include_closed=False"));
+        return queryData;
     }
 
     @Test
