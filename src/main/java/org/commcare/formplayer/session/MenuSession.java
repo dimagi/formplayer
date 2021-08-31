@@ -148,12 +148,16 @@ public class MenuSession implements HereFunctionHandlerListener {
                     if (screen.shouldBeSkipped()) {
                         return handleInput(input, true, confirmed, allowAutoLaunch, autoAdvanceMenu);
                     }
-                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                    log.info("[jls] handling input " + input + " with an EntityScreen");
+                    boolean retVal = screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                    log.info("[jls] ...handleInputAndUpdateSession returned " + retVal);
                 } else {
                     sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
                 }
             } else {
-                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                log.info("[jls] handling input " + input + " with something else, a " + screen);
+                boolean retVal = screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                log.info("[jls] ...handleInputAndUpdateSession returned " + retVal);
             }
             Screen previousScreen = screen;
             screen = getNextScreen(needsDetail);

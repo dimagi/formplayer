@@ -238,7 +238,9 @@ public class MenuSessionRunnerService {
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
+            log.info("[jls] in main loop, handling input " + selection);
             boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+            log.info("[jls] ...handleInput returned " + gotNextScreen);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -331,7 +333,9 @@ public class MenuSessionRunnerService {
             EntityScreen entityScreen = (EntityScreen)nextScreen;
             entityScreen.evaluateAutoLaunch(nextInput);
             if (entityScreen.getAutoLaunchAction() != null) {
-                menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+                log.info("[jls] in handleAutoLaunch, handling input " + selection);
+                boolean retVal = menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+                log.info("[jls] ...handleInput returned " + retVal);
                 nextScreen = menuSession.getNextScreen(needsDetail);
             }
         }
