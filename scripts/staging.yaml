@@ -56,6 +56,7 @@ branches:
   - jls/smart-linking-mvp-set-app-id # Jenny Aug 26
   - blankValueSearch # Shubham July 14
   - questionIdToWebApps # Shubham Aug 24
+  - defaultsOverride # Shubham Aug 31
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -66,3 +67,4 @@ submodules:
       - caseSearchMultiCases # Shubham June 15
       - dedupForCaseInstance # Shubham July 2
       - allowBlankSearch # Shubham July 14
+      - defaultsOverride # Shubham Aug 31
