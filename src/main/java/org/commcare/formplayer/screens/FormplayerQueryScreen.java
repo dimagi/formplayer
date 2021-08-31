@@ -30,10 +30,10 @@ public class FormplayerQueryScreen extends QueryScreen {
         for (String key : queryParams.keySet()) {
             QueryPrompt prompt = userInputDisplays.get(key);
             for (String value : queryParams.get(key)) {
-                if (prompt != null && prompt.isSelect()) {
-                    String[] selectedChoices = RemoteQuerySessionManager.extractSelectChoices(value);
-                    for (String selectedChoice : selectedChoices) {
-                        builder.queryParam(key, selectedChoice);
+                if (prompt != null) {
+                    String[] choices = RemoteQuerySessionManager.extractMultipleChoices(value);
+                    for (String choice : choices) {
+                        builder.queryParam(key, choice);
                     }
                 } else {
                     builder.queryParam(key, value);
