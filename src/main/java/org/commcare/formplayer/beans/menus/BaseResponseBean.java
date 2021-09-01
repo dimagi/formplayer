@@ -2,8 +2,10 @@ package org.commcare.formplayer.beans.menus;
 
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.SessionUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -98,8 +100,15 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         return selections;
     }
 
-    public void setSelections(String[] selections) {
+    public void setSelections(String[] selections, RestoreFactory restoreFactory) {
         this.selections = selections;
+
+        // When selections are set manually, the session is likely going to be played back automatically.
+        // Cache selections so that playing back the session won't get hung up on case details when it hits
+        // a case id, in MenuSession.handleInput. Any subset of selections that ends in a case id needs to be cached.
+        for (int i = 1; i <= selections.length; i++) {
+            restoreFactory.cacheSessionSelections(Arrays.copyOfRange(selections, 0, i));
+        }
     }
 
     public HashMap<String, String> getTranslations() {

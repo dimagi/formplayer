@@ -287,7 +287,7 @@ public class MenuSessionRunnerService {
                 nextResponse.setNotification(notificationMessage);
             }
             log.info("Returning menu: " + nextResponse);
-            nextResponse.setSelections(menuSession.getSelections());
+            nextResponse.setSelections(menuSession.getSelections(), restoreFactory);
             return nextResponse;
         } else {
             BaseResponseBean responseBean = new BaseResponseBean(null,
@@ -435,7 +435,7 @@ public class MenuSessionRunnerService {
             nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
             handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
             BaseResponseBean response = getNextMenu(menuSession);
-            response.setSelections(menuSession.getSelections());
+            response.setSelections(menuSession.getSelections(), restoreFactory);
             return response;
         }
         return null;
@@ -635,9 +635,6 @@ public class MenuSessionRunnerService {
         }
         menuSessionFactory.rebuildSessionFromFrame(menuSession);
         String[] selections = menuSession.getSelections();
-
-        // Cache selections so that playing back the session (below) won't get hung up on case details
-        restoreFactory.cacheSessionSelections(selections);
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
