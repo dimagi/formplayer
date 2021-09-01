@@ -130,6 +130,8 @@ public class FormSession {
                 postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
+        // try to save the form def before initializing
+        session.setFormXml(FormDefStringSerializer.serialize(formDef));
 
         formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
@@ -147,7 +149,7 @@ public class FormSession {
             session.setCurrentIndex(formController.getFormIndex().toString());
         }
         // must be done after formDef is initialized
-        session.setFormXml(FormDefStringSerializer.serialize(formDef));
+        // session.setFormXml(FormDefStringSerializer.serialize(formDef));
     }
 
     /**
