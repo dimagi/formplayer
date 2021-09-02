@@ -20,6 +20,7 @@ public class QuestionBean {
     private String caption;
 
     private String binding;
+    private String question_id;
     private int required;
     private int relevant;
     private Object answer;
@@ -246,5 +247,13 @@ public class QuestionBean {
 
     public String getOutput() {
         return output;
+    }
+
+    public String getQuestion_id() {
+        return question_id;
+    }
+
+    public void setQuestion_id(String question_id) {
+        this.question_id = question_id;
     }
 }
