@@ -39,14 +39,20 @@ allprojects{
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://jitpack.io" // jitpack required for kxml2
+    }
+    maven {
+        url "https://dl.bintray.com/unverbraucht/java9-fixed-jars" // repo for fetching `xmlpull` dependency that's java 9 enabled
+    }
 }
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 idea {
     module {
@@ -105,10 +111,10 @@ dependencies {
 
 
     implementation fileTree(dir: 'libs', include: '*.jar')
-    implementation project(path: ':commcare', configuration: 'api')
+    implementation project(path: ':commcare', configuration: 'ccapi')
     implementation project(path: ':commcare', configuration: 'translate')
 
-    testImplementation project(path: ':commcare', configuration: 'api')
+    testImplementation project(path: ':commcare', configuration: 'ccapi')
 
     // #### DEV / TEST DEPENDENCIES
     //Versions managed by Spring Dependency Management
