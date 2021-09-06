@@ -28,6 +28,8 @@ public class FormEntryTest extends BaseTestClass{
         configureRestoreFactory("test", "test");
 
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/question_types.xml");
+        QuestionBean[] questions = newSessionResponse.getTree();
+        assertEquals("intro", questions[0].getQuestion_id());
 
         String sessionId = newSessionResponse.getSessionId();
 
