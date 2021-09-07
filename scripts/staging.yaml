@@ -50,7 +50,7 @@
 trunk: master
 name: autostaging
 branches:
-  - ce/tracing # Cal Oct 23
+  - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - dedupForCaseInstance # Shubham July 2
   - jls/smart-linking-mvp # Shubham July 7
   - jls/smart-linking-mvp-cache-all-selections-variants # Jenny Aug 31
@@ -62,7 +62,7 @@ submodules:
     trunk: formplayer
     branches:
       - caseSearchMultiCases+ce/tag-triggers # Shubham June 15
-      - ce/tag-triggers # Cal Nov 16
+      - ce/tracing # 
       - ce/ensure-session # Cal Nov 20
       - caseSearchMultiCases # Shubham June 15
       - dedupForCaseInstance # Shubham July 2
