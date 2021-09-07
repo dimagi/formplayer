@@ -436,7 +436,6 @@ public class MenuSessionRunnerService {
             handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
             BaseResponseBean response = getNextMenu(menuSession);
             String[] selections = menuSession.getSelections();
-            restoreFactory.cacheAllSessionSelections(selections);
             response.setSelections(selections);
             return response;
         }
@@ -637,7 +636,6 @@ public class MenuSessionRunnerService {
         }
         menuSessionFactory.rebuildSessionFromFrame(menuSession);
         String[] selections = menuSession.getSelections();
-        restoreFactory.cacheAllSessionSelections(selections);
 
         // reset session and play it back with derived selections
         menuSession.resetSession();
