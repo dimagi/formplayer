@@ -6,6 +6,7 @@ import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.*;
 import org.javarosa.core.model.data.helper.Selection;
+import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryController;
@@ -36,7 +37,9 @@ public class PromptToJson {
     public static void parseQuestion(FormEntryPrompt prompt, JSONObject questionJson) {
         parseCaption(prompt, questionJson);
         questionJson.put("help", jsonNullIfNull(prompt.getHelpText()));
-        questionJson.put("binding", jsonNullIfNull(prompt.getQuestion().getBind().getReference().toString()));
+        TreeReference questionRef = prompt.getQuestion().getBind().getReference();
+        questionJson.put("binding", jsonNullIfNull(questionRef.toString()));
+        questionJson.put("question_id", jsonNullIfNull(questionRef.getNameLast()));
         questionJson.put("datatype", jsonNullIfNull(parseDataType(prompt)));
         questionJson.put("control", jsonNullIfNull(prompt.getControlType()));
         questionJson.put("required", prompt.isRequired() ? 1 : 0);

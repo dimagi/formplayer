@@ -53,8 +53,10 @@ branches:
   #- ce/tracing # Cal Oct 23
   - dedupForCaseInstance # Shubham July 2
   - jls/smart-linking-mvp # Shubham July 7
+  - jls/smart-linking-mvp-cache-all-selections-variants # Jenny Aug 31
   - blankValueSearch # Shubham July 14
   - questionIdToWebApps # Shubham Aug 24
+  - defaultsOverride # Shubham Aug 31
 submodules:
   libs/commcare:
     trunk: formplayer
@@ -65,3 +67,5 @@ submodules:
       - caseSearchMultiCases # Shubham June 15
       - dedupForCaseInstance # Shubham July 2
       - allowBlankSearch # Shubham July 14
+      - defaultsOverride # Shubham Aug 31
+      - revert-1029-revert-1021-jls/cli-fixes-formplayer # Jenny Aug 31
