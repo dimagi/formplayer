@@ -64,6 +64,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -765,6 +766,23 @@ public class RestoreFactory {
         String cacheValue = getSessionCacheValue(selections);
         redisSessionCache.add(cacheKey, cacheValue);
         redisSetTemplate.expire(cacheKey, 1, TimeUnit.HOURS);
+    }
+
+    /**
+     * Uses cacheSessionSelections to cache all sublists of the given
+     * selections array that start with the first element. For example,
+     * given selections [1, 2, 3], this will cache [1], [1, 2], and [1, 2, 3].
+     *
+     * This is useful in situations where a series of selections is played at once,
+     * as in end of form navigation. Caching all selections keeps playback from
+     * getting hung up on case details when it hits a case id in MenuSession.handleInput.
+     *
+     * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
+     */
+    public void cacheAllSessionSelections(String[] selections) {
+        for (int i = 1; i <= selections.length; i++) {
+            cacheSessionSelections(Arrays.copyOfRange(selections, 0, i));
+        }
     }
 
     /**
