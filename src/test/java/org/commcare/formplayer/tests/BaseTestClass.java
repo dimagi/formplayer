@@ -35,7 +35,6 @@ import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -43,7 +42,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.commcare.formplayer.objects.QueryData;
-import org.commcare.formplayer.repo.MenuSessionRepo;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.services.*;
@@ -664,6 +662,26 @@ public class BaseTestClass {
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
+    <T> T sessionNavigateWithEndpoint(String testName,
+                                      String endpointId,
+                                      HashMap<String, String> endpointArgs,
+                                      Class<T> clazz) throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setEndpointId(endpointId);
+        if (endpointArgs != null) {
+            sessionNavigationBean.setEndpointArgs(endpointArgs);
+        }
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+                ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_GET_ENDPOINT,
                 sessionNavigationBean,
                 clazz);
     }
