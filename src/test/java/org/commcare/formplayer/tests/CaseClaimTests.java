@@ -58,6 +58,84 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     @Test
+    public void testEmptySearch() throws Exception {
+        configureQueryMock();
+
+        // When no queryData, Formplayer should return the default values
+        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                null,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
+
+
+        // Empty query data should set all values as null
+        Hashtable<String, String> inputs = new Hashtable<>();
+        QueryData queryData = new QueryData();
+        queryData.setInputs("search_command.m1", inputs);
+        queryData.setExecute("search_command.m1", false);
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue() == null;
+        assert queryResponseBean.getDisplays()[1].getValue() == null;
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
+
+
+        // Empty values in query Data should be propogated back as it is from Formplayer
+        inputs.put("name", "");
+        inputs.put("state", "");
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
+
+        // Empty params should be carried over to url as well
+        queryData.setExecute("search_command.m1", true);
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+        verify(webClientMock, times(1)).get(uriCaptor.capture());
+        List<URI> uris = uriCaptor.getAllValues();
+        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&include_closed=False&name=&state="));
+
+        // select empty with a valid choice
+        inputs.put("name", "#,#chris");
+        inputs.put("state", "0");
+        inputs.put("district", "#,#1");
+        queryData.setExecute("search_command.m1", false);
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("#,#chris");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("#,#1");
+
+        queryData.setExecute("search_command.m1", true);
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+        verify(webClientMock, times(2)).get(uriCaptor.capture());
+        uris = uriCaptor.getAllValues();
+        assert uris.get(2).equals(new URI("http://localhost:8000/a/test/phone/search/?case_type=case1&case_type=case2&case_type=case3&district=&district=hampi&include_closed=False&name=&name=chris&state=ka"));
+    }
+
+    @Test
     public void testQueryScreen() throws Exception {
         UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
         SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
@@ -87,9 +165,12 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays().length == 3;
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
+        assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[1].isAllowBlankValue();
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
+        assert !queryResponseBean.getDisplays()[2].isAllowBlankValue();
 
         // test hint
         assert queryResponseBean.getDisplays()[1].getHint().contentEquals("This is a hint");
@@ -105,10 +186,10 @@ public class CaseClaimTests extends BaseTestClass {
                 true,
                 QueryResponseBean.class);
 
-        // no value in queryDictionary should reset the value to empty
-        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        // no value in queryDictionary should reset the value to null
+        assert queryResponseBean.getDisplays()[0].getValue() == null;
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Baran", "Kota"});
 
@@ -187,9 +268,6 @@ public class CaseClaimTests extends BaseTestClass {
 
     @Test
     public void testAlreadyOwnCase() throws Exception {
-
-        UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
-        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("name", "Burt");
         QueryData queryData = new QueryData();
