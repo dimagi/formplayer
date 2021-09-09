@@ -435,8 +435,7 @@ public class MenuSessionRunnerService {
             nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
             handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
             BaseResponseBean response = getNextMenu(menuSession);
-            String[] selections = menuSession.getSelections();
-            response.setSelections(selections);
+            response.setSelections(menuSession.getSelections());
             return response;
         }
         return null;

@@ -2,7 +2,6 @@ package org.commcare.formplayer.beans.menus;
 
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.modern.session.SessionWrapper;
-import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.SessionUtils;
 
 import java.util.HashMap;
