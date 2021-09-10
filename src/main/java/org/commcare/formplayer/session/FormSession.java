@@ -11,12 +11,15 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.modern.database.TableBuilder;
+import org.commcare.session.CommCareSession;
+import org.commcare.session.SessionFrame;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
@@ -83,7 +86,8 @@ public class FormSession {
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
                        FormSendCalloutHandler formSendCalloutHandler,
-                       FormplayerStorageFactory storageFactory) throws Exception{
+                       FormplayerStorageFactory storageFactory,
+                       CommCareSession commCareSession) throws Exception{
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -103,7 +107,7 @@ public class FormSession {
             formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
         }
         setupFunctionContext();
-        initialize(false, session.getSessionData(), storageFactory.getStorageManager());
+        initialize(false, session.getSessionData(), storageFactory.getStorageManager(), commCareSession.getFrame());
     }
 
     public FormSession(UserSqlSandbox sandbox,
@@ -122,7 +126,8 @@ public class FormSession {
                        FormSendCalloutHandler formSendCalloutHandler,
                        FormplayerStorageFactory storageFactory,
                        boolean inPromptMode,
-                       String caseId) throws Exception {
+                       String caseId,
+                       SessionFrame sessionFrame) throws Exception {
 
         this.formDef = formDef;
         session = new SerializableFormSession(
@@ -137,9 +142,9 @@ public class FormSession {
         setupFunctionContext();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData, storageFactory.getStorageManager());
+            initialize(false, sessionData, storageFactory.getStorageManager(), sessionFrame);
         } else {
-            initialize(true, sessionData, storageFactory.getStorageManager());
+            initialize(true, sessionData, storageFactory.getStorageManager(), sessionFrame);
         }
 
         if (oneQuestionPerScreen) {
@@ -197,11 +202,11 @@ public class FormSession {
         }
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager) {
+    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager, SessionFrame sessionFrame) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
-        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, sessionFrame);
+        formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false, sessionWrapper);
 
         setVolatilityIndicators();
         setAutoSubmitFlag();
