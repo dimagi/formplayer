@@ -53,7 +53,6 @@ branches:
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - dedupForCaseInstance # Shubham July 2
   - jls/smart-linking-mvp # Shubham July 7
-  - jls/smart-linking-mvp-cache-all-selections-variants # Jenny Aug 31
   - blankValueSearch # Shubham July 14
   - questionIdToWebApps # Shubham Aug 24
   - defaultsOverride # Shubham Aug 31
