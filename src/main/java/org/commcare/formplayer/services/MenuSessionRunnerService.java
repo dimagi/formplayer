@@ -2,6 +2,8 @@ package org.commcare.formplayer.services;
 
 import io.sentry.Sentry;
 
+import okhttp3.HttpUrl;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
@@ -26,6 +28,7 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.util.OrderedHashtable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -191,7 +194,31 @@ public class MenuSessionRunnerService {
     }
 
     private BaseResponseBean getSmartResponse(MenuSession menuSession, String smartLinkRedirect) {
-        // TODO
+        if (smartLinkRedirect == null) {
+            return null;
+        }
+
+        String template = storageFactory.getPropertyManager().getSmartLinkTemplate();
+        if (template != null) {
+            SessionWrapper session = menuSession.getSessionWrapper();
+            String command = session.getCommand();
+            if (command != null) {
+                Endpoint endpoint = menuSession.getEndpointByCommand(command);
+                if (endpoint != null) {
+                    template = template.replaceFirst("---", smartLinkRedirect);
+                    template = template.replace("---", endpoint.getId());
+                    HttpUrl.Builder urlBuilder = HttpUrl.parse(template).newBuilder();
+                    OrderedHashtable<String, String> data = session.getData();
+                    for (String key : data.keySet()) {
+                        urlBuilder.addQueryParameter(key, data.get(key));
+                    }
+                    template = urlBuilder.build().toString();
+                    BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
+                    responseBean.setSmartLinkRedirect(template);
+                    return responseBean;
+                }
+            }
+        }
         return null;
     }
 
