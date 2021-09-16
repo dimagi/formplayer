@@ -103,7 +103,7 @@ public class MenuSessionRunnerService {
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, 0, "", 0, null, 0);
+        return getNextMenu(menuSession, null, 0, "", 0, null, 0, null);
     }
 
     private BaseResponseBean getNextMenu(MenuSession menuSession,
@@ -112,7 +112,8 @@ public class MenuSessionRunnerService {
                                          String searchText,
                                          int sortIndex,
                                          QueryData queryData,
-                                         int casesPerPage) throws Exception {
+                                         int casesPerPage,
+                                         String smartLinkRedirect) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -123,12 +124,20 @@ public class MenuSessionRunnerService {
                         true);
                 return responseBean;
             }
+            BaseResponseBean smartResponse = getSmartResponse(menuSession, smartLinkRedirect);
+            if (smartResponse != null) {
+                return smartResponse;
+            }
             return startFormEntry(menuSession);
         }
 
         MenuBean menuResponseBean;
         // We're looking at a module or form menu
         if (nextScreen instanceof MenuScreen) {
+            BaseResponseBean smartResponse = getSmartResponse(menuSession, smartLinkRedirect);
+            if (smartResponse != null) {
+                return smartResponse;
+            }
             menuResponseBean = new CommandListResponseBean(
                     (MenuScreen)nextScreen,
                     menuSession.getSessionWrapper(),
@@ -140,7 +149,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
-                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData, casesPerPage);
+                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData, casesPerPage, smartLinkRedirect);
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
@@ -181,6 +190,11 @@ public class MenuSessionRunnerService {
         return menuResponseBean;
     }
 
+    private BaseResponseBean getSmartResponse(MenuSession menuSession, String smartLinkRedirect) {
+        // TODO
+        return null;
+    }
+
     private void addHereFuncHandler(EntityScreen nextScreen, MenuSession menuSession) {
         EvaluationContext ec = nextScreen.getEvalContext();
         ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
@@ -189,7 +203,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null,
-                0, null, 0, false, 0);
+                0, null, 0, false, 0, null);
     }
 
     /**
@@ -213,7 +227,8 @@ public class MenuSessionRunnerService {
                                                          String searchText,
                                                          int sortIndex,
                                                          boolean forceManualAction,
-                                                         int casesPerPage) throws Exception {
+                                                         int casesPerPage,
+                                                         String smartLinkRedirect) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -225,7 +240,8 @@ public class MenuSessionRunnerService {
                     searchText,
                     sortIndex,
                     queryData,
-                    casesPerPage
+                    casesPerPage,
+                    smartLinkRedirect
             );
         }
         NotificationMessage notificationMessage = null;
@@ -278,7 +294,8 @@ public class MenuSessionRunnerService {
                 searchText,
                 sortIndex,
                 queryData,
-                casesPerPage
+                casesPerPage,
+                smartLinkRedirect
         );
         restoreFactory.cacheSessionSelections(selections);
 
