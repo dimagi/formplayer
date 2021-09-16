@@ -21,6 +21,8 @@ public class FormplayerPropertyManager extends PropertyManager {
     public static final String SKIP_FIXTURES_AFTER_SUBMIT = "cc-skip-fixtures-after-submit";
     public static final String AUTO_ADVANCE_MENU = "cc-auto-advance-menu";
 
+    public static final String SMART_LINK_TEMPLATE = "cc-smart-link-template";
+
     /**
      * Constructor for this PropertyManager
      *
@@ -61,5 +63,9 @@ public class FormplayerPropertyManager extends PropertyManager {
 
     public boolean isAutoAdvanceMenu() {
         return doesPropertyMatch(AUTO_ADVANCE_MENU, NO, YES);
+    }
+
+    public String getSmartLinkTemplate() {
+        return getSingularProperty(SMART_LINK_TEMPLATE);
     }
 }
