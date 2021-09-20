@@ -210,7 +210,9 @@ public class MenuSessionRunnerService {
                     HttpUrl.Builder urlBuilder = HttpUrl.parse(template).newBuilder();
                     OrderedHashtable<String, String> data = session.getData();
                     for (String key : data.keySet()) {
-                        urlBuilder.addQueryParameter(key, data.get(key));
+                        if (endpoint.getArguments().contains(key)) {
+                            urlBuilder.addQueryParameter(key, data.get(key));
+                        }
                     }
                     template = urlBuilder.build().toString();
                     BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
