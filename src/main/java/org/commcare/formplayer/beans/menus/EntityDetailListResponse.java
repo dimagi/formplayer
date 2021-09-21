@@ -7,6 +7,10 @@ import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityScreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.xpath.XPathParseTool;
+import org.javarosa.xpath.expr.XPathExpression;
+import org.javarosa.xpath.XPathNodeset;
+import org.javarosa.xpath.parser.XPathSyntaxException;
 
 import java.util.ArrayList;
 
@@ -17,6 +21,7 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
 
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
+    private String[] smartLinkParams;
 
     public EntityDetailListResponse() {}
 
@@ -52,6 +57,8 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
         }
 
         EvaluationContext subContext = new EvaluationContext(ec, ref);
+        setSmartLinkParams(subContext);
+
         ArrayList<Object> accumulator = new ArrayList<>();
         for (int i = 0; i < detailList.length; i++) {
             if (detailList[i].getNodeset() == null) {
@@ -76,6 +83,20 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
         return ret;
     }
 
+    private void setSmartLinkParams(EvaluationContext ec) {
+        try {
+            XPathExpression paramExpr = XPathParseTool.parseXPath("commcare_project");
+            String commcare_project = (String) ((XPathNodeset) paramExpr.eval(ec)).unpack();
+            if (!commcare_project.equals("")) {
+                String[] params = new String[1];
+                params[0] = commcare_project;
+                this.setSmartLinkParams(params);
+            }
+        } catch (XPathSyntaxException e) {
+            // nothing to do here
+        }
+    }
+
     @JsonGetter(value = "details")
     public EntityDetailResponse[] getEntityDetailList() {
         return entityDetailList;
@@ -94,5 +115,15 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     @JsonSetter(value = "isPersistentDetail")
     public void setPersistentDetail(boolean persistentDetail) {
         this.isPersistentDetail = persistentDetail;
+    }
+
+    @JsonGetter(value = "smartLinkParams")
+    public String[] getSmartLinkParams() {
+        return smartLinkParams;
+    }
+
+    @JsonSetter(value = "smartLinkParams")
+    public void setSmartLinkParams(String[] params) {
+        this.smartLinkParams = params;
     }
 }
