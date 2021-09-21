@@ -57,6 +57,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,6 +66,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import io.sentry.Sentry;
+
+import datadog.trace.api.Trace;
+
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -334,6 +338,7 @@ public class FormController extends AbstractBaseController {
         formSessionService.deleteSessionById(id);
     }
 
+    @Trace
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
         log.info("End of form navigation with serialized menu session: " + serializedSession);
         MenuSession menuSession = menuSessionFactory.buildSession(serializedSession);
@@ -344,6 +349,7 @@ public class FormController extends AbstractBaseController {
      * Iterate over all answers and attempt to save them to check for validity.
      * Submit the complete XML instance to HQ if valid.
      */
+    @Trace
     private SubmitResponseBean validateSubmitAnswers(FormEntryController formEntryController,
                                                      FormEntryModel formEntryModel,
                                                      Map<String, Object> answers,
