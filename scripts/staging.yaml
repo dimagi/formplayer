@@ -57,8 +57,6 @@ submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - caseSearchMultiCases+ce/tag-triggers # Shubham June 15
-      - ce/tracing # 
+      - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
       - ce/ensure-session # Cal Nov 20
-      - revert-1029-revert-1021-jls/cli-fixes-formplayer # Jenny Aug 31
       - dr_form_query # Shubham Sep 21
