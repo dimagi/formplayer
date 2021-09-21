@@ -118,6 +118,11 @@ public class MenuSessionRunnerService {
                                          int casesPerPage,
                                          String[] smartLinkParams) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
+        BaseResponseBean smartResponse = getSmartResponse(menuSession, smartLinkParams);
+        if (smartResponse != null) {
+            return smartResponse;
+        }
+
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
             String assertionFailure = getAssertionFailure(menuSession);
@@ -127,20 +132,12 @@ public class MenuSessionRunnerService {
                         true);
                 return responseBean;
             }
-            BaseResponseBean smartResponse = getSmartResponse(menuSession, smartLinkRedirect);
-            if (smartResponse != null) {
-                return smartResponse;
-            }
             return startFormEntry(menuSession);
         }
 
         MenuBean menuResponseBean;
         // We're looking at a module or form menu
         if (nextScreen instanceof MenuScreen) {
-            BaseResponseBean smartResponse = getSmartResponse(menuSession, smartLinkRedirect);
-            if (smartResponse != null) {
-                return smartResponse;
-            }
             menuResponseBean = new CommandListResponseBean(
                     (MenuScreen)nextScreen,
                     menuSession.getSessionWrapper(),
