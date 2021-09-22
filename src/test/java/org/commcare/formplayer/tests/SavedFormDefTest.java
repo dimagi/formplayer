@@ -12,7 +12,7 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.util.XFormUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -60,7 +60,7 @@ public class SavedFormDefTest extends BaseTestClass {
     }
 
     @Test
-    public void testIrrelevantDataIsNotIncludedAfterSubmission() throws Exception {
+    public void testIrrelevantDataIsNotIncludedInSubmission() throws Exception {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_3.json",
                 "xforms/hidden_value_form.xml");
 
@@ -73,9 +73,6 @@ public class SavedFormDefTest extends BaseTestClass {
 
         SerializableFormSession session = this.formSessionService.getSessionById(newSessionResponse.getSessionId());
         FormSession formSession = new FormSession(session, this.restoreFactoryMock, null, this.storageFactoryMock);
-        // TODO: this is failing because the session.getInstanceXml() appears to still ignore relevance
-        // I'm not sure if it is expected that after a form submission, the form session instanceXml is updated or not
-        // it could just be that we send the instance xml that respects relevance but do not save it to the sesssion now that the session is useless
-        assertEquals(formSession.getInstanceXml(false), session.getInstanceXml());
+        Mockito.verify(this.submitServiceMock).submitForm(formSession.getInstanceXml(false), formSession.getPostUrl());
     }
 }
