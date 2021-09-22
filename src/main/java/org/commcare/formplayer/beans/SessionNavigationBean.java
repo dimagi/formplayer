@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.util.Arrays;
-import java.util.Hashtable;
+import java.util.HashMap;
 
 /**
  * Request body for navigating CommCare menus, including form preview and case selections
@@ -15,6 +15,8 @@ import java.util.Hashtable;
 public class SessionNavigationBean extends InstallRequestBean {
     private String[] selections;
     private int offset;
+    private String endpointId;
+    private HashMap<String, String> endpointArgs;
     private String searchText;
     private String geoLocation;
     private String menuSessionId;
@@ -48,6 +50,22 @@ public class SessionNavigationBean extends InstallRequestBean {
         this.offset = offset;
     }
 
+    @JsonGetter(value = "endpoint_id")
+    public String getEndpointId() {
+        return endpointId;
+    }
+    @JsonSetter(value = "endpoint_id")
+    public void setEndpointId(String endpointId) {
+        this.endpointId = endpointId;
+    }
+    @JsonGetter(value = "endpoint_args")
+    public HashMap<String, String> getEndpointArgs() {
+        return endpointArgs;
+    }
+    @JsonSetter(value = "endpoint_args")
+    public void setEndpointArgs(HashMap<String, String> endpointArgs) {
+        this.endpointArgs = endpointArgs;
+    }
     @JsonGetter(value = "search_text")
     public String getSearchText() {
         return searchText;
