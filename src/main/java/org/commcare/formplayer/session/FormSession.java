@@ -1,6 +1,9 @@
 package org.commcare.formplayer.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import datadog.trace.api.Trace;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.UserSandbox;
@@ -11,12 +14,15 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.modern.database.TableBuilder;
+import org.commcare.session.CommCareSession;
+import org.commcare.session.SessionFrame;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
@@ -72,6 +78,7 @@ public class FormSession {
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
 
+    @Trace
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -83,7 +90,8 @@ public class FormSession {
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
                        FormSendCalloutHandler formSendCalloutHandler,
-                       FormplayerStorageFactory storageFactory) throws Exception{
+                       FormplayerStorageFactory storageFactory,
+                       CommCareSession commCareSession) throws Exception{
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -103,7 +111,7 @@ public class FormSession {
             formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
         }
         setupFunctionContext();
-        initialize(false, session.getSessionData(), storageFactory.getStorageManager());
+        initialize(false, session.getSessionData(), storageFactory.getStorageManager(), commCareSession.getFrame());
     }
 
     public FormSession(UserSqlSandbox sandbox,
@@ -122,7 +130,8 @@ public class FormSession {
                        FormSendCalloutHandler formSendCalloutHandler,
                        FormplayerStorageFactory storageFactory,
                        boolean inPromptMode,
-                       String caseId) throws Exception {
+                       String caseId,
+                       SessionFrame sessionFrame) throws Exception {
 
         this.formDef = formDef;
         session = new SerializableFormSession(
@@ -137,9 +146,9 @@ public class FormSession {
         setupFunctionContext();
         if(instanceContent != null){
             loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData, storageFactory.getStorageManager());
+            initialize(false, sessionData, storageFactory.getStorageManager(), sessionFrame);
         } else {
-            initialize(true, sessionData, storageFactory.getStorageManager());
+            initialize(true, sessionData, storageFactory.getStorageManager(), sessionFrame);
         }
 
         if (oneQuestionPerScreen) {
@@ -154,6 +163,7 @@ public class FormSession {
      * Setup static function handlers. At the moment we only expect/accept date functions
      * (in particular, now() and today()) but could be extended in the future.
      */
+    @Trace
     private void setupFunctionContext() {
         if (session.getFunctionContext() == null || session.getFunctionContext().size() < 1) {
             return;
@@ -179,6 +189,7 @@ public class FormSession {
         }
     }
 
+    @Trace
     private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
         StringReader stringReader = new StringReader(instanceContent);
         XFormParser xFormParser = new XFormParser(stringReader);
@@ -197,11 +208,12 @@ public class FormSession {
         }
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager) {
+    @Trace
+    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager, SessionFrame sessionFrame) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
-        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
-        formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, sessionFrame);
+        formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false, sessionWrapper);
 
         setVolatilityIndicators();
         setAutoSubmitFlag();
@@ -218,6 +230,7 @@ public class FormSession {
         return null;
     }
 
+    @Trace
     private void setVolatilityIndicators()
     {
         String volatilityKey = getPragma("Pragma-Volatility-Key");
@@ -297,6 +310,7 @@ public class FormSession {
         return timeOutWindow;
     }
 
+    @Trace
     public String getInstanceXml() throws IOException {
         byte[] bytes = new XFormSerializingVisitor().serializeInstance(formDef.getInstance());
         return new String(bytes, "US-ASCII");
@@ -314,6 +328,7 @@ public class FormSession {
         return langs;
     }
 
+    @Trace
     public JSONArray getFormTree() {
         if (session.isOneQuestionPerScreen()) {
             return JsonActionUtils.getOneQuestionPerScreenJSON(formController.getFormEntryController().getModel(),
@@ -471,6 +486,7 @@ public class FormSession {
         return new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
     }
 
+    @Trace
     public FormEntryResponseBean answerQuestionToJSON(Object answer, String answerIndex) throws IOException {
         if (answerIndex == null) {
             answerIndex = session.getCurrentIndex();
