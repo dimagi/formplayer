@@ -53,7 +53,7 @@ branches:
   - dr_form_query+ce/tracing # Shubham Sep 21
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - dr_form_query # Shubham Sep 21
-  - jls/smart-linking-in-web-apps # Jenny Sep 22
+  #- jls/smart-linking-in-web-apps # Jenny Sep 22
 submodules:
   libs/commcare:
     trunk: formplayer
