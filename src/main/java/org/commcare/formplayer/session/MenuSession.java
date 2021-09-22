@@ -356,6 +356,10 @@ public class MenuSession implements HereFunctionHandlerListener {
         return engine.getPlatform().getAllEndpoints().get(id);
     }
 
+    public Endpoint getEndpointByCommand(String commandId) {
+        return engine.getPlatform().getEndpointByCommand(commandId);
+    }
+
     public void setCurrentBrowserLocation(String location) {
         this.currentBrowserLocation = location;
     }

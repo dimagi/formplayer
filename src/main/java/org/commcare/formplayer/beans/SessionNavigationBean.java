@@ -25,6 +25,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private int sortIndex;
     private boolean forceManualSearch;
     private int casesPerPage;
+    private String[] smartLinkParams;
 
     public String[] getSelections() {
         return selections;
@@ -107,6 +108,16 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     public void setIsPersistent(boolean persistent) {
         isPersistent = persistent;
+    }
+
+    @JsonGetter(value = "smart_link_params")
+    public String[] getSmartLinkParams() {
+        return smartLinkParams;
+    }
+
+    @JsonSetter(value = "smart_link_params")
+    public void setSmartLinkParams(String[] smartLinkParams) {
+        this.smartLinkParams = smartLinkParams;
     }
 
     public int getSortIndex() {
