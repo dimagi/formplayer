@@ -30,6 +30,9 @@ public class NewFormResponseFactory {
     private WebClient webClient;
 
     @Autowired
+    private CaseSearchHelper caseSearchHelper;
+
+    @Autowired
     private RestoreFactory restoreFactory;
 
     @Autowired
@@ -83,7 +86,8 @@ public class NewFormResponseFactory {
                 storageFactory,
                 Constants.NAV_MODE_PROMPT.equals(bean.getNavMode()),
                 bean.getRestoreAsCaseId(),
-                null
+                null,
+                caseSearchHelper
         );
 
         NewFormResponse response = getResponse(formSession);
@@ -128,7 +132,7 @@ public class NewFormResponseFactory {
     }
 
     public FormSession getFormSession(SerializableFormSession serializableFormSession, CommCareSession commCareSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, commCareSession);
+        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, commCareSession, caseSearchHelper);
     }
 
     private String getFormXml(String formUrl) {
