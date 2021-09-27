@@ -116,9 +116,9 @@ public class MenuSessionRunnerService {
                                          int sortIndex,
                                          QueryData queryData,
                                          int casesPerPage,
-                                         String[] smartLinkParams) throws Exception {
+                                         String smartLinkTemplate) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
-        BaseResponseBean smartResponse = getSmartResponse(menuSession, smartLinkParams);
+        BaseResponseBean smartResponse = getSmartResponse(menuSession, smartLinkTemplate);
         if (smartResponse != null) {
             return smartResponse;
         }
@@ -149,7 +149,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
-                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData, casesPerPage, smartLinkParams);
+                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData, casesPerPage, smartLinkTemplate);
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
@@ -190,37 +190,32 @@ public class MenuSessionRunnerService {
         return menuResponseBean;
     }
 
-    private BaseResponseBean getSmartResponse(MenuSession menuSession, String[] smartLinkParams) {
-        if (smartLinkParams == null || smartLinkParams.length == 0) {
+    private BaseResponseBean getSmartResponse(MenuSession menuSession, String template) {
+        if (template == null || template.equals("")) {
             return null;
         }
 
-        String template = storageFactory.getPropertyManager().getSmartLinkTemplate();
-        if (template != null) {
-            SessionWrapper session = menuSession.getSessionWrapper();
-            String command = session.getCommand();
-            if (command != null) {
-                Endpoint endpoint = menuSession.getEndpointByCommand(command);
-                if (endpoint != null) {
-                    for (String param : smartLinkParams) {
-                        template = template.replaceFirst("---", param);
+        SessionWrapper session = menuSession.getSessionWrapper();
+        String command = session.getCommand();
+        if (command != null) {
+            Endpoint endpoint = menuSession.getEndpointByCommand(command);
+            if (endpoint != null) {
+                template = template.replace("---", endpoint.getId());
+                HttpUrl.Builder urlBuilder = HttpUrl.parse(template).newBuilder();
+                OrderedHashtable<String, String> data = session.getData();
+                for (String key : data.keySet()) {
+                    if (endpoint.getArguments().contains(key)) {
+                        urlBuilder.addQueryParameter(key, data.get(key));
                     }
-                    template = template.replace("---", endpoint.getId());
-                    HttpUrl.Builder urlBuilder = HttpUrl.parse(template).newBuilder();
-                    OrderedHashtable<String, String> data = session.getData();
-                    for (String key : data.keySet()) {
-                        if (endpoint.getArguments().contains(key)) {
-                            urlBuilder.addQueryParameter(key, data.get(key));
-                        }
-                    }
-                    String finalUrl = urlBuilder.build().toString();
-                    BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
-                    System.out.println("final url => " + finalUrl);
-                    responseBean.setSmartLinkRedirect(finalUrl);
-                    return responseBean;
                 }
+                String finalUrl = urlBuilder.build().toString();
+                BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
+                System.out.println("final url => " + finalUrl);
+                responseBean.setSmartLinkRedirect(finalUrl);
+                return responseBean;
             }
         }
+
         return null;
     }
 
@@ -257,7 +252,7 @@ public class MenuSessionRunnerService {
                                                          int sortIndex,
                                                          boolean forceManualAction,
                                                          int casesPerPage,
-                                                         String[] smartLinkParams) throws Exception {
+                                                         String smartLinkTemplate) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -270,7 +265,7 @@ public class MenuSessionRunnerService {
                     sortIndex,
                     queryData,
                     casesPerPage,
-                    smartLinkParams
+                    smartLinkTemplate
             );
         }
         NotificationMessage notificationMessage = null;
@@ -324,7 +319,7 @@ public class MenuSessionRunnerService {
                 sortIndex,
                 queryData,
                 casesPerPage,
-                smartLinkParams
+                smartLinkTemplate
         );
         restoreFactory.cacheSessionSelections(selections);
 
