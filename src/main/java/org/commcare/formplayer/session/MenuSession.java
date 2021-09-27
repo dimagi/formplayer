@@ -9,6 +9,7 @@ import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
@@ -341,6 +342,10 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public void addSelection(String currentStep) {
         selections.add(currentStep);
+    }
+
+    public Endpoint getEndpoint(String id) {
+        return engine.getPlatform().getAllEndpoints().get(id);
     }
 
     public void setCurrentBrowserLocation(String location) {
