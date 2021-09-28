@@ -34,6 +34,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.repo.MenuSessionRepo;
@@ -200,13 +201,13 @@ public class MenuSessionRunnerService {
         if (command != null) {
             Endpoint endpoint = menuSession.getEndpointByCommand(command);
             if (endpoint != null) {
-                Hashtable<String, String> urlArgs = new Hashtable<String, String>();
+                HashMap<String, String> urlArgs = new HashMap<>();
                 urlArgs.put("endpoint", endpoint.getId());
-                HttpUrl.Builder urlBuilder = HttpUrl.parse(template).newBuilder();
+                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(template);
                 OrderedHashtable<String, String> data = session.getData();
                 for (String key : data.keySet()) {
                     if (endpoint.getArguments().contains(key)) {
-                        urlBuilder.addQueryParameter(key, data.get(key));
+                        urlBuilder.queryParam(key, data.get(key));
                     }
                 }
                 String finalUrl = urlBuilder.build(urlArgs).toString();
