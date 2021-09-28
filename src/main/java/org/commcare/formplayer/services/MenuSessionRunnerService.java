@@ -1,7 +1,5 @@
 package org.commcare.formplayer.services;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
@@ -11,6 +9,8 @@ import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.MenuBean;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
+import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
@@ -22,12 +22,18 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SessionUtils;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
+import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
+import org.commcare.suite.model.StackOperation;
 import org.commcare.suite.model.Text;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
@@ -43,6 +49,7 @@ import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
@@ -51,7 +58,9 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.annotation.Resource;
@@ -180,8 +189,7 @@ public class MenuSessionRunnerService {
 
         menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
         menuResponseBean.setAppId(menuSession.getAppId());
-        menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
-                ", App Version: " + menuSession.getAppVersion());
+        menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
         menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
         return menuResponseBean;
     }
@@ -292,10 +300,7 @@ public class MenuSessionRunnerService {
                 nextResponse.setNotification(notificationMessage);
             }
             log.info("Returning menu: " + nextResponse);
-
-            if (rebuildSession) {
-                nextResponse.setSelections(menuSession.getSelections());
-            }
+            nextResponse.setSelections(menuSession.getSelections());
             return nextResponse;
         } else {
             BaseResponseBean responseBean = new BaseResponseBean(null,
@@ -556,6 +561,8 @@ public class MenuSessionRunnerService {
     private NewFormResponse startFormEntry(MenuSession menuSession) throws Exception {
         if (menuSession.getSessionWrapper().getForm() != null) {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
+            formResponseBean.setAppId(menuSession.getAppId());
+            formResponseBean.setAppVersion(menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
             // update datadog/sentry metrics
@@ -606,6 +613,57 @@ public class MenuSessionRunnerService {
             }
         }
         return null;
+    }
+
+    public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId, @Nullable HashMap<String, String> endpointArgs)
+            throws Exception {
+        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
+            throw new RuntimeException("Linking into applications has been disabled for this project.");
+        }
+
+        Endpoint endpoint = menuSession.getEndpoint(endpointId);
+        if (endpoint == null) {
+            throw new RuntimeException("This link does not exist. Your app may have changed so that the given link is no longer valid");
+        }
+        SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
+        EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
+        try {
+            if (endpointArgs != null) {
+                Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
+            }
+        } catch (Endpoint.InvalidEndpointArgumentsException ieae) {
+            String missingMessage = "";
+            if (ieae.hasMissingArguments()) {
+                missingMessage = String.format(" Missing arguments: %s.", String.join(", ", ieae.getMissingArguments()));
+            }
+            String unexpectedMessage = "";
+            if (ieae.hasUnexpectedArguments()) {
+                unexpectedMessage = String.format(" Unexpected arguments: %s.", String.join(", ", ieae.getUnexpectedArguments()));
+            }
+            throw new RuntimeException(String.format("Invalid arguments supplied for link.%s%s", missingMessage, unexpectedMessage));
+        }
+
+        restoreFactory.performTimedSync(false, false, false);
+
+        // Sync requests aren't run when executing operations, so stop and check for them after each operation
+        for (StackOperation op : endpoint.getStackOperations()) {
+            sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
+            Screen s = menuSession.getNextScreen();
+            if (s instanceof FormplayerSyncScreen) {
+                try {
+                    s.init(sessionWrapper);
+                    doSyncGetNext((FormplayerSyncScreen) s, menuSession);
+                } catch (CommCareSessionException ccse) {
+                    throw new RuntimeException("Unable to claim case.");
+                }
+            }
+        }
+        menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        String[] selections = menuSession.getSelections();
+
+        // reset session and play it back with derived selections
+        menuSession.resetSession();
+        return advanceSessionWithSelections(menuSession, selections);
     }
 
     public CaseSearchHelper getCaseSearchHelper() {
