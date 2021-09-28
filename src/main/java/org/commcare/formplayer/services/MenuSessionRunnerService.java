@@ -607,4 +607,8 @@ public class MenuSessionRunnerService {
         }
         return null;
     }
+
+    public CaseSearchHelper getCaseSearchHelper() {
+        return caseSearchHelper;
+    }
 }

@@ -74,9 +74,6 @@ public abstract class AbstractBaseController {
     private WebClient webClient;
 
     @Autowired
-    private CaseSearchHelper caseSearchHelper;
-
-    @Autowired
     protected FormSessionService formSessionService;
 
     @Autowired
@@ -280,13 +277,12 @@ public abstract class AbstractBaseController {
     }
 
     protected FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        // todo somehow caseSearchHelper is always null
         return new FormSession(serializableFormSession,
                 restoreFactory,
                 formSendCalloutHandler,
                 storageFactory,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                caseSearchHelper);
+                runnerService.getCaseSearchHelper());
     }
 
 }

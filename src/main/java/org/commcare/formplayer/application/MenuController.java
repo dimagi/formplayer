@@ -10,6 +10,7 @@ import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
 import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
+import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;

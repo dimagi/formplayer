@@ -3,6 +3,9 @@ package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
@@ -61,6 +64,35 @@ public class FormEntryWithQueryTests extends BaseTestClass{
         assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>Burt Maclin</result>\n";
         assert evaluateXPathResponseBean.getOutput().equals(result);
+    }
+
+    @Test
+    public void testCaseSearchWithRegistryNavigation() throws Exception {
+        EntityListResponse entityList = sessionNavigateWithQuery(new String[]{"1"},
+                "caseclaimquery",
+                null,
+                false,
+                EntityListResponse.class);
+        assert entityList.getEntities().length == 1;
+
+        CommandListResponseBean commandResponse = sessionNavigateWithQuery(new String[]{"1", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
+                "caseclaimquery",
+                null,
+                true,
+                CommandListResponseBean.class);
+        assert commandResponse.getCommands().length == 1;
+
+        NewFormResponse formResponse = sessionNavigateWithQuery(new String[]{"1", "0156fa3e-093e-4136-b95c-01b13dae66c6", "0"},
+                "caseclaimquery",
+                null,
+                true,
+                NewFormResponse.class);
+
+    }
+
+    @Override
+    protected String getMockRestoreFileName() {
+        return "restores/caseclaim.xml";
     }
 
     private void configureQueryMock() {
