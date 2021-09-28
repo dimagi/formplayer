@@ -58,6 +58,7 @@ submodules:
   libs/commcare:
     trunk: formplayer
     branches:
+      - dr_form_query+ce/tracing+jls/smart-linking-in-web-apps # Jenny Sept 28
       - dr_form_query+ce/tracing # Shubham Sep 21
       - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
       - ce/ensure-session # Cal Nov 20
