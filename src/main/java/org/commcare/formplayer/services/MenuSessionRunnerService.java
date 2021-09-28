@@ -200,7 +200,8 @@ public class MenuSessionRunnerService {
         if (command != null) {
             Endpoint endpoint = menuSession.getEndpointByCommand(command);
             if (endpoint != null) {
-                template = template.replace("---", endpoint.getId());
+                Hashtable<String, String> urlArgs = new Hashtable<String, String>();
+                urlArgs.put("endpoint", endpoint.getId());
                 HttpUrl.Builder urlBuilder = HttpUrl.parse(template).newBuilder();
                 OrderedHashtable<String, String> data = session.getData();
                 for (String key : data.keySet()) {
@@ -208,7 +209,7 @@ public class MenuSessionRunnerService {
                         urlBuilder.addQueryParameter(key, data.get(key));
                     }
                 }
-                String finalUrl = urlBuilder.build().toString();
+                String finalUrl = urlBuilder.build(urlArgs).toString();
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
                 System.out.println("final url => " + finalUrl);
                 responseBean.setSmartLinkRedirect(finalUrl);
