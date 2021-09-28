@@ -716,4 +716,8 @@ public class MenuSessionRunnerService {
         menuSession.resetSession();
         return advanceSessionWithSelections(menuSession, selections);
     }
+
+    public CaseSearchHelper getCaseSearchHelper() {
+        return caseSearchHelper;
+    }
 }
