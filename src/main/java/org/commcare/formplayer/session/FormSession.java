@@ -22,6 +22,7 @@ import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
@@ -30,11 +31,13 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.model.instance.InstanceInitializationFactory;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.engine.FunctionExtensions;
+import org.javarosa.engine.models.Session;
 import org.javarosa.form.api.FormController;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -55,6 +58,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import static org.commcare.session.SessionFrame.STATE_DATUM_COMPUTED;
+import static org.commcare.session.SessionFrame.STATE_DATUM_VAL;
 
 
 /**
@@ -98,7 +106,7 @@ public class FormSession {
                        RestoreFactory restoreFactory,
                        FormSendCalloutHandler formSendCalloutHandler,
                        FormplayerStorageFactory storageFactory,
-                       CommCareSession commCareSession,
+                       @Nullable CommCareSession commCareSession,
                        CaseSearchHelper caseSearchHelper) throws Exception {
 
         this.session = session;
@@ -119,7 +127,11 @@ public class FormSession {
             formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
         }
         setupFunctionContext();
-        initialize(false, session.getSessionData(), storageFactory.getStorageManager(), commCareSession.getFrame(), caseSearchHelper);
+        SessionFrame sessionFrame = commCareSession != null ? commCareSession.getFrame() : null;
+        if (sessionFrame == null) {
+            sessionFrame = createSessionFrame(session.getSessionData());
+        }
+        initialize(false, session.getSessionData(), storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
     }
 
     public FormSession(UserSqlSandbox sandbox,
@@ -139,7 +151,7 @@ public class FormSession {
                        FormplayerStorageFactory storageFactory,
                        boolean inPromptMode,
                        String caseId,
-                       SessionFrame sessionFrame,
+                       @Nullable SessionFrame sessionFrame,
                        CaseSearchHelper caseSearchHelper) throws Exception {
 
         this.formDef = formDef;
@@ -153,6 +165,11 @@ public class FormSession {
         this.sandbox = sandbox;
         setupJavaRosaObjects();
         setupFunctionContext();
+
+        if (sessionFrame == null) {
+            sessionFrame = createSessionFrame(sessionData);
+        }
+
         if (instanceContent != null) {
             loadInstanceXml(formDef, instanceContent);
             initialize(false, sessionData, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
@@ -166,6 +183,20 @@ public class FormSession {
         }
         // must be done after formDef is initialized
         session.setFormXml(FormDefStringSerializer.serialize(formDef));
+    }
+
+    private SessionFrame createSessionFrame(Map<String, String> sessionData) {
+        SessionFrame sessionFrame = new SessionFrame();
+        if (sessionData != null) {
+            for (String key : sessionData.keySet()) {
+                if (key.equalsIgnoreCase(STATE_DATUM_VAL)) {
+                    sessionFrame.pushStep(new StackFrameStep(STATE_DATUM_VAL, key, sessionData.get(key)));
+                } else {
+                    sessionFrame.pushStep(new StackFrameStep(STATE_DATUM_COMPUTED, key, sessionData.get(key)));
+                }
+            }
+        }
+        return sessionFrame;
     }
 
     /**
@@ -218,7 +249,8 @@ public class FormSession {
     }
 
     @Trace
-    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager, SessionFrame sessionFrame, CaseSearchHelper caseSearchHelper) {
+    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager,
+                            SessionFrame sessionFrame, CaseSearchHelper caseSearchHelper) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, sessionFrame);
@@ -232,7 +264,6 @@ public class FormSession {
     }
 
     private void tryAttachingRemoteInstances(CaseSearchHelper caseSearchHelper) {
-        // todo throw an special error to HQ that reverts back one step to form selection in case of unsuccessful root retrieval
         ArrayList<DataInstance> replacedInstances = new ArrayList<>();
         Enumeration<DataInstance> instances = formDef.getNonMainInstances();
         while (instances.hasMoreElements()) {
@@ -250,7 +281,8 @@ public class FormSession {
                     }
                 } catch (UnfullfilledRequirementsException | XmlPullParserException |
                         InvalidStructureException | IOException | URISyntaxException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException("Could not retrieve data for instance " +
+                            instance.getName() + ". Please try opening the form again.");
                 }
             }
         }
