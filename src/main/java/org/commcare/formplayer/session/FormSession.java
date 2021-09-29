@@ -28,6 +28,7 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.FormInstance;
+import org.javarosa.core.model.instance.InstanceInitializationFactory;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.services.storage.StorageManager;
@@ -212,7 +213,8 @@ public class FormSession {
         }
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager, SessionFrame sessionFrame, CaseSearchHelper caseSearchHelper) {
+    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager,
+                            SessionFrame sessionFrame, CaseSearchHelper caseSearchHelper) {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, sessionFrame);
@@ -226,7 +228,6 @@ public class FormSession {
     }
 
     private void tryAttachingRemoteInstances(CaseSearchHelper caseSearchHelper) {
-        // todo throw an special error to HQ that reverts back one step to form selection in case of unsuccessful root retrieval
         ArrayList<DataInstance> replacedInstances = new ArrayList<>();
         Enumeration<DataInstance> instances = formDef.getNonMainInstances();
         while (instances.hasMoreElements()) {
@@ -244,7 +245,8 @@ public class FormSession {
                     }
                 } catch (UnfullfilledRequirementsException | XmlPullParserException |
                         InvalidStructureException | IOException | URISyntaxException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException("Could not retrieve data for instance " +
+                            instance.getName() + ". Please try opening the form again.");
                 }
             }
         }

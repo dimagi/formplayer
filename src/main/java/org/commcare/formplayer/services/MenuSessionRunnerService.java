@@ -1,7 +1,10 @@
 package org.commcare.formplayer.services;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
@@ -9,8 +12,6 @@ import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.MenuBean;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
-import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
-import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
@@ -22,10 +23,6 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SessionUtils;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
@@ -60,12 +57,13 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Vector;
 
 import javax.annotation.Resource;
 
 import io.sentry.Sentry;
+
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,

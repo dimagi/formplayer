@@ -23,7 +23,6 @@ import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.commcare.formplayer.exceptions.UnresolvedResourceRuntimeException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
