@@ -269,7 +269,12 @@ public abstract class AbstractBaseController {
         );
     }
 
+    @Nullable
     protected CommCareSession getCommCareSession(String menuSessionId) throws Exception {
+        if (menuSessionId == null) {
+            return null;
+        }
+
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(menuSessionId);
         FormplayerConfigEngine engine = installService.configureApplication(serializableMenuSession.getInstallReference(), serializableMenuSession.isPreview()).first;
         return SessionSerializer.deserialize(engine.getPlatform(), serializableMenuSession.getCommcareSession());
