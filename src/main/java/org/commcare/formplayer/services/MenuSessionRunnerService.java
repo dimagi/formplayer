@@ -25,7 +25,7 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
-import org.commcare.formplayer.util.SessionUtils;
+impore org.commcare.formplayer.util.SessionUtils;
 
 import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
@@ -57,6 +57,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.xmlpull.v1.XmlPullParserException;
@@ -217,15 +219,16 @@ public class MenuSessionRunnerService {
         if (command != null) {
             Endpoint endpoint = menuSession.getEndpointByCommand(command);
             if (endpoint != null) {
-                template = template.replace("---", endpoint.getId());
-                HttpUrl.Builder urlBuilder = HttpUrl.parse(template).newBuilder();
+                HashMap<String, String> urlArgs = new HashMap<>();
+                urlArgs.put("endpoint_id", endpoint.getId());
+                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(template);
                 OrderedHashtable<String, String> data = session.getData();
                 for (String key : data.keySet()) {
                     if (endpoint.getArguments().contains(key)) {
-                        urlBuilder.addQueryParameter(key, data.get(key));
+                        urlBuilder.queryParam(key, data.get(key));
                     }
                 }
-                String finalUrl = urlBuilder.build().toString();
+                String finalUrl = urlBuilder.build(urlArgs).toString();
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
                 System.out.println("final url => " + finalUrl);
                 responseBean.setSmartLinkRedirect(finalUrl);
