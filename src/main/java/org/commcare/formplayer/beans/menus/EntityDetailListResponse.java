@@ -13,6 +13,7 @@ import org.javarosa.xpath.XPathNodeset;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by willpride on 1/4/17.
@@ -21,7 +22,7 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
 
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
-    private String[] smartLinkParams;
+    private HashMap<String, String> smartLinkParams;
 
     public EntityDetailListResponse() {}
 
@@ -88,8 +89,8 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
             XPathExpression paramExpr = XPathParseTool.parseXPath("commcare_project");
             String commcare_project = (String) ((XPathNodeset) paramExpr.eval(ec)).unpack();
             if (!commcare_project.equals("")) {
-                String[] params = new String[1];
-                params[0] = commcare_project;
+                HashMap<String, String> params = new HashMap<>();
+                params.put("domain", commcare_project);
                 this.setSmartLinkParams(params);
             }
         } catch (XPathSyntaxException e) {
@@ -118,12 +119,12 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     }
 
     @JsonGetter(value = "smartLinkParams")
-    public String[] getSmartLinkParams() {
+    public HashMap<String, String> getSmartLinkParams() {
         return smartLinkParams;
     }
 
     @JsonSetter(value = "smartLinkParams")
-    public void setSmartLinkParams(String[] params) {
+    public void setSmartLinkParams(HashMap<String, String> params) {
         this.smartLinkParams = params;
     }
 }
