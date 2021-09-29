@@ -202,7 +202,7 @@ public class MenuSessionRunnerService {
             Endpoint endpoint = menuSession.getEndpointByCommand(command);
             if (endpoint != null) {
                 HashMap<String, String> urlArgs = new HashMap<>();
-                urlArgs.put("endpoint", endpoint.getId());
+                urlArgs.put("endpoint_id", endpoint.getId());
                 UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(template);
                 OrderedHashtable<String, String> data = session.getData();
                 for (String key : data.keySet()) {
