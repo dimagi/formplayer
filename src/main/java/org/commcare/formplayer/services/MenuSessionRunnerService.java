@@ -4,8 +4,11 @@ import io.sentry.Sentry;
 
 import okhttp3.HttpUrl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
@@ -13,8 +16,6 @@ import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.MenuBean;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
-import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
-import org.commcare.formplayer.beans.menus.*;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
@@ -28,8 +29,6 @@ import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SessionUtils;
 
 import datadog.trace.api.Trace;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
@@ -57,6 +56,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.xmlpull.v1.XmlPullParserException;
@@ -66,12 +67,13 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Vector;
 
 import javax.annotation.Resource;
 
 import io.sentry.Sentry;
+
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -217,15 +219,16 @@ public class MenuSessionRunnerService {
         if (command != null) {
             Endpoint endpoint = menuSession.getEndpointByCommand(command);
             if (endpoint != null) {
-                template = template.replace("---", endpoint.getId());
-                HttpUrl.Builder urlBuilder = HttpUrl.parse(template).newBuilder();
+                HashMap<String, String> urlArgs = new HashMap<>();
+                urlArgs.put("endpoint_id", endpoint.getId());
+                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(template);
                 OrderedHashtable<String, String> data = session.getData();
                 for (String key : data.keySet()) {
                     if (endpoint.getArguments().contains(key)) {
-                        urlBuilder.addQueryParameter(key, data.get(key));
+                        urlBuilder.queryParam(key, data.get(key));
                     }
                 }
-                String finalUrl = urlBuilder.build().toString();
+                String finalUrl = urlBuilder.build(urlArgs).toString();
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
                 System.out.println("final url => " + finalUrl);
                 responseBean.setSmartLinkRedirect(finalUrl);
@@ -715,5 +718,9 @@ public class MenuSessionRunnerService {
         // reset session and play it back with derived selections
         menuSession.resetSession();
         return advanceSessionWithSelections(menuSession, selections);
+    }
+
+    public CaseSearchHelper getCaseSearchHelper() {
+        return caseSearchHelper;
     }
 }

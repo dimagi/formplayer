@@ -26,7 +26,6 @@ import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.commcare.formplayer.exceptions.UnresolvedResourceRuntimeException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.InstallService;
@@ -75,9 +74,6 @@ public abstract class AbstractBaseController {
 
     @Autowired
     private WebClient webClient;
-
-    @Autowired
-    private CaseSearchHelper caseSearchHelper;
 
     @Autowired
     protected FormSessionService formSessionService;
@@ -278,20 +274,24 @@ public abstract class AbstractBaseController {
         );
     }
 
+    @Nullable
     protected CommCareSession getCommCareSession(String menuSessionId) throws Exception {
+        if (menuSessionId == null) {
+            return null;
+        }
+
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(menuSessionId);
         FormplayerConfigEngine engine = installService.configureApplication(serializableMenuSession.getInstallReference(), serializableMenuSession.isPreview()).first;
         return SessionSerializer.deserialize(engine.getPlatform(), serializableMenuSession.getCommcareSession());
     }
 
     protected FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        // todo somehow caseSearchHelper is always null
         return new FormSession(serializableFormSession,
                 restoreFactory,
                 formSendCalloutHandler,
                 storageFactory,
                 getCommCareSession(serializableFormSession.getMenuSessionId()),
-                caseSearchHelper);
+                runnerService.getCaseSearchHelper());
     }
 
 }
