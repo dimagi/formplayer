@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.util.SerializationUtil;
 import org.commcare.formplayer.web.client.WebClient;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -23,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 
 @CacheConfig(cacheNames = "case_search")
 @Component
-public class CaseSearchHelper {
+public class CaseSearchHelper implements RemoteInstanceFetcher {
 
     @Autowired
     CacheManager cacheManager;
@@ -36,7 +37,8 @@ public class CaseSearchHelper {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    public ExternalDataInstance getSearchDataInstance(String instanceId, boolean useCaseTemplate, URI uri)
+    @Override
+    public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URI uri)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
         Cache cache = cacheManager.getCache("case_search");
         String cacheKey = getCacheKey(uri);
