@@ -4,6 +4,7 @@ import io.sentry.SentryLevel;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 
 import com.timgroup.statsd.StatsDClient;
+import datadog.trace.api.Trace;
 import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
@@ -135,6 +136,7 @@ public class LockAspect {
         );
     }
 
+    @Trace
     private Lock getLockAndBlock(String username) throws LockError {
         FormplayerReentrantLock lock = userLockRegistry.obtain(username);
         if (obtainLock(lock)) {
