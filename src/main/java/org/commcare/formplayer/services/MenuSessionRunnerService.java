@@ -499,7 +499,7 @@ public class MenuSessionRunnerService {
 
     public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri)
             throws UnfullfilledRequirementsException, XmlPullParserException, IOException, InvalidStructureException {
-        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen.getQueryDatum().getDataId(),
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(screen.getQueryDatum().getDataId(),
                 screen.getQueryDatum().useCaseTemplate(), uri);
         screen.setQueryDatum(searchDataInstance);
         return searchDataInstance;
