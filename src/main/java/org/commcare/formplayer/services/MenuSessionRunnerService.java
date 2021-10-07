@@ -230,7 +230,6 @@ public class MenuSessionRunnerService {
                 }
                 String finalUrl = urlBuilder.build(urlArgs).toString();
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
-                System.out.println("final url => " + finalUrl);
                 responseBean.setSmartLinkRedirect(finalUrl);
                 return responseBean;
             }
@@ -366,14 +365,15 @@ public class MenuSessionRunnerService {
         if (nextScreen instanceof FormplayerQueryScreen) {
             FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
             formplayerQueryScreen.refreshItemSetChoices();
-            boolean autoSearch = replay || (formplayerQueryScreen.doDefaultSearch() && !forceManualAction);
+            EvaluationContext ec = menuSession.getSessionWrapper().getEvaluationContext();
+            boolean autoSearch = replay || (formplayerQueryScreen.doDefaultSearch(ec) && !forceManualAction);
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
                 return doQuery(
                         (FormplayerQueryScreen)nextScreen,
                         menuSession,
                         queryData == null ? null : queryData.getInputs(queryKey),
-                        formplayerQueryScreen.doDefaultSearch() && !forceManualAction
+                        formplayerQueryScreen.doDefaultSearch(ec) && !forceManualAction
                 );
             } else if (queryData != null) {
                 answerQueryPrompts((FormplayerQueryScreen)nextScreen,
@@ -679,6 +679,16 @@ public class MenuSessionRunnerService {
         if (endpoint == null) {
             throw new RuntimeException("This link does not exist. Your app may have changed so that the given link is no longer valid");
         }
+        String argString = "";
+        if (endpointArgs != null) {
+            for (String key : endpointArgs.keySet()) {
+                if (argString.equals("")) {
+                    argString += "; ";
+                }
+                argString += key + " => " + endpointArgs.get(key);
+            }
+        }
+        System.out.println("Processing endpoint: " + endpoint.getId() + " with args: " + argString);
         SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
         EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
         try {
@@ -700,7 +710,15 @@ public class MenuSessionRunnerService {
         restoreFactory.performTimedSync(false, false, false);
 
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
+        int i = 0;
         for (StackOperation op : endpoint.getStackOperations()) {
+            if (i == 1) {       // hahaha
+                // prepend a query step to the op's stack operations
+                Vector<StackFrameStep> steps = op.getStackFrameSteps();
+                // include GET string for now, maybe later use extras for URL args and template="case"
+                StackFrameStep queryStep = new StackFrameStep(SessionFrame.STATE_QUERY_REQUEST, "results", "http://localhost:8000/a/bosco/phone/search/5409c49f4c284b34b792911244255e39/?commcare_registry=songs&case_id=9a1271c8-f749-4679-8abb-ce2bd0d83a90");
+                steps.add(0, queryStep);
+            }
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
             Screen s = menuSession.getNextScreen();
             if (s instanceof FormplayerSyncScreen) {
@@ -711,9 +729,11 @@ public class MenuSessionRunnerService {
                     throw new RuntimeException("Unable to claim case.");
                 }
             }
+            i++;
         }
-        menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
         String[] selections = menuSession.getSelections();
+        System.out.println("Finished executing and rebuilding, selections are " + String.join(", ", selections));
 
         // reset session and play it back with derived selections
         menuSession.resetSession();

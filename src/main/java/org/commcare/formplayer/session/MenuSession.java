@@ -212,6 +212,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     @Trace
     public Screen getNextScreen(boolean needsDetail) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
+        //System.out.println(" [next = " + next + "]");
         if (next == null) {
             if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
                 sessionWrapper.stepBack();
