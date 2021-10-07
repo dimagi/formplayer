@@ -1,5 +1,8 @@
 package org.commcare.formplayer.services;
 
+import org.commcare.suite.model.RemoteQueryDatum;
+import java.net.URI;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.suite.model.EntityDatum;
@@ -9,8 +12,10 @@ import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.util.OrderedHashtable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -41,12 +46,16 @@ public class MenuSessionFactory {
 
     private static final Log log = LogFactory.getLog(MenuSessionFactory.class);
 
+    public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
+        rebuildSessionFromFrame(menuSession, null);
+    }
+
     /**
      * Rebuild the MenuSession from its stack frame. This is used after end of form navigation.
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
      */
-    public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
+    public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
         Screen screen = menuSession.getNextScreen(false);
@@ -76,6 +85,30 @@ public class MenuSessionFactory {
                         }
                         break;
                     }
+                }
+            } else if (screen instanceof QueryScreen) {
+                QueryScreen queryScreen = (QueryScreen)screen;
+                RemoteQueryDatum neededDatum = (RemoteQueryDatum) menuSession.getSessionWrapper().getNeededDatum();
+                boolean done = false;
+                for (StackFrameStep step : steps) {
+                    if (step.getId().equals(neededDatum.getDataId())) {
+                        try {
+                            ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
+                                queryScreen.getQueryDatum().getDataId(),
+                                queryScreen.getQueryDatum().useCaseTemplate(),
+                                new URI(step.getValue())
+                            );
+                            queryScreen.setQueryDatum(searchDataInstance);
+                            screen = menuSession.getNextScreen(false);
+                            done = true;
+                        } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
+                            e.printStackTrace();
+                            throw new CommCareSessionException("Query response format error: " + e.getMessage());
+                        }
+                    }
+                }
+                if (done) {
+                    continue;
                 }
             }
             if (currentStep == null) {

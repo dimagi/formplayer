@@ -232,7 +232,6 @@ public class MenuSessionRunnerService {
                 }
                 String finalUrl = urlBuilder.build(urlArgs).toString();
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
-                System.out.println("final url => " + finalUrl);
                 responseBean.setSmartLinkRedirect(finalUrl);
                 return responseBean;
             }
@@ -696,7 +695,15 @@ public class MenuSessionRunnerService {
         restoreFactory.performTimedSync(false, false, false);
 
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
+        int i = 0;
         for (StackOperation op : endpoint.getStackOperations()) {
+            if (i == 1) {       // hahaha
+                // prepend a query step to the op's stack operations
+                Vector<StackFrameStep> steps = op.getStackFrameSteps();
+                // include GET string for now, maybe later use extras for URL args and template="case"
+                StackFrameStep queryStep = new StackFrameStep(SessionFrame.STATE_QUERY_REQUEST, "results", "http://localhost:8000/a/bosco/phone/search/5409c49f4c284b34b792911244255e39/?commcare_registry=songs&case_id=9a1271c8-f749-4679-8abb-ce2bd0d83a90");
+                steps.add(0, queryStep);
+            }
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
             Screen s = menuSession.getNextScreen();
             if (s instanceof FormplayerSyncScreen) {
@@ -707,8 +714,9 @@ public class MenuSessionRunnerService {
                     throw new RuntimeException("Unable to claim case.");
                 }
             }
+            i++;
         }
-        menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
         String[] selections = menuSession.getSelections();
 
         // reset session and play it back with derived selections
