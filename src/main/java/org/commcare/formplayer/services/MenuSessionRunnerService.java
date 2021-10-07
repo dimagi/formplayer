@@ -1,19 +1,28 @@
 package org.commcare.formplayer.services;
 
-import io.sentry.Sentry;
-
-import okhttp3.HttpUrl;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
-import org.commcare.formplayer.beans.menus.*;
+import org.commcare.formplayer.beans.menus.BaseResponseBean;
+import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
+import org.commcare.formplayer.beans.menus.EntityDetailResponse;
+import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.beans.menus.MenuBean;
+import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.QueryData;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
+import org.commcare.formplayer.screens.FormplayerQueryScreen;
+import org.commcare.formplayer.screens.FormplayerSyncScreen;
+import org.commcare.formplayer.session.FormSession;
+import org.commcare.formplayer.session.MenuSession;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
+import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.SessionUtils;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
@@ -23,12 +32,18 @@ import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.suite.model.StackOperation;
 import org.commcare.suite.model.Text;
-import org.commcare.util.screen.*;
+import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.EntityScreen;
+import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.QueryScreen;
+import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.OrderedHashtable;
+import org.javarosa.xml.util.InvalidStructureException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -48,15 +63,20 @@ import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SessionUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Vector;
-import java.util.Arrays;
 
 import javax.annotation.Resource;
+
+import io.sentry.Sentry;
+
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -446,27 +466,39 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        ExternalDataInstance searchDataInstance = searchAndSetResult(
-                screen,
-                screen.getUri(skipDefaultPromptValues));
-
-        if (searchDataInstance != null) {
-            if (screen.getCurrentMessage() != null) {
-                notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
+        String error = null;
+        ExternalDataInstance searchDataInstance;
+        try {
+            searchDataInstance = searchAndSetResult(
+                    screen,
+                    screen.getUri(skipDefaultPromptValues));
+            if (searchDataInstance == null) {
+                error = "No result from query";
             }
-        } else {
+        } catch (InvalidStructureException | IOException
+                | XmlPullParserException | UnfullfilledRequirementsException e) {
+            e.printStackTrace();
+            error = "Query response format error: " + e.getMessage();
+        }
+
+        if (error != null) {
             notificationMessage = new NotificationMessage(
-                    "Query failed with message " + screen.getCurrentMessage(),
+                    "Query failed with message " + error,
                     true,
                     NotificationMessage.Tag.query);
+        } else {
+            notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
         }
+
         Screen nextScreen = menuSession.getNextScreen();
         log.info("Next screen after query: " + nextScreen);
         return notificationMessage;
     }
 
-    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri) {
-        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen, uri);
+    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri)
+            throws UnfullfilledRequirementsException, XmlPullParserException, IOException, InvalidStructureException {
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(screen.getQueryDatum().getDataId(),
+                screen.getQueryDatum().useCaseTemplate(), uri);
         screen.setQueryDatum(searchDataInstance);
         return searchDataInstance;
     }
@@ -606,7 +638,7 @@ public class MenuSessionRunnerService {
 
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         menuSessionService.saveSession(menuSession.serialize());
-        FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
+        FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory, caseSearchHelper);
 
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
         response.setNotification(establishVolatility(formEntrySession));
@@ -682,5 +714,9 @@ public class MenuSessionRunnerService {
         // reset session and play it back with derived selections
         menuSession.resetSession();
         return advanceSessionWithSelections(menuSession, selections);
+    }
+
+    public CaseSearchHelper getCaseSearchHelper() {
+        return caseSearchHelper;
     }
 }

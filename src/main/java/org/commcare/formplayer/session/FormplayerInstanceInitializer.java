@@ -60,11 +60,6 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
         if (u == null) {
             throw new RuntimeException("There was a problem loading the user data. Please Sync.");
         }
-        if (sessionData != null) {
-            for (String key : sessionData.keySet()) {
-                session.setDatum(key, sessionData.get(key));
-            }
-        }
 
         Hashtable<String, String> userProperties = u.getProperties();
 
