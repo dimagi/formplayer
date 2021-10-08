@@ -50,6 +50,7 @@
 trunk: master
 name: autostaging
 branches:
+  - dr_form_query+ce/tracing+jls/smart-linking-in-web-apps+gh/serialize-full-xml-unless-submitting+jls/smart-linking-in-web-apps-stack-queries # Jenny Oct 7
   - dr_form_query+ce/tracing+jls/smart-linking-in-web-apps+gh/serialize-full-xml-unless-submitting # Graham Sept 28
   - dr_form_query+ce/tracing+jls/smart-linking-in-web-apps # Jenny Sept 28
   #- dr_form_query+ce/tracing # Shubham Sep 21
