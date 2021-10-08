@@ -1,9 +1,5 @@
 package org.commcare.formplayer.services;
 
-import io.sentry.Sentry;
-
-import okhttp3.HttpUrl;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.NewFormResponse;
@@ -58,6 +54,15 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import org.commcare.formplayer.objects.FormVolatilityRecord;
+import org.commcare.formplayer.screens.FormplayerQueryScreen;
+import org.commcare.formplayer.screens.FormplayerSyncScreen;
+import org.commcare.formplayer.session.FormSession;
+import org.commcare.formplayer.session.MenuSession;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
+import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.SessionUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.xmlpull.v1.XmlPullParserException;
@@ -230,7 +235,6 @@ public class MenuSessionRunnerService {
                 }
                 String finalUrl = urlBuilder.build(urlArgs).toString();
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
-                System.out.println("final url => " + finalUrl);
                 responseBean.setSmartLinkRedirect(finalUrl);
                 return responseBean;
             }
@@ -366,6 +370,7 @@ public class MenuSessionRunnerService {
         if (nextScreen instanceof FormplayerQueryScreen) {
             FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
             formplayerQueryScreen.refreshItemSetChoices();
+            EvaluationContext ec = menuSession.getSessionWrapper().getEvaluationContext();
             boolean autoSearch = replay || (formplayerQueryScreen.doDefaultSearch() && !forceManualAction);
             String queryKey = menuSession.getSessionWrapper().getCommand();
             if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
@@ -499,7 +504,7 @@ public class MenuSessionRunnerService {
 
     public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri)
             throws UnfullfilledRequirementsException, XmlPullParserException, IOException, InvalidStructureException {
-        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen.getQueryDatum().getDataId(),
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(screen.getQueryDatum().getDataId(),
                 screen.getQueryDatum().useCaseTemplate(), uri);
         screen.setQueryDatum(searchDataInstance);
         return searchDataInstance;
@@ -679,6 +684,16 @@ public class MenuSessionRunnerService {
         if (endpoint == null) {
             throw new RuntimeException("This link does not exist. Your app may have changed so that the given link is no longer valid");
         }
+        String argString = "";
+        if (endpointArgs != null) {
+            for (String key : endpointArgs.keySet()) {
+                if (!argString.equals("")) {
+                    argString += "; ";
+                }
+                argString += key + " => " + endpointArgs.get(key);
+            }
+        }
+        System.out.println("Processing endpoint: " + endpoint.getId() + " with args: " + argString);
         SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
         EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
         try {
@@ -712,8 +727,9 @@ public class MenuSessionRunnerService {
                 }
             }
         }
-        menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
         String[] selections = menuSession.getSelections();
+        System.out.println("Finished executing and rebuilding, selections are " + String.join(", ", selections));
 
         // reset session and play it back with derived selections
         menuSession.resetSession();

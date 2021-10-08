@@ -1,6 +1,9 @@
 package org.commcare.formplayer.services;
 
 import datadog.trace.api.Trace;
+import org.commcare.suite.model.RemoteQueryDatum;
+import java.net.URI;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.suite.model.EntityDatum;
@@ -10,8 +13,10 @@ import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.util.OrderedHashtable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -42,17 +47,22 @@ public class MenuSessionFactory {
 
     private static final Log log = LogFactory.getLog(MenuSessionFactory.class);
 
+    public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
+        rebuildSessionFromFrame(menuSession, null);
+    }
+
     /**
      * Rebuild the MenuSession from its stack frame. This is used after end of form navigation.
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
      */
     @Trace
-    public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
+    public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
         Screen screen = menuSession.getNextScreen(false);
         while (screen != null) {
+            System.out.println("    next screen: " + screen);
             String currentStep = null;
             if (screen instanceof MenuScreen) {
                 MenuDisplayable[] options = ((MenuScreen)screen).getMenuDisplayables();
@@ -79,7 +89,37 @@ public class MenuSessionFactory {
                         break;
                     }
                 }
+            } else if (screen instanceof QueryScreen) {
+                // TODO: just check for a step here that has the "results" id, and its xmlInstance should be results
+                // TODO: execute query during endpoint execution, and just check for a datum here?
+                // Or maybe this is fine, just need to get rid of formplayer-specific code?
+                // ...nevermind, I'm in formplayer already. But perhaps make sure that including query datums in the endpoint stack won't break the CLI.
+                QueryScreen queryScreen = (QueryScreen)screen;
+                RemoteQueryDatum neededDatum = (RemoteQueryDatum) menuSession.getSessionWrapper().getNeededDatum(); // throw error if it's NOT a RemoteQueryDatum? getDataNeededByAllEntries basically says it has to be
+                System.out.println("in a QueryScreen, neededDatum = " + neededDatum); // it's a RemoteQueryDatum
+                boolean done = false;
+                for (StackFrameStep step : steps) {
+                    if (step.getId().equals(neededDatum.getDataId())) {
+                        // Can't just run QueryScreen.handleInputAndUpdateSession becuase no one does that and it throws an auth error
+                        try {
+                            ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
+                                queryScreen.getQueryDatum().getDataId(),
+                                queryScreen.getQueryDatum().useCaseTemplate(),
+                                new URI(step.getValue())
+                            );
+                            queryScreen.setQueryDatum(searchDataInstance);
+                            screen = menuSession.getNextScreen(false);
+                            done = true;
+                        } catch (Exception e) {
+                            break;  // or do nothing, this break only affects the inner loop anyway
+                        }
+                    }
+                }
+                if (done) {
+                    continue;       // ew
+                }
             }
+            System.out.println("    currentStep: " + currentStep);
             if (currentStep == null) {
                 break;
             } else {
