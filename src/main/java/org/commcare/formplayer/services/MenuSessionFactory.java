@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.commcare.suite.model.RemoteQueryDatum;
 import java.net.URI;
+import java.net.URISyntaxException;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,12 +17,16 @@ import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.OrderedHashtable;
+import org.javarosa.xml.util.InvalidStructureException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.Vector;
 
@@ -92,11 +97,18 @@ public class MenuSessionFactory {
                 boolean done = false;
                 for (StackFrameStep step : steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
+                        URI uri = null;
+                        try {
+                            uri = new URI(step.getValue());
+                        } catch (URISyntaxException e) {
+                            e.printStackTrace();
+                            throw new CommCareSessionException("Query URL format error: " + e.getMessage());
+                        }
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                                 queryScreen.getQueryDatum().getDataId(),
                                 queryScreen.getQueryDatum().useCaseTemplate(),
-                                new URI(step.getValue())
+                                uri
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
                             screen = menuSession.getNextScreen(false);
