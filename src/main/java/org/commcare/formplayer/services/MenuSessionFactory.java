@@ -90,17 +90,11 @@ public class MenuSessionFactory {
                     }
                 }
             } else if (screen instanceof QueryScreen) {
-                // TODO: just check for a step here that has the "results" id, and its xmlInstance should be results
-                // TODO: execute query during endpoint execution, and just check for a datum here?
-                // Or maybe this is fine, just need to get rid of formplayer-specific code?
-                // ...nevermind, I'm in formplayer already. But perhaps make sure that including query datums in the endpoint stack won't break the CLI.
                 QueryScreen queryScreen = (QueryScreen)screen;
-                RemoteQueryDatum neededDatum = (RemoteQueryDatum) menuSession.getSessionWrapper().getNeededDatum(); // throw error if it's NOT a RemoteQueryDatum? getDataNeededByAllEntries basically says it has to be
-                System.out.println("in a QueryScreen, neededDatum = " + neededDatum); // it's a RemoteQueryDatum
+                RemoteQueryDatum neededDatum = (RemoteQueryDatum) menuSession.getSessionWrapper().getNeededDatum();
                 boolean done = false;
                 for (StackFrameStep step : steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
-                        // Can't just run QueryScreen.handleInputAndUpdateSession becuase no one does that and it throws an auth error
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                                 queryScreen.getQueryDatum().getDataId(),
@@ -110,13 +104,14 @@ public class MenuSessionFactory {
                             queryScreen.setQueryDatum(searchDataInstance);
                             screen = menuSession.getNextScreen(false);
                             done = true;
-                        } catch (Exception e) {
-                            break;  // or do nothing, this break only affects the inner loop anyway
+                        } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
+                            e.printStackTrace();
+                            throw new CommCareSessionException("Query response format error: " + e.getMessage());
                         }
                     }
                 }
                 if (done) {
-                    continue;       // ew
+                    continue;
                 }
             }
             System.out.println("    currentStep: " + currentStep);
