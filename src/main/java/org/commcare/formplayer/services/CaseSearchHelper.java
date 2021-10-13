@@ -77,12 +77,13 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
     public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URI uri)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
-        ExternalDataInstanceSource source = new ExternalDataInstanceSource(uri.toString());
+        ExternalDataInstanceSource source = new ExternalDataInstanceSource(instanceId, uri.toString());
 
         TreeElement root = getExternalRoot(instanceId, source);
+        source.init(root);
+
         return ExternalDataInstance.buildFromRemote(
                 instanceId,
-                root,
                 source,
                 useCaseTemplate);
     }
