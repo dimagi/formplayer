@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
@@ -36,9 +35,10 @@ public class CaseSearchHelper {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
+    // TODO: pass in data
     public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen, URI uri) {
         Cache cache = cacheManager.getCache("case_search");
-        String cacheKey = getCacheKey(uri);
+        String cacheKey = getCacheKey(uri); // TODO: problem?
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
         if (cachedRoot != null) {
             // Deep copy to avoid concurrency issues
@@ -46,7 +46,7 @@ public class CaseSearchHelper {
             return screen.buildExternalDataInstance(copyOfRoot);
         }
         log.info(String.format("Making case search request to url %s",  uri));
-        String responseString = webClient.get(uri);
+        String responseString = webClient.get(uri); // TODO
         if (responseString != null) {
             Pair<ExternalDataInstance, String> dataInstanceWithError = screen.processResponse(
                     new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
