@@ -425,7 +425,6 @@ public class MenuSessionRunnerService {
             }
         } catch (InvalidStructureException | IOException
                 | XmlPullParserException | UnfullfilledRequirementsException e) {
-            e.printStackTrace();
             error = "Query response format error: " + e.getMessage();
         }
 
