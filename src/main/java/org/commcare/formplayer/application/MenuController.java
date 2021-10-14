@@ -107,7 +107,7 @@ public class MenuController extends AbstractBaseController {
         restoreFactory.cacheSessionSelections(selections);
         return setLocationNeeds(
                 new EntityDetailListResponse(entityScreen,
-                        menuSession.getEvalContextWithHereFuncHandler(),
+                        menuSession,
                         reference,
                         storageFactory.getPropertyManager().isFuzzySearchEnabled()),
                 menuSession

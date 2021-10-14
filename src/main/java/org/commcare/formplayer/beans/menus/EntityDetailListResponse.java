@@ -11,6 +11,7 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.XPathNodeset;
 import org.javarosa.xpath.parser.XPathSyntaxException;
+import org.commcare.formplayer.session.MenuSession;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +24,8 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
     private HashMap<String, String> smartLinkParams;
+    private EntityScreen mScreen;
+    private MenuSession mMenuSession;
 
     public EntityDetailListResponse() {}
 
@@ -31,7 +34,10 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
         this.isPersistentDetail = true;
     }
 
-    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference, boolean isFuzzySearchEnabled) {
+    public EntityDetailListResponse(EntityScreen screen, MenuSession menuSession, TreeReference treeReference, boolean isFuzzySearchEnabled) {
+        mMenuSession = menuSession;
+        mScreen = screen;
+        EvaluationContext ec = menuSession.getEvalContextWithHereFuncHandler();
         entityDetailList = processDetails(screen, ec, treeReference, isFuzzySearchEnabled);
     }
 
@@ -91,7 +97,22 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
             if (!commcare_project.equals("")) {
                 HashMap<String, String> params = new HashMap<>();
                 params.put("domain", commcare_project);
-                this.setSmartLinkParams(params);
+                try {
+                    // TODO: don't hard code this, get it in the session and add session data as params
+                    XPathExpression paramExpr2 = XPathParseTool.parseXPath("@case_id");
+                    String case_id = (String) ((XPathNodeset) paramExpr2.eval(ec)).unpack();
+                    params.put("case_id", case_id);
+
+                    mScreen.getSession().setDatum("search_case_id", case_id);
+                    //System.out.println("current command is " + mScreen.getSession().getCommand());  // it's search_command.m1, but what will it be after rewinding?
+                    //System.out.println("next screen: " + mMenuSession.getNextScreen());   // it's a FormplayerSyncScreen
+                    mScreen.getSession().syncState();
+                    mScreen.getSession().finishExecuteAndPop(ec);   // rewind
+                    this.setSmartLinkParams(params);
+                } catch (Exception e) {
+                    System.out.println("whatever..." + e.getMessage());
+                    e.printStackTrace();
+                }
             }
         } catch (XPathSyntaxException e) {
             // nothing to do here
