@@ -57,8 +57,6 @@ branches:
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - dr_form_query # Shubham Sep 21
   - jls/smart-linking-in-web-apps # Jenny Sep 22
-  - jls/smart-linking-in-web-apps+dr_form_query # not a conflict branch, just a base for stack-queries branch
-  - jls/smart-linking-in-web-apps-stack-queries # Jenny Oct 7
   - gh/serialize-full-xml-unless-submitting # Graham Sept 28
 submodules:
   libs/commcare:
@@ -69,4 +67,3 @@ submodules:
       - ce/ensure-session # Cal Nov 20
       - jls/smart-linking-in-web-apps # Jenny Sept 22
       - dr_form_query # Shubham Sep 21
-      - jls/parse-stack-queries # Jenny Oct 11
