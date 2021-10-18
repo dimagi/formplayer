@@ -139,10 +139,6 @@ public class MenuSessionRunnerService {
                                          int casesPerPage,
                                          String smartLinkTemplate) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
-        BaseResponseBean smartResponse = getSmartResponse(menuSession, smartLinkTemplate);
-        if (smartResponse != null) {
-            return smartResponse;
-        }
 
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
@@ -209,35 +205,6 @@ public class MenuSessionRunnerService {
         menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
         menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
         return menuResponseBean;
-    }
-
-    private BaseResponseBean getSmartResponse(MenuSession menuSession, String template) {
-        if (template == null || template.equals("")) {
-            return null;
-        }
-
-        SessionWrapper session = menuSession.getSessionWrapper();
-        String command = session.getCommand();
-        if (command != null) {
-            Endpoint endpoint = menuSession.getEndpointByCommand(command);
-            if (endpoint != null) {
-                HashMap<String, String> urlArgs = new HashMap<>();
-                urlArgs.put("endpoint_id", endpoint.getId());
-                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(template);
-                OrderedHashtable<String, String> data = session.getData();
-                for (String key : data.keySet()) {
-                    if (endpoint.getArguments().contains(key)) {
-                        urlBuilder.queryParam(key, data.get(key));
-                    }
-                }
-                String finalUrl = urlBuilder.build(urlArgs).toString();
-                BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
-                responseBean.setSmartLinkRedirect(finalUrl);
-                return responseBean;
-            }
-        }
-
-        return null;
     }
 
     private void addHereFuncHandler(EntityScreen nextScreen, MenuSession menuSession) {
