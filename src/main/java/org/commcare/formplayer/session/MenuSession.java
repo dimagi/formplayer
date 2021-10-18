@@ -64,6 +64,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     private Map<String, EntityScreen> entityScreenCache = new HashMap<>();
     private boolean oneQuestionPerScreen;
 
+    public String smartLinkRedirect;
+
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.session = session;
