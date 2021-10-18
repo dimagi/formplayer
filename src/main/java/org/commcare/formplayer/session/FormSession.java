@@ -247,7 +247,10 @@ public class FormSession {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, sessionFrame);
-        formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false, caseSearchHelper);
+
+        sessionWrapper.prepareExternalSources(caseSearchHelper);
+
+        formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 
         setVolatilityIndicators();
         setAutoSubmitFlag();
