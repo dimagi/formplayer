@@ -474,6 +474,17 @@ public class MenuSessionRunnerService {
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
+            if (menuSession.smartLinkRedirect != null) {
+                BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
+                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(menuSession.smartLinkRedirect);
+                OrderedHashtable<String, String> data = menuSession.getSessionWrapper().getData();
+                for (String key : data.keySet()) {
+                    urlBuilder.queryParam(key, data.get(key));
+                }
+                responseBean.setSmartLinkRedirect(urlBuilder.build().toString());
+                return responseBean;
+            }
+
             Screen nextScreen = menuSession.getNextScreen();
             nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
             handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
@@ -488,8 +499,13 @@ public class MenuSessionRunnerService {
     private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException {
         menuSession.getSessionWrapper().syncState();
         if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
-            menuSession.getSessionWrapper().clearVolatiles();
-            menuSessionFactory.rebuildSessionFromFrame(menuSession);
+            String smartLinkRedirect = menuSession.getSessionWrapper().smartLinkRedirect;
+            if (smartLinkRedirect != null) {
+                menuSession.smartLinkRedirect = smartLinkRedirect;
+            } else {
+                menuSession.getSessionWrapper().clearVolatiles();
+                menuSessionFactory.rebuildSessionFromFrame(menuSession);
+            }
             return true;
         }
         return false;
