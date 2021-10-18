@@ -36,7 +36,9 @@ public class CaseSearchHelper {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen, URI uri) {
+    public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen,
+                                                      boolean skipDefaultPromptValues) {
+        URI uri = screen.getUri(skipDefaultPromptValues);
         Cache cache = cacheManager.getCache("case_search");
         String cacheKey = getCacheKey(uri);
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
