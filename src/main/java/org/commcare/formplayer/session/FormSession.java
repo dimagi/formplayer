@@ -6,6 +6,7 @@ import datadog.trace.api.Trace;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
@@ -31,13 +32,11 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.FormInstance;
-import org.javarosa.core.model.instance.InstanceInitializationFactory;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.services.storage.StorageManager;
 import org.javarosa.core.util.UnregisteredLocaleException;
 import org.javarosa.engine.FunctionExtensions;
-import org.javarosa.engine.models.Session;
 import org.javarosa.form.api.FormController;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
@@ -250,46 +249,22 @@ public class FormSession {
 
     @Trace
     private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager,
-                            SessionFrame sessionFrame, CaseSearchHelper caseSearchHelper) {
+                            SessionFrame sessionFrame, CaseSearchHelper caseSearchHelper) throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, sessionFrame);
+
+        sessionWrapper.prepareExternalSources(caseSearchHelper);
+
         formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 
-        tryAttachingRemoteInstances(caseSearchHelper);
         setVolatilityIndicators();
         setAutoSubmitFlag();
         setSuppressAutosyncFlag();
         setSkipValidation();
     }
 
-    private void tryAttachingRemoteInstances(CaseSearchHelper caseSearchHelper) {
-        ArrayList<DataInstance> replacedInstances = new ArrayList<>();
-        Enumeration<DataInstance> instances = formDef.getNonMainInstances();
-        while (instances.hasMoreElements()) {
-            DataInstance instance = instances.nextElement();
-            if (instance instanceof ExternalDataInstance &&
-                    instance.getRoot() == null &&
-                    ((ExternalDataInstance)instance).getRemoteUrl() != null) {
-                try {
-                    ExternalDataInstance externalDataInstance = (ExternalDataInstance)instance;
-                    ExternalDataInstance newExternalDataInstance = caseSearchHelper.getSearchDataInstance(instance.getInstanceId(),
-                            externalDataInstance.useCaseTemplate(),
-                            new URI(externalDataInstance.getRemoteUrl()));
-                    if (newExternalDataInstance != null && newExternalDataInstance.getRoot() != null) {
-                        replacedInstances.add(newExternalDataInstance);
-                    }
-                } catch (UnfullfilledRequirementsException | XmlPullParserException |
-                        InvalidStructureException | IOException | URISyntaxException e) {
-                    throw new RuntimeException("Could not retrieve data for instance " +
-                            instance.getName() + ". Please try opening the form again.");
-                }
-            }
-        }
-        for (DataInstance replacedInstance : replacedInstances) {
-            formDef.addNonMainInstance(replacedInstance);
-        }
-    }
+
 
     private String getPragma(String key) {
         String value = formDef.getLocalizer().getText(key);
@@ -300,6 +275,10 @@ public class FormSession {
         return null;
     }
 
+    /**
+     * Volatility indicator are used to warn the current user if another user is already performing
+     * the same action.
+     */
     @Trace
     private void setVolatilityIndicators() {
         String volatilityKey = getPragma("Pragma-Volatility-Key");
@@ -315,6 +294,11 @@ public class FormSession {
         }
     }
 
+    /**
+     * When this flag is set the form will be automatically submitted by the Web Apps UI after
+     * it has loaded. Assuming the form validation succeeds the form will be processed
+     * without the need for user interaction.
+     */
     private void setAutoSubmitFlag() {
         String shouldSubmit = getPragma("Pragma-Submit-Automatically");
         if (shouldSubmit != null) {
@@ -324,6 +308,12 @@ public class FormSession {
         }
     }
 
+    /**
+     * Disable auto-sync after form submissions for the current form session (if it was enabled).
+     * This is useful  when it is combined "Pragma-Submit-Automatically" so that multiple automatic submissions
+     * can be done without the need for sync in between each one.
+     * See {@link org.commcare.formplayer.util.FormplayerPropertyManager#POST_FORM_SYNC}
+     */
     private void setSuppressAutosyncFlag() {
         String shouldSubmit = getPragma("Pragma-Suppress-Autosync");
         if (shouldSubmit != null) {
@@ -333,6 +323,13 @@ public class FormSession {
         }
     }
 
+    /**
+     * This allows forms to skip some validation that occurs on submit.
+     * If the answer in the submission matches the answer in the model, it will no revalidate.
+     * This will still catch required questions and changes since the last validation,
+     * but will no longer catch the case where a later response invalidates an earlier one.
+     * As such, it should be used with caution, but will provide meaningful speed-ups when used in that way.
+     */
     private void setSkipValidation() {
         String shouldSkipValidation = getPragma("Pragma-Skip-Full-Form-Validation");
         if (shouldSkipValidation != null) {
