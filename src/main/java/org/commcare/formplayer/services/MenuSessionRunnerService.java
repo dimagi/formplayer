@@ -504,9 +504,9 @@ public class MenuSessionRunnerService {
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
-            if (menuSession.smartLinkRedirect != null) {
+            if (menuSession.getSmartLinkRedirect() != null) {
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
-                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(menuSession.smartLinkRedirect);
+                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(menuSession.getSmartLinkRedirect());
                 OrderedHashtable<String, String> data = menuSession.getSessionWrapper().getData();
                 for (String key : data.keySet()) {
                     urlBuilder.queryParam(key, data.get(key));
@@ -529,9 +529,9 @@ public class MenuSessionRunnerService {
     private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException {
         menuSession.getSessionWrapper().syncState();
         if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
-            String smartLinkRedirect = menuSession.getSessionWrapper().smartLinkRedirect;
+            String smartLinkRedirect = menuSession.getSessionWrapper().getSmartLinkRedirect();
             if (smartLinkRedirect != null) {
-                menuSession.smartLinkRedirect = smartLinkRedirect;
+                menuSession.setSmartLinkRedirect(smartLinkRedirect);
             } else {
                 menuSession.getSessionWrapper().clearVolatiles();
                 menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
