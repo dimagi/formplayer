@@ -225,6 +225,10 @@ public class FormSession {
         return null;
     }
 
+    /**
+     * Volatility indicator are used to warn the current user if another user is already performing
+     * the same action.
+     */
     @Trace
     private void setVolatilityIndicators()
     {
@@ -241,6 +245,11 @@ public class FormSession {
         }
     }
 
+    /**
+     * When this flag is set the form will be automatically submitted by the Web Apps UI after
+     * it has loaded. Assuming the form validation succeeds the form will be processed
+     * without the need for user interaction.
+     */
     private void setAutoSubmitFlag() {
         String shouldSubmit = getPragma("Pragma-Submit-Automatically");
         if(shouldSubmit != null ) {
@@ -251,6 +260,12 @@ public class FormSession {
         }
     }
 
+    /**
+     * Disable auto-sync after form submissions for the current form session (if it was enabled).
+     * This is useful  when it is combined "Pragma-Submit-Automatically" so that multiple automatic submissions
+     * can be done without the need for sync in between each one.
+     * See {@link org.commcare.formplayer.util.FormplayerPropertyManager#POST_FORM_SYNC}
+     */
     private void setSuppressAutosyncFlag() {
         String shouldSubmit = getPragma("Pragma-Suppress-Autosync");
         if(shouldSubmit != null ) {
@@ -261,6 +276,13 @@ public class FormSession {
         }
     }
 
+    /**
+     * This allows forms to skip some validation that occurs on submit.
+     * If the answer in the submission matches the answer in the model, it will no revalidate.
+     * This will still catch required questions and changes since the last validation,
+     * but will no longer catch the case where a later response invalidates an earlier one.
+     * As such, it should be used with caution, but will provide meaningful speed-ups when used in that way.
+     */
     private void setSkipValidation() {
         String shouldSkipValidation = getPragma("Pragma-Skip-Full-Form-Validation");
         if (shouldSkipValidation != null) {
