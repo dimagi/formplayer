@@ -102,7 +102,7 @@ public class MenuSessionFactory {
                             uri = new URI(step.getValue());
                         } catch (URISyntaxException e) {
                             e.printStackTrace();
-                            throw new CommCareSessionException("Query URL format error: " + e.getMessage());
+                            throw new CommCareSessionException("Query URL format error: " + e.getMessage(), e);
                         }
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
@@ -115,7 +115,7 @@ public class MenuSessionFactory {
                             done = true;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
                             e.printStackTrace();
-                            throw new CommCareSessionException("Query response format error: " + e.getMessage());
+                            throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
                         }
                     }
                 }
