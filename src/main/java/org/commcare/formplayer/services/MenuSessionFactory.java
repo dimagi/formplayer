@@ -94,7 +94,6 @@ public class MenuSessionFactory {
             } else if (screen instanceof QueryScreen) {
                 QueryScreen queryScreen = (QueryScreen)screen;
                 RemoteQueryDatum neededDatum = (RemoteQueryDatum) menuSession.getSessionWrapper().getNeededDatum();
-                boolean done = false;
                 for (StackFrameStep step : steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
                         URI uri = null;
@@ -112,15 +111,12 @@ public class MenuSessionFactory {
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
                             screen = menuSession.getNextScreen(false);
-                            done = true;
+                            break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
                             e.printStackTrace();
                             throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
                         }
                     }
-                }
-                if (done) {
-                    continue;
                 }
             }
             if (currentStep == null) {
