@@ -552,7 +552,7 @@ public class MenuSessionRunnerService {
         menuSession.getSessionWrapper().syncState();
         if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
             menuSession.getSessionWrapper().clearVolatiles();
-            menuSessionFactory.rebuildSessionFromFrame(menuSession);
+            menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
             return true;
         }
         return false;

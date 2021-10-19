@@ -53,10 +53,6 @@ public class MenuSessionFactory {
 
     private static final Log log = LogFactory.getLog(MenuSessionFactory.class);
 
-    public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
-        rebuildSessionFromFrame(menuSession, null);
-    }
-
     /**
      * Rebuild the MenuSession from its stack frame. This is used after end of form navigation.
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
