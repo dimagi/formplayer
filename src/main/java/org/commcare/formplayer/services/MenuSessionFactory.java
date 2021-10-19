@@ -37,6 +37,8 @@ import java.util.Vector;
 @Component
 public class MenuSessionFactory {
 
+    private static final String NEXT_SCREEN = "NEXT_SCREEN";
+
     @Autowired
     private RestoreFactory restoreFactory;
 
@@ -111,6 +113,7 @@ public class MenuSessionFactory {
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
                             screen = menuSession.getNextScreen(false);
+                            currentStep = NEXT_SCREEN;
                             break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
                             e.printStackTrace();
@@ -121,7 +124,7 @@ public class MenuSessionFactory {
             }
             if (currentStep == null) {
                 break;
-            } else {
+            } else if (currentStep != NEXT_SCREEN) {
                 menuSession.handleInput(currentStep, false, true, false, storageFactory.getPropertyManager().isAutoAdvanceMenu());
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(false);
