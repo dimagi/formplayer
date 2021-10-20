@@ -3,6 +3,7 @@ package org.commcare.formplayer.services;
 import datadog.trace.api.Trace;
 import org.commcare.suite.model.RemoteQueryDatum;
 import java.net.URI;
+import java.net.URISyntaxException;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,12 +18,16 @@ import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.util.OrderedHashtable;
+import org.javarosa.xml.util.InvalidStructureException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.Vector;
 
@@ -32,6 +37,8 @@ import java.util.Vector;
  */
 @Component
 public class MenuSessionFactory {
+
+    private static final String NEXT_SCREEN = "NEXT_SCREEN";
 
     @Autowired
     private RestoreFactory restoreFactory;
@@ -46,10 +53,6 @@ public class MenuSessionFactory {
     private String host;
 
     private static final Log log = LogFactory.getLog(MenuSessionFactory.class);
-
-    public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
-        rebuildSessionFromFrame(menuSession, null);
-    }
 
     /**
      * Rebuild the MenuSession from its stack frame. This is used after end of form navigation.
@@ -92,32 +95,36 @@ public class MenuSessionFactory {
             } else if (screen instanceof QueryScreen) {
                 QueryScreen queryScreen = (QueryScreen)screen;
                 RemoteQueryDatum neededDatum = (RemoteQueryDatum) menuSession.getSessionWrapper().getNeededDatum();
-                boolean done = false;
                 for (StackFrameStep step : steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
+                        URI uri = null;
+                        try {
+                            uri = new URI(step.getValue());
+                        } catch (URISyntaxException e) {
+                            e.printStackTrace();
+                            throw new CommCareSessionException("Query URL format error: " + e.getMessage(), e);
+                        }
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                                 queryScreen.getQueryDatum().getDataId(),
                                 queryScreen.getQueryDatum().useCaseTemplate(),
-                                new URI(step.getValue())
+                                uri
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
                             screen = menuSession.getNextScreen(false);
-                            done = true;
+                            currentStep = NEXT_SCREEN;
+                            break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
                             e.printStackTrace();
-                            throw new CommCareSessionException("Query response format error: " + e.getMessage());
+                            throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
                         }
                     }
-                }
-                if (done) {
-                    continue;
                 }
             }
             System.out.println("    currentStep: " + currentStep);
             if (currentStep == null) {
                 break;
-            } else {
+            } else if (currentStep != NEXT_SCREEN) {
                 menuSession.handleInput(currentStep, false, true, false, storageFactory.getPropertyManager().isAutoAdvanceMenu());
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(false);
