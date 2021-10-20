@@ -3,6 +3,8 @@ package org.commcare.formplayer.screens;
 import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.QueryPrompt;
 import org.commcare.util.screen.QueryScreen;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -23,6 +25,7 @@ public class FormplayerQueryScreen extends QueryScreen {
      * @param skipDefaultPromptValues don't apply the default value expressions for query prompts
      * @return case search url with search prompt values
      */
+    // TODO remove, find new cache key
     public URI getUri(boolean skipDefaultPromptValues) {
         URL url = getBaseUrl();
         Multimap<String, String> queryParams = getQueryParams(skipDefaultPromptValues);
@@ -42,4 +45,24 @@ public class FormplayerQueryScreen extends QueryScreen {
         }
         return builder.build().toUri();
     }
+
+    public MultiValueMap getRequestData(boolean skipDefaultPromptValues) {
+        MultiValueMap ret = new LinkedMultiValueMap<String, String>();
+        Multimap<String, String> queryParams = getQueryParams(skipDefaultPromptValues);
+        for (String key : queryParams.keySet()) {
+            QueryPrompt prompt = userInputDisplays.get(key);
+            for (String value : queryParams.get(key)) {
+                if (prompt != null) {
+                    String[] choices = RemoteQuerySessionManager.extractMultipleChoices(value);
+                    for (String choice : choices) {
+                        ret.add(key, choice);
+                    }
+                } else {
+                    ret.add(key, value);
+                }
+            }
+        }
+        return ret;
+    }
+
 }

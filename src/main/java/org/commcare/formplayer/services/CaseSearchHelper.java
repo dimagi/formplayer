@@ -16,6 +16,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
@@ -47,8 +48,7 @@ public class CaseSearchHelper {
             TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
             return screen.buildExternalDataInstance(copyOfRoot);
         }
-        log.info(String.format("Making case search request to url %s",  uri));
-        String responseString = webClient.get(uri);
+        String responseString = doSearch(screen, skipDefaultPromptValues);
         if (responseString != null) {
             Pair<ExternalDataInstance, String> dataInstanceWithError = screen.processResponse(
                     new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
@@ -61,6 +61,13 @@ public class CaseSearchHelper {
             return dataInstanceWithError.first;
         }
         return null;
+    }
+
+    private String doSearch(FormplayerQueryScreen screen, boolean skipDefaultPromptValues) {
+        String url = screen.getBaseUrl().toString();
+        MultiValueMap<String, String> queryParams = screen.getRequestData(skipDefaultPromptValues);
+        log.info(String.format("Making case search request to url %s with data %s",  url, queryParams));
+        return webClient.postFormData(url, queryParams);
     }
 
     private String getCacheKey(URI uri) {

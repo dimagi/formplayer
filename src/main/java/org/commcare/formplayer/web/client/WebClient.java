@@ -3,6 +3,7 @@ package org.commcare.formplayer.web.client;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -36,4 +37,15 @@ public class WebClient {
                 RequestEntity.post(url).headers(restoreFactory.getUserHeaders()).body(body), String.class
         ).getBody();
     }
+
+    public <T> String postFormData(String url, MultiValueMap data) {
+        return restTemplate.exchange(
+                RequestEntity.post(url)
+                             .headers(restoreFactory.getUserHeaders())
+                             .contentType(MediaType.MULTIPART_FORM_DATA)
+                             .body(data),
+                String.class
+        ).getBody();
+    }
+
 }
