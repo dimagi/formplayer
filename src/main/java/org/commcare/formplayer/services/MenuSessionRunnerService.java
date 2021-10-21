@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
@@ -548,8 +549,9 @@ public class MenuSessionRunnerService {
     }
 
     // Rebuild the session after executing any pending session stack
-    private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException {
+    private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         menuSession.getSessionWrapper().syncState();
+        menuSession.getSessionWrapper().prepareExternalSources(caseSearchHelper);
         if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
             menuSession.getSessionWrapper().clearVolatiles();
             menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
