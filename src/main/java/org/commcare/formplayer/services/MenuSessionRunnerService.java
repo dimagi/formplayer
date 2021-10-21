@@ -318,6 +318,7 @@ public class MenuSessionRunnerService {
                 nextScreen = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
+                break;
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
@@ -357,9 +358,10 @@ public class MenuSessionRunnerService {
             nextResponse.setSelections(menuSession.getSelections());
             return nextResponse;
         } else {
-            BaseResponseBean responseBean = new BaseResponseBean(null,
-                    new NotificationMessage(null, false, NotificationMessage.Tag.selection),
-                    true);
+            if (notificationMessage == null) {
+                notificationMessage = new NotificationMessage(null, false, NotificationMessage.Tag.selection);
+            }
+            BaseResponseBean responseBean = new BaseResponseBean(null, notificationMessage,true);
             return responseBean;
         }
     }
