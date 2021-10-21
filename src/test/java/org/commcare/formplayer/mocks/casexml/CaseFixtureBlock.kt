@@ -34,9 +34,9 @@ import javax.xml.transform.stream.StreamResult
  *
  * Usage:
  * ```java
- * val block: CaseFixtureBlock = CaseFixtureBlock.Builder("case", "case_id")
- *      .property("case_name", "name")
- *      .property("other", "any")
+ * val block: CaseFixtureBlock = CaseFixtureBlock.Builder("my_case_type")
+ *      .withProperty("case_name", "name")
+ *      .withProperty("other", "any")
  *      .build()
  * val fixture: String = CaseFixtureResult.blocksToString(block, ...)
  * ```
@@ -59,7 +59,7 @@ class CaseFixtureBlock private constructor(
     ) {
         private val props: MutableMap<String, String> = mutableMapOf();
 
-        fun property(name: String, value: String) = apply { this.props[name] = value }
+        fun withProperty(name: String, value: String) = apply { this.props[name] = value }
 
         fun build(): CaseFixtureBlock {
             return CaseFixtureBlock(
@@ -72,11 +72,17 @@ class CaseFixtureBlock private constructor(
     }
 }
 
-
-class CaseFixtureResult() {
+/**
+ * XML Serializer for CaseFixtureBlocks
+ *
+ * Usage:
+ *   val fixtureXml: Document = CaseFixtureResult.blocksToXml(block1, block2, ...)
+ *   val fixture: String = CaseFixtureResult.blocksToString(block1, block2, ...)
+ */
+class CaseFixtureResultSerializer() {
 
     companion object {
-        @JvmStatic fun blocksToXml(vararg blocks: CaseFixtureBlock): Document? {
+        @JvmStatic fun blocksToXml(vararg blocks: CaseFixtureBlock): Document {
             val docFactory = DocumentBuilderFactory.newInstance();
             val docBuilder = docFactory.newDocumentBuilder();
 
@@ -94,8 +100,6 @@ class CaseFixtureResult() {
                 case.setAttribute("owner_id", block.ownerId)
                 case.setAttribute("status", block.status)
                 for ((name, value) in block.props) {
-                    print(name)
-                    print(value)
                     val prop = doc.createElement(name)
                     prop.textContent = value
                     case.appendChild(prop)
@@ -107,7 +111,6 @@ class CaseFixtureResult() {
         @JvmStatic fun blocksToString(vararg blocks: CaseFixtureBlock): String {
             val xml = blocksToXml(*blocks)
 
-            //write the content into xml file
             val transformerFactory = TransformerFactory.newInstance()
             val transformer = transformerFactory.newTransformer()
             transformer.setOutputProperty(OutputKeys.INDENT, "yes")

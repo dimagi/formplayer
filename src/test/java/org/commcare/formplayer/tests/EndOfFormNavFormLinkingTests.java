@@ -58,8 +58,8 @@ public class EndOfFormNavFormLinkingTests extends BaseTestClass{
         NewFormResponse response =
                 sessionNavigate(new String[]{"1", "5ece8407-4d16-49fc-83d9-c044f08fc708", "0"},
                         "form_linking", NewFormResponse.class);
-        HashMap<String, Object> answers = getAnswers("0", "bart");
-        answers.put("1", "followup2");
+        HashMap<String, Object> answers = getAnswers("0", "bart");  // name question
+        answers.put("1", "followup2");  // next_form question
         SubmitResponseBean submitResponse = submitForm(answers, response.getSessionId());
         NewFormResponse formResponse = getNextScreenForEOFNavigation(submitResponse, NewFormResponse.class);
         assertEquals("Followup Form 2", formResponse.getTitle());
