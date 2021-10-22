@@ -8,5 +8,6 @@
         <referrals>None</referrals>
         <sample_choice_question>choice1</sample_choice_question>
         <sample_number_question>123</sample_number_question>
+        <duplicate_id>dupe_case_id</duplicate_id>
     </case>
 </results>
