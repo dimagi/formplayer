@@ -36,7 +36,7 @@ class FormplayerSessionWrapper extends SessionWrapper {
     @Override
     public CommCareInstanceInitializer getIIF() {
         if (initializer == null) {
-            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox) mSandbox, mPlatform, sessionData);
+            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox) mSandbox, mPlatform);
         }
         return initializer;
     }
