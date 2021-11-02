@@ -725,7 +725,7 @@ public class BaseTestClass {
         Pair<String, InstallRequestBean> refAndBean = getInstallReferenceAndBean(requestPath, InstallRequestBean.class);
         InstallRequestBean bean = refAndBean.second;
         storageFactoryMock.configure(bean);
-        restoreFactoryMock.configure(bean, new DjangoAuth("key"), bean.getUseLiveQuery());
+        restoreFactoryMock.configure(bean, new DjangoAuth("key"));
         if (bean.isMustRestore()) {
             restoreFactoryMock.performTimedSync();
         }
@@ -799,7 +799,7 @@ public class BaseTestClass {
 
         if (bean instanceof AuthenticatedRequestBean) {
             restoreFactoryMock.getSQLiteDB().closeConnection();
-            restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"), false);
+            restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"));
         }
 
         if (bean instanceof InstallRequestBean) {
