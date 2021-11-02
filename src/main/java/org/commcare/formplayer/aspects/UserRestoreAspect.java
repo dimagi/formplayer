@@ -88,7 +88,7 @@ public class UserRestoreAspect {
         }
         if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
             // Normal restore path
-            restoreFactory.configure(requestBean, auth, requestBean.getUseLiveQuery());
+            restoreFactory.configure(requestBean, auth);
             final Span span = GlobalTracer.get().activeSpan();
             if (span != null && (span instanceof MutableSpan)) {
                 MutableSpan localRootSpan = ((MutableSpan) span).getLocalRootSpan();
