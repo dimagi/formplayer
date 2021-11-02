@@ -84,7 +84,7 @@ public class UserRestoreAspect {
         }
         if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
             // Normal restore path
-            restoreFactory.configure(requestBean, auth, requestBean.getUseLiveQuery());
+            restoreFactory.configure(requestBean, auth);
         } else if (requestBean instanceof SessionRequestBean){
             // SMS users don't submit username and domain with each request, so obtain from session
             String sessionId = ((SessionRequestBean) requestBean).getSessionId();
