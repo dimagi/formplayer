@@ -48,7 +48,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
             casebase.rebase(instance.getBase());
         }
         //instance.setCacheHost((AndroidCaseInstanceTreeElement)casebase);
-        return new InstanceRoot(casebase, true);
+        return new ConcreteInstanceRoot(casebase);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
                         getVersionString(), getCurrentDrift(), u.getUsername(), u.getUniqueId(),
                         userProperties).getRoot();
         root.setParent(instance.getBase());
-        return new InstanceRoot(root);
+        return new ConcreteInstanceRoot(root);
     }
 
     @Override
@@ -79,9 +79,9 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
                 instance.getBase());
 
         if (indexedFixture != null) {
-            return new InstanceRoot(indexedFixture);
+            return new ConcreteInstanceRoot(indexedFixture);
         } else {
-            return new InstanceRoot(loadFixtureRoot(instance, instance.getReference()));
+            return new ConcreteInstanceRoot(loadFixtureRoot(instance, instance.getReference()));
         }
     }
 
