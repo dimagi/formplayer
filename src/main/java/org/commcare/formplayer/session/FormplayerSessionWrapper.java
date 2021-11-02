@@ -15,22 +15,17 @@ import java.util.Map;
  */
 class FormplayerSessionWrapper extends SessionWrapper {
 
-    private final Map<String, String> sessionData;
-
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox) {
-        this(platform, sandbox, null, new SessionFrame());
+        this(platform, sandbox, new SessionFrame());
     }
 
-    public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox,
-                                    Map<String, String> sessionData, SessionFrame sessionFrame) {
+    public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox, SessionFrame sessionFrame) {
         super(platform, sandbox);
-        this.sessionData = sessionData;
         this.frame = sessionFrame;
     }
 
     public FormplayerSessionWrapper(CommCareSession session, CommCarePlatform platform, UserSandbox sandbox) {
         super(session, platform, sandbox);
-        this.sessionData = null;
     }
 
     @Override

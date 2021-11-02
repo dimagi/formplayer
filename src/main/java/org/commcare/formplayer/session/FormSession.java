@@ -127,7 +127,7 @@ public class FormSession {
         if (sessionFrame == null) {
             sessionFrame = createSessionFrame(session.getSessionData());
         }
-        initialize(false, session.getSessionData(), storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
+        initialize(false, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
     }
 
     public FormSession(UserSqlSandbox sandbox,
@@ -168,9 +168,9 @@ public class FormSession {
 
         if (instanceContent != null) {
             loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
+            initialize(false, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
         } else {
-            initialize(true, sessionData, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
+            initialize(true, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
         }
 
         if (oneQuestionPerScreen) {
@@ -242,11 +242,11 @@ public class FormSession {
         }
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager,
+    private void initialize(boolean newInstance, StorageManager storageManager,
                             SessionFrame sessionFrame, CaseSearchHelper caseSearchHelper) throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
-        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, sessionFrame);
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionFrame);
 
         sessionWrapper.prepareExternalSources(caseSearchHelper);
 
