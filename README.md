@@ -80,6 +80,10 @@ You're likely running the wrong version of Java. Check with `java -version` whic
   - Update `~/.gradle/gradle.properties` with `org.gradle.java.home=/JDK_PATH`
   - OR run append this to gradle commands: `-Dorg.gradle.java.home=/JDK_PATH`
 
+*Could not find tools.jar on MacOS*
+
+A Big Sur update caused the built-in Java to take precedence.Follow the steps in the number one answer [here](https://stackoverflow.com/questions/64968851/could-not-find-tools-jar-please-check-that-library-internet-plug-ins-javaapple) to add the non "Internet Plug-Ins" Java to your path.
+
 ### Running in IntelliJ
 
 In order to set breakpoints, step through code, and link the runtime with source you'll need to run the code in an IDE. We use IntelliJ. To setup
