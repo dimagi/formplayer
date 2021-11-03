@@ -70,6 +70,4 @@ submodules:
       - ce/ensure-session # Cal Nov 20
       - dr_form_query # Shubham Sep 21
       - ctsims/case-template-option  # Simon Oct 22
-      - jls/parse-stack-queries+jls/parse-stack-nav
       - jls/parse-stack-queries # Jenny Oct 20
-      - jls/parse-stack-nav # Jenny Oct 20
