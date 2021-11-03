@@ -12,7 +12,9 @@ import org.commcare.session.SessionInstanceBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.AbstractTreeElement;
+import org.javarosa.core.model.instance.ConcreteInstanceRoot;
 import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.InstanceRoot;
 import org.javarosa.core.model.instance.TreeElement;
 
 import java.util.Hashtable;
@@ -37,7 +39,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     }
 
     @Override
-    protected AbstractTreeElement setupCaseData(ExternalDataInstance instance) {
+    protected InstanceRoot setupCaseData(ExternalDataInstance instance) {
         if (casebase == null) {
             SqlStorage<Case> storage = (SqlStorage<Case>) mSandbox.getCaseStorage();
             FormplayerCaseIndexTable formplayerCaseIndexTable;
@@ -48,11 +50,11 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
             casebase.rebase(instance.getBase());
         }
         //instance.setCacheHost((AndroidCaseInstanceTreeElement)casebase);
-        return casebase;
+        return new ConcreteInstanceRoot(casebase);
     }
 
     @Override
-    protected AbstractTreeElement setupSessionData(ExternalDataInstance instance) {
+    protected InstanceRoot setupSessionData(ExternalDataInstance instance) {
         if (this.mPlatform == null) {
             throw new RuntimeException("Cannot generate session instance with undeclared platform!");
         }
@@ -68,20 +70,20 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
                         getVersionString(), getCurrentDrift(), u.getUsername(), u.getUniqueId(),
                         userProperties).getRoot();
         root.setParent(instance.getBase());
-        return root;
+        return new ConcreteInstanceRoot(root);
     }
 
     @Override
-    protected AbstractTreeElement setupFixtureData(ExternalDataInstance instance) {
+    protected InstanceRoot setupFixtureData(ExternalDataInstance instance) {
         AbstractTreeElement indexedFixture = FormplayerIndexedFixtureInstanceTreeElement.get(
                 mSandbox,
                 getRefId(instance.getReference()),
                 instance.getBase());
 
         if (indexedFixture != null) {
-            return indexedFixture;
+            return new ConcreteInstanceRoot(indexedFixture);
         } else {
-            return loadFixtureRoot(instance, instance.getReference());
+            return new ConcreteInstanceRoot(loadFixtureRoot(instance, instance.getReference()));
         }
     }
 

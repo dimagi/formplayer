@@ -7,9 +7,14 @@ import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.objects.QueryData;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -25,6 +30,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -37,6 +43,9 @@ public class FormEntryWithQueryTests extends BaseTestClass{
 
     @Captor
     ArgumentCaptor<URI> uriCaptor;
+
+    @Autowired
+    FormSendCalloutHandler formSendCalloutHandler;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -93,6 +102,13 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 "instance('registry')/results/case[@case_type='case']/case_name",
                 "Burt Maclin"
         );
+
+        // make sure that the instance in the form session is using the case template
+        SerializableFormSession serializableFormSession = formSessionService.getSessionById(formResponse.getSessionId());
+        FormSession formSession = getFormSession(serializableFormSession);
+        EvaluationContext evaluationContext = formSession.getFormEntryModel().getForm().getEvaluationContext();
+        ExternalDataInstance registry = (ExternalDataInstance) evaluationContext.getInstance("registry");
+        assertTrue(registry.useCaseTemplate());
     }
 
     @Test
@@ -170,10 +186,10 @@ public class FormEntryWithQueryTests extends BaseTestClass{
 
     private void checkXpath(NewFormResponse formResponse, String xpath, String expectedValue) throws Exception {
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(formResponse.getSessionId(), xpath);
-        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXPathResponseBean.getStatus());
         String result = String.format(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>%s</result>\n", expectedValue);
-        assert evaluateXPathResponseBean.getOutput().equals(result);
+        assertEquals(result, evaluateXPathResponseBean.getOutput());
     }
 
     @Override
