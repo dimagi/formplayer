@@ -63,6 +63,8 @@ import javax.servlet.http.HttpServletRequest;
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
 
+import datadog.trace.api.Trace;
+
 /**
  * Base Controller class containing exception handling logic and
  * autowired beans used in both MenuController and FormController
@@ -247,12 +249,14 @@ public abstract class AbstractBaseController {
         );
     }
 
+    @Trace
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
         MenuSession menuSession = performInstall(sessionNavigationBean);
         menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
         return menuSession;
     }
 
+    @Trace
     protected MenuSession performInstall(InstallRequestBean bean) throws Exception {
         if (bean.getAppId() == null || bean.getAppId().isEmpty()) {
             throw new RuntimeException("App_id must not be null.");
