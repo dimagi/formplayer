@@ -304,8 +304,7 @@ public class FormSession {
      * the same action.
      */
     @Trace
-    private void setVolatilityIndicators()
-    {
+    private void setVolatilityIndicators() {
         String volatilityKey = getPragma("Pragma-Volatility-Key");
         String entityTitle = getPragma("Pragma-Volatility-Entity-Title");
 
