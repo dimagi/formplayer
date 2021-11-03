@@ -1,5 +1,7 @@
 package org.commcare.formplayer.session;
 
+import lombok.SneakyThrows;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.modern.session.SessionWrapper;
@@ -14,25 +16,37 @@ import java.util.Map;
  * Created by willpride on 1/29/16.
  */
 class FormplayerSessionWrapper extends SessionWrapper {
+    private RemoteInstanceFetcher remoteInstanceFetcher;
 
-    public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox) {
-        this(platform, sandbox, new SessionFrame());
+    public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox,
+                                    RemoteInstanceFetcher remoteInstanceFetcher) {
+        this(platform, sandbox, new SessionFrame(), remoteInstanceFetcher);
     }
 
-    public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox, SessionFrame sessionFrame) {
+    public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox, SessionFrame sessionFrame,
+                                    RemoteInstanceFetcher remoteInstanceFetcher) {
         super(platform, sandbox);
         this.frame = sessionFrame;
+        this.remoteInstanceFetcher = remoteInstanceFetcher;
     }
 
-    public FormplayerSessionWrapper(CommCareSession session, CommCarePlatform platform, UserSandbox sandbox) {
+    public FormplayerSessionWrapper(CommCareSession session, CommCarePlatform platform, UserSandbox sandbox,
+                                    RemoteInstanceFetcher remoteInstanceFetcher) {
         super(session, platform, sandbox);
+        this.remoteInstanceFetcher = remoteInstanceFetcher;
+    }
+
+    @SneakyThrows
+    private void initialize() {
+        if (initializer == null) {
+            prepareExternalSources(remoteInstanceFetcher);
+            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox) mSandbox, mPlatform);
+        }
     }
 
     @Override
     public CommCareInstanceInitializer getIIF() {
-        if (initializer == null) {
-            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox) mSandbox, mPlatform);
-        }
+        initialize();
         return initializer;
     }
 }

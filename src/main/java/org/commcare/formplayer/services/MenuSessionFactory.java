@@ -34,6 +34,9 @@ public class MenuSessionFactory {
     private InstallService installService;
 
     @Autowired
+    private CaseSearchHelper caseSearchHelper;
+
+    @Autowired
     protected FormplayerStorageFactory storageFactory;
 
     @Value("${commcarehq.host}")
@@ -96,10 +99,11 @@ public class MenuSessionFactory {
                                     String asUser,
                                     boolean preview) throws Exception {
         return new MenuSession(username, domain, appId, locale,
-                installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
+                installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
+                caseSearchHelper);
     }
 
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
-        return new MenuSession(serializableMenuSession, installService, restoreFactory, host);
+        return new MenuSession(serializableMenuSession, installService, restoreFactory, caseSearchHelper);
     }
 }
