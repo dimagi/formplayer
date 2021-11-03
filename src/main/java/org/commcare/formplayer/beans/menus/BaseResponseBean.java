@@ -23,6 +23,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     private String appVersion;
     private String[] selections;
     private HashMap<String, String> translations;
+    private String smartLinkRedirect;
 
     public BaseResponseBean() {}
 
@@ -43,6 +44,14 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSmartLinkRedirect() {
+        return smartLinkRedirect;
+    }
+
+    public void setSmartLinkRedirect(String smartLinkRedirect) {
+        this.smartLinkRedirect = smartLinkRedirect;
     }
 
     public NotificationMessage getNotification() {
