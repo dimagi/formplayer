@@ -12,7 +12,9 @@ import org.commcare.session.SessionInstanceBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.AbstractTreeElement;
+import org.javarosa.core.model.instance.ConcreteInstanceRoot;
 import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.InstanceRoot;
 import org.javarosa.core.model.instance.TreeElement;
 
 import java.util.Hashtable;
