@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 
 import java.io.ByteArrayInputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 @CacheConfig(cacheNames = "case_search")
@@ -39,16 +38,16 @@ public class CaseSearchHelper {
 
     public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen,
                                                       boolean skipDefaultPromptValues) {
-        URI uri = screen.getUri(skipDefaultPromptValues);
+        MultiValueMap<String, String> queryParams = screen.getRequestData(skipDefaultPromptValues);
         Cache cache = cacheManager.getCache("case_search");
-        String cacheKey = getCacheKey(uri);
+        String cacheKey = getCacheKey(queryParams.hashCode());
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
         if (cachedRoot != null) {
             // Deep copy to avoid concurrency issues
             TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
             return screen.buildExternalDataInstance(copyOfRoot);
         }
-        String responseString = doSearch(screen, skipDefaultPromptValues);
+        String responseString = doSearch(screen, queryParams);
         if (responseString != null) {
             Pair<ExternalDataInstance, String> dataInstanceWithError = screen.processResponse(
                     new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
@@ -63,21 +62,21 @@ public class CaseSearchHelper {
         return null;
     }
 
-    private String doSearch(FormplayerQueryScreen screen, boolean skipDefaultPromptValues) {
+    private String doSearch(FormplayerQueryScreen screen,
+                            MultiValueMap<String, String> queryParams) {
         String url = screen.getBaseUrl().toString();
-        MultiValueMap<String, String> queryParams = screen.getRequestData(skipDefaultPromptValues);
         log.info(String.format("Making case search request to url %s with data %s",  url, queryParams));
         return webClient.postFormData(url, queryParams);
     }
 
-    private String getCacheKey(URI uri) {
+    private String getCacheKey(int paramsHash) {
         StringBuilder builder = new StringBuilder();
         builder.append(restoreFactory.getDomain());
         builder.append("_").append(restoreFactory.getScrubbedUsername());
         if (restoreFactory.getAsUsername() != null) {
             builder.append("_").append(restoreFactory.getAsUsername());
         }
-        builder.append("_").append(uri);
+        builder.append("_").append(paramsHash);
         return builder.toString();
     }
 }
