@@ -44,9 +44,6 @@ public class FormEntryWithQueryTests extends BaseTestClass{
     @Captor
     ArgumentCaptor<URI> uriCaptor;
 
-    @Autowired
-    FormSendCalloutHandler formSendCalloutHandler;
-
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
