@@ -23,17 +23,14 @@ import java.util.Map;
  */
 public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
 
-    private Map<String, String> sessionData;
 
     public FormplayerInstanceInitializer(UserSqlSandbox sandbox) {
         super(sandbox);
     }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
-                                         UserSqlSandbox mSandbox, CommCarePlatform mPlatform,
-                                         Map<String, String> sessionData) {
+                                         UserSqlSandbox mSandbox, CommCarePlatform mPlatform) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
-        this.sessionData = sessionData;
     }
 
     @Override

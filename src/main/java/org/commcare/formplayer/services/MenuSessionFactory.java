@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.SessionDatum;
@@ -34,6 +35,9 @@ public class MenuSessionFactory {
     private InstallService installService;
 
     @Autowired
+    private CaseSearchHelper caseSearchHelper;
+
+    @Autowired
     protected FormplayerStorageFactory storageFactory;
 
     @Value("${commcarehq.host}")
@@ -46,7 +50,7 @@ public class MenuSessionFactory {
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
      */
-    public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
+    public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
         Screen screen = menuSession.getNextScreen(false);
@@ -96,10 +100,11 @@ public class MenuSessionFactory {
                                     String asUser,
                                     boolean preview) throws Exception {
         return new MenuSession(username, domain, appId, locale,
-                installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
+                installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview,
+                caseSearchHelper);
     }
 
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
-        return new MenuSession(serializableMenuSession, installService, restoreFactory, host);
+        return new MenuSession(serializableMenuSession, installService, restoreFactory, caseSearchHelper);
     }
 }
