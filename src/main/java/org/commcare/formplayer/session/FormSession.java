@@ -15,7 +15,6 @@ import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
@@ -29,8 +28,6 @@ import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.javarosa.core.model.instance.DataInstance;
-import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
@@ -42,23 +39,15 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
-import org.javarosa.xml.util.InvalidStructureException;
-import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Date;
+import java.util.Map;
 
 import static org.commcare.session.SessionFrame.STATE_DATUM_COMPUTED;
 import static org.commcare.session.SessionFrame.STATE_DATUM_VAL;
@@ -106,7 +95,7 @@ public class FormSession {
                        FormSendCalloutHandler formSendCalloutHandler,
                        FormplayerStorageFactory storageFactory,
                        @Nullable CommCareSession commCareSession,
-                       CaseSearchHelper caseSearchHelper) throws Exception {
+                       RemoteInstanceFetcher instanceFetcher) throws Exception {
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -130,7 +119,7 @@ public class FormSession {
         if (sessionFrame == null) {
             sessionFrame = createSessionFrame(session.getSessionData());
         }
-        initialize(false, session.getSessionData(), storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
+        initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
     }
 
     public FormSession(UserSqlSandbox sandbox,
@@ -151,7 +140,7 @@ public class FormSession {
                        boolean inPromptMode,
                        String caseId,
                        @Nullable SessionFrame sessionFrame,
-                       CaseSearchHelper caseSearchHelper) throws Exception {
+                       RemoteInstanceFetcher instanceFetcher) throws Exception {
 
         this.formDef = formDef;
         session = new SerializableFormSession(
@@ -171,9 +160,9 @@ public class FormSession {
 
         if (instanceContent != null) {
             loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
+            initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
         } else {
-            initialize(true, sessionData, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
+            initialize(true, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
         }
 
         if (oneQuestionPerScreen) {
@@ -248,13 +237,12 @@ public class FormSession {
     }
 
     @Trace
-    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager,
-                            SessionFrame sessionFrame, CaseSearchHelper caseSearchHelper) throws RemoteInstanceFetcher.RemoteInstanceException {
+    private void initialize(boolean newInstance, StorageManager storageManager,
+                            SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher) throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
-        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, sessionFrame);
-
-        sessionWrapper.prepareExternalSources(caseSearchHelper);
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(
+                platform, this.sandbox, sessionFrame, instanceFetcher);
 
         formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 
