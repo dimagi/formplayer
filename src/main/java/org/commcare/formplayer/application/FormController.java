@@ -223,7 +223,14 @@ public class FormController extends AbstractBaseController {
                         NotificationMessage.Tag.submit);
                 submitResponseBean.setNotification(notification);
                 logNotification(notification, request);
-                log.error("Submission failed with structure exception " + e);
+                log.error("Submission failed with exception " + e);
+                return submitResponseBean;
+            } catch (Exception e) {
+                submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+                NotificationMessage notification = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.submit);
+                submitResponseBean.setNotification(notification);
+                logNotification(notification, request);
+                log.error("Submission failed with exception " + e);
                 return submitResponseBean;
             }
 
@@ -252,13 +259,6 @@ public class FormController extends AbstractBaseController {
             // Only delete session immediately after successful submit
             deleteSession(submitRequestBean.getSessionId());
             restoreFactory.commit();
-        } catch (InvalidStructureException e) {
-            submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
-            NotificationMessage notification = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.submit);
-            submitResponseBean.setNotification(notification);
-            logNotification(notification, request);
-            log.error("Submission failed with structure exception " + e);
-            return submitResponseBean;
         } finally {
             // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
             if (!restoreFactory.getAutoCommit()) {
