@@ -45,7 +45,7 @@ public class MenuSessionFactory {
      * Rebuild the MenuSession from its stack frame. This is used after end of form navigation.
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
-    */
+     */
     public void rebuildSessionFromFrame(MenuSession menuSession) throws CommCareSessionException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
@@ -53,7 +53,7 @@ public class MenuSessionFactory {
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
-                MenuDisplayable[] options = ((MenuScreen) screen).getMenuDisplayables();
+                MenuDisplayable[] options = ((MenuScreen)screen).getMenuDisplayables();
                 for (int i = 0; i < options.length; i++) {
                     for (StackFrameStep step : steps) {
                         if (step.getId().equals(options[i].getCommandID())) {
@@ -62,14 +62,14 @@ public class MenuSessionFactory {
                     }
                 }
             } else if (screen instanceof EntityScreen) {
-                EntityScreen entityScreen = (EntityScreen) screen;
+                EntityScreen entityScreen = (EntityScreen)screen;
                 entityScreen.init(menuSession.getSessionWrapper());
                 if (entityScreen.shouldBeSkipped()) {
                     screen = menuSession.getNextScreen(false);
                     continue;
                 }
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
-                for (StackFrameStep step: steps) {
+                for (StackFrameStep step : steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
                         if (entityScreen.referencesContainStep(step.getValue())) {
                             currentStep = step.getValue();

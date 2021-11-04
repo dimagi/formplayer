@@ -1,27 +1,34 @@
 package org.commcare.formplayer.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
-import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.modern.database.TableBuilder;
+import org.commcare.session.CommCareSession;
+import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.CommCarePlatform;
 import org.commcare.util.engine.CommCareConfigEngine;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.instance.DataInstance;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
@@ -33,18 +40,29 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.xform.parse.XFormParser;
+import org.javarosa.xml.util.InvalidStructureException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import static org.commcare.session.SessionFrame.STATE_DATUM_COMPUTED;
+import static org.commcare.session.SessionFrame.STATE_DATUM_VAL;
 
 
 /**
- *
  * OK this (and MenuSession) is a total god object that basically mananges everything about the state of
  * a form entry session. We turn this into a SerializableFormSession to persist it. Within that we also
  * serialize the formDef to persist the session, in addition to a bunch of other information.
@@ -83,7 +101,9 @@ public class FormSession {
     public FormSession(SerializableFormSession session,
                        RestoreFactory restoreFactory,
                        FormSendCalloutHandler formSendCalloutHandler,
-                       FormplayerStorageFactory storageFactory) throws Exception{
+                       FormplayerStorageFactory storageFactory,
+                       @Nullable CommCareSession commCareSession,
+                       CaseSearchHelper caseSearchHelper) throws Exception {
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -103,7 +123,11 @@ public class FormSession {
             formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
         }
         setupFunctionContext();
-        initialize(false, session.getSessionData(), storageFactory.getStorageManager());
+        SessionFrame sessionFrame = commCareSession != null ? commCareSession.getFrame() : null;
+        if (sessionFrame == null) {
+            sessionFrame = createSessionFrame(session.getSessionData());
+        }
+        initialize(false, session.getSessionData(), storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
     }
 
     public FormSession(UserSqlSandbox sandbox,
@@ -122,7 +146,9 @@ public class FormSession {
                        FormSendCalloutHandler formSendCalloutHandler,
                        FormplayerStorageFactory storageFactory,
                        boolean inPromptMode,
-                       String caseId) throws Exception {
+                       String caseId,
+                       @Nullable SessionFrame sessionFrame,
+                       CaseSearchHelper caseSearchHelper) throws Exception {
 
         this.formDef = formDef;
         session = new SerializableFormSession(
@@ -135,11 +161,16 @@ public class FormSession {
         this.sandbox = sandbox;
         setupJavaRosaObjects();
         setupFunctionContext();
-        if(instanceContent != null){
+
+        if (sessionFrame == null) {
+            sessionFrame = createSessionFrame(sessionData);
+        }
+
+        if (instanceContent != null) {
             loadInstanceXml(formDef, instanceContent);
-            initialize(false, sessionData, storageFactory.getStorageManager());
+            initialize(false, sessionData, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
         } else {
-            initialize(true, sessionData, storageFactory.getStorageManager());
+            initialize(true, sessionData, storageFactory.getStorageManager(), sessionFrame, caseSearchHelper);
         }
 
         if (oneQuestionPerScreen) {
@@ -150,6 +181,20 @@ public class FormSession {
         session.setFormXml(FormDefStringSerializer.serialize(formDef));
     }
 
+    private SessionFrame createSessionFrame(Map<String, String> sessionData) {
+        SessionFrame sessionFrame = new SessionFrame();
+        if (sessionData != null) {
+            for (String key : sessionData.keySet()) {
+                if (key.equalsIgnoreCase(STATE_DATUM_VAL)) {
+                    sessionFrame.pushStep(new StackFrameStep(STATE_DATUM_VAL, key, sessionData.get(key)));
+                } else {
+                    sessionFrame.pushStep(new StackFrameStep(STATE_DATUM_COMPUTED, key, sessionData.get(key)));
+                }
+            }
+        }
+        return sessionFrame;
+    }
+
     /**
      * Setup static function handlers. At the moment we only expect/accept date functions
      * (in particular, now() and today()) but could be extended in the future.
@@ -158,10 +203,10 @@ public class FormSession {
         if (session.getFunctionContext() == null || session.getFunctionContext().size() < 1) {
             return;
         }
-        for (String outerKey: session.getFunctionContext().keySet()) {
+        for (String outerKey : session.getFunctionContext().keySet()) {
             FunctionHandler[] functionHandlers = session.getFunctionContext().get(outerKey);
-            if(outerKey.equals("static-date")) {
-                for (FunctionHandler functionHandler: functionHandlers) {
+            if (outerKey.equals("static-date")) {
+                for (FunctionHandler functionHandler : functionHandlers) {
                     String funcName = functionHandler.getName();
                     Date funcValue;
                     if (funcName.contains("now")) {
@@ -170,9 +215,9 @@ public class FormSession {
                         funcValue = DateUtils.parseDate(functionHandler.getValue());
                     }
                     formDef.exprEvalContext.addFunctionHandler(
-                        new FunctionExtensions.TodayFunc(
-                                funcName,
-                                funcValue)
+                            new FunctionExtensions.TodayFunc(
+                                    funcName,
+                                    funcValue)
                     );
                 }
             }
@@ -185,8 +230,8 @@ public class FormSession {
         xFormParser.loadXmlInstance(formDef, stringReader);
     }
 
-    private void initLocale(){
-        if(session.getInitLang() == null){
+    private void initLocale() {
+        if (session.getInitLang() == null) {
             session.setInitLang(this.langs[0]);
         }
         try {
@@ -197,10 +242,14 @@ public class FormSession {
         }
     }
 
-    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager) {
+    private void initialize(boolean newInstance, Map<String, String> sessionData, StorageManager storageManager,
+                            SessionFrame sessionFrame, CaseSearchHelper caseSearchHelper) throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
                 CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
-        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData);
+        FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(platform, this.sandbox, sessionData, sessionFrame);
+
+        sessionWrapper.prepareExternalSources(caseSearchHelper);
+
         formDef.initialize(newInstance, sessionWrapper.getIIF(), session.getInitLang(), false);
 
         setVolatilityIndicators();
@@ -209,9 +258,11 @@ public class FormSession {
         setSkipValidation();
     }
 
+
+
     private String getPragma(String key) {
         String value = formDef.getLocalizer().getText(key);
-        if(value != null) {
+        if (value != null) {
             return formDef.fillTemplateString(
                     value, TreeReference.rootRef());
         }
@@ -222,12 +273,11 @@ public class FormSession {
      * Volatility indicator are used to warn the current user if another user is already performing
      * the same action.
      */
-    private void setVolatilityIndicators()
-    {
+    private void setVolatilityIndicators() {
         String volatilityKey = getPragma("Pragma-Volatility-Key");
         String entityTitle = getPragma("Pragma-Volatility-Entity-Title");
 
-        if(volatilityKey != null) {
+        if (volatilityKey != null) {
             this.sessionVolatilityRecord = new FormVolatilityRecord(
                     String.format(FormVolatilityRecord.VOLATILITY_KEY_TEMPLATE,
                             this.getXmlns(),
@@ -244,10 +294,9 @@ public class FormSession {
      */
     private void setAutoSubmitFlag() {
         String shouldSubmit = getPragma("Pragma-Submit-Automatically");
-        if(shouldSubmit != null ) {
+        if (shouldSubmit != null) {
             this.shouldAutoSubmit = true;
-        }
-        else {
+        } else {
             this.shouldAutoSubmit = false;
         }
     }
@@ -260,10 +309,9 @@ public class FormSession {
      */
     private void setSuppressAutosyncFlag() {
         String shouldSubmit = getPragma("Pragma-Suppress-Autosync");
-        if(shouldSubmit != null ) {
+        if (shouldSubmit != null) {
             this.suppressAutosync = true;
-        }
-        else {
+        } else {
             this.suppressAutosync = false;
         }
     }
@@ -324,15 +372,15 @@ public class FormSession {
         return new String(bytes, "US-ASCII");
     }
 
-    public FormEntryModel getFormEntryModel(){
+    public FormEntryModel getFormEntryModel() {
         return formEntryModel;
     }
 
-    public FormEntryController getFormEntryController(){
+    public FormEntryController getFormEntryController() {
         return formEntryController;
     }
 
-    public String[] getLanguages(){
+    public String[] getLanguages() {
         return langs;
     }
 
@@ -346,13 +394,13 @@ public class FormSession {
     }
 
 
-    public String getSessionId(){
+    public String getSessionId() {
         return session.getId();
     }
 
-    public String getXmlns(){
+    public String getXmlns() {
         Object metaData = getFormEntryModel().getForm().getMainInstance().getMetaData(FormInstance.META_XMLNS);
-        if(metaData == null){
+        if (metaData == null) {
             return null;
         }
         return metaData.toString();
@@ -362,7 +410,7 @@ public class FormSession {
         return session.getInitLang();
     }
 
-    public UserSandbox getSandbox(){
+    public UserSandbox getSandbox() {
         return this.sandbox;
     }
 
@@ -381,7 +429,7 @@ public class FormSession {
         return session.getPostUrl();
     }
 
-    public String getUsername(){
+    public String getUsername() {
         return session.getUsername();
     }
 
@@ -527,8 +575,8 @@ public class FormSession {
     }
 
     /**
-     *  Automatically advance to the next question after an answer when in "prompt" mode
-     *  (currently only used by SMS)
+     * Automatically advance to the next question after an answer when in "prompt" mode
+     * (currently only used by SMS)
      */
     public FormEntryNavigationResponseBean getNextFormNavigation() throws IOException {
         formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
