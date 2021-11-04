@@ -52,16 +52,13 @@ name: autostaging
 branches:
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - jls/query-datum-and-smart-linking # Shubham/Simon/Jenny
-  - ctsims/case-template-option  # Simon Oct 22
   - gh/serialize-full-xml-unless-submitting # Graham Sept 28
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - ctsims/case-template-option+ce/tracing # Jenny Nov 3
-      #- dr_form_query+ce/tracing # Shubham Sep 21.  # uncomment when ctsims/case-template-option is merged
+      - dr_form_query+ce/tracing # Shubham Sep 21.  # uncomment when ctsims/case-template-option is merged
       - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
-      - ce/ensure-session # Cal Nov 20
+      - ce/ensure-session # Cal Nov 20 2021
       - dr_form_query # Shubham Sep 21
-      - ctsims/case-template-option  # Simon Oct 22
       - jls/parse-stack-queries # Jenny Oct 20
