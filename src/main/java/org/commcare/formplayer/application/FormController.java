@@ -195,15 +195,16 @@ public class FormController extends AbstractBaseController {
         Map<String, String> extras = new HashMap<String, String>();
         extras.put(Constants.DOMAIN_TAG, submitRequestBean.getDomain());
 
-        SubmitResponseBean submitResponseBean;
-        SimpleTimer validationTimer = new SimpleTimer();
-        validationTimer.start();
-        submitResponseBean = validateSubmitAnswers(formEntrySession.getFormEntryController(),
+        SubmitResponseBean submitResponseBean = categoryTimingHelper.timed(
+            Constants.TimingCategories.VALIDATE_SUBMISSION,
+            () -> validateSubmitAnswers(
+                formEntrySession.getFormEntryController(),
                 formEntrySession.getFormEntryModel(),
                 submitRequestBean.getAnswers(),
-                formEntrySession.getSkipValidation());
-        validationTimer.end();
-        categoryTimingHelper.recordCategoryTiming(validationTimer, Constants.TimingCategories.VALIDATE_SUBMISSION, null, extras);
+                formEntrySession.getSkipValidation()
+            ),
+            extras
+        );
 
         FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
 
