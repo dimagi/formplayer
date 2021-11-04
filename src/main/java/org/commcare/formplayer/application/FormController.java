@@ -209,87 +209,87 @@ public class FormController extends AbstractBaseController {
         if (!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
                 || !submitRequestBean.isPrevalidated()) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
-        } else {
+            return submitResponseBean;
+        }
+        try {
+            restoreFactory.setAutoCommit(false);
+
+            SimpleTimer purgeCasesTimer = null;
+
             try {
-                restoreFactory.setAutoCommit(false);
-
-                SimpleTimer purgeCasesTimer = null;
-
-                try {
-                    purgeCasesTimer = FormRecordProcessorHelper.processXML(
-                            new FormplayerTransactionParserFactory(
-                                    restoreFactory.getSqlSandbox(),
-                                    storageFactory.getPropertyManager().isBulkPerformanceEnabled()
-                            ),
-                            formEntrySession.submitGetXml(),
-                            storageFactory.getPropertyManager().isAutoPurgeEnabled()
-                    ).getPurgeCasesTimer();
-                } catch (InvalidCaseGraphException e) {
-                    submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR);
-                    NotificationMessage notification = new NotificationMessage(
-                            "Form submission failed due to a cyclic case relationship. Please contact the support desk to help resolve this issue.",
-                            true,
-                            NotificationMessage.Tag.submit);
-                    submitResponseBean.setNotification(notification);
-                    logNotification(notification, request);
-                    log.error("Submission failed with structure exception " + e);
-                    return submitResponseBean;
-                }
-
-                categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
-                        purgeCasesTimer.durationInMs() > 2 ?
-                                "Purging cases took some time" : "Probably didn't have to purge cases", extras);
-
-                String response;
-                try {
-                    response = submitService.submitForm(
-                            formEntrySession.getInstanceXml(),
-                            formEntrySession.getPostUrl()
-                    );
-                } catch (HttpClientErrorException.TooManyRequests e) {
-                    submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
-                    return submitResponseBean;
-                } catch (HttpClientErrorException e) {
-                    submitResponseBean.setStatus("error");
-                    NotificationMessage notification = new NotificationMessage(
-                            String.format("Form submission failed with error response: %s, %s, %s",
-                                    e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
-                            true, NotificationMessage.Tag.submit);
-                    submitResponseBean.setNotification(notification);
-                    logNotification(notification, request);
-                    log.error("Submit response bean: " + submitResponseBean);
-                    return submitResponseBean;
-                }
-
-                parseSubmitResponseMessage(response, submitResponseBean);
-
-                // Only delete session immediately after successful submit
-                deleteSession(submitRequestBean.getSessionId());
-                restoreFactory.commit();
-
-            } catch (InvalidStructureException e) {
-                submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
-                NotificationMessage notification = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.submit);
+                purgeCasesTimer = FormRecordProcessorHelper.processXML(
+                        new FormplayerTransactionParserFactory(
+                                restoreFactory.getSqlSandbox(),
+                                storageFactory.getPropertyManager().isBulkPerformanceEnabled()
+                        ),
+                        formEntrySession.submitGetXml(),
+                        storageFactory.getPropertyManager().isAutoPurgeEnabled()
+                ).getPurgeCasesTimer();
+            } catch (InvalidCaseGraphException e) {
+                submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR);
+                NotificationMessage notification = new NotificationMessage(
+                        "Form submission failed due to a cyclic case relationship. Please contact the support desk to help resolve this issue.",
+                        true,
+                        NotificationMessage.Tag.submit);
                 submitResponseBean.setNotification(notification);
                 logNotification(notification, request);
                 log.error("Submission failed with structure exception " + e);
                 return submitResponseBean;
-            } finally {
-                // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
-                if (!restoreFactory.getAutoCommit()) {
-                    // rollback sets autoCommit back to `true`
-                    restoreFactory.rollback();
-                }
             }
 
-            updateVolatility(formEntrySession);
+            categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
+                    purgeCasesTimer.durationInMs() > 2 ?
+                            "Purging cases took some time" : "Probably didn't have to purge cases", extras);
 
-            performSync(formEntrySession);
+            String response;
+            try {
+                response = submitService.submitForm(
+                        formEntrySession.getInstanceXml(),
+                        formEntrySession.getPostUrl()
+                );
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
+                return submitResponseBean;
+            } catch (HttpClientErrorException e) {
+                submitResponseBean.setStatus("error");
+                NotificationMessage notification = new NotificationMessage(
+                        String.format("Form submission failed with error response: %s, %s, %s",
+                                e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
+                        true, NotificationMessage.Tag.submit);
+                submitResponseBean.setNotification(notification);
+                logNotification(notification, request);
+                log.error("Submit response bean: " + submitResponseBean);
+                return submitResponseBean;
+            }
 
-            submitResponseBean.setNextScreen(
-                doEndOfFormNav(formEntrySession, extras, submitResponseBean)
-            );
+            parseSubmitResponseMessage(response, submitResponseBean);
+
+            // Only delete session immediately after successful submit
+            deleteSession(submitRequestBean.getSessionId());
+            restoreFactory.commit();
+
+        } catch (InvalidStructureException e) {
+            submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+            NotificationMessage notification = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.submit);
+            submitResponseBean.setNotification(notification);
+            logNotification(notification, request);
+            log.error("Submission failed with structure exception " + e);
+            return submitResponseBean;
+        } finally {
+            // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
+            if (!restoreFactory.getAutoCommit()) {
+                // rollback sets autoCommit back to `true`
+                restoreFactory.rollback();
+            }
         }
+
+        updateVolatility(formEntrySession);
+
+        performSync(formEntrySession);
+
+        submitResponseBean.setNextScreen(
+            doEndOfFormNav(formEntrySession, extras, submitResponseBean)
+        );
         return submitResponseBean;
     }
 
