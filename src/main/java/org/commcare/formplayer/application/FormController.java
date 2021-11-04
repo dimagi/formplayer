@@ -242,7 +242,7 @@ public class FormController extends AbstractBaseController {
                 String response;
                 try {
                     response = submitService.submitForm(
-                            formEntrySession.getInstanceXml(),
+                            formEntrySession.getInstanceXml(false),
                             formEntrySession.getPostUrl()
                     );
                 } catch (HttpClientErrorException.TooManyRequests e) {
