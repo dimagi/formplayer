@@ -4,6 +4,7 @@ import org.commcare.suite.model.RemoteQueryDatum;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.javarosa.core.model.instance.ExternalDataInstance;
+import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.suite.model.EntityDatum;
@@ -58,6 +59,7 @@ public class MenuSessionFactory {
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
      */
+    @Trace
     public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
@@ -128,6 +130,7 @@ public class MenuSessionFactory {
         }
     }
 
+    @Trace
     public MenuSession buildSession(String username,
                                     String domain,
                                     String appId,
@@ -139,6 +142,7 @@ public class MenuSessionFactory {
                 installService, restoreFactory, host, oneQuestionPerScreen, asUser, preview);
     }
 
+    @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
         return new MenuSession(serializableMenuSession, installService, restoreFactory, host);
     }
