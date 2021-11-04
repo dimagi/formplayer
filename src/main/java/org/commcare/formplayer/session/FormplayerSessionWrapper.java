@@ -19,34 +19,31 @@ class FormplayerSessionWrapper extends SessionWrapper {
     private RemoteInstanceFetcher remoteInstanceFetcher;
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox,
-                                    RemoteInstanceFetcher remoteInstanceFetcher) {
+                                    RemoteInstanceFetcher remoteInstanceFetcher) throws RemoteInstanceFetcher.RemoteInstanceException {
         this(platform, sandbox, new SessionFrame(), remoteInstanceFetcher);
     }
 
     public FormplayerSessionWrapper(CommCarePlatform platform, UserSandbox sandbox, SessionFrame sessionFrame,
-                                    RemoteInstanceFetcher remoteInstanceFetcher) {
+                                    RemoteInstanceFetcher remoteInstanceFetcher) throws RemoteInstanceFetcher.RemoteInstanceException {
         super(platform, sandbox);
         this.frame = sessionFrame;
         this.remoteInstanceFetcher = remoteInstanceFetcher;
+        prepareExternalSources(remoteInstanceFetcher);
     }
 
     public FormplayerSessionWrapper(CommCareSession session, CommCarePlatform platform, UserSandbox sandbox,
-                                    RemoteInstanceFetcher remoteInstanceFetcher) {
+                                    RemoteInstanceFetcher remoteInstanceFetcher) throws RemoteInstanceFetcher.RemoteInstanceException {
         super(session, platform, sandbox);
         this.remoteInstanceFetcher = remoteInstanceFetcher;
+        prepareExternalSources(remoteInstanceFetcher);
     }
 
-    @SneakyThrows
-    private void initialize() {
-        if (initializer == null) {
-            prepareExternalSources(remoteInstanceFetcher);
-            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox) mSandbox, mPlatform);
-        }
-    }
 
     @Override
     public CommCareInstanceInitializer getIIF() {
-        initialize();
+        if (initializer == null) {
+            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox) mSandbox, mPlatform);
+        }
         return initializer;
     }
 }

@@ -107,7 +107,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         initializeBreadcrumbs();
     }
 
-    public void resetSession() {
+    public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
         this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox, instanceFetcher);
         clearEntityScreenCache();
         initializeBreadcrumbs();
