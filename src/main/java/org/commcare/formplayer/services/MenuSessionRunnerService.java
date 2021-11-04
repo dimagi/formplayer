@@ -44,11 +44,13 @@ import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.javarosa.core.util.OrderedHashtable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.xmlpull.v1.XmlPullParserException;
@@ -115,7 +117,7 @@ public class MenuSessionRunnerService {
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, 0, "", 0, null, 0);
+        return getNextMenu(menuSession, null, 0, "", 0, null, 0, null);
     }
 
     private BaseResponseBean getNextMenu(MenuSession menuSession,
@@ -124,8 +126,14 @@ public class MenuSessionRunnerService {
                                          String searchText,
                                          int sortIndex,
                                          QueryData queryData,
-                                         int casesPerPage) throws Exception {
+                                         int casesPerPage,
+                                         String smartLinkTemplate) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
+        BaseResponseBean smartResponse = getSmartResponse(menuSession, smartLinkTemplate);
+        if (smartResponse != null) {
+            return smartResponse;
+        }
+
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
             String assertionFailure = getAssertionFailure(menuSession);
@@ -152,7 +160,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
-                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData, casesPerPage);
+                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData, casesPerPage, smartLinkTemplate);
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
@@ -193,6 +201,36 @@ public class MenuSessionRunnerService {
         return menuResponseBean;
     }
 
+    private BaseResponseBean getSmartResponse(MenuSession menuSession, String template) {
+        if (template == null || template.equals("")) {
+            return null;
+        }
+
+        SessionWrapper session = menuSession.getSessionWrapper();
+        String command = session.getCommand();
+        if (command != null) {
+            Endpoint endpoint = menuSession.getEndpointByCommand(command);
+            if (endpoint != null) {
+                HashMap<String, String> urlArgs = new HashMap<>();
+                urlArgs.put("endpoint_id", endpoint.getId());
+                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(template);
+                OrderedHashtable<String, String> data = session.getData();
+                for (String key : data.keySet()) {
+                    if (endpoint.getArguments().contains(key)) {
+                        urlBuilder.queryParam(key, data.get(key));
+                    }
+                }
+                String finalUrl = urlBuilder.build(urlArgs).toString();
+                BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
+                System.out.println("final url => " + finalUrl);
+                responseBean.setSmartLinkRedirect(finalUrl);
+                return responseBean;
+            }
+        }
+
+        return null;
+    }
+
     private void addHereFuncHandler(EntityScreen nextScreen, MenuSession menuSession) {
         EvaluationContext ec = nextScreen.getEvalContext();
         ec.addFunctionHandler(new FormplayerHereFunctionHandler(menuSession, menuSession.getCurrentBrowserLocation()));
@@ -201,7 +239,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null,
-                0, null, 0, false, 0);
+                0, null, 0, false, 0, null);
     }
 
     /**
@@ -225,7 +263,8 @@ public class MenuSessionRunnerService {
                                                          String searchText,
                                                          int sortIndex,
                                                          boolean forceManualAction,
-                                                         int casesPerPage) throws Exception {
+                                                         int casesPerPage,
+                                                         String smartLinkTemplate) throws Exception {
         BaseResponseBean nextResponse;
         boolean needsDetail;
         // If we have no selections, we're are the root screen.
@@ -237,7 +276,8 @@ public class MenuSessionRunnerService {
                     searchText,
                     sortIndex,
                     queryData,
-                    casesPerPage
+                    casesPerPage,
+                    smartLinkTemplate
             );
         }
         NotificationMessage notificationMessage = null;
@@ -294,7 +334,8 @@ public class MenuSessionRunnerService {
                 searchText,
                 sortIndex,
                 queryData,
-                casesPerPage
+                casesPerPage,
+                smartLinkTemplate
         );
         restoreFactory.cacheSessionSelections(selections);
 
