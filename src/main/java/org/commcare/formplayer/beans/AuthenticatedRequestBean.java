@@ -15,7 +15,6 @@ public class AuthenticatedRequestBean {
     protected String username;
     protected String restoreAs;
     protected boolean mustRestore;
-    private boolean useLiveQuery;
 
     private String sessionId;
     private String restoreAsCaseId;
@@ -70,14 +69,6 @@ public class AuthenticatedRequestBean {
 
     public void setMustRestore(boolean mustRestore) {
         this.mustRestore = mustRestore;
-    }
-
-    public boolean getUseLiveQuery() {
-        return useLiveQuery;
-    }
-
-    public void setUseLiveQuery(boolean useLiveQuery) {
-        this.useLiveQuery = useLiveQuery;
     }
 
     @JsonGetter(value = "tz_offset_millis")

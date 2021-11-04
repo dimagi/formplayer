@@ -8,12 +8,13 @@ fi
 
 function usage() {
     cat << EOF
-usage: $0 [-h|--help] [-v|--verbose] [--no-push] [--skip-fetch]
+usage: $0 [-h|--help] [-v|--verbose] [--deploy|--no-push] [--skip-fetch]
 
 rebuild staging from yaml configuration (scripts/staging.yaml)
 
     -h --help       print this help text
     -v --verbose    display debugging output
+    --deploy        deploy after rebuild is complete
     --no-push       do not push changes (cannot be used with --deploy)
     --skip-fetch    assume local copy is already update date with remote
 EOF
@@ -31,6 +32,9 @@ do
         ;;
       -v|--verbose)
         verbose=y
+        ;;
+      --deploy)
+        deploy=y
         ;;
       --skip-fetch)
         skip_fetch=y
@@ -68,4 +72,13 @@ then
     exit 1
 fi
 
-rebuildstaging $args
+if [[ $deploy = 'y' && $no_push != 'y' ]]
+then
+    rebuildstaging $args && {
+        which commcare-cloud \
+        && commcare-cloud --control staging deploy formplayer --quiet \
+        || echo 'Could not auto-deploy for you. Run `commcare-cloud --control staging deploy formplayer` to deploy.'
+    }
+else
+    rebuildstaging $args
+fi

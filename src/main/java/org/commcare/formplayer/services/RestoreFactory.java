@@ -139,7 +139,6 @@ public class RestoreFactory {
     CategoryTimingHelper.RecordingTimer downloadRestoreTimer;
 
     private SQLiteDB sqLiteDB = new SQLiteDB(null);
-    private boolean useLiveQuery;
     private boolean hasRestored;
     private String caseId;
     private boolean configured = false;
@@ -165,21 +164,20 @@ public class RestoreFactory {
         this.configured = true;
         sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
         log.info(String.format("configuring RestoreFactory with arguments " +
-                "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s", username, asUsername, domain, useLiveQuery));
+                "username = %s, asUsername = %s, domain = %s", username, asUsername, domain));
     }
 
-    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth, boolean useLiveQuery) {
+    public void configure(AuthenticatedRequestBean authenticatedRequestBean, HqAuth auth) {
         this.setUsername(authenticatedRequestBean.getUsername());
         this.setDomain(authenticatedRequestBean.getDomain());
         this.setAsUsername(authenticatedRequestBean.getRestoreAs());
         this.setHqAuth(auth);
-        this.setUseLiveQuery(useLiveQuery);
         this.hasRestored = false;
         this.configured = true;
         sqLiteDB = new UserDB(domain, scrubbedUsername, asUsername);
         log.info(String.format("configuring RestoreFactory from authed request with arguments " +
-                        "username = %s, asUsername = %s, domain = %s, useLiveQuery = %s",
-                username, asUsername, domain, useLiveQuery));
+                        "username = %s, asUsername = %s, domain = %s",
+                username, asUsername, domain));
     }
 
     // This function will only wipe user DBs when they have expired, otherwise will incremental sync
@@ -687,9 +685,6 @@ public class RestoreFactory {
                 builderQueryParamEncoded(builder, "since", syncToken);
             }
             builderQueryParamEncoded(builder, "device_id", getSyncDeviceId());
-            if (useLiveQuery) {
-                builderQueryParamEncoded(builder, "case_sync", "livequery");
-            }
             if (asUsername != null) {
                 String unEncodedAsUsername = asUsername;
                 if (!asUsername.contains("@")) {
@@ -815,14 +810,6 @@ public class RestoreFactory {
 
     public String getScrubbedUsername() {
         return scrubbedUsername;
-    }
-
-    public boolean isUseLiveQuery() {
-        return useLiveQuery;
-    }
-
-    public void setUseLiveQuery(boolean useLiveQuery) {
-        this.useLiveQuery = useLiveQuery;
     }
 
     public boolean getHasRestored() {
