@@ -206,8 +206,6 @@ public class FormController extends AbstractBaseController {
             extras
         );
 
-        FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
-
         if (!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
                 || !submitRequestBean.isPrevalidated()) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
@@ -284,39 +282,54 @@ public class FormController extends AbstractBaseController {
                 }
             }
 
-            if (volatilityCache != null && volatilityRecord != null) {
-                FormVolatilityRecord existingRecord = volatilityCache.get(volatilityRecord.getKey());
-                if (existingRecord != null && existingRecord.matchesUser(formEntrySession)) {
-                    volatilityRecord = existingRecord;
-                }
-                volatilityRecord.updateFormSubmitted(formEntrySession);
-                volatilityRecord.write(volatilityCache);
-            }
+            updateVolatility(formEntrySession);
 
-            boolean suppressAutosync = formEntrySession.getSuppressAutosync();
+            performSync(formEntrySession);
 
-            if (storageFactory.getPropertyManager().isSyncAfterFormEnabled() && !suppressAutosync) {
-                //If configured to do so, do a sync with server now to ensure dats is up to date.
-                //Need to do before end of form nav triggers, since the new data might change the
-                //validity of the form
-
-                boolean skipFixtures = storageFactory.getPropertyManager().skipFixturesAfterSubmit();
-                restoreFactory.performTimedSync(true, skipFixtures, false);
-            }
-
-            SimpleTimer navTimer = new SimpleTimer();
-            navTimer.start();
-            if (formEntrySession.getMenuSessionId() != null &&
-                    !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                Object nav = doEndOfFormNav(menuSessionService.getSessionById(formEntrySession.getMenuSessionId()));
-                if (nav != null) {
-                    submitResponseBean.setNextScreen(nav);
-                }
-            }
-            navTimer.end();
-            categoryTimingHelper.recordCategoryTiming(navTimer, Constants.TimingCategories.END_OF_FORM_NAV, null, extras);
+            submitResponseBean.setNextScreen(
+                doEndOfFormNav(formEntrySession, extras, submitResponseBean)
+            );
         }
         return submitResponseBean;
+    }
+
+    private Object doEndOfFormNav(FormSession formEntrySession, Map<String, String> extras, SubmitResponseBean submitResponseBean) {
+        return categoryTimingHelper.timed(
+            Constants.TimingCategories.END_OF_FORM_NAV,
+            () -> {
+                if (formEntrySession.getMenuSessionId() != null &&
+                        !("").equals(formEntrySession.getMenuSessionId().trim())) {
+                    return doEndOfFormNav(menuSessionService.getSessionById(formEntrySession.getMenuSessionId()));
+                }
+                return null;
+            },
+            extras
+        );
+    }
+
+    private void performSync(FormSession formEntrySession) throws Exception {
+        boolean suppressAutosync = formEntrySession.getSuppressAutosync();
+
+        if (storageFactory.getPropertyManager().isSyncAfterFormEnabled() && !suppressAutosync) {
+            //If configured to do so, do a sync with server now to ensure dats is up to date.
+            //Need to do before end of form nav triggers, since the new data might change the
+            //validity of the form
+
+            boolean skipFixtures = storageFactory.getPropertyManager().skipFixturesAfterSubmit();
+            restoreFactory.performTimedSync(true, skipFixtures, false);
+        }
+    }
+
+    private void updateVolatility(FormSession formEntrySession) {
+        FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
+        if (volatilityCache != null && volatilityRecord != null) {
+            FormVolatilityRecord existingRecord = volatilityCache.get(volatilityRecord.getKey());
+            if (existingRecord != null && existingRecord.matchesUser(formEntrySession)) {
+                volatilityRecord = existingRecord;
+            }
+            volatilityRecord.updateFormSubmitted(formEntrySession);
+            volatilityRecord.write(volatilityCache);
+        }
     }
 
     private void parseSubmitResponseMessage(String responseBody, SubmitResponseBean submitResponseBean) {
