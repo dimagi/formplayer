@@ -64,6 +64,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     private Map<String, EntityScreen> entityScreenCache = new HashMap<>();
     private boolean oneQuestionPerScreen;
 
+    private String smartLinkRedirect;
+
     public MenuSession(SerializableMenuSession session, InstallService installService,
                        RestoreFactory restoreFactory, String host) throws Exception {
         this.session = session;
@@ -348,8 +350,12 @@ public class MenuSession implements HereFunctionHandlerListener {
         return engine.getPlatform().getAllEndpoints().get(id);
     }
 
-    public Endpoint getEndpointByCommand(String commandId) {
-        return engine.getPlatform().getEndpointByCommand(commandId);
+    public String getSmartLinkRedirect() {
+        return smartLinkRedirect;
+    }
+
+    public void setSmartLinkRedirect(String url) {
+        smartLinkRedirect = url;
     }
 
     public void setCurrentBrowserLocation(String location) {
