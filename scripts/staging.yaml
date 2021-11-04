@@ -50,6 +50,8 @@
 trunk: master
 name: autostaging
 branches:
+  - jls/query-datum-and-smart-linking+ce/tracing
+  - jls/query-datum-and-smart-linking+gh/serialize-full-xml-unless-submitting
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - jls/query-datum-and-smart-linking # Shubham/Simon/Jenny
   - gh/serialize-full-xml-unless-submitting # Graham Sept 28
