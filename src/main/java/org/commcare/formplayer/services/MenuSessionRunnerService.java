@@ -521,7 +521,6 @@ public class MenuSessionRunnerService {
     // Rebuild the session after executing any pending session stack
     private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         menuSession.getSessionWrapper().syncState();
-        menuSession.getSessionWrapper().prepareExternalSources(caseSearchHelper);
         if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
             String smartLinkRedirect = menuSession.getSessionWrapper().getSmartLinkRedirect();
             if (smartLinkRedirect != null) {
