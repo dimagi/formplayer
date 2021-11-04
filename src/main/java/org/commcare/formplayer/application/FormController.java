@@ -65,7 +65,6 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.SimpleTimer;
 import org.springframework.web.client.HttpClientErrorException;
 
 /**
@@ -214,17 +213,8 @@ public class FormController extends AbstractBaseController {
         try {
             restoreFactory.setAutoCommit(false);
 
-            SimpleTimer purgeCasesTimer = null;
-
             try {
-                purgeCasesTimer = FormRecordProcessorHelper.processXML(
-                        new FormplayerTransactionParserFactory(
-                                restoreFactory.getSqlSandbox(),
-                                storageFactory.getPropertyManager().isBulkPerformanceEnabled()
-                        ),
-                        formEntrySession.submitGetXml(),
-                        storageFactory.getPropertyManager().isAutoPurgeEnabled()
-                ).getPurgeCasesTimer();
+                processFormXml(formEntrySession, extras);
             } catch (InvalidCaseGraphException e) {
                 submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR);
                 NotificationMessage notification = new NotificationMessage(
@@ -237,16 +227,13 @@ public class FormController extends AbstractBaseController {
                 return submitResponseBean;
             }
 
-            categoryTimingHelper.recordCategoryTiming(purgeCasesTimer, Constants.TimingCategories.PURGE_CASES,
-                    purgeCasesTimer.durationInMs() > 2 ?
-                            "Purging cases took some time" : "Probably didn't have to purge cases", extras);
 
-            String response;
             try {
-                response = submitService.submitForm(
+                String response = submitService.submitForm(
                         formEntrySession.getInstanceXml(),
                         formEntrySession.getPostUrl()
                 );
+                parseSubmitResponseMessage(response, submitResponseBean);
             } catch (HttpClientErrorException.TooManyRequests e) {
                 submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
                 return submitResponseBean;
@@ -262,12 +249,9 @@ public class FormController extends AbstractBaseController {
                 return submitResponseBean;
             }
 
-            parseSubmitResponseMessage(response, submitResponseBean);
-
             // Only delete session immediately after successful submit
             deleteSession(submitRequestBean.getSessionId());
             restoreFactory.commit();
-
         } catch (InvalidStructureException e) {
             submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
             NotificationMessage notification = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.submit);
@@ -291,6 +275,23 @@ public class FormController extends AbstractBaseController {
             doEndOfFormNav(formEntrySession, extras, submitResponseBean)
         );
         return submitResponseBean;
+    }
+
+    private void processFormXml(FormSession formEntrySession, Map<String, String> extras) throws Exception {
+        FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(
+                restoreFactory.getSqlSandbox(),
+                storageFactory.getPropertyManager().isBulkPerformanceEnabled()
+        );
+        FormRecordProcessorHelper.processXML(factory, formEntrySession.submitGetXml());
+        categoryTimingHelper.timed(
+            Constants.TimingCategories.PURGE_CASES,
+            () -> {
+                if (factory.wereCaseIndexesDisrupted() && storageFactory.getPropertyManager().isAutoPurgeEnabled()) {
+                    FormRecordProcessorHelper.purgeCases(factory.getSqlSandbox());
+                }
+            },
+            extras
+        );
     }
 
     private Object doEndOfFormNav(FormSession formEntrySession, Map<String, String> extras, SubmitResponseBean submitResponseBean) {

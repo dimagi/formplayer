@@ -58,6 +58,12 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         }
     }
 
+    public static void processXML(FormplayerTransactionParserFactory factory,
+                                          String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
+        InputStream stream = new ByteArrayInputStream(fileText.getBytes("UTF-8"));
+        process(stream, factory);
+    }
+
     public static TimingResult processXML(FormplayerTransactionParserFactory factory,
                                           String fileText,
                                           boolean autoPurgeEnabled) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException, InvalidCaseGraphException {
