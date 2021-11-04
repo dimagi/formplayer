@@ -3,6 +3,7 @@ package org.commcare.formplayer.session;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
@@ -296,7 +297,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
-                                           FormplayerStorageFactory storageFactory) throws Exception {
+                                           FormplayerStorageFactory storageFactory,
+                                           CaseSearchHelper caseSearchHelper) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
@@ -304,7 +306,8 @@ public class MenuSession implements HereFunctionHandlerListener {
         return new FormSession(sandbox, formDef, session.getUsername(), session.getDomain(),
                 sessionData, postUrl, session.getLocale(), session.getId(),
                 null, oneQuestionPerScreen,
-                session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory, false, null);
+                session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory,
+                false, null, new SessionFrame(sessionWrapper.getFrame()), caseSearchHelper);
     }
 
     public SessionWrapper getSessionWrapper() {

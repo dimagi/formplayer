@@ -50,8 +50,11 @@ To test:
 
     $ ./gradlew test
 
-    # to run a single test
-    $ ./gradlew :test --tests tests.NewFormTests.testNewForm
+    # to run a single test class
+    $ ./gradlew :test --tests=NewFormTests
+    
+    # to run a single test method
+    $ ./gradlew :test --tests=NewFormTests.testNewForm
 
     # to run in continuous mode
     $ ./gradlew test -t
