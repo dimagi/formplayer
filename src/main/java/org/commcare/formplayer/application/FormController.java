@@ -216,22 +216,14 @@ public class FormController extends AbstractBaseController {
             try {
                 processFormXml(formEntrySession, extras);
             } catch (InvalidCaseGraphException e) {
-                submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR);
-                NotificationMessage notification = new NotificationMessage(
-                        "Form submission failed due to a cyclic case relationship. Please contact the support desk to help resolve this issue.",
-                        true,
-                        NotificationMessage.Tag.submit);
-                submitResponseBean.setNotification(notification);
-                logNotification(notification, request);
-                log.error("Submission failed with exception " + e);
-                return submitResponseBean;
+                return updateResponseWithError(
+                        request, submitResponseBean, Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR,
+                        "Form submission failed due to a cyclic case relationship. " +
+                                "Please contact the support desk to help resolve this issue.", e);
             } catch (Exception e) {
-                submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
-                NotificationMessage notification = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.submit);
-                submitResponseBean.setNotification(notification);
-                logNotification(notification, request);
-                log.error("Submission failed with exception " + e);
-                return submitResponseBean;
+                return updateResponseWithError(
+                        request, submitResponseBean, Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
+                        e.getMessage(), e);
             }
 
 
@@ -245,15 +237,11 @@ public class FormController extends AbstractBaseController {
                 submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
                 return submitResponseBean;
             } catch (HttpClientErrorException e) {
-                submitResponseBean.setStatus("error");
-                NotificationMessage notification = new NotificationMessage(
+                return updateResponseWithError(
+                        request, submitResponseBean, "error",
                         String.format("Form submission failed with error response: %s, %s, %s",
                                 e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
-                        true, NotificationMessage.Tag.submit);
-                submitResponseBean.setNotification(notification);
-                logNotification(notification, request);
-                log.error("Submit response bean: " + submitResponseBean);
-                return submitResponseBean;
+                        e);
             }
 
             // Only delete session immediately after successful submit
@@ -274,6 +262,23 @@ public class FormController extends AbstractBaseController {
         submitResponseBean.setNextScreen(
             doEndOfFormNav(formEntrySession, extras, submitResponseBean)
         );
+        return submitResponseBean;
+    }
+
+    private SubmitResponseBean updateResponseWithError(
+            HttpServletRequest request,
+            SubmitResponseBean submitResponseBean,
+            String status,
+            String message,
+            Throwable exception) {
+        submitResponseBean.setStatus(status);
+        NotificationMessage notification = new NotificationMessage(
+                message,
+                true,
+                NotificationMessage.Tag.submit);
+        submitResponseBean.setNotification(notification);
+        logNotification(notification, request);
+        log.error(message, exception);
         return submitResponseBean;
     }
 
