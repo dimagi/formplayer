@@ -42,15 +42,16 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
-import org.javarosa.core.util.OrderedHashtable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.xmlpull.v1.XmlPullParserException;
@@ -222,7 +223,6 @@ public class MenuSessionRunnerService {
                 }
                 String finalUrl = urlBuilder.build(urlArgs).toString();
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
-                System.out.println("final url => " + finalUrl);
                 responseBean.setSmartLinkRedirect(finalUrl);
                 return responseBean;
             }
@@ -308,6 +308,7 @@ public class MenuSessionRunnerService {
                 nextScreen = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
+                break;
             }
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
@@ -347,9 +348,10 @@ public class MenuSessionRunnerService {
             nextResponse.setSelections(menuSession.getSelections());
             return nextResponse;
         } else {
-            BaseResponseBean responseBean = new BaseResponseBean(null,
-                    new NotificationMessage(null, false, NotificationMessage.Tag.selection),
-                    true);
+            if (notificationMessage == null) {
+                notificationMessage = new NotificationMessage(null, false, NotificationMessage.Tag.selection);
+            }
+            BaseResponseBean responseBean = new BaseResponseBean(null, notificationMessage,true);
             return responseBean;
         }
     }
@@ -544,7 +546,7 @@ public class MenuSessionRunnerService {
         menuSession.getSessionWrapper().prepareExternalSources(caseSearchHelper);
         if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
             menuSession.getSessionWrapper().clearVolatiles();
-            menuSessionFactory.rebuildSessionFromFrame(menuSession);
+            menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
             return true;
         }
         return false;
@@ -731,7 +733,7 @@ public class MenuSessionRunnerService {
                 }
             }
         }
-        menuSessionFactory.rebuildSessionFromFrame(menuSession);
+        menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
         String[] selections = menuSession.getSelections();
 
         // reset session and play it back with derived selections
