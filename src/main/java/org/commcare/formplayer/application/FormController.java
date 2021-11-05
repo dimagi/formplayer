@@ -188,7 +188,8 @@ public class FormController extends AbstractBaseController {
 
         Stream<CheckedSupplier<SubmitResponseBean>> processingSteps = Stream.of(
                 () -> validateAnswers(context),
-                () -> processFormXml(context)
+                () -> processFormXml(context),
+                () -> submitFormToRemote(context)
         );
 
         try {
@@ -202,22 +203,6 @@ public class FormController extends AbstractBaseController {
 
             if (error.isPresent()) {
                 return error.get();
-            }
-
-            try {
-                String response = submitService.submitForm(
-                        context.getFormEntrySession().getInstanceXml(),
-                        context.getFormEntrySession().getPostUrl()
-                );
-                parseSubmitResponseMessage(response, context.getResponse());
-            } catch (HttpClientErrorException.TooManyRequests e) {
-                return context.error(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
-            } catch (HttpClientErrorException e) {
-                return getErrorResponse(
-                        request, "error",
-                        String.format("Form submission failed with error response: %s, %s, %s",
-                                e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
-                        e);
             }
 
             // Only delete session immediately after successful submit
@@ -331,6 +316,25 @@ public class FormController extends AbstractBaseController {
             },
             context.getMetricsTags()
         );
+    }
+
+    private SubmitResponseBean submitFormToRemote(FormSubmissionContext context) throws IOException {
+        try {
+            String response = submitService.submitForm(
+                    context.getFormEntrySession().getInstanceXml(),
+                    context.getFormEntrySession().getPostUrl()
+            );
+            parseSubmitResponseMessage(response, context.getResponse());
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            return context.error(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
+        } catch (HttpClientErrorException e) {
+            return getErrorResponse(
+                    context.getHttpRequest(), "error",
+                    String.format("Form submission failed with error response: %s, %s, %s",
+                            e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
+                    e);
+        }
+        return context.success();
     }
 
     private Object doEndOfFormNav(FormSession formEntrySession, Map<String, String> extras, SubmitResponseBean submitResponseBean) {
