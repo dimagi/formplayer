@@ -238,10 +238,20 @@ public class FormController extends AbstractBaseController {
         return new FormSubmissionContext(request, submitRequestBean, formEntrySession, extras);
     }
 
-    private Optional<SubmitResponseBean> checkResponse(HttpServletRequest request, CheckedSupplier<SubmitResponseBean> supplier) {
+    /**
+     * Execute a step in the process and return an error response to halt processing or
+     * and empty response to continue.
+     *
+     * @param request The HTTP Request object
+     * @param step A supplier object that performs one unit of form processing and returns
+     *             a SubmitResponseBean.
+     * @return Empty Optional if the processing should continue otherwise an Optional containing the
+     *          error response.
+     */
+    private Optional<SubmitResponseBean> checkResponse(HttpServletRequest request, CheckedSupplier<SubmitResponseBean> step) {
         SubmitResponseBean response = null;
         try {
-            response = supplier.get();
+            response = step.get();
         } catch (Exception e) {
             response = getErrorResponse(
                     request, Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
@@ -345,7 +355,7 @@ public class FormController extends AbstractBaseController {
                 }
                 return null;
             },
-                context.getMetricsTags()
+            context.getMetricsTags()
         );
         context.getResponse().setNextScreen(nextScreen);
         return context.success();
