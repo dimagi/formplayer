@@ -184,37 +184,25 @@ public class FormController extends AbstractBaseController {
     @ConfigureStorageFromSession
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                          @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken, HttpServletRequest request) throws Exception {
-        FormSubmissionContext context = getFormProcessingContext(submitRequestBean);
+        FormSubmissionContext context = getFormProcessingContext(request, submitRequestBean);
 
         Stream<CheckedSupplier<SubmitResponseBean>> processingSteps = Stream.of(
-                () -> validateAnswers(context)
+                () -> validateAnswers(context),
+                () -> processFormXml(context)
         );
-        Optional<SubmitResponseBean> error = processingSteps
-                .map((step) -> checkResponse(request, step))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findFirst();
-
-        if (error.isPresent()) {
-            return error.get();
-        }
 
         try {
             restoreFactory.setAutoCommit(false);
 
-            try {
-                processFormXml(context.getFormEntrySession(), context.getMetricsTags());
-            } catch (InvalidCaseGraphException e) {
-                return getErrorResponse(
-                        request, Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR,
-                        "Form submission failed due to a cyclic case relationship. " +
-                                "Please contact the support desk to help resolve this issue.", e);
-            } catch (Exception e) {
-                return getErrorResponse(
-                        request, Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
-                        e.getMessage(), e);
-            }
+            Optional<SubmitResponseBean> error = processingSteps
+                    .map((step) -> checkResponse(request, step))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst();
 
+            if (error.isPresent()) {
+                return error.get();
+            }
 
             try {
                 String response = submitService.submitForm(
@@ -253,7 +241,7 @@ public class FormController extends AbstractBaseController {
         return context.getResponse();
     }
 
-    public FormSubmissionContext getFormProcessingContext(SubmitRequestBean submitRequestBean) throws Exception {
+    public FormSubmissionContext getFormProcessingContext(HttpServletRequest request, SubmitRequestBean submitRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(submitRequestBean.getSessionId());
         FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
 
@@ -265,7 +253,7 @@ public class FormController extends AbstractBaseController {
         Map<String, String> extras = new HashMap();
         extras.put(Constants.DOMAIN_TAG, submitRequestBean.getDomain());
 
-        return new FormSubmissionContext(submitRequestBean, formEntrySession, extras);
+        return new FormSubmissionContext(request, submitRequestBean, formEntrySession, extras);
     }
 
     private Optional<SubmitResponseBean> checkResponse(HttpServletRequest request, CheckedSupplier<SubmitResponseBean> supplier) {
@@ -312,12 +300,28 @@ public class FormController extends AbstractBaseController {
         return responseBean;
     }
 
-    private void processFormXml(FormSession formEntrySession, Map<String, String> extras) throws Exception {
+    private SubmitResponseBean processFormXml(FormSubmissionContext context) throws Exception {
+        try {
+            processXmlInner(context);
+        } catch (InvalidCaseGraphException e) {
+            return getErrorResponse(
+                    context.getHttpRequest(), Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR,
+                    "Form submission failed due to a cyclic case relationship. " +
+                            "Please contact the support desk to help resolve this issue.", e);
+        } catch (Exception e) {
+            return getErrorResponse(
+                    context.getHttpRequest(), Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
+                    e.getMessage(), e);
+        }
+        return context.success();
+    }
+
+    private void processXmlInner(FormSubmissionContext context) throws Exception {
         FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(
                 restoreFactory.getSqlSandbox(),
                 storageFactory.getPropertyManager().isBulkPerformanceEnabled()
         );
-        FormRecordProcessorHelper.processXML(factory, formEntrySession.submitGetXml());
+        FormRecordProcessorHelper.processXML(factory, context.getFormEntrySession().submitGetXml());
         categoryTimingHelper.timed(
             Constants.TimingCategories.PURGE_CASES,
             () -> {
@@ -325,7 +329,7 @@ public class FormController extends AbstractBaseController {
                     FormRecordProcessorHelper.purgeCases(factory.getSqlSandbox());
                 }
             },
-            extras
+            context.getMetricsTags()
         );
     }
 

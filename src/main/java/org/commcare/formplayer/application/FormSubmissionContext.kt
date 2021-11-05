@@ -6,10 +6,12 @@ import org.commcare.formplayer.beans.menus.ErrorBean
 import org.commcare.formplayer.session.FormSession
 import org.commcare.formplayer.util.Constants
 import java.util.HashMap
+import javax.servlet.http.HttpServletRequest
 
-class FormSubmissionContext (val request: SubmitRequestBean,
-                             val formEntrySession: FormSession,
-                             val metricsTags: Map<String, String>) {
+class FormSubmissionContext(val httpRequest: HttpServletRequest,
+                            val request: SubmitRequestBean,
+                            val formEntrySession: FormSession,
+                            val metricsTags: Map<String, String>) {
 
     val response: SubmitResponseBean = SubmitResponseBean(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)
 
