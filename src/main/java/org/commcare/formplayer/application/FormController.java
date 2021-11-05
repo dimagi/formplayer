@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -189,7 +190,10 @@ public class FormController extends AbstractBaseController {
         Stream<CheckedSupplier<SubmitResponseBean>> processingSteps = Stream.of(
                 () -> validateAnswers(context),
                 () -> processFormXml(context),
-                () -> submitFormToRemote(context)
+                () -> submitFormToRemote(context),
+                () -> updateVolatility(context),
+                () -> performSync(context),
+                () -> doEndOfFormNav(context)
         );
 
         try {
@@ -216,13 +220,6 @@ public class FormController extends AbstractBaseController {
             }
         }
 
-        updateVolatility(context.getFormEntrySession());
-
-        performSync(context.getFormEntrySession());
-
-        context.getResponse().setNextScreen(
-                doEndOfFormNav(context.getFormEntrySession(), context.getMetricsTags(), context.getResponse())
-        );
         return context.getResponse();
     }
 
@@ -337,8 +334,9 @@ public class FormController extends AbstractBaseController {
         return context.success();
     }
 
-    private Object doEndOfFormNav(FormSession formEntrySession, Map<String, String> extras, SubmitResponseBean submitResponseBean) {
-        return categoryTimingHelper.timed(
+    private SubmitResponseBean doEndOfFormNav(FormSubmissionContext context) {
+        FormSession formEntrySession = context.getFormEntrySession();
+        Object nextScreen = categoryTimingHelper.timed(
             Constants.TimingCategories.END_OF_FORM_NAV,
             () -> {
                 if (formEntrySession.getMenuSessionId() != null &&
@@ -347,12 +345,14 @@ public class FormController extends AbstractBaseController {
                 }
                 return null;
             },
-            extras
+                context.getMetricsTags()
         );
+        context.getResponse().setNextScreen(nextScreen);
+        return context.success();
     }
 
-    private void performSync(FormSession formEntrySession) throws Exception {
-        boolean suppressAutosync = formEntrySession.getSuppressAutosync();
+    private SubmitResponseBean performSync(FormSubmissionContext context) throws Exception {
+        boolean suppressAutosync = context.getFormEntrySession().getSuppressAutosync();
 
         if (storageFactory.getPropertyManager().isSyncAfterFormEnabled() && !suppressAutosync) {
             //If configured to do so, do a sync with server now to ensure dats is up to date.
@@ -362,18 +362,20 @@ public class FormController extends AbstractBaseController {
             boolean skipFixtures = storageFactory.getPropertyManager().skipFixturesAfterSubmit();
             restoreFactory.performTimedSync(true, skipFixtures, false);
         }
+        return context.success();
     }
 
-    private void updateVolatility(FormSession formEntrySession) {
-        FormVolatilityRecord volatilityRecord = formEntrySession.getSessionVolatilityRecord();
+    private SubmitResponseBean updateVolatility(FormSubmissionContext context) {
+        FormVolatilityRecord volatilityRecord = context.getFormEntrySession().getSessionVolatilityRecord();
         if (volatilityCache != null && volatilityRecord != null) {
             FormVolatilityRecord existingRecord = volatilityCache.get(volatilityRecord.getKey());
-            if (existingRecord != null && existingRecord.matchesUser(formEntrySession)) {
+            if (existingRecord != null && existingRecord.matchesUser(context.getFormEntrySession())) {
                 volatilityRecord = existingRecord;
             }
-            volatilityRecord.updateFormSubmitted(formEntrySession);
+            volatilityRecord.updateFormSubmitted(context.getFormEntrySession());
             volatilityRecord.write(volatilityCache);
         }
+        return context.success();
     }
 
     private void parseSubmitResponseMessage(String responseBody, SubmitResponseBean submitResponseBean) {
