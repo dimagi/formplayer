@@ -196,29 +196,18 @@ public class FormController extends AbstractBaseController {
                 () -> doEndOfFormNav(context)
         );
 
-        try {
-            restoreFactory.setAutoCommit(false);
+        Optional<SubmitResponseBean> error = processingSteps
+                .map((step) -> checkResponse(request, step))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst();
 
-            Optional<SubmitResponseBean> error = processingSteps
-                    .map((step) -> checkResponse(request, step))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .findFirst();
-
-            if (error.isPresent()) {
-                return error.get();
-            }
-
-            // Only delete session immediately after successful submit
-            deleteSession(submitRequestBean.getSessionId());
-            restoreFactory.commit();
-        } finally {
-            // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
-            if (!restoreFactory.getAutoCommit()) {
-                // rollback sets autoCommit back to `true`
-                restoreFactory.rollback();
-            }
+        if (error.isPresent()) {
+            return error.get();
         }
+
+        // Only delete session immediately after successful submit
+        deleteSession(submitRequestBean.getSessionId());
 
         return context.getResponse();
     }
@@ -294,7 +283,9 @@ public class FormController extends AbstractBaseController {
 
     private SubmitResponseBean processFormXml(FormSubmissionContext context) throws Exception {
         try {
+            restoreFactory.setAutoCommit(false);
             processXmlInner(context);
+            restoreFactory.commit();
         } catch (InvalidCaseGraphException e) {
             return getErrorResponse(
                     context.getHttpRequest(), Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR,
@@ -304,6 +295,12 @@ public class FormController extends AbstractBaseController {
             return getErrorResponse(
                     context.getHttpRequest(), Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
                     e.getMessage(), e);
+        } finally {
+            // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
+            if (!restoreFactory.getAutoCommit()) {
+                // rollback sets autoCommit back to `true`
+                restoreFactory.rollback();
+            }
         }
         return context.success();
     }
