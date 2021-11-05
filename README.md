@@ -82,7 +82,7 @@ You're likely running the wrong version of Java. Check with `java -version` whic
 
 *Could not find tools.jar on MacOS*
 
-A Big Sur update caused the built-in Java to take precedence.Follow the steps in the number one answer [here](https://stackoverflow.com/questions/64968851/could-not-find-tools-jar-please-check-that-library-internet-plug-ins-javaapple) to add the non "Internet Plug-Ins" Java to your path.
+A Big Sur update caused the built-in Java to take precedence. Follow the steps in the number one answer [here](https://stackoverflow.com/questions/64968851/could-not-find-tools-jar-please-check-that-library-internet-plug-ins-javaapple) to add the non "Internet Plug-Ins" Java to your path.
 
 ### Running in IntelliJ
 
