@@ -7,6 +7,7 @@ import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
+import org.commcare.formplayer.utils.CheckedSupplier;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.json.JSONObject;
@@ -26,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
@@ -182,9 +185,18 @@ public class FormController extends AbstractBaseController {
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                          @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken, HttpServletRequest request) throws Exception {
         FormSubmissionContext context = getFormProcessingContext(submitRequestBean);
-        SubmitResponseBean responseBean = validateAnswers(context);
-        if (!responseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
-            return responseBean;
+
+        Stream<CheckedSupplier<SubmitResponseBean>> processingSteps = Stream.of(
+                () -> validateAnswers(context)
+        );
+        Optional<SubmitResponseBean> error = processingSteps
+                .map((step) -> checkResponse(request, step))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst();
+
+        if (error.isPresent()) {
+            return error.get();
         }
 
         try {
@@ -254,6 +266,21 @@ public class FormController extends AbstractBaseController {
         extras.put(Constants.DOMAIN_TAG, submitRequestBean.getDomain());
 
         return new FormSubmissionContext(submitRequestBean, formEntrySession, extras);
+    }
+
+    private Optional<SubmitResponseBean> checkResponse(HttpServletRequest request, CheckedSupplier<SubmitResponseBean> supplier) {
+        SubmitResponseBean response = null;
+        try {
+            response = supplier.get();
+        } catch (Exception e) {
+            response = getErrorResponse(
+                    request, Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
+                    e.getMessage(), e);
+        }
+        if (response.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)) {
+            return Optional.empty();  // continue processing
+        }
+        return Optional.of(response);
     }
 
     private SubmitResponseBean validateAnswers(FormSubmissionContext context) {
