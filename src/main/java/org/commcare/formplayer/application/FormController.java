@@ -3,14 +3,12 @@ package org.commcare.formplayer.application;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.sentry.Sentry;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
-import org.javarosa.xml.util.InvalidStructureException;
 import org.json.JSONObject;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
@@ -183,62 +181,40 @@ public class FormController extends AbstractBaseController {
     @ConfigureStorageFromSession
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
                                          @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken, HttpServletRequest request) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionService.getSessionById(submitRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
-
-        // add tags for future datadog/sentry requests
-        datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
-        Sentry.setTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
-
-        // package additional args to pass to category timing helper
-        Map<String, String> extras = new HashMap<String, String>();
-        extras.put(Constants.DOMAIN_TAG, submitRequestBean.getDomain());
-
-        SubmitResponseBean submitResponseBean = categoryTimingHelper.timed(
-            Constants.TimingCategories.VALIDATE_SUBMISSION,
-            () -> validateSubmitAnswers(
-                formEntrySession.getFormEntryController(),
-                formEntrySession.getFormEntryModel(),
-                submitRequestBean.getAnswers(),
-                formEntrySession.getSkipValidation()
-            ),
-            extras
-        );
-
-        if (!submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
-                || !submitRequestBean.isPrevalidated()) {
-            submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
-            return submitResponseBean;
+        FormSubmissionContext context = getFormProcessingContext(submitRequestBean);
+        SubmitResponseBean responseBean = validateAnswers(context);
+        if (!responseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
+            return responseBean;
         }
+
         try {
             restoreFactory.setAutoCommit(false);
 
             try {
-                processFormXml(formEntrySession, extras);
+                processFormXml(context.getFormEntrySession(), context.getMetricsTags());
             } catch (InvalidCaseGraphException e) {
-                return updateResponseWithError(
-                        request, submitResponseBean, Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR,
+                return getErrorResponse(
+                        request, Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR,
                         "Form submission failed due to a cyclic case relationship. " +
                                 "Please contact the support desk to help resolve this issue.", e);
             } catch (Exception e) {
-                return updateResponseWithError(
-                        request, submitResponseBean, Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
+                return getErrorResponse(
+                        request, Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
                         e.getMessage(), e);
             }
 
 
             try {
                 String response = submitService.submitForm(
-                        formEntrySession.getInstanceXml(),
-                        formEntrySession.getPostUrl()
+                        context.getFormEntrySession().getInstanceXml(),
+                        context.getFormEntrySession().getPostUrl()
                 );
-                parseSubmitResponseMessage(response, submitResponseBean);
+                parseSubmitResponseMessage(response, context.getResponse());
             } catch (HttpClientErrorException.TooManyRequests e) {
-                submitResponseBean.setStatus(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
-                return submitResponseBean;
+                return context.error(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
             } catch (HttpClientErrorException e) {
-                return updateResponseWithError(
-                        request, submitResponseBean, "error",
+                return getErrorResponse(
+                        request, "error",
                         String.format("Form submission failed with error response: %s, %s, %s",
                                 e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
                         e);
@@ -255,31 +231,58 @@ public class FormController extends AbstractBaseController {
             }
         }
 
-        updateVolatility(formEntrySession);
+        updateVolatility(context.getFormEntrySession());
 
-        performSync(formEntrySession);
+        performSync(context.getFormEntrySession());
 
-        submitResponseBean.setNextScreen(
-            doEndOfFormNav(formEntrySession, extras, submitResponseBean)
+        context.getResponse().setNextScreen(
+                doEndOfFormNav(context.getFormEntrySession(), context.getMetricsTags(), context.getResponse())
         );
-        return submitResponseBean;
+        return context.getResponse();
     }
 
-    private SubmitResponseBean updateResponseWithError(
+    public FormSubmissionContext getFormProcessingContext(SubmitRequestBean submitRequestBean) throws Exception {
+        SerializableFormSession serializableFormSession = formSessionService.getSessionById(submitRequestBean.getSessionId());
+        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+
+        // add tags for future datadog/sentry requests
+        datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+        Sentry.setTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
+
+        // package additional args to pass to category timing helper
+        Map<String, String> extras = new HashMap();
+        extras.put(Constants.DOMAIN_TAG, submitRequestBean.getDomain());
+
+        return new FormSubmissionContext(submitRequestBean, formEntrySession, extras);
+    }
+
+    private SubmitResponseBean validateAnswers(FormSubmissionContext context) {
+        categoryTimingHelper.timed(
+                Constants.TimingCategories.VALIDATE_SUBMISSION,
+                () -> validateSubmitAnswers(context),
+                context.getMetricsTags()
+        );
+        if (!context.getResponse().getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
+                || !context.getRequest().isPrevalidated()) {
+            return context.error(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+        }
+        return context.success();
+    }
+
+    private SubmitResponseBean getErrorResponse(
             HttpServletRequest request,
-            SubmitResponseBean submitResponseBean,
             String status,
             String message,
             Throwable exception) {
-        submitResponseBean.setStatus(status);
+        SubmitResponseBean responseBean = new SubmitResponseBean(status);
         NotificationMessage notification = new NotificationMessage(
                 message,
                 true,
                 NotificationMessage.Tag.submit);
-        submitResponseBean.setNotification(notification);
+        responseBean.setNotification(notification);
         logNotification(notification, request);
         log.error(message, exception);
-        return submitResponseBean;
+        return responseBean;
     }
 
     private void processFormXml(FormSession formEntrySession, Map<String, String> extras) throws Exception {
@@ -366,17 +369,15 @@ public class FormController extends AbstractBaseController {
      * Iterate over all answers and attempt to save them to check for validity.
      * Submit the complete XML instance to HQ if valid.
      */
-    private SubmitResponseBean validateSubmitAnswers(FormEntryController formEntryController,
-                                                     FormEntryModel formEntryModel,
-                                                     Map<String, Object> answers,
-                                                     boolean skipValidation) {
-        SubmitResponseBean submitResponseBean = new SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
-        HashMap<String, ErrorBean> errors = validateAnswers(formEntryController, formEntryModel, answers, skipValidation);
-        submitResponseBean.setErrors(errors);
+    private void validateSubmitAnswers(FormSubmissionContext context) {
+        HashMap<String, ErrorBean> errors = validateAnswers(
+                context.getFormEntrySession().getFormEntryController(),
+                context.getFormEntrySession().getFormEntryModel(),
+                context.getRequest().getAnswers(),
+                context.getFormEntrySession().getSkipValidation());
         if (errors.size() > 0) {
-            submitResponseBean.setStatus(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+            context.error(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, errors);
         }
-        return submitResponseBean;
     }
 
     // Iterate over all answers and attempt to save them to check for validity.
