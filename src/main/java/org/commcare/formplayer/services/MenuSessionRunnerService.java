@@ -708,8 +708,6 @@ public class MenuSessionRunnerService {
             throw new RuntimeException(String.format("Invalid arguments supplied for link.%s%s", missingMessage, unexpectedMessage));
         }
 
-        restoreFactory.performTimedSync(false, false, false);
-
         // Sync requests aren't run when executing operations, so stop and check for them after each operation
         for (StackOperation op : endpoint.getStackOperations()) {
             sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
