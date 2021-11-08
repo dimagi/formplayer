@@ -6,6 +6,7 @@ import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.TestContext;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -42,9 +43,9 @@ public class SubmitTests extends BaseTestClass {
                 .when(formSessionService).deleteSessionById(anyString());
 
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
-        assert submitResponseBean.getStatus().equals("error");
+        Assertions.assertEquals("error", submitResponseBean.getStatus());
         // Assert that case is not created
-        assert(caseStorage.getNumRecords()== 15);
+        Assertions.assertEquals(15, caseStorage.getNumRecords());
 
         sandbox.getConnection().close();
     }
