@@ -225,6 +225,15 @@ public class BaseTestClass {
                 throw new FormNotFoundException(key);
             }
         });
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                String key = (String) invocation.getArguments()[0];
+                sessionMap.remove(key);
+                return null;
+            }
+        }).when(formSessionService).deleteSessionById(anyString());
     }
 
     private void mockMenuSessionService() {
