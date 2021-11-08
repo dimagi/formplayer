@@ -249,7 +249,7 @@ public class FormController extends AbstractBaseController {
                     request, Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
                     e.getMessage(), e);
         }
-        if (response.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)) {
+        if (response.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)) {
             return Optional.empty();  // continue processing
         }
         log.debug(String.format("Aborting execution of processing steps after error in step: %s", step));
@@ -262,7 +262,7 @@ public class FormController extends AbstractBaseController {
                 () -> validateSubmitAnswers(context),
                 context.getMetricsTags()
         );
-        if (!context.getResponse().getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
+        if (!context.getResponse().getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)
                 || !context.getRequest().isPrevalidated()) {
             return context.error(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         }
