@@ -5,6 +5,7 @@ import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.TestContext;
@@ -20,8 +21,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 /**
@@ -30,6 +34,7 @@ import static org.mockito.Mockito.when;
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class SubmitTests extends BaseTestClass {
+    static Map<String, Object> answers = ImmutableMap.of("0", "name", "1", "1");
 
     @BeforeEach
     public void setUpLocal() {
@@ -49,7 +54,7 @@ public class SubmitTests extends BaseTestClass {
                 HttpStatus.BAD_REQUEST, "", new HttpHeaders(), new byte[0], null);
         when(submitServiceMock.submitForm(anyString(), anyString())).thenThrow(exception);
 
-        SubmitResponseBean submitResponseBean = submitForm(sessionId);
+        SubmitResponseBean submitResponseBean = submitForm(answers, sessionId);
 
         assertEquals("error", submitResponseBean.getStatus());
 
@@ -60,30 +65,48 @@ public class SubmitTests extends BaseTestClass {
         Assertions.assertNotNull(formSessionService.getSessionById(sessionId));
     }
 
-    private SubmitResponseBean submitForm(String sessionId) throws Exception {
-        Map<String, Object> answers = ImmutableMap.of("0", "name", "1", "1");
-        return submitForm(answers, sessionId);
-    }
-
     @Test
     public void testSubmissionSuccessfulAfterProcessingFailure() throws Exception {
         String sessionId = startSession("2", "0");
 
+        HttpClientErrorException exception = HttpClientErrorException.create(
+                HttpStatus.BAD_REQUEST, "", new HttpHeaders(), new byte[0], null);
         when(submitServiceMock.submitForm(anyString(), anyString()))
-                .thenThrow(new Exception("mock"))
+                .thenThrow(exception)
                 .thenReturn("<OpenRosaResponse>" +
                         "<message nature='status'>" +
                         "OK" +
                         "</message>" +
                         "</OpenRosaResponse>");
 
-        SubmitResponseBean submitResponseBean = submitForm(sessionId);
+        SubmitResponseBean submitResponseBean = submitForm(answers, sessionId);
         assertEquals("error", submitResponseBean.getStatus());
 
-        SubmitResponseBean response = submitForm(sessionId);
+        SubmitResponseBean response = submitForm(answers, sessionId);
 
         assertEquals("success", response.getStatus());
         Assertions.assertThrows(FormNotFoundException.class, () -> formSessionService.getSessionById(sessionId));
+    }
+
+    @Test
+    public void testSubmissionSuccessfulAfterStackFailure() throws Exception {
+        String sessionId = startSession("2", "0");
+
+        doThrow(new Exception("mock stack fail"))
+                .doCallRealMethod()
+                .when(menuSessionRunnerService).resolveFormGetNext(any());
+
+        SubmitResponseBean errorResponse = submitForm(answers, sessionId);
+        assertEquals("error", errorResponse.getStatus());
+
+        SerializableFormSession session = formSessionService.getSessionById(sessionId);
+        assertEquals(PROCESSED_XML, session.getSubmitStatus());
+        assertLocalCaseCount(117);
+
+        SubmitResponseBean response = submitForm(answers, sessionId);
+        assertEquals("success", response.getStatus());
+        Assertions.assertThrows(FormNotFoundException.class, () -> formSessionService.getSessionById(sessionId));
+        assertLocalCaseCount(117);
     }
 
     private String startSession(String ...selections) throws Exception {
