@@ -191,8 +191,7 @@ public class FormController extends AbstractBaseController {
         ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);
         Stream<ProcessingStep> processingSteps = Stream.of(
                 stepFactory.makeStep("validateAnswers", this::validateAnswers),
-                stepFactory.makeStep("processFormXml", this::processFormXml, PROCESSED_LOCAL),
-                stepFactory.makeStep("submitFormToRemote", this::submitFormToRemote, PROCESSED_REMOTE),
+                stepFactory.makeStep("processFormXml", this::processFormXml, PROCESSED_XML),
                 stepFactory.makeStep("updateVolatility", this::updateVolatility),
                 stepFactory.makeStep("performSync", this::performSync),
                 stepFactory.makeStep("doEndOfFormNav", this::doEndOfFormNav, PROCESSED_STACK)
@@ -289,15 +288,30 @@ public class FormController extends AbstractBaseController {
         try {
             restoreFactory.setAutoCommit(false);
             processXmlInner(context);
+
+            String response = submitService.submitForm(
+                    context.getFormEntrySession().getInstanceXml(),
+                    context.getFormEntrySession().getPostUrl()
+            );
+            parseSubmitResponseMessage(response, context.getResponse());
+
             restoreFactory.commit();
         } catch (InvalidCaseGraphException e) {
             return getErrorResponse(
                     context.getHttpRequest(), Constants.SUBMIT_RESPONSE_CASE_CYCLE_ERROR,
                     "Form submission failed due to a cyclic case relationship. " +
                             "Please contact the support desk to help resolve this issue.", e);
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            return context.error(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
+        } catch (HttpClientErrorException e) {
+            return getErrorResponse(
+                    context.getHttpRequest(), "error",
+                    String.format("Form submission failed with error response: %s, %s, %s",
+                            e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
+                    e);
         } catch (Exception e) {
             return getErrorResponse(
-                    context.getHttpRequest(), Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
+                    context.getHttpRequest(), "error",
                     e.getMessage(), e);
         } finally {
             // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
@@ -324,29 +338,6 @@ public class FormController extends AbstractBaseController {
             },
             context.getMetricsTags()
         );
-    }
-
-    private SubmitResponseBean submitFormToRemote(FormSubmissionContext context) {
-        try {
-            String response = submitService.submitForm(
-                    context.getFormEntrySession().getInstanceXml(),
-                    context.getFormEntrySession().getPostUrl()
-            );
-            parseSubmitResponseMessage(response, context.getResponse());
-        } catch (HttpClientErrorException.TooManyRequests e) {
-            return context.error(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
-        } catch (HttpClientErrorException e) {
-            return getErrorResponse(
-                    context.getHttpRequest(), "error",
-                    String.format("Form submission failed with error response: %s, %s, %s",
-                            e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
-                    e);
-        } catch (IOException e) {
-            return getErrorResponse(
-                    context.getHttpRequest(), "error",
-                    e.getMessage(), e);
-        }
-        return context.success();
     }
 
     private SubmitResponseBean doEndOfFormNav(FormSubmissionContext context) {

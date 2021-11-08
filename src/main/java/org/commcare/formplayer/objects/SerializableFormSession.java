@@ -17,8 +17,7 @@ import java.util.Map;
 @Getter
 public class SerializableFormSession implements Serializable{
     public enum SubmitStatus {
-        PROCESSED_LOCAL,
-        PROCESSED_REMOTE,
+        PROCESSED_XML,
         PROCESSED_STACK
     }
 
