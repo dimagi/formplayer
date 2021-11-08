@@ -13,7 +13,7 @@ class FormSubmissionContext(val httpRequest: HttpServletRequest,
                             val formEntrySession: FormSession,
                             val metricsTags: Map<String, String>) {
 
-    val response: SubmitResponseBean = SubmitResponseBean(Constants.ANSWER_RESPONSE_STATUS_POSITIVE)
+    val response: SubmitResponseBean = SubmitResponseBean(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
 
     fun success(): SubmitResponseBean {
         return response
