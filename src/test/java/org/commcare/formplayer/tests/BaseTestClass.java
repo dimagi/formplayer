@@ -74,6 +74,8 @@ public class BaseTestClass {
 
     private MockMvc mockFormController;
 
+    private MockMvc mockFormSubmissionController;
+
     protected MockMvc mockUtilController;
 
     private MockMvc mockMenuController;
@@ -129,6 +131,9 @@ public class BaseTestClass {
     protected FormController formController;
 
     @InjectMocks
+    protected FormSubmissionController formSubmissionController;
+
+    @InjectMocks
     protected UtilController utilController;
 
     @InjectMocks
@@ -167,6 +172,7 @@ public class BaseTestClass {
         Mockito.reset(menuSessionRunnerService);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
+        mockFormSubmissionController = MockMvcBuilders.standaloneSetup(formSubmissionController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
@@ -437,7 +443,7 @@ public class BaseTestClass {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
         submitRequestBean.setSessionId(sessionId);
-        return generateMockQuery(ControllerType.FORM,
+        return generateMockQuery(ControllerType.FORM_SUBMISSION,
                 RequestType.POST,
                 Constants.URL_SUBMIT_FORM,
                 submitRequestBean,
@@ -453,7 +459,7 @@ public class BaseTestClass {
         SubmitRequestBean submitRequestBean = populateFromSession(new SubmitRequestBean(), sessionId);
         submitRequestBean.setAnswers(answers);
         submitRequestBean.setPrevalidated(prevalidated);
-        return generateMockQuery(ControllerType.FORM,
+        return generateMockQuery(ControllerType.FORM_SUBMISSION,
                 RequestType.POST,
                 Constants.URL_SUBMIT_FORM,
                 submitRequestBean,
@@ -759,7 +765,7 @@ public class BaseTestClass {
     }
 
     public enum ControllerType {
-        FORM, MENU, UTIL, DEBUGGER,
+        FORM, FORM_SUBMISSION, MENU, UTIL, DEBUGGER,
     }
 
     private <T> T mockInstallReference(CheckedSupplier<T> supplier, String installReference) throws Exception {
@@ -818,6 +824,9 @@ public class BaseTestClass {
         switch (controllerType) {
             case FORM:
                 controller = mockFormController;
+                break;
+            case FORM_SUBMISSION:
+                controller = mockFormSubmissionController;
                 break;
             case MENU:
                 controller = mockMenuController;
