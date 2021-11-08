@@ -7,9 +7,7 @@ import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
-import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.api.process.FormRecordProcessorHelper;
-import org.commcare.formplayer.api.util.ApiConstants;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.OpenRosaResponse;
 import org.commcare.formplayer.beans.SubmitRequestBean;
@@ -25,10 +23,9 @@ import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormSubmissionContext;
 import org.commcare.formplayer.util.FormplayerDatadog;
-import org.javarosa.form.api.FormEntryController;
-import org.javarosa.form.api.FormEntryModel;
-import org.json.JSONObject;
+import org.commcare.formplayer.util.ProcessingStep;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +35,6 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
-import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -83,7 +79,8 @@ public class FormSubmissionController extends AbstractBaseController {
     @UserRestore
     @ConfigureStorageFromSession
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
-                                         @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken, HttpServletRequest request) throws Exception {
+                                         @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
+                                         HttpServletRequest request) throws Exception {
         FormSubmissionContext context = getFormProcessingContext(request, submitRequestBean);
 
         ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);

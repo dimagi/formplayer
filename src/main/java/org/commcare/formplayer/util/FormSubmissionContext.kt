@@ -1,10 +1,9 @@
-package org.commcare.formplayer.application
+package org.commcare.formplayer.util
 
 import org.commcare.formplayer.beans.SubmitRequestBean
 import org.commcare.formplayer.beans.SubmitResponseBean
 import org.commcare.formplayer.beans.menus.ErrorBean
 import org.commcare.formplayer.session.FormSession
-import org.commcare.formplayer.util.Constants
 import java.util.HashMap
 import javax.servlet.http.HttpServletRequest
 

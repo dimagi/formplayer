@@ -1,4 +1,4 @@
-package org.commcare.formplayer.application
+package org.commcare.formplayer.util
 
 import org.apache.commons.logging.LogFactory
 import org.commcare.formplayer.beans.SubmitResponseBean
