@@ -7,7 +7,6 @@ import io.sentry.Sentry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
-import org.commcare.formplayer.utils.CheckedSupplier;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.json.JSONObject;
@@ -68,6 +67,8 @@ import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.springframework.web.client.HttpClientErrorException;
+
+import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.*;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
@@ -187,17 +188,19 @@ public class FormController extends AbstractBaseController {
                                          @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken, HttpServletRequest request) throws Exception {
         FormSubmissionContext context = getFormProcessingContext(request, submitRequestBean);
 
-        Stream<CheckedSupplier<SubmitResponseBean>> processingSteps = Stream.of(
-                () -> validateAnswers(context),
-                () -> processFormXml(context),
-                () -> submitFormToRemote(context),
-                () -> updateVolatility(context),
-                () -> performSync(context),
-                () -> doEndOfFormNav(context)
+        ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);
+        Stream<ProcessingStep> processingSteps = Stream.of(
+                stepFactory.makeStep("validateAnswers", this::validateAnswers),
+                stepFactory.makeStep("processFormXml", this::processFormXml, PROCESSED_LOCAL),
+                stepFactory.makeStep("submitFormToRemote", this::submitFormToRemote, PROCESSED_REMOTE),
+                stepFactory.makeStep("updateVolatility", this::updateVolatility),
+                stepFactory.makeStep("performSync", this::performSync),
+                stepFactory.makeStep("doEndOfFormNav", this::doEndOfFormNav, PROCESSED_STACK)
         );
 
+        // execute steps one at a time, only proceeding to the next step if the previous step was successful
         Optional<SubmitResponseBean> error = processingSteps
-                .map((step) -> checkResponse(request, step))
+                .map((step) -> executeStep(request, step))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst();
@@ -237,10 +240,10 @@ public class FormController extends AbstractBaseController {
      * @return Empty Optional if the processing should continue otherwise an Optional containing the
      *          error response.
      */
-    private Optional<SubmitResponseBean> checkResponse(HttpServletRequest request, CheckedSupplier<SubmitResponseBean> step) {
+    private Optional<SubmitResponseBean> executeStep(HttpServletRequest request, ProcessingStep step) {
         SubmitResponseBean response = null;
         try {
-            response = step.get();
+            response = step.execute();
         } catch (Exception e) {
             response = getErrorResponse(
                     request, Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
@@ -249,6 +252,7 @@ public class FormController extends AbstractBaseController {
         if (response.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)) {
             return Optional.empty();  // continue processing
         }
+        log.debug(String.format("Aborting execution of processing steps after error in step: %s", step));
         return Optional.of(response);
     }
 
@@ -281,7 +285,7 @@ public class FormController extends AbstractBaseController {
         return responseBean;
     }
 
-    private SubmitResponseBean processFormXml(FormSubmissionContext context) throws Exception {
+    private SubmitResponseBean processFormXml(FormSubmissionContext context) {
         try {
             restoreFactory.setAutoCommit(false);
             processXmlInner(context);
@@ -322,7 +326,7 @@ public class FormController extends AbstractBaseController {
         );
     }
 
-    private SubmitResponseBean submitFormToRemote(FormSubmissionContext context) throws IOException {
+    private SubmitResponseBean submitFormToRemote(FormSubmissionContext context) {
         try {
             String response = submitService.submitForm(
                     context.getFormEntrySession().getInstanceXml(),
@@ -337,6 +341,10 @@ public class FormController extends AbstractBaseController {
                     String.format("Form submission failed with error response: %s, %s, %s",
                             e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
                     e);
+        } catch (IOException e) {
+            return getErrorResponse(
+                    context.getHttpRequest(), "error",
+                    e.getMessage(), e);
         }
         return context.success();
     }
@@ -358,7 +366,7 @@ public class FormController extends AbstractBaseController {
         return context.success();
     }
 
-    private SubmitResponseBean performSync(FormSubmissionContext context) throws Exception {
+    private SubmitResponseBean performSync(FormSubmissionContext context) {
         boolean suppressAutosync = context.getFormEntrySession().getSuppressAutosync();
 
         if (storageFactory.getPropertyManager().isSyncAfterFormEnabled() && !suppressAutosync) {
@@ -367,7 +375,13 @@ public class FormController extends AbstractBaseController {
             //validity of the form
 
             boolean skipFixtures = storageFactory.getPropertyManager().skipFixturesAfterSubmit();
-            restoreFactory.performTimedSync(true, skipFixtures, false);
+            try {
+                restoreFactory.performTimedSync(true, skipFixtures, false);
+            } catch (Exception e) {
+                return getErrorResponse(
+                        context.getHttpRequest(), Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
+                        e.getMessage(), e);
+            }
         }
         return context.success();
     }
