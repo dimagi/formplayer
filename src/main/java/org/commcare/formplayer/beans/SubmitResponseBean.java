@@ -10,7 +10,7 @@ import java.util.HashMap;
 public class SubmitResponseBean extends SessionResponseBean {
     private String status;
     private String submitResponseMessage;
-    private HashMap<String, ErrorBean> errors;
+    private HashMap<String, ErrorBean> errors = new HashMap<>();
     private Object nextScreen;
 
     // default constructor for Jackson
