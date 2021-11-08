@@ -148,8 +148,9 @@ public class FormSession {
                 postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
+        session.setFormXml(FormDefStringSerializer.serialize(this.formDef));
 
-        formDef.setSendCalloutHandler(formSendCalloutHandler);
+        this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
         setupJavaRosaObjects();
         setupFunctionContext();
@@ -159,7 +160,7 @@ public class FormSession {
         }
 
         if (instanceContent != null) {
-            loadInstanceXml(formDef, instanceContent);
+            loadInstanceXml(this.formDef, instanceContent);
             initialize(false, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
         } else {
             initialize(true, storageFactory.getStorageManager(), sessionFrame, instanceFetcher);
@@ -169,8 +170,6 @@ public class FormSession {
             stepToNextIndex();
             session.setCurrentIndex(formController.getFormIndex().toString());
         }
-        // must be done after formDef is initialized
-        session.setFormXml(FormDefStringSerializer.serialize(formDef));
     }
 
     private SessionFrame createSessionFrame(Map<String, String> sessionData) {
@@ -364,7 +363,11 @@ public class FormSession {
 
     @Trace
     public String getInstanceXml() throws IOException {
-        byte[] bytes = new XFormSerializingVisitor().serializeInstance(formDef.getInstance());
+        return getInstanceXml(true);
+    }
+
+    public String getInstanceXml(boolean serializeAllData) throws IOException {
+        byte[] bytes = new XFormSerializingVisitor(!serializeAllData).serializeInstance(formDef.getInstance());
         return new String(bytes, "US-ASCII");
     }
 
@@ -414,7 +417,7 @@ public class FormSession {
 
     public String submitGetXml() throws IOException {
         formDef.postProcessInstance();
-        return getInstanceXml();
+        return getInstanceXml(false);
     }
 
     public SerializableFormSession serialize() throws IOException {
