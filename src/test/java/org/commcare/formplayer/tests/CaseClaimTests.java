@@ -168,7 +168,7 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
 
         assert cacheManager.getCache("case_search")
-                .get("caseclaimdomain_caseclaimusername_-1069310135") != null;
+                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/_case_type=case1=case2=case3_include_closed=False") != null;
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");

@@ -39,15 +39,19 @@ public class CaseSearchHelper {
     public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen,
                                                       boolean skipDefaultPromptValues) {
         MultiValueMap<String, String> queryParams = screen.getRequestData(skipDefaultPromptValues);
+        String url = screen.getBaseUrl().toString();
+
         Cache cache = cacheManager.getCache("case_search");
-        String cacheKey = getCacheKey(queryParams.hashCode());
+        String cacheKey = getCacheKey(url, queryParams);
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
         if (cachedRoot != null) {
             // Deep copy to avoid concurrency issues
             TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
             return screen.buildExternalDataInstance(copyOfRoot);
         }
-        String responseString = doSearch(screen, queryParams);
+
+        log.info(String.format("Making case search request to url %s with data %s",  url, queryParams));
+        String responseString = webClient.postFormData(url, queryParams);
         if (responseString != null) {
             Pair<ExternalDataInstance, String> dataInstanceWithError = screen.processResponse(
                     new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
@@ -62,21 +66,20 @@ public class CaseSearchHelper {
         return null;
     }
 
-    private String doSearch(FormplayerQueryScreen screen,
-                            MultiValueMap<String, String> queryParams) {
-        String url = screen.getBaseUrl().toString();
-        log.info(String.format("Making case search request to url %s with data %s",  url, queryParams));
-        return webClient.postFormData(url, queryParams);
-    }
-
-    private String getCacheKey(int paramsHash) {
+    private String getCacheKey(String url, MultiValueMap<String, String> queryParams) {
         StringBuilder builder = new StringBuilder();
         builder.append(restoreFactory.getDomain());
         builder.append("_").append(restoreFactory.getScrubbedUsername());
         if (restoreFactory.getAsUsername() != null) {
             builder.append("_").append(restoreFactory.getAsUsername());
         }
-        builder.append("_").append(paramsHash);
+        builder.append("_").append(url);
+        for (String key : queryParams.keySet()) {
+            builder.append("_").append(key);
+            for (String value : queryParams.get(key)) {
+                builder.append("=").append(value);
+            }
+        }
         return builder.toString();
     }
 }
