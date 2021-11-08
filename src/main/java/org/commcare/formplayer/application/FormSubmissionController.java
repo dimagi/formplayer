@@ -104,7 +104,7 @@ public class FormSubmissionController extends AbstractBaseController {
         }
 
         // Only delete session immediately after successful submit
-        deleteSession(submitRequestBean.getSessionId());
+        formSessionService.deleteSessionById(submitRequestBean.getSessionId());
 
         return context.getResponse();
     }
@@ -298,10 +298,6 @@ public class FormSubmissionController extends AbstractBaseController {
                 log.error("Exception parsing submission response body", e);
             }
         }
-    }
-
-    protected void deleteSession(String id) {
-        formSessionService.deleteSessionById(id);
     }
 
     private Object doEndOfFormNav(SerializableMenuSession serializedSession) throws Exception {
