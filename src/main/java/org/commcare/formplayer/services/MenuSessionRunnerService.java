@@ -500,10 +500,6 @@ public class MenuSessionRunnerService {
             if (menuSession.getSmartLinkRedirect() != null) {
                 BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
                 UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(menuSession.getSmartLinkRedirect());
-                OrderedHashtable<String, String> data = menuSession.getSessionWrapper().getData();
-                for (String key : data.keySet()) {
-                    urlBuilder.queryParam(key, data.get(key));
-                }
                 responseBean.setSmartLinkRedirect(urlBuilder.build().toString());
                 return responseBean;
             }
