@@ -6,15 +6,16 @@ import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.util.JsonUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.core.log.LogMessage;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -50,6 +51,9 @@ public class HmacAuthFilter extends GenericFilterBean {
             new RequestHeaderRequestMatcher(Constants.HMAC_HEADER)
     );
 
+    private static final AnonymousAuthenticationToken ANONYMOUS_TOKEN = new AnonymousAuthenticationToken(
+            "key", "anonymous", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
+
     private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
 
     private String hmacKey;
@@ -83,6 +87,8 @@ public class HmacAuthFilter extends GenericFilterBean {
                     userDetails, userDetails.getDomain(), userDetails.getAuthorities());
             authenticationResult.setDetails(this.authenticationDetailsSource.buildDetails(request));
             successfulAuthentication(request, response, authenticationResult);
+        } catch (BadCredentialsException ex) {
+            anonymousAuthentication();
         } catch (AuthenticationException ex) {
             unsuccessfulAuthentication(request, response, ex);
         } catch (Exception e) {
@@ -107,7 +113,12 @@ public class HmacAuthFilter extends GenericFilterBean {
     }
 
     private HqUserDetailsBean getUserDetails(HttpServletRequest request) {
-        JSONObject body = RequestUtils.getPostData(request);
+        JSONObject body;
+        try {
+            body = RequestUtils.getPostData(request);
+        } catch (Exception e) {
+            throw new BadCredentialsException("Unable to extract user credentials from the request", e);
+        }
 
         if (body.has("username") && body.has("domain")) {
             return new HqUserDetailsBean(
@@ -154,5 +165,10 @@ public class HmacAuthFilter extends GenericFilterBean {
         SecurityContextHolder.clearContext();
         this.logger.debug("Cleared security context due to exception", failed);
         request.setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, failed);
+    }
+
+    protected void anonymousAuthentication() {
+        this.logger.debug(LogMessage.format("Authentication success but no user details provided"));
+        SecurityContextHolder.getContext().setAuthentication(ANONYMOUS_TOKEN);
     }
 }
