@@ -144,6 +144,7 @@ public class FormSubmissionController extends AbstractBaseController {
                     e.getMessage(), e);
         }
         if (response.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)) {
+            step.recordCheckpoint();
             return Optional.empty();  // continue processing
         }
         log.debug(String.format("Aborting execution of processing steps after error in step: %s", step));

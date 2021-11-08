@@ -25,13 +25,15 @@ class ProcessingStep (
         }
 
         log.debug("Form submission step '$name': executing")
-        val response = step.apply(context)
+        return step.apply(context)
+    }
 
+    fun recordCheckpoint() {
+        val session = context.formEntrySession.serializableSession
         checkpoint?.let {
             session.submitStatus = it
             formSessionService.saveSession(session)
         }
-        return response
     }
 
     override fun toString(): String {
