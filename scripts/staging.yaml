@@ -52,10 +52,12 @@ name: autostaging
 branches:
   - jls/query-datum-and-smart-linking+ce/tracing
   - jls/query-datum-and-smart-linking+gh/serialize-full-xml-unless-submitting
+#  - jls/query-datum-and-smart-linking+sk/re-submit-form-on-failure1
+#  - ce/tracing+sk/re-submit-form-on-failure1
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - jls/query-datum-and-smart-linking # Shubham/Simon/Jenny
   # - gh/serialize-full-xml-unless-submitting # Graham Sept 28
-  - sk/re-submit-form-on-failure1  # Simon Nov 8
+#  - sk/re-submit-form-on-failure1  # Simon Nov 8
 submodules:
   libs/commcare:
     trunk: formplayer
