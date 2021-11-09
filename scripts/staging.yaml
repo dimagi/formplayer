@@ -56,7 +56,6 @@ branches:
 #  - ce/tracing+sk/re-submit-form-on-failure1
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - jls/query-datum-and-smart-linking # Shubham/Simon/Jenny
-  - jls/smart-links-drop-sync # Jenny Nov 8
   # - gh/serialize-full-xml-unless-submitting # Graham Sept 28
 #  - sk/re-submit-form-on-failure1  # Simon Nov 8
 submodules:
