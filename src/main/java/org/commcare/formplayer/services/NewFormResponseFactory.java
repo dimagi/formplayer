@@ -8,6 +8,7 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.web.client.WebClient;
+import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.xform.util.XFormUtils;
@@ -27,6 +28,9 @@ public class NewFormResponseFactory {
 
     @Autowired
     private WebClient webClient;
+
+    @Autowired
+    private CaseSearchHelper caseSearchHelper;
 
     @Autowired
     private RestoreFactory restoreFactory;
@@ -49,8 +53,7 @@ public class NewFormResponseFactory {
 
         if (bean.getFormUrl() != null) {
             formXml = getFormXml(bean.getFormUrl());
-        }
-        else if (bean.getFormContent() != null) {
+        } else if (bean.getFormContent() != null) {
             formXml = bean.getFormContent();
         } else {
             throw new RuntimeException("No FormURL or FormContent");
@@ -82,7 +85,9 @@ public class NewFormResponseFactory {
                 formSendCalloutHandler,
                 storageFactory,
                 Constants.NAV_MODE_PROMPT.equals(bean.getNavMode()),
-                bean.getRestoreAsCaseId()
+                bean.getRestoreAsCaseId(),
+                null,
+                caseSearchHelper
         );
 
         NewFormResponse response = getResponse(formSession);
@@ -116,8 +121,8 @@ public class NewFormResponseFactory {
         return response;
     }
 
-    public NewFormResponse getResponse(SerializableFormSession session) throws Exception {
-        FormSession formSession = getFormSession(session);
+    public NewFormResponse getResponse(SerializableFormSession session, CommCareSession commCareSession) throws Exception {
+        FormSession formSession = getFormSession(session, commCareSession);
         String formTreeJson = formSession.getFormTree().toString();
         return new NewFormResponse(
                 formTreeJson, formSession.getLanguages(), session.getTitle(),
@@ -126,8 +131,8 @@ public class NewFormResponseFactory {
         );
     }
 
-    public FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
-        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+    public FormSession getFormSession(SerializableFormSession serializableFormSession, CommCareSession commCareSession) throws Exception {
+        return new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory, commCareSession, caseSearchHelper);
     }
 
     private String getFormXml(String formUrl) {
