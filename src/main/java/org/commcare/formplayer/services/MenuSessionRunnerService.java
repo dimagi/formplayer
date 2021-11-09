@@ -409,9 +409,8 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        ExternalDataInstance searchDataInstance = searchAndSetResult(
-                screen,
-                screen.getUri(skipDefaultPromptValues));
+        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen, skipDefaultPromptValues);
+        screen.setQueryDatum(searchDataInstance);
 
         if (searchDataInstance != null) {
             if (screen.getCurrentMessage() != null) {
@@ -426,12 +425,6 @@ public class MenuSessionRunnerService {
         Screen nextScreen = menuSession.getNextScreen();
         log.info("Next screen after query: " + nextScreen);
         return notificationMessage;
-    }
-
-    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri) {
-        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen, uri);
-        screen.setQueryDatum(searchDataInstance);
-        return searchDataInstance;
     }
 
     @Trace

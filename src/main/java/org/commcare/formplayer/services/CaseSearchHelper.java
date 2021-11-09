@@ -16,9 +16,9 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 
 import java.io.ByteArrayInputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 @CacheConfig(cacheNames = "case_search")
@@ -36,17 +36,22 @@ public class CaseSearchHelper {
 
     private final Log log = LogFactory.getLog(CaseSearchHelper.class);
 
-    public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen, URI uri) {
+    public ExternalDataInstance getSearchDataInstance(FormplayerQueryScreen screen,
+                                                      boolean skipDefaultPromptValues) {
+        MultiValueMap<String, String> queryParams = screen.getRequestData(skipDefaultPromptValues);
+        String url = screen.getBaseUrl().toString();
+
         Cache cache = cacheManager.getCache("case_search");
-        String cacheKey = getCacheKey(uri);
+        String cacheKey = getCacheKey(url, queryParams);
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
         if (cachedRoot != null) {
             // Deep copy to avoid concurrency issues
             TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
             return screen.buildExternalDataInstance(copyOfRoot);
         }
-        log.info(String.format("Making case search request to url %s",  uri));
-        String responseString = webClient.get(uri);
+
+        log.info(String.format("Making case search request to url %s with data %s",  url, queryParams));
+        String responseString = webClient.postFormData(url, queryParams);
         if (responseString != null) {
             Pair<ExternalDataInstance, String> dataInstanceWithError = screen.processResponse(
                     new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)));
@@ -61,14 +66,20 @@ public class CaseSearchHelper {
         return null;
     }
 
-    private String getCacheKey(URI uri) {
+    private String getCacheKey(String url, MultiValueMap<String, String> queryParams) {
         StringBuilder builder = new StringBuilder();
         builder.append(restoreFactory.getDomain());
         builder.append("_").append(restoreFactory.getScrubbedUsername());
         if (restoreFactory.getAsUsername() != null) {
             builder.append("_").append(restoreFactory.getAsUsername());
         }
-        builder.append("_").append(uri);
+        builder.append("_").append(url);
+        for (String key : queryParams.keySet()) {
+            builder.append("_").append(key);
+            for (String value : queryParams.get(key)) {
+                builder.append("=").append(value);
+            }
+        }
         return builder.toString();
     }
 }
