@@ -1,11 +1,13 @@
 package org.commcare.formplayer.session;
 
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
 
 import datadog.trace.api.Trace;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.services.CaseSearchHelper;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
@@ -65,15 +67,19 @@ public class MenuSession implements HereFunctionHandlerListener {
     // Stores the entity screens created to manage state for the lifecycle of this request
     private Map<String, EntityScreen> entityScreenCache = new HashMap<>();
     private boolean oneQuestionPerScreen;
+    private RemoteInstanceFetcher instanceFetcher;
+
+    private String smartLinkRedirect;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreFactory restoreFactory, String host) throws Exception {
+                       RestoreFactory restoreFactory, RemoteInstanceFetcher instanceFetcher) throws Exception {
+        this.instanceFetcher = instanceFetcher;
         this.session = session;
         this.engine = installService.configureApplication(session.getInstallReference(), session.isPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(
                 SessionSerializer.deserialize(engine.getPlatform(), session.getCommcareSession()),
-                engine.getPlatform(), sandbox);
+                engine.getPlatform(), sandbox, instanceFetcher);
         SessionUtils.setLocale(session.getLocale());
         sessionWrapper.syncState();
         initializeBreadcrumbs();
@@ -81,8 +87,10 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public MenuSession(String username, String domain, String appId, String locale,
                        InstallService installService, RestoreFactory restoreFactory, String host,
-                       boolean oneQuestionPerScreen, String asUser, boolean preview) throws Exception {
+                       boolean oneQuestionPerScreen, String asUser, boolean preview,
+                       RemoteInstanceFetcher instanceFetcher) throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
+        this.instanceFetcher = instanceFetcher;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
         this.session = new SerializableMenuSession(
                 TableBuilder.scrubName(username),
@@ -99,13 +107,13 @@ public class MenuSession implements HereFunctionHandlerListener {
             this.sandbox = restoreFactory.performTimedSync();
         }
         this.sandbox = restoreFactory.getSandbox();
-        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox, instanceFetcher);
         SessionUtils.setLocale(locale);
         initializeBreadcrumbs();
     }
 
-    public void resetSession() {
-        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox);
+    public void resetSession() throws RemoteInstanceFetcher.RemoteInstanceException {
+        this.sessionWrapper = new FormplayerSessionWrapper(engine.getPlatform(), sandbox, instanceFetcher);
         clearEntityScreenCache();
         initializeBreadcrumbs();
         selections.clear();
@@ -304,7 +312,8 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     @Trace
     public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
-                                           FormplayerStorageFactory storageFactory) throws Exception {
+                                           FormplayerStorageFactory storageFactory,
+                                           CaseSearchHelper caseSearchHelper) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
@@ -312,7 +321,8 @@ public class MenuSession implements HereFunctionHandlerListener {
         return new FormSession(sandbox, formDef, session.getUsername(), session.getDomain(),
                 sessionData, postUrl, session.getLocale(), session.getId(),
                 null, oneQuestionPerScreen,
-                session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory, false, null);
+                session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory,
+                false, null, new SessionFrame(sessionWrapper.getFrame()), caseSearchHelper);
     }
 
     public SessionWrapper getSessionWrapper() {
@@ -353,6 +363,14 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     public Endpoint getEndpoint(String id) {
         return engine.getPlatform().getAllEndpoints().get(id);
+    }
+
+    public String getSmartLinkRedirect() {
+        return smartLinkRedirect;
+    }
+
+    public void setSmartLinkRedirect(String url) {
+        smartLinkRedirect = url;
     }
 
     public void setCurrentBrowserLocation(String location) {

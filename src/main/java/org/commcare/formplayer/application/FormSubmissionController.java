@@ -112,7 +112,7 @@ public class FormSubmissionController extends AbstractBaseController {
 
     public FormSubmissionContext getFormProcessingContext(HttpServletRequest request, SubmitRequestBean submitRequestBean) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(submitRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+        FormSession formEntrySession = getFormSession(serializableFormSession);
 
         // add tags for future datadog/sentry requests
         datadog.addRequestScopedTag(Constants.FORM_NAME_TAG, serializableFormSession.getTitle());
