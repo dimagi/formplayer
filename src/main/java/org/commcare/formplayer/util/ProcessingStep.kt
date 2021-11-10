@@ -4,11 +4,12 @@ import org.apache.commons.logging.LogFactory
 import org.commcare.formplayer.beans.SubmitResponseBean
 import org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus
 import org.commcare.formplayer.services.FormSessionService
+import org.commcare.formplayer.utils.CheckedFunction
 import java.util.function.Function
 
 class ProcessingStep (
         private val name: String,
-        private val step: Function<FormSubmissionContext, SubmitResponseBean>,
+        private val step: CheckedFunction<FormSubmissionContext, SubmitResponseBean, Exception>,
         private val context: FormSubmissionContext,
         private val formSessionService: FormSessionService,
         private val checkpoint: SubmitStatus?
@@ -16,6 +17,7 @@ class ProcessingStep (
 
     private val log = LogFactory.getLog(ProcessingStep::class.java)
 
+    @Throws(Exception::class)
     fun execute(): SubmitResponseBean {
         val session = context.formEntrySession.serializableSession
         if (checkpoint?.let { session.isProcessingStageComplete(it) } == true) {
@@ -42,7 +44,7 @@ class ProcessingStep (
 
     class StepFactory (val context: FormSubmissionContext, val formSessionService: FormSessionService) {
 
-        @JvmOverloads fun makeStep(name: String, step: Function<FormSubmissionContext, SubmitResponseBean>, checkpoint: SubmitStatus? = null): ProcessingStep {
+        @JvmOverloads fun makeStep(name: String, step: CheckedFunction<FormSubmissionContext, SubmitResponseBean, Exception>, checkpoint: SubmitStatus? = null): ProcessingStep {
             return ProcessingStep(name, step, context, formSessionService, checkpoint)
         }
     }
