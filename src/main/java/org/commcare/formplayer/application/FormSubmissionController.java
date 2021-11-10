@@ -143,7 +143,7 @@ public class FormSubmissionController extends AbstractBaseController {
                     request, Constants.SUBMIT_RESPONSE_ERROR,
                     e.getMessage(), e);
         }
-        if (response.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)) {
+        if (response.getStatus().equals(Constants.SUBMIT_RESPONSE_STATUS_POSITIVE)) {
             step.recordCheckpoint();
             return Optional.empty();  // continue processing
         }
@@ -157,7 +157,7 @@ public class FormSubmissionController extends AbstractBaseController {
                 () -> validateSubmitAnswers(context),
                 context.getMetricsTags()
         );
-        if (!context.getResponse().getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
+        if (!context.getResponse().getStatus().equals(Constants.SUBMIT_RESPONSE_STATUS_POSITIVE)
                 || !context.getRequest().isPrevalidated()) {
             return context.error(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         }
