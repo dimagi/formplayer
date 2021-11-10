@@ -140,7 +140,7 @@ public class FormSubmissionController extends AbstractBaseController {
             response = step.execute();
         } catch (Exception e) {
             response = getErrorResponse(
-                    request, "error",
+                    request, Constants.SUBMIT_RESPONSE_ERROR,
                     e.getMessage(), e);
         }
         if (response.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)) {
@@ -201,7 +201,7 @@ public class FormSubmissionController extends AbstractBaseController {
             return context.error(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
         } catch (HttpClientErrorException e) {
             return getErrorResponse(
-                    context.getHttpRequest(), "error",
+                    context.getHttpRequest(), Constants.SUBMIT_RESPONSE_ERROR,
                     String.format("Form submission failed with error response: %s, %s, %s",
                             e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
                     e);
