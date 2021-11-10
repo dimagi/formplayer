@@ -180,7 +180,7 @@ public class FormSubmissionController extends AbstractBaseController {
         return responseBean;
     }
 
-    private SubmitResponseBean processFormXml(FormSubmissionContext context) {
+    private SubmitResponseBean processFormXml(FormSubmissionContext context) throws Exception {
         try {
             restoreFactory.setAutoCommit(false);
             processXmlInner(context);
@@ -205,10 +205,6 @@ public class FormSubmissionController extends AbstractBaseController {
                     String.format("Form submission failed with error response: %s, %s, %s",
                             e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
                     e);
-        } catch (Exception e) {
-            return getErrorResponse(
-                    context.getHttpRequest(), "error",
-                    e.getMessage(), e);
         } finally {
             // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
             if (!restoreFactory.getAutoCommit()) {
@@ -253,7 +249,7 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.success();
     }
 
-    private SubmitResponseBean performSync(FormSubmissionContext context) {
+    private SubmitResponseBean performSync(FormSubmissionContext context) throws Exception {
         boolean suppressAutosync = context.getFormEntrySession().getSuppressAutosync();
 
         if (storageFactory.getPropertyManager().isSyncAfterFormEnabled() && !suppressAutosync) {
@@ -262,13 +258,7 @@ public class FormSubmissionController extends AbstractBaseController {
             //validity of the form
 
             boolean skipFixtures = storageFactory.getPropertyManager().skipFixturesAfterSubmit();
-            try {
-                restoreFactory.performTimedSync(true, skipFixtures, false);
-            } catch (Exception e) {
-                return getErrorResponse(
-                        context.getHttpRequest(), Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
-                        e.getMessage(), e);
-            }
+            restoreFactory.performTimedSync(true, skipFixtures, false);
         }
         return context.success();
     }
