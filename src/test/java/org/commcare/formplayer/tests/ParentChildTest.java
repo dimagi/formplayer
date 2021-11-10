@@ -12,6 +12,8 @@ import org.commcare.formplayer.utils.TestContext;
 
 import java.util.HashMap;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Regression tests for fixed behaviors
  */
@@ -38,11 +40,11 @@ public class ParentChildTest extends BaseTestClass{
         answers.put("0", "Sr");
         answers.put("1", "Jr");
         SubmitResponseBean submitResponseBean = submitForm(answers, newFormResponse.getSessionId());
-        assert submitResponseBean.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE);
+        assertEquals(Constants.SYNC_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
         EntityListResponse entityListResponse = sessionNavigate(new String[]{"1"}, "parentchild", EntityListResponse.class);
-        assert entityListResponse.getEntities().length == 1;
+        assertEquals(1, entityListResponse.getEntities().length);
         String entityId = entityListResponse.getEntities()[0].getId();
         entityListResponse = sessionNavigate(new String[]{"1", entityId}, "parentchild", EntityListResponse.class);
-        assert entityListResponse.getEntities().length == 1;
+        assertEquals(1, entityListResponse.getEntities().length);
     }
 }
