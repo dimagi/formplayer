@@ -159,17 +159,27 @@ public class MenuSession implements HereFunctionHandlerListener {
                 addTitle(input, screen);
             }
 
-            Screen nextScreen = getNextScreen(needsDetail);
-
-            if (nextScreen instanceof MenuScreen && autoAdvanceMenu) {
-                ((MenuScreen)nextScreen).handleAutoMenuAdvance(sessionWrapper);
-            }
+            autoAdvance(needsDetail, autoAdvanceMenu);
 
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
                     " threw exception " + e.getMessage() + ". Please try reloading this application" +
                     " and if the problem persists please report a bug.", e);
+        }
+    }
+
+    /**
+     *
+     * @param needsDetail Whether a full entity screen is required for this request
+     *                    or if a list of references is sufficient
+     * @param autoAdvanceMenu Whether the menu navigation should be advanced if it can be
+     * @throws CommCareSessionException
+     */
+    public void autoAdvance(boolean needsDetail, boolean autoAdvanceMenu) throws CommCareSessionException {
+        Screen nextScreen = getNextScreen(needsDetail);
+        if (nextScreen instanceof MenuScreen && autoAdvanceMenu) {
+            ((MenuScreen)nextScreen).handleAutoMenuAdvance(sessionWrapper);
         }
     }
 
