@@ -130,7 +130,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param allowAutoLaunch If this step is allowed to automatically launch an action,
      *                        assuming it has an autolaunch action specified.
      */
-    public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch, boolean autoAdvanceMenu) throws CommCareSessionException {
+    public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
@@ -145,7 +145,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 if (input.startsWith("action ") || (autoLaunch) || !confirmed) {
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
-                        return handleInput(input, true, confirmed, allowAutoLaunch, autoAdvanceMenu);
+                        return handleInput(input, true, confirmed, allowAutoLaunch);
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
                 } else {
@@ -158,8 +158,6 @@ public class MenuSession implements HereFunctionHandlerListener {
             if (addBreadcrumb) {
                 addTitle(input, screen);
             }
-
-            autoAdvance(needsDetail, autoAdvanceMenu);
 
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {

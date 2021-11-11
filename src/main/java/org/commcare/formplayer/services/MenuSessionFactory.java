@@ -125,10 +125,13 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, false, true, false, storageFactory.getPropertyManager().isAutoAdvanceMenu());
+                menuSession.handleInput(currentStep, false, true, false);
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(false);
             }
+        }
+        if (screen != null) {
+            menuSession.autoAdvance(false, storageFactory.getPropertyManager().isAutoAdvanceMenu());
         }
     }
 

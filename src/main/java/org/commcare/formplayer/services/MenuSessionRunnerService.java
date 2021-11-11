@@ -257,7 +257,7 @@ public class MenuSessionRunnerService {
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -265,6 +265,7 @@ public class MenuSessionRunnerService {
                         NotificationMessage.Tag.selection);
                 break;
             }
+            menuSession.autoAdvance(needsDetail, isAutoAdvanceMenu());
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
             String nextInput = i == selections.length ? "" : selections[i];
@@ -386,7 +387,7 @@ public class MenuSessionRunnerService {
             EntityScreen entityScreen = (EntityScreen) nextScreen;
             entityScreen.evaluateAutoLaunch(nextInput);
             if (entityScreen.getAutoLaunchAction() != null) {
-                menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+                menuSession.handleInput(selection, needsDetail, confirmed, true);
                 nextScreen = menuSession.getNextScreen(needsDetail);
             }
         }
@@ -507,6 +508,7 @@ public class MenuSessionRunnerService {
             Screen nextScreen = menuSession.getNextScreen();
             nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
             handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
+            menuSession.autoAdvance(false, isAutoAdvanceMenu());
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
