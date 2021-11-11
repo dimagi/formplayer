@@ -372,11 +372,10 @@ public class MenuSessionRunnerService {
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
             NotificationMessage notificationMessage = doQuery(
                     queryScreen,
-                    menuSession,
                     queryData == null ? null : queryData.getInputs(queryKey),
                     queryScreen.doDefaultSearch() && !forceManualAction
             );
-            if (notificationMessage != null && notificationMessage.isError()) {
+            if (notificationMessage.isError()) {
                 throw new CommCareSessionException(notificationMessage.getMessage());
             }
             return true;
@@ -464,12 +463,9 @@ public class MenuSessionRunnerService {
      * Will do nothing if this wasn't a query screen.
      */
     private NotificationMessage doQuery(FormplayerQueryScreen screen,
-                                        MenuSession menuSession,
                                         Hashtable<String, String> queryDictionary,
-                                        boolean skipDefaultPromptValues) throws CommCareSessionException {
+                                        boolean skipDefaultPromptValues) {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
-        NotificationMessage notificationMessage = null;
-
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
@@ -488,6 +484,7 @@ public class MenuSessionRunnerService {
             error = "Query response format error: " + e.getMessage();
         }
 
+        NotificationMessage notificationMessage;
         if (error != null) {
             notificationMessage = new NotificationMessage(
                     "Query failed with message " + error,
@@ -497,8 +494,6 @@ public class MenuSessionRunnerService {
             notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
         }
 
-        Screen nextScreen = menuSession.getNextScreen();
-        log.info("Next screen after query: " + nextScreen);
         return notificationMessage;
     }
 
