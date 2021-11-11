@@ -42,7 +42,6 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,10 +57,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 import javax.annotation.Resource;
 
@@ -76,6 +72,7 @@ import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 @Component
 public class MenuSessionRunnerService {
 
+    public static final String NO_SELECTION = "";
     @Autowired
     private RestoreFactory restoreFactory;
 
@@ -265,18 +262,15 @@ public class MenuSessionRunnerService {
                         NotificationMessage.Tag.selection);
                 break;
             }
-            Screen nextScreen = menuSession.getNextScreen(needsDetail);
-
-            String nextInput = i == selections.length ? "" : selections[i];
-            // Advance the session in case auto launch is set
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed, nextInput);
-            boolean replay = i < selections.length;
+            String nextInput = i == selections.length ? NO_SELECTION : selections[i];
+            Screen nextScreen = null;
             try {
-                nextScreen = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
+                nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData, needsDetail, confirmed, forceManualAction);
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
                 break;
             }
+
             if (nextScreen instanceof FormplayerSyncScreen) {
                 BaseResponseBean syncResponse = doSyncGetNext(
                         (FormplayerSyncScreen)nextScreen,
@@ -284,9 +278,6 @@ public class MenuSessionRunnerService {
                 if (syncResponse != null) {
                     return syncResponse;
                 }
-            }
-            if (menuSession.autoAdvance(nextScreen, isAutoAdvanceMenu())) {
-                nextScreen = menuSession.getNextScreen(needsDetail);
             }
 
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
@@ -324,6 +315,30 @@ public class MenuSessionRunnerService {
             BaseResponseBean responseBean = new BaseResponseBean(null, notificationMessage,true);
             return responseBean;
         }
+    }
+
+    private Screen autoAdvanceSession(
+            MenuSession menuSession,
+            String currentInput,
+            String nextInput,
+            QueryData queryData,
+            boolean needsDetail,
+            boolean confirmed,
+            boolean forceManualAction) throws CommCareSessionException {
+        Screen nextScreen = menuSession.getNextScreen(needsDetail);
+
+        // Advance the session in case auto launch is set
+        nextScreen = handleAutoLaunch(nextScreen, menuSession, currentInput, needsDetail, confirmed, nextInput);
+
+        // Run any queries that
+        boolean replay = !nextInput.equals(NO_SELECTION);
+        nextScreen = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
+
+        if (menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu())) {
+            nextScreen = menuSession.getNextScreen(needsDetail);
+        }
+
+        return nextScreen;
     }
 
     /**
@@ -507,10 +522,10 @@ public class MenuSessionRunnerService {
                 return responseBean;
             }
 
-            Screen nextScreen = menuSession.getNextScreen();
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
-            nextScreen = handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
-            menuSession.autoAdvance(nextScreen, isAutoAdvanceMenu());
+            autoAdvanceSession(
+                    menuSession, "", "", new QueryData(),
+                    false, false, false
+            );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;

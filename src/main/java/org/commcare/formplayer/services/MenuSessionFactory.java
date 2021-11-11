@@ -7,7 +7,6 @@ import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
-import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.MenuDisplayable;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.suite.model.StackFrameStep;
@@ -16,8 +15,6 @@ import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
-import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +25,6 @@ import org.commcare.formplayer.session.MenuSession;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -131,7 +127,7 @@ public class MenuSessionFactory {
             }
         }
         if (screen != null) {
-            menuSession.autoAdvance(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu());
+            menuSession.autoAdvanceMenu(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu());
         }
     }
 

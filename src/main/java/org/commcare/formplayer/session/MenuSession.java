@@ -174,7 +174,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @throws CommCareSessionException
      * @return true if the session was advanced
      */
-    public boolean autoAdvance(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
+    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
         if (!autoAdvanceMenu) {
             return false;
         }
