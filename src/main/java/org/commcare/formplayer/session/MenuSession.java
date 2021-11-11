@@ -154,16 +154,17 @@ public class MenuSession implements HereFunctionHandlerListener {
             } else {
                 screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
             }
-            Screen previousScreen = screen;
+
+            if (addBreadcrumb) {
+                addTitle(input, screen);
+            }
+
             screen = getNextScreen(needsDetail);
 
             if (screen instanceof MenuScreen && autoAdvanceMenu) {
                 ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
             }
 
-            if (addBreadcrumb) {
-                addTitle(input, previousScreen);
-            }
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
