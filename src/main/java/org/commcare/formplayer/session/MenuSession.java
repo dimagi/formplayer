@@ -172,14 +172,16 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param screen The current screen that has been navigated to.
      * @param autoAdvanceMenu Whether the menu navigation should be advanced if it can be.
      * @throws CommCareSessionException
+     * @return true if the session was advanced
      */
-    public void autoAdvance(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
+    public boolean autoAdvance(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
         if (!autoAdvanceMenu) {
-            return;
+            return false;
         }
         if (screen instanceof MenuScreen) {
-            ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
+            return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
         }
+        return false;
     }
 
     private void addTitle(String input, Screen previousScreen) {

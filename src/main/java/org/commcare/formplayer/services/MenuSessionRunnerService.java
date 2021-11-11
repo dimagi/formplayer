@@ -285,7 +285,9 @@ public class MenuSessionRunnerService {
                     return syncResponse;
                 }
             }
-            menuSession.autoAdvance(nextScreen, isAutoAdvanceMenu());
+            if (menuSession.autoAdvance(nextScreen, isAutoAdvanceMenu())) {
+                nextScreen = menuSession.getNextScreen(needsDetail);
+            }
 
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                 // we don't have a resolution, try rebuilding session to execute any pending ops
