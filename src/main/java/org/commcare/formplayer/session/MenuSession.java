@@ -159,10 +159,10 @@ public class MenuSession implements HereFunctionHandlerListener {
                 addTitle(input, screen);
             }
 
-            screen = getNextScreen(needsDetail);
+            Screen nextScreen = getNextScreen(needsDetail);
 
-            if (screen instanceof MenuScreen && autoAdvanceMenu) {
-                ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
+            if (nextScreen instanceof MenuScreen && autoAdvanceMenu) {
+                ((MenuScreen)nextScreen).handleAutoMenuAdvance(sessionWrapper);
             }
 
             return true;
