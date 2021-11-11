@@ -8,6 +8,7 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.FileUtils;
@@ -29,6 +30,8 @@ import java.net.URISyntaxException;
 import java.util.Hashtable;
 import java.util.List;
 
+import static org.commcare.formplayer.util.FormplayerPropertyManager.AUTO_ADVANCE_MENU;
+import static org.commcare.formplayer.util.FormplayerPropertyManager.YES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
@@ -37,6 +40,9 @@ import static org.mockito.Mockito.*;
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class FormEntryWithQueryTests extends BaseTestClass{
+
+    @Autowired
+    FormplayerStorageFactory storageFactory;
 
     @Autowired
     CacheManager cacheManager;
@@ -60,7 +66,6 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 null,
                 false,
                 QueryResponseBean.class);
-
 
         Hashtable<String, String> inputs = new Hashtable<>();
         QueryData queryData = new QueryData();
@@ -179,6 +184,54 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 "instance('duplicate')/results/case[@case_id='dupe_case_id']/case_name",
                 "Duplicate of Burt"
         );
+    }
+
+    /**
+     * Test that setting "cc-auto-advance-menu" works even when the last
+     * screen is a query.
+     */
+    @Test
+    public void testNavigationToFormEntryWithQueriesAutoAdvance() throws Exception {
+        // select module 2
+        sessionNavigateWithQuery(new String[]{"2"},
+                "caseclaimquery",
+                null,
+                false,
+                QueryResponseBean.class);
+
+
+        Hashtable<String, String> inputs = new Hashtable<>();
+        QueryData queryData = new QueryData();
+        queryData.setInputs("m2", inputs);
+        queryData.setExecute("m2", true);
+
+        // execute search query
+        sessionNavigateWithQuery(new String[]{"2"},
+                "caseclaimquery",
+                queryData,
+                false,
+                EntityListResponse.class);
+
+        // Check if form's query was executed
+        verify(webClientMock, times(1)).get(uriCaptor.capture());
+        List<URI> uris = uriCaptor.getAllValues();
+        // when default search, prompts doesn't get included
+        assert uris.get(0).equals(new URI("http://localhost:8000/a/test-1/phone/search/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case"));
+
+        // with auto-advance enabled the selection of a case should result in the session
+        // being auto-advanced directly to the form (since there is only one form to choose from)
+        storageFactory.getPropertyManager().setProperty(AUTO_ADVANCE_MENU, YES);
+        NewFormResponse formResponse = sessionNavigateWithQuery(new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
+                "caseclaimquery",
+                queryData,
+                false,
+                NewFormResponse.class);
+
+        assertEquals(formResponse.getTitle(), "Followup Form");
+        verify(webClientMock, times(3)).get(uriCaptor.capture());
+        uris = uriCaptor.getAllValues();
+        assert uris.get(2).equals(new URI("http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case&case_id=0156fa3e-093e-4136-b95c-01b13dae66c6"));
+        assert uris.get(3).equals(new URI("http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case&case_id=dupe_case_id"));
     }
 
     private void checkXpath(NewFormResponse formResponse, String xpath, String expectedValue) throws Exception {
