@@ -248,12 +248,12 @@ public class MenuSessionRunnerService {
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
-            boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
+            boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
             needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true);
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, inputValidated, true);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -265,7 +265,7 @@ public class MenuSessionRunnerService {
             Screen nextScreen;
             try {
                 nextScreen = autoAdvanceSession(
-                        menuSession, selection, nextInput, queryData, needsDetail, confirmed, forceManualAction
+                        menuSession, selection, nextInput, queryData, needsDetail, inputValidated, forceManualAction
                 );
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
@@ -317,24 +317,46 @@ public class MenuSessionRunnerService {
         }
     }
 
+    /**
+     * Apply an actions to the menu session that do not require user input e.g.
+     *  - auto launch
+     *  - queries
+     *  - auto advance menu
+     * @param menuSession
+     * @param currentInput The current input being processed
+     * @param nextInput The next input being processed or NO_SELECTION constant
+     * @param queryData Query data from the request
+     * @param needsDetail Whether the full entity screen is required
+     * @param inputValidated Whether the input has been validated (allows skipping validation)
+     * @param forceManualAction Prevent auto execution of queries if true.
+     * @return
+     * @throws CommCareSessionException
+     */
     private Screen autoAdvanceSession(
             MenuSession menuSession,
             String currentInput,
             String nextInput,
             QueryData queryData,
             boolean needsDetail,
-            boolean confirmed,
+            boolean inputValidated,
             boolean forceManualAction) throws CommCareSessionException {
         boolean sessionAdvanced;
-
-        Screen nextScreen;
+        Screen nextScreen = null;
+        Screen previousScreen;
         do {
             sessionAdvanced = false;
+            previousScreen = nextScreen;
+
             nextScreen = menuSession.getNextScreen(needsDetail);
+            if (previousScreen != null) {
+                String to = nextScreen == null ? "XForm" : nextScreen.toString();
+                log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
+            }
+
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
                 sessionAdvanced = handleAutoLaunch(
-                        (EntityScreen) nextScreen, menuSession, currentInput, needsDetail, confirmed, nextInput
+                        (EntityScreen) nextScreen, menuSession, currentInput, needsDetail, inputValidated, nextInput
                 );
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
@@ -344,7 +366,6 @@ public class MenuSessionRunnerService {
             } else if (nextScreen instanceof MenuScreen) {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
             }
-
         } while(sessionAdvanced);
 
         return nextScreen;
@@ -398,11 +419,11 @@ public class MenuSessionRunnerService {
      * @throws CommCareSessionException
      */
     private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession,
-                                    String selection, boolean needsDetail, boolean confirmed, String nextInput)
+                                    String selection, boolean needsDetail, boolean inputValidated, String nextInput)
             throws CommCareSessionException {
         entityScreen.evaluateAutoLaunch(nextInput);
         if (entityScreen.getAutoLaunchAction() != null) {
-            menuSession.handleInput(selection, needsDetail, confirmed, true);
+            menuSession.handleInput(selection, needsDetail, inputValidated, true);
             return true;
         }
         return false;
