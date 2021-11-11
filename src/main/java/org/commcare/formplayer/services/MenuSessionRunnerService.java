@@ -329,6 +329,7 @@ public class MenuSessionRunnerService {
 
         Screen nextScreen = null;
         do {
+            sessionAdvanced = false;
             nextScreen = menuSession.getNextScreen(needsDetail);
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
