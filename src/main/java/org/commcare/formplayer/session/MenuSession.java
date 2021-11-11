@@ -177,8 +177,11 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @throws CommCareSessionException
      */
     public void autoAdvance(boolean needsDetail, boolean autoAdvanceMenu) throws CommCareSessionException {
+        if (!autoAdvanceMenu) {
+            return;
+        }
         Screen nextScreen = getNextScreen(needsDetail);
-        if (nextScreen instanceof MenuScreen && autoAdvanceMenu) {
+        if (nextScreen instanceof MenuScreen) {
             ((MenuScreen)nextScreen).handleAutoMenuAdvance(sessionWrapper);
         }
     }
