@@ -122,15 +122,6 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     /**
-     * Handle a user step, ignoring performance optimizations and not allowing autolaunch actions.
-     *
-     * @param input The user step input
-     */
-    public boolean handleInput(String input, boolean autoAdvanceMenu) throws CommCareSessionException {
-        return handleInput(input, true, false, false, autoAdvanceMenu);
-    }
-
-    /**
      * @param input           The user step input
      * @param needsDetail     Whether a full entity screen is required for this request
      *                        or if a list of references is sufficient
