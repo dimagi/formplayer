@@ -169,18 +169,16 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     /**
      *
-     * @param needsDetail Whether a full entity screen is required for this request
-     *                    or if a list of references is sufficient
-     * @param autoAdvanceMenu Whether the menu navigation should be advanced if it can be
+     * @param screen The current screen that has been navigated to.
+     * @param autoAdvanceMenu Whether the menu navigation should be advanced if it can be.
      * @throws CommCareSessionException
      */
-    public void autoAdvance(boolean needsDetail, boolean autoAdvanceMenu) throws CommCareSessionException {
+    public void autoAdvance(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
         if (!autoAdvanceMenu) {
             return;
         }
-        Screen nextScreen = getNextScreen(needsDetail);
-        if (nextScreen instanceof MenuScreen) {
-            ((MenuScreen)nextScreen).handleAutoMenuAdvance(sessionWrapper);
+        if (screen instanceof MenuScreen) {
+            ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
         }
     }
 

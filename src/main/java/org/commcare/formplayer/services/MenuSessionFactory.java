@@ -131,7 +131,7 @@ public class MenuSessionFactory {
             }
         }
         if (screen != null) {
-            menuSession.autoAdvance(false, storageFactory.getPropertyManager().isAutoAdvanceMenu());
+            menuSession.autoAdvance(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu());
         }
     }
 

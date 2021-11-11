@@ -285,7 +285,7 @@ public class MenuSessionRunnerService {
                     return syncResponse;
                 }
             }
-            menuSession.autoAdvance(needsDetail, isAutoAdvanceMenu());
+            menuSession.autoAdvance(nextScreen, isAutoAdvanceMenu());
 
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                 // we don't have a resolution, try rebuilding session to execute any pending ops
@@ -507,8 +507,8 @@ public class MenuSessionRunnerService {
 
             Screen nextScreen = menuSession.getNextScreen();
             nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
-            handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
-            menuSession.autoAdvance(false, isAutoAdvanceMenu());
+            nextScreen = handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
+            menuSession.autoAdvance(nextScreen, isAutoAdvanceMenu());
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
