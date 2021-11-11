@@ -245,7 +245,6 @@ public class MenuSessionRunnerService {
             );
         }
         NotificationMessage notificationMessage = null;
-        boolean rebuildSession = false;
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
@@ -263,9 +262,11 @@ public class MenuSessionRunnerService {
                 break;
             }
             String nextInput = i == selections.length ? NO_SELECTION : selections[i];
-            Screen nextScreen = null;
+            Screen nextScreen;
             try {
-                nextScreen = autoAdvanceSession(menuSession, selection, nextInput, queryData, needsDetail, confirmed, forceManualAction);
+                nextScreen = autoAdvanceSession(
+                        menuSession, selection, nextInput, queryData, needsDetail, confirmed, forceManualAction
+                );
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
                 break;
@@ -283,7 +284,6 @@ public class MenuSessionRunnerService {
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                 // we don't have a resolution, try rebuilding session to execute any pending ops
                 executeAndRebuildSession(menuSession);
-                rebuildSession = true;
             } else {
                 menuSession.addSelection(selection);
             }
@@ -325,9 +325,9 @@ public class MenuSessionRunnerService {
             boolean needsDetail,
             boolean confirmed,
             boolean forceManualAction) throws CommCareSessionException {
-        boolean sessionAdvanced = false;
+        boolean sessionAdvanced;
 
-        Screen nextScreen = null;
+        Screen nextScreen;
         do {
             sessionAdvanced = false;
             nextScreen = menuSession.getNextScreen(needsDetail);
