@@ -265,7 +265,6 @@ public class MenuSessionRunnerService {
                         NotificationMessage.Tag.selection);
                 break;
             }
-            menuSession.autoAdvance(needsDetail, isAutoAdvanceMenu());
             Screen nextScreen = menuSession.getNextScreen(needsDetail);
 
             String nextInput = i == selections.length ? "" : selections[i];
@@ -286,6 +285,7 @@ public class MenuSessionRunnerService {
                     return syncResponse;
                 }
             }
+            menuSession.autoAdvance(needsDetail, isAutoAdvanceMenu());
 
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                 // we don't have a resolution, try rebuilding session to execute any pending ops
