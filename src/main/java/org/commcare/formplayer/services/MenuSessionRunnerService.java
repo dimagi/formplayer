@@ -383,14 +383,11 @@ public class MenuSessionRunnerService {
         boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualAction);
         String queryKey = menuSession.getSessionWrapper().getCommand();
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
-            NotificationMessage notificationMessage = doQuery(
+            doQuery(
                     queryScreen,
                     queryData == null ? null : queryData.getInputs(queryKey),
                     queryScreen.doDefaultSearch() && !forceManualAction
             );
-            if (notificationMessage.isError()) {
-                throw new CommCareSessionException(notificationMessage.getMessage());
-            }
             return true;
         } else if (queryData != null) {
             // TODO: this doesn't belong here. Move it to menuSession.handleInput
@@ -475,39 +472,26 @@ public class MenuSessionRunnerService {
      * <p>
      * Will do nothing if this wasn't a query screen.
      */
-    private NotificationMessage doQuery(FormplayerQueryScreen screen,
-                                        Hashtable<String, String> queryDictionary,
-                                        boolean skipDefaultPromptValues) {
+    private void doQuery(FormplayerQueryScreen screen,
+                         Hashtable<String, String> queryDictionary,
+                         boolean skipDefaultPromptValues) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
 
-        String error = null;
         ExternalDataInstance searchDataInstance;
         try {
             searchDataInstance = searchAndSetResult(
                     screen,
                     screen.getUri(skipDefaultPromptValues));
             if (searchDataInstance == null) {
-                error = "No result from query";
+                throw new CommCareSessionException("No result from query");
             }
         } catch (InvalidStructureException | IOException
                 | XmlPullParserException | UnfullfilledRequirementsException e) {
-            error = "Query response format error: " + e.getMessage();
+            throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
         }
-
-        NotificationMessage notificationMessage;
-        if (error != null) {
-            notificationMessage = new NotificationMessage(
-                    "Query failed with message " + error,
-                    true,
-                    NotificationMessage.Tag.query);
-        } else {
-            notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
-        }
-
-        return notificationMessage;
     }
 
     public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri)
