@@ -229,8 +229,6 @@ public class MenuSessionRunnerService {
                                                          boolean forceManualAction,
                                                          int casesPerPage,
                                                          String smartLinkTemplate) throws Exception {
-        BaseResponseBean nextResponse;
-        boolean needsDetail;
         // If we have no selections, we're are the root screen.
         if (selections == null) {
             return getNextMenu(
@@ -252,7 +250,7 @@ public class MenuSessionRunnerService {
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
-            needsDetail = detailSelection != null || i != selections.length;
+            boolean needsDetail = detailSelection != null || i != selections.length;
             boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, inputValidated, true);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
@@ -289,7 +287,7 @@ public class MenuSessionRunnerService {
             }
         }
 
-        nextResponse = getNextMenu(
+        BaseResponseBean nextResponse = getNextMenu(
                 menuSession,
                 detailSelection,
                 offset,
