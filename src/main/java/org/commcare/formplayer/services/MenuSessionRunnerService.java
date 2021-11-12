@@ -271,12 +271,7 @@ public class MenuSessionRunnerService {
             }
 
             if (nextScreen instanceof FormplayerSyncScreen) {
-                BaseResponseBean syncResponse = doSyncGetNext(
-                        (FormplayerSyncScreen)nextScreen,
-                        menuSession);
-                if (syncResponse != null) {
-                    return syncResponse;
-                }
+                return doSyncGetNext((FormplayerSyncScreen)nextScreen, menuSession);
             }
 
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
@@ -310,8 +305,7 @@ public class MenuSessionRunnerService {
             if (notificationMessage == null) {
                 notificationMessage = new NotificationMessage(null, false, NotificationMessage.Tag.selection);
             }
-            BaseResponseBean responseBean = new BaseResponseBean(null, notificationMessage,true);
-            return responseBean;
+            return new BaseResponseBean(null, notificationMessage,true);
         }
     }
 
