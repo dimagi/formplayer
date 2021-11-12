@@ -390,7 +390,6 @@ public class MenuSessionRunnerService {
             );
             return true;
         } else if (queryData != null) {
-            // TODO: this doesn't belong here. Move it to menuSession.handleInput
             answerQueryPrompts(queryScreen, queryData.getInputs(queryKey));
             return false;
         }
