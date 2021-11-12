@@ -479,28 +479,19 @@ public class MenuSessionRunnerService {
             screen.answerPrompts(queryDictionary);
         }
 
-        ExternalDataInstance searchDataInstance;
         try {
-            searchDataInstance = searchAndSetResult(
-                    screen,
-                    screen.getUri(skipDefaultPromptValues));
+            URI uri = screen.getUri(skipDefaultPromptValues);
+            ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
+                    screen.getQueryDatum().getDataId(), screen.getQueryDatum().useCaseTemplate(), uri);
             if (searchDataInstance == null) {
                 throw new CommCareSessionException("No result from query");
             }
+            screen.setQueryDatum(searchDataInstance);
         } catch (InvalidStructureException | IOException
                 | XmlPullParserException | UnfullfilledRequirementsException e) {
             throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
         }
     }
-
-    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri)
-            throws UnfullfilledRequirementsException, XmlPullParserException, IOException, InvalidStructureException {
-        ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(screen.getQueryDatum().getDataId(),
-                screen.getQueryDatum().useCaseTemplate(), uri);
-        screen.setQueryDatum(searchDataInstance);
-        return searchDataInstance;
-    }
-
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
