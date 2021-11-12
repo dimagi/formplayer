@@ -175,13 +175,10 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @return true if the session was advanced
      */
     public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
-        if (!autoAdvanceMenu) {
+        if (!autoAdvanceMenu || !(screen instanceof MenuScreen)) {
             return false;
         }
-        if (screen instanceof MenuScreen) {
-            return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
-        }
-        return false;
+        return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
     }
 
     private void addTitle(String input, Screen previousScreen) {
