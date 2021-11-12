@@ -483,9 +483,6 @@ public class MenuSessionRunnerService {
             URI uri = screen.getUri(skipDefaultPromptValues);
             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                     screen.getQueryDatum().getDataId(), screen.getQueryDatum().useCaseTemplate(), uri);
-            if (searchDataInstance == null) {
-                throw new CommCareSessionException("No result from query");
-            }
             screen.setQueryDatum(searchDataInstance);
         } catch (InvalidStructureException | IOException
                 | XmlPullParserException | UnfullfilledRequirementsException e) {
