@@ -34,7 +34,7 @@ jacoco {
 }
 
 jar {
-    archiveBaseName = 'formplayer'
+    enabled = false
 }
 
 allprojects{
