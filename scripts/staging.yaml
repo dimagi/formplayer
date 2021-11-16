@@ -61,9 +61,9 @@ branches:
   # - gh/serialize-full-xml-unless-submitting # Graham Sept 28
   - sk/re-submit-form-on-failure1  # Simon Nov 8
   # - es/post-case-search  # Ethan Nov 29
-  - sk/dependencies-shedlock-spring
-  - dependabot/gradle/net.javacrumbs.shedlock-shedlock-provider-jdbc-template-4.29.0
-  - dependabot/gradle/net.javacrumbs.shedlock-shedlock-spring-4.29.0
+  - sk/dependabot-conflict-shedlock-sentry
+  - dependabot/gradle/shedlockVersion-4.29.0
+  - dependabot/gradle/sentryVersion-5.4.0
   - dependabot/gradle/org.springframework.boot-2.5.6
 submodules:
   libs/commcare:
