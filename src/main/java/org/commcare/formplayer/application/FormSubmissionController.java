@@ -140,10 +140,10 @@ public class FormSubmissionController extends AbstractBaseController {
             response = step.execute();
         } catch (Exception e) {
             response = getErrorResponse(
-                    request, "error",
+                    request, Constants.SUBMIT_RESPONSE_ERROR,
                     e.getMessage(), e);
         }
-        if (response.getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)) {
+        if (response.getStatus().equals(Constants.SUBMIT_RESPONSE_STATUS_POSITIVE)) {
             step.recordCheckpoint();
             return Optional.empty();  // continue processing
         }
@@ -157,7 +157,7 @@ public class FormSubmissionController extends AbstractBaseController {
                 () -> validateSubmitAnswers(context),
                 context.getMetricsTags()
         );
-        if (!context.getResponse().getStatus().equals(Constants.SYNC_RESPONSE_STATUS_POSITIVE)
+        if (!context.getResponse().getStatus().equals(Constants.SUBMIT_RESPONSE_STATUS_POSITIVE)
                 || !context.getRequest().isPrevalidated()) {
             return context.error(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
         }
@@ -180,7 +180,7 @@ public class FormSubmissionController extends AbstractBaseController {
         return responseBean;
     }
 
-    private SubmitResponseBean processFormXml(FormSubmissionContext context) {
+    private SubmitResponseBean processFormXml(FormSubmissionContext context) throws Exception {
         try {
             restoreFactory.setAutoCommit(false);
             processXmlInner(context);
@@ -201,14 +201,10 @@ public class FormSubmissionController extends AbstractBaseController {
             return context.error(Constants.SUBMIT_RESPONSE_TOO_MANY_REQUESTS);
         } catch (HttpClientErrorException e) {
             return getErrorResponse(
-                    context.getHttpRequest(), "error",
+                    context.getHttpRequest(), Constants.SUBMIT_RESPONSE_ERROR,
                     String.format("Form submission failed with error response: %s, %s, %s",
                             e.getMessage(), e.getResponseBodyAsString(), e.getResponseHeaders()),
                     e);
-        } catch (Exception e) {
-            return getErrorResponse(
-                    context.getHttpRequest(), "error",
-                    e.getMessage(), e);
         } finally {
             // If autoCommit hasn't been reset to `true` by the commit() call then an error occurred
             if (!restoreFactory.getAutoCommit()) {
@@ -253,7 +249,7 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.success();
     }
 
-    private SubmitResponseBean performSync(FormSubmissionContext context) {
+    private SubmitResponseBean performSync(FormSubmissionContext context) throws Exception {
         boolean suppressAutosync = context.getFormEntrySession().getSuppressAutosync();
 
         if (storageFactory.getPropertyManager().isSyncAfterFormEnabled() && !suppressAutosync) {
@@ -262,13 +258,7 @@ public class FormSubmissionController extends AbstractBaseController {
             //validity of the form
 
             boolean skipFixtures = storageFactory.getPropertyManager().skipFixturesAfterSubmit();
-            try {
-                restoreFactory.performTimedSync(true, skipFixtures, false);
-            } catch (Exception e) {
-                return getErrorResponse(
-                        context.getHttpRequest(), Constants.ANSWER_RESPONSE_STATUS_NEGATIVE,
-                        e.getMessage(), e);
-            }
+            restoreFactory.performTimedSync(true, skipFixtures, false);
         }
         return context.success();
     }
