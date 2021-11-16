@@ -55,6 +55,7 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
         String cacheKey = getCacheKey(uri);
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
         if (cachedRoot != null) {
+            log.info(String.format("Using cached case search results for %s", uri));
             // Deep copy to avoid concurrency issues
             TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
             return copyOfRoot;
