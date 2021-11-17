@@ -1,6 +1,8 @@
 package org.commcare.formplayer.services;
 
-import org.commcare.suite.model.RemoteQueryDatum;
+import org.commcare.session.RemoteQuerySessionManager;
+import org.commcare.suite.model.*;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.javarosa.core.model.instance.ExternalDataInstance;
@@ -8,17 +10,11 @@ import datadog.trace.api.Trace;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
-import org.commcare.suite.model.EntityDatum;
-import org.commcare.suite.model.MenuDisplayable;
-import org.commcare.suite.model.SessionDatum;
-import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
-import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +22,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -107,11 +104,15 @@ public class MenuSessionFactory {
                             e.printStackTrace();
                             throw new CommCareSessionException("Query URL format error: " + e.getMessage(), e);
                         }
+                        UriComponentsBuilder builder = UriComponentsBuilder.fromUri(uri);
+                        step.getExtras().entrySet().forEach(entry -> {
+                            builder.queryParam(entry.getKey(), entry.getValue());
+                        });
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                                 queryScreen.getQueryDatum().getDataId(),
                                 queryScreen.getQueryDatum().useCaseTemplate(),
-                                uri
+                                builder.build().toUri()
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
                             screen = menuSession.getNextScreen(false);
