@@ -40,7 +40,7 @@ public class ParentChildTest extends BaseTestClass{
         answers.put("0", "Sr");
         answers.put("1", "Jr");
         SubmitResponseBean submitResponseBean = submitForm(answers, newFormResponse.getSessionId());
-        assertEquals(Constants.SYNC_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
+        assertEquals(Constants.SUBMIT_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
         EntityListResponse entityListResponse = sessionNavigate(new String[]{"1"}, "parentchild", EntityListResponse.class);
         assertEquals(1, entityListResponse.getEntities().length);
         String entityId = entityListResponse.getEntities()[0].getId();
