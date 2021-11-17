@@ -35,6 +35,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+import datadog.trace.api.Trace;
+
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes
  * opening a new form, question answering, and form submission.
@@ -161,6 +163,7 @@ public class FormController extends AbstractBaseController {
     }
 
     // Iterate over all answers and attempt to save them to check for validity.
+    @Trace
     public static HashMap<String, ErrorBean> validateAnswers(FormEntryController formEntryController,
                                                        FormEntryModel formEntryModel,
                                                        @Nullable Map<String, Object> answers,
