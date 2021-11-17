@@ -69,8 +69,7 @@ submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      # - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
+      - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
       - ce/ensure-session # Cal Nov 20 2021
       # - es/post-case-search  # Ethan Nov 29
       - dr_form_query # Shubham Sep 21
-      - jls/parse-stack-queries # Jenny Oct 20
