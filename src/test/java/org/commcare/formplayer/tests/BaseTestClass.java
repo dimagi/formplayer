@@ -1,28 +1,42 @@
 package org.commcare.formplayer.tests;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.commcare.formplayer.application.*;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.*;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.*;
+import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
-import org.commcare.formplayer.util.*;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
+import org.commcare.formplayer.util.PrototypeUtils;
+import org.commcare.formplayer.util.SessionUtils;
+import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.utils.CheckedSupplier;
+import org.commcare.formplayer.utils.FileUtils;
+import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
+import org.commcare.session.CommCareSession;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
-import org.javarosa.core.services.locale.LocalizerManager;
 import org.javarosa.core.services.locale.Localization;
+import org.javarosa.core.services.locale.LocalizerManager;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,20 +50,18 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.integration.support.locks.LockRegistry;
+import org.springframework.lang.Nullable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.commcare.formplayer.objects.QueryData;
-import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.sandbox.SqlSandboxUtils;
-import org.commcare.formplayer.services.*;
-import org.commcare.formplayer.utils.FileUtils;
-import org.commcare.formplayer.utils.TestContext;
 
 import javax.servlet.http.Cookie;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -73,6 +85,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class BaseTestClass {
 
     private MockMvc mockFormController;
+
+    private MockMvc mockFormSubmissionController;
 
     protected MockMvc mockUtilController;
 
@@ -125,8 +139,14 @@ public class BaseTestClass {
     @Autowired
     protected MenuSessionRunnerService menuSessionRunnerService;
 
+    @Autowired
+    private FormSendCalloutHandler formSendCalloutHandlerMock;
+
     @InjectMocks
     protected FormController formController;
+
+    @InjectMocks
+    protected FormSubmissionController formSubmissionController;
 
     @InjectMocks
     protected UtilController utilController;
@@ -167,6 +187,7 @@ public class BaseTestClass {
         Mockito.reset(menuSessionRunnerService);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
+        mockFormSubmissionController = MockMvcBuilders.standaloneSetup(formSubmissionController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
         mockMenuController = MockMvcBuilders.standaloneSetup(menuController).build();
         mockDebuggerController = MockMvcBuilders.standaloneSetup(debuggerController).build();
@@ -219,6 +240,15 @@ public class BaseTestClass {
                 throw new FormNotFoundException(key);
             }
         });
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                String key = (String) invocation.getArguments()[0];
+                sessionMap.remove(key);
+                return null;
+            }
+        }).when(formSessionService).deleteSessionById(anyString());
     }
 
     private void mockMenuSessionService() {
@@ -437,7 +467,7 @@ public class BaseTestClass {
         SubmitRequestBean submitRequestBean = mapper.readValue
                 (FileUtils.getFile(this.getClass(), requestPath), SubmitRequestBean.class);
         submitRequestBean.setSessionId(sessionId);
-        return generateMockQuery(ControllerType.FORM,
+        return generateMockQuery(ControllerType.FORM_SUBMISSION,
                 RequestType.POST,
                 Constants.URL_SUBMIT_FORM,
                 submitRequestBean,
@@ -453,7 +483,7 @@ public class BaseTestClass {
         SubmitRequestBean submitRequestBean = populateFromSession(new SubmitRequestBean(), sessionId);
         submitRequestBean.setAnswers(answers);
         submitRequestBean.setPrevalidated(prevalidated);
-        return generateMockQuery(ControllerType.FORM,
+        return generateMockQuery(ControllerType.FORM_SUBMISSION,
                 RequestType.POST,
                 Constants.URL_SUBMIT_FORM,
                 submitRequestBean,
@@ -759,7 +789,7 @@ public class BaseTestClass {
     }
 
     public enum ControllerType {
-        FORM, MENU, UTIL, DEBUGGER,
+        FORM, FORM_SUBMISSION, MENU, UTIL, DEBUGGER,
     }
 
     private <T> T mockInstallReference(CheckedSupplier<T> supplier, String installReference) throws Exception {
@@ -818,6 +848,9 @@ public class BaseTestClass {
         switch (controllerType) {
             case FORM:
                 controller = mockFormController;
+                break;
+            case FORM_SUBMISSION:
+                controller = mockFormSubmissionController;
                 break;
             case MENU:
                 controller = mockMenuController;
@@ -890,4 +923,23 @@ public class BaseTestClass {
         return new Pair(installReference, mapper.readValue(beanContent, clazz));
     }
 
+    protected FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
+        return new FormSession(serializableFormSession,
+                restoreFactoryMock,
+                formSendCalloutHandlerMock,
+                storageFactoryMock,
+                getCommCareSession(serializableFormSession.getMenuSessionId()),
+                menuSessionRunnerService.getCaseSearchHelper());
+    }
+
+    @Nullable
+    protected CommCareSession getCommCareSession(String menuSessionId) throws Exception {
+        if (menuSessionId == null) {
+            return null;
+        }
+
+        SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(menuSessionId);
+        FormplayerConfigEngine engine = installService.configureApplication(serializableMenuSession.getInstallReference(), serializableMenuSession.isPreview()).first;
+        return SessionSerializer.deserialize(engine.getPlatform(), serializableMenuSession.getCommcareSession());
+    }
 }
