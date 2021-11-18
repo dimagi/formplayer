@@ -24,8 +24,11 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SessionUtils;
+import org.commcare.formplayer.utils.ClosureScope;
+import org.commcare.formplayer.utils.ThreadSafeLoop;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.session.SessionWrapper;
+import org.commcare.modern.util.Pair;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.Endpoint;
@@ -331,19 +334,19 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             boolean needsDetail,
             boolean inputValidated,
-            boolean forceManualAction) throws CommCareSessionException {
-        boolean sessionAdvanced;
-        Screen nextScreen = null;
-        Screen previousScreen;
-        do {
-            sessionAdvanced = false;
-            previousScreen = nextScreen;
+            boolean forceManualAction) throws Exception {
 
-            nextScreen = menuSession.getNextScreen(needsDetail);
-            if (previousScreen != null) {
+        final ClosureScope<Screen> previous = ClosureScope.empty();
+
+        Pair<Screen, Boolean> result = ThreadSafeLoop.doWhile(() -> {
+            Screen nextScreen = menuSession.getNextScreen(needsDetail);
+            boolean sessionAdvanced = false;
+            if (previous.isPresent()) {
                 String to = nextScreen == null ? "XForm" : nextScreen.toString();
-                log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
+                log.info(String.format("Menu session auto advanced from %s to %s", previous.get(), to));
             }
+
+            previous.set(nextScreen);
 
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
@@ -358,10 +361,13 @@ public class MenuSessionRunnerService {
             } else if (nextScreen instanceof MenuScreen) {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
             }
-        } while(sessionAdvanced);
+            return new Pair<>(nextScreen, sessionAdvanced);
+        }, (res) -> res.second);
 
-        return nextScreen;
+        return result.first;
     }
+
+
 
     /**
      * This method handles Query Screens during app navigation. This method does nothing
