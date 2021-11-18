@@ -59,7 +59,7 @@ branches:
   # - ce/tracing+sk/re-submit-form-on-failure1
   #- ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - jls/query-datum-and-smart-linking # Shubham/Simon/Jenny
-  # - gh/serialize-full-xml-unless-submitting # Graham Sept 28
+  - gh/serialize-full-xml-unless-submitting # Graham Nov 18
   - sk/re-submit-form-on-failure1  # Simon Nov 8
   # - es/post-case-search  # Ethan Nov 29
   - sk/dependabot-conflict-shedlock-sentry
