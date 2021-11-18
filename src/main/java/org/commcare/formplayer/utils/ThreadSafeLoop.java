@@ -14,10 +14,16 @@ public class ThreadSafeLoop {
      * @param <T> Return type of the body
      */
     public static <T> T doWhile(CheckedSupplier<T> body, Predicate<T> repeatLoop) throws Exception {
+        return doWhile(body, repeatLoop, Integer.MAX_VALUE);
+    }
+
+    public static <T> T doWhile(CheckedSupplier<T> body, Predicate<T> repeatLoop, int maxIterations) throws Exception {
         T result;
+        int count = 0;
         do {
+            count += 1;
             result = body.get();
-        } while (!Thread.interrupted() && repeatLoop.test(result));
+        } while (!Thread.interrupted() && repeatLoop.test(result) && count < maxIterations);
         return result;
     }
 }

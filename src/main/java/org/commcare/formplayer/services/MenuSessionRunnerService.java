@@ -336,6 +336,7 @@ public class MenuSessionRunnerService {
             boolean inputValidated,
             boolean forceManualAction) throws Exception {
 
+        int maxIterations = 50;
         final ClosureScope<Screen> previous = ClosureScope.empty();
 
         Pair<Screen, Boolean> result = ThreadSafeLoop.doWhile(() -> {
@@ -362,7 +363,7 @@ public class MenuSessionRunnerService {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
             }
             return new Pair<>(nextScreen, sessionAdvanced);
-        }, (res) -> res.second);
+        }, (res) -> res.second, maxIterations);
 
         return result.first;
     }
