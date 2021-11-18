@@ -335,9 +335,12 @@ public class MenuSessionRunnerService {
         boolean sessionAdvanced;
         Screen nextScreen = null;
         Screen previousScreen;
+        int iterationCount = 0;
+        int maxIterations = 50; // maximum plausible iterations
         do {
             sessionAdvanced = false;
             previousScreen = nextScreen;
+            iterationCount += 1;
 
             nextScreen = menuSession.getNextScreen(needsDetail);
             if (previousScreen != null) {
@@ -358,7 +361,7 @@ public class MenuSessionRunnerService {
             } else if (nextScreen instanceof MenuScreen) {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
             }
-        } while(sessionAdvanced);
+        } while(!Thread.interrupted() && sessionAdvanced && iterationCount < maxIterations);
 
         return nextScreen;
     }
