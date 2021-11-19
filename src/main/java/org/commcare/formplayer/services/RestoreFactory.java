@@ -625,7 +625,9 @@ public class RestoreFactory {
         return getUserRestoreUrlAndHeaders(skipFixtures);
     }
 
-    private HttpHeaders getHmacHeaders(String requestPath) {
+    private HttpHeaders getHmacHeaders(URI url) {
+        // Do HMAC auth which requires only the path and query components of the URL
+        String requestPath = String.format("%s?%s", url.getRawPath(), url.getRawQuery());
         HttpServletRequest request = RequestUtils.getCurrentRequest();
         if (request == null) {
             throw new RuntimeException(String.format(
@@ -668,9 +670,10 @@ public class RestoreFactory {
         builder.append("/case_migrations/restore/");
         builder.append(caseId);
         builder.append("/");
-        HttpHeaders headers = getHmacHeaders(builder.toString());
         String fullUrl = host + builder.toString();
-        return new Pair<>(UriComponentsBuilder.fromUriString(fullUrl).build(true).toUri(), headers);
+        URI uri = UriComponentsBuilder.fromUriString(fullUrl).build(true).toUri();
+        HttpHeaders headers = getHmacHeaders(uri);
+        return new Pair<>(uri, headers);
     }
 
     public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders(boolean skipFixtures) {
@@ -701,21 +704,15 @@ public class RestoreFactory {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(String.format("Restore Error: " + e.getMessage()));
         }
-
+        URI fullUrl = builder.build(true).toUri();
         // Headers
         HttpHeaders headers;
         if (getHqAuth() == null) {
             // Do HMAC auth which requires only the path and query components of the URL
-            UriComponentsBuilder authPath = builder.cloneBuilder();
-            authPath.scheme(null);
-            authPath.host(null);
-            authPath.userInfo(null);
-            authPath.port(null);
-            headers = getHmacHeaders(authPath.build(true).toUriString());
+            headers = getHmacHeaders(fullUrl);
         } else {
             headers = getUserHeaders();
         }
-        URI fullUrl = builder.build(true).toUri();
         return new Pair<>(fullUrl, headers);
     }
 
