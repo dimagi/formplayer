@@ -665,7 +665,7 @@ public class RestoreFactory {
     }
 
     private String buildUrlPath(String... parts) {
-        StringBuilder builder = new StringBuilder(host);
+        StringBuilder builder = new StringBuilder();
         for (String part : parts) {
             builder.append(part);
         }
