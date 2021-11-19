@@ -713,9 +713,7 @@ public class RestoreFactory {
             authPath.port(null);
             headers = getHmacHeaders(authPath.build(true).toUriString());
         } else {
-            headers = getHqAuth().getAuthHeaders();
-            headers.add("x-openrosa-version", "2.0");
-            headers.setAll(getOriginTokenHeader());
+            headers = getUserHeaders();
         }
         URI fullUrl = builder.build(true).toUri();
         return new Pair<>(fullUrl, headers);
