@@ -595,9 +595,18 @@ public class RestoreFactory {
                     " did not have an authentication key.");
         }
         HttpHeaders headers = getHqAuth().getAuthHeaders();
-        headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
-        headers.set("X-OpenRosa-Version", "3.0");
-        headers.set("X-OpenRosa-DeviceId", getSyncDeviceId());
+        headers.addAll(getStandardHeaders());
+        return headers;
+    }
+
+    private HttpHeaders getStandardHeaders() {
+        HttpHeaders headers = new HttpHeaders() {
+            {
+                add("X-CommCareHQ-LastSyncToken", getSyncToken());
+                add("X-OpenRosa-Version", "3.0");
+                add("X-OpenRosa-DeviceId", getSyncDeviceId());
+            }
+        };
         headers.setAll(getOriginTokenHeader());
         return headers;
     }
