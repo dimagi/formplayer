@@ -637,12 +637,7 @@ public class RestoreFactory {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
-        HttpHeaders headers = new HttpHeaders() {
-            {
-                add("x-openrosa-version", "2.0");
-            }
-        };
-        headers.setAll(getOriginTokenHeader());
+        HttpHeaders headers = getStandardHeaders();
         try {
             String digest = RequestUtils.getHmac(formplayerAuthKey, requestPath);
             headers.add("X-MAC-DIGEST", digest);
