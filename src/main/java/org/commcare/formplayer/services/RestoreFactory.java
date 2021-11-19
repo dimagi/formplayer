@@ -433,7 +433,7 @@ public class RestoreFactory {
     public InputStream getRestoreXml(boolean skipFixtures) {
         ensureValidParameters();
         URI url = getRestoreUrl(skipFixtures);
-        HttpHeaders headers = getRestoreHeaders(url);
+        HttpHeaders headers = getRequestHeaders(url);
         recordSentryData(url.toString());
         log.info("Restoring from URL " + url);
         InputStream restoreStream = getRestoreXmlHelper(url, headers);
@@ -441,7 +441,7 @@ public class RestoreFactory {
         return restoreStream;
     }
 
-    private HttpHeaders getRestoreHeaders(URI url) {
+    public HttpHeaders getRequestHeaders(URI url) {
         if (getHqAuth() == null) {
             // Do HMAC auth which requires only the path and query components of the URL
             return getHmacHeaders(url);

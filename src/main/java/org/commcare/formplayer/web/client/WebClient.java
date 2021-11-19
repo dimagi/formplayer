@@ -20,20 +20,22 @@ public class WebClient {
     RestoreFactory restoreFactory;
 
     public String get(String url) {
+        URI uri = URI.create(url);
         return restTemplate.exchange(
-                RequestEntity.get(url).headers(restoreFactory.getUserHeaders()).build(), String.class
+                RequestEntity.get(uri).headers(restoreFactory.getRequestHeaders(uri)).build(), String.class
         ).getBody();
     }
 
     public String get(URI uri) {
         return restTemplate.exchange(
-                RequestEntity.get(uri).headers(restoreFactory.getUserHeaders()).build(), String.class
+                RequestEntity.get(uri).headers(restoreFactory.getRequestHeaders(uri)).build(), String.class
         ).getBody();
     }
 
     public <T> String post(String url, T body) {
+        URI uri = URI.create(url);
         return restTemplate.exchange(
-                RequestEntity.post(url).headers(restoreFactory.getUserHeaders()).body(body), String.class
+                RequestEntity.post(uri).headers(restoreFactory.getRequestHeaders(uri)).body(body), String.class
         ).getBody();
     }
 }
