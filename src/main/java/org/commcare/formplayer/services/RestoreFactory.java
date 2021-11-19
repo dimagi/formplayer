@@ -63,6 +63,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -597,17 +598,15 @@ public class RestoreFactory {
         headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
         headers.set("X-OpenRosa-Version", "3.0");
         headers.set("X-OpenRosa-DeviceId", getSyncDeviceId());
-        addOriginTokenHeader(headers);
+        headers.setAll(getOriginTokenHeader());
         return headers;
     }
 
-    private void addOriginTokenHeader(HttpHeaders headers) {
+    private Map<String, String> getOriginTokenHeader() {
         String originToken = PropertyUtils.genUUID();
         String redisKey = String.format("%s%s", ORIGIN_TOKEN_SLUG, originToken);
-        originTokens.set(redisKey,
-                "valid",
-                Duration.ofSeconds(60));
-        headers.set("X-CommCareHQ-Origin-Token", originToken);
+        originTokens.set(redisKey, "valid", Duration.ofSeconds(60));
+        return Collections.singletonMap("X-CommCareHQ-Origin-Token", originToken);
     }
 
     public Pair<URI, HttpHeaders> getRestoreUrlAndHeaders(boolean skipFixtures) {
@@ -632,7 +631,7 @@ public class RestoreFactory {
                 add("x-openrosa-version", "2.0");
             }
         };
-        addOriginTokenHeader(headers);
+        headers.setAll(getOriginTokenHeader());
         try {
             String digest = RequestUtils.getHmac(formplayerAuthKey, requestPath);
             headers.add("X-MAC-DIGEST", digest);
@@ -707,7 +706,7 @@ public class RestoreFactory {
         } else {
             headers = getHqAuth().getAuthHeaders();
             headers.add("x-openrosa-version", "2.0");
-            addOriginTokenHeader(headers);
+            headers.setAll(getOriginTokenHeader());
         }
         URI fullUrl = builder.build(true).toUri();
         return new Pair<>(fullUrl, headers);
