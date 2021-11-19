@@ -610,10 +610,6 @@ public class RestoreFactory {
         headers.set("X-CommCareHQ-Origin-Token", originToken);
     }
 
-    public Pair<URI, HttpHeaders> getRestoreUrlAndHeaders() {
-        return getRestoreUrlAndHeaders(false);
-    }
-
     public Pair<URI, HttpHeaders> getRestoreUrlAndHeaders(boolean skipFixtures) {
         if (caseId != null) {
             return getCaseRestoreUrlAndHeaders();
@@ -667,10 +663,6 @@ public class RestoreFactory {
         HttpHeaders headers = getHmacHeaders(builder.toString());
         String fullUrl = host + builder.toString();
         return new Pair<>(UriComponentsBuilder.fromUriString(fullUrl).build(true).toUri(), headers);
-    }
-
-    public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders() {
-        return getUserRestoreUrlAndHeaders(false);
     }
 
     public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders(boolean skipFixtures) {
@@ -816,19 +808,11 @@ public class RestoreFactory {
         return hasRestored;
     }
 
-    public SimpleTimer getDownloadRestoreTimer() {
-        return downloadRestoreTimer;
-    }
-
     public void setCaseId(String caseId) {
         this.caseId = caseId;
     }
 
     public String getCaseId() {
         return caseId;
-    }
-
-    public boolean isConfigured() {
-        return this.configured;
     }
 }
