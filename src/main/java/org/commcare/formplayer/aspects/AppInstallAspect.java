@@ -1,5 +1,6 @@
 package org.commcare.formplayer.aspects;
 
+import datadog.trace.api.Trace;
 import io.sentry.Sentry;
 import lombok.extern.java.Log;
 import org.apache.http.client.utils.URIBuilder;
@@ -32,6 +33,7 @@ public class AppInstallAspect {
     private String host;
 
     @Before(value = "@annotation(org.commcare.formplayer.annotations.AppInstall)")
+    @Trace
     public void configureStorageFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         if (!(args[0] instanceof InstallRequestBean)) {

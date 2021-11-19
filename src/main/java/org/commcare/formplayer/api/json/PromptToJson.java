@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Vector;
 
+import datadog.trace.api.Trace;
+
 /**
  * Functions for generating the JSON repesentation of a FormEntryPrompt
  *
@@ -126,6 +128,7 @@ public class PromptToJson {
         obj.put("done-choice", repeatOptions.done);
     }
 
+    @Trace
     private static void parseQuestionAnswer(JSONObject obj, FormEntryPrompt prompt) {
         IAnswerData answerValue = prompt.getAnswerValue();
         if (answerValue == null) {
