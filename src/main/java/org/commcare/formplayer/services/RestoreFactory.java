@@ -430,10 +430,6 @@ public class RestoreFactory {
         }
     }
 
-    public InputStream getRestoreXml() {
-        return getRestoreXml(false);
-    }
-
     public InputStream getRestoreXml(boolean skipFixtures) {
         ensureValidParameters();
         URI url = getRestoreUrl(skipFixtures);
