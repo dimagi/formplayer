@@ -20,7 +20,6 @@ import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.*;
 import org.commcare.modern.database.TableBuilder;
-import org.commcare.modern.util.Pair;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
 import org.javarosa.core.util.PropertyUtils;
@@ -442,12 +441,14 @@ public class RestoreFactory {
     }
 
     public HttpHeaders getRequestHeaders(URI url) {
+        HttpHeaders headers;
         if (getHqAuth() == null) {
-            // Do HMAC auth which requires only the path and query components of the URL
-            return getHmacHeaders(url);
+            headers = getHmacHeader(url);
         } else {
-            return getUserHeaders();
+            headers = getHqAuth().getAuthHeaders();;
         }
+        headers.addAll(getStandardHeaders());
+        return headers;
     }
 
     private void recordSentryData(final String restoreUrl) {
@@ -595,16 +596,6 @@ public class RestoreFactory {
         return String.format("%s*%s*as*%s", DEVICE_ID_SLUG, username, asUsername);
     }
 
-    public HttpHeaders getUserHeaders() {
-        if (getHqAuth() == null) {
-            throw new RuntimeException("Trying to get Authentication headers but request " +
-                    " did not have an authentication key.");
-        }
-        HttpHeaders headers = getHqAuth().getAuthHeaders();
-        headers.addAll(getStandardHeaders());
-        return headers;
-    }
-
     private HttpHeaders getStandardHeaders() {
         HttpHeaders headers = new HttpHeaders() {
             {
@@ -631,7 +622,7 @@ public class RestoreFactory {
         return getUserRestoreUrl(skipFixtures);
     }
 
-    private HttpHeaders getHmacHeaders(URI url) {
+    private HttpHeaders getHmacHeader(URI url) {
         // Do HMAC auth which requires only the path and query components of the URL
         String requestPath = String.format("%s?%s", url.getRawPath(), url.getRawQuery());
         HttpServletRequest request = RequestUtils.getCurrentRequest();
@@ -643,15 +634,19 @@ public class RestoreFactory {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
-        HttpHeaders headers = getStandardHeaders();
+        String digest;
         try {
-            String digest = RequestUtils.getHmac(formplayerAuthKey, requestPath);
-            headers.add("X-MAC-DIGEST", digest);
-            return headers;
+            digest = RequestUtils.getHmac(formplayerAuthKey, requestPath);
         } catch (Exception e) {
             log.error("Could not get HMAC signature to auth restore request", e);
             throw new RuntimeException(e);
         }
+
+        return new HttpHeaders() {
+            {
+                add("X-MAC-DIGEST", digest);
+            }
+        };
     }
 
     private void builderQueryParamEncoded(UriComponentsBuilder builder, String name, String value)
