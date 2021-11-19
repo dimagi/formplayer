@@ -436,12 +436,22 @@ public class RestoreFactory {
 
     public InputStream getRestoreXml(boolean skipFixtures) {
         ensureValidParameters();
-        Pair<URI, HttpHeaders> restoreUrlAndHeaders = getRestoreUrlAndHeaders(skipFixtures);
-        recordSentryData(restoreUrlAndHeaders.first.toString());
-        log.info("Restoring from URL " + restoreUrlAndHeaders.first.toString());
-        InputStream restoreStream = getRestoreXmlHelper(restoreUrlAndHeaders.first, restoreUrlAndHeaders.second);
+        URI url = getRestoreUrl(skipFixtures);
+        HttpHeaders headers = getRestoreHeaders(url);
+        recordSentryData(url.toString());
+        log.info("Restoring from URL " + url);
+        InputStream restoreStream = getRestoreXmlHelper(url, headers);
         setLastSyncTime();
         return restoreStream;
+    }
+
+    private HttpHeaders getRestoreHeaders(URI url) {
+        if (getHqAuth() == null) {
+            // Do HMAC auth which requires only the path and query components of the URL
+            return getHmacHeaders(url);
+        } else {
+            return getUserHeaders();
+        }
     }
 
     private void recordSentryData(final String restoreUrl) {
@@ -618,11 +628,11 @@ public class RestoreFactory {
         return Collections.singletonMap("X-CommCareHQ-Origin-Token", originToken);
     }
 
-    public Pair<URI, HttpHeaders> getRestoreUrlAndHeaders(boolean skipFixtures) {
+    public URI getRestoreUrl(boolean skipFixtures) {
         if (caseId != null) {
-            return getCaseRestoreUrlAndHeaders();
+            return getCaseRestoreUrl();
         }
-        return getUserRestoreUrlAndHeaders(skipFixtures);
+        return getUserRestoreUrl(skipFixtures);
     }
 
     private HttpHeaders getHmacHeaders(URI url) {
@@ -658,11 +668,9 @@ public class RestoreFactory {
         }
     }
 
-    public Pair<URI, HttpHeaders> getCaseRestoreUrlAndHeaders() {
+    public URI getCaseRestoreUrl() {
         String path = buildUrlPath(host, "/a/", domain, "/case_migrations/restore/", caseId, "/");
-        URI uri = UriComponentsBuilder.fromUriString(path).build(true).toUri();
-        HttpHeaders headers = getHmacHeaders(uri);
-        return new Pair<>(uri, headers);
+        return UriComponentsBuilder.fromUriString(path).build(true).toUri();
     }
 
     private String buildUrlPath(String... parts) {
@@ -673,7 +681,7 @@ public class RestoreFactory {
         return builder.toString();
     }
 
-    public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders(boolean skipFixtures) {
+    public URI getUserRestoreUrl(boolean skipFixtures) {
         String uri = buildUrlPath(host, "/a/", domain, "/phone/restore/?version=2.0");
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(uri);
         String syncToken = getSyncToken();
@@ -699,16 +707,7 @@ public class RestoreFactory {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(String.format("Restore Error: " + e.getMessage()));
         }
-        URI fullUrl = builder.build(true).toUri();
-        // Headers
-        HttpHeaders headers;
-        if (getHqAuth() == null) {
-            // Do HMAC auth which requires only the path and query components of the URL
-            headers = getHmacHeaders(fullUrl);
-        } else {
-            headers = getUserHeaders();
-        }
-        return new Pair<>(fullUrl, headers);
+        return builder.build(true).toUri();
     }
 
     /**
