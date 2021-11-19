@@ -19,6 +19,7 @@ import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.*;
+import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
 import org.javarosa.core.model.User;
@@ -34,11 +35,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -111,7 +110,7 @@ public class RestoreFactory {
     private FormplayerStorageFactory storageFactory;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private WebClient webClient;
 
     @Autowired
     private RedisTemplate redisTemplateLong;
@@ -537,10 +536,7 @@ public class RestoreFactory {
         downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
         downloadRestoreTimer.start();
         try {
-            response = restTemplate.exchange(
-                    RequestEntity.get(restoreUrl).headers(headers).build(),
-                    org.springframework.core.io.Resource.class
-            );
+            response = webClient.getRaw(restoreUrl, org.springframework.core.io.Resource.class);
             status = response.getStatusCode().toString();
         } catch (HttpClientErrorException e) {
             status = e.getStatusCode().toString();
