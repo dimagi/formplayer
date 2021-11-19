@@ -599,11 +599,14 @@ public class RestoreFactory {
     private HttpHeaders getStandardHeaders() {
         HttpHeaders headers = new HttpHeaders() {
             {
-                add("X-CommCareHQ-LastSyncToken", getSyncToken());
-                add("X-OpenRosa-Version", "3.0");
-                add("X-OpenRosa-DeviceId", getSyncDeviceId());
+                set("X-OpenRosa-Version", "3.0");
+                set("X-OpenRosa-DeviceId", getSyncDeviceId());
             }
         };
+        String syncToken = getSyncToken();
+        if (syncToken != null) {
+            headers.set("X-CommCareHQ-LastSyncToken", getSyncToken());
+        }
         headers.setAll(getOriginTokenHeader());
         return headers;
     }
