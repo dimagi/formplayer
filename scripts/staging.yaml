@@ -50,17 +50,17 @@
 trunk: master
 name: autostaging
 branches:
-  # - autostaging+ce/tracing # Jenny Nov 17
+  - autostaging+ce/tracing # Jenny Nov 17
   # - ce/tracing+sk/re-submit-form-on-failure1+jls/query-datum-and-smart-linking
   #- jls/query-datum-and-smart-linking+ce/tracing
   # - jls/query-datum-and-smart-linking+gh/serialize-full-xml-unless-submitting
   # - ce/tracing+es/post-case-search
-  - jls/query-datum-and-smart-linking+sk/re-submit-form-on-failure1+gh/serialize-full-xml-unless-submitting
+  # - jls/query-datum-and-smart-linking+sk/re-submit-form-on-failure1+gh/serialize-full-xml-unless-submitting
   - jls/query-datum-and-smart-linking+sk/re-submit-form-on-failure1
   # - ce/tracing+sk/re-submit-form-on-failure1
   #- ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - jls/query-datum-and-smart-linking # Shubham/Simon/Jenny
-  - gh/serialize-full-xml-unless-submitting # Graham Nov 18 This conflicts with ce/tracing so I removed that branch so QA can test this one tonight/tomorrow
+  # - gh/serialize-full-xml-unless-submitting # Graham Nov 18 This conflicts with ce/tracing so I removed that branch so QA can test this one tonight/tomorrow
   - sk/re-submit-form-on-failure1  # Simon Nov 8
   # - es/post-case-search  # Ethan Nov 29
   - sk/dependabot-conflict-shedlock-sentry
