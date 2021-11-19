@@ -659,22 +659,22 @@ public class RestoreFactory {
     }
 
     public Pair<URI, HttpHeaders> getCaseRestoreUrlAndHeaders() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("/a/");
-        builder.append(domain);
-        builder.append("/case_migrations/restore/");
-        builder.append(caseId);
-        builder.append("/");
-        String fullUrl = host + builder.toString();
-        URI uri = UriComponentsBuilder.fromUriString(fullUrl).build(true).toUri();
+        String path = buildUrlPath(host, "/a/", domain, "/case_migrations/restore/", caseId, "/");
+        URI uri = UriComponentsBuilder.fromUriString(path).build(true).toUri();
         HttpHeaders headers = getHmacHeaders(uri);
         return new Pair<>(uri, headers);
     }
 
+    private String buildUrlPath(String... parts) {
+        StringBuilder builder = new StringBuilder(host);
+        for (String part : parts) {
+            builder.append(part);
+        }
+        return builder.toString();
+    }
+
     public Pair<URI, HttpHeaders> getUserRestoreUrlAndHeaders(boolean skipFixtures) {
-        // URI
-        String restoreUrl = "/a/" + domain + "/phone/restore/?version=2.0";
-        String uri = host + restoreUrl;
+        String uri = buildUrlPath(host, "/a/", domain, "/phone/restore/?version=2.0");
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(uri);
         String syncToken = getSyncToken();
         // Add query params.
