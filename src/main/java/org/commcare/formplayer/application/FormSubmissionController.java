@@ -152,14 +152,13 @@ public class FormSubmissionController extends AbstractBaseController {
     }
 
     private SubmitResponseBean validateAnswers(FormSubmissionContext context) {
-        categoryTimingHelper.timed(
+        Map<String, ErrorBean> errors = categoryTimingHelper.timed(
                 Constants.TimingCategories.VALIDATE_SUBMISSION,
                 () -> validateSubmitAnswers(context),
                 context.getMetricsTags()
         );
-        if (!context.getResponse().getStatus().equals(Constants.SUBMIT_RESPONSE_STATUS_POSITIVE)
-                || !context.getRequest().isPrevalidated()) {
-            return context.error(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+        if (errors.size() > 0 || !context.getRequest().isPrevalidated()) {
+            return context.error(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, errors);
         }
         return context.success();
     }
@@ -300,14 +299,11 @@ public class FormSubmissionController extends AbstractBaseController {
      * Iterate over all answers and attempt to save them to check for validity.
      * Submit the complete XML instance to HQ if valid.
      */
-    private void validateSubmitAnswers(FormSubmissionContext context) {
-        HashMap<String, ErrorBean> errors = FormController.validateAnswers(
+    private Map<String, ErrorBean> validateSubmitAnswers(FormSubmissionContext context) {
+        return FormController.validateAnswers(
                 context.getFormEntrySession().getFormEntryController(),
                 context.getFormEntrySession().getFormEntryModel(),
                 context.getRequest().getAnswers(),
                 context.getFormEntrySession().getSkipValidation());
-        if (errors.size() > 0) {
-            context.error(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, errors);
-        }
     }
 }
