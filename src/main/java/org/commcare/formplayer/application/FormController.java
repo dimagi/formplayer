@@ -144,22 +144,6 @@ public class FormController extends AbstractBaseController {
         return responseBean;
     }
 
-    private SubmitResponseBean getErrorResponse(
-            HttpServletRequest request,
-            String status,
-            String message,
-            Throwable exception) {
-        SubmitResponseBean responseBean = new SubmitResponseBean(status);
-        NotificationMessage notification = new NotificationMessage(
-                message,
-                true,
-                NotificationMessage.Tag.submit);
-        responseBean.setNotification(notification);
-        logNotification(notification, request);
-        log.error(message, exception);
-        return responseBean;
-    }
-
     // Iterate over all answers and attempt to save them to check for validity.
     public static HashMap<String, ErrorBean> validateAnswers(FormEntryController formEntryController,
                                                        FormEntryModel formEntryModel,
