@@ -431,10 +431,9 @@ public class RestoreFactory {
     public InputStream getRestoreXml(boolean skipFixtures) {
         ensureValidParameters();
         URI url = getRestoreUrl(skipFixtures);
-        HttpHeaders headers = getRequestHeaders(url);
         recordSentryData(url.toString());
         log.info("Restoring from URL " + url);
-        InputStream restoreStream = getRestoreXmlHelper(url, headers);
+        InputStream restoreStream = getRestoreXmlHelper(url);
         setLastSyncTime();
         return restoreStream;
     }
@@ -529,7 +528,7 @@ public class RestoreFactory {
         );
     }
 
-    private InputStream getRestoreXmlHelper(URI restoreUrl, HttpHeaders headers) {
+    private InputStream getRestoreXmlHelper(URI restoreUrl) {
         ResponseEntity<org.springframework.core.io.Resource> response;
         String status = "error";
         log.info("Restoring at domain: " + domain + " with url: " + restoreUrl.toString());
