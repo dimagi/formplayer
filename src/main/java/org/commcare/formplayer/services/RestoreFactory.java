@@ -256,10 +256,6 @@ public class RestoreFactory {
         }
     }
 
-    private UserSqlSandbox restoreUser() throws Exception {
-        return restoreUser(false);
-    }
-
     private UserSqlSandbox restoreUser(boolean skipFixtures) throws
             UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
