@@ -52,6 +52,7 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
         }
 
         EvaluationContext subContext = new EvaluationContext(ec, ref);
+
         ArrayList<Object> accumulator = new ArrayList<>();
         for (int i = 0; i < detailList.length; i++) {
             if (detailList[i].getNodeset() == null) {

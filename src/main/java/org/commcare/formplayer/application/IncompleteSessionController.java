@@ -1,16 +1,24 @@
 package org.commcare.formplayer.application;
 
-import org.commcare.formplayer.annotations.UserLock;
-import org.commcare.formplayer.annotations.UserRestore;
-import org.commcare.formplayer.beans.*;
-import org.commcare.formplayer.objects.FormSessionListView;
-import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.annotations.UserLock;
+import org.commcare.formplayer.annotations.UserRestore;
+import org.commcare.formplayer.beans.FormsSessionsRequestBean;
+import org.commcare.formplayer.beans.GetSessionsResponse;
+import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.beans.SessionRequestBean;
+import org.commcare.formplayer.objects.FormSessionListView;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.util.Constants;
 import org.commcare.modern.database.TableBuilder;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.web.bind.annotation.*;
-import org.commcare.formplayer.util.Constants;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,7 +41,7 @@ public class IncompleteSessionController extends AbstractBaseController {
                                               @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession session = formSessionService.getSessionById(incompleteSessionRequestBean.getSessionId());
         storageFactory.configure(session);
-        return newFormResponseFactory.getResponse(session);
+        return newFormResponseFactory.getResponse(session, getCommCareSession(session.getMenuSessionId()));
     }
 
     @RequestMapping(value = Constants.URL_GET_SESSIONS, method = RequestMethod.POST)
