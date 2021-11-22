@@ -3,6 +3,7 @@ package org.commcare.formplayer.beans;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by willpride on 1/20/16.
@@ -10,7 +11,7 @@ import java.util.HashMap;
 public class SubmitResponseBean extends SessionResponseBean {
     private String status;
     private String submitResponseMessage;
-    private HashMap<String, ErrorBean> errors = new HashMap<>();
+    private Map<String, ErrorBean> errors = new HashMap<>();
     private Object nextScreen;
 
     // default constructor for Jackson
@@ -28,11 +29,11 @@ public class SubmitResponseBean extends SessionResponseBean {
         this.status = status;
     }
 
-    public HashMap<String, ErrorBean> getErrors() {
+    public Map<String, ErrorBean> getErrors() {
         return errors;
     }
 
-    public void setErrors(HashMap<String, ErrorBean> errors) {
+    public void setErrors(Map<String, ErrorBean> errors) {
         this.errors = errors;
     }
 

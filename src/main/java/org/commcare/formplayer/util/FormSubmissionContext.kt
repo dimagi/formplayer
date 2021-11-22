@@ -18,7 +18,7 @@ class FormSubmissionContext(val httpRequest: HttpServletRequest,
         return response
     }
 
-    @JvmOverloads fun error(status: String, errors: HashMap<String, ErrorBean>? = null): SubmitResponseBean {
+    @JvmOverloads fun error(status: String, errors: Map<String, ErrorBean>? = null): SubmitResponseBean {
         response.status = status;
         errors?.let { response.errors = errors }
         return response;
