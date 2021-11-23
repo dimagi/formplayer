@@ -50,7 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-  - autostaging+ce/tracing # Jenny Nov 17
   # - ce/tracing+sk/re-submit-form-on-failure1+jls/query-datum-and-smart-linking
   #- jls/query-datum-and-smart-linking+ce/tracing
   # - jls/query-datum-and-smart-linking+gh/serialize-full-xml-unless-submitting
