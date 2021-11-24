@@ -1,6 +1,5 @@
 package org.commcare.formplayer.services;
 
-import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.*;
 
 import java.net.URI;
@@ -9,6 +8,9 @@ import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.suite.model.MenuDisplayable;
+import org.commcare.suite.model.SessionDatum;
+import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
@@ -25,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -126,10 +127,13 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, false, true, false, storageFactory.getPropertyManager().isAutoAdvanceMenu());
+                menuSession.handleInput(currentStep, false, true, false);
                 menuSession.addSelection(currentStep);
                 screen = menuSession.getNextScreen(false);
             }
+        }
+        if (screen != null) {
+            menuSession.autoAdvanceMenu(screen, storageFactory.getPropertyManager().isAutoAdvanceMenu());
         }
     }
 
