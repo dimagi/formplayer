@@ -4,29 +4,36 @@ import org.commcare.formplayer.annotations.AppInstall;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
-import org.commcare.formplayer.beans.*;
+import org.commcare.formplayer.beans.EvaluateXPathMenuRequestBean;
+import org.commcare.formplayer.beans.EvaluateXPathRequestBean;
+import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
+import org.commcare.formplayer.beans.SessionNavigationBean;
+import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.beans.debugger.DebuggerFormattedQuestionsResponseBean;
 import org.commcare.formplayer.beans.debugger.MenuDebuggerContentResponseBean;
 import org.commcare.formplayer.beans.debugger.XPathQueryItem;
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
-
 import org.commcare.formplayer.objects.SerializableFormSession;
-import org.javarosa.xpath.expr.FunctionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.*;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.services.FormattedQuestionsService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.javarosa.xpath.expr.FunctionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
-import java.util.List;
 
 /**
  * Controller class for all routes pertaining to the CloudCare Debugger
@@ -52,8 +59,8 @@ public class DebuggerController extends AbstractBaseController {
             @RequestBody SessionRequestBean debuggerRequest,
             @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(debuggerRequest.getSessionId());
-        FormSession formSession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(serializableFormSession.getMenuSessionId());
+        FormSession formSession = getFormSession(serializableFormSession);
         String instanceXml = formSession.getInstanceXml();
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
                 debuggerRequest.getDomain(),
@@ -130,7 +137,7 @@ public class DebuggerController extends AbstractBaseController {
     public EvaluateXPathResponseBean evaluateXpath(@RequestBody EvaluateXPathRequestBean evaluateXPathRequestBean,
                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(evaluateXPathRequestBean.getSessionId());
-        FormSession formEntrySession = new FormSession(serializableFormSession, restoreFactory, formSendCalloutHandler, storageFactory);
+        FormSession formEntrySession = getFormSession(serializableFormSession);
         EvaluateXPathResponseBean evaluateXPathResponseBean = new EvaluateXPathResponseBean(
                 formEntrySession.getFormEntryModel().getForm().getEvaluationContext(),
                 evaluateXPathRequestBean.getXpath(),
