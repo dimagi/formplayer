@@ -45,8 +45,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
             .authorizeRequests()
-            .antMatchers("/serverup", "/validate_form", "/favicon.ico")
+            .antMatchers("/serverup", "/favicon.ico")
             .permitAll();
+        http
+            .authorizeRequests()
+            .antMatchers("/validate_form")
+            .hasRole(Constants.ROLE_COMMCARE);
+
         // allow access to management endpoints
         http.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll();
         http.authorizeRequests().antMatchers("/**").authenticated();
