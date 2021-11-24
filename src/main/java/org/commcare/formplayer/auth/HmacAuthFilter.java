@@ -82,6 +82,16 @@ public class HmacAuthFilter extends GenericFilterBean {
             throws IOException, ServletException {
         try {
             doAuthenticateInternal(request);
+        } catch (AuthenticationException ex) {
+            unsuccessfulAuthentication(request, response, ex);
+        } catch (Exception e) {
+            logger.error("Request Authorization with unexpected exception", e);
+            unsuccessfulAuthentication(
+                    request, response, new InternalAuthenticationServiceException("Exception checking HMAC", e)
+            );
+        }
+
+        try {
             HqUserDetailsBean userDetails = getUserDetails(request);
             PreAuthenticatedAuthenticationToken authenticationResult = new PreAuthenticatedAuthenticationToken(
                     userDetails, userDetails.getDomain(), userDetails.getAuthorities());
@@ -94,7 +104,7 @@ public class HmacAuthFilter extends GenericFilterBean {
         } catch (Exception e) {
             logger.error("Request Authorization with unexpected exception", e);
             unsuccessfulAuthentication(
-                    request, response, new InternalAuthenticationServiceException("Exception checking HMAC", e)
+                    request, response, new InternalAuthenticationServiceException("Exception getting user details", e)
             );
         }
     }
@@ -168,7 +178,7 @@ public class HmacAuthFilter extends GenericFilterBean {
     }
 
     protected void anonymousAuthentication() {
-        this.logger.debug(LogMessage.format("Authentication success but no user details provided"));
+        this.logger.debug("Authentication success but no user details provided");
         SecurityContextHolder.getContext().setAuthentication(ANONYMOUS_TOKEN);
     }
 }
