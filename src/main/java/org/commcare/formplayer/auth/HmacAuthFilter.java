@@ -1,5 +1,7 @@
 package org.commcare.formplayer.auth;
 
+import lombok.Builder;
+import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.FormSessionService;
@@ -26,17 +28,13 @@ import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.GenericFilterBean;
 
-import java.io.IOException;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import lombok.Builder;
-import lombok.extern.apachecommons.CommonsLog;
+import java.io.IOException;
 
 /**
  * Request filter that performs HMAC auth if the request contains the
@@ -50,9 +48,6 @@ public class HmacAuthFilter extends GenericFilterBean {
             new AntPathRequestMatcher("/**", HttpMethod.POST.toString()),
             new RequestHeaderRequestMatcher(Constants.HMAC_HEADER)
     );
-
-    private static final AnonymousAuthenticationToken ANONYMOUS_TOKEN = new AnonymousAuthenticationToken(
-            "key", "anonymous", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
 
     private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
 
@@ -98,7 +93,7 @@ public class HmacAuthFilter extends GenericFilterBean {
             authenticationResult.setDetails(this.authenticationDetailsSource.buildDetails(request));
             successfulAuthentication(request, response, authenticationResult);
         } catch (BadCredentialsException ex) {
-            anonymousAuthentication();
+            anonymousCommcareAuthentication(request);
         } catch (AuthenticationException ex) {
             unsuccessfulAuthentication(request, response, ex);
         } catch (Exception e) {
@@ -177,8 +172,28 @@ public class HmacAuthFilter extends GenericFilterBean {
         request.setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, failed);
     }
 
-    protected void anonymousAuthentication() {
-        this.logger.debug("Authentication success but no user details provided");
-        SecurityContextHolder.getContext().setAuthentication(ANONYMOUS_TOKEN);
+    protected void anonymousCommcareAuthentication(HttpServletRequest request) {
+        CommCareAnonymousAuthenticationToken token = new CommCareAnonymousAuthenticationToken();
+        token.setDetails(this.authenticationDetailsSource.buildDetails(request));
+        this.logger.debug("HMAC Authentication success but no user details provided");
+        SecurityContextHolder.getContext().setAuthentication(token);
+        this.logger.debug("Set SecurityContextHolder to CommCareAnonymousAuthentication SecurityContext");
+    }
+
+    /**
+     * An anonymous token that is used to indicate valid HMAC auth but without any user details.
+     *
+     * This is used for endpoints where we don't require user authentication but still require that the
+     * request came from CommCare.
+     *
+     * Setting the role allows us to differentiate this anonymous token from a truly anonymous one that
+     * is not authenticated at all.
+     */
+    private static class CommCareAnonymousAuthenticationToken extends AnonymousAuthenticationToken {
+
+        public CommCareAnonymousAuthenticationToken() {
+            super("commcare", "commcare", AuthorityUtils.createAuthorityList(
+                    Constants.ROLE_COMMCARE_PREFIXED));
+        }
     }
 }
