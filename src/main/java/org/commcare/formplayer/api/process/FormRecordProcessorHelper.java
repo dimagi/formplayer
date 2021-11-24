@@ -1,8 +1,5 @@
 package org.commcare.formplayer.api.process;
 
-import org.commcare.cases.util.InvalidCaseGraphException;
-import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
-import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.ledger.Ledger;
@@ -10,8 +7,14 @@ import org.commcare.cases.ledger.LedgerPurgeFilter;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
 import org.commcare.cases.util.CasePurgeFilter;
+import org.commcare.cases.util.InvalidCaseGraphException;
 import org.commcare.core.process.XmlFormRecordProcessor;
 import org.commcare.core.sandbox.SandboxUtils;
+import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
+import org.commcare.formplayer.engine.FormplayerTransactionParserFactory;
+import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.modern.util.Pair;
 import org.commcare.util.LogTypes;
 import org.javarosa.core.model.User;
@@ -26,10 +29,6 @@ import org.javarosa.model.xform.XPathReference;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.xmlpull.v1.XmlPullParserException;
-import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.util.SimpleTimer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -46,30 +45,10 @@ import java.util.Vector;
 public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
     private static final Log log = LogFactory.getLog(FormRecordProcessorHelper.class);
 
-    public static class TimingResult {
-        private SimpleTimer purgeCasesTimer;
-
-        private TimingResult(SimpleTimer purgeCasesTimer) {
-            this.purgeCasesTimer = purgeCasesTimer;
-        }
-
-        public SimpleTimer getPurgeCasesTimer() {
-            return purgeCasesTimer;
-        }
-    }
-
-    public static TimingResult processXML(FormplayerTransactionParserFactory factory,
-                                          String fileText,
-                                          boolean autoPurgeEnabled) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException, InvalidCaseGraphException {
+    public static void processXML(FormplayerTransactionParserFactory factory,
+                                          String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
         InputStream stream = new ByteArrayInputStream(fileText.getBytes("UTF-8"));
         process(stream, factory);
-        SimpleTimer timer = new SimpleTimer();
-        timer.start();
-        if (factory.wereCaseIndexesDisrupted() && autoPurgeEnabled) {
-            purgeCases(factory.getSqlSandbox());
-        }
-        timer.end();
-        return new TimingResult(timer);
     }
 
     /**
