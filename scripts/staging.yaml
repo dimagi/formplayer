@@ -62,6 +62,7 @@ branches:
   - dependabot/gradle/sentryVersion-5.4.0
   - dependabot/gradle/org.springframework.boot-2.5.6
   - sk/validate-form  # Simon Nov 24
+  - sk/refator-advanceSessionWithSelections  # Simon Nov 24
 submodules:
   libs/commcare:
     trunk: formplayer
