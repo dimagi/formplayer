@@ -3,11 +3,9 @@ package org.commcare.formplayer.web.client;
 import com.google.common.collect.Multimap;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;

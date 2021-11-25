@@ -14,8 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
