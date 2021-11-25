@@ -461,9 +461,12 @@ public class MenuSessionRunnerService {
         String error = null;
         ExternalDataInstance searchDataInstance;
         try {
-            searchDataInstance = searchAndSetResult(
-                    screen,
-                    screen.getUri(skipDefaultPromptValues));
+            searchDataInstance = caseSearchHelper.getRemoteDataInstance(
+                    screen.getQueryDatum().getDataId(),
+                    screen.getQueryDatum().useCaseTemplate(),
+                    screen.getBaseUrl(),
+                    screen.getRequestData(skipDefaultPromptValues));
+        screen.setQueryDatum(searchDataInstance);
             if (searchDataInstance == null) {
                 error = "No result from query";
             }
@@ -485,15 +488,6 @@ public class MenuSessionRunnerService {
         log.info("Next screen after query: " + nextScreen);
         return notificationMessage;
     }
-
-    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri)
-            throws UnfullfilledRequirementsException, XmlPullParserException, IOException, InvalidStructureException {
-        ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(screen.getQueryDatum().getDataId(),
-                screen.getQueryDatum().useCaseTemplate(), uri);
-        screen.setQueryDatum(searchDataInstance);
-        return searchDataInstance;
-    }
-
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {

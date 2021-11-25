@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import com.google.common.collect.ImmutableMultimap;
 import org.commcare.session.RemoteQuerySessionManager;
 import org.commcare.suite.model.*;
 
@@ -102,15 +103,16 @@ public class MenuSessionFactory {
                             e.printStackTrace();
                             throw new CommCareSessionException("Query URL format error: " + e.getMessage(), e);
                         }
-                        UriComponentsBuilder builder = UriComponentsBuilder.fromUri(uri);
+                        ImmutableMultimap.Builder<String, String> dataBuilder = ImmutableMultimap.builder();
                         step.getExtras().entrySet().forEach(entry -> {
-                            builder.queryParam(entry.getKey(), entry.getValue());
+                            dataBuilder.put(entry.getKey(), entry.getValue().toString());
                         });
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                                 queryScreen.getQueryDatum().getDataId(),
                                 queryScreen.getQueryDatum().useCaseTemplate(),
-                                builder.build().toUri()
+                                uri.toURL(),
+                                dataBuilder.build()
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
                             screen = menuSession.getNextScreen(false);
