@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -13,10 +14,8 @@ import java.net.URI;
 @Component
 public class WebClient {
 
-    @Autowired
     RestTemplate restTemplate;
 
-    @Autowired
     RestoreFactory restoreFactory;
 
     public String get(String url) {
@@ -47,4 +46,13 @@ public class WebClient {
         ).getBody();
     }
 
+    @Autowired
+    public void setRestoreFactory(RestoreFactory restoreFactory) {
+        this.restoreFactory = restoreFactory;
+    }
+
+    @Autowired
+    public void setRestTemplate(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 }
