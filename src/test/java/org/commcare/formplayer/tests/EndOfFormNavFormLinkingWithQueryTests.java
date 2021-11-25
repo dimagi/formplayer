@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests;
 
 
+import com.google.common.collect.ImmutableMultimap;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.mocks.casexml.CaseFixtureBlock;
@@ -54,8 +55,7 @@ public class EndOfFormNavFormLinkingWithQueryTests extends BaseTestClass{
         assertEquals("2nd Followup Form", formResponse.getTitle());
     }
 
-    private void configureQueryMock() throws URISyntaxException {
-        URI searchURI = new URI("http://localhost:8000/a/test/phone/search/c4d2d3a7b32948cea64d28e961b183cb/?commcare_registry=test&case_type=case");
+    private void configureQueryMock() {
         String searchResponse = CaseFixtureResultSerializer.blocksToString(
                 new CaseFixtureBlock.Builder("case", "first_case")
                         .withProperty("case_name", "first_case")
@@ -65,12 +65,17 @@ public class EndOfFormNavFormLinkingWithQueryTests extends BaseTestClass{
                         .withProperty("case_name", "second_case")
                         .build()
         );
-        when(webClientMock.get(eq(searchURI))).thenReturn(searchResponse);
+        String searchUrl = "http://localhost:8000/a/test/phone/search/c4d2d3a7b32948cea64d28e961b183cb/";
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of("commcare_registry", "test", "case_type", "case");
+        when(webClientMock.postFormData(eq(searchUrl), eq(data))).thenReturn(searchResponse);
 
-        URI firstQueryURI = new URI("http://localhost:8000/a/test/phone/registry_case/c4d2d3a7b32948cea64d28e961b183cb/?commcare_registry=test&case_type=case&case_id=first_case");
-        when(webClientMock.get(eq(firstQueryURI))).thenReturn(searchResponse);
+        String registryUrl = "http://localhost:8000/a/test/phone/registry_case/c4d2d3a7b32948cea64d28e961b183cb/";
+        ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.builder();
+        builder.putAll(data).put("case_id", "first_case");
+        when(webClientMock.postFormData(eq(registryUrl), eq(builder.build()))).thenReturn(searchResponse);
 
-        URI secondQueryURI = new URI("http://localhost:8000/a/test/phone/registry_case/c4d2d3a7b32948cea64d28e961b183cb/?commcare_registry=test&case_type=case&case_id=second_case");
-        when(webClientMock.get(eq(secondQueryURI))).thenReturn(searchResponse);
+        builder = ImmutableMultimap.builder();
+        builder.putAll(data).put("case_id", "second_case");
+        when(webClientMock.postFormData(eq(registryUrl), eq(builder.build()))).thenReturn(searchResponse);
     }
 }
