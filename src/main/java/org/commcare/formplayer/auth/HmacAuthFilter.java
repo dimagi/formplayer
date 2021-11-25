@@ -79,11 +79,13 @@ public class HmacAuthFilter extends GenericFilterBean {
             doAuthenticateInternal(request);
         } catch (AuthenticationException ex) {
             unsuccessfulAuthentication(request, response, ex);
+            return;
         } catch (Exception e) {
             logger.error("Request Authorization with unexpected exception", e);
             unsuccessfulAuthentication(
                     request, response, new InternalAuthenticationServiceException("Exception checking HMAC", e)
             );
+            return;
         }
 
         try {
