@@ -42,7 +42,7 @@ public class WebClient {
         return restTemplate.exchange(
                 RequestEntity.post(url)
                         .headers(restoreFactory.getUserHeaders())
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .body(postData),
                 String.class
         ).getBody();
