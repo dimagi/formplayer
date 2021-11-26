@@ -2,6 +2,7 @@ package org.commcare.formplayer.application;
 
 import com.timgroup.statsd.StatsDClient;
 
+import lombok.extern.apachecommons.CommonsLog;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,10 +34,7 @@ import org.commcare.formplayer.services.NewFormResponseFactory;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.FormplayerSentry;
-import org.commcare.formplayer.util.RequestUtils;
+import org.commcare.formplayer.util.*;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.models.RecordTooLargeException;
@@ -68,6 +66,7 @@ import io.sentry.SentryLevel;
  * Base Controller class containing exception handling logic and
  * autowired beans used in both MenuController and FormController
  */
+@CommonsLog
 public abstract class AbstractBaseController {
 
     @Autowired
@@ -106,7 +105,8 @@ public abstract class AbstractBaseController {
     @Autowired
     private FormplayerDatadog datadog;
 
-    private final Log log = LogFactory.getLog(AbstractBaseController.class);
+    @Autowired
+    private NotificationLogger notificationLogger;
 
     /**
      * Catch all the exceptions that we *do not* want emailed here
@@ -210,17 +210,7 @@ public abstract class AbstractBaseController {
     }
 
     void logNotification(@Nullable NotificationMessage notification, HttpServletRequest req) {
-        try {
-            if (notification != null && notification.getType() == NotificationMessage.Type.error.name()) {
-                Sentry.captureException(new RuntimeException(notification.getMessage()));
-                datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_NOTIFICATIONS, req, notification.getTag());
-            } else if (notification != null && notification.getType() == NotificationMessage.Type.app_error.name()) {
-                FormplayerSentry.captureException(new ApplicationConfigException(notification.getMessage()), SentryLevel.INFO);
-                datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req, notification.getTag());
-            }
-        } catch (Exception e) {
-            // we don't wanna crash while logging the error
-        }
+        notificationLogger.logNotification(notification, req);
     }
 
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
