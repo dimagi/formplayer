@@ -195,7 +195,7 @@ public class HmacAuthFilter extends GenericFilterBean {
 
         public CommCareAnonymousAuthenticationToken() {
             super("commcare", "commcare", AuthorityUtils.createAuthorityList(
-                    Constants.ROLE_COMMCARE_PREFIXED));
+                    Constants.AUTHORITY_COMMCARE));
         }
     }
 }
