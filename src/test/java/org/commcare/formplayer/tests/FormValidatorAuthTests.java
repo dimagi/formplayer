@@ -9,6 +9,7 @@ import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -25,6 +27,9 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -72,6 +77,18 @@ public class FormValidatorAuthTests {
     @Test
     public void testValidateFormWithoutAuth_Fails() throws Exception {
         this.testValidateForm(status().isForbidden());
+    }
+
+    @Test
+    @WithHqUser
+    public void testValidateFormWithUserAuth_Succeeds() throws Exception {
+        requestBuilder.with(SecurityMockMvcRequestPostProcessors.csrf());
+
+        this.testValidateForm(
+                jsonPath("$.validated", is(true)),
+                jsonPath("$.problems", hasSize(0)),
+                status().isOk()
+        );
     }
 
     private void testValidateForm(ResultMatcher... matchers) throws Exception {
