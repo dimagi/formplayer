@@ -143,7 +143,20 @@ For PRs that just modify code in the Formplayer repo, submit a PR to Formplayer 
 
 Formplayer also has a dependency on the commcare-core repository. The commcare-core `master` branch is not
 stable and Formplayer uses a different branch. The submodule repo `libs/commcare` should always be pointing to
-the `formplayer` branch.
+the HEAD of the `formplayer` branch.
+
+When making changes to Formplayer that depend on changes to commcare-core you should follow this process:
+
+1. Make changes to commcare-core and push the changes
+2. Make changes to formplayer and update the commcare-core submodule ref to point to the HEAD commit of your
+commcare-core branch
+3. PR both sets of changes
+
+Once the PR's have been approved:
+1. Merge the commcare-core PR (this should merge into the 'formplayer' branch in the commcare-core repo)
+2. In your Formplayer branch, update the submodule ref to point to the HEAD commit of the
+commcare-core 'formplayer' branch (remember to pull the most recent commcare-core changes first)
+3. Push the submodule ref change and once the build is passing merge your Formplayer PR
 
 #### Updating the CommCare version
 
