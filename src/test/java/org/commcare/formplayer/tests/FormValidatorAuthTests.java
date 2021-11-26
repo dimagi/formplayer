@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest
 @Import({UtilController.class, MultipleReadRequestWrappingFilter.class})
 @ContextConfiguration(classes = {TestContext.class, WebSecurityConfig.class})
-public class FormValidatorAuthTests extends BaseTestClass {
+public class FormValidatorAuthTests {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_XML.getType(),
             MediaType.APPLICATION_XML.getSubtype(),
