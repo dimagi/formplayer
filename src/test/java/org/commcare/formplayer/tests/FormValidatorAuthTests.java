@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,9 +26,6 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -40,8 +36,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest
-@Import({UtilController.class, MultipleReadRequestWrappingFilter.class})
-@ContextConfiguration(classes = {TestContext.class, WebSecurityConfig.class})
+@ContextConfiguration(classes = {
+        UtilController.class,
+        TestContext.class,
+        WebSecurityConfig.class,
+        MultipleReadRequestWrappingFilter.class
+})
 public class FormValidatorAuthTests {
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_XML.getType(),
