@@ -9,6 +9,8 @@ import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +25,6 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -56,37 +55,43 @@ public class FormValidatorAuthTests {
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
 
+    private static String formXML;
+    private MockHttpServletRequestBuilder requestBuilder;
+
     @Test
     public void testValidateFormWithHmacAuth_Succeeds() throws Exception {
-        String xml = FileUtils.getFile(this.getClass(), "form_validation/valid_form.xml");
-        this.testValidateForm(xml, Arrays.asList(
+        String hmac = RequestUtils.getHmac(formplayerAuthKey, formXML);
+        requestBuilder.header(Constants.HMAC_HEADER, hmac);
+        this.testValidateForm(
             jsonPath("$.validated", is(true)),
             jsonPath("$.problems", hasSize(0)),
             status().isOk()
-        ), true);
+        );
     }
 
     @Test
     public void testValidateFormWithoutAuth_Fails() throws Exception {
-        String xml = FileUtils.getFile(this.getClass(), "form_validation/valid_form.xml");
-        this.testValidateForm(xml, Collections.singletonList(status().isForbidden()), false);
+        this.testValidateForm(status().isForbidden());
     }
 
-    public void testValidateForm(String formXML, List<ResultMatcher> matchers, boolean withAuth) throws Exception {
-        MockHttpServletRequestBuilder requestBuilder = post(String.format("/%s", Constants.URL_VALIDATE_FORM))
-            .content(formXML)
-            .contentType(contentType);
-
-        if (withAuth) {
-            String hmac = RequestUtils.getHmac(formplayerAuthKey, formXML);
-            requestBuilder = requestBuilder.header(Constants.HMAC_HEADER, hmac);
-         }
-
+    private void testValidateForm(ResultMatcher... matchers) throws Exception {
         ResultActions actions = mvc.perform(requestBuilder)
                 .andDo(log());
 
         for (ResultMatcher matcher : matchers   ) {
             actions = actions.andExpect(matcher);
         }
+    }
+
+    @BeforeAll
+    private static void loadXML() {
+        formXML = FileUtils.getFile(FormValidatorAuthTests.class, "form_validation/valid_form.xml");
+    }
+
+    @BeforeEach
+    private void setUp() {
+        requestBuilder = post(String.format("/%s", Constants.URL_VALIDATE_FORM))
+                .content(formXML)
+                .contentType(contentType);
     }
 }
