@@ -50,7 +50,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .authorizeRequests()
             .antMatchers("/validate_form")
-            .hasAuthority(Constants.AUTHORITY_COMMCARE);
+            .access("isAuthenticated() or hasAuthority('" + Constants.AUTHORITY_COMMCARE + "')");
 
         // allow access to management endpoints
         http.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll();
