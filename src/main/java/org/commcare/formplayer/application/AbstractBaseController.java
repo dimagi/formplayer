@@ -34,6 +34,7 @@ import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
@@ -102,6 +103,9 @@ public abstract class AbstractBaseController {
     @Autowired
     protected MenuSessionRunnerService runnerService;
 
+    @Autowired
+    private FormplayerDatadog datadog;
+
     private final Log log = LogFactory.getLog(AbstractBaseController.class);
 
     /**
@@ -119,7 +123,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     public ExceptionResponseBean handleApplicationError(HttpServletRequest request, Exception exception) {
         log.error("Request: " + request.getRequestURL() + " raised " + exception);
-        incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
+        datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_APP_CONFIG, request);
         FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return getPrettyExceptionResponse(exception, request);
     }
@@ -140,7 +144,7 @@ public abstract class AbstractBaseController {
     @ExceptionHandler({HttpClientErrorException.class})
     @ResponseBody
     public ExceptionResponseBean handleHttpRequestError(HttpServletRequest req, HttpClientErrorException exception) {
-        incrementDatadogCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
+        datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_EXTERNAL_REQUEST, req);
         log.error(String.format("Exception %s making external request %s.", exception, req));
         Sentry.captureException(exception);
         return new ExceptionResponseBean(exception.getResponseBodyAsString(), req.getRequestURL().toString());
@@ -166,7 +170,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     public HTMLExceptionResponseBean handleFormattedApplicationError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception);
-        incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
+        datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req);
         FormplayerSentry.captureException(exception, SentryLevel.INFO);
         return new HTMLExceptionResponseBean(exception.getMessage(), req.getRequestURL().toString());
     }
@@ -190,7 +194,7 @@ public abstract class AbstractBaseController {
     @ResponseBody
     public ExceptionResponseBean handleError(HttpServletRequest req, Exception exception) {
         log.error("Request: " + req.getRequestURL() + " raised " + exception.getClass(), exception);
-        incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
+        datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
         Sentry.captureException(exception);
         String message = exception.getMessage();
@@ -209,42 +213,14 @@ public abstract class AbstractBaseController {
         try {
             if (notification != null && notification.getType() == NotificationMessage.Type.error.name()) {
                 Sentry.captureException(new RuntimeException(notification.getMessage()));
-                incrementDatadogCounter(Constants.DATADOG_ERRORS_NOTIFICATIONS, req, notification.getTag());
+                datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_NOTIFICATIONS, req, notification.getTag());
             } else if (notification != null && notification.getType() == NotificationMessage.Type.app_error.name()) {
                 FormplayerSentry.captureException(new ApplicationConfigException(notification.getMessage()), SentryLevel.INFO);
-                incrementDatadogCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req, notification.getTag());
+                datadog.incrementErrorCounter(Constants.DATADOG_ERRORS_APP_CONFIG, req, notification.getTag());
             }
         } catch (Exception e) {
             // we don't wanna crash while logging the error
         }
-    }
-
-    private void incrementDatadogCounter(String metric, HttpServletRequest req) {
-        incrementDatadogCounter(metric, req, null);
-    }
-
-    private void incrementDatadogCounter(String metric, HttpServletRequest req, String tag) {
-        String user = "unknown";
-        String domain = "unknown";
-
-        Optional<HqUserDetailsBean> userDetails = RequestUtils.getUserDetails();
-        if (userDetails.isPresent()) {
-            user = userDetails.get().getDomain();
-            domain = userDetails.get().getUsername();
-        }
-
-        ArrayList<String> tags = new ArrayList<>();
-        tags.add("domain:" + domain);
-        tags.add("user:" + user);
-        tags.add("request:" + req.getRequestURI());
-        if (tag != null) {
-            tags.add("tag:" + tag);
-        }
-
-        datadogStatsDClient.increment(
-                metric,
-                tags.toArray(new String[tags.size()])
-        );
     }
 
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
