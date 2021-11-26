@@ -6,15 +6,10 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.services.FormSessionService;
-import org.commcare.formplayer.services.InstallService;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 
@@ -30,18 +25,6 @@ public class MetricsAspect {
 
     @Autowired
     private FormplayerDatadog datadog;
-
-    @Autowired
-    private RestoreFactory restoreFactory;
-
-    @Autowired
-    private SubmitService submitService;
-
-    @Autowired
-    private InstallService installService;
-
-    @Autowired
-    private FormSessionService formSessionService;
 
     private Map<String, Long> tolerableRequestThresholds;
 
