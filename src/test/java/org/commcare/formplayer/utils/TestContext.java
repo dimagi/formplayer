@@ -1,7 +1,6 @@
 package org.commcare.formplayer.utils;
 
 import com.timgroup.statsd.StatsDClient;
-
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.mocks.MockLockRegistry;
 import org.commcare.formplayer.mocks.TestInstallService;
@@ -21,14 +20,13 @@ import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.util.ArrayList;
 
@@ -65,6 +63,9 @@ public class TestContext {
 
     @MockBean
     public WebClient webClient;
+
+    @MockBean
+    public HqUserDetailsService userDetailsService;
 
     @Bean
     public ValueOperations<String, Long> redisTemplateLong() {

@@ -37,7 +37,7 @@ In Formpayer the main features we make use of are:
   * [Spring security reference](https://docs.spring.io/spring-security/site/docs/5.4.5/reference/html5/#introduction)
 
 ### Security
-All Formplayer endpoints other than "/serverup" and "/validate_form" are secured using Spring Security.
+All Formplayer endpoints other than "/serverup" are secured using Spring Security.
 
 Spring security is part of the Spring framework that provides filters and classes for securing an application.
 The primary mechanism is a set of request filters that apply the security policy to requests.
@@ -70,7 +70,9 @@ example, when CommCare HQ makes requests to Formplayer as part of an SMS interac
 
 The authentication for this mode is handled by the `HmacAuthFilter` which validates the HMAC in the `X-MAC-DIGEST`
 request header. If the HMAC is valid the filter constructs a `HqUserDetailsBean` from the request body or by
-fetching a session record from the DB. This user details bean is then placed in the security context.
+fetching a session record from the DB. This user details bean is then placed in the security context. If it is not
+possible to construct the user details then an anonymous token is placed in the security context with the role
+"COMMCARE" to indicate that the HMAC auth passed but with no user details.
 
 ### Glossary
 * [JPA](https://en.wikipedia.org/wiki/Jakarta_Persistence): Jakarta Persistence
