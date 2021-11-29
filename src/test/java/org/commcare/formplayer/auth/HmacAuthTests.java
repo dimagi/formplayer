@@ -1,4 +1,4 @@
-package org.commcare.formplayer.tests;
+package org.commcare.formplayer.auth;
 
 import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.configuration.WebSecurityConfig;
@@ -11,7 +11,6 @@ import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,8 +41,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         WebSecurityConfig.class,
         MultipleReadRequestWrappingFilter.class
 })
-public class FormValidatorAuthTests {
+public class HmacAuthTests {
 
+    private static final String FULL_AUTH_BODY = "{\"username\": \"citrus\", \"domain\":\"swallowtail\"}";
     private MediaType contentType = new MediaType(MediaType.APPLICATION_XML.getType(),
             MediaType.APPLICATION_XML.getSubtype(),
             Charset.forName("utf8"));
@@ -61,13 +61,13 @@ public class FormValidatorAuthTests {
     private String formplayerAuthKey;
 
     private static String formXML;
-    private MockHttpServletRequestBuilder requestBuilder;
 
     @Test
-    public void testValidateFormWithHmacAuth_Succeeds() throws Exception {
+    public void testRelaxedEndpoint_WithHmacAuth_Succeeds() throws Exception {
         String hmac = RequestUtils.getHmac(formplayerAuthKey, formXML);
-        requestBuilder.header(Constants.HMAC_HEADER, hmac);
-        this.testValidateForm(
+        MockHttpServletRequestBuilder builder = getRelaxedEndpointRequestBuilder()
+                .header(Constants.HMAC_HEADER, hmac);
+        this.testEndpoint(builder,
             jsonPath("$.validated", is(true)),
             jsonPath("$.problems", hasSize(0)),
             status().isOk()
@@ -75,23 +75,49 @@ public class FormValidatorAuthTests {
     }
 
     @Test
-    public void testValidateFormWithoutAuth_Fails() throws Exception {
-        this.testValidateForm(status().isForbidden());
+    public void testRelaxedEndpoint_WithoutAnyAuth_Fails() throws Exception {
+        this.testEndpoint(getRelaxedEndpointRequestBuilder(), status().isForbidden());
     }
 
     @Test
     @WithHqUser
-    public void testValidateFormWithUserAuth_Succeeds() throws Exception {
-        requestBuilder.with(SecurityMockMvcRequestPostProcessors.csrf());
+    public void testRelaxedEndpoint_WithUserAuth_Succeeds() throws Exception {
+        MockHttpServletRequestBuilder builder = getRelaxedEndpointRequestBuilder()
+                .with(SecurityMockMvcRequestPostProcessors.csrf());
 
-        this.testValidateForm(
+        this.testEndpoint(builder,
                 jsonPath("$.validated", is(true)),
                 jsonPath("$.problems", hasSize(0)),
                 status().isOk()
         );
     }
 
-    private void testValidateForm(ResultMatcher... matchers) throws Exception {
+    @Test
+    public void testFullAuthEndpoint_WithoutAnyAuth_Fails() throws Exception {
+        this.testEndpoint(getFullAuthRequestBuilder(FULL_AUTH_BODY), status().isForbidden());
+    }
+
+    /**
+     * HMAC header is correct but request does not contain user details
+     */
+    @Test
+    public void testFullAuthEndpoint_WithPlainHmac_Fails() throws Exception {
+        String hmac = RequestUtils.getHmac(formplayerAuthKey, "{}");
+        MockHttpServletRequestBuilder builder = getFullAuthRequestBuilder("{}")
+                .header(Constants.HMAC_HEADER, hmac);
+        this.testEndpoint(builder, status().isForbidden());
+    }
+
+    @Test
+    public void testFullAuthEndpoint_WithHmacAuthAndUserDetails_Succeeds() throws Exception {
+        String hmac = RequestUtils.getHmac(formplayerAuthKey, FULL_AUTH_BODY);
+        MockHttpServletRequestBuilder builder = getFullAuthRequestBuilder(FULL_AUTH_BODY)
+                .header(Constants.HMAC_HEADER, hmac);
+        this.testEndpoint(builder, status().isOk());
+    }
+
+
+    private void testEndpoint(MockHttpServletRequestBuilder requestBuilder, ResultMatcher... matchers) throws Exception {
         ResultActions actions = mvc.perform(requestBuilder)
                 .andDo(log());
 
@@ -102,13 +128,26 @@ public class FormValidatorAuthTests {
 
     @BeforeAll
     private static void loadXML() {
-        formXML = FileUtils.getFile(FormValidatorAuthTests.class, "form_validation/valid_form.xml");
+        formXML = FileUtils.getFile(HmacAuthTests.class, "form_validation/valid_form.xml");
     }
 
-    @BeforeEach
-    private void setUp() {
-        requestBuilder = post(String.format("/%s", Constants.URL_VALIDATE_FORM))
+    /**
+     * Use the 'validate_form' endpoint for 'relaxed auth' which only requires the HMAC
+     * header but not any user details.
+     */
+    private MockHttpServletRequestBuilder getRelaxedEndpointRequestBuilder() {
+        return post(String.format("/%s", Constants.URL_VALIDATE_FORM))
                 .content(formXML)
                 .contentType(contentType);
+    }
+
+    /**
+     * Use the 'clear_user_data' endpoint for 'full auth' which required user details.
+     */
+    private MockHttpServletRequestBuilder getFullAuthRequestBuilder(String body) {
+        return post(String.format("/%s", Constants.URL_CLEAR_USER_DATA))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+                .with(SecurityMockMvcRequestPostProcessors.csrf());
     }
 }
