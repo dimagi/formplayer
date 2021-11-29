@@ -54,7 +54,8 @@ branches:
   #- ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - gh/serialize-full-xml-unless-submitting # Graham Nov 18 This conflicts with ce/tracing so I removed that branch so QA can test this one tonight/tomorrow
   # - es/post-case-search  # Ethan Nov 29
-  - sk/validate-form  # Simon Nov 24
+#  - sk/validate-form  # Simon Nov 24
+  - sk/refactor-for-test  # Simon Nov 29
   - sk/refator-advanceSessionWithSelections  # Simon Nov 24
 submodules:
   libs/commcare:
