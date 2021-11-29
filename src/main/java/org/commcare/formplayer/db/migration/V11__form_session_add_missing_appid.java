@@ -49,7 +49,7 @@ public class V11__form_session_add_missing_appid extends BaseJavaMigration {
 
         if (menuSessionId != null && !"".equals(menuSessionId)) {
             String query = "SELECT appid FROM menu_sessions WHERE id = ?";
-            String menuAppId = jdbcTemplate.queryForObject(query, new Object[] { menuSessionId }, String.class);
+            String menuAppId = jdbcTemplate.queryForObject(query, String.class, menuSessionId);
             if (menuAppId != null && !"".equals(menuAppId)) {
                 executeUpdate(jdbcTemplate, menuAppId, sessionId);
                 return;
