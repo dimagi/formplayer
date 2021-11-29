@@ -2,16 +2,32 @@ package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.utils.TestContext;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.utils.TestContext;
+import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.ContextConfiguration;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by benrudolph on 1/19/17.
@@ -20,6 +36,7 @@ import org.commcare.formplayer.utils.TestContext;
 @ContextConfiguration(classes = TestContext.class)
 public class RestoreFactoryTest {
 
+    private static final String BASE_URL = "http://localhost:8000/a/restore-domain/phone/restore/";
     private String username = "restore-dude";
     private String domain = "restore-domain";
     private String asUsername = "restore-gal";
@@ -36,6 +53,8 @@ public class RestoreFactoryTest {
         requestBean.setUsername(username);
         requestBean.setDomain(domain);
         restoreFactorySpy.configure(requestBean, new DjangoAuth("key"));
+        restoreFactorySpy.setAsUsername(null);
+        restoreFactorySpy.setCaseId(null);
     }
 
     private void mockSyncFreq(String freq) {
@@ -95,5 +114,89 @@ public class RestoreFactoryTest {
         mockLastSyncTime(System.currentTimeMillis());
 
         Assertions.assertFalse(restoreFactorySpy.isRestoreXmlExpired());
+    }
+
+    @Test
+    public void testGetCaseRestoreUrl() {
+        restoreFactorySpy.setCaseId("case_id_123");
+        assertEquals(
+                "http://localhost:8000/a/restore-domain/case_migrations/restore/case_id_123/",
+                restoreFactorySpy.getCaseRestoreUrl().toString()
+        );
+    }
+
+    @Test
+    public void testGetUserRestoreUrl() {
+        assertEquals(
+                BASE_URL + "?version=2.0&device_id=WebAppsLogin",
+                restoreFactorySpy.getUserRestoreUrl(false).toString()
+        );
+    }
+
+    @Test
+    public void testGetUserRestoreUrlWithLoginAs() {
+        restoreFactorySpy.setAsUsername("asUser@domain1.commcarehq.org");
+        assertEquals(
+                BASE_URL + "?version=2.0" +
+                        "&device_id=WebAppsLogin*restore-dude*as*asUser%40domain1.commcarehq.org" +
+                        "&as=asUser%40domain1.commcarehq.org",
+                restoreFactorySpy.getUserRestoreUrl(false).toString()
+        );
+    }
+
+
+    @Test
+    public void testGetUserRestoreUrlWithLoginAsNoDomain() {
+        restoreFactorySpy.setAsUsername("asUser");
+        assertEquals(
+                BASE_URL + "?version=2.0" +
+                        "&device_id=WebAppsLogin*restore-dude*as*asUser" +
+                        "&as=asUser%40restore-domain.commcarehq.org",
+                restoreFactorySpy.getUserRestoreUrl(false).toString()
+        );
+    }
+
+    @Test
+    public void testGetRequestHeaders() {
+        String syncToken = "synctoken";
+        Mockito.doReturn(syncToken).when(restoreFactorySpy).getSyncToken();
+        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(null);
+        hasSize(7).matches(headers);
+        validateHeaders(headers, Arrays.asList(
+                hasEntry("Cookie", singletonList("sessionid=key")),
+                hasEntry("sessionid", singletonList("key")),
+                hasEntry("Authorization", singletonList("sessionid=key")),
+                hasEntry("X-OpenRosa-Version", singletonList("3.0")),
+                hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
+                hasEntry("X-CommCareHQ-LastSyncToken", singletonList(syncToken)),
+                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
+        );
+    }
+
+    private void validateHeaders(HttpHeaders headers, List<Matcher<Map<? extends String, ? extends List<String>>>> matchers) {
+        for (Matcher<Map<? extends String, ? extends List<String>>> matcher: matchers) {
+            MatcherAssert.assertThat(headers, matcher);
+        }
+    }
+
+    private static class ValueIsUUID extends TypeSafeMatcher<List<String>> {
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("<[A valid UUID string]>");
+        }
+
+        @Override
+        protected boolean matchesSafely(List<String> item) {
+            if (item.size() != 1) {
+                return false;
+            }
+            try {
+                UUID.fromString(item.get(0));
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
     }
 }
