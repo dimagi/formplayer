@@ -116,7 +116,6 @@ public class HmacAuthTests {
         this.testEndpoint(builder, status().isOk());
     }
 
-
     private void testEndpoint(MockHttpServletRequestBuilder requestBuilder, ResultMatcher... matchers) throws Exception {
         ResultActions actions = mvc.perform(requestBuilder)
                 .andDo(log());
