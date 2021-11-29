@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.util.*;
+import org.commcare.formplayer.utils.CheckedRunnable;
 import org.commcare.formplayer.utils.CheckedSupplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -66,22 +67,33 @@ public class CategoryTimingHelper {
                 timing.durationInMs()));
     }
 
-    public void timed(String category, Runnable timed) {
+    @SneakyThrows
+    public void timed(String category, CheckedRunnable timed) {
+        timed(category, timed, null);
+    }
+
+    @SneakyThrows
+    public void timed(String category, CheckedRunnable timed, Map<String, String> extras) {
         timed(category, () -> {
             timed.run();
             return null;
-        });
+        }, extras);
     }
 
     @SneakyThrows
     public <T> T timed(String category, CheckedSupplier<T> timed) {
+        return timed(category, timed, null);
+    }
+
+    @SneakyThrows
+    public <T> T timed(String category, CheckedSupplier<T> timed, Map<String, String> extras) {
         SimpleTimer timer = new SimpleTimer();
         timer.start();
         try {
             return timed.get();
         } finally {
             timer.end();
-            recordCategoryTiming(timer, category, null, null);
+            recordCategoryTiming(timer, category, null, extras);
             logTiming(timer, category);
         }
     }
