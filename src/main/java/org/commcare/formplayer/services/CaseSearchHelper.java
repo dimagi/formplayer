@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import com.google.common.collect.Multimap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -9,8 +10,6 @@ import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstanceSource;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.util.externalizable.ExtUtil;
-import org.javarosa.xml.ElementParser;
-import org.javarosa.xml.TreeElementParser;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +17,14 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Component;
-import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayInputStream;
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 @CacheConfig(cacheNames = "case_search")
@@ -45,6 +46,9 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
     public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
+        Multimap<String, String> requestData = source.getRequestData();
+        String url = source.getSourceUri();
+
         Cache cache = cacheManager.getCache("case_search");
         URI uri = null;
         try {
@@ -52,7 +56,7 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
         } catch (URISyntaxException e) {
             throw new InvalidStructureException("Invalid URI in source: " + uri);
         }
-        String cacheKey = getCacheKey(uri);
+        String cacheKey = getCacheKey(uri, requestData);
         TreeElement cachedRoot = cache.get(cacheKey, TreeElement.class);
         if (cachedRoot != null) {
             log.info(String.format("Using cached case search results for %s", uri));
@@ -61,8 +65,8 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
             return copyOfRoot;
         }
 
-        log.info(String.format("Making case search request to url %s", uri));
-        String responseString = webClient.get(uri);
+        log.info(String.format("Making case search request to url %s with data %s",  url, requestData));
+        String responseString = webClient.postFormData(url, requestData);
 
         if (responseString != null) {
             TreeElement root = ExternalDataInstance.parseExternalTree(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)), instanceId);
@@ -75,10 +79,10 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
         throw new IOException("No response from server for case search query");
     }
 
-    public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URI uri)
+    public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url, Multimap<String, String> requestData)
             throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
-        ExternalDataInstanceSource source = new ExternalDataInstanceSource(instanceId, uri.toString(), useCaseTemplate);
+        ExternalDataInstanceSource source = new ExternalDataInstanceSource(instanceId, url.toString(), requestData, useCaseTemplate);
 
         TreeElement root = getExternalRoot(instanceId, source);
         source.init(root);
@@ -88,14 +92,20 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
                 source);
     }
 
-    private String getCacheKey(URI uri) {
+    private String getCacheKey(URI url, Multimap<String, String> queryParams) {
         StringBuilder builder = new StringBuilder();
         builder.append(restoreFactory.getDomain());
         builder.append("_").append(restoreFactory.getScrubbedUsername());
         if (restoreFactory.getAsUsername() != null) {
             builder.append("_").append(restoreFactory.getAsUsername());
         }
-        builder.append("_").append(uri);
+        builder.append("_").append(url);
+        for (String key : queryParams.keySet()) {
+            builder.append("_").append(key);
+            for (String value : queryParams.get(key)) {
+                builder.append("=").append(value);
+            }
+        }
         return builder.toString();
     }
 }

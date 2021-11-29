@@ -122,24 +122,15 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     /**
-     * Handle a user step, ignoring performance optimizations and not allowing autolaunch actions.
-     *
-     * @param input The user step input
-     */
-    public boolean handleInput(String input, boolean autoAdvanceMenu) throws CommCareSessionException {
-        return handleInput(input, true, false, false, autoAdvanceMenu);
-    }
-
-    /**
      * @param input           The user step input
      * @param needsDetail     Whether a full entity screen is required for this request
      *                        or if a list of references is sufficient
-     * @param confirmed       Whether the input has been previously validated,
+     * @param inputValidated  Whether the input has been previously validated,
      *                        allowing this step to skip validation
      * @param allowAutoLaunch If this step is allowed to automatically launch an action,
      *                        assuming it has an autolaunch action specified.
      */
-    public boolean handleInput(String input, boolean needsDetail, boolean confirmed, boolean allowAutoLaunch, boolean autoAdvanceMenu) throws CommCareSessionException {
+    public boolean handleInput(String input, boolean needsDetail, boolean inputValidated, boolean allowAutoLaunch) throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
@@ -151,10 +142,10 @@ public class MenuSession implements HereFunctionHandlerListener {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 boolean autoLaunch = entityScreen.getAutoLaunchAction() != null && allowAutoLaunch;
                 addBreadcrumb = !autoLaunch;
-                if (input.startsWith("action ") || (autoLaunch) || !confirmed) {
+                if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
-                        return handleInput(input, true, confirmed, allowAutoLaunch, autoAdvanceMenu);
+                        return handleInput(input, needsDetail, inputValidated, allowAutoLaunch);
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
                 } else {
@@ -163,22 +154,31 @@ public class MenuSession implements HereFunctionHandlerListener {
             } else {
                 screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
             }
-            Screen previousScreen = screen;
-            screen = getNextScreen(needsDetail);
-
-            if (screen instanceof MenuScreen && autoAdvanceMenu) {
-                ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
-            }
 
             if (addBreadcrumb) {
-                addTitle(input, previousScreen);
+                addTitle(input, screen);
             }
+
             return true;
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             throw new RuntimeException("Screen " + screen + "  handling input " + input +
                     " threw exception " + e.getMessage() + ". Please try reloading this application" +
                     " and if the problem persists please report a bug.", e);
         }
+    }
+
+    /**
+     *
+     * @param screen The current screen that has been navigated to.
+     * @param autoAdvanceMenu Whether the menu navigation should be advanced if it can be.
+     * @throws CommCareSessionException
+     * @return true if the session was advanced
+     */
+    public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
+        if (!autoAdvanceMenu || !(screen instanceof MenuScreen)) {
+            return false;
+        }
+        return ((MenuScreen)screen).handleAutoMenuAdvance(sessionWrapper);
     }
 
     private void addTitle(String input, Screen previousScreen) {
