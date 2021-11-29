@@ -189,7 +189,7 @@ public abstract class AbstractBaseController {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ExceptionResponseBean handleError(HttpServletRequest req, Exception exception) {
-        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        log.error("Request: " + req.getRequestURL() + " raised " + exception.getClass(), exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
         Sentry.captureException(exception);
