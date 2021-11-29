@@ -50,25 +50,17 @@
 trunk: master
 name: autostaging
 branches:
-  - dr_form_query+ce/tracing+jls/smart-linking-in-web-apps+gh/serialize-full-xml-unless-submitting+jls/smart-linking-in-web-apps-stack-queries # Jenny Oct 7
-  - dr_form_query+ce/tracing+jls/smart-linking-in-web-apps+gh/serialize-full-xml-unless-submitting # Graham Sept 28
-  - dr_form_query+ce/tracing+jls/smart-linking-in-web-apps # Jenny Sept 28
-  #- dr_form_query+ce/tracing # Shubham Sep 21
-  - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
-  - dr_form_query # Shubham Sep 21
-  - ctsims/case-template-option  # Simon Oct 22
-  - jls/smart-linking-in-web-apps # Jenny Sep 22
-  - jls/smart-linking-in-web-apps-stack-queries # Jenny Oct 22
-  - jls/smart-linking-in-web-apps-stack-jump # Jenny Oct 22
-  - gh/serialize-full-xml-unless-submitting # Graham Sept 28
+  # - ce/tracing+es/post-case-search
+  #- ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
+  - gh/serialize-full-xml-unless-submitting # Graham Nov 18 This conflicts with ce/tracing so I removed that branch so QA can test this one tonight/tomorrow
+  # - es/post-case-search  # Ethan Nov 29
+#  - sk/validate-form  # Simon Nov 24
+  - sk/refactor-for-test  # Simon Nov 29
+  - sk/refator-advanceSessionWithSelections  # Simon Nov 24
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - ctsims/case-template-option+ce/tracing # Jenny Nov 3
-      #- dr_form_query+ce/tracing # Shubham Sep 21.  # uncomment when ctsims/case-template-option is merged
       - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
-      - ce/ensure-session # Cal Nov 20
-      - dr_form_query # Shubham Sep 21
-      - ctsims/case-template-option  # Simon Oct 22
-      - jls/parse-stack-queries # Jenny Oct 20
+      - ce/ensure-session # Cal Nov 20 2021
+      # - es/post-case-search  # Ethan Nov 29
