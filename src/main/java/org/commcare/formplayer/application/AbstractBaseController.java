@@ -1,6 +1,5 @@
 package org.commcare.formplayer.application;
 
-import com.timgroup.statsd.StatsDClient;
 import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.NotificationMessage;
@@ -11,10 +10,8 @@ import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
-import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
-import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +20,10 @@ import org.springframework.lang.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Base Controller class containing exception handling logic and
- * autowired beans used in both MenuController and FormController
+ * Base Controller class containing autowired beans used in both MenuController and FormController
  */
 @CommonsLog
 public abstract class AbstractBaseController {
-
-    @Autowired
-    private WebClient webClient;
 
     @Autowired
     protected FormSessionService formSessionService;
@@ -51,9 +44,6 @@ public abstract class AbstractBaseController {
     protected FormplayerStorageFactory storageFactory;
 
     @Autowired
-    protected StatsDClient datadogStatsDClient;
-
-    @Autowired
     protected FormSendCalloutHandler formSendCalloutHandler;
 
     @Autowired
@@ -61,9 +51,6 @@ public abstract class AbstractBaseController {
 
     @Autowired
     protected MenuSessionRunnerService runnerService;
-
-    @Autowired
-    private FormplayerDatadog datadog;
 
     @Autowired
     private NotificationLogger notificationLogger;
