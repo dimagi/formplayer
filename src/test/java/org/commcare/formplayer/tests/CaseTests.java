@@ -93,7 +93,7 @@ public class CaseTests extends BaseTestClass {
         assertEquals("illegal-argument", submitResponseBean.getErrors().get("0").getType());
 
         submitResponseBean = submitForm("requests/submit/submit_request_close_case.json", sessionId);
-        assertEquals(Constants.SYNC_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
+        assertEquals(Constants.SUBMIT_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
 
         // test that we have successfully closed this case (will still be in storage)
         caseStorage.removeAll(new CasePurgeFilter(caseStorage, null));

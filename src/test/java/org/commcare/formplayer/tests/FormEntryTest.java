@@ -217,7 +217,7 @@ public class FormEntryTest extends BaseTestClass{
 
         Map<String, Object> answers = ImmutableMap.of("1", "not test");
         SubmitResponseBean submitResponseBean = submitForm(answers, sessionId);
-        assertEquals(Constants.SYNC_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
+        assertEquals(Constants.SUBMIT_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
         assertEquals(0, submitResponseBean.getErrors().size());
     }
 

@@ -2,8 +2,7 @@ package org.commcare.formplayer.application;
 
 import com.timgroup.statsd.StatsDClient;
 import datadog.trace.api.Trace;
-import io.sentry.Sentry;
-import io.sentry.SentryLevel;
+
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,15 +15,32 @@ import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.beans.exceptions.ExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.HTMLExceptionResponseBean;
 import org.commcare.formplayer.beans.exceptions.RetryExceptionResponseBean;
-import org.commcare.formplayer.exceptions.*;
-import org.commcare.formplayer.repo.MenuSessionRepo;
-import org.commcare.formplayer.services.*;
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.exceptions.AsyncRetryException;
+import org.commcare.formplayer.exceptions.FormNotFoundException;
+import org.commcare.formplayer.exceptions.FormattedApplicationConfigException;
+import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
+import org.commcare.formplayer.exceptions.UnresolvedResourceRuntimeException;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.InstallService;
+import org.commcare.formplayer.services.MenuSessionFactory;
+import org.commcare.formplayer.services.MenuSessionRunnerService;
+import org.commcare.formplayer.services.MenuSessionService;
+import org.commcare.formplayer.services.NewFormResponseFactory;
+import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.RequestUtils;
+import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.models.RecordTooLargeException;
+import org.commcare.session.CommCareSession;
 import org.commcare.util.screen.CommCareSessionException;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.util.NoLocalizedTextException;
@@ -40,9 +56,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 
 /**
  * Base Controller class containing exception handling logic and
@@ -170,7 +190,7 @@ public abstract class AbstractBaseController {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ExceptionResponseBean handleError(HttpServletRequest req, Exception exception) {
-        log.error("Request: " + req.getRequestURL() + " raised " + exception);
+        log.error("Request: " + req.getRequestURL() + " raised " + exception.getClass(), exception);
         incrementDatadogCounter(Constants.DATADOG_ERRORS_CRASH, req);
         exception.printStackTrace();
         Sentry.captureException(exception);
@@ -250,6 +270,26 @@ public abstract class AbstractBaseController {
                 bean.getRestoreAs(),
                 bean.getPreview()
         );
+    }
+
+    @Nullable
+    protected CommCareSession getCommCareSession(String menuSessionId) throws Exception {
+        if (menuSessionId == null) {
+            return null;
+        }
+
+        SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(menuSessionId);
+        FormplayerConfigEngine engine = installService.configureApplication(serializableMenuSession.getInstallReference(), serializableMenuSession.isPreview()).first;
+        return SessionSerializer.deserialize(engine.getPlatform(), serializableMenuSession.getCommcareSession());
+    }
+
+    protected FormSession getFormSession(SerializableFormSession serializableFormSession) throws Exception {
+        return new FormSession(serializableFormSession,
+                restoreFactory,
+                formSendCalloutHandler,
+                storageFactory,
+                getCommCareSession(serializableFormSession.getMenuSessionId()),
+                runnerService.getCaseSearchHelper());
     }
 
 }
