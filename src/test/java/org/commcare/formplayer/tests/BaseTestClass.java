@@ -185,7 +185,7 @@ public class BaseTestClass {
         Mockito.reset(datadogMock);
         Mockito.reset(menuSessionFactory);
         Mockito.reset(menuSessionRunnerService);
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockFormSubmissionController = MockMvcBuilders.standaloneSetup(formSubmissionController).build();
         mockUtilController = MockMvcBuilders.standaloneSetup(utilController).build();
