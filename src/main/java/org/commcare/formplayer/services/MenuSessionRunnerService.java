@@ -42,7 +42,6 @@ import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
-import org.javarosa.core.util.OrderedHashtable;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,10 +57,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 import javax.annotation.Resource;
 
@@ -76,6 +72,7 @@ import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 @Component
 public class MenuSessionRunnerService {
 
+    public static final String NO_SELECTION = "";
     @Autowired
     private RestoreFactory restoreFactory;
 
@@ -232,8 +229,6 @@ public class MenuSessionRunnerService {
                                                          boolean forceManualAction,
                                                          int casesPerPage,
                                                          String smartLinkTemplate) throws Exception {
-        BaseResponseBean nextResponse;
-        boolean needsDetail;
         // If we have no selections, we're are the root screen.
         if (selections == null) {
             return getNextMenu(
@@ -251,12 +246,12 @@ public class MenuSessionRunnerService {
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
-            boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
+            boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
-            needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+            boolean needsDetail = detailSelection != null || i != selections.length;
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, inputValidated, true);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -264,25 +259,19 @@ public class MenuSessionRunnerService {
                         NotificationMessage.Tag.selection);
                 break;
             }
-            Screen nextScreen = menuSession.getNextScreen(needsDetail);
-
-            String nextInput = i == selections.length ? "" : selections[i];
-            // Advance the session in case auto launch is set
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed, nextInput);
-            boolean replay = i < selections.length;
+            String nextInput = i == selections.length ? NO_SELECTION : selections[i];
+            Screen nextScreen;
             try {
-                nextScreen = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
+                nextScreen = autoAdvanceSession(
+                        menuSession, selection, nextInput, queryData, needsDetail, inputValidated, forceManualAction
+                );
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
                 break;
             }
+
             if (nextScreen instanceof FormplayerSyncScreen) {
-                BaseResponseBean syncResponse = doSyncGetNext(
-                        (FormplayerSyncScreen)nextScreen,
-                        menuSession);
-                if (syncResponse != null) {
-                    return syncResponse;
-                }
+                return doSyncGetNext((FormplayerSyncScreen)nextScreen, menuSession);
             }
 
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
@@ -293,7 +282,7 @@ public class MenuSessionRunnerService {
             }
         }
 
-        nextResponse = getNextMenu(
+        BaseResponseBean nextResponse = getNextMenu(
                 menuSession,
                 detailSelection,
                 offset,
@@ -316,79 +305,119 @@ public class MenuSessionRunnerService {
             if (notificationMessage == null) {
                 notificationMessage = new NotificationMessage(null, false, NotificationMessage.Tag.selection);
             }
-            BaseResponseBean responseBean = new BaseResponseBean(null, notificationMessage,true);
-            return responseBean;
+            return new BaseResponseBean(null, notificationMessage,true);
         }
+    }
+
+    /**
+     * Apply an actions to the menu session that do not require user input e.g.
+     *  - auto launch
+     *  - queries
+     *  - auto advance menu
+     * @param menuSession
+     * @param currentInput The current input being processed
+     * @param nextInput The next input being processed or NO_SELECTION constant
+     * @param queryData Query data from the request
+     * @param needsDetail Whether the full entity screen is required
+     * @param inputValidated Whether the input has been validated (allows skipping validation)
+     * @param forceManualAction Prevent auto execution of queries if true.
+     * @return
+     * @throws CommCareSessionException
+     */
+    private Screen autoAdvanceSession(
+            MenuSession menuSession,
+            String currentInput,
+            String nextInput,
+            QueryData queryData,
+            boolean needsDetail,
+            boolean inputValidated,
+            boolean forceManualAction) throws CommCareSessionException {
+        boolean sessionAdvanced;
+        Screen nextScreen = null;
+        Screen previousScreen;
+        int iterationCount = 0;
+        int maxIterations = 50; // maximum plausible iterations
+        do {
+            sessionAdvanced = false;
+            previousScreen = nextScreen;
+            iterationCount += 1;
+
+            nextScreen = menuSession.getNextScreen(needsDetail);
+            if (previousScreen != null) {
+                String to = nextScreen == null ? "XForm" : nextScreen.toString();
+                log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
+            }
+
+            if (nextScreen instanceof EntityScreen) {
+                // Advance the session in case auto launch is set
+                sessionAdvanced = handleAutoLaunch(
+                        (EntityScreen) nextScreen, menuSession, currentInput, needsDetail, inputValidated, nextInput
+                );
+            } else if (nextScreen instanceof FormplayerQueryScreen) {
+                boolean replay = !nextInput.equals(NO_SELECTION);
+                sessionAdvanced = handleQueryScreen(
+                        (FormplayerQueryScreen) nextScreen, menuSession, queryData, replay, forceManualAction
+                );
+            } else if (nextScreen instanceof MenuScreen) {
+                sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
+            }
+        } while(!Thread.interrupted() && sessionAdvanced && iterationCount < maxIterations);
+
+        return nextScreen;
     }
 
     /**
      * This method handles Query Screens during app navigation. This method does nothing
      * if the 'nextScreen' is not a query screen.
      *
-     * @param nextScreen The next screen in the navigation cycle
+     * @param queryScreen The query screen to handle
      * @param menuSession The current menu session
      * @param queryData Query data passed in from the response
      * @param replay Boolean that is True if there are still more selections to process in the navigation loop.
      *               i.e. if we are handling the query as part of navigation replay
      * @param forceManualAction Boolean passed in from the request which will prevent auto launch actions
-     * @return The next screen in the navigation cycle. This will mostly be the same value as is passed in except
-     *         where there are multiple chained queries that can be executed without user input.
+     * @return true if the query was executed and the session should move to the next screen
      * @throws CommCareSessionException if the was an error performing a query
      */
-    private Screen handleQueryScreen(Screen nextScreen, MenuSession menuSession, QueryData queryData,
+    private boolean handleQueryScreen(FormplayerQueryScreen queryScreen, MenuSession menuSession, QueryData queryData,
                                                   boolean replay, boolean forceManualAction)
             throws CommCareSessionException {
-        while (nextScreen instanceof FormplayerQueryScreen) {
-            FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
-            formplayerQueryScreen.refreshItemSetChoices();
-            boolean autoSearch = replay || (formplayerQueryScreen.doDefaultSearch() && !forceManualAction);
-            String queryKey = menuSession.getSessionWrapper().getCommand();
-            if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
-                NotificationMessage notificationMessage = doQuery(
-                        (FormplayerQueryScreen) nextScreen,
-                        menuSession,
-                        queryData == null ? null : queryData.getInputs(queryKey),
-                        formplayerQueryScreen.doDefaultSearch() && !forceManualAction
-                );
-                if (notificationMessage != null && notificationMessage.isError()) {
-                    throw new CommCareSessionException(notificationMessage.getMessage());
-                }
-                Screen nextScreenPeek = menuSession.getNextScreen();
-                if (nextScreenPeek instanceof FormplayerQueryScreen) {
-                    FormplayerQueryScreen nextQueryScreen = (FormplayerQueryScreen) nextScreenPeek;
-                    if (replay || (nextQueryScreen.doDefaultSearch() && !forceManualAction)) {
-                        nextScreen = menuSession.getNextScreen();
-                    }
-                } else {
-                    return nextScreen;
-                }
-            } else if (queryData != null) {
-                answerQueryPrompts((FormplayerQueryScreen)nextScreen,
-                        queryData.getInputs(queryKey));
-                return nextScreen;
-            } else {
-                return nextScreen;
-            }
+        queryScreen.refreshItemSetChoices();
+        boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualAction);
+        String queryKey = menuSession.getSessionWrapper().getCommand();
+        if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
+            doQuery(
+                    queryScreen,
+                    queryData == null ? null : queryData.getInputs(queryKey),
+                    queryScreen.doDefaultSearch() && !forceManualAction
+            );
+            return true;
+        } else if (queryData != null) {
+            answerQueryPrompts(queryScreen, queryData.getInputs(queryKey));
+            return false;
         }
-        return nextScreen;
+        return false;
     }
 
     private boolean isAutoAdvanceMenu() {
         return storageFactory.getPropertyManager().isAutoAdvanceMenu();
     }
 
-    private Screen handleAutoLaunch(Screen nextScreen, MenuSession menuSession,
-                                    String selection, boolean needsDetail, boolean confirmed, String nextInput)
+    /**
+     * Handle auto-launch actions for EntityScreens
+     *
+     * @return true if the session was advanced
+     * @throws CommCareSessionException
+     */
+    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession,
+                                    String selection, boolean needsDetail, boolean inputValidated, String nextInput)
             throws CommCareSessionException {
-        if (nextScreen instanceof EntityScreen) {
-            EntityScreen entityScreen = (EntityScreen) nextScreen;
-            entityScreen.evaluateAutoLaunch(nextInput);
-            if (entityScreen.getAutoLaunchAction() != null) {
-                menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
-                nextScreen = menuSession.getNextScreen(needsDetail);
-            }
+        entityScreen.evaluateAutoLaunch(nextInput);
+        if (entityScreen.getAutoLaunchAction() != null) {
+            menuSession.handleInput(selection, needsDetail, inputValidated, true);
+            return true;
         }
-        return nextScreen;
+        return false;
     }
 
     // Sets the query fields and refreshes any itemset choices based on them
@@ -445,46 +474,25 @@ public class MenuSessionRunnerService {
      * <p>
      * Will do nothing if this wasn't a query screen.
      */
-    private NotificationMessage doQuery(FormplayerQueryScreen screen,
-                                        MenuSession menuSession,
-                                        Hashtable<String, String> queryDictionary,
-                                        boolean skipDefaultPromptValues) throws CommCareSessionException {
+    private void doQuery(FormplayerQueryScreen screen,
+                         Hashtable<String, String> queryDictionary,
+                         boolean skipDefaultPromptValues) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
-        NotificationMessage notificationMessage = null;
-
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
 
-        String error = null;
-        ExternalDataInstance searchDataInstance;
         try {
-            searchDataInstance = caseSearchHelper.getRemoteDataInstance(
+            ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                     screen.getQueryDatum().getDataId(),
                     screen.getQueryDatum().useCaseTemplate(),
                     screen.getBaseUrl(),
                     screen.getRequestData(skipDefaultPromptValues));
-        screen.setQueryDatum(searchDataInstance);
-            if (searchDataInstance == null) {
-                error = "No result from query";
-            }
+            screen.setQueryDatum(searchDataInstance);
         } catch (InvalidStructureException | IOException
                 | XmlPullParserException | UnfullfilledRequirementsException e) {
-            error = "Query response format error: " + e.getMessage();
+            throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
         }
-
-        if (error != null) {
-            notificationMessage = new NotificationMessage(
-                    "Query failed with message " + error,
-                    true,
-                    NotificationMessage.Tag.query);
-        } else {
-            notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
-        }
-
-        Screen nextScreen = menuSession.getNextScreen();
-        log.info("Next screen after query: " + nextScreen);
-        return notificationMessage;
     }
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
@@ -496,9 +504,10 @@ public class MenuSessionRunnerService {
                 return responseBean;
             }
 
-            Screen nextScreen = menuSession.getNextScreen();
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
-            handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
+            autoAdvanceSession(
+                    menuSession, "", "", new QueryData(),
+                    false, false, false
+            );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;

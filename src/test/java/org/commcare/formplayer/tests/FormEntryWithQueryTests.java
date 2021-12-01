@@ -9,6 +9,7 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.FileUtils;
@@ -17,16 +18,15 @@ import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.net.URI;
 import java.util.Hashtable;
 
+import static org.commcare.formplayer.util.FormplayerPropertyManager.AUTO_ADVANCE_MENU;
+import static org.commcare.formplayer.util.FormplayerPropertyManager.YES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
@@ -37,10 +37,10 @@ import static org.mockito.Mockito.*;
 public class FormEntryWithQueryTests extends BaseTestClass{
 
     @Autowired
-    CacheManager cacheManager;
+    FormplayerStorageFactory storageFactory;
 
-    @Captor
-    ArgumentCaptor<URI> uriCaptor;
+    @Autowired
+    CacheManager cacheManager;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -58,7 +58,6 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 null,
                 false,
                 QueryResponseBean.class);
-
 
         Hashtable<String, String> inputs = new Hashtable<>();
         QueryData queryData = new QueryData();
@@ -165,6 +164,48 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 "instance('duplicate')/results/case[@case_id='dupe_case_id']/case_name",
                 "Duplicate of Burt"
         );
+    }
+
+    /**
+     * Test that setting "cc-auto-advance-menu" works even when the last
+     * screen is a query.
+     */
+    @Test
+    public void testNavigationToFormEntryWithQueriesAutoAdvance() throws Exception {
+        // select module 2
+        sessionNavigateWithQuery(new String[]{"2"},
+                "caseclaimquery",
+                null,
+                false,
+                QueryResponseBean.class);
+
+
+        Hashtable<String, String> inputs = new Hashtable<>();
+        QueryData queryData = new QueryData();
+        queryData.setInputs("m2", inputs);
+        queryData.setExecute("m2", true);
+
+        // execute search query
+        sessionNavigateWithQuery(new String[]{"2"},
+                "caseclaimquery",
+                queryData,
+                false,
+                EntityListResponse.class);
+
+        // Check if form's query was executed
+        verify(webClientMock, times(1)).postFormData(any(), any());
+
+        // with auto-advance enabled the selection of a case should result in the session
+        // being auto-advanced directly to the form (since there is only one form to choose from)
+        storageFactory.getPropertyManager().setProperty(AUTO_ADVANCE_MENU, YES);
+        NewFormResponse formResponse = sessionNavigateWithQuery(new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
+                "caseclaimquery",
+                queryData,
+                false,
+                NewFormResponse.class);
+
+        assertEquals(formResponse.getTitle(), "Followup Form");
+        verify(webClientMock, times(3)).postFormData(any(), any());
     }
 
     private void checkXpath(NewFormResponse formResponse, String xpath, String expectedValue) throws Exception {
