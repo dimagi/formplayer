@@ -47,7 +47,7 @@ public class RestoreFactoryTest {
     @BeforeEach
     public void setUp() throws Exception {
         Mockito.reset(restoreFactorySpy);
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         AuthenticatedRequestBean requestBean = new AuthenticatedRequestBean();
         requestBean.setRestoreAs(asUsername);
         requestBean.setUsername(username);

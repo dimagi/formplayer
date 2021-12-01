@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URISyntaxException;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -47,7 +48,7 @@ public class WebClientTest {
         webClient.setRestoreFactory(restoreFactory);
         webClient.setRestTemplate(restTemplate);
 
-        when(restoreFactory.getUserHeaders()).thenReturn(new HttpHeaders());
+        when(restoreFactory.getRequestHeaders(any())).thenReturn(new HttpHeaders());
     }
 
     @Test

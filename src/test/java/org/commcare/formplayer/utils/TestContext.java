@@ -36,7 +36,7 @@ import java.util.ArrayList;
 public class TestContext {
 
     public TestContext() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Bean

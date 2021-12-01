@@ -46,11 +46,12 @@ public class WebClient {
     }
 
     public <T> String postFormData(String url, Multimap<String, String> data) {
+        URI uri = URI.create(url);
         LinkedMultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
         data.forEach(postData::add);
         return restTemplate.exchange(
-                RequestEntity.post(url)
-                        .headers(restoreFactory.getUserHeaders())
+                RequestEntity.post(uri)
+                        .headers(restoreFactory.getRequestHeaders(uri))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .body(postData),
                 String.class
