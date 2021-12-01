@@ -1,13 +1,19 @@
 package org.commcare.formplayer.application;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.annotations.NoLogging;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.aspects.LockAspect;
 import org.commcare.formplayer.beans.*;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.FormplayerLockRegistry;
+import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.sqlitedb.UserDB;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.NotificationLogger;
 import org.javarosa.xform.parse.XFormParseException;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xform.schema.JSONReporter;
@@ -16,14 +22,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.formplayer.services.FormplayerLockRegistry;
-import org.commcare.formplayer.sqlitedb.UserDB;
-import org.commcare.formplayer.util.Constants;
-
-import java.io.StringReader;
-
 import javax.servlet.http.HttpServletRequest;
+import java.io.StringReader;
 
 /**
  * Controller class (API endpoint) containing all all logic that isn't associated with
@@ -35,11 +35,19 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @EnableAutoConfiguration
-public class UtilController extends AbstractBaseController {
+public class UtilController {
 
+    @Autowired
+    protected RestoreFactory restoreFactory;
+
+    @Autowired
+    protected FormSessionService formSessionService;
 
     @Autowired
     FormplayerLockRegistry userLockRegistry;
+
+    @Autowired
+    NotificationLogger notificationLogger;
 
     private final Log log = LogFactory.getLog(UtilController.class);
 
@@ -74,7 +82,7 @@ public class UtilController extends AbstractBaseController {
             message = "Failed to clear application database for " + deleteRequest.getAppId();
         }
         NotificationMessage notificationMessage = new NotificationMessage(message, !success, NotificationMessage.Tag.wipedb);
-        logNotification(notificationMessage, request);
+        notificationLogger.logNotification(notificationMessage, request);
         return notificationMessage;
     }
 
@@ -91,7 +99,7 @@ public class UtilController extends AbstractBaseController {
                 requestBean.getRestoreAs()
         ).deleteDatabaseFolder();
         NotificationMessage notificationMessage = new NotificationMessage(message, false, NotificationMessage.Tag.clear_data);
-        logNotification(notificationMessage, request);
+        notificationLogger.logNotification(notificationMessage, request);
         return notificationMessage;
     }
 
