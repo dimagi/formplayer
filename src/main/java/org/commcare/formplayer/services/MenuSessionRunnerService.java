@@ -248,7 +248,6 @@ public class MenuSessionRunnerService {
             );
         }
         NotificationMessage notificationMessage = null;
-        boolean rebuildSession = false;
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
@@ -289,7 +288,6 @@ public class MenuSessionRunnerService {
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                 // we don't have a resolution, try rebuilding session to execute any pending ops
                 executeAndRebuildSession(menuSession);
-                rebuildSession = true;
             } else {
                 menuSession.addSelection(selection);
             }
