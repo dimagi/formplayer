@@ -145,7 +145,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                 if (input.startsWith("action ") || (autoLaunch) || !inputValidated) {
                     screen.init(sessionWrapper);
                     if (screen.shouldBeSkipped()) {
-                        return handleInput(input, needsDetail, inputValidated, allowAutoLaunch);
+                        return handleInput(input, true, inputValidated, allowAutoLaunch);
                     }
                     screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
                 } else {
