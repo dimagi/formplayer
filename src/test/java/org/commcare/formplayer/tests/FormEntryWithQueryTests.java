@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests;
 
 
+import com.google.common.collect.ImmutableMultimap;
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
@@ -8,27 +9,24 @@ import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.beans.menus.QueryResponseBean;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
-import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Hashtable;
-import java.util.List;
 
+import static org.commcare.formplayer.util.FormplayerPropertyManager.AUTO_ADVANCE_MENU;
+import static org.commcare.formplayer.util.FormplayerPropertyManager.YES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
@@ -39,10 +37,10 @@ import static org.mockito.Mockito.*;
 public class FormEntryWithQueryTests extends BaseTestClass{
 
     @Autowired
-    CacheManager cacheManager;
+    FormplayerStorageFactory storageFactory;
 
-    @Captor
-    ArgumentCaptor<URI> uriCaptor;
+    @Autowired
+    CacheManager cacheManager;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -61,7 +59,6 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 false,
                 QueryResponseBean.class);
 
-
         Hashtable<String, String> inputs = new Hashtable<>();
         QueryData queryData = new QueryData();
         queryData.setInputs("m1", inputs);
@@ -74,11 +71,8 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 EntityListResponse.class);
 
         // Check if form's query was executed
-        verify(webClientMock, times(1)).get(uriCaptor.capture());
-        List<URI> uris = uriCaptor.getAllValues();
-        // when default search, prompts doesn't get included
-        assert uris.get(0).equals(new URI("http://localhost:8000/a/test-1/phone/search/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case"));
-
+        verify(webClientMock).postFormData(any(), any());
+        verifyNoMoreInteractions(webClientMock);
 
         // Open the form with `query` blocks
         NewFormResponse formResponse = sessionNavigateWithQuery(new String[]{"1", "0156fa3e-093e-4136-b95c-01b13dae66c6", "0"},
@@ -88,10 +82,8 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 NewFormResponse.class);
 
         // verify the second query block to fetch the remote case was executed
-        verify(webClientMock, times(2)).get(uriCaptor.capture());
-        uris = uriCaptor.getAllValues();
-        // when default search, prompts doesn't get included
-        assert uris.get(2).equals(new URI("http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case&case_id=0156fa3e-093e-4136-b95c-01b13dae66c6"));
+        verify(webClientMock, times(2)).postFormData(any(), any());
+        verifyNoMoreInteractions(webClientMock);
 
         // see if the instance is retained into the form session
         checkXpath(
@@ -131,10 +123,8 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 EntityListResponse.class);
 
         // Check if form's query was executed
-        verify(webClientMock, times(1)).get(uriCaptor.capture());
-        List<URI> uris = uriCaptor.getAllValues();
-        // when default search, prompts doesn't get included
-        assert uris.get(0).equals(new URI("http://localhost:8000/a/test-1/phone/search/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case"));
+        verify(webClientMock).postFormData(any(), any());
+        verifyNoMoreInteractions(webClientMock);
 
         // Select a case
         CommandListResponseBean menuResponse = sessionNavigateWithQuery(new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
@@ -148,11 +138,8 @@ public class FormEntryWithQueryTests extends BaseTestClass{
 
         // verify the second query block to fetch the remote case was executed as well as the 3rd query block
         // to do a custom lookup
-        verify(webClientMock, times(3)).get(uriCaptor.capture());
-        uris = uriCaptor.getAllValues();
-        // when default search, prompts doesn't get included
-        assert uris.get(2).equals(new URI("http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case&case_id=0156fa3e-093e-4136-b95c-01b13dae66c6"));
-        assert uris.get(3).equals(new URI("http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case&case_id=dupe_case_id"));
+        verify(webClientMock, times(3)).postFormData(any(), any());
+        verifyNoMoreInteractions(webClientMock);
 
         // Open the form
         NewFormResponse formResponse = sessionNavigateWithQuery(new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6", "0"},
@@ -161,10 +148,8 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 false,
                 NewFormResponse.class);
 
-        verify(webClientMock, times(3)).get(uriCaptor.capture());
-        uris = uriCaptor.getAllValues();
-        assert uris.get(2).equals(new URI("http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case&case_id=0156fa3e-093e-4136-b95c-01b13dae66c6"));
-        assert uris.get(3).equals(new URI("http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case&case_id=dupe_case_id"));
+        verify(webClientMock, times(3)).postFormData(any(), any());
+        verifyNoMoreInteractions(webClientMock);
 
         // check we can access the 'registry' instance in the form
         checkXpath(
@@ -181,6 +166,48 @@ public class FormEntryWithQueryTests extends BaseTestClass{
         );
     }
 
+    /**
+     * Test that setting "cc-auto-advance-menu" works even when the last
+     * screen is a query.
+     */
+    @Test
+    public void testNavigationToFormEntryWithQueriesAutoAdvance() throws Exception {
+        // select module 2
+        sessionNavigateWithQuery(new String[]{"2"},
+                "caseclaimquery",
+                null,
+                false,
+                QueryResponseBean.class);
+
+
+        Hashtable<String, String> inputs = new Hashtable<>();
+        QueryData queryData = new QueryData();
+        queryData.setInputs("m2", inputs);
+        queryData.setExecute("m2", true);
+
+        // execute search query
+        sessionNavigateWithQuery(new String[]{"2"},
+                "caseclaimquery",
+                queryData,
+                false,
+                EntityListResponse.class);
+
+        // Check if form's query was executed
+        verify(webClientMock, times(1)).postFormData(any(), any());
+
+        // with auto-advance enabled the selection of a case should result in the session
+        // being auto-advanced directly to the form (since there is only one form to choose from)
+        storageFactory.getPropertyManager().setProperty(AUTO_ADVANCE_MENU, YES);
+        NewFormResponse formResponse = sessionNavigateWithQuery(new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
+                "caseclaimquery",
+                queryData,
+                false,
+                NewFormResponse.class);
+
+        assertEquals(formResponse.getTitle(), "Followup Form");
+        verify(webClientMock, times(3)).postFormData(any(), any());
+    }
+
     private void checkXpath(NewFormResponse formResponse, String xpath, String expectedValue) throws Exception {
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(formResponse.getSessionId(), xpath);
         assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXPathResponseBean.getStatus());
@@ -194,17 +221,21 @@ public class FormEntryWithQueryTests extends BaseTestClass{
         return "restores/caseclaim.xml";
     }
 
-    private void configureQueryMock() throws URISyntaxException {
-        URI searchURI = new URI("http://localhost:8000/a/test-1/phone/search/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case");
+    private void configureQueryMock() {
+        String searchURI = "http://localhost:8000/a/test-1/phone/search/dec220eae9974c788654f23320f3a8d3/";
         String searchResponse = "query_responses/case_claim_response.xml";
-        when(webClientMock.get(eq(searchURI))).thenReturn(FileUtils.getFile(this.getClass(), searchResponse));
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of("commcare_registry", "shubham", "case_type", "case");
+        when(webClientMock.postFormData(eq(searchURI), eq(data))).thenReturn(FileUtils.getFile(this.getClass(), searchResponse));
 
-        URI firstQueryURI = new URI("http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case&case_id=0156fa3e-093e-4136-b95c-01b13dae66c6");
+        String registryUrl = "http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/";
+        ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.builder();
+        builder.putAll(data).put("case_id", "0156fa3e-093e-4136-b95c-01b13dae66c6");
         String firstQueryResponse = "query_responses/case_claim_response.xml";
-        when(webClientMock.get(eq(firstQueryURI))).thenReturn(FileUtils.getFile(this.getClass(), firstQueryResponse));
+        when(webClientMock.postFormData(eq(registryUrl), eq(builder.build()))).thenReturn(FileUtils.getFile(this.getClass(), firstQueryResponse));
 
-        URI secondQueryURI = new URI("http://localhost:8000/a/test-1/phone/registry_case/dec220eae9974c788654f23320f3a8d3/?commcare_registry=shubham&case_type=case&case_id=dupe_case_id");
+        builder = ImmutableMultimap.builder();
+        builder.putAll(data).put("case_id", "dupe_case_id");
         String secondQueryResponse = "query_responses/registry_query_response.xml";
-        when(webClientMock.get(eq(secondQueryURI))).thenReturn(FileUtils.getFile(this.getClass(), secondQueryResponse));
+        when(webClientMock.postFormData(eq(registryUrl), eq(builder.build()))).thenReturn(FileUtils.getFile(this.getClass(), secondQueryResponse));
     }
 }

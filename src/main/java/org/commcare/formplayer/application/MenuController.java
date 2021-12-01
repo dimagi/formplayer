@@ -160,6 +160,10 @@ public class MenuController extends AbstractBaseController {
     public BaseResponseBean navigateToEndpoint(@RequestBody SessionNavigationBean sessionNavigationBean,
                                                     @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
                                                     HttpServletRequest request) throws Exception {
+        // Apps using aggressive syncs are likely to hit a sync whenever using endpoint-based navigation,
+        // since they use it to jump between different sandboxes. Turn it off.
+        restoreFactory.setPermitAggressiveSyncs(false);
+
         MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
         BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
                 sessionNavigationBean.getEndpointId(),
