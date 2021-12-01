@@ -5,7 +5,6 @@ import org.commcare.formplayer.services.RestoreFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -20,28 +19,20 @@ public class WebClient {
     RestoreFactory restoreFactory;
 
     public String get(String url) {
-        URI uri = URI.create(url);
-        return get(uri, String.class);
+        return restTemplate.exchange(
+                RequestEntity.get(url).headers(restoreFactory.getUserHeaders()).build(), String.class
+        ).getBody();
     }
 
     public String get(URI uri) {
-        return get(uri, String.class);
-    }
-
-    public <T> T get(URI uri, Class<T> responseType) {
-        return getRaw(uri, responseType).getBody();
-    }
-
-    public <T> ResponseEntity<T> getRaw(URI uri, Class<T> responseType) {
         return restTemplate.exchange(
-                RequestEntity.get(uri).headers(restoreFactory.getRequestHeaders(uri)).build(), responseType
-        );
+                RequestEntity.get(uri).headers(restoreFactory.getUserHeaders()).build(), String.class
+        ).getBody();
     }
 
     public <T> String post(String url, T body) {
-        URI uri = URI.create(url);
         return restTemplate.exchange(
-                RequestEntity.post(uri).headers(restoreFactory.getRequestHeaders(uri)).body(body), String.class
+                RequestEntity.post(url).headers(restoreFactory.getUserHeaders()).body(body), String.class
         ).getBody();
     }
 
