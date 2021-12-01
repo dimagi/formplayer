@@ -193,7 +193,7 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 EntityListResponse.class);
 
         // Check if form's query was executed
-        verify(webClientMock, times(1)).get(any(), any());
+        verify(webClientMock, times(1)).postFormData(any(), any());
 
         // with auto-advance enabled the selection of a case should result in the session
         // being auto-advanced directly to the form (since there is only one form to choose from)
@@ -205,7 +205,7 @@ public class FormEntryWithQueryTests extends BaseTestClass{
                 NewFormResponse.class);
 
         assertEquals(formResponse.getTitle(), "Followup Form");
-        verify(webClientMock, times(3)).get(any(), any());
+        verify(webClientMock, times(3)).postFormData(any(), any());
     }
 
     private void checkXpath(NewFormResponse formResponse, String xpath, String expectedValue) throws Exception {
