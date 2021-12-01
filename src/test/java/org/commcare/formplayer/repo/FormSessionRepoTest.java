@@ -56,7 +56,7 @@ public class FormSessionRepoTest {
         formSessionRepo.saveAndFlush(session);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         SerializableFormSession loaded = JpaTestUtils.unwrapProxy(
-                formSessionRepo.getOne(session.getId())
+                formSessionRepo.getById(session.getId())
         );
         assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "version").isEqualTo(session);
         Instant dateCreated = loaded.getDateCreated();

@@ -16,6 +16,11 @@ import java.util.Map;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 public class SerializableFormSession implements Serializable{
+    public enum SubmitStatus {
+        PROCESSED_XML,
+        PROCESSED_STACK
+    }
+
     @Id
     @GeneratedValue( generator="uuid" )
     @GenericGenerator(name="uuid", strategy="org.hibernate.id.UUIDGenerator")
@@ -82,6 +87,8 @@ public class SerializableFormSession implements Serializable{
     @Column(name="inpromptmode")
     private boolean inPromptMode;
 
+    private String submitStatus;
+
     public SerializableFormSession() { }
     public SerializableFormSession(String id) {
         this.id = id;
@@ -117,9 +124,23 @@ public class SerializableFormSession implements Serializable{
         this.currentIndex = "0";
     }
 
+    public void setSubmitStatus(SubmitStatus submitStatus) {
+        this.submitStatus = submitStatus.name();
+    }
+
+    public SubmitStatus getSubmitStatus() {
+        return submitStatus == null ? null : SubmitStatus.valueOf(submitStatus);
+    }
+
+    public boolean isProcessingStageComplete(SubmitStatus stage) {
+        SubmitStatus status = getSubmitStatus();
+        return status != null && status.compareTo(stage) >= 0;
+    }
+
     @Override
     public String toString(){
         return "Session [id=" + id + ", version=" + version + ", username=" + username
-                + " domain=" + domain + ", instance=" + instanceXml + "]";
+                + " domain=" + domain + ", instance=" + instanceXml
+                + ", submitStatus=" + submitStatus + "]";
     }
 }

@@ -49,7 +49,7 @@ public class MenuSessionRepoTest {
         menuSessionRepo.saveAndFlush(session);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         SerializableMenuSession loaded = JpaTestUtils.unwrapProxy(
-                menuSessionRepo.getOne(session.getId())
+                menuSessionRepo.getById(session.getId())
         );
         assertThat(loaded).usingRecursiveComparison().isEqualTo(session);
     }
