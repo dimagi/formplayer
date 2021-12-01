@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import com.google.common.collect.ImmutableMultimap;
 import org.commcare.suite.model.*;
 
 import java.net.URI;
@@ -23,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.session.MenuSession;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -103,15 +103,14 @@ public class MenuSessionFactory {
                             e.printStackTrace();
                             throw new CommCareSessionException("Query URL format error: " + e.getMessage(), e);
                         }
-                        UriComponentsBuilder builder = UriComponentsBuilder.fromUri(uri);
-                        step.getExtras().entrySet().forEach(entry -> {
-                            builder.queryParam(entry.getKey(), entry.getValue());
-                        });
+                        ImmutableMultimap.Builder<String, String> dataBuilder = ImmutableMultimap.builder();
+                        step.getExtras().forEach((key, value) -> dataBuilder.put(key, value.toString()));
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
                                 queryScreen.getQueryDatum().getDataId(),
                                 queryScreen.getQueryDatum().useCaseTemplate(),
-                                builder.build().toUri()
+                                uri.toURL(),
+                                dataBuilder.build()
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
                             screen = menuSession.getNextScreen(false);

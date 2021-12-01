@@ -5,11 +5,11 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.4.5'
-    id "com.gorylenko.gradle-git-properties" version "2.2.4"
+    id 'org.springframework.boot' version '2.5.6'
+    id "com.gorylenko.gradle-git-properties" version "2.4.0-rc1"
     id "io.freefair.lombok" version "5.3.3.3"
-    id 'org.jetbrains.kotlin.jvm' version '1.4.32'
-    id 'org.jetbrains.kotlin.plugin.spring' version '1.4.32'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.0'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.6.0'
 }
 
 springBoot {
@@ -29,8 +29,12 @@ apply plugin: 'idea'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'jacoco'
 
+jacoco {
+    toolVersion = "0.8.7"
+}
+
 jar {
-    archiveBaseName = 'formplayer'
+    enabled = false
 }
 
 allprojects{
@@ -43,6 +47,8 @@ repositories {
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+    sentryVersion = '5.4.2'
+    shedlockVersion = '4.29.0'
 }
 
 sourceCompatibility = 1.8
@@ -92,15 +98,15 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
-    implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.11.0'
-    implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: '4.3.0'
-    implementation group: 'io.sentry', name: 'sentry-logback', version: '4.3.0'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
+    implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '3.0.0'
+    implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
+    implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
+    implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
     implementation group: 'org.json', name: 'json', version: '20210307'
     implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
-    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: '4.23.0'
-    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: '4.23.0'
-    implementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
+    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-spring', version: "${shedlockVersion}"
+    implementation group: 'net.javacrumbs.shedlock', name: 'shedlock-provider-jdbc-template', version: "${shedlockVersion}"
+    implementation group: 'com.google.guava', name: 'guava', version: '31.0.1-jre'
     runtimeOnly group: 'com.github.ben-manes.caffeine', name: 'jcache', version: '2.8.8'
 
 
