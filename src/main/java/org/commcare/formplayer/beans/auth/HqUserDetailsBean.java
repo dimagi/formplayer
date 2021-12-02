@@ -36,6 +36,10 @@ public class HqUserDetailsBean implements UserDetails {
     public HqUserDetailsBean() {
     }
 
+    public HqUserDetailsBean(String domain, String username) {
+        this(domain, new String[]{domain}, username, false, new String[]{}, new String[]{});
+    }
+
     public HqUserDetailsBean(String domain, String[] domains, String username, boolean isSuperuser, String[] enabledToggles, String[] enabledPreviews) {
         this.domain = domain;
         this.domains = domains;

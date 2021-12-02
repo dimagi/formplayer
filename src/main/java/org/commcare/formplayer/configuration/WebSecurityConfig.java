@@ -43,18 +43,26 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         disableDefaults(http);
 
+        // no auth required for management endpoints
+        // (these are bound to a separate HTTP port that is not publicly exposed)
+        http.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll();
+
+        // not auth required
         http
             .authorizeRequests()
             .antMatchers("/serverup", "/favicon.ico")
             .permitAll();
+
+        // relaxed auth (only require HMAC but not user details)
         http
             .authorizeRequests()
             .antMatchers("/validate_form")
             .access("isAuthenticated() or hasAuthority('" + Constants.AUTHORITY_COMMCARE + "')");
 
-        // allow access to management endpoints
-        http.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll();
+        // full auth required
         http.authorizeRequests().antMatchers("/**").authenticated();
+
+        // configure auth filters
         http.addFilterAt(getHmacAuthFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(sessionAuthFilter(), HmacAuthFilter.class);
         http.csrf()
