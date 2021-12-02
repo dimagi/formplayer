@@ -613,7 +613,10 @@ public class RestoreFactory {
 
     private HttpHeaders getHmacHeader(URI url) {
         // Do HMAC auth which requires only the path and query components of the URL
-        String requestPath = String.format("%s?%s", url.getRawPath(), url.getRawQuery());
+        String requestPath = url.getRawPath();
+        if (url.getRawQuery() != null) {
+            requestPath = String.format("%s?%s", requestPath, url.getRawQuery());
+        }
         if (!RequestUtils.requestAuthedWithHmac()) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));

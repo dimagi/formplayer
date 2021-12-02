@@ -4,6 +4,7 @@ import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.TestContext;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -16,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
@@ -48,6 +50,9 @@ public class RestoreFactoryTest {
     private String username = "restore-dude";
     private String domain = "restore-domain";
     private String asUsername = "restore-gal";
+
+    @Value("${commcarehq.formplayerAuthKey}")
+    private String formplayerAuthKey;
 
     @Autowired
     RestoreFactory restoreFactorySpy;
@@ -196,14 +201,14 @@ public class RestoreFactoryTest {
     }
 
     @Test
-    public void testGetRequestHeaders_HmacAuth() throws URISyntaxException {
+    public void testGetRequestHeaders_HmacAuth() throws Exception {
         mockHmacRequest();
         restoreFactorySpy.configure(domain, "case_id", null);
-        URI url = new URI("http://localhost:8000/a/restore-domain/case_migrations/restore/case_id_123/");
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(url);
+        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
+        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
         validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST", singletonList("LAFtw7wwTodY3LINqfVsyle5dAXEEA2uglk1pkgev3U=")),
+                hasEntry("X-MAC-DIGEST", singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
                 hasEntry("X-OpenRosa-Version", singletonList("3.0")),
                 hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
                 hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
@@ -211,13 +216,28 @@ public class RestoreFactoryTest {
     }
 
     @Test
-    public void testGetRequestHeaders_HmacAuthRequestWithUserDetails() throws URISyntaxException {
+    public void testGetRequestHeaders_HmacAuth_UrlWithQuery() throws Exception {
         mockHmacRequest();
-        URI url = new URI("http://localhost:8000/a/restore-domain/case_migrations/restore/case_id_123/");
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(url);
+        restoreFactorySpy.configure(domain, "case_id", null);
+        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/?query_param=true";
+        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
         validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST", singletonList("LAFtw7wwTodY3LINqfVsyle5dAXEEA2uglk1pkgev3U=")),
+                hasEntry("X-MAC-DIGEST", singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
+                hasEntry("X-OpenRosa-Version", singletonList("3.0")),
+                hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
+                hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
+        );
+    }
+
+    @Test
+    public void testGetRequestHeaders_HmacAuthRequestWithUserDetails() throws Exception {
+        mockHmacRequest();
+        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
+        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(new URI("http://localhost:8000" + requestPath));
+        assertEquals(4, headers.size());
+        validateHeaders(headers, Arrays.asList(
+                hasEntry("X-MAC-DIGEST", singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
                 hasEntry("X-OpenRosa-Version", singletonList("3.0")),
                 hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
                 hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
