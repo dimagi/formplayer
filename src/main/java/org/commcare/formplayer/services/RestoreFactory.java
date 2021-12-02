@@ -1,9 +1,8 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
-
+import io.sentry.SentryLevel;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
@@ -48,11 +47,9 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,8 +62,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import io.sentry.SentryLevel;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -436,7 +431,7 @@ public class RestoreFactory {
 
     public HttpHeaders getRequestHeaders(URI url) {
         HttpHeaders headers;
-        if (getHqAuth() == null) {
+        if (RequestUtils.requestAuthedWithHmac()) {
             headers = getHmacHeader(url);
         } else {
             headers = getHqAuth().getAuthHeaders();;
@@ -618,13 +613,11 @@ public class RestoreFactory {
 
     private HttpHeaders getHmacHeader(URI url) {
         // Do HMAC auth which requires only the path and query components of the URL
-        String requestPath = String.format("%s?%s", url.getRawPath(), url.getRawQuery());
-        HttpServletRequest request = RequestUtils.getCurrentRequest();
-        if (request == null) {
-            throw new RuntimeException(String.format(
-                    "HMAC Auth not available outside of a web request %s", requestPath
-            ));
-        } else if (BooleanUtils.isNotTrue((Boolean)request.getAttribute(Constants.HMAC_REQUEST_ATTRIBUTE))) {
+        String requestPath = url.getRawPath();
+        if (url.getRawQuery() != null) {
+            requestPath = String.format("%s?%s", requestPath, url.getRawQuery());
+        }
+        if (!RequestUtils.requestAuthedWithHmac()) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
