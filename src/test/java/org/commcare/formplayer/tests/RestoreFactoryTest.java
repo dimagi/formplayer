@@ -26,7 +26,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -231,7 +230,7 @@ public class RestoreFactoryTest {
     }
 
     @Test
-    public void testGetRequestHeaders_HmacAuthRequestWithUserDetails() throws Exception {
+    public void testGetRequestHeaders_UseHmacAuthEvenIfHqAuthPresent() throws Exception {
         mockHmacRequest();
         String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
         HttpHeaders headers = restoreFactorySpy.getRequestHeaders(new URI("http://localhost:8000" + requestPath));
