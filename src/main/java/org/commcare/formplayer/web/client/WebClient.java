@@ -2,6 +2,7 @@ package org.commcare.formplayer.web.client;
 
 import com.google.common.collect.Multimap;
 import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -39,6 +40,7 @@ public class WebClient {
     }
 
     public <T> String post(String url, T body) {
+        checkHmac();
         URI uri = URI.create(url);
         return restTemplate.exchange(
                 RequestEntity.post(uri).headers(restoreFactory.getRequestHeaders(uri)).body(body), String.class
@@ -46,6 +48,7 @@ public class WebClient {
     }
 
     public <T> String postFormData(String url, Multimap<String, String> data) {
+        checkHmac();
         URI uri = URI.create(url);
         LinkedMultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
         data.forEach(postData::add);
@@ -56,6 +59,16 @@ public class WebClient {
                         .body(postData),
                 String.class
         ).getBody();
+    }
+
+    /**
+     * This is not a technical limitation, just a code limitation that should
+     * be fixed in the future.
+     */
+    private void checkHmac() {
+        if (RequestUtils.requestAuthedWithHmac()) {
+            throw new RuntimeException("HMAC auth not supported for POST requests");
+        }
     }
 
     @Autowired
