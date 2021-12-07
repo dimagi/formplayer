@@ -51,7 +51,7 @@ trunk: master
 name: autostaging
 branches:
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
-  - gh/serialize-full-xml-unless-submitting # Graham Nov 18 This conflicts with ce/tracing so I removed that branch so QA can test this one tonight/tomorrow
+  - gh/serialize-full-xml-unless-submitting # Graham Nov 18
   - sk/validate-form+ce/tracing
   - sk/validate-form  # Simon Nov 24
 submodules:
