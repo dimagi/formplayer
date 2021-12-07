@@ -54,9 +54,6 @@ public class HmacAuthTests {
     @MockBean
     private FormplayerLockRegistry lockRegistry;
 
-    @MockBean
-    private NotificationLogger notificationLogger;
-
     @Value("${commcarehq.formplayerAuthKey}")
     private String formplayerAuthKey;
 

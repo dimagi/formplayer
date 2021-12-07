@@ -56,9 +56,6 @@ public class SessionAuthTests {
     @MockBean
     private FormplayerLockRegistry lockRegistry;
 
-    @MockBean
-    private NotificationLogger notificationLogger;
-
     @Test
     public void testEndpoint_WithoutAnyAuth_Fails() throws Exception {
         this.testEndpoint(getRequestBuilder(FULL_AUTH_BODY), status().isForbidden());
