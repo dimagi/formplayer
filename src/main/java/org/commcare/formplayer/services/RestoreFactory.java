@@ -75,6 +75,9 @@ public class RestoreFactory {
     @Value("${commcarehq.host}")
     private String host;
 
+    @Value("${commcarehq.restore.url.case}")
+    private String caseRestoreUrl;
+
     private String asUsername;
     private String username;
     private String scrubbedUsername;
@@ -647,8 +650,7 @@ public class RestoreFactory {
     }
 
     public URI getCaseRestoreUrl() {
-        String path = buildUrlPath(host, "/a/", domain, "/case_migrations/restore/", caseId, "/");
-        return UriComponentsBuilder.fromUriString(path).build(true).toUri();
+        return UriComponentsBuilder.fromHttpUrl(caseRestoreUrl).buildAndExpand(domain, caseId).toUri();
     }
 
     private String buildUrlPath(String... parts) {
