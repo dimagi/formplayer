@@ -164,8 +164,19 @@ public class RestoreFactoryTest {
         restoreFactorySpy.setAsUsername("asUser@domain1.commcarehq.org");
         assertEquals(
                 BASE_URL + "?version=2.0" +
-                        "&device_id=WebAppsLogin*restore-dude*as*asUser%40domain1.commcarehq.org" +
+                        "&device_id=WebAppsLogin%2Arestore-dude%2Aas%2AasUser%40domain1.commcarehq.org" +
                         "&as=asUser%40domain1.commcarehq.org",
+                restoreFactorySpy.getUserRestoreUrl(false).toString()
+        );
+    }
+
+    @Test
+    public void testGetUserRestoreUrlWithLoginAs_encoded() {
+        restoreFactorySpy.setAsUsername("asUser+test-encoding@domain1.commcarehq.org");
+        assertEquals(
+                BASE_URL + "?version=2.0" +
+                        "&device_id=WebAppsLogin%2Arestore-dude%2Aas%2AasUser%2Btest-encoding%40domain1.commcarehq.org" +
+                        "&as=asUser%2Btest-encoding%40domain1.commcarehq.org",
                 restoreFactorySpy.getUserRestoreUrl(false).toString()
         );
     }
@@ -176,7 +187,7 @@ public class RestoreFactoryTest {
         restoreFactorySpy.setAsUsername("asUser");
         assertEquals(
                 BASE_URL + "?version=2.0" +
-                        "&device_id=WebAppsLogin*restore-dude*as*asUser" +
+                        "&device_id=WebAppsLogin%2Arestore-dude%2Aas%2AasUser" +
                         "&as=asUser%40restore-domain.commcarehq.org",
                 restoreFactorySpy.getUserRestoreUrl(false).toString()
         );
