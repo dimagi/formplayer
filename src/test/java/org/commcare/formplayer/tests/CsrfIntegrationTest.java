@@ -2,13 +2,16 @@ package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.utils.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
@@ -59,9 +62,12 @@ public class CsrfIntegrationTest {
     @InjectMocks
     protected UtilController utilController;
 
+    @MockBean
+    private NotificationLogger notificationLogger;
 
     @BeforeEach
     public void setUp() throws Exception {
+        MockitoAnnotations.openMocks(this);
         mockUserDetailResponse();
         mockUtilController = MockMvcBuilders
                 .standaloneSetup(utilController)

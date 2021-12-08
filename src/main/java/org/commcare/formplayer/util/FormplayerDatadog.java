@@ -4,6 +4,7 @@ import com.timgroup.statsd.StatsDClient;
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
@@ -106,6 +107,34 @@ public class FormplayerDatadog {
         List<String> tagsToSend = getTagsToSend(transientTags);
         String[] datadogTags = tagsToSend.toArray(new String[tagsToSend.size()]);
         datadogClient.increment(aspect, datadogTags);
+    }
+
+    public void incrementErrorCounter(String metric, HttpServletRequest req) {
+        incrementErrorCounter(metric, req, null);
+    }
+
+    public void incrementErrorCounter(String metric, HttpServletRequest req, String tag) {
+        String user = "unknown";
+        String domain = "unknown";
+
+        Optional<HqUserDetailsBean> userDetails = RequestUtils.getUserDetails();
+        if (userDetails.isPresent()) {
+            user = userDetails.get().getDomain();
+            domain = userDetails.get().getUsername();
+        }
+
+        ArrayList<String> tags = new ArrayList<>();
+        tags.add("domain:" + domain);
+        tags.add("user:" + user);
+        tags.add("request:" + req.getRequestURI());
+        if (tag != null) {
+            tags.add("tag:" + tag);
+        }
+
+        datadogClient.increment(
+                metric,
+                tags.toArray(new String[tags.size()])
+        );
     }
 
     // Private Helpers

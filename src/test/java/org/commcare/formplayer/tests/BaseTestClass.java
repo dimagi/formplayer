@@ -21,10 +21,7 @@ import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.PrototypeUtils;
-import org.commcare.formplayer.util.SessionUtils;
+import org.commcare.formplayer.util.*;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.utils.CheckedSupplier;
 import org.commcare.formplayer.utils.FileUtils;
@@ -142,6 +139,9 @@ public class BaseTestClass {
     @Autowired
     private FormSendCalloutHandler formSendCalloutHandlerMock;
 
+    @Autowired
+    private NotificationLogger notificationLogger;
+
     @InjectMocks
     protected FormController formController;
 
@@ -185,6 +185,7 @@ public class BaseTestClass {
         Mockito.reset(datadogMock);
         Mockito.reset(menuSessionFactory);
         Mockito.reset(menuSessionRunnerService);
+        Mockito.reset(notificationLogger);
         MockitoAnnotations.openMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockFormSubmissionController = MockMvcBuilders.standaloneSetup(formSubmissionController).build();
