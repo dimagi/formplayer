@@ -170,6 +170,17 @@ public class RestoreFactoryTest {
         );
     }
 
+    @Test
+    public void testGetUserRestoreUrlWithLoginAs_encoded() {
+        restoreFactorySpy.setAsUsername("asUser+test-encoding@domain1.commcarehq.org");
+        assertEquals(
+                BASE_URL + "?version=2.0" +
+                        "&device_id=WebAppsLogin*restore-dude*as*asUser%2Btest-encoding%40domain1.commcarehq.org" +
+                        "&as=asUser%2Btest-encoding%40domain1.commcarehq.org",
+                restoreFactorySpy.getUserRestoreUrl(false).toString()
+        );
+    }
+
 
     @Test
     public void testGetUserRestoreUrlWithLoginAsNoDomain() {
