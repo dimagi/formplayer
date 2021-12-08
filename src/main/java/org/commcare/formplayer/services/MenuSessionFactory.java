@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import datadog.trace.api.Trace;
 import com.google.common.collect.ImmutableMultimap;
 import org.commcare.suite.model.*;
 
@@ -60,6 +61,7 @@ public class MenuSessionFactory {
      * By re-walking the frame, we establish the set of selections the user 'would' have made to get
      * to this state without doing end of form navigation. Such a path must always exist in a valid app.
      */
+    @Trace
     public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
@@ -136,6 +138,7 @@ public class MenuSessionFactory {
         }
     }
 
+    @Trace
     public MenuSession buildSession(String username,
                                     String domain,
                                     String appId,
@@ -148,6 +151,7 @@ public class MenuSessionFactory {
                 caseSearchHelper);
     }
 
+    @Trace
     public MenuSession buildSession(SerializableMenuSession serializableMenuSession) throws Exception {
         return new MenuSession(serializableMenuSession, installService, restoreFactory, caseSearchHelper);
     }

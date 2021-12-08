@@ -1,5 +1,6 @@
 package org.commcare.formplayer.application;
 
+import datadog.trace.api.Trace;
 import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.NotificationMessage;
@@ -60,12 +61,14 @@ public abstract class AbstractBaseController {
         notificationLogger.logNotification(notification, req);
     }
 
+    @Trace
     protected MenuSession getMenuSessionFromBean(SessionNavigationBean sessionNavigationBean) throws Exception {
         MenuSession menuSession = performInstall(sessionNavigationBean);
         menuSession.setCurrentBrowserLocation(sessionNavigationBean.getGeoLocation());
         return menuSession;
     }
 
+    @Trace
     protected MenuSession performInstall(InstallRequestBean bean) throws Exception {
         if (bean.getAppId() == null || bean.getAppId().isEmpty()) {
             throw new RuntimeException("App_id must not be null.");
