@@ -52,6 +52,7 @@ name: autostaging
 branches:
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
   - gh/serialize-full-xml-unless-submitting # Graham Nov 18
+  - sk/refactor-urls # Simon Dec 8
 submodules:
   libs/commcare:
     trunk: formplayer
