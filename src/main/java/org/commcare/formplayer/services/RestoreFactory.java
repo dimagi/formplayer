@@ -74,9 +74,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RestoreFactory {
-    @Value("${commcarehq.host}")
-    private String host;
-
     @Value("${commcarehq.restore.url}")
     private String restoreUrl;
 
@@ -644,26 +641,8 @@ public class RestoreFactory {
         };
     }
 
-    private void builderQueryParamEncoded(UriComponentsBuilder builder, String name, String value)
-            throws UnsupportedEncodingException {
-        try {
-            builder.queryParam(name,
-                    URLEncoder.encode(value, UTF_8.toString()));
-        } catch (UnsupportedEncodingException e) {
-            throw new UnsupportedEncodingException(String.format("Unable to encode '%s'", name));
-        }
-    }
-
     public URI getCaseRestoreUrl() {
         return UriComponentsBuilder.fromHttpUrl(caseRestoreUrl).buildAndExpand(domain, caseId).toUri();
-    }
-
-    private String buildUrlPath(String... parts) {
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            builder.append(part);
-        }
-        return builder.toString();
     }
 
     public URI getUserRestoreUrl(boolean skipFixtures) {
