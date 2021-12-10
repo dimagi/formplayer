@@ -6,6 +6,7 @@ import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.*;
 import org.javarosa.core.model.data.helper.Selection;
+import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryController;
@@ -32,9 +33,11 @@ public class PromptToJson {
      * @param questionJson the JSON object question representation being generated
      */
     public static void parseQuestion(FormEntryPrompt prompt, JSONObject questionJson) {
-        parseCaption(((FormEntryCaption)prompt), questionJson);
+        parseCaption(prompt, questionJson);
         questionJson.put("help", jsonNullIfNull(prompt.getHelpText()));
-        questionJson.put("binding", jsonNullIfNull(prompt.getQuestion().getBind().getReference().toString()));
+        TreeReference questionRef = prompt.getQuestion().getBind().getReference();
+        questionJson.put("binding", jsonNullIfNull(questionRef.toString()));
+        questionJson.put("question_id", jsonNullIfNull(questionRef.getNameLast()));
         questionJson.put("datatype", jsonNullIfNull(parseDataType(prompt)));
         questionJson.put("control", jsonNullIfNull(prompt.getControlType()));
         questionJson.put("required", prompt.isRequired() ? 1 : 0);
@@ -44,9 +47,6 @@ public class PromptToJson {
 
         if (prompt.getDataType() == Constants.DATATYPE_CHOICE || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
             questionJson.put("choices", parseSelect(prompt));
-            // this creates an improved choices object that contains both values and captions for each choice
-            JSONArray choicesWithCaptions = parseChoicesWithCaptions(prompt);
-            questionJson.put("choices_v2", choicesWithCaptions);
         }
     }
 
@@ -249,34 +249,4 @@ public class PromptToJson {
         }
         return "unrecognized";
     }
-
-    private static JSONArray parseChoicesWithCaptions(FormEntryPrompt prompt) {
-        Vector<SelectChoice> selectChoices = prompt.getSelectChoices();
-        JSONArray choicesWithCaptions = new JSONArray();
-        for (SelectChoice choice : selectChoices) {
-            JSONObject choiceWithCaptions = parseChoiceWithCaptions(choice, prompt);
-            choicesWithCaptions.put(choiceWithCaptions);
-        }
-        return choicesWithCaptions;
-    }
-
-
-    private static JSONObject parseChoiceWithCaptions(SelectChoice choice, FormEntryPrompt prompt) {
-        String choiceValue = prompt.getSelectChoiceText(choice);
-        if (prompt.getControlType() == Constants.CONTROL_SELECT_MULTI && choice.getValue().contains(" ")) {
-            throw new ApplicationConfigException(String.format("Select answer options cannot contain spaces. " +
-                    "Question %s with answer %s", prompt, choiceValue));
-        }
-        String imagePath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_IMAGE);
-        String audioPath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_AUDIO);
-        String videoPath = prompt.getSpecialFormSelectChoiceText(choice, FormEntryCaption.TEXT_FORM_VIDEO);
-
-        JSONObject choicesAndCaptions = new JSONObject();
-        choicesAndCaptions.put("value", choiceValue);
-        choicesAndCaptions.put("caption_image", jsonNullIfNull(imagePath));
-        choicesAndCaptions.put("caption_audio", jsonNullIfNull(audioPath));
-        choicesAndCaptions.put("caption_video", jsonNullIfNull(videoPath));
-        return choicesAndCaptions;
-    }
-
 }

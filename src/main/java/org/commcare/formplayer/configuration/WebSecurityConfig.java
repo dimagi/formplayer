@@ -4,6 +4,7 @@ import org.commcare.formplayer.auth.CommCareSessionAuthFilter;
 import org.commcare.formplayer.auth.HmacAuthFilter;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.HqUserDetailsService;
+import org.commcare.formplayer.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
@@ -18,8 +19,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -40,15 +43,31 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         disableDefaults(http);
 
+        // no auth required for management endpoints
+        // (these are bound to a separate HTTP port that is not publicly exposed)
+        http.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll();
+
+        // not auth required
         http
             .authorizeRequests()
-            .antMatchers("/serverup", "/validate_form", "/favicon.ico")
+            .antMatchers("/serverup", "/favicon.ico")
             .permitAll();
-        // allow access to management endpoints
-        http.authorizeRequests().requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll();
+
+        // relaxed auth (only require HMAC but not user details)
+        http
+            .authorizeRequests()
+            .antMatchers("/validate_form")
+            .access("isAuthenticated() or hasAuthority('" + Constants.AUTHORITY_COMMCARE + "')");
+
+        // full auth required
         http.authorizeRequests().antMatchers("/**").authenticated();
+
+        // configure auth filters
         http.addFilterAt(getHmacAuthFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(sessionAuthFilter(), HmacAuthFilter.class);
+        http.csrf()
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .ignoringRequestMatchers(new RequestHeaderRequestMatcher(Constants.HMAC_HEADER));
         http.cors();
     }
 
@@ -60,7 +79,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private void disableDefaults(HttpSecurity http) throws Exception {
-        http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.requestCache().disable();  // only needed for login workflow
         http.logout().disable();

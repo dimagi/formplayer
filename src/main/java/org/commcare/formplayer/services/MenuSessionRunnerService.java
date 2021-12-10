@@ -1,34 +1,21 @@
 package org.commcare.formplayer.services;
 
-import io.sentry.Sentry;
-
-import org.commcare.formplayer.beans.NewFormResponse;
-import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.formplayer.beans.menus.*;
-import org.commcare.formplayer.exceptions.ApplicationConfigException;
-import org.commcare.formplayer.objects.QueryData;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.web.client.WebClient;
-import org.commcare.modern.session.SessionWrapper;
-import org.commcare.session.SessionFrame;
-import org.commcare.suite.model.Detail;
-import org.commcare.suite.model.EntityDatum;
-import org.commcare.suite.model.StackFrameStep;
-import org.commcare.suite.model.Text;
-import org.commcare.util.screen.*;
-import org.javarosa.core.model.actions.FormSendCalloutHandler;
-import org.javarosa.core.model.condition.EvaluationContext;
-import org.javarosa.core.model.instance.ExternalDataInstance;
-import org.javarosa.core.model.instance.TreeReference;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.stereotype.Component;
-
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
+import org.commcare.formplayer.beans.menus.BaseResponseBean;
+import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
+import org.commcare.formplayer.beans.menus.EntityDetailResponse;
+import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.beans.menus.MenuBean;
+import org.commcare.formplayer.beans.menus.QueryResponseBean;
+import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
-import org.commcare.formplayer.repo.MenuSessionRepo;
+import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.session.FormSession;
@@ -37,15 +24,46 @@ import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
 import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
 import org.commcare.formplayer.util.SessionUtils;
+import org.commcare.formplayer.web.client.WebClient;
+import org.commcare.modern.session.SessionWrapper;
+import org.commcare.session.SessionFrame;
+import org.commcare.suite.model.Detail;
+import org.commcare.suite.model.Endpoint;
+import org.commcare.suite.model.EntityDatum;
+import org.commcare.suite.model.StackFrameStep;
+import org.commcare.suite.model.StackOperation;
+import org.commcare.suite.model.Text;
+import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.EntityScreen;
+import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.QueryScreen;
+import org.commcare.util.screen.Screen;
+import org.javarosa.core.model.actions.FormSendCalloutHandler;
+import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.instance.ExternalDataInstance;
+import org.javarosa.core.model.instance.TreeReference;
+import org.javarosa.xml.util.InvalidStructureException;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.IOException;
 import java.net.URI;
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Arrays;
+import java.util.*;
 
 import javax.annotation.Resource;
+
+import io.sentry.Sentry;
+
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -54,6 +72,7 @@ import javax.annotation.Resource;
 @Component
 public class MenuSessionRunnerService {
 
+    public static final String NO_SELECTION = "";
     @Autowired
     private RestoreFactory restoreFactory;
 
@@ -96,7 +115,7 @@ public class MenuSessionRunnerService {
     private static final Log log = LogFactory.getLog(MenuSessionRunnerService.class);
 
     public BaseResponseBean getNextMenu(MenuSession menuSession) throws Exception {
-        return getNextMenu(menuSession, null, 0, "", 0, null, 0);
+        return getNextMenu(menuSession, null, 0, "", 0, null, 0, null);
     }
 
     private BaseResponseBean getNextMenu(MenuSession menuSession,
@@ -105,8 +124,10 @@ public class MenuSessionRunnerService {
                                          String searchText,
                                          int sortIndex,
                                          QueryData queryData,
-                                         int casesPerPage) throws Exception {
+                                         int casesPerPage,
+                                         String smartLinkTemplate) throws Exception {
         Screen nextScreen = menuSession.getNextScreen();
+
         // No next menu screen? Start form entry!
         if (nextScreen == null) {
             String assertionFailure = getAssertionFailure(menuSession);
@@ -133,7 +154,7 @@ public class MenuSessionRunnerService {
             // We're looking at a case list or detail screen
             nextScreen.init(menuSession.getSessionWrapper());
             if (nextScreen.shouldBeSkipped()) {
-                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData, casesPerPage);
+                return getNextMenu(menuSession, detailSelection, offset, searchText, sortIndex, queryData, casesPerPage, smartLinkTemplate);
             }
             addHereFuncHandler((EntityScreen)nextScreen, menuSession);
             menuResponseBean = new EntityListResponse(
@@ -169,8 +190,7 @@ public class MenuSessionRunnerService {
 
         menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
         menuResponseBean.setAppId(menuSession.getAppId());
-        menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() +
-                ", App Version: " + menuSession.getAppVersion());
+        menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
         menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
         return menuResponseBean;
     }
@@ -183,7 +203,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null,
-                0, null, 0, false, 0);
+                0, null, 0, false, 0, null);
     }
 
     /**
@@ -207,9 +227,8 @@ public class MenuSessionRunnerService {
                                                          String searchText,
                                                          int sortIndex,
                                                          boolean forceManualAction,
-                                                         int casesPerPage) throws Exception {
-        BaseResponseBean nextResponse;
-        boolean needsDetail;
+                                                         int casesPerPage,
+                                                         String smartLinkTemplate) throws Exception {
         // If we have no selections, we're are the root screen.
         if (selections == null) {
             return getNextMenu(
@@ -219,20 +238,20 @@ public class MenuSessionRunnerService {
                     searchText,
                     sortIndex,
                     queryData,
-                    casesPerPage
+                    casesPerPage,
+                    smartLinkTemplate
             );
         }
         NotificationMessage notificationMessage = null;
-        boolean rebuildSession = false;
         for (int i = 1; i <= selections.length; i++) {
             String selection = selections[i - 1];
 
-            boolean confirmed = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
+            boolean inputValidated = restoreFactory.isConfirmedSelection(Arrays.copyOfRange(selections, 0, i));
 
             // minimal entity screens are only safe if there will be no further selection
             // and we do not need the case detail
-            needsDetail = detailSelection != null || i != selections.length;
-            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
+            boolean needsDetail = detailSelection != null || i != selections.length;
+            boolean gotNextScreen = menuSession.handleInput(selection, needsDetail, inputValidated, true);
             if (!gotNextScreen) {
                 notificationMessage = new NotificationMessage(
                         "Overflowed selections with selection " + selection + " at index " + i,
@@ -240,39 +259,38 @@ public class MenuSessionRunnerService {
                         NotificationMessage.Tag.selection);
                 break;
             }
-            Screen nextScreen = menuSession.getNextScreen(needsDetail);
+            String nextInput = i == selections.length ? NO_SELECTION : selections[i];
+            Screen nextScreen;
+            try {
+                nextScreen = autoAdvanceSession(
+                        menuSession, selection, nextInput, queryData, needsDetail, inputValidated, forceManualAction
+                );
+            } catch (CommCareSessionException e) {
+                notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
+                break;
+            }
 
-            String nextInput = i == selections.length ? "" : selections[i];
-            // Advance the session in case auto launch is set
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, selection, needsDetail, confirmed, nextInput);
-            boolean replay = i < selections.length;
-            notificationMessage = handleQueryScreen(nextScreen, menuSession, queryData, replay, forceManualAction);
             if (nextScreen instanceof FormplayerSyncScreen) {
-                BaseResponseBean syncResponse = doSyncGetNext(
-                        (FormplayerSyncScreen)nextScreen,
-                        menuSession);
-                if (syncResponse != null) {
-                    return syncResponse;
-                }
+                return doSyncGetNext((FormplayerSyncScreen)nextScreen, menuSession);
             }
 
             if (nextScreen == null && menuSession.getSessionWrapper().getForm() == null) {
                 // we don't have a resolution, try rebuilding session to execute any pending ops
                 executeAndRebuildSession(menuSession);
-                rebuildSession = true;
             } else {
                 menuSession.addSelection(selection);
             }
         }
 
-        nextResponse = getNextMenu(
+        BaseResponseBean nextResponse = getNextMenu(
                 menuSession,
                 detailSelection,
                 offset,
                 searchText,
                 sortIndex,
                 queryData,
-                casesPerPage
+                casesPerPage,
+                smartLinkTemplate
         );
         restoreFactory.cacheSessionSelections(selections);
 
@@ -281,58 +299,125 @@ public class MenuSessionRunnerService {
                 nextResponse.setNotification(notificationMessage);
             }
             log.info("Returning menu: " + nextResponse);
-
-            if (rebuildSession) {
-                nextResponse.setSelections(menuSession.getSelections());
-            }
+            nextResponse.setSelections(menuSession.getSelections());
             return nextResponse;
         } else {
-            BaseResponseBean responseBean = new BaseResponseBean(null,
-                    new NotificationMessage(null, false, NotificationMessage.Tag.selection),
-                    true);
-            return responseBean;
+            if (notificationMessage == null) {
+                notificationMessage = new NotificationMessage(null, false, NotificationMessage.Tag.selection);
+            }
+            return new BaseResponseBean(null, notificationMessage,true);
         }
     }
 
-    private NotificationMessage handleQueryScreen(Screen nextScreen, MenuSession menuSession, QueryData queryData,
+    /**
+     * Apply an actions to the menu session that do not require user input e.g.
+     *  - auto launch
+     *  - queries
+     *  - auto advance menu
+     * @param menuSession
+     * @param currentInput The current input being processed
+     * @param nextInput The next input being processed or NO_SELECTION constant
+     * @param queryData Query data from the request
+     * @param needsDetail Whether the full entity screen is required
+     * @param inputValidated Whether the input has been validated (allows skipping validation)
+     * @param forceManualAction Prevent auto execution of queries if true.
+     * @return
+     * @throws CommCareSessionException
+     */
+    private Screen autoAdvanceSession(
+            MenuSession menuSession,
+            String currentInput,
+            String nextInput,
+            QueryData queryData,
+            boolean needsDetail,
+            boolean inputValidated,
+            boolean forceManualAction) throws CommCareSessionException {
+        boolean sessionAdvanced;
+        Screen nextScreen = null;
+        Screen previousScreen;
+        int iterationCount = 0;
+        int maxIterations = 50; // maximum plausible iterations
+        do {
+            sessionAdvanced = false;
+            previousScreen = nextScreen;
+            iterationCount += 1;
+
+            nextScreen = menuSession.getNextScreen(needsDetail);
+            if (previousScreen != null) {
+                String to = nextScreen == null ? "XForm" : nextScreen.toString();
+                log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
+            }
+
+            if (nextScreen instanceof EntityScreen) {
+                // Advance the session in case auto launch is set
+                sessionAdvanced = handleAutoLaunch(
+                        (EntityScreen) nextScreen, menuSession, currentInput, needsDetail, inputValidated, nextInput
+                );
+            } else if (nextScreen instanceof FormplayerQueryScreen) {
+                boolean replay = !nextInput.equals(NO_SELECTION);
+                sessionAdvanced = handleQueryScreen(
+                        (FormplayerQueryScreen) nextScreen, menuSession, queryData, replay, forceManualAction
+                );
+            } else if (nextScreen instanceof MenuScreen) {
+                sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
+            }
+        } while(!Thread.interrupted() && sessionAdvanced && iterationCount < maxIterations);
+
+        return nextScreen;
+    }
+
+    /**
+     * This method handles Query Screens during app navigation. This method does nothing
+     * if the 'nextScreen' is not a query screen.
+     *
+     * @param queryScreen The query screen to handle
+     * @param menuSession The current menu session
+     * @param queryData Query data passed in from the response
+     * @param replay Boolean that is True if there are still more selections to process in the navigation loop.
+     *               i.e. if we are handling the query as part of navigation replay
+     * @param forceManualAction Boolean passed in from the request which will prevent auto launch actions
+     * @return true if the query was executed and the session should move to the next screen
+     * @throws CommCareSessionException if the was an error performing a query
+     */
+    private boolean handleQueryScreen(FormplayerQueryScreen queryScreen, MenuSession menuSession, QueryData queryData,
                                                   boolean replay, boolean forceManualAction)
             throws CommCareSessionException {
-        if (nextScreen instanceof FormplayerQueryScreen) {
-            FormplayerQueryScreen formplayerQueryScreen = ((FormplayerQueryScreen)nextScreen);
-            formplayerQueryScreen.refreshItemSetChoices();
-            boolean autoSearch = replay || (formplayerQueryScreen.doDefaultSearch() && !forceManualAction);
-            String queryKey = menuSession.getSessionWrapper().getCommand();
-            if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
-                return doQuery(
-                        (FormplayerQueryScreen)nextScreen,
-                        menuSession,
-                        queryData == null ? null : queryData.getInputs(queryKey),
-                        formplayerQueryScreen.doDefaultSearch() && !forceManualAction
-                );
-            } else if (queryData != null) {
-                answerQueryPrompts((FormplayerQueryScreen)nextScreen,
-                        queryData.getInputs(queryKey));
-            }
+        queryScreen.refreshItemSetChoices();
+        boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualAction);
+        String queryKey = menuSession.getSessionWrapper().getCommand();
+        if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
+            doQuery(
+                    queryScreen,
+                    queryData == null ? null : queryData.getInputs(queryKey),
+                    queryScreen.doDefaultSearch() && !forceManualAction
+            );
+            return true;
+        } else if (queryData != null) {
+            answerQueryPrompts(queryScreen, queryData.getInputs(queryKey));
+            return false;
         }
-        return null;
+        return false;
     }
 
     private boolean isAutoAdvanceMenu() {
         return storageFactory.getPropertyManager().isAutoAdvanceMenu();
     }
 
-    private Screen handleAutoLaunch(Screen nextScreen, MenuSession menuSession,
-                                    String selection, boolean needsDetail, boolean confirmed, String nextInput)
+    /**
+     * Handle auto-launch actions for EntityScreens
+     *
+     * @return true if the session was advanced
+     * @throws CommCareSessionException
+     */
+    private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession,
+                                    String selection, boolean needsDetail, boolean inputValidated, String nextInput)
             throws CommCareSessionException {
-        if (nextScreen instanceof EntityScreen) {
-            EntityScreen entityScreen = (EntityScreen)nextScreen;
-            entityScreen.evaluateAutoLaunch(nextInput);
-            if (entityScreen.getAutoLaunchAction() != null) {
-                menuSession.handleInput(selection, needsDetail, confirmed, true, isAutoAdvanceMenu());
-                nextScreen = menuSession.getNextScreen(needsDetail);
-            }
+        entityScreen.evaluateAutoLaunch(nextInput);
+        if (entityScreen.getAutoLaunchAction() != null) {
+            menuSession.handleInput(selection, needsDetail, inputValidated, true);
+            return true;
         }
-        return nextScreen;
+        return false;
     }
 
     // Sets the query fields and refreshes any itemset choices based on them
@@ -389,48 +474,40 @@ public class MenuSessionRunnerService {
      * <p>
      * Will do nothing if this wasn't a query screen.
      */
-    private NotificationMessage doQuery(FormplayerQueryScreen screen,
-                                        MenuSession menuSession,
-                                        Hashtable<String, String> queryDictionary,
-                                        boolean skipDefaultPromptValues) throws CommCareSessionException {
+    private void doQuery(FormplayerQueryScreen screen,
+                         Hashtable<String, String> queryDictionary,
+                         boolean skipDefaultPromptValues) throws CommCareSessionException {
         log.info("Formplayer doing query with dictionary " + queryDictionary);
-        NotificationMessage notificationMessage = null;
-
         if (queryDictionary != null) {
             screen.answerPrompts(queryDictionary);
         }
 
-        ExternalDataInstance searchDataInstance = searchAndSetResult(
-                screen,
-                screen.getUri(skipDefaultPromptValues));
-
-        if (searchDataInstance != null) {
-            if (screen.getCurrentMessage() != null) {
-                notificationMessage = new NotificationMessage(screen.getCurrentMessage(), false, NotificationMessage.Tag.query);
-            }
-        } else {
-            notificationMessage = new NotificationMessage(
-                    "Query failed with message " + screen.getCurrentMessage(),
-                    true,
-                    NotificationMessage.Tag.query);
+        try {
+            ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
+                    screen.getQueryDatum().getDataId(),
+                    screen.getQueryDatum().useCaseTemplate(),
+                    screen.getBaseUrl(),
+                    screen.getRequestData(skipDefaultPromptValues));
+            screen.setQueryDatum(searchDataInstance);
+        } catch (InvalidStructureException | IOException
+                | XmlPullParserException | UnfullfilledRequirementsException e) {
+            throw new CommCareSessionException("Query response format error: " + e.getMessage(), e);
         }
-        Screen nextScreen = menuSession.getNextScreen();
-        log.info("Next screen after query: " + nextScreen);
-        return notificationMessage;
     }
-
-    public ExternalDataInstance searchAndSetResult(FormplayerQueryScreen screen, URI uri) {
-        ExternalDataInstance searchDataInstance = caseSearchHelper.getSearchDataInstance(screen, uri);
-        screen.setQueryDatum(searchDataInstance);
-        return searchDataInstance;
-    }
-
 
     public BaseResponseBean resolveFormGetNext(MenuSession menuSession) throws Exception {
         if (executeAndRebuildSession(menuSession)) {
-            Screen nextScreen = menuSession.getNextScreen();
-            nextScreen = handleAutoLaunch(nextScreen, menuSession, "", false, false, "");
-            handleQueryScreen(nextScreen, menuSession, new QueryData(), false, false);
+            if (menuSession.getSmartLinkRedirect() != null) {
+                BaseResponseBean responseBean = new BaseResponseBean(null, null, true);
+                UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(menuSession.getSmartLinkRedirect());
+                responseBean.setSmartLinkRedirect(urlBuilder.build().toString());
+                return responseBean;
+            }
+
+            autoAdvanceSession(
+                    menuSession, "", "", new QueryData(),
+                    false, false, false
+            );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());
             return response;
@@ -439,11 +516,16 @@ public class MenuSessionRunnerService {
     }
 
     // Rebuild the session after executing any pending session stack
-    private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException {
+    private boolean executeAndRebuildSession(MenuSession menuSession) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         menuSession.getSessionWrapper().syncState();
         if (menuSession.getSessionWrapper().finishExecuteAndPop(menuSession.getSessionWrapper().getEvaluationContext())) {
-            menuSession.getSessionWrapper().clearVolatiles();
-            menuSessionFactory.rebuildSessionFromFrame(menuSession);
+            String smartLinkRedirect = menuSession.getSessionWrapper().getSmartLinkRedirect();
+            if (smartLinkRedirect != null) {
+                menuSession.setSmartLinkRedirect(smartLinkRedirect);
+            } else {
+                menuSession.getSessionWrapper().clearVolatiles();
+                menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
+            }
             return true;
         }
         return false;
@@ -533,6 +615,8 @@ public class MenuSessionRunnerService {
     private NewFormResponse startFormEntry(MenuSession menuSession) throws Exception {
         if (menuSession.getSessionWrapper().getForm() != null) {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
+            formResponseBean.setAppId(menuSession.getAppId());
+            formResponseBean.setAppVersion(menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
             // update datadog/sentry metrics
@@ -558,7 +642,7 @@ public class MenuSessionRunnerService {
 
     private NewFormResponse generateFormEntrySession(MenuSession menuSession) throws Exception {
         menuSessionService.saveSession(menuSession.serialize());
-        FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory);
+        FormSession formEntrySession = menuSession.getFormEntrySession(formSendCalloutHandler, storageFactory, caseSearchHelper);
 
         NewFormResponse response = newFormResponseFactory.getResponse(formEntrySession);
         response.setNotification(establishVolatility(formEntrySession));
@@ -583,5 +667,58 @@ public class MenuSessionRunnerService {
             }
         }
         return null;
+    }
+
+    public BaseResponseBean advanceSessionWithEndpoint(MenuSession menuSession, String endpointId, @Nullable HashMap<String, String> endpointArgs)
+            throws Exception {
+        if (!FeatureFlagChecker.isToggleEnabled(TOGGLE_SESSION_ENDPOINTS)) {
+            throw new RuntimeException("Linking into applications has been disabled for this project.");
+        }
+
+        Endpoint endpoint = menuSession.getEndpoint(endpointId);
+        if (endpoint == null) {
+            throw new RuntimeException("This link does not exist. Your app may have changed so that the given link is no longer valid");
+        }
+        SessionWrapper sessionWrapper = menuSession.getSessionWrapper();
+        EvaluationContext evalContext = sessionWrapper.getEvaluationContext();
+        try {
+            if (endpointArgs != null) {
+                Endpoint.populateEndpointArgumentsToEvaluationContext(endpoint, endpointArgs, evalContext);
+            }
+        } catch (Endpoint.InvalidEndpointArgumentsException ieae) {
+            String missingMessage = "";
+            if (ieae.hasMissingArguments()) {
+                missingMessage = String.format(" Missing arguments: %s.", String.join(", ", ieae.getMissingArguments()));
+            }
+            String unexpectedMessage = "";
+            if (ieae.hasUnexpectedArguments()) {
+                unexpectedMessage = String.format(" Unexpected arguments: %s.", String.join(", ", ieae.getUnexpectedArguments()));
+            }
+            throw new RuntimeException(String.format("Invalid arguments supplied for link.%s%s", missingMessage, unexpectedMessage));
+        }
+
+        // Sync requests aren't run when executing operations, so stop and check for them after each operation
+        for (StackOperation op : endpoint.getStackOperations()) {
+            sessionWrapper.executeStackOperations(new Vector<>(Arrays.asList(op)), evalContext);
+            Screen s = menuSession.getNextScreen();
+            if (s instanceof FormplayerSyncScreen) {
+                try {
+                    s.init(sessionWrapper);
+                    doSyncGetNext((FormplayerSyncScreen) s, menuSession);
+                } catch (CommCareSessionException ccse) {
+                    throw new RuntimeException("Unable to claim case.");
+                }
+            }
+        }
+        menuSessionFactory.rebuildSessionFromFrame(menuSession, caseSearchHelper);
+        String[] selections = menuSession.getSelections();
+
+        // reset session and play it back with derived selections
+        menuSession.resetSession();
+        return advanceSessionWithSelections(menuSession, selections);
+    }
+
+    public CaseSearchHelper getCaseSearchHelper() {
+        return caseSearchHelper;
     }
 }

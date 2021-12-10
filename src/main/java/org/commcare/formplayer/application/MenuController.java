@@ -56,7 +56,8 @@ public class MenuController extends AbstractBaseController {
                     sessionNavigationBean.getSearchText(),
                     sessionNavigationBean.getSortIndex(),
                     sessionNavigationBean.isForceManualAction(),
-                    sessionNavigationBean.getCasesPerPage()
+                    sessionNavigationBean.getCasesPerPage(),
+                    sessionNavigationBean.getSmartLinkTemplate()
             );
             logNotification(baseResponseBean.getNotification(),request);
             // See if we have a persistent case tile to expand
@@ -81,7 +82,8 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.isForceManualAction(),
-                sessionNavigationBean.getCasesPerPage()
+                sessionNavigationBean.getCasesPerPage(),
+                sessionNavigationBean.getSmartLinkTemplate()
         );
         logNotification(baseResponseBean.getNotification(),request);
 
@@ -138,7 +140,8 @@ public class MenuController extends AbstractBaseController {
                 sessionNavigationBean.getSearchText(),
                 sessionNavigationBean.getSortIndex(),
                 sessionNavigationBean.isForceManualAction(),
-                sessionNavigationBean.getCasesPerPage()
+                sessionNavigationBean.getCasesPerPage(),
+                sessionNavigationBean.getSmartLinkTemplate()
         );
         logNotification(response.getNotification(), request);
         return setLocationNeeds(response, menuSession);
@@ -148,5 +151,24 @@ public class MenuController extends AbstractBaseController {
         responseBean.setShouldRequestLocation(menuSession.locationRequestNeeded());
         responseBean.setShouldWatchLocation(menuSession.hereFunctionEvaluated());
         return responseBean;
+    }
+
+    @RequestMapping(value = Constants.URL_GET_ENDPOINT, method = RequestMethod.POST)
+    @UserLock
+    @UserRestore
+    @AppInstall
+    public BaseResponseBean navigateToEndpoint(@RequestBody SessionNavigationBean sessionNavigationBean,
+                                                    @CookieValue(Constants.POSTGRES_DJANGO_SESSION_ID) String authToken,
+                                                    HttpServletRequest request) throws Exception {
+        // Apps using aggressive syncs are likely to hit a sync whenever using endpoint-based navigation,
+        // since they use it to jump between different sandboxes. Turn it off.
+        restoreFactory.setPermitAggressiveSyncs(false);
+
+        MenuSession menuSession = getMenuSessionFromBean(sessionNavigationBean);
+        BaseResponseBean response = runnerService.advanceSessionWithEndpoint(menuSession,
+                sessionNavigationBean.getEndpointId(),
+                sessionNavigationBean.getEndpointArgs());
+        logNotification(response.getNotification(), request);
+        return setLocationNeeds(response, menuSession);
     }
 }

@@ -26,6 +26,7 @@ public class Constants {
     public static final String URL_UPDATE = "update";
     public static final String URL_INITIAL_MENU_NAVIGATION = "navigate_menu_start";
     public static final String URL_MENU_NAVIGATION = "navigate_menu";
+    public static final String URL_GET_ENDPOINT = "get_endpoint";
     public static final String URL_GET_DETAILS = "get_details";
     public static final String URL_GET_SESSIONS = "get_sessions";
     public static final String URL_SERVER_UP = "serverup";
@@ -58,9 +59,11 @@ public class Constants {
     //Status
     public static final String ANSWER_RESPONSE_STATUS_POSITIVE = "accepted";
     public static final String ANSWER_RESPONSE_STATUS_NEGATIVE = "validation-error";
-    public static final String SYNC_RESPONSE_STATUS_POSITIVE = "success";
+
+    public static final String SUBMIT_RESPONSE_STATUS_POSITIVE = "success";
     public static final String SUBMIT_RESPONSE_TOO_MANY_REQUESTS = "too-many-requests";
     public static final String SUBMIT_RESPONSE_CASE_CYCLE_ERROR = "case-cycle-error";
+    public static final String SUBMIT_RESPONSE_ERROR = "error";
 
     //Debug output request types
     public static final String BASIC_NO_TRACE = "basic";
@@ -140,6 +143,7 @@ public class Constants {
         public static final String DOWNLOAD_RESTORE = "download_restore";
         public static final String COMPLETE_RESTORE = "complete_restore";
         public static final String VALIDATE_SUBMISSION = "validate_submission";
+        public static final String VALIDATE_ANSWERS = "validate_answers";
         public static final String END_OF_FORM_NAV = "end_of_form_navigation";
 
         public static final String GET_SESSION = "get_session";
@@ -166,7 +170,10 @@ public class Constants {
     public static final String SCHEDULED_TASKS_PURGE = "scheduled_tasks.purge";
 
     // Feature Flags/Toggles
+    // These correspond to the names of StaticToggle objects in commcare-hq repo's corehq/toggles.py
 
-    // https://.commcarehq.org/hq/flags/edit/detailed_tagging/
     public static final String TOGGLE_DETAILED_TAGGING = "DETAILED_TAGGING";
+    public static final String TOGGLE_SESSION_ENDPOINTS = "SESSION_ENDPOINTS";
+
+    public static final String AUTHORITY_COMMCARE = "COMMCARE";
 }

@@ -104,4 +104,16 @@ public class RequestUtils {
         }
         return Optional.empty();
     }
+
+    /**
+     * @return True if there is request in the context AND the request was authenticated with HMAC auth
+     */
+    public static boolean requestAuthedWithHmac() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request == null) {
+            return false;
+        }
+        Object attribute = request.getAttribute(Constants.HMAC_REQUEST_ATTRIBUTE);
+        return attribute != null && (Boolean) attribute;
+    }
 }

@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import com.google.common.collect.Multimap;
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
@@ -19,14 +20,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.net.URI;
 import java.util.Hashtable;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,7 +42,10 @@ public class CaseClaimTests extends BaseTestClass {
     CacheManager cacheManager;
 
     @Captor
-    ArgumentCaptor<URI> uriCaptor;
+    ArgumentCaptor<String> urlCaptor;
+
+    @Captor
+    ArgumentCaptor<Multimap<String, String>> requestDataCaptor;
 
     @Override
     @BeforeEach
@@ -55,6 +58,97 @@ public class CaseClaimTests extends BaseTestClass {
     @Override
     protected String getMockRestoreFileName() {
         return "restores/caseclaim.xml";
+    }
+
+    @Test
+    public void testEmptySearch() throws Exception {
+        configureQueryMock();
+
+        // When no queryData, Formplayer should return the default values
+        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                null,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
+
+
+        // Empty query data should set all values as null
+        Hashtable<String, String> inputs = new Hashtable<>();
+        QueryData queryData = new QueryData();
+        queryData.setInputs("search_command.m1", inputs);
+        queryData.setExecute("search_command.m1", false);
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue() == null;
+        assert queryResponseBean.getDisplays()[1].getValue() == null;
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
+
+
+        // Empty values in query Data should be propogated back as it is from Formplayer
+        inputs.put("name", "");
+        inputs.put("state", "");
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
+
+        // Empty params should be carried over to url as well
+        queryData.setExecute("search_command.m1", true);
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+        verify(webClientMock, times(1)).postFormData(urlCaptor.capture(), requestDataCaptor.capture());
+        assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(0));
+        Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
+        assertEquals(4, requestData.keySet().size());
+        assertArrayEquals(new String[]{"case1", "case2", "case3"},
+                          requestData.get("case_type").toArray());
+        assertArrayEquals(new String[]{""}, requestData.get("name").toArray());
+        assertArrayEquals(new String[]{""}, requestData.get("state").toArray());
+        assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
+
+        // select empty with a valid choice
+        inputs.put("name", "#,#chris");
+        inputs.put("state", "0");
+        inputs.put("district", "#,#1");
+        queryData.setExecute("search_command.m1", false);
+        queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                QueryResponseBean.class);
+        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("#,#chris");
+        assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("#,#1");
+
+        queryData.setExecute("search_command.m1", true);
+        sessionNavigateWithQuery(new String[]{"1", "action 1"},
+                "caseclaim",
+                queryData,
+                true,
+                EntityListResponse.class);
+        verify(webClientMock, times(2)).postFormData(urlCaptor.capture(), requestDataCaptor.capture());
+        assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(2));
+        requestData = requestDataCaptor.getAllValues().get(2);
+        assertEquals(5, requestData.keySet().size());
+        assertArrayEquals(new String[]{"case1", "case2", "case3"},
+                          requestData.get("case_type").toArray());
+        assertArrayEquals(new String[]{"", "chris"}, requestData.get("name").toArray());
+        assertArrayEquals(new String[]{"", "hampi"}, requestData.get("district").toArray());
+        assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
+        assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
     }
 
     @Test
@@ -73,7 +167,7 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
 
         assert cacheManager.getCache("case_search")
-                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case") != null;
+                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/_case_type=case1=case2=case3_include_closed=False") != null;
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
@@ -87,9 +181,12 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays().length == 3;
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
+        assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
+        assert queryResponseBean.getDisplays()[1].isAllowBlankValue();
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
+        assert !queryResponseBean.getDisplays()[2].isAllowBlankValue();
 
         // test hint
         assert queryResponseBean.getDisplays()[1].getHint().contentEquals("This is a hint");
@@ -105,10 +202,10 @@ public class CaseClaimTests extends BaseTestClass {
                 true,
                 QueryResponseBean.class);
 
-        // no value in queryDictionary should reset the value to empty
-        assert queryResponseBean.getDisplays()[0].getValue().contentEquals("");
+        // no value in queryDictionary should reset the value to null
+        assert queryResponseBean.getDisplays()[0].getValue() == null;
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
-        assert queryResponseBean.getDisplays()[2].getValue().contentEquals("");
+        assert queryResponseBean.getDisplays()[2].getValue() == null;
         assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
         assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Baran", "Kota"});
 
@@ -158,9 +255,9 @@ public class CaseClaimTests extends BaseTestClass {
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
-        assert caseStorage.getNumRecords() == 20;
+        assert caseStorage.getNumRecords() == 21;
 
-        // When we sync afterwards, include new case and case-claim 
+        // When we sync afterwards, include new case and case-claim
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
 
@@ -172,24 +269,34 @@ public class CaseClaimTests extends BaseTestClass {
         assert commandResponse.getCommands().length == 2;
         assert commandResponse.getSelections().length == 2;
         assert commandResponse.getSelections()[1].equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
-        assert caseStorage.getNumRecords() == 22;
+        assert caseStorage.getNumRecords() == 23;
 
-        // verify search uris
-        verify(webClientMock, times(2)).get(uriCaptor.capture());
-        List<URI> uris = uriCaptor.getAllValues();
+        verify(webClientMock, times(2)).postFormData(urlCaptor.capture(), requestDataCaptor.capture());
+
         // when default search, prompts doesn't get included
-        assert uris.get(0).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&case_type=case"));
+        assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(0));
+        Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
+        assertEquals(2, requestData.keySet().size());
+        assertArrayEquals(new String[]{"case1", "case2", "case3"},
+                          requestData.get("case_type").toArray());
+        assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
+
         // when default search but forceManualSearch, prompts should get included
         // Subsequently when search happens as part of replaying a session, prompts should be same as the last search
         // and therefore be served through cache. Therefore there are only 2 http calls here instead of 3
-        assert uris.get(1).equals(new URI("http://localhost:8000/a/test/phone/search/?include_closed=False&name=Burt&case_type=case&state=ka&district=bang&district=hampi"));
+        assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(1));
+        requestData = requestDataCaptor.getAllValues().get(1);
+        assertEquals(5, requestData.keySet().size());
+        assertArrayEquals(new String[]{"case1", "case2", "case3"},
+                          requestData.get("case_type").toArray());
+        assertArrayEquals(new String[]{"Burt"}, requestData.get("name").toArray());
+        assertArrayEquals(new String[]{"bang", "hampi"}, requestData.get("district").toArray());
+        assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
+        assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
     }
 
     @Test
     public void testAlreadyOwnCase() throws Exception {
-
-        UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
-        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
         Hashtable<String, String> inputs = new Hashtable<>();
         inputs.put("name", "Burt");
         QueryData queryData = new QueryData();
@@ -215,12 +322,12 @@ public class CaseClaimTests extends BaseTestClass {
     }
 
     private void configureQueryMock() {
-        when(webClientMock.get(any(URI.class)))
+        when(webClientMock.postFormData(anyString(), any(Multimap.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
     }
 
     private void configureQueryMockOwned() {
-        when(webClientMock.get(any(URI.class)))
+        when(webClientMock.postFormData(anyString(), any(Multimap.class)))
                 .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response_owned.xml"));
     }
 }

@@ -50,8 +50,11 @@ To test:
 
     $ ./gradlew test
 
-    # to run a single test
-    $ ./gradlew :test --tests tests.NewFormTests.testNewForm
+    # to run a single test class
+    $ ./gradlew :test --tests=NewFormTests
+    
+    # to run a single test method
+    $ ./gradlew :test --tests=NewFormTests.testNewForm
 
     # to run in continuous mode
     $ ./gradlew test -t
@@ -76,6 +79,10 @@ You're likely running the wrong version of Java. Check with `java -version` whic
 - Configure gradle to use the new Java
   - Update `~/.gradle/gradle.properties` with `org.gradle.java.home=/JDK_PATH`
   - OR run append this to gradle commands: `-Dorg.gradle.java.home=/JDK_PATH`
+
+*Could not find tools.jar on MacOS*
+
+A Big Sur update caused the built-in Java to take precedence. Follow the steps in the number one answer [here](https://stackoverflow.com/questions/64968851/could-not-find-tools-jar-please-check-that-library-internet-plug-ins-javaapple) to add the non "Internet Plug-Ins" Java to your path.
 
 ### Running in IntelliJ
 

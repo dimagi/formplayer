@@ -1,5 +1,6 @@
 package org.commcare.formplayer.tests;
 
+import com.google.common.collect.Multimap;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import java.util.Hashtable;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
 /**
@@ -82,8 +82,9 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
     @Test
     public void testEofNavigation() throws Exception {
-        when(webClientMock.get(eq(new URI("https://www.commcarehq.org/a/shubhamgoyaltest/phone/search/?case_type=song&rating=5&commcare_blacklisted_owner_ids=fef71c7ff9d54471ab3cbd2c828b0e13"))))
-                .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
+        when(webClientMock.postFormData(anyString(), argThat(data -> {
+            return ((Multimap<String, String>) data).get("case_type").contains("song");
+        }))).thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
         String appName = APP_CASE_CLAIM_EOF_NAVIGATION;
         ArrayList<String> selections = new ArrayList<>();
         selections.add("1");
@@ -135,8 +136,9 @@ public class CaseClaimNavigationTests extends BaseTestClass {
         queryData.setInputs("search_command.m1", inputs);
 
         // return search results that doesn't have the selected case
-        when(webClientMock.get(eq(new URI("https://www.commcarehq.org/a/shubhamgoyaltest/phone/search/?case_type=song&rating=3&commcare_blacklisted_owner_ids=fef71c7ff9d54471ab3cbd2c828b0e13"))))
-                .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_child_response.xml"));
+        when(webClientMock.postFormData(any(), argThat(data -> {
+            return ((Multimap<String, String>) data).get("case_type").contains("song");
+        }))).thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_child_response.xml"));
 
         // since the case claim has happened already, this should not redo the search and trigger the query above
         // If that happens, it would result into a Entity Screen selection error
@@ -369,11 +371,15 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     }
 
     private void configureQueryMock() throws URISyntaxException {
-        when(webClientMock.get(eq(new URI("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=song"))))
-                .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
+        when(webClientMock.postFormData(anyString(), argThat(data -> {
+            return (data != null) &&
+                   ((Multimap<String, String>) data).get("case_type").contains("song");
+        }))).thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
 
-        when(webClientMock.get(new URI("https://staging.commcarehq.org/a/bosco/phone/search/?case_type=show")))
-                .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_child_response.xml"));
+        when(webClientMock.postFormData(anyString(), argThat(data -> {
+            return (data != null) &&
+                   ((Multimap<String, String>) data).get("case_type").contains("show");
+        }))).thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_child_response.xml"));
     }
 
     private HashMap<String, Object> getAnswers(String index, String answer) {

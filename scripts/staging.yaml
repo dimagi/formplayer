@@ -50,14 +50,11 @@
 trunk: master
 name: autostaging
 branches:
-  - ce/tracing # Cal Oct 23
-  - jls/pragma-logging # Jenny May 26
-  - multiCaseTypes # Shubham June 15
+  - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
+  # - gh/serialize-full-xml-unless-submitting # Graham Nov 18
 submodules:
   libs/commcare:
     trunk: formplayer
     branches:
-      - caseSearchMultiCases+ce/tag-triggers # Shubham June 15
-      - ce/tag-triggers # Cal Nov 16
-      - ce/ensure-session # Cal Nov 20
-      - caseSearchMultiCases # Shubham June 15
+      - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
+      - ce/ensure-session # Cal Nov 20 2021
