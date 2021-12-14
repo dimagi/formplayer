@@ -1,6 +1,9 @@
 package org.commcare.formplayer.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import datadog.trace.api.Trace;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -78,6 +81,7 @@ public class FormSession {
     private boolean suppressAutosync;
     private boolean shouldSkipFullFormValidation;
 
+    @Trace
     private void setupJavaRosaObjects() {
         formEntryModel = new FormEntryModel(formDef, FormEntryModel.REPEAT_STRUCTURE_NON_LINEAR);
         formEntryController = new FormEntryController(formEntryModel);
@@ -187,6 +191,7 @@ public class FormSession {
      * Setup static function handlers. At the moment we only expect/accept date functions
      * (in particular, now() and today()) but could be extended in the future.
      */
+    @Trace
     private void setupFunctionContext() {
         if (session.getFunctionContext() == null || session.getFunctionContext().size() < 1) {
             return;
@@ -212,6 +217,7 @@ public class FormSession {
         }
     }
 
+    @Trace
     private void loadInstanceXml(FormDef formDef, String instanceContent) throws IOException {
         StringReader stringReader = new StringReader(instanceContent);
         XFormParser xFormParser = new XFormParser(stringReader);
@@ -230,6 +236,7 @@ public class FormSession {
         }
     }
 
+    @Trace
     private void initialize(boolean newInstance, StorageManager storageManager,
                             SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher) throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
@@ -260,6 +267,7 @@ public class FormSession {
      * Volatility indicator are used to warn the current user if another user is already performing
      * the same action.
      */
+    @Trace
     private void setVolatilityIndicators() {
         String volatilityKey = getPragma("Pragma-Volatility-Key");
         String entityTitle = getPragma("Pragma-Volatility-Entity-Title");
@@ -354,6 +362,7 @@ public class FormSession {
         return timeOutWindow;
     }
 
+    @Trace
     public String getInstanceXml() throws IOException {
         byte[] bytes = new XFormSerializingVisitor().serializeInstance(formDef.getInstance());
         return new String(bytes, "US-ASCII");
@@ -371,6 +380,7 @@ public class FormSession {
         return langs;
     }
 
+    @Trace
     public JSONArray getFormTree() {
         if (session.isOneQuestionPerScreen()) {
             return JsonActionUtils.getOneQuestionPerScreenJSON(formController.getFormEntryController().getModel(),
@@ -528,6 +538,7 @@ public class FormSession {
         return new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
     }
 
+    @Trace
     public FormEntryResponseBean answerQuestionToJSON(Object answer, String answerIndex) throws IOException {
         if (answerIndex == null) {
             answerIndex = session.getCurrentIndex();
