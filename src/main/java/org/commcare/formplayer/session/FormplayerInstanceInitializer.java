@@ -1,7 +1,7 @@
 package org.commcare.formplayer.session;
 
+import org.commcare.cases.instance.CaseInstanceTreeElement;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
-import org.commcare.formplayer.engine.FormplayerCaseInstanceTreeElement;
 import org.commcare.formplayer.engine.FormplayerIndexedFixtureInstanceTreeElement;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
@@ -41,7 +41,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
             SqlStorage<Case> storage = (SqlStorage<Case>) mSandbox.getCaseStorage();
             FormplayerCaseIndexTable formplayerCaseIndexTable;
             formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox) mSandbox);
-            casebase = new FormplayerCaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
+            casebase = new CaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
         } else {
             //re-use the existing model if it exists.
             casebase.rebase(instance.getBase());

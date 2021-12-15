@@ -1,9 +1,9 @@
 package org.commcare.formplayer.services;
 
+import com.google.common.collect.ImmutableMap;
 import com.timgroup.statsd.StatsDClient;
-
+import io.sentry.SentryLevel;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
@@ -48,11 +48,9 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,10 +61,9 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import io.sentry.SentryLevel;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -77,8 +74,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RestoreFactory {
-    @Value("${commcarehq.host}")
-    private String host;
+    @Value("${commcarehq.restore.url}")
+    private String restoreUrl;
+
+    @Value("${commcarehq.restore.url.case}")
+    private String caseRestoreUrl;
 
     private String asUsername;
     private String username;
@@ -436,7 +436,7 @@ public class RestoreFactory {
 
     public HttpHeaders getRequestHeaders(URI url) {
         HttpHeaders headers;
-        if (getHqAuth() == null) {
+        if (RequestUtils.requestAuthedWithHmac()) {
             headers = getHmacHeader(url);
         } else {
             headers = getHqAuth().getAuthHeaders();;
@@ -618,13 +618,11 @@ public class RestoreFactory {
 
     private HttpHeaders getHmacHeader(URI url) {
         // Do HMAC auth which requires only the path and query components of the URL
-        String requestPath = String.format("%s?%s", url.getRawPath(), url.getRawQuery());
-        HttpServletRequest request = RequestUtils.getCurrentRequest();
-        if (request == null) {
-            throw new RuntimeException(String.format(
-                    "HMAC Auth not available outside of a web request %s", requestPath
-            ));
-        } else if (BooleanUtils.isNotTrue((Boolean)request.getAttribute(Constants.HMAC_REQUEST_ATTRIBUTE))) {
+        String requestPath = url.getRawPath();
+        if (url.getRawQuery() != null) {
+            requestPath = String.format("%s?%s", requestPath, url.getRawQuery());
+        }
+        if (!RequestUtils.requestAuthedWithHmac()) {
             throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
                     "was not validated with HMAC.", requestPath));
         }
@@ -643,56 +641,44 @@ public class RestoreFactory {
         };
     }
 
-    private void builderQueryParamEncoded(UriComponentsBuilder builder, String name, String value)
-            throws UnsupportedEncodingException {
-        try {
-            builder.queryParam(name,
-                    URLEncoder.encode(value, UTF_8.toString()));
-        } catch (UnsupportedEncodingException e) {
-            throw new UnsupportedEncodingException(String.format("Unable to encode '%s'", name));
-        }
-    }
-
     public URI getCaseRestoreUrl() {
-        String path = buildUrlPath(host, "/a/", domain, "/case_migrations/restore/", caseId, "/");
-        return UriComponentsBuilder.fromUriString(path).build(true).toUri();
-    }
-
-    private String buildUrlPath(String... parts) {
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            builder.append(part);
-        }
-        return builder.toString();
+        return UriComponentsBuilder.fromHttpUrl(caseRestoreUrl).buildAndExpand(domain, caseId).toUri();
     }
 
     public URI getUserRestoreUrl(boolean skipFixtures) {
-        String uri = buildUrlPath(host, "/a/", domain, "/phone/restore/?version=2.0");
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(uri);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(restoreUrl).encode();
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("version", "2.0");
+        params.put("device_id", getSyncDeviceId());
+
         String syncToken = getSyncToken();
         // Add query params.
-        try {
-            if (syncToken != null && !"".equals(syncToken)) {
-                builderQueryParamEncoded(builder, "since", syncToken);
-            }
-            builderQueryParamEncoded(builder, "device_id", getSyncDeviceId());
-            if (asUsername != null) {
-                String unEncodedAsUsername = asUsername;
-                if (!asUsername.contains("@")) {
-                    unEncodedAsUsername += "@" + domain + ".commcarehq.org";
-                }
-                builderQueryParamEncoded(builder, "as", unEncodedAsUsername);
-            } else if (getHqAuth() == null && username != null) {
-                // HQ requesting to force a sync for a user
-                builderQueryParamEncoded(builder, "as", username);
-            }
-            if (skipFixtures) {
-                builderQueryParamEncoded(builder, "skip_fixtures", "true");
-            }
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(String.format("Restore Error: " + e.getMessage()));
+        if (syncToken != null && !"".equals(syncToken)) {
+            params.put("since", syncToken);
         }
-        return builder.build(true).toUri();
+        if (asUsername != null) {
+            String asUserParam = asUsername;
+            if (!asUsername.contains("@")) {
+                asUserParam += "@" + domain + ".commcarehq.org";
+            }
+            params.put("as", asUserParam);
+        } else if (getHqAuth() == null && username != null) {
+            // HQ requesting to force a sync for a user
+            params.put("as", username);
+        }
+        if (skipFixtures) {
+            params.put("skip_fixtures", "true");
+        }
+
+        // add the params to the query builder as templates
+        params.forEach((key, value) -> builder.queryParam(key, String.format("{%s}", key)));
+
+        Map<String, String> templateVars = ImmutableMap.<String, String>builder()
+                .putAll(params)
+                .put("domain", this.domain)
+                .build();
+        return builder.buildAndExpand(templateVars).toUri();
     }
 
     /**

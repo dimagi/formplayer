@@ -1,20 +1,23 @@
 package org.commcare.formplayer.auth;
 
+import lombok.Builder;
+import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.util.JsonUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.core.log.LogMessage;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -25,17 +28,13 @@ import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.GenericFilterBean;
 
-import java.io.IOException;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import lombok.Builder;
-import lombok.extern.apachecommons.CommonsLog;
+import java.io.IOException;
 
 /**
  * Request filter that performs HMAC auth if the request contains the
@@ -78,17 +77,31 @@ public class HmacAuthFilter extends GenericFilterBean {
             throws IOException, ServletException {
         try {
             doAuthenticateInternal(request);
+        } catch (AuthenticationException ex) {
+            unsuccessfulAuthentication(request, response, ex);
+            return;
+        } catch (Exception e) {
+            logger.error("Request Authorization with unexpected exception", e);
+            unsuccessfulAuthentication(
+                    request, response, new InternalAuthenticationServiceException("Exception checking HMAC", e)
+            );
+            return;
+        }
+
+        try {
             HqUserDetailsBean userDetails = getUserDetails(request);
             PreAuthenticatedAuthenticationToken authenticationResult = new PreAuthenticatedAuthenticationToken(
                     userDetails, userDetails.getDomain(), userDetails.getAuthorities());
             authenticationResult.setDetails(this.authenticationDetailsSource.buildDetails(request));
             successfulAuthentication(request, response, authenticationResult);
+        } catch (BadCredentialsException ex) {
+            anonymousCommcareAuthentication(request);
         } catch (AuthenticationException ex) {
             unsuccessfulAuthentication(request, response, ex);
         } catch (Exception e) {
             logger.error("Request Authorization with unexpected exception", e);
             unsuccessfulAuthentication(
-                    request, response, new InternalAuthenticationServiceException("Exception checking HMAC", e)
+                    request, response, new InternalAuthenticationServiceException("Exception getting user details", e)
             );
         }
     }
@@ -107,7 +120,12 @@ public class HmacAuthFilter extends GenericFilterBean {
     }
 
     private HqUserDetailsBean getUserDetails(HttpServletRequest request) {
-        JSONObject body = RequestUtils.getPostData(request);
+        JSONObject body;
+        try {
+            body = RequestUtils.getPostData(request);
+        } catch (Exception e) {
+            throw new BadCredentialsException("Unable to extract user credentials from the request", e);
+        }
 
         if (body.has("username") && body.has("domain")) {
             return new HqUserDetailsBean(
@@ -154,5 +172,30 @@ public class HmacAuthFilter extends GenericFilterBean {
         SecurityContextHolder.clearContext();
         this.logger.debug("Cleared security context due to exception", failed);
         request.setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, failed);
+    }
+
+    protected void anonymousCommcareAuthentication(HttpServletRequest request) {
+        CommCareAnonymousAuthenticationToken token = new CommCareAnonymousAuthenticationToken();
+        token.setDetails(this.authenticationDetailsSource.buildDetails(request));
+        this.logger.debug("HMAC Authentication success but no user details provided");
+        SecurityContextHolder.getContext().setAuthentication(token);
+        this.logger.debug("Set SecurityContextHolder to CommCareAnonymousAuthentication SecurityContext");
+    }
+
+    /**
+     * An anonymous token that is used to indicate valid HMAC auth but without any user details.
+     *
+     * This is used for endpoints where we don't require user authentication but still require that the
+     * request came from CommCare.
+     *
+     * Setting the role allows us to differentiate this anonymous token from a truly anonymous one that
+     * is not authenticated at all.
+     */
+    private static class CommCareAnonymousAuthenticationToken extends AnonymousAuthenticationToken {
+
+        public CommCareAnonymousAuthenticationToken() {
+            super("commcare", "commcare", AuthorityUtils.createAuthorityList(
+                    Constants.AUTHORITY_COMMCARE));
+        }
     }
 }
