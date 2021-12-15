@@ -29,6 +29,8 @@ import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
+
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
