@@ -166,6 +166,9 @@ public class BaseTestClass {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private SetOperations<String, String> redisSessionCache;
 
+    @Mock
+    protected RemoteInstanceFetcher remoteInstanceFetcherMock;
+
     protected ObjectMapper mapper;
 
     final Map<String, SerializableFormSession> sessionMap = new HashMap<String, SerializableFormSession>();
@@ -185,6 +188,7 @@ public class BaseTestClass {
         Mockito.reset(datadogMock);
         Mockito.reset(menuSessionFactory);
         Mockito.reset(menuSessionRunnerService);
+        Mockito.reset(remoteInstanceFetcherMock);
         MockitoAnnotations.initMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
         mockFormSubmissionController = MockMvcBuilders.standaloneSetup(formSubmissionController).build();

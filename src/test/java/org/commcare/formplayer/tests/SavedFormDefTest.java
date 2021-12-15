@@ -55,7 +55,7 @@ public class SavedFormDefTest extends BaseTestClass {
         answerQuestionGetResult("0", "9", sessionId);
 
         SerializableFormSession session = this.formSessionService.getSessionById(newSessionResponse.getSessionId());
-        FormSession formSession = new FormSession(session, this.restoreFactoryMock, null, this.storageFactoryMock);
+        FormSession formSession = new FormSession(session, this.restoreFactoryMock, null, this.storageFactoryMock, null, this.remoteInstanceFetcherMock);
         assertEquals(formSession.getInstanceXml(true), session.getInstanceXml());
     }
 
@@ -72,7 +72,7 @@ public class SavedFormDefTest extends BaseTestClass {
         assertEquals("success", submitResponseBean.getStatus());
 
         SerializableFormSession session = this.formSessionService.getSessionById(newSessionResponse.getSessionId());
-        FormSession formSession = new FormSession(session, this.restoreFactoryMock, null, this.storageFactoryMock);
+        FormSession formSession = new FormSession(session, this.restoreFactoryMock, null, this.storageFactoryMock, null, this.remoteInstanceFetcherMock);
         Mockito.verify(this.submitServiceMock).submitForm(formSession.getInstanceXml(false), formSession.getPostUrl());
     }
 }
