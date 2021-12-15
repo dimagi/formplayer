@@ -19,6 +19,9 @@ import org.springframework.test.context.ContextConfiguration;
 import java.io.InputStreamReader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
@@ -68,11 +71,11 @@ public class SavedFormDefTest extends BaseTestClass {
 
         // this answer does not satisfy the condition, and therefore the calculated property is irrelevant
         answerQuestionGetResult("0", "9", sessionId);
+        SerializableFormSession session = this.formSessionService.getSessionById(newSessionResponse.getSessionId());
+        FormSession formSession = new FormSession(session, this.restoreFactoryMock, null, this.storageFactoryMock, null, this.remoteInstanceFetcherMock);
         SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_hidden_value_form.json", sessionId);
         assertEquals("success", submitResponseBean.getStatus());
 
-        SerializableFormSession session = this.formSessionService.getSessionById(newSessionResponse.getSessionId());
-        FormSession formSession = new FormSession(session, this.restoreFactoryMock, null, this.storageFactoryMock, null, this.remoteInstanceFetcherMock);
         Mockito.verify(this.submitServiceMock).submitForm(formSession.getInstanceXml(false), formSession.getPostUrl());
     }
 }
