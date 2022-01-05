@@ -31,7 +31,7 @@ public class FormDefinitionService {
         } else if (formDefs.size() == 1) {
             formDefinition = formDefs.get(0);
         } else {
-            formDefinition = new FormDefinition(formXmlns, appVersion, appId, serializedFormDef);
+            formDefinition = new FormDefinition(appId, appVersion, formXmlns, serializedFormDef);
             this.formDefinitionRepo.save(formDefinition);
         }
         return formDefinition;
