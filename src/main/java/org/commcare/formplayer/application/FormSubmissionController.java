@@ -185,7 +185,7 @@ public class FormSubmissionController extends AbstractBaseController {
             processXmlInner(context);
 
             String response = submitService.submitForm(
-                    context.getFormEntrySession().getInstanceXml(),
+                    context.getFormEntrySession().getInstanceXml(false),
                     context.getFormEntrySession().getPostUrl()
             );
             parseSubmitResponseMessage(response, context.getResponse());
