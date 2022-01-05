@@ -12,6 +12,7 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
+import org.commcare.formplayer.objects.FormDefinition;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -100,6 +101,9 @@ public class BaseTestClass {
     protected FormSessionService formSessionService;
 
     @Autowired
+    protected FormDefinitionService formDefinitionService;
+
+    @Autowired
     private MenuSessionService menuSessionService;
 
     @Autowired
@@ -174,6 +178,7 @@ public class BaseTestClass {
     protected ObjectMapper mapper;
 
     final Map<String, SerializableFormSession> sessionMap = new HashMap<String, SerializableFormSession>();
+    final Map<String, FormDefinition> formDefinitionMap = new HashMap<String, FormDefinition>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<String, SerializableMenuSession>();
 
     @BeforeEach
@@ -215,6 +220,7 @@ public class BaseTestClass {
         DateUtils.setTimezoneProvider(tzProvider);
 
         mockFormSessionService();
+        mockFormDefinitionService();
         mockMenuSessionService();
     }
 
@@ -256,6 +262,35 @@ public class BaseTestClass {
                 return null;
             }
         }).when(formSessionService).deleteSessionById(anyString());
+    }
+
+    /*
+     * Setup mocking for the FormDefinitionService that allows saving and retrieving form definitions.
+     * The 'persisted' definitions are cleared at the start of each test.
+     */
+    private void mockFormDefinitionService() {
+        formDefinitionMap.clear();
+        doAnswer(new Answer<FormDefinition>() {
+            @Override
+            public FormDefinition answer(InvocationOnMock invocation) throws Throwable {
+                String appId = ((String)invocation.getArguments()[0]);
+                String appVersion = ((String)invocation.getArguments()[1]);
+                String xmlns = ((String)invocation.getArguments()[2]);
+                for (FormDefinition tmp : formDefinitionMap.values()) {
+                    if (tmp.getAppId().equals(appId) && tmp.getAppVersion().equals(appVersion) && tmp.getXmlns().equals(xmlns)) {
+                        return tmp;
+                    }
+                }
+                // else create a new one
+                FormDefinition formDefinition = new FormDefinition(appId, appVersion, xmlns, ((String)invocation.getArguments()[3]));
+                if (formDefinition.getId() == null) {
+                    // this is normally taken care of by Hibernate
+                    ReflectionTestUtils.setField(formDefinition,"id",UUID.randomUUID().toString());
+                }
+                formDefinitionMap.put(formDefinition.getId(), formDefinition);
+                return formDefinition;
+            }
+        }).when(this.formDefinitionService).getOrCreateFormDefinition(anyString(), anyString(), anyString(), anyString());
     }
 
     private void mockMenuSessionService() {

@@ -32,7 +32,8 @@ public class FormDefinitionRepoTest {
 
     @BeforeEach
     public void setUp() {
-        jdbcTemplate.execute("DELETE from form_definition");
+        this.jdbcTemplate.execute("DELETE from formplayer_sessions");
+        this.jdbcTemplate.execute("DELETE from form_definition");
     }
 
     @Test
