@@ -8,6 +8,7 @@ import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.objects.FormDefinition;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -100,15 +101,15 @@ public class FormSession {
         restoreFactory.setPermitAggressiveSyncs(false);
 
         this.sandbox = restoreFactory.getSandbox();
-        this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
-        loadInstanceXml(formDef, session.getInstanceXml());
-        formDef.setSendCalloutHandler(formSendCalloutHandler);
+        this.formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+        loadInstanceXml(this.formDef, session.getInstanceXml());
+        this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         setupJavaRosaObjects();
 
         if (session.isOneQuestionPerScreen() || session.isInPromptMode()) {
             FormIndex formIndex = JsonActionUtils.indexFromString(session.getCurrentIndex(), this.formDef);
-            formController.jumpToIndex(formIndex);
-            formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
+            this.formController.jumpToIndex(formIndex);
+            this.formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), this.formDef));
         }
         setupFunctionContext();
         SessionFrame sessionFrame = commCareSession != null ? commCareSession.getFrame() : null;
@@ -119,7 +120,7 @@ public class FormSession {
     }
 
     public FormSession(UserSqlSandbox sandbox,
-                       FormDef formDef,
+                       FormDefinition formDefinition,
                        String username,
                        String domain,
                        Map<String, String> sessionData,
@@ -138,13 +139,14 @@ public class FormSession {
                        @Nullable SessionFrame sessionFrame,
                        RemoteInstanceFetcher instanceFetcher) throws Exception {
 
-        this.formDef = formDef;
-        session = new SerializableFormSession(
+        // use this.formDef to mutate (e.g., inject instance content, set callout handler
+        this.formDef = FormDefStringSerializer.deserialize(formDefinition.getSerializedFormDef());
+        this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
-                postUrl, menuSessionId, formDef.getTitle(), oneQuestionPerScreen,
+                postUrl, menuSessionId, this.formDef.getTitle(), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
-        session.setFormXml(FormDefStringSerializer.serialize(this.formDef));
+        this.session.setFormDefinition(formDefinition);
 
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
