@@ -13,7 +13,8 @@ public class V22__create_form_definition extends BaseFormplayerMigration {
                         "    appid text NOT NULL,\n" +
                         "    appversion text NOT NULL,\n" +
                         "    xmlns text NOT NULL,\n" +
-                        "    formdef text\n" +
+                        "    formdef text,\n" +
+                        "    CONSTRAINT form_definition_version UNIQUE (appid, appversion, xmlns)\n" +
                         ")",
 
                 "ALTER TABLE formplayer_sessions ADD form_definition_id text",
