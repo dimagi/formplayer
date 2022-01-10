@@ -33,7 +33,6 @@ public class FormDefinition {
     @Column(name="datecreated")
     private Instant dateCreated;
 
-    @Setter
     @Column(name="formdef")
     private String serializedFormDef;
 

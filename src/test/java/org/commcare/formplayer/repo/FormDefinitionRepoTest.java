@@ -12,7 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.EntityManager;
 import java.time.Instant;
-import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,13 +67,14 @@ public class FormDefinitionRepoTest {
                 "formdef"
         );
         formDefinitionRepo.save(formDef);
-        List<FormDefinition> formDefinitions = formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(
+        Optional<FormDefinition> optFormDef = formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(
                 "appId", "appVersion", "xmlns"
         );
-        assertThat(formDefinitions).hasSize(1);
-        assertThat(formDefinitions.get(0).getAppId()).isEqualTo("appId");
-        assertThat(formDefinitions.get(0).getAppVersion()).isEqualTo("appVersion");
-        assertThat(formDefinitions.get(0).getXmlns()).isEqualTo("xmlns");
-        assertThat(formDefinitions.get(0).getDateCreated()).isEqualTo(formDef.getDateCreated());
+        assertThat(optFormDef.isPresent()).isTrue();
+        FormDefinition fetchedFormDef = optFormDef.get();
+        assertThat(fetchedFormDef.getAppId()).isEqualTo("appId");
+        assertThat(fetchedFormDef.getAppVersion()).isEqualTo("appVersion");
+        assertThat(fetchedFormDef.getXmlns()).isEqualTo("xmlns");
+        assertThat(fetchedFormDef.getDateCreated()).isEqualTo(formDef.getDateCreated());
     }
 }

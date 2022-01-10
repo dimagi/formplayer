@@ -10,7 +10,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
 
 @Service
 @CacheConfig(cacheNames = {"form_definition"})
@@ -22,18 +22,12 @@ public class FormDefinitionService {
     private FormDefinitionRepo formDefinitionRepo;
 
 
-    @Cacheable
+    @Cacheable(key="{#appId, #appVersion, #formXmlns}")
     public FormDefinition getOrCreateFormDefinition(String appId, String appVersion, String formXmlns, String serializedFormDef) {
-        List<FormDefinition> formDefs = this.formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(appId, appVersion, formXmlns);
-        FormDefinition formDefinition;
-        if (formDefs.size() > 1) {
-            throw new MultipleFormDefsFoundException(appId, appVersion, formXmlns);
-        } else if (formDefs.size() == 1) {
-            formDefinition = formDefs.get(0);
-        } else {
-            formDefinition = new FormDefinition(appId, appVersion, formXmlns, serializedFormDef);
-            this.formDefinitionRepo.save(formDefinition);
-        }
-        return formDefinition;
+        Optional<FormDefinition> optFormDef = this.formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(appId, appVersion, formXmlns);
+        return optFormDef.orElseGet(() -> {
+            FormDefinition newFormDef = new FormDefinition(appId, appVersion, formXmlns, serializedFormDef);
+            return this.formDefinitionRepo.save(newFormDef);
+        });
     }
 }

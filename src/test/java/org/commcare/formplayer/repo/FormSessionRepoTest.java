@@ -198,11 +198,11 @@ public class FormSessionRepoTest {
                 "formXmlns",
                 "formXml"
         );
-        formDefinitionRepo.save(formDef);
+        this.formDefinitionRepo.save(formDef);
         SerializableFormSession session = getSession();
         session.setFormDefinition(formDef);
-        formSessionRepo.save(session);
-        FormDefinition fetchedFormDef = session.getFormDefinition();
+        this.formSessionRepo.save(session);
+        FormDefinition fetchedFormDef = this.formDefinitionRepo.getById(formDef.getId());
         assertThat(fetchedFormDef.getAppId()).isEqualTo("appId");
         assertThat(fetchedFormDef.getDateCreated()).isEqualTo(formDef.getDateCreated());
         assertThat(fetchedFormDef.getAppVersion()).isEqualTo("appVersion");
