@@ -50,7 +50,7 @@ public class FormDefinitionRepoTest {
         FormDefinition loaded = JpaTestUtils.unwrapProxy(
                 formDefinitionRepo.getOne(formDef.getId())
         );
-        assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "id", "formSessions").isEqualTo(formDef);
+        assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "id").isEqualTo(formDef);
         Instant dateCreated = loaded.getDateCreated();
         assertThat(dateCreated).isNotNull();
 

@@ -36,10 +36,6 @@ public class FormDefinition {
     @Column(name="formdef")
     private String serializedFormDef;
 
-    @OneToMany(mappedBy="formDefinition")
-    @Column(name="formsessions")
-    private List<SerializableFormSession> formSessions;
-
     protected FormDefinition(){}
     public FormDefinition(String appId, String appVersion, String formXmlns, String formdef) {
         this.appId = appId;

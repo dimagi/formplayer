@@ -8,7 +8,6 @@ public class V22__create_form_definition extends BaseFormplayerMigration {
         return Arrays.asList(
                 "CREATE TABLE form_definition (\n" +
                         "    id text PRIMARY KEY,\n" +
-                        "    formsessions text,\n" +
                         "    datecreated timestamp with time zone,\n" +
                         "    appid text NOT NULL,\n" +
                         "    appversion text NOT NULL,\n" +
