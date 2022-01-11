@@ -101,7 +101,12 @@ public class FormSession {
         restoreFactory.setPermitAggressiveSyncs(false);
 
         this.sandbox = restoreFactory.getSandbox();
-        this.formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+        if (session.getFormDefinition() != null) {
+            this.formDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
+        } else {
+            // DEPRECATED: this code will be removed once all incomplete sessions that depend on this are purged
+            this.formDef = FormDefStringSerializer.deserialize(session.getFormXml());
+        }
         loadInstanceXml(this.formDef, session.getInstanceXml());
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         setupJavaRosaObjects();
