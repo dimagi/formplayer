@@ -51,7 +51,7 @@ trunk: master
 name: autostaging
 branches:
   - ce/tracing # Performance branch with @Trace annotations. Try to avoid removing this.
-  # - gh/serialize-full-xml-unless-submitting # Graham Nov 18
+  - gh/serialize-full-xml-unless-submitting # Graham Nov 18
 submodules:
   libs/commcare:
     trunk: formplayer
