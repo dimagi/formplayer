@@ -29,8 +29,6 @@ import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
-import org.commcare.core.interfaces.RemoteInstanceFetcher;
-
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
@@ -168,9 +166,6 @@ public class BaseTestClass {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private SetOperations<String, String> redisSessionCache;
 
-    @Mock
-    protected RemoteInstanceFetcher remoteInstanceFetcherMock;
-
     protected ObjectMapper mapper;
 
     final Map<String, SerializableFormSession> sessionMap = new HashMap<String, SerializableFormSession>();
@@ -190,7 +185,6 @@ public class BaseTestClass {
         Mockito.reset(datadogMock);
         Mockito.reset(menuSessionFactory);
         Mockito.reset(menuSessionRunnerService);
-        Mockito.reset(remoteInstanceFetcherMock);
         Mockito.reset(notificationLogger);
         MockitoAnnotations.openMocks(this);
         mockFormController = MockMvcBuilders.standaloneSetup(formController).build();
