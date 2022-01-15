@@ -50,7 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-  - gh/serialize-full-xml-unless-submitting # Graham Nov 18
 submodules:
   libs/commcare:
     trunk: formplayer
