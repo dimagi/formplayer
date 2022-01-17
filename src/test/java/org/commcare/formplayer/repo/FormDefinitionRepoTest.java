@@ -44,11 +44,10 @@ public class FormDefinitionRepoTest {
                 "xmlns",
                 "formdef"
         );
-
         formDefinitionRepo.saveAndFlush(formDef);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         FormDefinition loaded = JpaTestUtils.unwrapProxy(
-                formDefinitionRepo.getOne(formDef.getId())
+                formDefinitionRepo.getById(formDef.getId())
         );
         assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "id").isEqualTo(formDef);
         Instant dateCreated = loaded.getDateCreated();

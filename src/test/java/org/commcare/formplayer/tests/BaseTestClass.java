@@ -178,8 +178,10 @@ public class BaseTestClass {
     protected ObjectMapper mapper;
 
     final Map<String, SerializableFormSession> sessionMap = new HashMap<String, SerializableFormSession>();
-    final Map<String, FormDefinition> formDefinitionMap = new HashMap<String, FormDefinition>();
+    final Map<Long, FormDefinition> formDefinitionMap = new HashMap<Long, FormDefinition>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<String, SerializableMenuSession>();
+
+    protected Long currentFormDefinitionId = 1L;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -270,6 +272,7 @@ public class BaseTestClass {
      */
     private void mockFormDefinitionService() {
         formDefinitionMap.clear();
+        currentFormDefinitionId = 1L;
         doAnswer(new Answer<FormDefinition>() {
             @Override
             public FormDefinition answer(InvocationOnMock invocation) throws Throwable {
@@ -285,7 +288,8 @@ public class BaseTestClass {
                 FormDefinition formDefinition = new FormDefinition(appId, appVersion, xmlns, ((String)invocation.getArguments()[3]));
                 if (formDefinition.getId() == null) {
                     // this is normally taken care of by Hibernate
-                    ReflectionTestUtils.setField(formDefinition,"id",UUID.randomUUID().toString());
+                    ReflectionTestUtils.setField(formDefinition,"id", currentFormDefinitionId);
+                    currentFormDefinitionId++;
                 }
                 formDefinitionMap.put(formDefinition.getId(), formDefinition);
                 return formDefinition;

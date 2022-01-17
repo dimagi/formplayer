@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface FormDefinitionRepo extends JpaRepository<FormDefinition, String> {
+public interface FormDefinitionRepo extends JpaRepository<FormDefinition, Long> {
     Optional<FormDefinition> findByAppIdAndAppVersionAndXmlns(String appId, String appVersion, String xmlns);
 }
 
