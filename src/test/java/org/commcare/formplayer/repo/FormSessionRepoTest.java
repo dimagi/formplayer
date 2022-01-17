@@ -202,7 +202,7 @@ public class FormSessionRepoTest {
         SerializableFormSession session = getSession();
         session.setFormDefinition(formDef);
         this.formSessionRepo.save(session);
-        FormDefinition fetchedFormDef = this.formDefinitionRepo.getById(formDef.getId());
+        FormDefinition fetchedFormDef = this.formDefinitionRepo.getById(formDef.getId().toString());
         assertThat(fetchedFormDef.getAppId()).isEqualTo("appId");
         assertThat(fetchedFormDef.getDateCreated()).isEqualTo(formDef.getDateCreated());
         assertThat(fetchedFormDef.getAppVersion()).isEqualTo("appVersion");

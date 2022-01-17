@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
 import java.time.Instant;
@@ -44,11 +45,12 @@ public class FormDefinitionRepoTest {
                 "xmlns",
                 "formdef"
         );
+        ReflectionTestUtils.setField(formDef, "id", 1L);
 
         formDefinitionRepo.saveAndFlush(formDef);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
         FormDefinition loaded = JpaTestUtils.unwrapProxy(
-                formDefinitionRepo.getOne(formDef.getId())
+                formDefinitionRepo.getById(formDef.getId().toString())
         );
         assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "id").isEqualTo(formDef);
         Instant dateCreated = loaded.getDateCreated();
@@ -66,6 +68,8 @@ public class FormDefinitionRepoTest {
                 "xmlns",
                 "formdef"
         );
+        ReflectionTestUtils.setField(formDef, "id", 1L);
+
         formDefinitionRepo.save(formDef);
         Optional<FormDefinition> optFormDef = formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(
                 "appId", "appVersion", "xmlns"

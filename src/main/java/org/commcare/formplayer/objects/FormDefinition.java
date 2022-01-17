@@ -2,6 +2,7 @@ package org.commcare.formplayer.objects;
 
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -14,9 +15,10 @@ import java.time.Instant;
 @Getter
 public class FormDefinition {
     @Id
-    @GeneratedValue( generator="uuid" )
-    @GenericGenerator(name="uuid", strategy="org.hibernate.id.UUIDGenerator")
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue( generator = "form_def_sequence")
+//    @GenericGenerator(name = "form_def_sequence", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator")
+    private Long id;
 
     @CreatedDate
     @Column(name="datecreated")
