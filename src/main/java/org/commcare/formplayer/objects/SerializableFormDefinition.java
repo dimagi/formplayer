@@ -20,16 +20,16 @@ public class SerializableFormDefinition {
     @Column(name="datecreated")
     private Instant dateCreated;
 
-    @Column(name="appid", updatable = false)
+    @Column(name="appid")
     private String appId;
 
-    @Column(name="appversion", updatable = false)
+    @Column(name="appversion")
     private String appVersion;
 
-    @Column(name="xmlns", updatable = false)
+    @Column(name="xmlns")
     private String xmlns;
 
-    @Column(name="formdef", updatable = false)
+    @Column(name="formdef")
     private String serializedFormDef;
 
     protected SerializableFormDefinition(){}

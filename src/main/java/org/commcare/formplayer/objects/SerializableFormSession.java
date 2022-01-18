@@ -66,7 +66,7 @@ public class SerializableFormSession implements Serializable{
     private String instanceXml;
 
     @Setter
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name="form_definition_id")
     private SerializableFormDefinition formDefinition;
 
