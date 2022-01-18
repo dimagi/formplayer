@@ -11,7 +11,7 @@ import java.time.Instant;
 @Table(name="form_definition")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-public class FormDefinition {
+public class SerializableFormDefinition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,8 +32,8 @@ public class FormDefinition {
     @Column(name="formdef", updatable = false)
     private String serializedFormDef;
 
-    protected FormDefinition(){}
-    public FormDefinition(String appId, String appVersion, String formXmlns, String formdef) {
+    protected SerializableFormDefinition(){}
+    public SerializableFormDefinition(String appId, String appVersion, String formXmlns, String formdef) {
         this.appId = appId;
         this.appVersion = appVersion;
         this.xmlns = formXmlns;

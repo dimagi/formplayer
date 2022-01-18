@@ -4,7 +4,7 @@ import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.objects.FormDefinition;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.services.*;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
@@ -306,10 +306,10 @@ public class MenuSession implements HereFunctionHandlerListener {
                                            FormDefinitionService formDefinitionService) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         String serializedFormDef = FormDefStringSerializer.serialize(this.engine.loadFormByXmlns(formXmlns));
-        FormDefinition formDefinition = formDefinitionService.getOrCreateFormDefinition(this.getAppId(), this.getAppVersion(), formXmlns, serializedFormDef);
+        SerializableFormDefinition serializableFormDefinition = formDefinitionService.getOrCreateFormDefinition(this.getAppId(), this.getAppVersion(), formXmlns, serializedFormDef);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDefinition, session.getUsername(), session.getDomain(),
+        return new FormSession(sandbox, serializableFormDefinition, session.getUsername(), session.getDomain(),
                 sessionData, postUrl, session.getLocale(), session.getId(),
                 null, oneQuestionPerScreen,
                 session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory,

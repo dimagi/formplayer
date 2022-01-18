@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.FunctionHandler;
-import org.commcare.formplayer.objects.FormDefinition;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.utils.JpaTestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -192,7 +192,7 @@ public class FormSessionRepoTest {
 
     @Test
     public void testFormDefinitionRelationship() {
-        FormDefinition formDef = new FormDefinition(
+        SerializableFormDefinition formDef = new SerializableFormDefinition(
                 "appId",
                 "appVersion",
                 "formXmlns",
@@ -202,7 +202,7 @@ public class FormSessionRepoTest {
         SerializableFormSession session = getSession();
         session.setFormDefinition(formDef);
         this.formSessionRepo.save(session);
-        FormDefinition fetchedFormDef = this.formDefinitionRepo.getById(formDef.getId());
+        SerializableFormDefinition fetchedFormDef = this.formDefinitionRepo.getById(formDef.getId());
         assertThat(fetchedFormDef.getAppId()).isEqualTo("appId");
         assertThat(fetchedFormDef.getDateCreated()).isEqualTo(formDef.getDateCreated());
         assertThat(fetchedFormDef.getAppVersion()).isEqualTo("appVersion");

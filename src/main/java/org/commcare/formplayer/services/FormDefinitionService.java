@@ -2,7 +2,7 @@ package org.commcare.formplayer.services;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.objects.FormDefinition;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.repo.FormDefinitionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
@@ -22,10 +22,10 @@ public class FormDefinitionService {
 
 
     @Cacheable(key="{#appId, #appVersion, #formXmlns}")
-    public FormDefinition getOrCreateFormDefinition(String appId, String appVersion, String formXmlns, String serializedFormDef) {
-        Optional<FormDefinition> optFormDef = this.formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(appId, appVersion, formXmlns);
+    public SerializableFormDefinition getOrCreateFormDefinition(String appId, String appVersion, String formXmlns, String serializedFormDef) {
+        Optional<SerializableFormDefinition> optFormDef = this.formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(appId, appVersion, formXmlns);
         return optFormDef.orElseGet(() -> {
-            FormDefinition newFormDef = new FormDefinition(appId, appVersion, formXmlns, serializedFormDef);
+            SerializableFormDefinition newFormDef = new SerializableFormDefinition(appId, appVersion, formXmlns, serializedFormDef);
             return this.formDefinitionRepo.save(newFormDef);
         });
     }

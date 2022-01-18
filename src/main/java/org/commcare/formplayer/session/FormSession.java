@@ -8,7 +8,7 @@ import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
-import org.commcare.formplayer.objects.FormDefinition;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.FunctionHandler;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -125,7 +125,7 @@ public class FormSession {
     }
 
     public FormSession(UserSqlSandbox sandbox,
-                       FormDefinition formDefinition,
+                       SerializableFormDefinition serializableFormDefinition,
                        String username,
                        String domain,
                        Map<String, String> sessionData,
@@ -145,13 +145,13 @@ public class FormSession {
                        RemoteInstanceFetcher instanceFetcher) throws Exception {
 
         // use this.formDef to mutate (e.g., inject instance content, set callout handler)
-        this.formDef = FormDefStringSerializer.deserialize(formDefinition.getSerializedFormDef());
+        this.formDef = FormDefStringSerializer.deserialize(serializableFormDefinition.getSerializedFormDef());
         this.session = new SerializableFormSession(
                 domain, appId, TableBuilder.scrubName(username), asUser, caseId,
                 postUrl, menuSessionId, this.formDef.getTitle(), oneQuestionPerScreen,
                 locale, inPromptMode, sessionData, functionContext
         );
-        this.session.setFormDefinition(formDefinition);
+        this.session.setFormDefinition(serializableFormDefinition);
 
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;

@@ -1,11 +1,11 @@
 package org.commcare.formplayer.repo;
 
-import org.commcare.formplayer.objects.FormDefinition;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface FormDefinitionRepo extends JpaRepository<FormDefinition, Long> {
-    Optional<FormDefinition> findByAppIdAndAppVersionAndXmlns(String appId, String appVersion, String xmlns);
+public interface FormDefinitionRepo extends JpaRepository<SerializableFormDefinition, Long> {
+    Optional<SerializableFormDefinition> findByAppIdAndAppVersionAndXmlns(String appId, String appVersion, String xmlns);
 }
 

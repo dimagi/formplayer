@@ -12,7 +12,7 @@ import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.exceptions.MenuNotFoundException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
-import org.commcare.formplayer.objects.FormDefinition;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.QueryData;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.objects.SerializableMenuSession;
@@ -178,7 +178,7 @@ public class BaseTestClass {
     protected ObjectMapper mapper;
 
     final Map<String, SerializableFormSession> sessionMap = new HashMap<String, SerializableFormSession>();
-    final Map<Long, FormDefinition> formDefinitionMap = new HashMap<Long, FormDefinition>();
+    final Map<Long, SerializableFormDefinition> formDefinitionMap = new HashMap<Long, SerializableFormDefinition>();
     final Map<String, SerializableMenuSession> menuSessionMap = new HashMap<String, SerializableMenuSession>();
 
     protected Long currentFormDefinitionId = 1L;
@@ -273,26 +273,26 @@ public class BaseTestClass {
     private void mockFormDefinitionService() {
         formDefinitionMap.clear();
         currentFormDefinitionId = 1L;
-        doAnswer(new Answer<FormDefinition>() {
+        doAnswer(new Answer<SerializableFormDefinition>() {
             @Override
-            public FormDefinition answer(InvocationOnMock invocation) throws Throwable {
+            public SerializableFormDefinition answer(InvocationOnMock invocation) throws Throwable {
                 String appId = ((String)invocation.getArguments()[0]);
                 String appVersion = ((String)invocation.getArguments()[1]);
                 String xmlns = ((String)invocation.getArguments()[2]);
-                for (FormDefinition tmp : formDefinitionMap.values()) {
+                for (SerializableFormDefinition tmp : formDefinitionMap.values()) {
                     if (tmp.getAppId().equals(appId) && tmp.getAppVersion().equals(appVersion) && tmp.getXmlns().equals(xmlns)) {
                         return tmp;
                     }
                 }
                 // else create a new one
-                FormDefinition formDefinition = new FormDefinition(appId, appVersion, xmlns, ((String)invocation.getArguments()[3]));
-                if (formDefinition.getId() == null) {
+                SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(appId, appVersion, xmlns, ((String)invocation.getArguments()[3]));
+                if (serializableFormDef.getId() == null) {
                     // this is normally taken care of by Hibernate
-                    ReflectionTestUtils.setField(formDefinition,"id", currentFormDefinitionId);
+                    ReflectionTestUtils.setField(serializableFormDef, "id", currentFormDefinitionId);
                     currentFormDefinitionId++;
                 }
-                formDefinitionMap.put(formDefinition.getId(), formDefinition);
-                return formDefinition;
+                formDefinitionMap.put(serializableFormDef.getId(), serializableFormDef);
+                return serializableFormDef;
             }
         }).when(this.formDefinitionService).getOrCreateFormDefinition(anyString(), anyString(), anyString(), anyString());
     }

@@ -1,6 +1,6 @@
 package org.commcare.formplayer.repo;
 
-import org.commcare.formplayer.objects.FormDefinition;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.utils.JpaTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class FormDefinitionRepoTest {
 
     @Test
     public void testSaveAndLoad() {
-        FormDefinition formDef = new FormDefinition(
+        SerializableFormDefinition formDef = new SerializableFormDefinition(
                 "appId",
                 "appVersion",
                 "xmlns",
@@ -46,7 +46,7 @@ public class FormDefinitionRepoTest {
         );
         formDefinitionRepo.saveAndFlush(formDef);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
-        FormDefinition loaded = JpaTestUtils.unwrapProxy(
+        SerializableFormDefinition loaded = JpaTestUtils.unwrapProxy(
                 formDefinitionRepo.getById(formDef.getId())
         );
         assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "id").isEqualTo(formDef);
@@ -59,18 +59,18 @@ public class FormDefinitionRepoTest {
 
     @Test
     public void testFindByAppIdAndAppVersionAndXmlns() {
-        FormDefinition formDef = new FormDefinition(
+        SerializableFormDefinition formDef = new SerializableFormDefinition(
                 "appId",
                 "appVersion",
                 "xmlns",
                 "formdef"
         );
         formDefinitionRepo.save(formDef);
-        Optional<FormDefinition> optFormDef = formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(
+        Optional<SerializableFormDefinition> optFormDef = formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(
                 "appId", "appVersion", "xmlns"
         );
         assertThat(optFormDef.isPresent()).isTrue();
-        FormDefinition fetchedFormDef = optFormDef.get();
+        SerializableFormDefinition fetchedFormDef = optFormDef.get();
         assertThat(fetchedFormDef.getAppId()).isEqualTo("appId");
         assertThat(fetchedFormDef.getAppVersion()).isEqualTo("appVersion");
         assertThat(fetchedFormDef.getXmlns()).isEqualTo("xmlns");

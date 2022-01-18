@@ -68,7 +68,7 @@ public class SerializableFormSession implements Serializable{
     @Setter
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="form_definition_id")
-    private FormDefinition formDefinition;
+    private SerializableFormDefinition formDefinition;
 
     @Column(updatable=false)
     private String username;

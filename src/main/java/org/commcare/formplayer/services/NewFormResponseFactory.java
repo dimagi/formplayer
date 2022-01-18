@@ -3,7 +3,7 @@ package org.commcare.formplayer.services;
 import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NewSessionRequestBean;
-import org.commcare.formplayer.objects.FormDefinition;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.FormSession;
@@ -75,10 +75,10 @@ public class NewFormResponseFactory {
 
         FormDef formDef = parseFormDef(formXml);
         String serializedFormDef = FormDefStringSerializer.serialize(formDef);
-        FormDefinition formDefinition = this.formDefinitionService.getOrCreateFormDefinition(bean.getSessionData().getAppId(), bean.getSessionData().getAppVersion(), formDef.getMainInstance().schema, serializedFormDef);
+        SerializableFormDefinition serializableFormDefinition = this.formDefinitionService.getOrCreateFormDefinition(bean.getSessionData().getAppId(), bean.getSessionData().getAppVersion(), formDef.getMainInstance().schema, serializedFormDef);
         FormSession formSession = new FormSession(
                 sandbox,
-                formDefinition,
+                serializableFormDefinition,
                 bean.getUsername(),
                 bean.getDomain(),
                 bean.getSessionData().getData(),
