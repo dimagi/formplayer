@@ -23,6 +23,7 @@ import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
 import org.commcare.formplayer.util.*;
+import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.utils.CheckedSupplier;
 import org.commcare.formplayer.utils.FileUtils;
@@ -31,7 +32,8 @@ import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.util.Pair;
 import org.commcare.session.CommCareSession;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
-
+import org.javarosa.core.model.FormDef;
+import org.javarosa.core.util.externalizable.DeserializationException;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
@@ -285,7 +287,13 @@ public class BaseTestClass {
                     }
                 }
                 // else create a new one
-                SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(appId, appVersion, xmlns, ((String)invocation.getArguments()[3]));
+                String serializedFormDef;
+                try {
+                    serializedFormDef = FormDefStringSerializer.serialize(((FormDef)invocation.getArguments()[3]));
+                } catch (IOException ex) {
+                    serializedFormDef = "could not serialize provided form def";
+                }
+                SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(appId, appVersion, xmlns, serializedFormDef);
                 if (serializableFormDef.getId() == null) {
                     // this is normally taken care of by Hibernate
                     ReflectionTestUtils.setField(serializableFormDef, "id", currentFormDefinitionId);
@@ -294,7 +302,7 @@ public class BaseTestClass {
                 formDefinitionMap.put(serializableFormDef.getId(), serializableFormDef);
                 return serializableFormDef;
             }
-        }).when(this.formDefinitionService).getOrCreateFormDefinition(anyString(), anyString(), anyString(), anyString());
+        }).when(this.formDefinitionService).getOrCreateFormDefinition(anyString(), anyString(), anyString(), any(FormDef.class));
     }
 
     private void mockMenuSessionService() {
