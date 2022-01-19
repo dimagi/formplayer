@@ -1,6 +1,5 @@
 package org.commcare.formplayer.services;
 
-import com.fasterxml.jackson.datatype.jdk8.WrappedIOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
@@ -28,7 +27,7 @@ public class FormDefinitionService {
 
 
     @Cacheable(key="{#appId, #appVersion, #formXmlns}")
-    public SerializableFormDefinition getOrCreateFormDefinition(String appId, String appVersion, String formXmlns, FormDef formDef) throws WrappedException {
+    public SerializableFormDefinition getOrCreateFormDefinition(String appId, String appVersion, String formXmlns, FormDef formDef) {
         Optional<SerializableFormDefinition> optFormDef = this.formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(appId, appVersion, formXmlns);
         return optFormDef.orElseGet(() -> {
             try {
