@@ -49,13 +49,15 @@ jobs:
         run: |
           cp .github/application.properties.ci config/application.properties
           cp .github/gradle.properties.ci gradle.properties
-      - uses: gradle/gradle-build-action@v2
+      - name: Copy Test Resources
+        uses: gradle/gradle-build-action@v2
         with:
           arguments: copyTestResources
-      - uses: gradle/gradle-build-action@v2
+      - name: Run all tests and checks
+        uses: gradle/gradle-build-action@v2
         with:
           arguments: check
-      - name: "Codecov upload"
+      - name: Codecov upload
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
