@@ -1,0 +1,33 @@
+# set to the URL of your CCHQ instance
+commcarehq.host=http://localhost:8000
+commcarehq.formplayerAuthKey=secretkey
+user.suffix=commcarehq.org
+logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=INFO
+server.port=8080
+redis.hostname=localhost
+redis.password=
+
+# sqlite.dataDir must end in /
+sqlite.dataDir=dbs/
+# sentry.dsn only needed for production environments
+sentry.dsn=
+
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+
+smtp.host=127.0.0.1
+smtp.port=8888
+smtp.username=test
+smtp.password=123
+smtp.from.address=mail@formplayer.commcarehq.org
+smtp.to.address=exceptions@commcarehq.org
+
+endpoints.enabled=true
+management.address: 127.0.0.1
+management.port: 8081
+
+logging.level.root=WARN
+logging.level.org.springframework.web=INFO
+logging.level.org.commcare=TRACE
