@@ -55,9 +55,6 @@ jobs:
       - uses: gradle/gradle-build-action@v2
         with:
           arguments: check
-      - uses: gradle/gradle-build-action@v2
-        with:
-          arguments: bootJar
       - name: "Codecov upload"
         uses: codecov/codecov-action@v2
         with:
