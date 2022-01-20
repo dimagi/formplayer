@@ -1,4 +1,4 @@
-# set to the URL of your CCHQ instance 
+# set to the URL of your CCHQ instance
 commcarehq.host=http://localhost:8000
 commcarehq.formplayerAuthKey=secretkey
 user.suffix=commcarehq.org
@@ -15,7 +15,7 @@ sentry.dsn=
 spring.datasource.driver-class-name=org.postgresql.Driver
 spring.datasource.url=jdbc:postgresql://localhost:5432/formplayer?prepareThreshold=0
 spring.datasource.username=postgres
-spring.datasource.password=
+spring.datasource.password=postgres
 
 smtp.host=127.0.0.1
 smtp.port=8888

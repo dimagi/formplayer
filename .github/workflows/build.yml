@@ -1,0 +1,64 @@
+name: Formplayer tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: formplayer
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      MALLOC_ARENA_MAX: 1
+      GRADLE_OPTS: -Xmx512m
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - name: Setup config
+        run: |
+          cp .github/application.properties.ci config/application.properties
+          cp .github/gradle.properties.ci gradle.properties
+      - name: Copy Test Resources
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: copyTestResources
+      - name: Run all tests and checks
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: check
+      - name: Codecov upload
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
