@@ -35,6 +35,12 @@ jobs:
     env:
       MALLOC_ARENA_MAX: 1
       GRADLE_OPTS: -Xmx512m
+      POSTGRESQL_HOST: localhost
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWROD: postgres
+      REDIS_HOSTNAME: localhost
+      COMMCARE_HOST: http://localhost:8000
+      AUTH_KEY: secretkey
     steps:
       - uses: actions/checkout@v2
         with:
@@ -46,7 +52,6 @@ jobs:
           distribution: 'adopt'
       - name: Setup config
         run: |
-          cp .github/application.properties.ci config/application.properties
           cp .github/gradle.properties.ci gradle.properties
       - name: Copy Test Resources
         uses: gradle/gradle-build-action@v2
