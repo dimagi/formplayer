@@ -152,6 +152,8 @@ public class FormSession {
                 locale, inPromptMode, sessionData, functionContext
         );
         this.session.setFormDefinition(serializableFormDefinition);
+        // DEPRECATED: leave to allow us to rollback if needed. Can remove once https://github.com/dimagi/formplayer/pull/1075 is safe
+        this.session.setFormXml(serializableFormDefinition.getSerializedFormDef());
 
         this.formDef.setSendCalloutHandler(formSendCalloutHandler);
         this.sandbox = sandbox;
