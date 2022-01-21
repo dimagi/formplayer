@@ -21,6 +21,8 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @ContextConfiguration
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -52,10 +54,10 @@ public class FormSessionsPaginationTest {
         formsSessionsRequestBean.setPageSize(5);
         formsSessionsRequestBean.setPageNumber(3);
         List<FormSessionListView> formSessions = formSessionService.getSessionsForUser("momo", formsSessionsRequestBean);
-        assert formSessions.size() == 3;
+        assertEquals(formSessions.size(), 3);
         for (int i = 0; i < formSessions.size(); i++) {
             // first 3 records in latest first order
-            assert formSessions.get(i).getTitle().contentEquals("More momo " + (2-i));
+            assertEquals(formSessions.get(i).getTitle(), "More momo " + (2-i));
         }
         formSessionService.purge();
     }
