@@ -50,6 +50,7 @@
 trunk: master
 name: autostaging
 branches:
+  - gh/form-def/add-table # Graham Jan 24
 submodules:
   libs/commcare:
     trunk: formplayer
