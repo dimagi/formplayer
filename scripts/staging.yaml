@@ -50,7 +50,6 @@
 trunk: master
 name: autostaging
 branches:
-  - gh/data-preview-bug # Graham Jan 24 2022
 submodules:
   libs/commcare:
     trunk: formplayer
