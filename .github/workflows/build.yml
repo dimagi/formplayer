@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:9.6
         env:
           POSTGRES_DB: formplayer
           POSTGRES_PASSWORD: postgres
