@@ -8,6 +8,7 @@ import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.suite.model.Style;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +62,7 @@ public class CasePaginationTests extends BaseTestClass {
                 getDetails("requests/get_details/pagination_navigator_details.json", EntityDetailListResponse.class);
 
         assert details.getEntityDetailList().length == 2;
+        checkDetailTemplates(details.getEntityDetailList()[0]);
 
         EntityListResponse entityListResponse2 =
                 sessionNavigate("requests/navigators/pagination_navigator_1.json", EntityListResponse.class);
@@ -79,6 +81,11 @@ public class CasePaginationTests extends BaseTestClass {
         assert secondDetail.getDetails().length == 0;
 
         assert firstDetail.getHeaders()[0].equals("Name");
+    }
+
+    private void checkDetailTemplates(EntityDetailResponse entityDetailResponse) {
+        assert String.valueOf(entityDetailResponse.getStyles()[3].getDisplayFormat()).equals("Markdown");
+        assert String.valueOf(entityDetailResponse.getStyles()[4].getDisplayFormat()).equals("Phone");
     }
 
     // test that searching (filtering the case list) works
