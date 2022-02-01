@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import datadog.trace.api.Trace;
+
 import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
 import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
 
@@ -231,6 +233,7 @@ public class FormSubmissionController extends AbstractBaseController {
         );
     }
 
+    @Trace
     private SubmitResponseBean doEndOfFormNav(FormSubmissionContext context) {
         FormSession formEntrySession = context.getFormEntrySession();
         Object nextScreen = categoryTimingHelper.timed(
@@ -299,6 +302,7 @@ public class FormSubmissionController extends AbstractBaseController {
      * Iterate over all answers and attempt to save them to check for validity.
      * Submit the complete XML instance to HQ if valid.
      */
+    @Trace
     private Map<String, ErrorBean> validateSubmitAnswers(FormSubmissionContext context) {
         return FormController.validateAnswers(
                 context.getFormEntrySession().getFormEntryController(),

@@ -61,7 +61,7 @@ public class DebuggerController extends AbstractBaseController {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(debuggerRequest.getSessionId());
         SerializableMenuSession serializableMenuSession = menuSessionService.getSessionById(serializableFormSession.getMenuSessionId());
         FormSession formSession = getFormSession(serializableFormSession);
-        String instanceXml = formSession.getInstanceXml();
+        String instanceXml = formSession.getInstanceXml(false);
         FormattedQuestionsService.QuestionResponse response = formattedQuestionsService.getFormattedQuestions(
                 debuggerRequest.getDomain(),
                 serializableMenuSession.getAppId(),

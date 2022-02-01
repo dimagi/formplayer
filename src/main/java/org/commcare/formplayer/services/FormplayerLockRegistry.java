@@ -1,5 +1,6 @@
 package org.commcare.formplayer.services;
 
+import io.sentry.Sentry;
 import io.sentry.SentryLevel;
 import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.apache.commons.logging.Log;
@@ -41,14 +42,14 @@ public class FormplayerLockRegistry implements LockRegistry {
         this.lockTable = new FormplayerReentrantLock[arraySize];
         this.lockTableLocks = new Object[arraySize];
         for (int i = 0; i < arraySize; i++) {
-            this.lockTable[i] = new FormplayerReentrantLock();
+            this.lockTable[i] = new FormplayerReentrantLock(null);
             this.lockTableLocks[i] = new Object();
         }
     }
 
-    private FormplayerReentrantLock setNewLock(Integer lockIndex) {
+    private FormplayerReentrantLock setNewLock(Integer lockIndex, Object lockKey) {
         synchronized (this.lockTableLocks[lockIndex]) {
-            this.lockTable[lockIndex] = new FormplayerReentrantLock();
+            this.lockTable[lockIndex] = new FormplayerReentrantLock(lockKey);
             return this.lockTable[lockIndex];
         }
     }
@@ -64,6 +65,10 @@ public class FormplayerLockRegistry implements LockRegistry {
 
         synchronized (this.lockTableLocks[lockIndex]) {
             FormplayerReentrantLock lock = this.lockTable[lockIndex];
+            if (lock.lockKey != null && lock.lockKey != lockKey) {
+                log.warn(String.format("Lock key hash collision: %s != %s", lock.lockKey, lockKey));
+                Sentry.captureMessage("Lock key hash collision", SentryLevel.WARNING);
+            }
             Thread ownerThread = lock.getOwner();
 
             if (ownerThread == null) {
@@ -71,7 +76,7 @@ public class FormplayerLockRegistry implements LockRegistry {
             }
             if (!ownerThread.isAlive()) {
                 log.error(String.format("Evicted dead thread %s owning lockkey %s.", ownerThread, lockKey));
-                lock = setNewLock(lockIndex);
+                lock = setNewLock(lockIndex, lockKey);
                 return lock;
             }
             if (lock.isExpired()) {
@@ -91,7 +96,9 @@ public class FormplayerLockRegistry implements LockRegistry {
             throw new InterruptedRuntimeException(e);
         }
         if (ownerThread.isAlive()) {
-            log.error(String.format("Unable to evict thread %s owning expired lock with lock key %s.", ownerThread, lockKey));
+            log.error(String.format(
+                "Unable to evict thread %s owning lock with lock key %s. expired=%s, lockTime=%s(s)",
+                    ownerThread, lockKey, lock.isExpired(), lock.timeLocked()));
             Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
             e.setStackTrace(ownerThread.getStackTrace());
             FormplayerSentry.captureException(new Exception(e), SentryLevel.WARNING);
@@ -135,6 +142,12 @@ public class FormplayerLockRegistry implements LockRegistry {
     public class FormplayerReentrantLock extends ReentrantLock {
 
         DateTime lockTime;
+        Object lockKey;
+
+        public FormplayerReentrantLock(Object lockKey) {
+            super();
+            this.lockKey = lockKey;
+        }
 
         @Override
         public boolean tryLock(long timeout, TimeUnit unit)

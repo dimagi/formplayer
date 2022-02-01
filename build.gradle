@@ -43,6 +43,7 @@ allprojects{
 
 repositories {
     mavenCentral()
+    maven { url "https://jitpack.io" }
 }
 
 ext {
@@ -108,6 +109,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
     //Unmanaged Dependencies
+    implementation group: 'com.datadoghq', name: 'dd-trace-api', version: '0.92.0'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '3.0.1'
     implementation group: 'io.sentry', name: 'sentry-spring-boot-starter', version: "${sentryVersion}"
     implementation group: 'io.sentry', name: 'sentry-logback', version: "${sentryVersion}"
@@ -121,10 +123,10 @@ dependencies {
 
 
     implementation fileTree(dir: 'libs', include: '*.jar')
-    implementation project(path: ':commcare', configuration: 'api')
+    implementation project(path: ':commcare', configuration: 'ccapi')
     implementation project(path: ':commcare', configuration: 'translate')
 
-    testImplementation project(path: ':commcare', configuration: 'api')
+    testImplementation project(path: ':commcare', configuration: 'ccapi')
 
     // #### DEV / TEST DEPENDENCIES
     //Versions managed by Spring Dependency Management
