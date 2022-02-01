@@ -50,8 +50,7 @@
 trunk: master
 name: autostaging
 branches:
-#   - gh/form-def/add-table # Graham Jan 24 (contains migration)
-  - gh/revert-serialize-change # Graham Feburary 1 (testing something)
+  - gh/form-def/add-table # Graham Jan 24 (contains migration)
 submodules:
   libs/commcare:
     trunk: formplayer
