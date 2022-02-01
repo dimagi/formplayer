@@ -60,6 +60,9 @@ public class TestContext {
     public FormSessionService formSessionService;
 
     @MockBean
+    public FormDefinitionService formDefinitionService;
+
+    @MockBean
     public MenuSessionService menuSessionService;
 
     @MockBean

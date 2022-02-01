@@ -39,7 +39,7 @@ public class SavedFormDefTest extends BaseTestClass {
                 "xforms/hidden_value_form.xml");
 
         SerializableFormSession session = this.formSessionService.getSessionById(newSessionResponse.getSessionId());
-        FormDef actualFormDef = FormDefStringSerializer.deserialize(session.getFormXml());
+        FormDef actualFormDef = FormDefStringSerializer.deserialize(session.getFormDefinition().getSerializedFormDef());
         byte[] actualInstanceBytes = new XFormSerializingVisitor(false).serializeInstance(actualFormDef.getInstance());
 
         String actualFormDefString = new String(actualInstanceBytes, "US-ASCII");
