@@ -149,3 +149,15 @@ the `formplayer` branch.
 
 When updating Formplayer to have a new release of a CommCare version (e.g. 2.34 to 2.35), a PR should be opened from the `commcare_X.Y` branch into
 the `formplayer` branch. Once QA has been finished, merge the PR and update the Formplayer submodule.
+
+### IntelliJ Code Style Settings
+
+In order to comply with code style guidelines we follow, please use [Commcare Coding Style file](https://github.com/dimagi/formplayer/blob/master/.ide_settings/codestyles/CommCare%20Coding%20Style.xml)  as your respective code style in IntelliJ. To do so follow these instructions
+
+1. Go to IntelliJ preferences -> Editor -> Code Style.
+2. Click on the settings icon to the right of the “Scheme” label at the top and select “Import Scheme” from the drop-down.
+3. Select the [Commcare Coding Style file](https://github.com/dimagi/formplayer/blob/master/.ide_settings/codestyles/CommCare%20Coding%20Style.xml) file from the file chooser
+4. Select “Ok” on the “Import Scheme” dialog.
+5. Click on “Apply” and then “OK” to save the settings.
+
+These instructions might differ depending on the IntelliJ version you are on.
