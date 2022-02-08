@@ -1,0 +1,4 @@
+linters:
+  checkstyle:
+    config: ./libs/commcare/config/checkstyle/checkstyle.xml
+  ktlint:
