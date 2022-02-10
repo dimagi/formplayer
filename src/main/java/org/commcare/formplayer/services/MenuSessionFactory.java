@@ -1,11 +1,14 @@
 package org.commcare.formplayer.services;
 
 import datadog.trace.api.Trace;
+
 import com.google.common.collect.ImmutableMultimap;
+
 import org.commcare.suite.model.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -95,7 +98,7 @@ public class MenuSessionFactory {
                 }
             } else if (screen instanceof QueryScreen) {
                 QueryScreen queryScreen = (QueryScreen)screen;
-                RemoteQueryDatum neededDatum = (RemoteQueryDatum) menuSession.getSessionWrapper().getNeededDatum();
+                RemoteQueryDatum neededDatum = (RemoteQueryDatum)menuSession.getSessionWrapper().getNeededDatum();
                 for (StackFrameStep step : steps) {
                     if (step.getId().equals(neededDatum.getDataId())) {
                         URI uri = null;
@@ -109,10 +112,10 @@ public class MenuSessionFactory {
                         step.getExtras().forEach((key, value) -> dataBuilder.put(key, value.toString()));
                         try {
                             ExternalDataInstance searchDataInstance = caseSearchHelper.getRemoteDataInstance(
-                                queryScreen.getQueryDatum().getDataId(),
-                                queryScreen.getQueryDatum().useCaseTemplate(),
-                                uri.toURL(),
-                                dataBuilder.build()
+                                    queryScreen.getQueryDatum().getDataId(),
+                                    queryScreen.getQueryDatum().useCaseTemplate(),
+                                    uri.toURL(),
+                                    dataBuilder.build()
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
                             screen = menuSession.getNextScreen(false);

@@ -1,6 +1,7 @@
 package org.commcare.formplayer.application;
 
 import io.sentry.Sentry;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
@@ -37,6 +38,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -131,10 +133,10 @@ public class FormSubmissionController extends AbstractBaseController {
      * and empty response to continue.
      *
      * @param request The HTTP Request object
-     * @param step A supplier object that performs one unit of form processing and returns
-     *             a SubmitResponseBean.
+     * @param step    A supplier object that performs one unit of form processing and returns
+     *                a SubmitResponseBean.
      * @return Empty Optional if the processing should continue otherwise an Optional containing the
-     *          error response.
+     * error response.
      */
     private Optional<SubmitResponseBean> executeStep(HttpServletRequest request, ProcessingStep step) {
         SubmitResponseBean response = null;
@@ -223,13 +225,13 @@ public class FormSubmissionController extends AbstractBaseController {
         );
         FormRecordProcessorHelper.processXML(factory, context.getFormEntrySession().submitGetXml());
         categoryTimingHelper.timed(
-            Constants.TimingCategories.PURGE_CASES,
-            () -> {
-                if (factory.wereCaseIndexesDisrupted() && storageFactory.getPropertyManager().isAutoPurgeEnabled()) {
-                    FormRecordProcessorHelper.purgeCases(factory.getSqlSandbox());
-                }
-            },
-            context.getMetricsTags()
+                Constants.TimingCategories.PURGE_CASES,
+                () -> {
+                    if (factory.wereCaseIndexesDisrupted() && storageFactory.getPropertyManager().isAutoPurgeEnabled()) {
+                        FormRecordProcessorHelper.purgeCases(factory.getSqlSandbox());
+                    }
+                },
+                context.getMetricsTags()
         );
     }
 
@@ -237,15 +239,15 @@ public class FormSubmissionController extends AbstractBaseController {
     private SubmitResponseBean doEndOfFormNav(FormSubmissionContext context) {
         FormSession formEntrySession = context.getFormEntrySession();
         Object nextScreen = categoryTimingHelper.timed(
-            Constants.TimingCategories.END_OF_FORM_NAV,
-            () -> {
-                if (formEntrySession.getMenuSessionId() != null &&
-                        !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                    return doEndOfFormNav(menuSessionService.getSessionById(formEntrySession.getMenuSessionId()));
-                }
-                return null;
-            },
-            context.getMetricsTags()
+                Constants.TimingCategories.END_OF_FORM_NAV,
+                () -> {
+                    if (formEntrySession.getMenuSessionId() != null &&
+                            !("").equals(formEntrySession.getMenuSessionId().trim())) {
+                        return doEndOfFormNav(menuSessionService.getSessionById(formEntrySession.getMenuSessionId()));
+                    }
+                    return null;
+                },
+                context.getMetricsTags()
         );
         context.getResponse().setNextScreen(nextScreen);
         return context.success();

@@ -1,6 +1,7 @@
 package org.commcare.formplayer.beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
 import org.commcare.modern.util.Pair;
@@ -54,7 +55,7 @@ public class EntityDetailResponse {
             Object datum = data[i];
             if (datum instanceof GraphData) {
                 try {
-                    datum = FormplayerGraphUtil.getHTML((GraphData) datum, "").replace("\"", "'");
+                    datum = FormplayerGraphUtil.getHTML((GraphData)datum, "").replace("\"", "'");
                 } catch (GraphException e) {
                     datum = "Error loading graph " + e;
                 }

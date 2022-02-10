@@ -34,10 +34,10 @@ public class DebuggerFormattedQuestionsResponseBean {
         for (int i = 0; i < questionList.length(); i++) {
             autoCompletable.add(new AutoCompletableItem(questionList.getJSONObject(i)));
         }
-        for (String function: functionList) {
+        for (String function : functionList) {
             autoCompletable.add(new FunctionAutocompletable(function));
         }
-        for (String instanceId: instanceIds) {
+        for (String instanceId : instanceIds) {
             autoCompletable.add(new InstanceAutocompletableItem(instanceId));
         }
         this.questionList = autoCompletable.toArray(new AutoCompletableItem[autoCompletable.size()]);

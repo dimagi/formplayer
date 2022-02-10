@@ -14,9 +14,10 @@ public class Tile {
     private String cssId;
     private String fontSize;
 
-    public Tile(){}
+    public Tile() {
+    }
 
-    public Tile(DetailField field){
+    public Tile(DetailField field) {
         gridX = field.getGridX();
         gridY = field.getGridY();
         gridWidth = field.getGridWidth();
@@ -74,7 +75,7 @@ public class Tile {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "Tile [gridX=" + gridX + ", gridY=" + gridY + ", gridWidth=" + gridWidth + ", gridHeight=" + gridHeight +
                 ", cssId=" + cssId + ", fontSize=" + fontSize + "]";
     }

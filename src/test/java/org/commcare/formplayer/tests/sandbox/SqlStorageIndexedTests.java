@@ -109,24 +109,24 @@ public class SqlStorageIndexedTests {
         assertEquals(caseStorage.getIDsForValue("case-type", "case_type_ipsum").size(), 3);
 
         // Test inverse matching
-        assertEquals(caseStorage.getIDsForValues(new String[] {"case-type"},
-                                                 new String[] {"case_type_ipsum"},
-                                                 new String[] {"case-id"},
-                                                 new String[] {"c_case_id"},
-                                                 new LinkedHashSet<>()
-                                                 ).size(), 2);
+        assertEquals(caseStorage.getIDsForValues(new String[]{"case-type"},
+                new String[]{"case_type_ipsum"},
+                new String[]{"case-id"},
+                new String[]{"c_case_id"},
+                new LinkedHashSet<>()
+        ).size(), 2);
         assertEquals(caseStorage.getIDsForValues(new String[0],
-                                                 new String[0],
-                                                 new String[] {"case-id"},
-                                                 new String[] {"c_case_id"},
-                                                 new LinkedHashSet<>()
-                                                 ).size(), 2);
-        assertEquals(caseStorage.getIDsForValues(new String[] {"case-type"},
-                                                 new String[] {"case_type_ipsum"},
-                                                 new String[0],
-                                                 new String[0],
-                                                 new LinkedHashSet<>()
-                                                 ).size(), 3);
+                new String[0],
+                new String[]{"case-id"},
+                new String[]{"c_case_id"},
+                new LinkedHashSet<>()
+        ).size(), 2);
+        assertEquals(caseStorage.getIDsForValues(new String[]{"case-type"},
+                new String[]{"case_type_ipsum"},
+                new String[0],
+                new String[0],
+                new LinkedHashSet<>()
+        ).size(), 3);
 
 
         caseStorage.remove(1);
@@ -195,7 +195,7 @@ public class SqlStorageIndexedTests {
 
     @AfterEach
     public void tearDown() throws SQLException {
-        if(sandbox != null) {
+        if (sandbox != null) {
             sandbox.getConnection().close();
         }
         SqlSandboxUtils.deleteDatabaseFolder(UserSqlSandbox.DEFAULT_DATBASE_PATH);

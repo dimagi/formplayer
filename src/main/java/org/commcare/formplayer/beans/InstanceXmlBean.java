@@ -12,7 +12,8 @@ public class InstanceXmlBean {
     private String output;
 
     // Jackson requires the default constructor be present
-    public InstanceXmlBean(){}
+    public InstanceXmlBean() {
+    }
 
     public InstanceXmlBean(String xml) {
         output = XmlUtils.indent(xml);
@@ -27,7 +28,7 @@ public class InstanceXmlBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "InstanceXmlBean: [output=" + output + "]";
     }
 }

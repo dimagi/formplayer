@@ -17,7 +17,8 @@ import org.javarosa.xml.util.UnfullfilledRequirementsException;
  */
 public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreInstaller {
 
-    public FormplayerOfflineUserRestoreInstaller(){}
+    public FormplayerOfflineUserRestoreInstaller() {
+    }
 
     @Override
     public boolean initialize(CommCarePlatform platform, boolean isUpgrade) {

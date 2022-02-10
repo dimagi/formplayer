@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.commcare.formplayer.beans.FormsSessionsRequestBean;
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -57,7 +58,7 @@ public class FormSessionsPaginationTest {
         assertEquals(formSessions.size(), 3);
         for (int i = 0; i < formSessions.size(); i++) {
             // first 3 records in latest first order
-            assertEquals(formSessions.get(i).getTitle(), "More momo " + (2-i));
+            assertEquals(formSessions.get(i).getTitle(), "More momo " + (2 - i));
         }
         formSessionService.purge();
     }

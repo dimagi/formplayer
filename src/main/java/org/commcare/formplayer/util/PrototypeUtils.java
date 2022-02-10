@@ -29,9 +29,9 @@ import org.javarosa.xpath.expr.*;
  * Created by willpride on 2/8/16.
  */
 public class PrototypeUtils {
-    public static void setupThreadLocalPrototypes(){
+    public static void setupThreadLocalPrototypes() {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
-        String[] prototypes = new String[] {BasicInstaller.class.getName(),
+        String[] prototypes = new String[]{BasicInstaller.class.getName(),
                 LocaleFileInstaller.class.getName(),
                 SuiteInstaller.class.getName(),
                 ProfileInstaller.class.getName(),
@@ -97,7 +97,7 @@ public class PrototypeUtils {
                 XPathDistinctValuesFunc.class.getName(),
         };
 
-        for (Class clazz: FunctionUtils.getXPathFuncListMap().values()) {
+        for (Class clazz : FunctionUtils.getXPathFuncListMap().values()) {
             PrototypeManager.registerPrototype(clazz.getName());
         }
         PrototypeManager.registerPrototypes(prototypes);

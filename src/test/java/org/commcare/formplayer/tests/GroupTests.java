@@ -3,8 +3,10 @@ package org.commcare.formplayer.tests;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
@@ -19,7 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class GroupTests extends BaseTestClass{
+public class GroupTests extends BaseTestClass {
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -71,7 +73,7 @@ public class GroupTests extends BaseTestClass{
     public String toPrettyTree(QuestionBean[] questionBean) {
         try {
             return new ObjectMapper().writeValueAsString(questionBean);
-        } catch(JsonProcessingException e){
+        } catch (JsonProcessingException e) {
             return "Error: " + e;
         }
     }

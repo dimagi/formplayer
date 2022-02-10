@@ -31,7 +31,7 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
     }
 
     public UserSqlSandbox getSqlSandbox() {
-        return (UserSqlSandbox) sandbox;
+        return (UserSqlSandbox)sandbox;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
             @Override
             public FormplayerCaseXmlParser getParser(KXmlParser parser) {
                 if (created == null) {
-                    created = new FormplayerCaseXmlParser(parser, true, (UserSqlSandbox) sandbox) {
+                    created = new FormplayerCaseXmlParser(parser, true, (UserSqlSandbox)sandbox) {
 
                         @Override
                         public void onIndexDisrupted(String caseId) {

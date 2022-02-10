@@ -1,6 +1,7 @@
 package org.commcare.formplayer.beans;
 
 import io.sentry.SentryLevel;
+
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.trace.AccumulatingReporter;
@@ -34,7 +35,8 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
     private String trace;
 
     //Jackson requires the default constructor
-    public EvaluateXPathResponseBean(){}
+    public EvaluateXPathResponseBean() {
+    }
 
     public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath, String debugTraceLevel) throws XPathSyntaxException {
         status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
@@ -43,18 +45,18 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
 
         EvaluationContext subcontext = evaluationContext.spawnWithCleanLifecycle();
         EvaluationTraceReporter reporter = null;
-        if(Constants.BASIC_NO_TRACE.equals(debugTraceLevel)) {
+        if (Constants.BASIC_NO_TRACE.equals(debugTraceLevel)) {
             reporter = null;
-        } else if(Constants.TRACE_REDUCE.equals(debugTraceLevel)) {
+        } else if (Constants.TRACE_REDUCE.equals(debugTraceLevel)) {
             reporter = new ReducingTraceReporter(false);
-        } else if(Constants.TRACE_FULL.equals(debugTraceLevel)) {
+        } else if (Constants.TRACE_FULL.equals(debugTraceLevel)) {
             reporter = new AccumulatingReporter();
         }
-        if(reporter != null) {
+        if (reporter != null) {
             subcontext.setDebugModeOn(reporter);
         }
         try {
-            XPathExpression  expr = XPathParseTool.parseXPath(xpath);
+            XPathExpression expr = XPathParseTool.parseXPath(xpath);
             Object value = expr.eval(subcontext);
 
             // Wrap output in a top level node
@@ -73,12 +75,12 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
             output = e.getMessage();
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } catch(Exception e) {
+        } catch (Exception e) {
             ApplicationConfigException ace =
                     new ApplicationConfigException("Unexpected error evaluating expression", e);
             FormplayerSentry.captureException(ace, SentryLevel.INFO);
 
-            status= Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
+            status = Constants.ANSWER_RESPONSE_STATUS_NEGATIVE;
             output = ace.getMessage();
         }
     }
@@ -105,7 +107,7 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "EvaluateXPathResponseBean: [output=" + output + "]";
     }
 

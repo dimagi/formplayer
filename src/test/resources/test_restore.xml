@@ -11,9 +11,9 @@
         <uuid>84c246edf58bfa69e03bdecc39692e1f</uuid>
         <date>2015-10-08</date>
         <user_data>
-            <data key="commcare_first_name"/>
-            <data key="commcare_last_name"/>
-            <data key="commcare_phone_number"/>
+            <data key="commcare_first_name" />
+            <data key="commcare_last_name" />
+            <data key="commcare_phone_number" />
         </user_data>
     </Registration>
     <fixture id="user-groups" user_id="84c246edf58bfa69e03bdecc39692e1f">
@@ -23,7 +23,9 @@
             </group>
         </groups>
     </fixture>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="2aa41fcf4d8a464b82b171a39959ccec" date_modified="2015-11-16T22:36:43.328000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="2aa41fcf4d8a464b82b171a39959ccec" date_modified="2015-11-16T22:36:43.328000Z"
+        user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>
@@ -31,36 +33,43 @@
         </create>
         <update>
             <data_node>51</data_node>
-            <dateval/>
-            <geodata/>
+            <dateval />
+            <geodata />
             <intval>1</intval>
             <multiselect>b</multiselect>
             <singleselect>b</singleselect>
             <text>123</text>
         </update>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="1a8ca44cb5dc4ce9995a71ea8929d4c3" date_modified="2015-11-23T20:54:44.734000Z" user_id="67056dfba972ea70017477f2217d0b77">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="1a8ca44cb5dc4ce9995a71ea8929d4c3" date_modified="2015-11-23T20:54:44.734000Z"
+        user_id="67056dfba972ea70017477f2217d0b77">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>113</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="55ddcff802d845cb890a9a2d3ae6ed1a" date_modified="2015-11-13T20:53:52.426000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="55ddcff802d845cb890a9a2d3ae6ed1a" date_modified="2015-11-13T20:53:52.426000Z"
+        user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="2af02f991a854ea6a69ca58516f71d5d" date_modified="2015-11-20T20:20:30.399000Z" user_id="67056dfba972ea70017477f2217d0b77">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="2af02f991a854ea6a69ca58516f71d5d" date_modified="2015-11-20T20:20:30.399000Z"
+        user_id="67056dfba972ea70017477f2217d0b77">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>Will</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="testclose" date_modified="2015-12-30T16:17:26.190000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="testclose"
+        date_modified="2015-12-30T16:17:26.190000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>
@@ -68,22 +77,26 @@
         </create>
         <update>
             <data_node>173</data_node>
-            <dateval/>
-            <geodata/>
+            <dateval />
+            <geodata />
             <intval>123</intval>
             <multiselect>c b</multiselect>
             <singleselect>b</singleselect>
             <text>123</text>
         </update>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="ed1fcb9d46814331ab86bc0d2f087a06" date_modified="2015-11-24T17:56:36.704000Z" user_id="67056dfba972ea70017477f2217d0b77">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="ed1fcb9d46814331ab86bc0d2f087a06" date_modified="2015-11-24T17:56:36.704000Z"
+        user_id="67056dfba972ea70017477f2217d0b77">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>Will1256</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="44bc692540e7402e93d7980d70c5d73a" date_modified="2015-11-13T20:43:08.907000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="44bc692540e7402e93d7980d70c5d73a" date_modified="2015-11-13T20:43:08.907000Z"
+        user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>William</case_name>
@@ -91,64 +104,80 @@
         </create>
         <update>
             <data_node>1282</data_node>
-            <dateval/>
-            <geodata/>
+            <dateval />
+            <geodata />
             <intval>1232</intval>
             <multiselect>a</multiselect>
             <singleselect>b</singleselect>
             <text>12123</text>
         </update>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="d8003626eb114694adc541ddd796fab4" date_modified="2015-11-20T20:23:19.388000Z" user_id="67056dfba972ea70017477f2217d0b77">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="d8003626eb114694adc541ddd796fab4" date_modified="2015-11-20T20:23:19.388000Z"
+        user_id="67056dfba972ea70017477f2217d0b77">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="35b9504613ff4ff587c85bb0aed0e220" date_modified="2015-11-13T20:49:42.957000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="35b9504613ff4ff587c85bb0aed0e220" date_modified="2015-11-13T20:49:42.957000Z"
+        user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="fb96336519224923aac227def18f825c" date_modified="2015-11-13T20:43:24.012000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="fb96336519224923aac227def18f825c" date_modified="2015-11-13T20:43:24.012000Z"
+        user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>William</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="14b8e67739ed419e85729c3b2b72023e" date_modified="2015-11-24T18:07:57.146000Z" user_id="67056dfba972ea70017477f2217d0b77">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="14b8e67739ed419e85729c3b2b72023e" date_modified="2015-11-24T18:07:57.146000Z"
+        user_id="67056dfba972ea70017477f2217d0b77">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="9cbbc273b61542ef953ed4674a223c0c" date_modified="2015-11-23T21:31:37.287000Z" user_id="67056dfba972ea70017477f2217d0b77">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="9cbbc273b61542ef953ed4674a223c0c" date_modified="2015-11-23T21:31:37.287000Z"
+        user_id="67056dfba972ea70017477f2217d0b77">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>Test431</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="e7ed3658d7394415a4bba5edc7055f1d" date_modified="2015-11-13T20:48:10.727000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="e7ed3658d7394415a4bba5edc7055f1d" date_modified="2015-11-13T20:48:10.727000Z"
+        user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="c3bd2c251e6d423eb90207e597bccef8" date_modified="2015-11-24T19:07:41.039000Z" user_id="67056dfba972ea70017477f2217d0b77">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="c3bd2c251e6d423eb90207e597bccef8" date_modified="2015-11-24T19:07:41.039000Z"
+        user_id="67056dfba972ea70017477f2217d0b77">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>
             <owner_id>67056dfba972ea70017477f2215deb1b</owner_id>
         </create>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="35cb37fbff054703b249df0892c09e15" date_modified="2015-11-13T21:36:07.644000Z" user_id="84c246edf58bfa69e03bdecc39692e1f">
+    <case xmlns="http://commcarehq.org/case/transaction/v2"
+        case_id="35cb37fbff054703b249df0892c09e15" date_modified="2015-11-13T21:36:07.644000Z"
+        user_id="84c246edf58bfa69e03bdecc39692e1f">
         <create>
             <case_type>coverage_basic</case_type>
             <case_name>123</case_name>

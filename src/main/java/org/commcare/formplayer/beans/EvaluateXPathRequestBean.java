@@ -14,12 +14,14 @@ public class EvaluateXPathRequestBean extends SessionRequestBean {
     private String debugOutput;
 
     // default constructor for Jackson
-    public EvaluateXPathRequestBean(){}
+    public EvaluateXPathRequestBean() {
+    }
 
     @JsonGetter(value = "xpath")
     public String getXpath() {
         return xpath;
     }
+
     @JsonSetter(value = "xpath")
     public void setXpath(String xpath) {
         this.xpath = xpath;
@@ -29,12 +31,13 @@ public class EvaluateXPathRequestBean extends SessionRequestBean {
     public String getDebugOutputLevel() {
         return debugOutput;
     }
+
     @JsonSetter(value = "debugOutput")
     public void setDebugOutputLevel(String debugOutput) {
         this.debugOutput = debugOutput;
     }
 
-    public String toString(){
+    public String toString() {
         return "EvaluateXPathRequestBean [xpath: " + xpath + ", sessionId: " + sessionId +
                 ", debugOutput: " + debugOutput + "]";
     }

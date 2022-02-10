@@ -3,6 +3,7 @@ package org.commcare.formplayer.application;
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
 import lombok.extern.apachecommons.CommonsLog;
+
 import org.apache.catalina.connector.ClientAbortException;
 import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.formplayer.aspects.LockAspect;

@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class ParentChildTest extends BaseTestClass{
+public class ParentChildTest extends BaseTestClass {
 
     @Override
     @BeforeEach

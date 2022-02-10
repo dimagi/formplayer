@@ -9,7 +9,7 @@ public abstract class BaseFormplayerMigration extends BaseJavaMigration {
     @Override
     public void migrate(Context context) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
-        for (String sql: getSqlStatements()) {
+        for (String sql : getSqlStatements()) {
             jdbcTemplate.execute(sql);
         }
     }

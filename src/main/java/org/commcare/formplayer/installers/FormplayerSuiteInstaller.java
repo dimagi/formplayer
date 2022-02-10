@@ -10,7 +10,8 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
  */
 public class FormplayerSuiteInstaller extends SuiteInstaller {
 
-    public FormplayerSuiteInstaller(){}
+    public FormplayerSuiteInstaller() {
+    }
 
     @Override
     protected IStorageUtilityIndexed<Suite> storage(CommCarePlatform platform) {

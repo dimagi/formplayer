@@ -25,7 +25,7 @@ public class ConfigureStorageFromSessionAspect {
             throw new RuntimeException("Could not configure StorageFactory, request not a SessionRequestBean "
                     + args[0]);
         }
-        final SessionRequestBean requestBean = (SessionRequestBean) args[0];
+        final SessionRequestBean requestBean = (SessionRequestBean)args[0];
         storageFactory.configure(requestBean.getSessionId());
     }
 }

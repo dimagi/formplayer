@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class EndOfFormNavFormLinkingTests extends BaseTestClass{
+public class EndOfFormNavFormLinkingTests extends BaseTestClass {
 
     @BeforeEach
     @Override

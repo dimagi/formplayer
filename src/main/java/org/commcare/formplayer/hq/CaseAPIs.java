@@ -13,7 +13,7 @@ public class CaseAPIs {
 
     private static final Log log = LogFactory.getLog(CaseAPIs.class);
 
-    public static CaseBean getFullCase(String caseId, SqlStorage<Case> caseStorage){
+    public static CaseBean getFullCase(String caseId, SqlStorage<Case> caseStorage) {
         Case cCase = caseStorage.getRecordForValue("case-id", caseId);
         return new CaseBean(cCase);
     }

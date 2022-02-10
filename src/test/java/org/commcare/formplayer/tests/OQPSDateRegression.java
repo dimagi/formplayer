@@ -13,7 +13,7 @@ import org.commcare.formplayer.utils.TestContext;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class OQPSDateRegression extends BaseTestClass{
+public class OQPSDateRegression extends BaseTestClass {
 
     @Override
     @BeforeEach

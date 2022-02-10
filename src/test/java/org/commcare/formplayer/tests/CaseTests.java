@@ -36,7 +36,7 @@ public class CaseTests extends BaseTestClass {
 
         UserSqlSandbox sandbox = getRestoreSandbox();
 
-        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
 
         assertEquals(15, caseStorage.getNumRecords());
         sandbox.getConnection().close();
@@ -78,7 +78,7 @@ public class CaseTests extends BaseTestClass {
         NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
 
         UserSqlSandbox sandbox = getRestoreSandbox();
-        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
         assertEquals(15, caseStorage.getNumRecords());
 
         String sessionId = newSessionResponse.getSessionId();
@@ -102,7 +102,7 @@ public class CaseTests extends BaseTestClass {
         while (caseIterator.hasNext()) {
             Case cCase = (Case)caseIterator.next();
             if (!cCase.isClosed()) {
-                openCount ++;
+                openCount++;
             }
         }
         assertEquals(14, openCount);

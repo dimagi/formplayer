@@ -1,6 +1,7 @@
 package org.commcare.formplayer.installers;
 
 import lombok.NonNull;
+
 import org.commcare.resources.ResourceInstallContext;
 import org.commcare.resources.model.*;
 import org.commcare.util.CommCarePlatform;
@@ -73,8 +74,8 @@ public class FormplayerLocaleInstaller extends SimpleInstaller {
     @Override
     public void readExternal(DataInputStream in, PrototypeFactory pf) throws IOException, DeserializationException {
         locale = ExtUtil.readString(in);
-        localizedValues = (Hashtable) ExtUtil.nullIfEmpty(
-                (Hashtable) ExtUtil.read(in, new ExtWrapMap(String.class, String.class), pf)
+        localizedValues = (Hashtable)ExtUtil.nullIfEmpty(
+                (Hashtable)ExtUtil.read(in, new ExtWrapMap(String.class, String.class), pf)
         );
     }
 

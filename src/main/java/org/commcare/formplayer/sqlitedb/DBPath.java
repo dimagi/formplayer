@@ -4,6 +4,7 @@ import java.io.File;
 
 abstract class DBPath {
     abstract String getDatabasePath();
+
     abstract String getDatabaseName();
 
     String getDatabaseFile() {

@@ -15,6 +15,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,7 +92,7 @@ public class RequestUtils {
     public static HttpServletRequest getCurrentRequest() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
-            return ((ServletRequestAttributes) attributes).getRequest();
+            return ((ServletRequestAttributes)attributes).getRequest();
         }
         return null;
     }
@@ -99,7 +100,7 @@ public class RequestUtils {
     public static Optional<HqUserDetailsBean> getUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
-            HqUserDetailsBean userDetails = (HqUserDetailsBean) authentication.getPrincipal();
+            HqUserDetailsBean userDetails = (HqUserDetailsBean)authentication.getPrincipal();
             return Optional.of(userDetails);
         }
         return Optional.empty();
@@ -114,6 +115,6 @@ public class RequestUtils {
             return false;
         }
         Object attribute = request.getAttribute(Constants.HMAC_REQUEST_ATTRIBUTE);
-        return attribute != null && (Boolean) attribute;
+        return attribute != null && (Boolean)attribute;
     }
 }

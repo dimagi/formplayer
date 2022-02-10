@@ -18,17 +18,17 @@ public class DjangoAuth implements HqAuth {
     // We seem to need all of these headers at different times. TODO WSP figure that out
     @Override
     public HttpHeaders getAuthHeaders() {
-        return new HttpHeaders(){
+        return new HttpHeaders() {
             {
-                add("Cookie",  Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authKey);
-                add(Constants.POSTGRES_DJANGO_SESSION_ID,  authKey);
-                add("Authorization",  Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authKey);
+                add("Cookie", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authKey);
+                add(Constants.POSTGRES_DJANGO_SESSION_ID, authKey);
+                add("Authorization", Constants.POSTGRES_DJANGO_SESSION_ID + "=" + authKey);
             }
         };
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "DjangoAuth key=" + authKey;
     }
 }

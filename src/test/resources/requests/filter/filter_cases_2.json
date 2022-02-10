@@ -1,5 +1,5 @@
 {
   "filter_expr": "[case_name = '123']",
   "domain": "test",
-  "username": "test",
+  "username": "test"
 }

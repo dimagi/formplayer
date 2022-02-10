@@ -14,7 +14,7 @@ import org.commcare.formplayer.utils.TestContext;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class RegressionTests extends BaseTestClass{
+public class RegressionTests extends BaseTestClass {
 
     @Override
     @BeforeEach
@@ -32,11 +32,11 @@ public class RegressionTests extends BaseTestClass{
     public void testBadCaseSelection() {
         try {
             sessionNavigate(new String[]{"2", "1"}, "doublemgmt", NewFormResponse.class);
-        } catch(Exception e) {
+        } catch (Exception e) {
             assert e.getCause() instanceof CommCareSessionException;
         }
     }
-    
+
     @Test
     public void testReportModule() throws Exception {
         configureRestoreFactory("modulerelevancydomain", "modulerelevancyusername");

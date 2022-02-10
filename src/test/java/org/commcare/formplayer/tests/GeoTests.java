@@ -12,7 +12,7 @@ import org.commcare.formplayer.utils.TestContext;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class GeoTests extends BaseTestClass{
+public class GeoTests extends BaseTestClass {
 
     @Override
     @BeforeEach

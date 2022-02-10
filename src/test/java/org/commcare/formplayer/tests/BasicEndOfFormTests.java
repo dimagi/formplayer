@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class BasicEndOfFormTests extends BaseTestClass{
+public class BasicEndOfFormTests extends BaseTestClass {
 
     @BeforeEach
     @Override
@@ -64,11 +64,11 @@ public class BasicEndOfFormTests extends BaseTestClass{
     public void testPreviousScreen() throws Exception {
         NewFormResponse response =
                 sessionNavigate(new String[]{"15", "2", "bef97ca3-e815-4841-ae54-0baf40d9f1af"},
-                "basic", NewFormResponse.class);
+                        "basic", NewFormResponse.class);
         SubmitResponseBean submitResponse = submitForm(
-                    getAnswers("0", "0"),
-                    response.getSessionId()
-                );
+                getAnswers("0", "0"),
+                response.getSessionId()
+        );
         EntityListResponse entityResponse = getNextScreenForEOFNavigation(submitResponse, EntityListResponse.class);
         assert entityResponse.getEntities().length == 3;
         assert entityResponse.getTitle().equals("Previous Screen");

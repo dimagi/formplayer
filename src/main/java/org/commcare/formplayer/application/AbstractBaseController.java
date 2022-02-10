@@ -2,6 +2,7 @@ package org.commcare.formplayer.application;
 
 import datadog.trace.api.Trace;
 import lombok.extern.apachecommons.CommonsLog;
+
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.beans.SessionNavigationBean;

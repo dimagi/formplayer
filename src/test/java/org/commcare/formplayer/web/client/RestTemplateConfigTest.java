@@ -40,11 +40,11 @@ class RestTemplateConfigTest_noCustomization {
     @Test
     public void testRestTemplate() throws URISyntaxException {
         mockServer.expect(ExpectedCount.once(), requestTo(new URI(getExpectedUrl())))
-            .andExpect(method(HttpMethod.GET))
-            .andRespond(withStatus(HttpStatus.OK)
-            .contentType(MediaType.TEXT_HTML)
-            .body("response")
-        );
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.OK)
+                        .contentType(MediaType.TEXT_HTML)
+                        .body("response")
+                );
 
         String url = "http://localhost:8000/a/demo/receiver/1234";
         restTemplate.getForObject(url, String.class);

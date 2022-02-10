@@ -7,13 +7,13 @@ import org.commcare.formplayer.services.FormSessionService
 import org.commcare.formplayer.utils.CheckedFunction
 import java.util.function.Function
 
-class ProcessingStep (
+class ProcessingStep(
         private val name: String,
         private val step: CheckedFunction<FormSubmissionContext, SubmitResponseBean, Exception>,
         private val context: FormSubmissionContext,
         private val formSessionService: FormSessionService,
         private val checkpoint: SubmitStatus?
-        ){
+) {
 
     private val log = LogFactory.getLog(ProcessingStep::class.java)
 
@@ -42,9 +42,10 @@ class ProcessingStep (
         return "ProcessingStep($name)";
     }
 
-    class StepFactory (val context: FormSubmissionContext, val formSessionService: FormSessionService) {
+    class StepFactory(val context: FormSubmissionContext, val formSessionService: FormSessionService) {
 
-        @JvmOverloads fun makeStep(name: String, step: CheckedFunction<FormSubmissionContext, SubmitResponseBean, Exception>, checkpoint: SubmitStatus? = null): ProcessingStep {
+        @JvmOverloads
+        fun makeStep(name: String, step: CheckedFunction<FormSubmissionContext, SubmitResponseBean, Exception>, checkpoint: SubmitStatus? = null): ProcessingStep {
             return ProcessingStep(name, step, context, formSessionService, checkpoint)
         }
     }

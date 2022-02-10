@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms"
+    xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
     <h:head>
         <h:title>Functions</h:title>
         <model>
             <instance>
-                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/E8B02EC5-D090-4AD5-8D81-64435E067FD5" uiVersion="1" version="1" name="Functions">
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms"
+                    xmlns="http://openrosa.org/formdesigner/E8B02EC5-D090-4AD5-8D81-64435E067FD5"
+                    uiVersion="1" version="1" name="Functions">
                     <form_intro />
                     <random />
                     <num1 />
@@ -55,64 +59,99 @@
             <bind nodeset="/data/boolean" type="xsd:int" />
             <bind nodeset="/data/boolean_display" relevant="boolean(/data/boolean)" />
             <bind nodeset="/data/selected_at" />
-            <bind nodeset="/data/selected_at_hidden" calculate="selected-at(&quot;I am a number&quot;, 3)" />
+            <bind nodeset="/data/selected_at_hidden"
+                calculate="selected-at(&quot;I am a number&quot;, 3)" />
             <bind nodeset="/data/int_dec" type="xsd:int" />
             <bind nodeset="/data/if_output" />
             <bind nodeset="/data/number" />
-            <bind nodeset="/data/if_dec" calculate="if( int(/data/int_dec) &lt;= /data/int_dec, int(/data/int_dec) + 1, int(/data/int_dec))" />
+            <bind nodeset="/data/if_dec"
+                calculate="if( int(/data/int_dec) &lt;= /data/int_dec, int(/data/int_dec) + 1, int(/data/int_dec))" />
             <bind nodeset="/data/pow" />
             <bind nodeset="/data/one" calculate="1" />
             <bind nodeset="/data/one_1" calculate="1" />
             <bind nodeset="/data/two" calculate="2" />
-            <bind nodeset="/data/true" relevant="checklist(2,2, /data/one=&quot;1&quot;, /data/one_1=&quot;1&quot;, /data/two=&quot;1&quot;)" />
-            <bind nodeset="/data/false" relevant="checklist(2,3, /data/one=&quot;2&quot;, /data/one_1=&quot;2&quot;, /data/two=&quot;2&quot;)" />
+            <bind nodeset="/data/true"
+                relevant="checklist(2,2, /data/one=&quot;1&quot;, /data/one_1=&quot;1&quot;, /data/two=&quot;1&quot;)" />
+            <bind nodeset="/data/false"
+                relevant="checklist(2,3, /data/one=&quot;2&quot;, /data/one_1=&quot;2&quot;, /data/two=&quot;2&quot;)" />
             <itext>
                 <translation lang="en" default="">
                     <text id="form_intro-label">
-                        <value>This form tests different functions and is structured with hidden values. </value>
+                        <value>This form tests different functions and is structured with hidden
+                            values.
+                        </value>
                     </text>
                     <text id="random-label">
-                        <value>This should display a random whole number between 1 and 50: <output ref="int((random()*(50 - 1)) + 1)" /></value>
+                        <value>This should display a random whole number between 1 and 50:
+                            <output ref="int((random()*(50 - 1)) + 1)" />
+                        </value>
                     </text>
                     <text id="min_max/concat-label">
-                        <value>The number "12" should be here: <output value="/data/concat_hidden" /></value>
+                        <value>The number "12" should be here:
+                            <output value="/data/concat_hidden" />
+                        </value>
                     </text>
                     <text id="min_max-label">
                         <value>Min &amp; Max</value>
                     </text>
                     <text id="min_value-label">
-                        <value>The number "1" should be displayed here: <output value="min(/data/hidden_max, /data/hidden_numb, /data/hidden_min)" />
-                            The number "3 should be displayed here: <output value="max(/data/hidden_max, /data/hidden_numb, /data/hidden_min)" /></value>
+                        <value>The number "1" should be displayed here:
+                            <output
+                                value="min(/data/hidden_max, /data/hidden_numb, /data/hidden_min)" />
+                            The number "3 should be displayed here:
+                            <output
+                                value="max(/data/hidden_max, /data/hidden_numb, /data/hidden_min)" />
+                        </value>
                     </text>
                     <text id="min_max/summation-label">
-                        <value>The number 6 should be displayed here: <output value="(int(/data/hidden_max) + int(/data/hidden_numb) + int(/data/hidden_min))" /></value>
+                        <value>The number 6 should be displayed here:
+                            <output
+                                value="(int(/data/hidden_max) + int(/data/hidden_numb) + int(/data/hidden_min))" />
+                        </value>
                     </text>
                     <text id="min_max/divisible-label">
-                        <value>The number "0" should be displayed here: <output value="/data/mod" /></value>
+                        <value>The number "0" should be displayed here:
+                            <output value="/data/mod" />
+                        </value>
                     </text>
                     <text id="min_max/coal_numbers-label">
-                        <value>The number "2" should display here: <output value="coalesce(/data/two, /data/three)" /></value>
+                        <value>The number "2" should display here:
+                            <output value="coalesce(/data/two, /data/three)" />
+                        </value>
                     </text>
                     <text id="boolean-label">
-                        <value>Enter a number and navigate forward; you should see a message. Return to this question, enter 0, and move forward. The message that was previously there should not display.</value>
+                        <value>Enter a number and navigate forward; you should see a message. Return
+                            to this question, enter 0, and move forward. The message that was
+                            previously there should not display.
+                        </value>
                     </text>
                     <text id="boolean_display-label">
-                        <value>This should only display if you entered any number other than "0" in the previous question.</value>
+                        <value>This should only display if you entered any number other than "0" in
+                            the previous question.
+                        </value>
                     </text>
                     <text id="selected_at-label">
-                        <value>This should display the word, "number": <output value="/data/selected_at_hidden" /></value>
+                        <value>This should display the word, "number":
+                            <output value="/data/selected_at_hidden" />
+                        </value>
                     </text>
                     <text id="int_dec-label">
                         <value>Enter 14</value>
                     </text>
                     <text id="if_output-label">
-                        <value>This should display "15": <output value="/data/if_dec" /></value>
+                        <value>This should display "15":
+                            <output value="/data/if_dec" />
+                        </value>
                     </text>
                     <text id="number-label">
-                        <value>This should display "14": <output value="number(/data/int_dec)" /></value>
+                        <value>This should display "14":
+                            <output value="number(/data/int_dec)" />
+                        </value>
                     </text>
                     <text id="pow-label">
-                        <value>The answer displayed here: 64, should equal this: <output ref="pow(8,2)" /></value>
+                        <value>The answer displayed here: 64, should equal this:
+                            <output ref="pow(8,2)" />
+                        </value>
                     </text>
                     <text id="true-label">
                         <value>You should be able to see this.</value>
@@ -123,50 +162,81 @@
                 </translation>
                 <translation lang="hin">
                     <text id="form_intro-label">
-                        <value>This form tests different functions and is structured with hidden values. </value>
+                        <value>This form tests different functions and is structured with hidden
+                            values.
+                        </value>
                     </text>
                     <text id="random-label">
-                        <value>This should display a random whole number between 1 and 50: <output ref="int((random()*(50 - 1)) + 1)" /></value>
+                        <value>This should display a random whole number between 1 and 50:
+                            <output ref="int((random()*(50 - 1)) + 1)" />
+                        </value>
                     </text>
                     <text id="min_max/concat-label">
-                        <value>The number "12" should be here: <output value="/data/concat_hidden" /></value>
+                        <value>The number "12" should be here:
+                            <output value="/data/concat_hidden" />
+                        </value>
                     </text>
                     <text id="min_max-label">
                         <value>Min &amp; Max</value>
                     </text>
                     <text id="min_value-label">
-                        <value>The number "1" should be displayed here: <output value="min(/data/hidden_max, /data/hidden_numb, /data/hidden_min)" />
-                            The number "3 should be displayed here: <output value="max(/data/hidden_max, /data/hidden_numb, /data/hidden_min)" /></value>
+                        <value>The number "1" should be displayed here:
+                            <output
+                                value="min(/data/hidden_max, /data/hidden_numb, /data/hidden_min)" />
+                            The number "3 should be displayed here:
+                            <output
+                                value="max(/data/hidden_max, /data/hidden_numb, /data/hidden_min)" />
+                        </value>
                     </text>
                     <text id="min_max/summation-label">
-                        <value>The number 6 should be displayed here: <output value="(int(/data/hidden_max) + int(/data/hidden_numb) + int(/data/hidden_min))" /></value>
+                        <value>The number 6 should be displayed here:
+                            <output
+                                value="(int(/data/hidden_max) + int(/data/hidden_numb) + int(/data/hidden_min))" />
+                        </value>
                     </text>
                     <text id="min_max/divisible-label">
-                        <value>The number "0" should be displayed here: <output value="/data/mod" /></value>
+                        <value>The number "0" should be displayed here:
+                            <output value="/data/mod" />
+                        </value>
                     </text>
                     <text id="min_max/coal_numbers-label">
-                        <value>The number "2" should display here: <output value="coalesce(/data/two, /data/three)" /></value>
+                        <value>The number "2" should display here:
+                            <output value="coalesce(/data/two, /data/three)" />
+                        </value>
                     </text>
                     <text id="boolean-label">
-                        <value>Enter a number and navigate forward; you should see a message. Return to this question, enter 0, and move forward. The message that was previously there should not display.</value>
+                        <value>Enter a number and navigate forward; you should see a message. Return
+                            to this question, enter 0, and move forward. The message that was
+                            previously there should not display.
+                        </value>
                     </text>
                     <text id="boolean_display-label">
-                        <value>This should only display if you entered any number other than "0" in the previous question.</value>
+                        <value>This should only display if you entered any number other than "0" in
+                            the previous question.
+                        </value>
                     </text>
                     <text id="selected_at-label">
-                        <value>This should display the word, "number": <output value="/data/selected_at_hidden" /></value>
+                        <value>This should display the word, "number":
+                            <output value="/data/selected_at_hidden" />
+                        </value>
                     </text>
                     <text id="int_dec-label">
                         <value>Enter 14</value>
                     </text>
                     <text id="if_output-label">
-                        <value>This should display "15": <output value="/data/if_dec" /></value>
+                        <value>This should display "15":
+                            <output value="/data/if_dec" />
+                        </value>
                     </text>
                     <text id="number-label">
-                        <value>This should display "14": <output value="number(/data/int_dec)" /></value>
+                        <value>This should display "14":
+                            <output value="number(/data/int_dec)" />
+                        </value>
                     </text>
                     <text id="pow-label">
-                        <value>The answer displayed here: 64, should equal this: <output ref="pow(8,2)" /></value>
+                        <value>The answer displayed here: 64, should equal this:
+                            <output ref="pow(8,2)" />
+                        </value>
                     </text>
                     <text id="true-label">
                         <value>You should be able to see this.</value>

@@ -1,6 +1,7 @@
 package org.commcare.formplayer.web.client;
 
 import lombok.extern.apachecommons.CommonsLog;
+
 import org.commcare.formplayer.util.Constants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -31,7 +32,6 @@ public class RestTemplateConfig {
 
     /**
      * Constructor for tests
-     * @param externalRequestMode
      */
     public RestTemplateConfig(String commcareHost, String externalRequestMode) {
         this.commcareHost = commcareHost;

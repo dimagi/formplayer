@@ -10,7 +10,8 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
  */
 public class FormplayerProfileInstaller extends ProfileInstaller {
 
-    public FormplayerProfileInstaller(){}
+    public FormplayerProfileInstaller() {
+    }
 
     public FormplayerProfileInstaller(boolean forceInstall) {
         super(forceInstall);

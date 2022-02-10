@@ -1,6 +1,7 @@
 package org.commcare.formplayer.sqlitedb;
 
 import datadog.trace.api.Trace;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sqlite.SQLiteConnection;
@@ -9,6 +10,7 @@ import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.services.ConnectionHandler;
 
 import javax.sql.DataSource;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -52,9 +54,9 @@ public class SQLiteDB implements ConnectionHandler {
                 connection = getNewConnection();
             } else {
                 if (connection instanceof SQLiteConnection) {
-                    SQLiteConnection sqLiteConnection = (SQLiteConnection) connection;
+                    SQLiteConnection sqLiteConnection = (SQLiteConnection)connection;
                     if (!matchesConnection(sqLiteConnection)) {
-                        log.error(String.format("Connection for path %s already exists",  sqLiteConnection.getUrl()));
+                        log.error(String.format("Connection for path %s already exists", sqLiteConnection.getUrl()));
                         connection.close();
                         connection = getNewConnection();
                     }
@@ -68,7 +70,7 @@ public class SQLiteDB implements ConnectionHandler {
 
     public void closeConnection() {
         try {
-            if(connection != null && !connection.isClosed()) {
+            if (connection != null && !connection.isClosed()) {
                 connection.close();
             }
         } catch (SQLException e) {

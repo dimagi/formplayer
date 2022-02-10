@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.FormsSessionsRequestBean;
@@ -78,9 +79,9 @@ public class FormSessionService {
         Pageable page = PageRequest.of(pageNumber, pageSize);
 
         if (asUser == null) {
-             return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain, page);
+            return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain, page);
         } else {
-             return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser, page);
+            return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser, page);
         }
     }
 

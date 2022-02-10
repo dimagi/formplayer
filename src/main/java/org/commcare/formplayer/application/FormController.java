@@ -1,7 +1,9 @@
 package org.commcare.formplayer.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.sentry.Sentry;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -145,9 +148,9 @@ public class FormController extends AbstractBaseController {
 
     // Iterate over all answers and attempt to save them to check for validity.
     public static HashMap<String, ErrorBean> validateAnswers(FormEntryController formEntryController,
-                                                       FormEntryModel formEntryModel,
-                                                       @Nullable Map<String, Object> answers,
-                                                       boolean skipValidation) {
+                                                             FormEntryModel formEntryModel,
+                                                             @Nullable Map<String, Object> answers,
+                                                             boolean skipValidation) {
         HashMap<String, ErrorBean> errors = new HashMap<>();
         if (answers != null) {
             for (String key : answers.keySet()) {

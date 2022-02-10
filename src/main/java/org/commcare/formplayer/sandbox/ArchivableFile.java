@@ -49,13 +49,13 @@ public class ArchivableFile extends File {
                 gzipDeleted = getGzipFile().delete();
             }
             return super.delete() || gzipDeleted;
-        } catch(IOException sqle) {
+        } catch (IOException sqle) {
             //If we can't get the lock, no other operations will work anyway.
             return false;
         } finally {
             try {
                 deleteLockOrThrow();
-            } catch(IOException ioe) {
+            } catch (IOException ioe) {
                 return false;
             }
         }
@@ -64,9 +64,9 @@ public class ArchivableFile extends File {
     private static void decompressGzipFile(File gzipFile, File newFile) throws IOException {
         // copied and modified from http://www.journaldev.com/966/java-gzip-example-compress-decompress-file
         try (
-        FileInputStream fis = new FileInputStream(gzipFile);
-        GZIPInputStream gis = new GZIPInputStream(fis);
-        FileOutputStream fos = new FileOutputStream(newFile);
+                FileInputStream fis = new FileInputStream(gzipFile);
+                GZIPInputStream gis = new GZIPInputStream(fis);
+                FileOutputStream fos = new FileOutputStream(newFile);
         ) {
             byte[] buffer = new byte[1024];
             int len;
@@ -95,8 +95,7 @@ public class ArchivableFile extends File {
 
     /**
      * @param timeout How long to wait for the lock before throwing a SqlArchiveLockException
-     * @param force If true, attempts to delete an existing lockfile regardless of age
-     * @throws IOException
+     * @param force   If true, attempts to delete an existing lockfile regardless of age
      */
     private void acquireLock(long timeout, boolean force) throws IOException {
         File databaseLockFile = getLockFile();
@@ -155,6 +154,7 @@ public class ArchivableFile extends File {
             deleteLockOrThrow();
         }
     }
+
     private void deleteLockOrThrow() throws IOException {
         File databaseLockFile = getLockFile();
 

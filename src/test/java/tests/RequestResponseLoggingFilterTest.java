@@ -17,6 +17,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 import static org.mockito.Mockito.*;
@@ -46,16 +47,16 @@ public class RequestResponseLoggingFilterTest {
         MockHttpServletResponse response = this.getHttpServletResponse(responseBody);
         FilterChain filterChain = this.getFilterChain(responseBody);
 
-        RequestResponseLoggingFilter reqRespFilter= new RequestResponseLoggingFilter(this.log, true);
+        RequestResponseLoggingFilter reqRespFilter = new RequestResponseLoggingFilter(this.log, true);
         reqRespFilter.doFilter(request, response, filterChain);
 
         verify(this.log).info(argThat(logMessage -> {
-            return ((JSONObject) logMessage).getString("username").equals(user) &&
-                    ((JSONObject) logMessage).getString("username").equals(user) &&
-                    ((JSONObject) logMessage).getString("requestBody").equals(requestBody) &&
-                    ((JSONObject) logMessage).getString("restoreAs").equals(restoreAs) &&
-                    ((JSONObject) logMessage).getString("requestUrl").equals("http://localhost" + uri) &&
-                    ((JSONObject) logMessage).getString("requestBody").equals(requestBody);
+            return ((JSONObject)logMessage).getString("username").equals(user) &&
+                    ((JSONObject)logMessage).getString("username").equals(user) &&
+                    ((JSONObject)logMessage).getString("requestBody").equals(requestBody) &&
+                    ((JSONObject)logMessage).getString("restoreAs").equals(restoreAs) &&
+                    ((JSONObject)logMessage).getString("requestUrl").equals("http://localhost" + uri) &&
+                    ((JSONObject)logMessage).getString("requestBody").equals(requestBody);
 
         }));
     }
@@ -67,7 +68,7 @@ public class RequestResponseLoggingFilterTest {
         MockHttpServletResponse response = this.getHttpServletResponse("b");
         FilterChain filterChain = this.getFilterChain("b");
 
-        RequestResponseLoggingFilter reqRespFilter= new RequestResponseLoggingFilter(this.log, false);
+        RequestResponseLoggingFilter reqRespFilter = new RequestResponseLoggingFilter(this.log, false);
         reqRespFilter.doFilter(request, response, filterChain);
 
         verify(this.log, never()).info(Mockito.any());

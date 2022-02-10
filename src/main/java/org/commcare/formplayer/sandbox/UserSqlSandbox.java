@@ -1,6 +1,7 @@
 package org.commcare.formplayer.sandbox;
 
 import datadog.trace.api.Trace;
+
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.StorageIndexedTreeElementModel;
@@ -97,7 +98,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     public IndexedFixtureIdentifier getIndexedFixtureIdentifier(String fixtureName) {
         Connection connection = sqlUtil.getConnection();
         try (PreparedStatement preparedStatement = connection.prepareStatement(
-                IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE_SELECT_STMT) ){
+                IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE_SELECT_STMT)) {
             preparedStatement.setString(1, fixtureName);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -116,7 +117,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
 
     @Override
     public void setIndexedFixturePathBases(String fixtureName, String baseName,
-                                           String childName,  TreeElement attrs) {
+                                           String childName, TreeElement attrs) {
         Map<String, Object> contentVals = new HashMap<>();
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_BASE, baseName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_CHILD, childName);

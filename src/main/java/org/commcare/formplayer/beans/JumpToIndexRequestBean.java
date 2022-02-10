@@ -10,7 +10,8 @@ public class JumpToIndexRequestBean extends SessionRequestBean {
     private String formIndex;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public JumpToIndexRequestBean(){}
+    public JumpToIndexRequestBean() {
+    }
 
     public JumpToIndexRequestBean(String formIndex, String sessionId) {
         this.formIndex = formIndex;
@@ -21,13 +22,14 @@ public class JumpToIndexRequestBean extends SessionRequestBean {
     public String getFormIndex() {
         return formIndex;
     }
+
     @JsonSetter(value = "ix")
     public void setFormIndex(String formIndex) {
         this.formIndex = formIndex;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "Questions for index nean [formIndex: " + formIndex + ", sessionId: " + sessionId + "]";
     }
 }

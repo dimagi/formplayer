@@ -106,19 +106,19 @@ public class CaseAPITests {
     }
 
     @AfterEach
-    public void tearDown(){
+    public void tearDown() {
         try {
-            if(preparedStatement != null) {
+            if (preparedStatement != null) {
                 preparedStatement.close();
             }
-            if(connection != null) {
+            if (connection != null) {
                 connection.close();
             }
-            if(resultSet != null){
+            if (resultSet != null) {
                 resultSet.close();
             }
             File databaseFile = new File(databaseName);
-            if(databaseFile.exists()){
+            if (databaseFile.exists()) {
                 databaseFile.delete();
             }
         } catch (SQLException e1) {

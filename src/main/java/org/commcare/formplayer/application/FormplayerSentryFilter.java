@@ -1,6 +1,7 @@
 package org.commcare.formplayer.application;
 
 import io.sentry.Sentry;
+
 import org.commcare.formplayer.filters.FilterOrder;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
@@ -12,6 +13,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 @Component

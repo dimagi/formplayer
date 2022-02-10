@@ -20,10 +20,10 @@ public class MenuDebuggerContentResponseBean extends LocationRelevantResponseBea
             List<XPathQueryItem> recentXPathQueries) {
         this.appId = appId;
         HashSet<AutoCompletableItem> autoCompletable = new HashSet<>();
-        for (String function: functionList) {
+        for (String function : functionList) {
             autoCompletable.add(new FunctionAutocompletable(function));
         }
-        for (String instanceId: instanceIds) {
+        for (String instanceId : instanceIds) {
             autoCompletable.add(new InstanceAutocompletableItem(instanceId));
         }
         this.autoCompletableItems = autoCompletable.toArray(new AutoCompletableItem[autoCompletable.size()]);

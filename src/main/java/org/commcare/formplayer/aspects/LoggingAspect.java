@@ -27,7 +27,7 @@ public class LoggingAspect {
             "&& @annotation(org.springframework.web.bind.annotation.RequestMapping) " +
             "&& !@annotation(org.commcare.formplayer.annotations.NoLogging)")
     public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
-        MethodSignature ms = (MethodSignature) joinPoint.getSignature();
+        MethodSignature ms = (MethodSignature)joinPoint.getSignature();
         Method m = ms.getMethod();
         Object requestBean = null;
         String requestPath = null;
@@ -35,13 +35,13 @@ public class LoggingAspect {
             requestPath = m.getAnnotation(RequestMapping.class).value()[0]; //Should be only one
             requestBean = joinPoint.getArgs()[0];
             log.info("Request to " + requestPath + " with bean " + requestBean);
-        } catch(ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             // no request body
             log.info("Request to " + requestPath + " with no request body.");
         }
 
         if (requestBean != null && requestBean instanceof AuthenticatedRequestBean) {
-            final AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean) requestBean;
+            final AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean)requestBean;
             FormplayerSentry.newBreadcrumb()
                     .setData(
                             "path", requestPath,

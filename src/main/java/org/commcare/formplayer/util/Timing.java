@@ -2,6 +2,7 @@ package org.commcare.formplayer.util;
 
 public abstract class Timing {
     public abstract long durationInMs();
+
     public String getDurationBucket() {
         long timeInSeconds = durationInMs() / 1000;
         return getDurationBucket(timeInSeconds);

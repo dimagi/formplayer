@@ -13,7 +13,7 @@ import org.commcare.formplayer.utils.TestContext;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class SchedulerTest extends BaseTestClass{
+public class SchedulerTest extends BaseTestClass {
 
     @Override
     @BeforeEach

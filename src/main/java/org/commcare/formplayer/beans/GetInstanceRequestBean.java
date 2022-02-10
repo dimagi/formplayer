@@ -13,12 +13,14 @@ public class GetInstanceRequestBean {
 
     private String sessionId;
 
-    public GetInstanceRequestBean(){}
+    public GetInstanceRequestBean() {
+    }
 
     @JsonGetter(value = "session-id")
     public String getSessionId() {
         return sessionId;
     }
+
     @JsonSetter(value = "session-id")
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
@@ -26,7 +28,7 @@ public class GetInstanceRequestBean {
 
 
     @Override
-    public String toString(){
-        return "GetInstanceRequestBean [sessionId=" + sessionId +"]";
+    public String toString() {
+        return "GetInstanceRequestBean [sessionId=" + sessionId + "]";
     }
 }

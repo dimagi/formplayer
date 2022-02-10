@@ -9,7 +9,10 @@ import java.util.Map;
  */
 public interface FormSessionListView {
     String getId();
+
     String getTitle();
+
     Instant getDateCreated();
+
     Map<String, String> getSessionData();
 }

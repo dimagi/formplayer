@@ -3,6 +3,7 @@ package org.commcare.formplayer.aspects;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import io.sentry.Sentry;
+
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.auth.HqAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
@@ -60,9 +61,9 @@ public class UserRestoreAspect {
             throw new RuntimeException(
                     String.format("Could not configure RestoreFactory with invalid request %s", Arrays.toString(args)));
         }
-        AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
+        AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean)args[0];
 
-        HqAuth auth = getHqAuth((String) args[1]);
+        HqAuth auth = getHqAuth((String)args[1]);
 
         configureRestoreFactory(requestBean, auth);
         configureSentryScope(restoreFactory);
@@ -91,13 +92,13 @@ public class UserRestoreAspect {
             restoreFactory.configure(requestBean, auth);
             final Span span = GlobalTracer.get().activeSpan();
             if (span != null && (span instanceof MutableSpan)) {
-                MutableSpan localRootSpan = ((MutableSpan) span).getLocalRootSpan();
+                MutableSpan localRootSpan = ((MutableSpan)span).getLocalRootSpan();
                 localRootSpan.setTag("domain", requestBean.getDomain());
                 localRootSpan.setTag("user", requestBean.getUsername());
             }
-        } else if (requestBean instanceof SessionRequestBean){
+        } else if (requestBean instanceof SessionRequestBean) {
             // SMS users don't submit username and domain with each request, so obtain from session
-            String sessionId = ((SessionRequestBean) requestBean).getSessionId();
+            String sessionId = ((SessionRequestBean)requestBean).getSessionId();
             SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
 
             if (formSession.getRestoreAsCaseId() != null) {

@@ -32,7 +32,7 @@ public class SessionUtils {
             return null;
         }
         CaseBean caseBean = CaseAPIs.getFullCase(caseId, caseStorage);
-        return (String) caseBean.getProperties().get("case_name");
+        return (String)caseBean.getProperties().get("case_name");
     }
 
     public static String getBestTitle(SessionWrapper session) {
@@ -93,8 +93,8 @@ public class SessionUtils {
         }
     }
 
-    public static String resolveInstallReference(String appId, String host, String domain){
-        if(appId == null || "".equals(appId)){
+    public static String resolveInstallReference(String appId, String host, String domain) {
+        if (appId == null || "".equals(appId)) {
             throw new RuntimeException("app_id required for install");
         }
         return host + getReferenceToLatest(appId, domain);
@@ -102,8 +102,9 @@ public class SessionUtils {
 
     /**
      * Given an app id this returns a URI that will return a CCZ from HQ
+     *
      * @param appId An id of the application of the CCZ needed
-     * @return      An HQ URI to download the CCZ
+     * @return An HQ URI to download the CCZ
      */
     public static String getReferenceToLatest(String appId, String domain) {
         URIBuilder builder;

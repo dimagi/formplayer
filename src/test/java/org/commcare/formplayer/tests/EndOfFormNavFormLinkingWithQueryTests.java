@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests;
 
 
 import com.google.common.collect.ImmutableMultimap;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.mocks.casexml.CaseFixtureBlock;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.when;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class EndOfFormNavFormLinkingWithQueryTests extends BaseTestClass{
+public class EndOfFormNavFormLinkingWithQueryTests extends BaseTestClass {
 
     @Autowired
     CacheManager cacheManager;
@@ -43,9 +44,9 @@ public class EndOfFormNavFormLinkingWithQueryTests extends BaseTestClass{
     @Test
     public void testFormLinkingFromFollowupForm1ToFollowupForm2() throws Exception {
         NewFormResponse response = sessionNavigate(
-            new String[]{"0", "first_case", "0"},
-            "form-linking-test-with-stack-queries",
-            NewFormResponse.class
+                new String[]{"0", "first_case", "0"},
+                "form-linking-test-with-stack-queries",
+                NewFormResponse.class
         );
         assertEquals("1st Followup Form", response.getTitle());
         SubmitResponseBean submitResponse = submitForm(new HashMap<>(), response.getSessionId());

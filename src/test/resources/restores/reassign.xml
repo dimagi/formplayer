@@ -10,9 +10,9 @@
         <date>2015-05-19</date>
         <user_data>
             <data key="commcare_project">chadbrochill</data>
-            <data key="commcare_last_name"/>
-            <data key="commcare_phone_number"/>
-            <data key="commcare_first_name"/>
+            <data key="commcare_last_name" />
+            <data key="commcare_phone_number" />
+            <data key="commcare_first_name" />
         </user_data>
     </Registration>
 </OpenRosaResponse>

@@ -2,6 +2,7 @@ package org.commcare.formplayer.tests;
 
 
 import com.google.common.collect.ImmutableMultimap;
+
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
@@ -34,7 +35,7 @@ import static org.mockito.Mockito.*;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class FormEntryWithQueryTests extends BaseTestClass{
+public class FormEntryWithQueryTests extends BaseTestClass {
 
     @Autowired
     FormplayerStorageFactory storageFactory;
@@ -96,7 +97,7 @@ public class FormEntryWithQueryTests extends BaseTestClass{
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(formResponse.getSessionId());
         FormSession formSession = getFormSession(serializableFormSession);
         EvaluationContext evaluationContext = formSession.getFormEntryModel().getForm().getEvaluationContext();
-        ExternalDataInstance registry = (ExternalDataInstance) evaluationContext.getInstance("registry");
+        ExternalDataInstance registry = (ExternalDataInstance)evaluationContext.getInstance("registry");
         assertTrue(registry.useCaseTemplate());
     }
 

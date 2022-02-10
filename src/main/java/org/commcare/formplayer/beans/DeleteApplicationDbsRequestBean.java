@@ -2,6 +2,7 @@ package org.commcare.formplayer.beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+
 import org.commcare.formplayer.sqlitedb.ApplicationDB;
 
 /**

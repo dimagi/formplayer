@@ -3,6 +3,7 @@ package org.commcare.formplayer.tests;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.commcare.formplayer.application.*;
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.*;
@@ -57,6 +58,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import javax.servlet.http.Cookie;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -227,10 +229,10 @@ public class BaseTestClass {
         doAnswer(new Answer<SerializableFormSession>() {
             @Override
             public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
-                SerializableFormSession session = (SerializableFormSession) invocation.getArguments()[0];
+                SerializableFormSession session = (SerializableFormSession)invocation.getArguments()[0];
                 if (session.getId() == null) {
                     // this is normally taken care of by Hibernate
-                    ReflectionTestUtils.setField(session,"id",UUID.randomUUID().toString());
+                    ReflectionTestUtils.setField(session, "id", UUID.randomUUID().toString());
                 }
                 sessionMap.put(session.getId(), session);
                 return session;
@@ -240,7 +242,7 @@ public class BaseTestClass {
         when(formSessionService.getSessionById(anyString())).thenAnswer(new Answer<SerializableFormSession>() {
             @Override
             public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
-                String key = (String) invocation.getArguments()[0];
+                String key = (String)invocation.getArguments()[0];
                 if (sessionMap.containsKey(key)) {
                     return sessionMap.get(key);
                 }
@@ -251,7 +253,7 @@ public class BaseTestClass {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                String key = (String) invocation.getArguments()[0];
+                String key = (String)invocation.getArguments()[0];
                 sessionMap.remove(key);
                 return null;
             }
@@ -263,10 +265,10 @@ public class BaseTestClass {
         doAnswer(new Answer<SerializableMenuSession>() {
             @Override
             public SerializableMenuSession answer(InvocationOnMock invocation) throws Throwable {
-                SerializableMenuSession session = (SerializableMenuSession) invocation.getArguments()[0];
+                SerializableMenuSession session = (SerializableMenuSession)invocation.getArguments()[0];
                 if (session.getId() == null) {
                     // this is normally taken care of by Hibernate
-                    ReflectionTestUtils.setField(session,"id",UUID.randomUUID().toString());
+                    ReflectionTestUtils.setField(session, "id", UUID.randomUUID().toString());
                 }
                 menuSessionMap.put(session.getId(), session);
                 return session;
@@ -276,7 +278,7 @@ public class BaseTestClass {
         when(menuSessionService.getSessionById(anyString())).thenAnswer(new Answer<SerializableMenuSession>() {
             @Override
             public SerializableMenuSession answer(InvocationOnMock invocation) throws Throwable {
-                String key = (String) invocation.getArguments()[0];
+                String key = (String)invocation.getArguments()[0];
                 if (menuSessionMap.containsKey(key)) {
                     return menuSessionMap.get(key);
                 }
@@ -305,11 +307,11 @@ public class BaseTestClass {
 
     @AfterEach
     public void tearDown() throws SQLException {
-        if(customConnector != null) {
+        if (customConnector != null) {
             customConnector.closeConnection();
         }
 
-        if(sandbox != null ) {
+        if (sandbox != null) {
             sandbox.getConnection().close();
         }
         restoreFactoryMock.getSQLiteDB().closeConnection();
@@ -335,7 +337,7 @@ public class BaseTestClass {
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-            sandbox =  null;
+            sandbox = null;
         }
         sandbox = restoreFactoryMock.getSqlSandbox();
         return sandbox;
@@ -776,7 +778,7 @@ public class BaseTestClass {
                     bean.getRestoreAs(),
                     bean.getPreview()
             );
-            return (CommandListResponseBean) menuSessionRunnerService.getNextMenu(menuSession);
+            return (CommandListResponseBean)menuSessionRunnerService.getNextMenu(menuSession);
         };
         return mockInstallReference(install, refAndBean.first);
     }
@@ -836,17 +838,17 @@ public class BaseTestClass {
 
         if (bean instanceof AuthenticatedRequestBean) {
             restoreFactoryMock.getSQLiteDB().closeConnection();
-            restoreFactoryMock.configure((AuthenticatedRequestBean) bean, new DjangoAuth("derp"));
+            restoreFactoryMock.configure((AuthenticatedRequestBean)bean, new DjangoAuth("derp"));
         }
 
         if (bean instanceof InstallRequestBean) {
             storageFactoryMock.getSQLiteDB().closeConnection();
-            storageFactoryMock.configure((InstallRequestBean) bean);
+            storageFactoryMock.configure((InstallRequestBean)bean);
         }
 
         if (bean instanceof SessionRequestBean) {
             storageFactoryMock.getSQLiteDB().closeConnection();
-            storageFactoryMock.configure(((SessionRequestBean) bean).getSessionId());
+            storageFactoryMock.configure(((SessionRequestBean)bean).getSessionId());
         }
 
         if (!(bean instanceof String)) {
@@ -875,7 +877,7 @@ public class BaseTestClass {
                         post(urlPrepend(urlPath))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                                .content((String) bean));
+                                .content((String)bean));
                 break;
 
             case GET:
@@ -883,7 +885,7 @@ public class BaseTestClass {
                         get(urlPrepend(urlPath))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                                .content((String) bean));
+                                .content((String)bean));
                 break;
         }
         restoreFactoryMock.getSQLiteDB().closeConnection();
@@ -895,7 +897,7 @@ public class BaseTestClass {
     }
 
     <T> T getNextScreenForEOFNavigation(SubmitResponseBean submitResponse, Class<T> clazz) throws IOException {
-        LinkedHashMap commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
+        LinkedHashMap commandsRaw = (LinkedHashMap)submitResponse.getNextScreen();
         String jsonString = new JSONObject(commandsRaw).toString();
         return mapper.readValue(jsonString, clazz);
     }
@@ -919,13 +921,12 @@ public class BaseTestClass {
      * and map the remaining JSON fields to the given bean type.
      *
      * @param requestPath classpath relative path to JSON file
-     * @param clazz Bean class map JSON to
+     * @param clazz       Bean class map JSON to
      * @return Pair of 'installReference' and deserialized JSON bean
-     * @throws IOException
      */
     private <T> Pair<String, T> getInstallReferenceAndBean(String requestPath, Class<T> clazz) throws IOException {
         JsonNode root = mapper.readTree(new StringReader(FileUtils.getFile(this.getClass(), requestPath)));
-        String installReference = ((ObjectNode) root).remove("installReference").asText();
+        String installReference = ((ObjectNode)root).remove("installReference").asText();
         String beanContent = mapper.writeValueAsString(root);
         return new Pair(installReference, mapper.readValue(beanContent, clazz));
     }

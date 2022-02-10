@@ -2,6 +2,7 @@ package org.commcare.formplayer.beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+
 import org.commcare.suite.model.Detail;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityScreen;
@@ -18,7 +19,8 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
 
-    public EntityDetailListResponse() {}
+    public EntityDetailListResponse() {
+    }
 
     public EntityDetailListResponse(EntityDetailResponse entityDetailResponse) {
         this.entityDetailList = new EntityDetailResponse[]{entityDetailResponse};

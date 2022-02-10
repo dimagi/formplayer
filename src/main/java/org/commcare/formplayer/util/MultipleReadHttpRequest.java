@@ -6,6 +6,7 @@ import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+
 import java.io.*;
 
 /**
@@ -30,7 +31,7 @@ public class MultipleReadHttpRequest extends HttpServletRequestWrapper {
     }
 
     @Override
-    public BufferedReader getReader() throws IOException{
+    public BufferedReader getReader() throws IOException {
         return new BufferedReader(new InputStreamReader(getInputStream()));
     }
 
@@ -62,7 +63,8 @@ public class MultipleReadHttpRequest extends HttpServletRequestWrapper {
         }
 
         @Override
-        public void setReadListener(ReadListener listener) { }
+        public void setReadListener(ReadListener listener) {
+        }
 
         @Override
         public int read() throws IOException {

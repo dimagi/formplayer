@@ -41,8 +41,8 @@ public class CasePaginationTests extends BaseTestClass {
                 sessionNavigate("requests/navigators/pagination_navigator.json", EntityListResponse.class);
         assert entityListResponse.getEntities().length == 20;
         String previousName = "";
-        for (EntityBean entity: entityListResponse.getEntities()) {
-            String currentName = (String) entity.getData()[0];
+        for (EntityBean entity : entityListResponse.getEntities()) {
+            String currentName = (String)entity.getData()[0];
             // Case list sort converts text values to lowercase before comparing
             assert previousName.toLowerCase().compareTo(currentName.toLowerCase()) <= 0;
             previousName = currentName;

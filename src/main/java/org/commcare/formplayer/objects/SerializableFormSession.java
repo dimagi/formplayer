@@ -2,94 +2,98 @@ package org.commcare.formplayer.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Map;
 
 @Entity
-@Table(name="formplayer_sessions")
+@Table(name = "formplayer_sessions")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-public class SerializableFormSession implements Serializable{
+public class SerializableFormSession implements Serializable {
     public enum SubmitStatus {
         PROCESSED_XML,
         PROCESSED_STACK
     }
 
     @Id
-    @GeneratedValue( generator="uuid" )
-    @GenericGenerator(name="uuid", strategy="org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
     @Version
     private int version;
 
     @CreatedDate
-    @Column(name="datecreated")
+    @Column(name = "datecreated")
     private Instant dateCreated;
 
-    @Column(updatable=false)
+    @Column(updatable = false)
     private String domain;
 
-    @Column(name="asuser", updatable=false)
+    @Column(name = "asuser", updatable = false)
     private String asUser;
 
-    @Column(name="appid", updatable=false)
+    @Column(name = "appid", updatable = false)
     private String appId;
 
-    @Column(name="caseid", updatable=false)
+    @Column(name = "caseid", updatable = false)
     private String restoreAsCaseId;
 
-    @Column(name="posturl", updatable=false)
+    @Column(name = "posturl", updatable = false)
     private String postUrl;
 
-    @Column(name="menu_session_id", updatable=false)
+    @Column(name = "menu_session_id", updatable = false)
     private String menuSessionId;
 
-    @Column(updatable=false)
+    @Column(updatable = false)
     private String title;
 
-    @Column(name="onequestionperscreen", updatable=false)
+    @Column(name = "onequestionperscreen", updatable = false)
     private boolean oneQuestionPerScreen;
 
     @Setter
-    @Column(name="formxml", updatable=false)
+    @Column(name = "formxml", updatable = false)
     private String formXml;
 
     @Setter
-    @Column(name="instancexml")
+    @Column(name = "instancexml")
     private String instanceXml;
 
-    @Column(updatable=false)
+    @Column(updatable = false)
     private String username;
 
     @Setter
-    @Column(name="initlang")
+    @Column(name = "initlang")
     private String initLang;
 
-    @Column(name="sessiondata")
-    @Convert(converter=ByteArrayConverter.class)
+    @Column(name = "sessiondata")
+    @Convert(converter = ByteArrayConverter.class)
     private Map<String, String> sessionData;
 
     @Setter
-    @Column(name="currentindex")
+    @Column(name = "currentindex")
     private String currentIndex;
 
-    @Column(name="functioncontext")
-    @Convert(converter=ByteArrayConverter.class)
+    @Column(name = "functioncontext")
+    @Convert(converter = ByteArrayConverter.class)
     private Map<String, FunctionHandler[]> functionContext;
 
-    @Column(name="inpromptmode")
+    @Column(name = "inpromptmode")
     private boolean inPromptMode;
 
     private String submitStatus;
 
-    public SerializableFormSession() { }
+    public SerializableFormSession() {
+    }
+
     public SerializableFormSession(String id) {
         this.id = id;
     }
@@ -138,7 +142,7 @@ public class SerializableFormSession implements Serializable{
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "Session [id=" + id + ", version=" + version + ", username=" + username
                 + " domain=" + domain + ", instance=" + instanceXml
                 + ", submitStatus=" + submitStatus + "]";

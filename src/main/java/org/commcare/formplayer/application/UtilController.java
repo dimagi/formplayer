@@ -23,15 +23,16 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.StringReader;
 
 /**
  * Controller class (API endpoint) containing all all logic that isn't associated with
  * a particular form session or menu navigation. Includes:
- *      Get Cases
- *      Filter Cases
- *      Sync User DB
- *      Get Sessions (Incomplete Forms)
+ * Get Cases
+ * Filter Cases
+ * Sync User DB
+ * Get Sessions (Incomplete Forms)
  */
 @RestController
 @EnableAutoConfiguration
@@ -109,9 +110,9 @@ public class UtilController {
 
 
         Integer secondsLocked = userLockRegistry.getTimeLocked(key);
-        if(secondsLocked == null) {
+        if (secondsLocked == null) {
             return new LockReportBean(false, 0);
-        } else{
+        } else {
             return new LockReportBean(true, secondsLocked);
         }
     }
@@ -122,7 +123,7 @@ public class UtilController {
 
         String message;
 
-        if(userLockRegistry.breakAnyExistingLocks(key)) {
+        if (userLockRegistry.breakAnyExistingLocks(key)) {
             message = "A lock existed and it was requested to be evicted";
         } else {
             message = "No locks for the current user";
@@ -138,10 +139,10 @@ public class UtilController {
 
     @NoLogging
     @RequestMapping(
-        value = Constants.URL_VALIDATE_FORM,
-        method = RequestMethod.POST,
-        produces = { MediaType.APPLICATION_JSON_VALUE },
-        consumes = { MediaType.APPLICATION_XML_VALUE}
+            value = Constants.URL_VALIDATE_FORM,
+            method = RequestMethod.POST,
+            produces = {MediaType.APPLICATION_JSON_VALUE},
+            consumes = {MediaType.APPLICATION_XML_VALUE}
     )
     public String validateForm(@RequestBody String formXML) throws Exception {
         JSONReporter reporter = new JSONReporter();

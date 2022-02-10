@@ -2,6 +2,7 @@ package org.commcare.formplayer.aspects;
 
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -49,7 +50,7 @@ public class MetricsAspect {
 
         String requestPath = RequestUtils.getRequestEndpoint();
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
-            AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
+            AuthenticatedRequestBean bean = (AuthenticatedRequestBean)args[0];
             domain = bean.getDomain();
         }
 

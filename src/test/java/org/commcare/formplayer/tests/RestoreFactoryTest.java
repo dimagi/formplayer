@@ -25,6 +25,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -255,7 +256,7 @@ public class RestoreFactoryTest {
     }
 
     private void validateHeaders(HttpHeaders headers, List<Matcher<Map<? extends String, ? extends List<String>>>> matchers) {
-        for (Matcher<Map<? extends String, ? extends List<String>>> matcher: matchers) {
+        for (Matcher<Map<? extends String, ? extends List<String>>> matcher : matchers) {
             MatcherAssert.assertThat(headers, matcher);
         }
     }

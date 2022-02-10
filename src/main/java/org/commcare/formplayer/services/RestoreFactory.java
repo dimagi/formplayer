@@ -1,9 +1,12 @@
 package org.commcare.formplayer.services;
 
 import datadog.trace.api.Trace;
+
 import com.google.common.collect.ImmutableMap;
 import com.timgroup.statsd.StatsDClient;
+
 import io.sentry.SentryLevel;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,6 +55,7 @@ import javax.annotation.Resource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -444,7 +448,8 @@ public class RestoreFactory {
         if (RequestUtils.requestAuthedWithHmac()) {
             headers = getHmacHeader(url);
         } else {
-            headers = getHqAuth().getAuthHeaders();;
+            headers = getHqAuth().getAuthHeaders();
+            ;
         }
         headers.addAll(getStandardHeaders());
         return headers;

@@ -25,7 +25,7 @@ public class AsyncRestoreTest {
         try {
             method.invoke(restoreFactory, asyncResponse, headers);
         } catch (InvocationTargetException invocationException) {
-            AsyncRetryException e = (AsyncRetryException) invocationException.getTargetException();
+            AsyncRetryException e = (AsyncRetryException)invocationException.getTargetException();
             Assertions.assertEquals(143, e.getDone());
             Assertions.assertEquals(23311, e.getTotal());
             Assertions.assertEquals(30, e.getRetryAfter());

@@ -34,7 +34,7 @@ public class FormplayerSyncScreen extends SyncScreen {
     }
 
     @Override
-    public void init (SessionWrapper sessionWrapper) throws CommCareSessionException {
+    public void init(SessionWrapper sessionWrapper) throws CommCareSessionException {
         this.sessionWrapper = sessionWrapper;
         String command = sessionWrapper.getCommand();
         Entry commandEntry = sessionWrapper.getPlatform().getEntry(command);
@@ -46,7 +46,7 @@ public class FormplayerSyncScreen extends SyncScreen {
             if (asUser != null) {
                 queryParams.add("commcare_login_as", asUser);
             }
-            for (String key: params.keySet()){
+            for (String key : params.keySet()) {
                 queryParams.add(key, params.get(key));
             }
         } else {

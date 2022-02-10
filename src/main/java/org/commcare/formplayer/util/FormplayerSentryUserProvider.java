@@ -2,6 +2,7 @@ package org.commcare.formplayer.util;
 
 import io.sentry.protocol.User;
 import io.sentry.spring.SentryUserProvider;
+
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;

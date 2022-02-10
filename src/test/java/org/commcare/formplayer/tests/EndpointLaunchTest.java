@@ -1,9 +1,12 @@
 package org.commcare.formplayer.tests;
+
 import org.commcare.formplayer.utils.WithHqUser;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
+
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

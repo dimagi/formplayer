@@ -127,13 +127,13 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     }
 
 
-    public HashMap<Integer,Vector<Pair<String, String>>> getCaseIndexMap() {
-        String[] projection = new String[] {COL_CASE_RECORD_ID, COL_INDEX_TARGET, COL_INDEX_RELATIONSHIP};
-        HashMap<Integer,Vector<Pair<String, String>>> caseIndexMap = new HashMap<>();
+    public HashMap<Integer, Vector<Pair<String, String>>> getCaseIndexMap() {
+        String[] projection = new String[]{COL_CASE_RECORD_ID, COL_INDEX_TARGET, COL_INDEX_RELATIONSHIP};
+        HashMap<Integer, Vector<Pair<String, String>>> caseIndexMap = new HashMap<>();
 
         try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectProjectionStatement(connectionHandler.getConnection(),
-                    TABLE_NAME,
-                    projection)) {
+                TABLE_NAME,
+                projection)) {
             try (ResultSet resultSet = selectStatement.executeQuery()) {
                 while (resultSet.next()) {
                     int caseRecordId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
@@ -174,10 +174,10 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
         try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
                 connectionHandler.getConnection(),
-                    TABLE_NAME,
-                    new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
-                    args)) {
-            try(ResultSet resultSet = selectStatement.executeQuery()) {
+                TABLE_NAME,
+                new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
+                args)) {
+            try (ResultSet resultSet = selectStatement.executeQuery()) {
                 LinkedHashSet<Integer> ret = new LinkedHashSet<>();
                 SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
                 return ret;
@@ -205,9 +205,9 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
         try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
                 connectionHandler.getConnection(),
-                    TABLE_NAME,
-                    whereExpr,
-                    args)) {
+                TABLE_NAME,
+                whereExpr,
+                args)) {
             try (ResultSet resultSet = selectStatement.executeQuery()) {
                 LinkedHashSet<Integer> ret = new LinkedHashSet<>();
                 SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
@@ -228,7 +228,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 new String[]{COL_INDEX_NAME},
                 args)) {
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()){
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     resultsReturned++;
                     int id = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
@@ -253,9 +253,6 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     /**
      * Provided an index name and a list of case row ID's, provides a list of the row ID's of the
      * cases which point to that ID
-     *
-     * @param cuedCases
-     * @return
      */
     public DualTableSingleMatchModelQuerySet bulkReadIndexToCaseIdMatch(String indexName, Collection<Integer> cuedCases) {
         DualTableSingleMatchModelQuerySet set = new DualTableSingleMatchModelQuerySet();

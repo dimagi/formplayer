@@ -28,7 +28,7 @@ public class MenuSessionRepoTest {
 
     @Autowired
     private EntityManager entityManager;
-    
+
     @BeforeEach
     public void setUp() throws Exception {
         sessionWrapper = new CommCareSession();

@@ -22,6 +22,7 @@ public class FormattedQuestionsService {
             this.formattedQuestions = formattedQuestions;
             this.questionList = questionList;
         }
+
         public String getFormattedQuestions() {
             return formattedQuestions;
         }
@@ -30,6 +31,7 @@ public class FormattedQuestionsService {
             return questionList;
         }
     }
+
     @Value("${commcarehq.host}")
     private String host;
 

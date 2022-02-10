@@ -1,2 +1,82 @@
-
-<OpenRosaResponse xmlns="http://openrosa.org/http/response"><message nature="ota_restore_success">Successfully restored account tile.test!</message><Sync xmlns="http://commcarehq.org/sync"><restore_id>91327f0a78f5819c8a5d48da12436a9a</restore_id></Sync><Registration xmlns="http://openrosa.org/user/registration"><username>tile.test</username><password>sha1$0MuZEJJzzBIF$22869d609d6df9470ddc9e0e726d71ab6b2feff9</password><uuid>939a423c70fb4e159a152990a2089969</uuid><date>2017-07-31</date><user_data><data key="commcare_project">commcare-tests</data><data key="commcare_last_name">Test</data><data key="commcare_phone_number" /><data key="commcare_first_name">Tile</data></user_data></Registration><fixture id="user-groups" user_id="939a423c70fb4e159a152990a2089969"><groups /></fixture><fixture id="item-list:City" user_id="939a423c70fb4e159a152990a2089969"><City_list><City><id>bos</id><city>Boston</city><county_id>sf</county_id><group_1>Fixtures</group_1></City><City><id>cam</id><city>Cambridge</city><county_id>mx</county_id><group_1>Fixtures</group_1></City><City><id>wil</id><city>Wilmington</city><county_id>mx</county_id><group_1>Fixtures</group_1></City><City><id>bil</id><city>Billerica</city><county_id>mx</county_id><group_1>Fixtures</group_1></City><City><id>win</id><city>Winthrop</city><county_id>sf</county_id><group_1>Fixtures</group_1></City><City><id>sau</id><city>Saugus</city><county_id>ex</county_id><group_1>Fixtures</group_1></City><City><id>and</id><city>Andover</city><county_id>ex</county_id><group_1>Fixtures</group_1></City></City_list></fixture><case case_id="1d59d16b-c52c-49d6-889e-801736962281" date_modified="2017-07-31T21:20:57.887000Z" user_id="939a423c70fb4e159a152990a2089969" xmlns="http://commcarehq.org/case/transaction/v2"><create><case_type>tile_tests</case_type><case_name>Sally Ride</case_name><owner_id>939a423c70fb4e159a152990a2089969</owner_id></create><update><date_opened>2017-07-31</date_opened><chosen_date>2017-07-01</chosen_date><hidden>Secret</hidden><sex>female</sex></update></case></OpenRosaResponse>
+<OpenRosaResponse xmlns="http://openrosa.org/http/response">
+    <message nature="ota_restore_success">Successfully restored account tile.test!</message>
+    <Sync xmlns="http://commcarehq.org/sync">
+        <restore_id>91327f0a78f5819c8a5d48da12436a9a</restore_id>
+    </Sync>
+    <Registration xmlns="http://openrosa.org/user/registration">
+        <username>tile.test</username>
+        <password>sha1$0MuZEJJzzBIF$22869d609d6df9470ddc9e0e726d71ab6b2feff9</password>
+        <uuid>939a423c70fb4e159a152990a2089969</uuid>
+        <date>2017-07-31</date>
+        <user_data>
+            <data key="commcare_project">commcare-tests</data>
+            <data key="commcare_last_name">Test</data>
+            <data key="commcare_phone_number" />
+            <data key="commcare_first_name">Tile</data>
+        </user_data>
+    </Registration>
+    <fixture id="user-groups" user_id="939a423c70fb4e159a152990a2089969">
+        <groups />
+    </fixture>
+    <fixture id="item-list:City" user_id="939a423c70fb4e159a152990a2089969">
+        <City_list>
+            <City>
+                <id>bos</id>
+                <city>Boston</city>
+                <county_id>sf</county_id>
+                <group_1>Fixtures</group_1>
+            </City>
+            <City>
+                <id>cam</id>
+                <city>Cambridge</city>
+                <county_id>mx</county_id>
+                <group_1>Fixtures</group_1>
+            </City>
+            <City>
+                <id>wil</id>
+                <city>Wilmington</city>
+                <county_id>mx</county_id>
+                <group_1>Fixtures</group_1>
+            </City>
+            <City>
+                <id>bil</id>
+                <city>Billerica</city>
+                <county_id>mx</county_id>
+                <group_1>Fixtures</group_1>
+            </City>
+            <City>
+                <id>win</id>
+                <city>Winthrop</city>
+                <county_id>sf</county_id>
+                <group_1>Fixtures</group_1>
+            </City>
+            <City>
+                <id>sau</id>
+                <city>Saugus</city>
+                <county_id>ex</county_id>
+                <group_1>Fixtures</group_1>
+            </City>
+            <City>
+                <id>and</id>
+                <city>Andover</city>
+                <county_id>ex</county_id>
+                <group_1>Fixtures</group_1>
+            </City>
+        </City_list>
+    </fixture>
+    <case case_id="1d59d16b-c52c-49d6-889e-801736962281" date_modified="2017-07-31T21:20:57.887000Z"
+        user_id="939a423c70fb4e159a152990a2089969"
+        xmlns="http://commcarehq.org/case/transaction/v2">
+        <create>
+            <case_type>tile_tests</case_type>
+            <case_name>Sally Ride</case_name>
+            <owner_id>939a423c70fb4e159a152990a2089969</owner_id>
+        </create>
+        <update>
+            <date_opened>2017-07-31</date_opened>
+            <chosen_date>2017-07-01</chosen_date>
+            <hidden>Secret</hidden>
+            <sex>female</sex>
+        </update>
+    </case>
+</OpenRosaResponse>

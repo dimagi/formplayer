@@ -23,7 +23,8 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
     private Map<String, Object> answersToValidate;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public AnswerQuestionRequestBean(){}
+    public AnswerQuestionRequestBean() {
+    }
 
     public AnswerQuestionRequestBean(String formIndex, String answer, String sessionId) {
         this.formIndex = formIndex;
@@ -35,6 +36,7 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
     public String getFormIndex() {
         return formIndex;
     }
+
     @JsonSetter(value = "ix")
     public void setFormIndex(String formIndex) {
         this.formIndex = formIndex;
@@ -51,13 +53,15 @@ public class AnswerQuestionRequestBean extends SessionRequestBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "Answer Question Bean [formIndex: " + formIndex + ", answer: " + answer + ", sessionId: " + sessionId + "]";
     }
+
     @JsonGetter(value = "nav_mode")
     public String getNavMode() {
         return navMode;
     }
+
     @JsonSetter(value = "nav_mode")
     public void setNavMode(String navMode) {
         this.navMode = navMode;

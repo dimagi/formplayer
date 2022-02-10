@@ -100,7 +100,7 @@ public class SessionAuthTests {
         ResultActions actions = mvc.perform(requestBuilder)
                 .andDo(log());
 
-        for (ResultMatcher matcher : matchers   ) {
+        for (ResultMatcher matcher : matchers) {
             actions = actions.andExpect(matcher);
         }
     }
@@ -125,10 +125,11 @@ public class SessionAuthTests {
             this.username = username;
             this.sessionId = sessionId;
         }
+
         @Override
         public boolean matches(PreAuthenticatedAuthenticationToken token) {
-            final UserDomainPreAuthPrincipal principal = (UserDomainPreAuthPrincipal) token.getPrincipal();
-            final String sessionId = (String) token.getCredentials();
+            final UserDomainPreAuthPrincipal principal = (UserDomainPreAuthPrincipal)token.getPrincipal();
+            final String sessionId = (String)token.getCredentials();
             return principal.getDomain().equals(this.domain)
                     && principal.getUsername().equals(this.username)
                     && sessionId.equals(this.sessionId);

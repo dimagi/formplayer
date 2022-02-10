@@ -1,7 +1,9 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
+
 import lombok.SneakyThrows;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.util.*;
@@ -100,7 +102,7 @@ public class CategoryTimingHelper {
 
     /**
      * @param extras - optional tag/value pairs to send to datadog
-     * NOTE: if adding a new tag, add a constant for the tag name 
+     *               NOTE: if adding a new tag, add a constant for the tag name
      */
     public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
         FormplayerSentry.recordTimingBreadcrumb(timing, category, sentryMessage);

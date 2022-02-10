@@ -110,7 +110,7 @@ public class DisplayElement {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "DisplayElement id=" + id + ", text=" + text + ", value=" + value + ", imageUri=" + imageUri
                 + ", audioUri=" + audioUri + ", itemsetChoices=" + Arrays.toString(itemsetChoices);
     }

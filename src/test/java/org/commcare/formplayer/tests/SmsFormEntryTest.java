@@ -10,7 +10,7 @@ import org.commcare.formplayer.utils.TestContext;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class SmsFormEntryTest extends BaseTestClass{
+public class SmsFormEntryTest extends BaseTestClass {
 
     @Override
     @BeforeEach

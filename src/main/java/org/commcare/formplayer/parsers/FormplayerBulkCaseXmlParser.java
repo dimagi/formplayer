@@ -25,7 +25,7 @@ public class FormplayerBulkCaseXmlParser extends BulkProcessingCaseXmlParser {
     private final SqlStorage<Case> storage;
 
     public FormplayerBulkCaseXmlParser(KXmlParser parser,
-                                    UserSqlSandbox sandbox) {
+                                       UserSqlSandbox sandbox) {
         super(parser);
         mEntityCache = new EntityStorageCache("entitycase", sandbox);
         mCaseIndexTable = new FormplayerCaseIndexTable(sandbox);

@@ -27,7 +27,7 @@ import java.util.Map;
 public class SqlHelper {
 
     public static void explainSql(Connection c, String sql, String[] args) {
-        try (PreparedStatement preparedStatement = c.prepareStatement("EXPLAIN QUERY PLAN " + sql)){
+        try (PreparedStatement preparedStatement = c.prepareStatement("EXPLAIN QUERY PLAN " + sql)) {
             for (int i = 1; i <= args.length; i++) {
                 preparedStatement.setString(i, args[i - 1]);
             }
@@ -128,7 +128,6 @@ public class SqlHelper {
      * Get a prepared statement to select matching rows by the internal ID column
      *
      * Note: Caller is responsible for ensuring the prepared statement is closed
-     *
      */
     public static PreparedStatement prepareIdSelectStatement(Connection c, String storageKey, int id) {
         try {
@@ -146,7 +145,6 @@ public class SqlHelper {
      * Get a prepared statement to select matching rows by multiple storage keys
      *
      * Note: Caller is responsible for ensuring the prepared statement is closed
-     *
      */
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
                                                                           String storageKey,
@@ -171,7 +169,6 @@ public class SqlHelper {
      * an individual record
      *
      * Note: Caller is responsible for ensuring the prepared statement is closed
-     *
      */
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
                                                                           String storageKey,
@@ -362,7 +359,7 @@ public class SqlHelper {
         try (PreparedStatement preparedStatement = c.prepareStatement(mPair.first)) {
             for (int i = 0; i < mPair.second.size(); i++) {
                 Object obj = mPair.second.get(i);
-                setArgumentToSqlStatement(preparedStatement, obj, i+1);
+                setArgumentToSqlStatement(preparedStatement, obj, i + 1);
             }
             int affectedRows = preparedStatement.executeUpdate();
 
@@ -401,7 +398,7 @@ public class SqlHelper {
             preparedStatement.setLong(index, (Long)arg);
         } else if (arg instanceof byte[]) {
             preparedStatement.setBinaryStream(index, new ByteArrayInputStream((byte[])arg), ((byte[])arg).length);
-        } else if(arg == null) {
+        } else if (arg == null) {
             preparedStatement.setNull(index, 0);
         }
     }
@@ -423,7 +420,7 @@ public class SqlHelper {
 
         String query = "UPDATE " + storageKey + " SET " + DatabaseHelper.DATA_COL + " = ? WHERE " + where.first + ";";
 
-        try (PreparedStatement preparedStatement = c.prepareStatement(query)){
+        try (PreparedStatement preparedStatement = c.prepareStatement(query)) {
             setPreparedStatementArgs(preparedStatement, p, where.second);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -454,7 +451,7 @@ public class SqlHelper {
 
         String query = stringBuilder.append(queryEnd).toString();
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             int lastArgIndex = setPreparedStatementArgs(preparedStatement, persistable, values);
             preparedStatement.setInt(lastArgIndex, id);
             preparedStatement.executeUpdate();
@@ -499,7 +496,7 @@ public class SqlHelper {
     public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String arg) {
         String query = "DELETE FROM " + tableName + " WHERE " + whereClause + ";";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, arg);
             preparedStatement.execute();
         } catch (SQLException e) {
@@ -510,7 +507,7 @@ public class SqlHelper {
     public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String[] args) {
         String query = "DELETE FROM " + tableName + " WHERE " + whereClause + ";";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             for (int i = 1; i <= args.length; i++) {
                 preparedStatement.setString(i, args[i - 1]);
             }

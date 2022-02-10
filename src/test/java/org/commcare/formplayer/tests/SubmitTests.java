@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
@@ -109,7 +110,7 @@ public class SubmitTests extends BaseTestClass {
         assertLocalCaseCount(117);
     }
 
-    private String startSession(String ...selections) throws Exception {
+    private String startSession(String... selections) throws Exception {
         NewFormResponse response = sessionNavigate(selections, "basic", NewFormResponse.class);
         String sessionId = response.getSessionId();
         assertLocalCaseCount(116);
@@ -118,7 +119,7 @@ public class SubmitTests extends BaseTestClass {
 
     private void assertLocalCaseCount(int expected) {
         UserSqlSandbox sandbox = getRestoreSandbox();
-        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
         assertThat(caseStorage.getNumRecords()).isEqualTo(expected);
     }
 

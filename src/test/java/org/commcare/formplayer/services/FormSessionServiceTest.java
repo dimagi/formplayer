@@ -55,7 +55,7 @@ public class FormSessionServiceTest {
         when(formSessionRepo.save(any())).thenAnswer(new Answer<SerializableFormSession>() {
             @Override
             public SerializableFormSession answer(InvocationOnMock invocation) throws Throwable {
-                return (SerializableFormSession) invocation.getArguments()[0];
+                return (SerializableFormSession)invocation.getArguments()[0];
             }
         });
 
@@ -125,9 +125,9 @@ public class FormSessionServiceTest {
     // only include the service under test and it's dependencies
     // This should not be necessary but we're using older versions of junit and spring
     @ComponentScan(
-        basePackageClasses = {FormSessionService.class},
-        useDefaultFilters = false,
-        includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {FormSessionService.class})
+            basePackageClasses = {FormSessionService.class},
+            useDefaultFilters = false,
+            includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {FormSessionService.class})
     )
     @EnableCaching
     @Configuration

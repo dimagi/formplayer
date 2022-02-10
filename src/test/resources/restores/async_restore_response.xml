@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenRosaResponse>
-    <message nature="ota_restore_pending">Asynchronous restore under way for large_caseload</message>
+    <message nature="ota_restore_pending">Asynchronous restore under way for large_caseload
+    </message>
     <Sync>
         <progress done="143" retry-after="30" total="23311" />
     </Sync>

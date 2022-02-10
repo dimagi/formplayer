@@ -94,12 +94,12 @@ public class CsrfIntegrationTest {
     public void postApiCall_withCsrf_succeeds() throws Exception {
         String payload = FileUtils.getFile(this.getClass(), "requests/delete_db/delete_db.json");
         mockUtilController.perform(
-            post("/" + Constants.URL_DELETE_APPLICATION_DBS)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(payload)
-                    .with(testUser())
-                    .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                    .with(csrf())
+                post("/" + Constants.URL_DELETE_APPLICATION_DBS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload)
+                        .with(testUser())
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
+                        .with(csrf())
         ).andExpect(status().isOk());
     }
 

@@ -1,6 +1,7 @@
 package org.commcare.formplayer.utils;
 
 import com.timgroup.statsd.StatsDClient;
+
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
 import org.commcare.formplayer.mocks.MockLockRegistry;
 import org.commcare.formplayer.mocks.TestInstallService;

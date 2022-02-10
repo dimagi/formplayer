@@ -8,7 +8,7 @@ import org.commcare.util.CommCarePlatform;
 
 /**
  * Base class for installers that do not require any action for:
- *  unstage, revert, rollback, upgrade, uninstall, cleanup
+ * unstage, revert, rollback, upgrade, uninstall, cleanup
  */
 public abstract class SimpleInstaller implements ResourceInstaller<CommCarePlatform> {
     public boolean requiresRuntimeInitialization() {

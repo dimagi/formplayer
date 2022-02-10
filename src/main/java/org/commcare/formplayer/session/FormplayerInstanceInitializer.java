@@ -38,9 +38,9 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     @Override
     protected InstanceRoot setupCaseData(ExternalDataInstance instance) {
         if (casebase == null) {
-            SqlStorage<Case> storage = (SqlStorage<Case>) mSandbox.getCaseStorage();
+            SqlStorage<Case> storage = (SqlStorage<Case>)mSandbox.getCaseStorage();
             FormplayerCaseIndexTable formplayerCaseIndexTable;
-            formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox) mSandbox);
+            formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox)mSandbox);
             casebase = new CaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
         } else {
             //re-use the existing model if it exists.

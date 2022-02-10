@@ -3,6 +3,7 @@ package org.commcare.formplayer.aspects;
 import datadog.trace.api.Trace;
 import io.sentry.Sentry;
 import lombok.extern.java.Log;
+
 import org.apache.http.client.utils.URIBuilder;
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.aspectj.lang.JoinPoint;
@@ -39,7 +40,7 @@ public class AppInstallAspect {
         if (!(args[0] instanceof InstallRequestBean)) {
             throw new RuntimeException("Could not configure StorageFactory with args " + Arrays.toString(args));
         }
-        final InstallRequestBean requestBean = (InstallRequestBean) args[0];
+        final InstallRequestBean requestBean = (InstallRequestBean)args[0];
         storageFactory.configure(requestBean);
 
         FormplayerSentry.newBreadcrumb()

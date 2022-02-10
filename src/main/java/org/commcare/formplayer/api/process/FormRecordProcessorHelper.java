@@ -46,7 +46,7 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
     private static final Log log = LogFactory.getLog(FormRecordProcessorHelper.class);
 
     public static void processXML(FormplayerTransactionParserFactory factory,
-                                          String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
+                                  String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
         InputStream stream = new ByteArrayInputStream(fileText.getBytes("UTF-8"));
         process(stream, factory);
     }

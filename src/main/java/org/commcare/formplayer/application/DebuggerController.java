@@ -49,7 +49,7 @@ public class DebuggerController extends AbstractBaseController {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    @Resource(name="redisTemplate")
+    @Resource(name = "redisTemplate")
     private ListOperations<String, XPathQueryItem> listOperations;
 
     @RequestMapping(value = Constants.URL_DEBUGGER_FORMATTED_QUESTIONS, method = RequestMethod.POST)

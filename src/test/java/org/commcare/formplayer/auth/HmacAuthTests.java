@@ -65,9 +65,9 @@ public class HmacAuthTests {
         MockHttpServletRequestBuilder builder = getRelaxedEndpointRequestBuilder()
                 .header(Constants.HMAC_HEADER, hmac);
         this.testEndpoint(builder,
-            jsonPath("$.validated", is(true)),
-            jsonPath("$.problems", hasSize(0)),
-            status().isOk()
+                jsonPath("$.validated", is(true)),
+                jsonPath("$.problems", hasSize(0)),
+                status().isOk()
         );
     }
 
@@ -117,7 +117,7 @@ public class HmacAuthTests {
         ResultActions actions = mvc.perform(requestBuilder)
                 .andDo(log());
 
-        for (ResultMatcher matcher : matchers   ) {
+        for (ResultMatcher matcher : matchers) {
             actions = actions.andExpect(matcher);
         }
     }

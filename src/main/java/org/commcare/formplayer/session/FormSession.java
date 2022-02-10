@@ -44,6 +44,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
@@ -250,7 +251,6 @@ public class FormSession {
         setSuppressAutosyncFlag();
         setSkipValidation();
     }
-
 
 
     private String getPragma(String key) {

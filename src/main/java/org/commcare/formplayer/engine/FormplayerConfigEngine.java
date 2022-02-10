@@ -152,7 +152,7 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
                 }
                 return consolidatedErrorMessage;
             }
-        } catch (JSONException e ){
+        } catch (JSONException e) {
             return null;
         }
         return null;

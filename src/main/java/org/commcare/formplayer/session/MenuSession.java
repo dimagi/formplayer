@@ -1,6 +1,7 @@
 package org.commcare.formplayer.session;
 
 import datadog.trace.api.Trace;
+
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
@@ -170,10 +171,8 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     /**
-     *
-     * @param screen The current screen that has been navigated to.
+     * @param screen          The current screen that has been navigated to.
      * @param autoAdvanceMenu Whether the menu navigation should be advanced if it can be.
-     * @throws CommCareSessionException
      * @return true if the session was advanced
      */
     public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {

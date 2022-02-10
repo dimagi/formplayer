@@ -1,10 +1,13 @@
 package org.commcare.formplayer.aspects;
 
 import io.sentry.SentryLevel;
+
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 
 import com.timgroup.statsd.StatsDClient;
+
 import datadog.trace.api.Trace;
+
 import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
@@ -25,6 +28,7 @@ import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.UserUtils;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
@@ -48,7 +52,8 @@ public class LockAspect {
     private FormSessionService formSessionService;
 
     // needs to be accessible from WebAppContext.exceptionResolver
-    public class LockError extends Exception {}
+    public class LockError extends Exception {
+    }
 
     private final Log log = LogFactory.getLog(LockAspect.class);
 
@@ -66,7 +71,7 @@ public class LockAspect {
         }
 
         String username;
-        AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
+        AuthenticatedRequestBean bean = (AuthenticatedRequestBean)args[0];
 
 
         try {
@@ -106,10 +111,9 @@ public class LockAspect {
     public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionService formSessionService) throws Exception {
         if (bean.getUsernameDetail() != null) {
             return TableBuilder.scrubName(bean.getUsernameDetail());
-        }
-        else if (bean instanceof SessionRequestBean){
+        } else if (bean instanceof SessionRequestBean) {
             String username;
-            String sessionId = ((SessionRequestBean) bean).getSessionId();
+            String sessionId = ((SessionRequestBean)bean).getSessionId();
             SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
             String tempUser = formSession.getUsername();
             String restoreAs = formSession.getAsUser();
@@ -152,7 +156,7 @@ public class LockAspect {
         timer.start();
         try {
             return lock.tryLock(Constants.USER_LOCK_TIMEOUT, TimeUnit.SECONDS);
-        } catch (InterruptedException e){
+        } catch (InterruptedException e) {
             return obtainLock(lock);
         } finally {
             timer.end()

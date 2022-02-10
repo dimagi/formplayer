@@ -3,6 +3,7 @@ package org.commcare.formplayer.util;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
 import java.io.StringReader;
 import java.io.StringWriter;
 
@@ -13,6 +14,7 @@ public class XmlUtils {
     /**
      * Given a String representation of a valid XML document, this returns an
      * indented version of it.
+     *
      * @param xml - A string XML document
      * @return A string XML document that is indented
      */

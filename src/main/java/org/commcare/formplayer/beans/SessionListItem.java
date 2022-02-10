@@ -18,7 +18,7 @@ public class SessionListItem {
     private String sessionId;
     private String caseName;
 
-    public SessionListItem(SqlStorage<Case> caseStorage, FormSessionListView session){
+    public SessionListItem(SqlStorage<Case> caseStorage, FormSessionListView session) {
         this.title = session.getTitle();
         this.dateOpened = session.getDateCreated().toString();
         this.sessionId = session.getId();

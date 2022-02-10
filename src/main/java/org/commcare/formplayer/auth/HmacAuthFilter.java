@@ -2,6 +2,7 @@ package org.commcare.formplayer.auth;
 
 import lombok.Builder;
 import lombok.extern.apachecommons.CommonsLog;
+
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.FormSessionService;
@@ -34,6 +35,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /**

@@ -34,7 +34,7 @@ public class NotificationMessage {
     private String message;
     private String tag;
 
-    public NotificationMessage(){
+    public NotificationMessage() {
         // serialize
     }
 

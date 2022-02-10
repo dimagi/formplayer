@@ -178,7 +178,7 @@ public class SqlStorage<T extends Persistable>
     public List<Integer> getIDsForValues(String[] fieldNames, Object[] values, String[] inverseMatchFields, Object[] inverseMatchValues, LinkedHashSet<Integer> returnSet) {
         Connection connection = this.getConnection();
         try (PreparedStatement preparedStatement =
-             SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values, inverseMatchFields, inverseMatchValues)) {
+                     SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values, inverseMatchFields, inverseMatchValues)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
             }

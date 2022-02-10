@@ -57,7 +57,7 @@ public class GenerateSnapshotDatabases extends BaseTestClass {
 
     @Test
     public void testCreateSnapshot() throws Exception {
-        if(inCreateMode()) {
+        if (inCreateMode()) {
             //clear the landing zone
             SqlSandboxUtils.deleteDatabaseFolder(SQLiteProperties.getDataDir());
 

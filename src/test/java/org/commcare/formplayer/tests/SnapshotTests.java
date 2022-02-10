@@ -74,16 +74,16 @@ public class SnapshotTests extends BaseTestClass {
     private void enumerate(String descriptor, IStorageUtilityIndexed<?> storage) throws Exception {
         try {
             System.out.println(String.format("%s: %d", descriptor, storage.getNumRecords()));
-            for (Iterator i = storage.iterate() ; i.hasMore();) {
+            for (Iterator i = storage.iterate(); i.hasMore(); ) {
                 Object p = i.nextRecord();
-                if(p instanceof IMetaData) {
-                    for (String metaField : ((IMetaData) p).getMetaDataFields()) {
-                        Object value = ((IMetaData) p).getMetaData(metaField);
+                if (p instanceof IMetaData) {
+                    for (String metaField : ((IMetaData)p).getMetaDataFields()) {
+                        Object value = ((IMetaData)p).getMetaData(metaField);
                         storage.getIDsForValue(metaField, value == null ? "" : value.toString());
                     }
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw generateSandboxException(descriptor, e);
         }
     }

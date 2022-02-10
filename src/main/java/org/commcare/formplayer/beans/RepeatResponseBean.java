@@ -13,7 +13,8 @@ public class RepeatResponseBean {
     private String sequenceId;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public RepeatResponseBean(){}
+    public RepeatResponseBean() {
+    }
 
     public RepeatResponseBean(QuestionBean[] tree, String sequenceId) {
         this.tree = tree;
@@ -27,17 +28,19 @@ public class RepeatResponseBean {
     public void setTree(QuestionBean[] tree) {
         this.tree = tree;
     }
+
     @JsonGetter(value = "seq_id")
     public String getSequenceId() {
         return sequenceId;
     }
+
     @JsonSetter(value = "seq_id")
     public void setSequenceId(String sequenceId) {
         this.sequenceId = sequenceId;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "RepeatResponseBean: [tree=" + Arrays.toString(tree) + ", seq_id: " + sequenceId + "]";
     }
 }

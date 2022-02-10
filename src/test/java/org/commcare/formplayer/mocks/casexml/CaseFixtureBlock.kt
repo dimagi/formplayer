@@ -63,10 +63,10 @@ class CaseFixtureBlock private constructor(
 
         fun build(): CaseFixtureBlock {
             return CaseFixtureBlock(
-                caseType,
-                if (caseId == null) UUID.randomUUID().toString() else caseId!!,
-                if (ownerId == null) UUID.randomUUID().toString() else ownerId!!,
-                props
+                    caseType,
+                    if (caseId == null) UUID.randomUUID().toString() else caseId!!,
+                    if (ownerId == null) UUID.randomUUID().toString() else ownerId!!,
+                    props
             )
         }
     }
@@ -82,7 +82,8 @@ class CaseFixtureBlock private constructor(
 class CaseFixtureResultSerializer() {
 
     companion object {
-        @JvmStatic fun blocksToXml(vararg blocks: CaseFixtureBlock): Document {
+        @JvmStatic
+        fun blocksToXml(vararg blocks: CaseFixtureBlock): Document {
             val docFactory = DocumentBuilderFactory.newInstance();
             val docBuilder = docFactory.newDocumentBuilder();
 
@@ -108,7 +109,8 @@ class CaseFixtureResultSerializer() {
             return doc;
         }
 
-        @JvmStatic fun blocksToString(vararg blocks: CaseFixtureBlock): String {
+        @JvmStatic
+        fun blocksToString(vararg blocks: CaseFixtureBlock): String {
             val xml = blocksToXml(*blocks)
 
             val transformerFactory = TransformerFactory.newInstance()

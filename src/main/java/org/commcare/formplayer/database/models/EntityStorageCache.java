@@ -109,9 +109,9 @@ public class EntityStorageCache {
     public String retrieveCacheValue(String entityKey, String cacheKey) {
         Connection connection = handler.getConnection();
         try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
-                    TABLE_NAME,
-                    new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
-                    new String[]{mCacheName, entityKey, cacheKey})) {
+                TABLE_NAME,
+                new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
+                new String[]{mCacheName, entityKey, cacheKey})) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
                 if (resultSet.next()) {
@@ -143,7 +143,7 @@ public class EntityStorageCache {
             return;
         }
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(recordIds);
-        for(Pair<String, String[]> querySet : whereParamList) {
+        for (Pair<String, String[]> querySet : whereParamList) {
             String[] updated = new String[querySet.second.length + 1];
             System.arraycopy(querySet.second, 0, updated, 1, querySet.second.length);
             updated[0] = this.mCacheName;

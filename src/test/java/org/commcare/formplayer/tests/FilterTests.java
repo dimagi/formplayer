@@ -23,12 +23,12 @@ public class FilterTests extends BaseTestClass {
 
         SyncDbResponseBean syncDbResponseBean = syncDb();
 
-        assert(syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
-        assert(SqlSandboxUtils.databaseFolderExists(SQLiteProperties.getDataDir()));
+        assert (syncDbResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE));
+        assert (SqlSandboxUtils.databaseFolderExists(SQLiteProperties.getDataDir()));
 
-        UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("synctestdomain","synctestuser", null));
+        UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("synctestdomain", "synctestuser", null));
 
-        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
 
         assert (15 == caseStorage.getNumRecords());
 

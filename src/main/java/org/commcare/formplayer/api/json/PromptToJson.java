@@ -142,16 +142,16 @@ public class PromptToJson {
                 obj.put("answer", answerValue.getDisplayText());
                 return;
             case Constants.DATATYPE_INTEGER:
-                obj.put("answer", (int) answerValue.getValue());
+                obj.put("answer", (int)answerValue.getValue());
                 return;
             case Constants.DATATYPE_LONG:
-                obj.put("answer", (long) answerValue.getValue());
+                obj.put("answer", (long)answerValue.getValue());
                 return;
             case Constants.DATATYPE_DECIMAL:
-                obj.put("answer", (double) answerValue.getValue());
+                obj.put("answer", (double)answerValue.getValue());
                 return;
             case Constants.DATATYPE_DATE:
-                obj.put("answer", (DateUtils.formatDate((Date) answerValue.getValue(), DateUtils.FORMAT_ISO8601)));
+                obj.put("answer", (DateUtils.formatDate((Date)answerValue.getValue(), DateUtils.FORMAT_ISO8601)));
                 return;
             case Constants.DATATYPE_TIME:
                 obj.put("answer", answerValue.getDisplayText());
@@ -161,7 +161,7 @@ public class PromptToJson {
                 obj.put("answer", answer.toString("yyyy-MM-dd'T'HH:mm:ssZZ"));
                 return;
             case Constants.DATATYPE_CHOICE:
-                Selection singleSelection = ((Selection) answerValue.getValue());
+                Selection singleSelection = ((Selection)answerValue.getValue());
                 singleSelection.attachChoice(prompt.getQuestion());
                 int singleOrdinal = singleSelection.getTouchformsIndex();
                 if (singleOrdinal > 0) {
@@ -169,19 +169,19 @@ public class PromptToJson {
                 }
                 return;
             case Constants.DATATYPE_CHOICE_LIST:
-                Vector<Selection> selections = ((SelectMultiData) answerValue).getValue();
+                Vector<Selection> selections = ((SelectMultiData)answerValue).getValue();
                 JSONArray acc = new JSONArray();
                 for (Selection selection : selections) {
                     selection.attachChoice(prompt.getQuestion());
                     int multiOrdinal = selection.getTouchformsIndex();
-                    if (multiOrdinal > 0){
+                    if (multiOrdinal > 0) {
                         acc.put(multiOrdinal);
                     }
                 }
                 obj.put("answer", acc);
                 return;
             case Constants.DATATYPE_GEOPOINT:
-                GeoPointData geoPointData = ((GeoPointData) prompt.getAnswerValue());
+                GeoPointData geoPointData = ((GeoPointData)prompt.getAnswerValue());
                 double[] coords = new double[]{geoPointData.getLatitude(), geoPointData.getLongitude()};
                 obj.put("answer", new JSONArray(Arrays.toString(coords)));
                 return;

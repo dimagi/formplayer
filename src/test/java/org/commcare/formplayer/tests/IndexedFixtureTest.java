@@ -12,7 +12,7 @@ import org.commcare.formplayer.utils.TestContext;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class IndexedFixtureTest extends BaseTestClass{
+public class IndexedFixtureTest extends BaseTestClass {
 
     @Override
     @BeforeEach

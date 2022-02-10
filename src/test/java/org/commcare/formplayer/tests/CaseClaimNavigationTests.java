@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests;
 
 import com.google.common.collect.Multimap;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
@@ -83,7 +84,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     @Test
     public void testEofNavigation() throws Exception {
         when(webClientMock.postFormData(anyString(), argThat(data -> {
-            return ((Multimap<String, String>) data).get("case_type").contains("song");
+            return ((Multimap<String, String>)data).get("case_type").contains("song");
         }))).thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
         String appName = APP_CASE_CLAIM_EOF_NAVIGATION;
         ArrayList<String> selections = new ArrayList<>();
@@ -137,7 +138,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
 
         // return search results that doesn't have the selected case
         when(webClientMock.postFormData(any(), argThat(data -> {
-            return ((Multimap<String, String>) data).get("case_type").contains("song");
+            return ((Multimap<String, String>)data).get("case_type").contains("song");
         }))).thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_child_response.xml"));
 
         // since the case claim has happened already, this should not redo the search and trigger the query above
@@ -373,12 +374,12 @@ public class CaseClaimNavigationTests extends BaseTestClass {
     private void configureQueryMock() throws URISyntaxException {
         when(webClientMock.postFormData(anyString(), argThat(data -> {
             return (data != null) &&
-                   ((Multimap<String, String>) data).get("case_type").contains("song");
+                    ((Multimap<String, String>)data).get("case_type").contains("song");
         }))).thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_response.xml"));
 
         when(webClientMock.postFormData(anyString(), argThat(data -> {
             return (data != null) &&
-                   ((Multimap<String, String>) data).get("case_type").contains("show");
+                    ((Multimap<String, String>)data).get("case_type").contains("show");
         }))).thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_parent_child_child_response.xml"));
     }
 

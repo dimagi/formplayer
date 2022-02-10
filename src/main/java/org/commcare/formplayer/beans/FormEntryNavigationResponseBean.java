@@ -9,27 +9,31 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FormEntryNavigationResponseBean extends FormEntryResponseBean {
-  private boolean isAtLastIndex = false;
-  private boolean isAtFirstIndex = false;
-  private String currentIndex;
+    private boolean isAtLastIndex = false;
+    private boolean isAtFirstIndex = false;
+    private String currentIndex;
 
-  public boolean getIsAtLastIndex() { return isAtLastIndex; }
+    public boolean getIsAtLastIndex() {
+        return isAtLastIndex;
+    }
 
-  public void setIsAtLastIndex(boolean isAtLastIndex) {
-    this.isAtLastIndex = isAtLastIndex;
-  }
+    public void setIsAtLastIndex(boolean isAtLastIndex) {
+        this.isAtLastIndex = isAtLastIndex;
+    }
 
-  public String getCurrentIndex() { return currentIndex; }
+    public String getCurrentIndex() {
+        return currentIndex;
+    }
 
-  public void setCurrentIndex(String currentIndex) {
-    this.currentIndex = currentIndex;
-  }
+    public void setCurrentIndex(String currentIndex) {
+        this.currentIndex = currentIndex;
+    }
 
-  public boolean getIsAtFirstIndex() {
-    return isAtFirstIndex;
-  }
+    public boolean getIsAtFirstIndex() {
+        return isAtFirstIndex;
+    }
 
-  public void setIsAtFirstIndex(boolean atFirstIndex) {
-    isAtFirstIndex = atFirstIndex;
-  }
+    public void setIsAtFirstIndex(boolean atFirstIndex) {
+        isAtFirstIndex = atFirstIndex;
+    }
 }

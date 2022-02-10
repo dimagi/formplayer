@@ -64,7 +64,7 @@ public class JsonActionUtils {
      * @return The JSON representation of the question tree
      */
     public static JSONObject getCurrentJson(FormEntryController controller,
-                                                 FormEntryModel model) {
+                                            FormEntryModel model) {
         JSONObject ret = new JSONObject();
         ret.put(ApiConstants.QUESTION_TREE_KEY, getFullFormJSON(model, controller));
         return ret;
@@ -85,7 +85,7 @@ public class JsonActionUtils {
         return new JSONObject().put(ApiConstants.QUESTION_EVENT_KEY,
                 PromptToJson.parseQuestionType(model, new JSONObject()));
     }
-             
+
     /**
      * Answer the question, return the updated JSON representation of the question tree
      *
@@ -97,12 +97,12 @@ public class JsonActionUtils {
      */
     @Trace
     private static JSONObject questionAnswerToJson(FormEntryController controller,
-                                                  FormEntryModel model, String answer,
-                                                  FormEntryPrompt prompt,
-                                                  boolean oneQuestionPerScreen,
-                                                  FormIndex navIndex,
-                                                  boolean skipValidation,
-                                                  boolean returnTree) {
+                                                   FormEntryModel model, String answer,
+                                                   FormEntryPrompt prompt,
+                                                   boolean oneQuestionPerScreen,
+                                                   FormIndex navIndex,
+                                                   boolean skipValidation,
+                                                   boolean returnTree) {
         JSONObject ret = new JSONObject();
         IAnswerData answerData;
         int result;
@@ -138,7 +138,7 @@ public class JsonActionUtils {
             if (returnTree) {
                 if (oneQuestionPerScreen) {
                     ret.put(ApiConstants.QUESTION_TREE_KEY, getOneQuestionPerScreenJSON(
-                                                                                        model, controller, navIndex));
+                            model, controller, navIndex));
                 } else {
                     ret.put(ApiConstants.QUESTION_TREE_KEY, getFullFormJSON(model, controller));
                 }
@@ -154,7 +154,7 @@ public class JsonActionUtils {
      * @param controller the FormEntryController under consideration
      * @param model      the FormEntryModel under consideration
      * @param answer     the answer to enter
-     * @param ansIndex      the form index of the question to be answered
+     * @param ansIndex   the form index of the question to be answered
      * @return The JSON representation of the updated question tree
      */
     public static JSONObject questionAnswerToJson(FormEntryController controller,
@@ -180,7 +180,7 @@ public class JsonActionUtils {
     @Trace
     private static IAnswerData getAnswerData(FormEntryPrompt formEntryPrompt, String data) {
         int index;
-        switch(formEntryPrompt.getDataType()){
+        switch (formEntryPrompt.getDataType()) {
             case Constants.DATATYPE_CHOICE:
                 index = Integer.parseInt(data);
                 SelectChoice selectChoiceAnswer = formEntryPrompt.getSelectChoices().get(index - 1);
@@ -226,7 +226,7 @@ public class JsonActionUtils {
         return ret;
     }
 
-    public static int getQuestionType(FormEntryModel model, String stringIndex, FormDef form){
+    public static int getQuestionType(FormEntryModel model, String stringIndex, FormDef form) {
         FormIndex index = indexFromString(stringIndex, form);
         return model.getEvent(index);
     }
@@ -310,7 +310,7 @@ public class JsonActionUtils {
             return ret;
         }
         FormEntryPrompt[] prompts = fec.getQuestionPrompts(formIndex);
-        for (FormEntryPrompt prompt: prompts) {
+        for (FormEntryPrompt prompt : prompts) {
             fem.setQuestionIndex(prompt.getIndex());
             JSONObject obj = new JSONObject();
             PromptToJson.parseQuestionType(fem, obj);

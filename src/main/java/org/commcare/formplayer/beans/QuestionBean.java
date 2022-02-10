@@ -168,19 +168,19 @@ public class QuestionBean {
     }
 
     @Override
-    public String toString(){
-        String ret= "QuestionBean [ix="+ ix + ", bind=" + this.getBinding() + ", answer=" + this.getAnswer() + ", type: "
+    public String toString() {
+        String ret = "QuestionBean [ix=" + ix + ", bind=" + this.getBinding() + ", answer=" + this.getAnswer() + ", type: "
                 + this.getType() + ", text=" + caption;
 
-        if(choices != null){
+        if (choices != null) {
             ret += ", choices=" + Arrays.toString(choices);
         }
 
-        if(children != null){
-            ret +=", children=" + Arrays.toString(getChildren());
+        if (children != null) {
+            ret += ", children=" + Arrays.toString(getChildren());
         }
 
-        ret +="]";
+        ret += "]";
         return ret;
     }
 
@@ -212,6 +212,7 @@ public class QuestionBean {
     public String getAddChoice() {
         return addChoice;
     }
+
     @JsonSetter(value = "add-choice")
     public void setAddChoice(String addChoice) {
         this.addChoice = addChoice;

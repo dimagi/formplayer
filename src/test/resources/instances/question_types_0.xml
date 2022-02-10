@@ -1,43 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<data
-        name="Question Types" uiVersion="1" version="3"
-        xmlns="http://openrosa.org/formdesigner/C2D2AE89-CF6F-4EB3-8D92-0805C479376D"
-        xmlns:jrm="http://dev.commcarehq.org/jr/xforms">
-    <intro/>
-    <q_text/>
-    <q_int/>
-    <q_numeric/>
-    <q_date/>
-    <q_date_time/>
-    <q_time/>
-    <q_pass/>
-    <q_pass_int/>
-    <numerictext/>
-    <q_singleselect/>
-    <q_multiselect/>
-    <no_confirmation/>
-    <q_label/>
-    <sig_cap/>
-    <q_barcode/>
-    <qroutput/>
-    <q_gps/>
-    <q_image/>
-    <q_audio/>
-    <q_video/>
-    <q_image_acquire/>
-    <q_audio_acquire/>
-    <q_video_acquire/>
-    <n0:meta
-            xmlns:n0="http://openrosa.org/jr/xforms">
-        <n0:deviceID/>
-        <n0:timeStart/>
-        <n0:timeEnd/>
-        <n0:username/>
-        <n0:userID/>
-        <n0:instanceID/>
-        <n1:appVersion
-                xmlns:n1="http://commcarehq.org/xforms"/>
-        <n2:location
-                xmlns:n2="http://commcarehq.org/xforms"/>
+<data name="Question Types" uiVersion="1" version="3"
+    xmlns="http://openrosa.org/formdesigner/C2D2AE89-CF6F-4EB3-8D92-0805C479376D"
+    xmlns:jrm="http://dev.commcarehq.org/jr/xforms">
+    <intro />
+    <q_text />
+    <q_int />
+    <q_numeric />
+    <q_date />
+    <q_date_time />
+    <q_time />
+    <q_pass />
+    <q_pass_int />
+    <numerictext />
+    <q_singleselect />
+    <q_multiselect />
+    <no_confirmation />
+    <q_label />
+    <sig_cap />
+    <q_barcode />
+    <qroutput />
+    <q_gps />
+    <q_image />
+    <q_audio />
+    <q_video />
+    <q_image_acquire />
+    <q_audio_acquire />
+    <q_video_acquire />
+    <n0:meta xmlns:n0="http://openrosa.org/jr/xforms">
+        <n0:deviceID />
+        <n0:timeStart />
+        <n0:timeEnd />
+        <n0:username />
+        <n0:userID />
+        <n0:instanceID />
+        <n1:appVersion xmlns:n1="http://commcarehq.org/xforms" />
+        <n2:location xmlns:n2="http://commcarehq.org/xforms" />
     </n0:meta>
 </data>

@@ -78,14 +78,14 @@ public @interface WithHqUser {
      */
     boolean isSuperUser() default false;
 
-	/**
-	 * List of enabled previews for the user. Defaults to a mock list of preview_a and preview_b
-	 */
-	String[] enabledPreviews() default {"preview_a", "preview_b"};
+    /**
+     * List of enabled previews for the user. Defaults to a mock list of preview_a and preview_b
+     */
+    String[] enabledPreviews() default {"preview_a", "preview_b"};
 
 
-	/**
-	 * List of enabled toggles for the user. Defaults to a mock list of toggle_a and toggle_b
-	 */
+    /**
+     * List of enabled toggles for the user. Defaults to a mock list of toggle_a and toggle_b
+     */
     String[] enabledToggles() default {"toggle_a", "toggle_b"};
 }

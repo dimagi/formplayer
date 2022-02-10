@@ -3,6 +3,7 @@ package org.commcare.formplayer.tests;
 import io.sentry.Breadcrumb;
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
+
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

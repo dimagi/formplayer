@@ -2,6 +2,7 @@ package org.commcare.formplayer.util;
 
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
+
 import org.commcare.formplayer.beans.NotificationMessage;
 import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -32,8 +32,8 @@ public class FormValidatorTests extends BaseTestClass {
     public void testValidateForm() throws Exception {
         String xml = FileUtils.getFile(this.getClass(), "form_validation/valid_form.xml");
         this.testValidateForm(xml, Arrays.asList(
-            jsonPath("$.validated", is(true)),
-            jsonPath("$.problems", hasSize(0))
+                jsonPath("$.validated", is(true)),
+                jsonPath("$.problems", hasSize(0))
         ));
     }
 
@@ -41,8 +41,8 @@ public class FormValidatorTests extends BaseTestClass {
     public void testValidateFormNotXML() throws Exception {
         String xml = "this isn't XML";
         this.testValidateForm(xml, Arrays.asList(
-            jsonPath("$.problems", hasSize(0)),
-            jsonPath("$.validated", is(false))
+                jsonPath("$.problems", hasSize(0)),
+                jsonPath("$.validated", is(false))
         ));
     }
 
@@ -50,9 +50,9 @@ public class FormValidatorTests extends BaseTestClass {
     public void testValidateFormBadRef() throws Exception {
         String xml = FileUtils.getFile(this.getClass(), "form_validation/bad_ref.xml");
         this.testValidateForm(xml, Arrays.asList(
-            jsonPath("$.validated", is(false)),
-            jsonPath("$.problems", hasSize(1)),
-            jsonPath("$.problems[0].message", containsString("/data/missing"))
+                jsonPath("$.validated", is(false)),
+                jsonPath("$.problems", hasSize(1)),
+                jsonPath("$.problems[0].message", containsString("/data/missing"))
         ));
     }
 
@@ -74,7 +74,7 @@ public class FormValidatorTests extends BaseTestClass {
                 .andExpect(status().isOk())
                 .andDo(log());
 
-        for (ResultMatcher matcher : matchers   ) {
+        for (ResultMatcher matcher : matchers) {
             actions = actions.andExpect(matcher);
         }
     }

@@ -39,7 +39,7 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
         this.metaDataIndexSet = new HashSet<>(ArrayUtilities.toVector(metaDataIndexSet));
         this.preparedStatement = preparedStatement;
         try {
-            if(!resultSet.next()) {
+            if (!resultSet.next()) {
                 close();
             }
         } catch (SQLException e) {

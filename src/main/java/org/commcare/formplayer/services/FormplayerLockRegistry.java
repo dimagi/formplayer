@@ -2,6 +2,7 @@ package org.commcare.formplayer.services;
 
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
+
 import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -97,7 +98,7 @@ public class FormplayerLockRegistry implements LockRegistry {
         }
         if (ownerThread.isAlive()) {
             log.error(String.format(
-                "Unable to evict thread %s owning lock with lock key %s. expired=%s, lockTime=%s(s)",
+                    "Unable to evict thread %s owning lock with lock key %s. expired=%s, lockTime=%s(s)",
                     ownerThread, lockKey, lock.isExpired(), lock.timeLocked()));
             Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
             e.setStackTrace(ownerThread.getStackTrace());
@@ -168,7 +169,7 @@ public class FormplayerLockRegistry implements LockRegistry {
         }
 
         public int timeLocked() {
-            return Seconds.secondsBetween(lockTime,new DateTime()).getSeconds();
+            return Seconds.secondsBetween(lockTime, new DateTime()).getSeconds();
         }
     }
 }

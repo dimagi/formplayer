@@ -1,6 +1,7 @@
 package org.commcare.formplayer.session;
 
 import lombok.SneakyThrows;
+
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
@@ -42,7 +43,7 @@ class FormplayerSessionWrapper extends SessionWrapper {
     @Override
     public CommCareInstanceInitializer getIIF() {
         if (initializer == null) {
-            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox) mSandbox, mPlatform);
+            initializer = new FormplayerInstanceInitializer(this, (UserSqlSandbox)mSandbox, mPlatform);
         }
         return initializer;
     }

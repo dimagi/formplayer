@@ -6,7 +6,8 @@ import org.simpleframework.xml.Root;
 @Root
 public class OpenRosaResponse {
 
-    OpenRosaResponse() {}
+    OpenRosaResponse() {
+    }
 
     @Element
     private String message;

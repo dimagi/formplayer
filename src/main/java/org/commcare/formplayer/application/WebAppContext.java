@@ -101,7 +101,7 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    public JedisConnectionFactory jedisConnFactory(){
+    public JedisConnectionFactory jedisConnFactory() {
         if (redisClusterString != null) {
             List<String> nodeList = Arrays.asList(redisClusterString.split(","));
             RedisClusterConfiguration config = new RedisClusterConfiguration(nodeList);
@@ -157,13 +157,14 @@ public class WebAppContext implements WebMvcConfigurer {
     }
 
     @Bean
-    @Scope(value= "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public FormplayerDatadog datadog() {
         FormplayerDatadog datadog = new FormplayerDatadog(datadogStatsDClient(), detailedTagNames);
         return datadog;
     }
 
-    @Bean FormattedQuestionsService formattedQuestionsService() {
+    @Bean
+    FormattedQuestionsService formattedQuestionsService() {
         return new FormattedQuestionsService();
     }
 
@@ -177,6 +178,7 @@ public class WebAppContext implements WebMvcConfigurer {
     public LockAspect lockAspect() {
         return new LockAspect();
     }
+
     @Bean
     public LoggingAspect loggingAspect() {
         return new LoggingAspect();
@@ -222,7 +224,8 @@ public class WebAppContext implements WebMvcConfigurer {
         );
     }
 
-    @Bean public RequestContextListener requestContextListener(){
+    @Bean
+    public RequestContextListener requestContextListener() {
         return new RequestContextListener();
     }
 }

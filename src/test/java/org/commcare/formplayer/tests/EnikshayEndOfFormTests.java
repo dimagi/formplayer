@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class EnikshayEndOfFormTests extends BaseTestClass{
+public class EnikshayEndOfFormTests extends BaseTestClass {
 
     @Override
     @BeforeEach
@@ -38,13 +38,13 @@ public class EnikshayEndOfFormTests extends BaseTestClass{
     public void testEnikshayEndOfFormNavigation() throws Exception {
         NewFormResponse response =
                 sessionNavigate(new String[]{"0", "action 0"},
-                "enikshay_private", NewFormResponse.class);
+                        "enikshay_private", NewFormResponse.class);
         SubmitResponseBean submitResponse = submitForm(
-                    "requests/submit/submit_enikshay_private_0.json",
-                    response.getSessionId()
-                );
+                "requests/submit/submit_enikshay_private_0.json",
+                response.getSessionId()
+        );
 
-        LinkedHashMap commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
+        LinkedHashMap commandsRaw = (LinkedHashMap)submitResponse.getNextScreen();
         String jsonString = new JSONObject(commandsRaw).toString();
         CommandListResponseBean commandResponse = mapper.readValue(jsonString, CommandListResponseBean.class);
 
@@ -86,7 +86,7 @@ public class EnikshayEndOfFormTests extends BaseTestClass{
                 formResponse.getSessionId()
         );
 
-        commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
+        commandsRaw = (LinkedHashMap)submitResponse.getNextScreen();
         JSONObject jsonObject = new JSONObject(commandsRaw);
         jsonString = jsonObject.toString();
         entityResponse = mapper.readValue(jsonString, EntityListResponse.class);

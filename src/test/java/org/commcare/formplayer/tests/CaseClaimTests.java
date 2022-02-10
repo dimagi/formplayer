@@ -1,6 +1,7 @@
 package org.commcare.formplayer.tests;
 
 import com.google.common.collect.Multimap;
+
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
@@ -114,7 +115,7 @@ public class CaseClaimTests extends BaseTestClass {
         Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
         assertEquals(4, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
-                          requestData.get("case_type").toArray());
+                requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{""}, requestData.get("name").toArray());
         assertArrayEquals(new String[]{""}, requestData.get("state").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
@@ -144,7 +145,7 @@ public class CaseClaimTests extends BaseTestClass {
         requestData = requestDataCaptor.getAllValues().get(2);
         assertEquals(5, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
-                          requestData.get("case_type").toArray());
+                requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"", "chris"}, requestData.get("name").toArray());
         assertArrayEquals(new String[]{"", "hampi"}, requestData.get("district").toArray());
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
@@ -278,7 +279,7 @@ public class CaseClaimTests extends BaseTestClass {
         Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
         assertEquals(2, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
-                          requestData.get("case_type").toArray());
+                requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
 
         // when default search but forceManualSearch, prompts should get included
@@ -288,7 +289,7 @@ public class CaseClaimTests extends BaseTestClass {
         requestData = requestDataCaptor.getAllValues().get(1);
         assertEquals(5, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
-                          requestData.get("case_type").toArray());
+                requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"Burt"}, requestData.get("name").toArray());
         assertArrayEquals(new String[]{"bang", "hampi"}, requestData.get("district").toArray());
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());

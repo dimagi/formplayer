@@ -17,12 +17,12 @@ public class TestInstallService extends InstallService {
         return super.configureApplication(getTestResourcePath(reference), preview);
     }
 
-    private String getTestResourcePath(String resourcePath){
+    private String getTestResourcePath(String resourcePath) {
         try {
             URL url = this.getClass().getClassLoader().getResource(resourcePath);
             File file = new File(url.getPath());
             return file.getAbsolutePath();
-        } catch(NullPointerException npe){
+        } catch (NullPointerException npe) {
             npe.printStackTrace();
             throw npe;
         }

@@ -1,4 +1,5 @@
 package org.commcare.formplayer.beans;
+
 import org.commcare.formplayer.objects.QueryData;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -39,7 +40,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     public String toString() {
         return "SessionNavigationBean [id= " + menuSessionId +
                 ", selections=" + Arrays.toString(selections) +
-                ", parent="  + super.toString() +
+                ", parent=" + super.toString() +
                 ", queryData" + queryData + "]";
     }
 
@@ -55,38 +56,47 @@ public class SessionNavigationBean extends InstallRequestBean {
     public String getEndpointId() {
         return endpointId;
     }
+
     @JsonSetter(value = "endpoint_id")
     public void setEndpointId(String endpointId) {
         this.endpointId = endpointId;
     }
+
     @JsonGetter(value = "endpoint_args")
     public HashMap<String, String> getEndpointArgs() {
         return endpointArgs;
     }
+
     @JsonSetter(value = "endpoint_args")
     public void setEndpointArgs(HashMap<String, String> endpointArgs) {
         this.endpointArgs = endpointArgs;
     }
+
     @JsonGetter(value = "search_text")
     public String getSearchText() {
         return searchText;
     }
+
     @JsonSetter(value = "search_text")
     public void setSearchText(String searchText) {
         this.searchText = searchText;
     }
+
     @JsonGetter(value = "menu_session_id")
     public String getMenuSessionId() {
         return menuSessionId;
     }
+
     @JsonSetter(value = "menu_session_id")
     public void setMenuSessionId(String menuSessionId) {
         this.menuSessionId = menuSessionId;
     }
+
     @JsonGetter(value = "query_data")
     public QueryData getQueryData() {
         return queryData;
     }
+
     @JsonSetter(value = "query_data")
     public void setQueryData(QueryData queryData) {
         this.queryData = queryData;

@@ -13,7 +13,8 @@
             <data key="commcare_last_name" />
             <data key="commcare_phone_number" />
             <data key="commcare_first_name" />
-        </user_data>b
+        </user_data>
+        b
     </Registration>
     <schema id="locations">
         <indices>

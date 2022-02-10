@@ -1,6 +1,7 @@
 package org.commcare.formplayer.services;
 
 import com.google.common.collect.Multimap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -19,6 +20,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
+
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -65,7 +67,7 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
             return copyOfRoot;
         }
 
-        log.info(String.format("Making case search request to url %s with data %s",  url, requestData));
+        log.info(String.format("Making case search request to url %s with data %s", url, requestData));
         String responseString = webClient.postFormData(url, requestData);
 
         if (responseString != null) {

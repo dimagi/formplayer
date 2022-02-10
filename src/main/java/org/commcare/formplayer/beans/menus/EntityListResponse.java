@@ -1,6 +1,7 @@
 package org.commcare.formplayer.beans.menus;
 
 import datadog.trace.api.Trace;
+
 import org.commcare.cases.entity.Entity;
 import org.commcare.cases.entity.EntitySortNotificationInterface;
 import org.commcare.cases.entity.EntitySorter;
@@ -89,7 +90,7 @@ public class EntityListResponse extends MenuBean {
             Vector<TreeReference> references = nextScreen.getReferences();
             List<EntityBean> entityList = processEntitiesForCaseList(detail, references, ec, searchText, neededDatum, sortIndex, isFuzzySearchEnabled);
 
-            if(casesPerPage == 0){
+            if (casesPerPage == 0) {
                 casesPerPage = DEFAULT_CASES_PER_PAGE;
             }
             casesPerPage = Math.min(casesPerPage, MAX_CASES_PER_PAGE);
