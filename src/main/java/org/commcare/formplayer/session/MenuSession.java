@@ -334,10 +334,6 @@ public class MenuSession implements HereFunctionHandlerListener {
         return session.getAppId();
     }
 
-    public String getCommCareVersionString() {
-        return sessionWrapper.getIIF().getVersionString();
-    }
-
     public String getAppVersion() {
         return "" + this.engine.getPlatform().getCurrentProfile().getVersion();
     }

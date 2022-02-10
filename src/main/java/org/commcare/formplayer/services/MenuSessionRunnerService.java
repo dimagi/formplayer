@@ -193,7 +193,7 @@ public class MenuSessionRunnerService {
 
         menuResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
         menuResponseBean.setAppId(menuSession.getAppId());
-        menuResponseBean.setAppVersion(menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
+        menuResponseBean.setAppVersion("App Version: " + menuSession.getAppVersion());
         menuResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
         return menuResponseBean;
     }
@@ -625,7 +625,7 @@ public class MenuSessionRunnerService {
         if (menuSession.getSessionWrapper().getForm() != null) {
             NewFormResponse formResponseBean = generateFormEntrySession(menuSession);
             formResponseBean.setAppId(menuSession.getAppId());
-            formResponseBean.setAppVersion(menuSession.getCommCareVersionString() + ", App Version: " + menuSession.getAppVersion());
+            formResponseBean.setAppVersion("App Version: " + menuSession.getAppVersion());
             formResponseBean.setPersistentCaseTile(getPersistentDetail(menuSession, storageFactory.getPropertyManager().isFuzzySearchEnabled()));
             formResponseBean.setBreadcrumbs(menuSession.getBreadcrumbs());
             // update datadog/sentry metrics
