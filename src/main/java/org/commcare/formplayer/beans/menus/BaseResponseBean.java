@@ -7,12 +7,11 @@ import org.commcare.modern.session.SessionWrapper;
 import java.util.HashMap;
 
 /**
- * Base class for responses being sent to the front end. Params are:
- * title - self explanatory
- * notification - A message String and error boolean to be displayed by frontend
- * sholdAutoSubmit - A boolean to indicate if the frontend should auto-submit the form
- * clearSession - True if the front end should redirect to the app home
- * NOTE: clearSession causes all other displayables to be disregarded
+ * Base class for responses being sent to the front end. Params are: title - self explanatory
+ * notification - A message String and error boolean to be displayed by frontend sholdAutoSubmit - A
+ * boolean to indicate if the frontend should auto-submit the form clearSession - True if the front
+ * end should redirect to the app home NOTE: clearSession causes all other displayables to be
+ * disregarded
  */
 public class BaseResponseBean extends LocationRelevantResponseBean {
     protected NotificationMessage notification;

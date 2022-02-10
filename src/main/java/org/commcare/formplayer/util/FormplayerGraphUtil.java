@@ -20,13 +20,15 @@ public class FormplayerGraphUtil {
      * @param graphData The data to render.
      * @return Full HTML page, including head, body, and all script and style tags
      */
-    public static String getHTML(org.commcare.core.graph.model.GraphData graphData, String title) throws GraphException {
+    public static String getHTML(org.commcare.core.graph.model.GraphData graphData, String title)
+            throws GraphException {
         SortedMap<String, String> variables = new TreeMap<>();
         JSONObject config = new JSONObject();
         StringBuilder html = new StringBuilder();
         try {
             // Configure data first, as it may affect the other configurations
-            org.commcare.core.graph.c3.DataConfiguration data = new org.commcare.core.graph.c3.DataConfiguration(graphData);
+            org.commcare.core.graph.c3.DataConfiguration data =
+                    new org.commcare.core.graph.c3.DataConfiguration(graphData);
             config.put("data", data.getConfiguration());
 
             AxisConfiguration axis = new AxisConfiguration(graphData);
@@ -41,8 +43,10 @@ public class FormplayerGraphUtil {
             variables.put("type", "'" + graphData.getType() + "'");
             variables.put("config", config.toString());
 
-            // For debugging purposes, note that most minified files have un-minified equivalents in the same directory.
-            // To use them, switch affix to "max" and get rid of the ignoreAssetsPattern in build.gradle that
+            // For debugging purposes, note that most minified files have un-minified equivalents
+            // in the same directory.
+            // To use them, switch affix to "max" and get rid of the ignoreAssetsPattern in build
+            // .gradle that
             // filters them out of the APK.
 
             /**
@@ -55,10 +59,19 @@ public class FormplayerGraphUtil {
                     "<!DOCTYPE html>" +
                             "<html style=\"height: 100%\">" +
                             "<head>" +
-                            "<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.css'></link>" +
-                            "<link rel='stylesheet' type='text/css' href='https://cdn.rawgit.com/dimagi/commcare-android/master/app/assets/graphing/graph.max.css'></link>" +
-                            "<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/d3/5.16.0/d3.min.js'></script>" +
-                            "<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js'></script>" +
+                            "<link rel='stylesheet' type='text/css' href='https://cdnjs"
+                            + ".cloudflare.com/ajax/libs/c3/0.7.20/c3.css'></link>"
+                            +
+                            "<link rel='stylesheet' type='text/css' href='https://cdn.rawgit"
+                            + ".com/dimagi/commcare-android/master/app/assets/graphing/graph.max"
+                            + ".css'></link>"
+                            +
+                            "<script type='text/javascript' src='https://cdnjs.cloudflare"
+                            + ".com/ajax/libs/d3/5.16.0/d3.min.js'></script>"
+                            +
+                            "<script type='text/javascript' src='https://cdnjs.cloudflare"
+                            + ".com/ajax/libs/c3/0.7.20/c3.min.js'></script>"
+                            +
                             "<script type='text/javascript'>");
 
             html.append(getVariablesHTML(variables, null));
@@ -71,9 +84,13 @@ public class FormplayerGraphUtil {
             String errorHTML = "<div id='error'></div>";
             String chartHTML = "<div id='chart'></div>";
             html.append("</script>" +
-                    "<script type='text/javascript' src='https://cdn.rawgit.com/dimagi/commcare-android/master/app/assets/graphing/graph.max.js'></script>" +
+                    "<script type='text/javascript' src='https://cdn.rawgit"
+                    + ".com/dimagi/commcare-android/master/app/assets/graphing/graph.max"
+                    + ".js'></script>"
+                    +
                     "</head>" +
-                    "<body style=\"height: 90%; margin:0;\">" + titleHTML + errorHTML + chartHTML + "</body>" +
+                    "<body style=\"height: 90%; margin:0;\">" + titleHTML + errorHTML + chartHTML
+                    + "</body>" +
                     "</html>");
         } catch (JSONException e) {
             e.printStackTrace();
@@ -89,8 +106,8 @@ public class FormplayerGraphUtil {
      * @param variables OrderedHashTable where keys are variable names and values are JSON
      *                  representations of values.
      * @param namespace Optional. If provided, instead of declaring a separate variable for each
-     *                  item in variables, one object will be declared with namespace for a name
-     *                  and a property corresponding to each item in variables.
+     *                  item in variables, one object will be declared with namespace for a name and
+     *                  a property corresponding to each item in variables.
      * @return HTML string
      */
     private static String getVariablesHTML(SortedMap<String, String> variables, String namespace) {

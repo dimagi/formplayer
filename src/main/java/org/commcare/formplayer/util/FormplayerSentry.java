@@ -80,7 +80,8 @@ public class FormplayerSentry {
         Sentry.captureEvent(event);
     }
 
-    public static void recordTimingBreadcrumb(Timing timing, String category, String sentryMessage) {
+    public static void recordTimingBreadcrumb(Timing timing, String category,
+            String sentryMessage) {
         FormplayerSentry.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)

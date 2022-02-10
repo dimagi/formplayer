@@ -30,6 +30,7 @@ public class JumpToIndexRequestBean extends SessionRequestBean {
 
     @Override
     public String toString() {
-        return "Questions for index nean [formIndex: " + formIndex + ", sessionId: " + sessionId + "]";
+        return "Questions for index nean [formIndex: " + formIndex + ", sessionId: " + sessionId
+                + "]";
     }
 }

@@ -37,7 +37,8 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
     @Override
     public TransactionParser getParser(KXmlParser parser) {
         String namespace = parser.getNamespace();
-        if (namespace != null && formInstanceNamespaces != null && formInstanceNamespaces.containsKey(namespace)) {
+        if (namespace != null && formInstanceNamespaces != null
+                && formInstanceNamespaces.containsKey(namespace)) {
             req();
             return formInstanceParser.getParser(parser);
         }

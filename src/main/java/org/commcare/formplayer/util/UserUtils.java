@@ -9,7 +9,8 @@ public class UserUtils {
         return "CASE" + caseId;
     }
 
-    // If given a domained username, return the un-domained username, otherwise return @param username
+    // If given a domained username, return the un-domained username, otherwise return @param
+    // username
     public static String getUsernameBeforeAtSymbol(String wrappedUsername) {
         return wrappedUsername.contains("@")
                 ? wrappedUsername.substring(0, wrappedUsername.indexOf("@"))

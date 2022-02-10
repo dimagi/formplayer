@@ -9,13 +9,10 @@ import java.util.Map;
 /**
  * Created by jschweers on 12/28/20.
  * <p>
- * QueryData stores the case search & claim data for a session.
- * It's a hashtable keyed by command id, e.g., "search_command.m2"
- * For each command, QueryData stores two values:
- * 1. A boolean "execute" flag. If true, the search should be run.
- * If not, just fetch the current values of the prompts.
- * 2. An "inputs" map where keys are field names and values are
- * search terms.
+ * QueryData stores the case search & claim data for a session. It's a hashtable keyed by command
+ * id, e.g., "search_command.m2" For each command, QueryData stores two values: 1. A boolean
+ * "execute" flag. If true, the search should be run. If not, just fetch the current values of the
+ * prompts. 2. An "inputs" map where keys are field names and values are search terms.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryData extends Hashtable<String, Object> {

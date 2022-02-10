@@ -16,21 +16,23 @@ public class FormplayerIndexedFixtureInstanceTreeElement extends IndexedFixtureI
     private TreeElement attributes;
 
     private FormplayerIndexedFixtureInstanceTreeElement(AbstractTreeElement instanceRoot,
-                                                        IStorageUtilityIndexed<StorageIndexedTreeElementModel> storage,
-                                                        IndexedFixtureIdentifier indexedFixtureIdentifier) {
+            IStorageUtilityIndexed<StorageIndexedTreeElementModel> storage,
+            IndexedFixtureIdentifier indexedFixtureIdentifier) {
         super(instanceRoot, storage, indexedFixtureIdentifier);
     }
 
     public static IndexedFixtureInstanceTreeElement get(UserSandbox sandbox,
-                                                        String instanceName,
-                                                        InstanceBase instanceBase) {
-        IndexedFixtureIdentifier indexedFixtureIdentifier = sandbox.getIndexedFixtureIdentifier(instanceName);
+            String instanceName,
+            InstanceBase instanceBase) {
+        IndexedFixtureIdentifier indexedFixtureIdentifier = sandbox.getIndexedFixtureIdentifier(
+                instanceName);
         if (indexedFixtureIdentifier == null) {
             return null;
         } else {
             IStorageUtilityIndexed<StorageIndexedTreeElementModel> storage =
                     sandbox.getIndexedFixtureStorage(instanceName);
-            return new FormplayerIndexedFixtureInstanceTreeElement(instanceBase, storage, indexedFixtureIdentifier);
+            return new FormplayerIndexedFixtureInstanceTreeElement(instanceBase, storage,
+                    indexedFixtureIdentifier);
         }
     }
 
@@ -40,7 +42,9 @@ public class FormplayerIndexedFixtureInstanceTreeElement extends IndexedFixtureI
                 attributes = SerializationUtil.deserialize(attrHolder, TreeElement.class);
             } catch (Exception e) {
                 if (e.getCause() instanceof DeserializationException) {
-                    String newMessage = "Deserialization failed for indexed fixture root atrribute wrapper: " + e.getMessage();
+                    String newMessage =
+                            "Deserialization failed for indexed fixture root atrribute wrapper: "
+                                    + e.getMessage();
                     throw new RuntimeException(newMessage);
                 }
                 throw e;

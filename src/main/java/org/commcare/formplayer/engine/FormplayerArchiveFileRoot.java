@@ -30,7 +30,8 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
         return mGUID;
     }
 
-    // Given an encoded path (IE jr://archive/ABC123) return a Reference to be used to access the actual filesystem
+    // Given an encoded path (IE jr://archive/ABC123) return a Reference to be used to access the
+    // actual filesystem
     @Override
     public Reference derive(String guidPath) throws InvalidReferenceException {
         String GUID = getGUID(guidPath);
@@ -38,13 +39,17 @@ public class FormplayerArchiveFileRoot extends ArchiveFileRoot {
             return new ArchiveFileReference(guidToFolderMap.get(GUID), GUID, getPath(guidPath));
         }
         try {
-            String zipName = redisTemplate.opsForValue().get(String.format("formplayer:archive:%s", GUID));
+            String zipName = redisTemplate.opsForValue().get(
+                    String.format("formplayer:archive:%s", GUID));
             if (zipName == null) {
-                throw new InvalidReferenceException(String.format("No zip file saved for key %s.", guidPath), guidPath);
+                throw new InvalidReferenceException(
+                        String.format("No zip file saved for key %s.", guidPath), guidPath);
             }
             return new ArchiveFileReference(new ZipFile(zipName), GUID, getPath(guidPath));
         } catch (IOException e) {
-            throw new InvalidReferenceException(String.format("Error deriving reference with exception %s.", guidPath), guidPath);
+            throw new InvalidReferenceException(
+                    String.format("Error deriving reference with exception %s.", guidPath),
+                    guidPath);
         }
     }
 }

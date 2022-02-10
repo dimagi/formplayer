@@ -189,7 +189,8 @@ public class RestoreFactory {
         return performTimedSync(true, false, false);
     }
 
-    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures, boolean isResponseTo412) throws Exception {
+    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures,
+            boolean isResponseTo412) throws Exception {
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
         extras.put(Constants.DOMAIN_TAG, domain);
@@ -242,7 +243,8 @@ public class RestoreFactory {
         return sandbox;
     }
 
-    private UserSqlSandbox handle412Sync(boolean shouldPurge, boolean skipFixtures) throws Exception {
+    private UserSqlSandbox handle412Sync(boolean shouldPurge, boolean skipFixtures)
+            throws Exception {
         getSQLiteDB().deleteDatabaseFile();
         // this line has the effect of clearing the sync token
         // from the restore URL that's used
@@ -264,7 +266,8 @@ public class RestoreFactory {
 
     @Trace
     private UserSqlSandbox restoreUser(boolean skipFixtures) throws
-            UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
+            UnfullfilledRequirementsException, InvalidStructureException, IOException,
+            XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
         // create extras to send to category timing helper
@@ -276,7 +279,8 @@ public class RestoreFactory {
         while (true) {
             try {
                 UserSqlSandbox sandbox = getSqlSandbox();
-                FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
+                FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(
+                        sandbox, true);
                 InputStream restoreStream = getRestoreXml(skipFixtures);
 
                 SimpleTimer parseTimer = new SimpleTimer();
@@ -306,8 +310,9 @@ public class RestoreFactory {
                     getSQLiteDB().createDatabaseFolder();
                     throw e;
                 } else {
-                    log.info(String.format("Retrying restore for user %s after receiving exception.",
-                            getEffectiveUsername()),
+                    log.info(
+                            String.format("Retrying restore for user %s after receiving exception.",
+                                    getEffectiveUsername()),
                             e);
                 }
             }
@@ -367,10 +372,11 @@ public class RestoreFactory {
 
     private void ensureValidParameters() {
         if (domain == null || (username == null && asUsername == null)) {
-            throw new RuntimeException("Domain and one of username or asUsername must be non-null. " +
-                    " Domain: " + domain +
-                    ", username: " + username +
-                    ", asUsername: " + asUsername);
+            throw new RuntimeException(
+                    "Domain and one of username or asUsername must be non-null. " +
+                            " Domain: " + domain +
+                            ", username: " + username +
+                            ", asUsername: " + asUsername);
         }
     }
 
@@ -389,15 +395,16 @@ public class RestoreFactory {
             return storageFactory.getPropertyManager().isSyncAfterFormEnabled() &&
                     permitAggressiveSyncs;
         } catch (RuntimeException e) {
-            // In cases where we don't have access to the PropertyManager, such as sync-db, this call
+            // In cases where we don't have access to the PropertyManager, such as sync-db, this
+            // call
             // throws a RuntimeException
             return false;
         }
     }
 
     /**
-     * Based on the frequency of restore set in the app, this method determines
-     * whether the user should sync
+     * Based on the frequency of restore set in the app, this method determines whether the user
+     * should sync
      *
      * @return boolean - true if restore has expired, false otherwise
      */
@@ -481,8 +488,8 @@ public class RestoreFactory {
     }
 
     /**
-     * Given an async restore xml response, this function throws an AsyncRetryException
-     * with meta data about the async restore.
+     * Given an async restore xml response, this function throws an AsyncRetryException with meta
+     * data about the async restore.
      *
      * @param xml     - Async restore response
      * @param headers - HttpHeaders from the restore response
@@ -538,7 +545,8 @@ public class RestoreFactory {
         ResponseEntity<org.springframework.core.io.Resource> response;
         String status = "error";
         log.info("Restoring at domain: " + domain + " with url: " + restoreUrl.toString());
-        downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
+        downloadRestoreTimer = categoryTimingHelper.newTimer(
+                Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
         downloadRestoreTimer.start();
         try {
             response = webClient.getRaw(restoreUrl, org.springframework.core.io.Resource.class);
@@ -633,8 +641,9 @@ public class RestoreFactory {
             requestPath = String.format("%s?%s", requestPath, url.getRawQuery());
         }
         if (!RequestUtils.requestAuthedWithHmac()) {
-            throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
-                    "was not validated with HMAC.", requestPath));
+            throw new RuntimeException(
+                    String.format("Tried getting HMAC Auth for request %s but this request" +
+                            "was not validated with HMAC.", requestPath));
         }
         String digest;
         try {
@@ -652,7 +661,8 @@ public class RestoreFactory {
     }
 
     public URI getCaseRestoreUrl() {
-        return UriComponentsBuilder.fromHttpUrl(caseRestoreUrl).buildAndExpand(domain, caseId).toUri();
+        return UriComponentsBuilder.fromHttpUrl(caseRestoreUrl).buildAndExpand(domain,
+                caseId).toUri();
     }
 
     public URI getUserRestoreUrl(boolean skipFixtures) {
@@ -715,8 +725,8 @@ public class RestoreFactory {
     }
 
     /**
-     * Adds a sequence of menu selections to the set of validated selections
-     * for a given user session so that certain optimizations can skip validation
+     * Adds a sequence of menu selections to the set of validated selections for a given user
+     * session so that certain optimizations can skip validation
      *
      * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
      */
@@ -728,8 +738,8 @@ public class RestoreFactory {
     }
 
     /**
-     * Checks whether a sequence of menu selections has already been validated
-     * for a given user session
+     * Checks whether a sequence of menu selections has already been validated for a given user
+     * session
      *
      * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
      */

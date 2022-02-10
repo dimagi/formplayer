@@ -68,7 +68,8 @@ public class RequestUtils {
         try {
             data = new JSONObject(getBody(request));
         } catch (IOException | JSONException a) {
-            throw new RuntimeException("Unreadable POST Body for the request: " + request.getRequestURI(), a);
+            throw new RuntimeException(
+                    "Unreadable POST Body for the request: " + request.getRequestURI(), a);
         }
         return data;
     }
@@ -79,8 +80,8 @@ public class RequestUtils {
     }
 
     /**
-     * Get the HMAC hash of a given request body with a given key
-     * Used by Formplayer to validate requests from HQ using shared internal key `commcarehq.formplayerAuthKey`
+     * Get the HMAC hash of a given request body with a given key Used by Formplayer to validate
+     * requests from HQ using shared internal key `commcarehq.formplayerAuthKey`
      */
     public static String getHmac(String key, String data) throws Exception {
         Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
@@ -107,7 +108,8 @@ public class RequestUtils {
     }
 
     /**
-     * @return True if there is request in the context AND the request was authenticated with HMAC auth
+     * @return True if there is request in the context AND the request was authenticated with HMAC
+     * auth
      */
     public static boolean requestAuthedWithHmac() {
         HttpServletRequest request = getCurrentRequest();

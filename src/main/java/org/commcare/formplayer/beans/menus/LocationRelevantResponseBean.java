@@ -1,8 +1,8 @@
 package org.commcare.formplayer.beans.menus;
 
 /**
- * Extended by response beans that may need to convey to the browser that the browser location is needed for a
- * function evaluation.
+ * Extended by response beans that may need to convey to the browser that the browser location is
+ * needed for a function evaluation.
  * <p>
  * Created by amstone326 on 12/13/17.
  */

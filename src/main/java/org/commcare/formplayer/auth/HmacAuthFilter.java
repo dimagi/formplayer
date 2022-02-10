@@ -39,8 +39,7 @@ import lombok.Builder;
 import lombok.extern.apachecommons.CommonsLog;
 
 /**
- * Request filter that performs HMAC auth if the request contains the
- * "X-MAC-DIGEST" header.
+ * Request filter that performs HMAC auth if the request contains the "X-MAC-DIGEST" header.
  */
 @CommonsLog
 @Builder
@@ -51,7 +50,8 @@ public class HmacAuthFilter extends GenericFilterBean {
             new RequestHeaderRequestMatcher(Constants.HMAC_HEADER)
     );
 
-    private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
+    private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource =
+            new WebAuthenticationDetailsSource();
 
     private String hmacKey;
 
@@ -63,13 +63,15 @@ public class HmacAuthFilter extends GenericFilterBean {
         if (this.requiresAuthenticationRequestMatcher.matches((HttpServletRequest)request)) {
             if (logger.isDebugEnabled()) {
                 logger.debug(LogMessage
-                        .of(() -> "Authenticating " + ((HttpServletRequest)request).getRequestURI()));
+                        .of(() -> "Authenticating "
+                                + ((HttpServletRequest)request).getRequestURI()));
             }
             doAuthenticate((HttpServletRequest)request, (HttpServletResponse)response);
         } else {
             if (logger.isTraceEnabled()) {
-                logger.trace(LogMessage.format("Did not authenticate since request did not match [%s]",
-                        this.requiresAuthenticationRequestMatcher));
+                logger.trace(
+                        LogMessage.format("Did not authenticate since request did not match [%s]",
+                                this.requiresAuthenticationRequestMatcher));
             }
         }
         chain.doFilter(request, response);
@@ -85,15 +87,17 @@ public class HmacAuthFilter extends GenericFilterBean {
         } catch (Exception e) {
             logger.error("Request Authorization with unexpected exception", e);
             unsuccessfulAuthentication(
-                    request, response, new InternalAuthenticationServiceException("Exception checking HMAC", e)
+                    request, response,
+                    new InternalAuthenticationServiceException("Exception checking HMAC", e)
             );
             return;
         }
 
         try {
             HqUserDetailsBean userDetails = getUserDetails(request);
-            PreAuthenticatedAuthenticationToken authenticationResult = new PreAuthenticatedAuthenticationToken(
-                    userDetails, userDetails.getDomain(), userDetails.getAuthorities());
+            PreAuthenticatedAuthenticationToken authenticationResult =
+                    new PreAuthenticatedAuthenticationToken(
+                            userDetails, userDetails.getDomain(), userDetails.getAuthorities());
             authenticationResult.setDetails(this.authenticationDetailsSource.buildDetails(request));
             successfulAuthentication(request, response, authenticationResult);
         } catch (BadCredentialsException ex) {
@@ -103,7 +107,8 @@ public class HmacAuthFilter extends GenericFilterBean {
         } catch (Exception e) {
             logger.error("Request Authorization with unexpected exception", e);
             unsuccessfulAuthentication(
-                    request, response, new InternalAuthenticationServiceException("Exception getting user details", e)
+                    request, response,
+                    new InternalAuthenticationServiceException("Exception getting user details", e)
             );
         }
     }
@@ -126,7 +131,8 @@ public class HmacAuthFilter extends GenericFilterBean {
         try {
             body = RequestUtils.getPostData(request);
         } catch (Exception e) {
-            throw new BadCredentialsException("Unable to extract user credentials from the request", e);
+            throw new BadCredentialsException("Unable to extract user credentials from the request",
+                    e);
         }
 
         if (body.has("username") && body.has("domain")) {
@@ -154,23 +160,25 @@ public class HmacAuthFilter extends GenericFilterBean {
     }
 
     /**
-     * Puts the <code>Authentication</code> instance returned by the authentication
-     * manager into the secure context.
+     * Puts the <code>Authentication</code> instance returned by the authentication manager into the
+     * secure context.
      */
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            Authentication authResult) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authResult) throws IOException, ServletException {
         this.logger.debug(LogMessage.format("Authentication success: %s", authResult));
         SecurityContextHolder.getContext().setAuthentication(authResult);
     }
 
     /**
-     * Ensures the authentication object in the secure context is set to null when
-     * authentication fails.
+     * Ensures the authentication object in the secure context is set to null when authentication
+     * fails.
      * <p>
      * Caches the failure exception as a request attribute
      */
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                              AuthenticationException failed) throws IOException, ServletException {
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException failed) throws IOException, ServletException {
         SecurityContextHolder.clearContext();
         this.logger.debug("Cleared security context due to exception", failed);
         request.setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, failed);
@@ -181,17 +189,18 @@ public class HmacAuthFilter extends GenericFilterBean {
         token.setDetails(this.authenticationDetailsSource.buildDetails(request));
         this.logger.debug("HMAC Authentication success but no user details provided");
         SecurityContextHolder.getContext().setAuthentication(token);
-        this.logger.debug("Set SecurityContextHolder to CommCareAnonymousAuthentication SecurityContext");
+        this.logger.debug(
+                "Set SecurityContextHolder to CommCareAnonymousAuthentication SecurityContext");
     }
 
     /**
      * An anonymous token that is used to indicate valid HMAC auth but without any user details.
      * <p>
-     * This is used for endpoints where we don't require user authentication but still require that the
-     * request came from CommCare.
+     * This is used for endpoints where we don't require user authentication but still require that
+     * the request came from CommCare.
      * <p>
-     * Setting the role allows us to differentiate this anonymous token from a truly anonymous one that
-     * is not authenticated at all.
+     * Setting the role allows us to differentiate this anonymous token from a truly anonymous one
+     * that is not authenticated at all.
      */
     private static class CommCareAnonymousAuthenticationToken extends AnonymousAuthenticationToken {
 

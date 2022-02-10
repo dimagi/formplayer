@@ -29,7 +29,7 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     }
 
     public FormplayerInstanceInitializer(FormplayerSessionWrapper formplayerSessionWrapper,
-                                         UserSqlSandbox mSandbox, CommCarePlatform mPlatform) {
+            UserSqlSandbox mSandbox, CommCarePlatform mPlatform) {
         super(formplayerSessionWrapper, mSandbox, mPlatform);
     }
 
@@ -39,7 +39,8 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
             SqlStorage<Case> storage = (SqlStorage<Case>)mSandbox.getCaseStorage();
             FormplayerCaseIndexTable formplayerCaseIndexTable;
             formplayerCaseIndexTable = new FormplayerCaseIndexTable((UserSqlSandbox)mSandbox);
-            casebase = new CaseInstanceTreeElement(instance.getBase(), storage, formplayerCaseIndexTable);
+            casebase = new CaseInstanceTreeElement(instance.getBase(), storage,
+                    formplayerCaseIndexTable);
         } else {
             //re-use the existing model if it exists.
             casebase.rebase(instance.getBase());
@@ -51,7 +52,8 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     @Override
     protected InstanceRoot setupSessionData(ExternalDataInstance instance) {
         if (this.mPlatform == null) {
-            throw new RuntimeException("Cannot generate session instance with undeclared platform!");
+            throw new RuntimeException(
+                    "Cannot generate session instance with undeclared platform!");
         }
         User u = mSandbox.getLoggedInUser();
         if (u == null) {
@@ -83,7 +85,8 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     }
 
     public String getVersionString() {
-        return "Formplayer Version: " + mPlatform.getMajorVersion() + "." + mPlatform.getMinorVersion();
+        return "Formplayer Version: " + mPlatform.getMajorVersion() + "."
+                + mPlatform.getMinorVersion();
     }
 
     @Override

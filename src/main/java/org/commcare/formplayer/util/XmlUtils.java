@@ -17,8 +17,8 @@ import javax.xml.transform.stream.StreamSource;
  */
 public class XmlUtils {
     /**
-     * Given a String representation of a valid XML document, this returns an
-     * indented version of it.
+     * Given a String representation of a valid XML document, this returns an indented version of
+     * it.
      *
      * @param xml - A string XML document
      * @return A string XML document that is indented

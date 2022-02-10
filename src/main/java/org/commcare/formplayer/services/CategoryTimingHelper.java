@@ -54,7 +54,8 @@ public class CategoryTimingHelper {
         }
 
         public void record() {
-            parent.recordCategoryTiming(this, category, sentryMessage, Collections.singletonMap(Constants.DOMAIN_TAG, domain));
+            parent.recordCategoryTiming(this, category, sentryMessage,
+                    Collections.singletonMap(Constants.DOMAIN_TAG, domain));
         }
     }
 
@@ -105,10 +106,11 @@ public class CategoryTimingHelper {
     }
 
     /**
-     * @param extras - optional tag/value pairs to send to datadog
-     *               NOTE: if adding a new tag, add a constant for the tag name
+     * @param extras - optional tag/value pairs to send to datadog NOTE: if adding a new tag, add a
+     *               constant for the tag name
      */
-    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
+    public void recordCategoryTiming(Timing timing, String category, String sentryMessage,
+            Map<String, String> extras) {
         FormplayerSentry.recordTimingBreadcrumb(timing, category, sentryMessage);
         recordDatadogMetrics(timing, category, extras);
         logTiming(timing, category);

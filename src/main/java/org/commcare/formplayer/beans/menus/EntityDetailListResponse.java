@@ -27,22 +27,25 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
         this.isPersistentDetail = true;
     }
 
-    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference, boolean isFuzzySearchEnabled) {
+    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec,
+            TreeReference treeReference, boolean isFuzzySearchEnabled) {
         entityDetailList = processDetails(screen, ec, treeReference, isFuzzySearchEnabled);
     }
 
-    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference, boolean isFuzzySearchEnabled) {
+    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec,
+            TreeReference treeReference, boolean isFuzzySearchEnabled) {
         entityDetailList = processDetails(detailList, ec, treeReference, isFuzzySearchEnabled);
     }
 
-    private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref, boolean isFuzzySearchEnabled) {
+    private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec,
+            TreeReference ref, boolean isFuzzySearchEnabled) {
         return processDetails(screen.getLongDetailList(ref), ec, ref, isFuzzySearchEnabled);
     }
 
     private EntityDetailResponse[] processDetails(Detail[] detailList,
-                                                  EvaluationContext ec,
-                                                  TreeReference ref,
-                                                  boolean isFuzzySearchEnabled) {
+            EvaluationContext ec,
+            TreeReference ref,
+            boolean isFuzzySearchEnabled) {
         if (detailList == null || !(detailList.length > 0)) {
             // No details, just return null
             return null;
@@ -62,7 +65,8 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
                         detailList[i],
                         subContext,
                         titles);
-                EntityDetailResponse response = new EntityDetailResponse(subscreen, titles[i], detailList[i]);
+                EntityDetailResponse response = new EntityDetailResponse(subscreen, titles[i],
+                        detailList[i]);
                 accumulator.add(response);
             } else {
                 TreeReference contextualizedNodeset = detailList[i].getNodeset().contextualize(ref);

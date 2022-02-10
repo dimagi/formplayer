@@ -54,8 +54,8 @@ public class SerializableMenuSession {
     }
 
     public SerializableMenuSession(String username, String domain, String appId,
-                                   String installReference, String locale,
-                                   String asUser, boolean preview) {
+            String installReference, String locale,
+            String asUser, boolean preview) {
         this.username = username;
         this.domain = domain;
         this.appId = appId;

@@ -14,15 +14,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Wrap all requests in this request wrapper to allow us to read the body multiple times.
- * This is necessary since some of the authentication details are contained in the body.
+ * Wrap all requests in this request wrapper to allow us to read the body multiple times. This is
+ * necessary since some of the authentication details are contained in the body.
  */
 @Component
 @Order(FilterOrder.FIRST)
 public class MultipleReadRequestWrappingFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse response,
+            FilterChain filterChain) throws IOException, ServletException {
         filterChain.doFilter(new MultipleReadHttpRequest(req), response);
     }
 

@@ -36,7 +36,8 @@ public class EvaluateXPathResponseBean extends LocationRelevantResponseBean {
     public EvaluateXPathResponseBean() {
     }
 
-    public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath, String debugTraceLevel) throws XPathSyntaxException {
+    public EvaluateXPathResponseBean(EvaluationContext evaluationContext, String xpath,
+            String debugTraceLevel) throws XPathSyntaxException {
         status = Constants.ANSWER_RESPONSE_STATUS_POSITIVE;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         KXmlSerializer serializer = new KXmlSerializer();

@@ -40,8 +40,10 @@ public class DebuggerFormattedQuestionsResponseBean {
         for (String instanceId : instanceIds) {
             autoCompletable.add(new InstanceAutocompletableItem(instanceId));
         }
-        this.questionList = autoCompletable.toArray(new AutoCompletableItem[autoCompletable.size()]);
-        this.recentXPathQueries = recentXPathQueries.toArray(new XPathQueryItem[recentXPathQueries.size()]);
+        this.questionList = autoCompletable.toArray(
+                new AutoCompletableItem[autoCompletable.size()]);
+        this.recentXPathQueries = recentXPathQueries.toArray(
+                new XPathQueryItem[recentXPathQueries.size()]);
     }
 
     public String getFormattedQuestions() {

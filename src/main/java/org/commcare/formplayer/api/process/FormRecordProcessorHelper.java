@@ -37,8 +37,8 @@ import java.util.HashMap;
 import java.util.Vector;
 
 /**
- * * Convenience methods, mostly for Touchforms so we don't have to deal with Java IO
- * in Jython which is terrible
+ * * Convenience methods, mostly for Touchforms so we don't have to deal with Java IO in Jython
+ * which is terrible
  * <p>
  * Created by wpride1 on 8/20/15.
  */
@@ -46,22 +46,26 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
     private static final Log log = LogFactory.getLog(FormRecordProcessorHelper.class);
 
     public static void processXML(FormplayerTransactionParserFactory factory,
-                                  String fileText) throws IOException, XmlPullParserException, UnfullfilledRequirementsException, InvalidStructureException {
+            String fileText)
+            throws IOException, XmlPullParserException, UnfullfilledRequirementsException,
+            InvalidStructureException {
         InputStream stream = new ByteArrayInputStream(fileText.getBytes("UTF-8"));
         process(stream, factory);
     }
 
     /**
-     * Perform a case purge against the logged in user with the logged in app in local storage.
-     * This is coped almost directly from commcare-android's CaseUtils class.
-     * TODO They should be unified
+     * Perform a case purge against the logged in user with the logged in app in local storage. This
+     * is coped almost directly from commcare-android's CaseUtils class. TODO They should be
+     * unified
      */
     public static void purgeCases(UserSqlSandbox sandbox) throws InvalidCaseGraphException {
         long start = System.currentTimeMillis();
-        //We need to determine if we're using ownership for purging. For right now, only in sync mode
+        //We need to determine if we're using ownership for purging. For right now, only in sync
+        // mode
         Vector<String> owners = new Vector<>();
         Vector<String> users = new Vector<>();
-        for (IStorageIterator<User> userIterator = sandbox.getUserStorage().iterate(); userIterator.hasMore(); ) {
+        for (IStorageIterator<User> userIterator = sandbox.getUserStorage().iterate();
+                userIterator.hasMore(); ) {
             String id = userIterator.nextRecord().getUniqueId();
             owners.addElement(id);
             users.addElement(id);
@@ -75,7 +79,8 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
                 continue;
             }
             EvaluationContext ec = new EvaluationContext(instance);
-            for (TreeReference ref : ec.expandReference(XPathReference.getPathExpr("/groups/group/@id").getReference())) {
+            for (TreeReference ref : ec.expandReference(
+                    XPathReference.getPathExpr("/groups/group/@id").getReference())) {
                 AbstractTreeElement<AbstractTreeElement> idelement = ec.resolveReference(ref);
                 if (idelement.getValue() != null) {
                     owners.addElement(idelement.getValue().uncast().getString());
@@ -87,7 +92,8 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         int removedLedgers = -1;
 
         SqlStorage<Case> storage = sandbox.getCaseStorage();
-        DAG<String, int[], String> fullCaseGraph = getFullCaseGraph(storage, new FormplayerCaseIndexTable(sandbox), owners);
+        DAG<String, int[], String> fullCaseGraph = getFullCaseGraph(storage,
+                new FormplayerCaseIndexTable(sandbox), owners);
 
         CasePurgeFilter filter = new CasePurgeFilter(fullCaseGraph);
         if (filter.invalidEdgesWereRemoved()) {
@@ -97,7 +103,8 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
             Logger.log(LogTypes.TYPE_ERROR_ASSERTION, "Case lists on the server and device" +
                     " were out of sync. The following cases were expected to be on the device, " +
                     "but were missing: " + filter.getMissingCasesString() + ". As a result, the " +
-                    "following cases were also removed from the device: " + filter.getRemovedCasesString());
+                    "following cases were also removed from the device: "
+                    + filter.getRemovedCasesString());
         }
 
         Vector<Integer> casesRemoved = storage.removeAll(filter.getCasesToRemove());
@@ -120,8 +127,8 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
     }
 
     public static DAG<String, int[], String> getFullCaseGraph(SqlStorage<Case> caseStorage,
-                                                              FormplayerCaseIndexTable indexTable,
-                                                              Vector<String> owners) {
+            FormplayerCaseIndexTable indexTable,
+            Vector<String> owners) {
         DAG<String, int[], String> caseGraph = new DAG<>();
         Vector<Pair<String, String>> indexHolder = new Vector<>();
 
@@ -131,7 +138,8 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
         // directed edge for each index (from the 'child' case pointing to the 'parent' case) with
         // the appropriate relationship tagged
         for (JdbcSqlStorageIterator<Case> i = caseStorage.iterate(true,
-                new String[]{Case.INDEX_OWNER_ID, Case.INDEX_CASE_STATUS, Case.INDEX_CASE_ID}); i.hasMore(); ) {
+                new String[]{Case.INDEX_OWNER_ID, Case.INDEX_CASE_STATUS, Case.INDEX_CASE_ID});
+                i.hasMore(); ) {
 
             String ownerId = i.peekIncludedMetadata(Case.INDEX_OWNER_ID);
             boolean closed = i.peekIncludedMetadata(Case.INDEX_CASE_STATUS).equals("closed");
@@ -154,7 +162,8 @@ public class FormRecordProcessorHelper extends XmlFormRecordProcessor {
                     boolean skip = false;
                     for (Pair<String, String> existing : indexHolder) {
                         if (existing.first.equals(index.first)) {
-                            if (existing.second.equals(CaseIndex.RELATIONSHIP_EXTENSION) && !index.second.equals(CaseIndex.RELATIONSHIP_EXTENSION)) {
+                            if (existing.second.equals(CaseIndex.RELATIONSHIP_EXTENSION)
+                                    && !index.second.equals(CaseIndex.RELATIONSHIP_EXTENSION)) {
                                 toReplace = existing;
                             } else {
                                 skip = true;

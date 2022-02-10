@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Response containing a list of the user's incomplete form sessions.
- * Requires the Case storage in order to lookup case names for display
+ * Response containing a list of the user's incomplete form sessions. Requires the Case storage in
+ * order to lookup case names for display
  */
 public class GetSessionsResponse {
 
@@ -22,7 +22,8 @@ public class GetSessionsResponse {
     public GetSessionsResponse() {
     }
 
-    public GetSessionsResponse(SqlStorage<Case> caseStorage, ArrayList<FormSessionListView> sessionList, long totalRecords) {
+    public GetSessionsResponse(SqlStorage<Case> caseStorage,
+            ArrayList<FormSessionListView> sessionList, long totalRecords) {
         sessions = new SessionListItem[sessionList.size()];
         for (int i = 0; i < sessionList.size(); i++) {
             sessions[i] = new SessionListItem(caseStorage, sessionList.get(i));

@@ -36,7 +36,8 @@ public class HqUserDetailsBean implements UserDetails {
         this(domain, new String[]{domain}, username, false, new String[]{}, new String[]{});
     }
 
-    public HqUserDetailsBean(String domain, String[] domains, String username, boolean isSuperuser, String[] enabledToggles, String[] enabledPreviews) {
+    public HqUserDetailsBean(String domain, String[] domains, String username, boolean isSuperuser,
+            String[] enabledToggles, String[] enabledPreviews) {
         this.domain = domain;
         this.domains = domains;
         this.username = username;
@@ -46,7 +47,8 @@ public class HqUserDetailsBean implements UserDetails {
     }
 
     public boolean isAuthorized(String domain, String username) {
-        return isSuperUser || Arrays.asList(domains).contains(domain) && this.username.equals(username);
+        return isSuperUser || Arrays.asList(domains).contains(domain) && this.username.equals(
+                username);
     }
 
     /////////////////////// UserDetails methods

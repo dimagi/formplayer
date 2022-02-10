@@ -41,7 +41,8 @@ public class FormEntryResponseBean extends SessionResponseBean {
     @Override
     public String toString() {
         return "FormEntryResponseBean: [status=" + status + ", seq_id: " + sequenceId
-                + (status != null && status.equals("error") ? ", reason=" + reason + ", type=" + type : "") + "]";
+                + (status != null && status.equals("error") ? ", reason=" + reason + ", type="
+                + type : "") + "]";
     }
 
     public String getReason() {

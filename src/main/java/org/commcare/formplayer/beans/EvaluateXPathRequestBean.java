@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
- * Created by willpride on 1/20/16.
- * SessionResponseBean that evaluates the given XPath against the current session evaluation context
+ * Created by willpride on 1/20/16. SessionResponseBean that evaluates the given XPath against the
+ * current session evaluation context
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EvaluateXPathRequestBean extends SessionRequestBean {

@@ -46,9 +46,9 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
     private RestTemplate restTemplate;
 
     public FormplayerConfigEngine(IStorageIndexedFactory storageFactory,
-                                  FormplayerInstallerFactory formplayerInstallerFactory,
-                                  ArchiveFileRoot formplayerArchiveFileRoot,
-                                  RestTemplate restTemplate) {
+            FormplayerInstallerFactory formplayerInstallerFactory,
+            ArchiveFileRoot formplayerArchiveFileRoot,
+            RestTemplate restTemplate) {
         super(storageFactory, formplayerInstallerFactory, System.out);
         this.restTemplate = restTemplate;
         this.mArchiveRoot = formplayerArchiveFileRoot;
@@ -76,7 +76,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         initFromArchive(archiveURL, false);
     }
 
-    public void initFromArchive(String archiveURL, boolean preview) throws InstallCancelledException,
+    public void initFromArchive(String archiveURL, boolean preview)
+            throws InstallCancelledException,
             UnresolvedResourceException, UnfullfilledRequirementsException {
         String fileName;
         String appId = null;
@@ -86,7 +87,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
                 try {
                     mArchiveRoot.derive("jr://archive/" + appId + "/");
                     init("jr://archive/" + appId + "/profile.ccpr");
-                    log.info(String.format("Successfully re-used installation CCZ for appId %s", appId));
+                    log.info(String.format("Successfully re-used installation CCZ for appId %s",
+                            appId));
                     return;
                 } catch (InvalidReferenceException e) {
                     // Expected in many cases, pass
@@ -100,7 +102,8 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
         try {
             zip = new ZipFile(fileName);
         } catch (IOException e) {
-            log.error("File at " + archiveURL + ": is not a valid CommCare Package. Downloaded to: " + fileName, e);
+            log.error("File at " + archiveURL + ": is not a valid CommCare Package. Downloaded to: "
+                    + fileName, e);
             return;
         }
         String archiveGUID = this.mArchiveRoot.addArchiveFile(zip, appId);
@@ -124,16 +127,20 @@ public class FormplayerConfigEngine extends CommCareConfigEngine {
             );
         } catch (HttpClientErrorException e) {
             throw new RuntimeException(
-                    "Formplayer encountered an unknown error. Please submit a ticket if you continue to see this."
+                    "Formplayer encountered an unknown error. Please submit a ticket if you "
+                            + "continue to see this."
             );
         } catch (HttpServerErrorException.GatewayTimeout e) {
             throw new RuntimeException(
-                    "Timed out fetching the CommCare application. Please submit a ticket if you continue to see this."
+                    "Timed out fetching the CommCare application. Please submit a ticket if you "
+                            + "continue to see this."
             );
         } catch (HttpServerErrorException.InternalServerError e) {
             String errorMessage = parseErrorFromResponse(e.getResponseBodyAsString());
             if (StringUtils.isEmpty(errorMessage)) {
-                errorMessage = "There are errors in your application. Please fix these errors in your application before using app preview.";
+                errorMessage =
+                        "There are errors in your application. Please fix these errors in your "
+                                + "application before using app preview.";
             }
             throw new ApplicationConfigException(errorMessage);
         }

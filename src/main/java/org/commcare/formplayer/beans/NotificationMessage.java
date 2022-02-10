@@ -82,7 +82,8 @@ public class NotificationMessage {
 
     @Override
     public String toString() {
-        return String.format("NotificationMessage message=%s, isError=%s, type=%s", message, isError, type);
+        return String.format("NotificationMessage message=%s, isError=%s, type=%s", message,
+                isError, type);
     }
 
     public String getTag() {

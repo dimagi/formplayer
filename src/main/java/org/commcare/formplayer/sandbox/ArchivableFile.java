@@ -61,7 +61,8 @@ public class ArchivableFile extends File {
     }
 
     private static void decompressGzipFile(File gzipFile, File newFile) throws IOException {
-        // copied and modified from http://www.journaldev.com/966/java-gzip-example-compress-decompress-file
+        // copied and modified from http://www.journaldev
+        // .com/966/java-gzip-example-compress-decompress-file
         try (
                 FileInputStream fis = new FileInputStream(gzipFile);
                 GZIPInputStream gis = new GZIPInputStream(fis);
@@ -105,7 +106,8 @@ public class ArchivableFile extends File {
                 if (clearLockFileIfExpired(force)) {
                     break;
                 }
-                throw new SqlArchiveLockException("Timed out trying to acquire the archivable file lock");
+                throw new SqlArchiveLockException(
+                        "Timed out trying to acquire the archivable file lock");
             }
             try {
                 Thread.sleep(1000);

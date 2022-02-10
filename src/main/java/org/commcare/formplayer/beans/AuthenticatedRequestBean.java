@@ -6,9 +6,8 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import org.commcare.formplayer.util.UserUtils;
 
 /**
- * The AuthenticatedRequestBean should be used for requests that
- * need to be authenticated with HQ. This Bean will ensure the
- * necessary json values are present in the request.
+ * The AuthenticatedRequestBean should be used for requests that need to be authenticated with HQ.
+ * This Bean will ensure the necessary json values are present in the request.
  */
 public class AuthenticatedRequestBean {
 

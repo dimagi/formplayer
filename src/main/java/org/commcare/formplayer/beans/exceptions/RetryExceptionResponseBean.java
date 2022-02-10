@@ -10,7 +10,8 @@ public class RetryExceptionResponseBean extends BaseExceptionResponseBean {
     private int total;
     private int retryAfter;
 
-    public RetryExceptionResponseBean(String exception, String url, int done, int total, int retryAfter) {
+    public RetryExceptionResponseBean(String exception, String url, int done, int total,
+            int retryAfter) {
         this.exception = exception;
         this.url = url;
         this.status = Constants.RETRY_STATUS;

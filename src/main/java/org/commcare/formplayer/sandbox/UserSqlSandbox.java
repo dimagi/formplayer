@@ -45,8 +45,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     private ConnectionHandler handler;
 
     /**
-     * Create a sandbox of the necessary storage objects with the shared
-     * factory.
+     * Create a sandbox of the necessary storage objects with the shared factory.
      */
     public UserSqlSandbox(ConnectionHandler handler) {
         this.handler = handler;
@@ -75,7 +74,8 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     }
 
     @Override
-    public IStorageUtilityIndexed<StorageIndexedTreeElementModel> getIndexedFixtureStorage(String fixtureName) {
+    public IStorageUtilityIndexed<StorageIndexedTreeElementModel> getIndexedFixtureStorage(
+            String fixtureName) {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
         return new SqlStorage<>(handler,
                 StorageIndexedTreeElementModel.class,
@@ -85,8 +85,8 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
 
     @Override
     public void setupIndexedFixtureStorage(String fixtureName,
-                                           StorageIndexedTreeElementModel exampleEntry,
-                                           Set<String> indices) {
+            StorageIndexedTreeElementModel exampleEntry,
+            Set<String> indices) {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
         SqlStorage<StorageIndexedTreeElementModel> sqlUtil
                 = new SqlStorage<>(handler, exampleEntry, tableName);
@@ -117,12 +117,13 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
 
     @Override
     public void setIndexedFixturePathBases(String fixtureName, String baseName,
-                                           String childName, TreeElement attrs) {
+            String childName, TreeElement attrs) {
         Map<String, Object> contentVals = new HashMap<>();
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_BASE, baseName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_CHILD, childName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_NAME, fixtureName);
-        contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_ATTRIBUTES, TableBuilder.toBlob(attrs));
+        contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_ATTRIBUTES,
+                TableBuilder.toBlob(attrs));
         sqlUtil.insertOrReplace(contentVals);
     }
 

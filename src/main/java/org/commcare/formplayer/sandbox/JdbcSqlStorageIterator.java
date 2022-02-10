@@ -22,7 +22,8 @@ import java.util.Set;
  * @author ctsims
  * @author wspride
  */
-public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIterator<T>, Iterator<T> {
+public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIterator<T>,
+        Iterator<T> {
 
     protected PreparedStatement preparedStatement;
     protected ResultSet resultSet;
@@ -33,9 +34,9 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
     private static final Log log = LogFactory.getLog(JdbcSqlStorageIterator.class);
 
     public JdbcSqlStorageIterator(PreparedStatement preparedStatement,
-                                  ResultSet resultSet,
-                                  SqlStorage<T> storage,
-                                  String[] metaDataIndexSet) {
+            ResultSet resultSet,
+            SqlStorage<T> storage,
+            String[] metaDataIndexSet) {
         this.resultSet = resultSet;
         this.storage = storage;
         this.metaDataIndexSet = new HashSet<>(ArrayUtilities.toVector(metaDataIndexSet));
@@ -88,17 +89,18 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
     }
 
     /**
-     * Retrieves the indexed metadata for the current record _without_ advancing
-     * the iterator, so this needs to be called _before_ next() or nextId()
+     * Retrieves the indexed metadata for the current record _without_ advancing the iterator, so
+     * this needs to be called _before_ next() or nextId()
      *
-     * @param metadataKey The metadata key for this Serializable record. Would be
-     *                    the same key used with T.getMetaData()
+     * @param metadataKey The metadata key for this Serializable record. Would be the same key used
+     *                    with T.getMetaData()
      * @throws RuntimeException If this iterator was not intialized with metadata
      */
     public String peekIncludedMetadata(String metadataKey) {
         try {
             if (!metaDataIndexSet.contains(metadataKey)) {
-                throw new RuntimeException("Invalid iterator metadata request for key: " + metadataKey);
+                throw new RuntimeException(
+                        "Invalid iterator metadata request for key: " + metadataKey);
             }
             int columnIndex;
             if (metaDataColumnMap.containsKey(metadataKey)) {
@@ -143,7 +145,8 @@ public class JdbcSqlStorageIterator<T extends Persistable> implements IStorageIt
 
     @Override
     public void remove() {
-        throw new RuntimeException("Tried to use undefined remove() function in JdbcSqlStorageIterator");
+        throw new RuntimeException(
+                "Tried to use undefined remove() function in JdbcSqlStorageIterator");
     }
 
     public void close() {

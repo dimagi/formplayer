@@ -9,8 +9,8 @@ import org.commcare.formplayer.objects.SessionData;
 import java.util.Map;
 
 /**
- * Request to start a new form entry session
- * Optionally contains instanceContent for form editing or incomplete forms
+ * Request to start a new form entry session Optionally contains instanceContent for form editing or
+ * incomplete forms
  */
 @JsonIgnoreProperties
 public class NewSessionRequestBean extends AuthenticatedRequestBean {

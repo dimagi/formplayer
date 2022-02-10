@@ -26,8 +26,10 @@ public class MenuDebuggerContentResponseBean extends LocationRelevantResponseBea
         for (String instanceId : instanceIds) {
             autoCompletable.add(new InstanceAutocompletableItem(instanceId));
         }
-        this.autoCompletableItems = autoCompletable.toArray(new AutoCompletableItem[autoCompletable.size()]);
-        this.recentXPathQueries = recentXPathQueries.toArray(new XPathQueryItem[recentXPathQueries.size()]);
+        this.autoCompletableItems = autoCompletable.toArray(
+                new AutoCompletableItem[autoCompletable.size()]);
+        this.recentXPathQueries = recentXPathQueries.toArray(
+                new XPathQueryItem[recentXPathQueries.size()]);
     }
 
     public String getAppId() {

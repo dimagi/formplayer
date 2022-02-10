@@ -58,7 +58,8 @@ public class UserRestoreAspect {
         Object[] args = joinPoint.getArgs();
         if (!(args[0] instanceof AuthenticatedRequestBean)) {
             throw new RuntimeException(
-                    String.format("Could not configure RestoreFactory with invalid request %s", Arrays.toString(args)));
+                    String.format("Could not configure RestoreFactory with invalid request %s",
+                            Arrays.toString(args)));
         }
         AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean)args[0];
 
@@ -76,14 +77,17 @@ public class UserRestoreAspect {
         Sentry.configureScope(scope -> {
             scope.setTag(Constants.AS_USER, restoreFactory.getEffectiveUsername());
             scope.setExtra(Constants.USER_SYNC_TOKEN, restoreFactory.getSyncToken());
-            scope.setExtra(Constants.USER_SANDBOX_PATH, restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes());
+            scope.setExtra(Constants.USER_SANDBOX_PATH,
+                    restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes());
         });
     }
 
-    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) throws Exception {
+    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth)
+            throws Exception {
         if (requestBean.getRestoreAsCaseId() != null) {
             // SMS user filling out a form as a case
-            restoreFactory.configure(requestBean.getDomain(), requestBean.getRestoreAsCaseId(), auth);
+            restoreFactory.configure(requestBean.getDomain(), requestBean.getRestoreAsCaseId(),
+                    auth);
             return;
         }
         if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
@@ -101,9 +105,11 @@ public class UserRestoreAspect {
             SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
 
             if (formSession.getRestoreAsCaseId() != null) {
-                restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId(), auth);
+                restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId(),
+                        auth);
             } else {
-                restoreFactory.configure(formSession.getUsername(), formSession.getDomain(), formSession.getAsUser(), auth);
+                restoreFactory.configure(formSession.getUsername(), formSession.getDomain(),
+                        formSession.getAsUser(), auth);
             }
         } else {
             throw new Exception("Unable to configure restore factory");

@@ -20,8 +20,8 @@ public class NewFormResponse extends SessionResponseBean {
     }
 
     public NewFormResponse(String formTreeJson, String[] languages,
-                           String title, String sessionId, int sequenceId,
-                           String instanceXml) throws IOException {
+            String title, String sessionId, int sequenceId,
+            String instanceXml) throws IOException {
         this.tree = new ObjectMapper().readValue(formTreeJson, QuestionBean[].class);
         this.langs = languages;
         this.title = title;

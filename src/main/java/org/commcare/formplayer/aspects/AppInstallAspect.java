@@ -38,7 +38,8 @@ public class AppInstallAspect {
     public void configureStorageFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         if (!(args[0] instanceof InstallRequestBean)) {
-            throw new RuntimeException("Could not configure StorageFactory with args " + Arrays.toString(args));
+            throw new RuntimeException(
+                    "Could not configure StorageFactory with args " + Arrays.toString(args));
         }
         final InstallRequestBean requestBean = (InstallRequestBean)args[0];
         storageFactory.configure(requestBean);

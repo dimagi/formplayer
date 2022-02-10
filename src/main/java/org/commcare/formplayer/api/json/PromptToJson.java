@@ -48,7 +48,8 @@ public class PromptToJson {
         parseQuestionAnswer(questionJson, prompt);
         questionJson.put("ix", jsonNullIfNull(prompt.getIndex()));
 
-        if (prompt.getDataType() == Constants.DATATYPE_CHOICE || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
+        if (prompt.getDataType() == Constants.DATATYPE_CHOICE
+                || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
             questionJson.put("choices", parseSelect(prompt));
         }
     }
@@ -152,7 +153,8 @@ public class PromptToJson {
                 obj.put("answer", (double)answerValue.getValue());
                 return;
             case Constants.DATATYPE_DATE:
-                obj.put("answer", (DateUtils.formatDate((Date)answerValue.getValue(), DateUtils.FORMAT_ISO8601)));
+                obj.put("answer", (DateUtils.formatDate((Date)answerValue.getValue(),
+                        DateUtils.FORMAT_ISO8601)));
                 return;
             case Constants.DATATYPE_TIME:
                 obj.put("answer", answerValue.getDisplayText());
@@ -183,7 +185,8 @@ public class PromptToJson {
                 return;
             case Constants.DATATYPE_GEOPOINT:
                 GeoPointData geoPointData = ((GeoPointData)prompt.getAnswerValue());
-                double[] coords = new double[]{geoPointData.getLatitude(), geoPointData.getLongitude()};
+                double[] coords =
+                        new double[]{geoPointData.getLatitude(), geoPointData.getLongitude()};
                 obj.put("answer", new JSONArray(Arrays.toString(coords)));
                 return;
             case Constants.DATATYPE_BINARY:
@@ -192,15 +195,18 @@ public class PromptToJson {
     }
 
     /**
-     * Given a prompt, generate a JSONArray of the possible select choices. return empty array if no choices.
+     * Given a prompt, generate a JSONArray of the possible select choices. return empty array if no
+     * choices.
      */
     private static JSONArray parseSelect(FormEntryPrompt prompt) {
         JSONArray obj = new JSONArray();
         for (SelectChoice choice : prompt.getSelectChoices()) {
             String choiceValue = prompt.getSelectChoiceText(choice);
-            if (prompt.getControlType() == Constants.CONTROL_SELECT_MULTI && choice.getValue().contains(" ")) {
-                throw new ApplicationConfigException(String.format("Select answer options cannot contain spaces. " +
-                        "Question %s with answer %s", prompt, choiceValue));
+            if (prompt.getControlType() == Constants.CONTROL_SELECT_MULTI
+                    && choice.getValue().contains(" ")) {
+                throw new ApplicationConfigException(
+                        String.format("Select answer options cannot contain spaces. " +
+                                "Question %s with answer %s", prompt, choiceValue));
             }
             obj.put(prompt.getSelectChoiceText(choice));
         }

@@ -25,15 +25,16 @@ import java.util.Map;
  * Set of Sql utility methods for clients running modern, non-Android Java (where prepared
  * statements in the place of cursors)
  * <p/>
- * All methods that return a ResultSet expect a PreparedStatement as an argument and the caller
- * is responsible for closing this statement when its finished with it.
+ * All methods that return a ResultSet expect a PreparedStatement as an argument and the caller is
+ * responsible for closing this statement when its finished with it.
  * <p/>
  * Created by wpride1 on 8/11/15.
  */
 public class SqlHelper {
 
     public static void explainSql(Connection c, String sql, String[] args) {
-        try (PreparedStatement preparedStatement = c.prepareStatement("EXPLAIN QUERY PLAN " + sql)) {
+        try (PreparedStatement preparedStatement = c.prepareStatement(
+                "EXPLAIN QUERY PLAN " + sql)) {
             for (int i = 1; i <= args.length; i++) {
                 preparedStatement.setString(i, args[i - 1]);
             }
@@ -47,8 +48,7 @@ public class SqlHelper {
     }
 
     /**
-     * Prints the contents of a Cursor to System.out. The position is restored
-     * after printing.
+     * Prints the contents of a Cursor to System.out. The position is restored after printing.
      *
      * @param resultSet the ResultSet to print
      */
@@ -57,8 +57,7 @@ public class SqlHelper {
     }
 
     /**
-     * Prints the contents of a Cursor to a PrintSteam. The position is restored
-     * after printing.
+     * Prints the contents of a Cursor to a PrintSteam. The position is restored after printing.
      *
      * @param resultSet the ResultSet to print
      * @param stream    the stream to print to
@@ -72,7 +71,8 @@ public class SqlHelper {
         stream.println("<<<<<");
     }
 
-    private static void dumpResultSetRow(ResultSetMetaData metaData, ResultSet resultSet, PrintStream stream) throws SQLException {
+    private static void dumpResultSetRow(ResultSetMetaData metaData, ResultSet resultSet,
+            PrintStream stream) throws SQLException {
         stream.println("" + resultSet.getRow() + " {");
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             if (i > 1) stream.print(",  ");
@@ -100,19 +100,27 @@ public class SqlHelper {
             preparedStatement.close();
 
             if (storageKey.equals(UserSqlSandbox.FORMPLAYER_CASE)) {
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_id_index", UserSqlSandbox.FORMPLAYER_CASE, "case_id"));
+                preparedStatement = c.prepareStatement(
+                        DatabaseIndexingUtils.indexOnTableCommand("case_id_index",
+                                UserSqlSandbox.FORMPLAYER_CASE, "case_id"));
                 preparedStatement.execute();
                 preparedStatement.close();
 
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_type_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type"));
+                preparedStatement = c.prepareStatement(
+                        DatabaseIndexingUtils.indexOnTableCommand("case_type_index",
+                                UserSqlSandbox.FORMPLAYER_CASE, "case_type"));
                 preparedStatement.execute();
                 preparedStatement.close();
 
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_index", UserSqlSandbox.FORMPLAYER_CASE, "case_status"));
+                preparedStatement = c.prepareStatement(
+                        DatabaseIndexingUtils.indexOnTableCommand("case_status_index",
+                                UserSqlSandbox.FORMPLAYER_CASE, "case_status"));
                 preparedStatement.execute();
                 preparedStatement.close();
 
-                preparedStatement = c.prepareStatement(DatabaseIndexingUtils.indexOnTableCommand("case_status_open_index", UserSqlSandbox.FORMPLAYER_CASE, "case_type,case_status"));
+                preparedStatement = c.prepareStatement(
+                        DatabaseIndexingUtils.indexOnTableCommand("case_status_open_index",
+                                UserSqlSandbox.FORMPLAYER_CASE, "case_type,case_status"));
                 preparedStatement.execute();
                 preparedStatement.close();
 
@@ -135,7 +143,8 @@ public class SqlHelper {
      * <p>
      * Note: Caller is responsible for ensuring the prepared statement is closed
      */
-    public static PreparedStatement prepareIdSelectStatement(Connection c, String storageKey, int id) {
+    public static PreparedStatement prepareIdSelectStatement(Connection c, String storageKey,
+            int id) {
         try {
             PreparedStatement preparedStatement =
                     c.prepareStatement("SELECT * FROM " + storageKey + " WHERE "
@@ -153,8 +162,8 @@ public class SqlHelper {
      * Note: Caller is responsible for ensuring the prepared statement is closed
      */
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
-                                                                          String storageKey,
-                                                                          String[] projections) {
+            String storageKey,
+            String[] projections) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < projections.length; i++) {
             builder.append(projections[i]);
@@ -171,15 +180,15 @@ public class SqlHelper {
     }
 
     /**
-     * Get a prepared statement to select matching appropriate metadata fields from
-     * an individual record
+     * Get a prepared statement to select matching appropriate metadata fields from an individual
+     * record
      * <p>
      * Note: Caller is responsible for ensuring the prepared statement is closed
      */
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
-                                                                          String storageKey,
-                                                                          String recordId,
-                                                                          String[] projections) {
+            String storageKey,
+            String recordId,
+            String[] projections) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < projections.length; i++) {
             builder.append(projections[i]);
@@ -200,14 +209,14 @@ public class SqlHelper {
     }
 
     /**
-     * @throws IllegalArgumentException when one or more of the fields we're selecting on
-     *                                  is not a valid key to select on for this object
+     * @throws IllegalArgumentException when one or more of the fields we're selecting on is not a
+     *                                  valid key to select on for this object
      */
     public static PreparedStatement prepareTableSelectStatementProjection(Connection c,
-                                                                          String storageKey,
-                                                                          String where,
-                                                                          String values[],
-                                                                          String[] projections) {
+            String storageKey,
+            String where,
+            String values[],
+            String[] projections) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < projections.length; i++) {
             builder.append(projections[i]);
@@ -217,7 +226,8 @@ public class SqlHelper {
         }
         try {
             String queryString =
-                    "SELECT " + builder.toString() + " FROM " + storageKey + " WHERE " + where + ";";
+                    "SELECT " + builder.toString() + " FROM " + storageKey + " WHERE " + where
+                            + ";";
             PreparedStatement preparedStatement = c.prepareStatement(queryString);
             for (int i = 0; i < values.length; i++) {
                 preparedStatement.setString(i + 1, values[i]);
@@ -229,13 +239,13 @@ public class SqlHelper {
     }
 
     /**
-     * @throws IllegalArgumentException when one or more of the fields we're selecting on
-     *                                  is not a valid key to select on for this object
+     * @throws IllegalArgumentException when one or more of the fields we're selecting on is not a
+     *                                  valid key to select on for this object
      */
     public static PreparedStatement prepareTableSelectStatement(Connection c,
-                                                                String storageKey,
-                                                                String[] fields,
-                                                                Object[] values) {
+            String storageKey,
+            String[] fields,
+            Object[] values) {
         Pair<String, String[]> pair = DatabaseHelper.createWhere(fields, values, null);
         try {
             String queryString =
@@ -251,13 +261,13 @@ public class SqlHelper {
     }
 
     /**
-     * @throws IllegalArgumentException when one or more of the fields we're selecting on
-     *                                  is not a valid key to select on for this object
+     * @throws IllegalArgumentException when one or more of the fields we're selecting on is not a
+     *                                  valid key to select on for this object
      */
     public static PreparedStatement prepareTableSelectStatement(Connection c,
-                                                                String storageKey,
-                                                                String where,
-                                                                String values[]) {
+            String storageKey,
+            String where,
+            String values[]) {
         try {
             String queryString =
                     "SELECT * FROM " + storageKey + " WHERE " + where + ";";
@@ -272,16 +282,17 @@ public class SqlHelper {
     }
 
     /**
-     * @throws IllegalArgumentException when one or more of the fields we're selecting on
-     *                                  is not a valid key to select on for this object
+     * @throws IllegalArgumentException when one or more of the fields we're selecting on is not a
+     *                                  valid key to select on for this object
      */
     public static PreparedStatement prepareTableSelectStatement(Connection c,
-                                                                String storageKey,
-                                                                String[] fields,
-                                                                Object[] values,
-                                                                String[] inverseFields,
-                                                                Object[] inverseValues) {
-        Pair<String, String[]> pair = DatabaseHelper.createWhere(fields, values, inverseFields, inverseValues, null);
+            String storageKey,
+            String[] fields,
+            Object[] values,
+            String[] inverseFields,
+            Object[] inverseValues) {
+        Pair<String, String[]> pair = DatabaseHelper.createWhere(fields, values, inverseFields,
+                inverseValues, null);
         try {
             String queryString =
                     "SELECT * FROM " + storageKey + " WHERE " + pair.first + ";";
@@ -296,8 +307,9 @@ public class SqlHelper {
     }
 
     private static void performInsert(Connection c,
-                                      Pair<List<Object>, String> valsAndInsertStatement) {
-        try (PreparedStatement preparedStatement = c.prepareStatement(valsAndInsertStatement.second)) {
+            Pair<List<Object>, String> valsAndInsertStatement) {
+        try (PreparedStatement preparedStatement = c.prepareStatement(
+                valsAndInsertStatement.second)) {
             int i = 1;
 
             for (Object val : valsAndInsertStatement.first) {
@@ -310,24 +322,24 @@ public class SqlHelper {
     }
 
     public static void basicInsert(Connection c,
-                                   String storageKey,
-                                   Map<String, Object> contentVals) {
+            String storageKey,
+            Map<String, Object> contentVals) {
         Pair<List<Object>, String> valsAndInsertStatement =
                 buildInsertStatement(storageKey, contentVals);
         performInsert(c, valsAndInsertStatement);
     }
 
     public static void insertOrReplace(Connection c,
-                                       String storageKey,
-                                       Map<String, Object> contentValues) {
+            String storageKey,
+            Map<String, Object> contentValues) {
         Pair<List<Object>, String> valsAndInsertStatement =
                 buildInsertOrReplaceStatement(storageKey, contentValues);
         performInsert(c, valsAndInsertStatement);
     }
 
     private static Pair<List<Object>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, Object> contentVals,
-                                                                   String insertStatement) {
+            Map<String, Object> contentVals,
+            String insertStatement) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(insertStatement).append(storageKey).append(" (");
         List<Object> values = new ArrayList<>();
@@ -350,12 +362,12 @@ public class SqlHelper {
     }
 
     private static Pair<List<Object>, String> buildInsertStatement(String storageKey,
-                                                                   Map<String, Object> contentVals) {
+            Map<String, Object> contentVals) {
         return buildInsertStatement(storageKey, contentVals, "INSERT INTO ");
     }
 
     private static Pair<List<Object>, String> buildInsertOrReplaceStatement(String storageKey,
-                                                                            Map<String, Object> contentVals) {
+            Map<String, Object> contentVals) {
         return buildInsertStatement(storageKey, contentVals, "INSERT OR REPLACE INTO ");
     }
 
@@ -393,7 +405,8 @@ public class SqlHelper {
         }
     }
 
-    private static void setArgumentToSqlStatement(PreparedStatement preparedStatement, Object arg, int index) throws SQLException {
+    private static void setArgumentToSqlStatement(PreparedStatement preparedStatement, Object arg,
+            int index) throws SQLException {
         if (arg instanceof String) {
             preparedStatement.setString(index, (String)arg);
         } else if (arg instanceof Blob) {
@@ -403,7 +416,8 @@ public class SqlHelper {
         } else if (arg instanceof Long) {
             preparedStatement.setLong(index, (Long)arg);
         } else if (arg instanceof byte[]) {
-            preparedStatement.setBinaryStream(index, new ByteArrayInputStream((byte[])arg), ((byte[])arg).length);
+            preparedStatement.setBinaryStream(index, new ByteArrayInputStream((byte[])arg),
+                    ((byte[])arg).length);
         } else if (arg == null) {
             preparedStatement.setNull(index, 0);
         }
@@ -422,9 +436,11 @@ public class SqlHelper {
         String[] fieldNames = map.keySet().toArray(new String[map.keySet().size()]);
         Object[] values = map.values().toArray(new Object[map.values().size()]);
 
-        Pair<String, String[]> where = org.commcare.modern.database.DatabaseHelper.createWhere(fieldNames, values, p);
+        Pair<String, String[]> where = org.commcare.modern.database.DatabaseHelper.createWhere(
+                fieldNames, values, p);
 
-        String query = "UPDATE " + storageKey + " SET " + DatabaseHelper.DATA_COL + " = ? WHERE " + where.first + ";";
+        String query = "UPDATE " + storageKey + " SET " + DatabaseHelper.DATA_COL + " = ? WHERE "
+                + where.first + ";";
 
         try (PreparedStatement preparedStatement = c.prepareStatement(query)) {
             setPreparedStatementArgs(preparedStatement, p, where.second);
@@ -442,7 +458,8 @@ public class SqlHelper {
      * @param persistable persistable to update with
      * @param id          sql record to update
      */
-    public static void updateToTable(Connection connection, String tableName, Persistable persistable, int id) {
+    public static void updateToTable(Connection connection, String tableName,
+            Persistable persistable, int id) {
         String queryStart = "UPDATE " + tableName + " SET " + DatabaseHelper.DATA_COL + " = ? ";
         String queryEnd = " WHERE " + DatabaseHelper.ID_COL + " = ?;";
 
@@ -469,13 +486,13 @@ public class SqlHelper {
     /**
      * @param preparedStatement the PreparedStatement to populate with arguments
      * @param persistable       the Persistable object being stored
-     * @param values            the ordered values to use in the PreparedStatement (corresponding to the
-     *                          '?' in the query string)
+     * @param values            the ordered values to use in the PreparedStatement (corresponding to
+     *                          the '?' in the query string)
      * @return the index of the next '?' NOT populated by this helper
      */
     public static int setPreparedStatementArgs(PreparedStatement preparedStatement,
-                                               Persistable persistable,
-                                               Object[] values) throws SQLException {
+            Persistable persistable,
+            Object[] values) throws SQLException {
         byte[] blob = org.commcare.modern.database.TableBuilder.toBlob(persistable);
         preparedStatement.setBinaryStream(1, new ByteArrayInputStream(blob), blob.length);
         // offset to 2 since 1) SQLite is 1 indexed and 2) we set the first arg above
@@ -490,7 +507,8 @@ public class SqlHelper {
             } else if (obj instanceof Long) {
                 preparedStatement.setLong(i, (Long)obj);
             } else if (obj instanceof byte[]) {
-                preparedStatement.setBinaryStream(i, new ByteArrayInputStream((byte[])obj), ((byte[])obj).length);
+                preparedStatement.setBinaryStream(i, new ByteArrayInputStream((byte[])obj),
+                        ((byte[])obj).length);
             } else if (obj == null) {
                 preparedStatement.setNull(i, 0);
             }
@@ -499,7 +517,8 @@ public class SqlHelper {
         return i;
     }
 
-    public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String arg) {
+    public static void deleteFromTableWhere(Connection connection, String tableName,
+            String whereClause, String arg) {
         String query = "DELETE FROM " + tableName + " WHERE " + whereClause + ";";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -510,7 +529,8 @@ public class SqlHelper {
         }
     }
 
-    public static void deleteFromTableWhere(Connection connection, String tableName, String whereClause, String[] args) {
+    public static void deleteFromTableWhere(Connection connection, String tableName,
+            String whereClause, String[] args) {
         String query = "DELETE FROM " + tableName + " WHERE " + whereClause + ";";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {

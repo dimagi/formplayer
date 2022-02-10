@@ -10,8 +10,8 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Redis cache record object for managing records of actions (open, complete, etc) which
- * are taken against forms that are marked as 'volatile.'
+ * Redis cache record object for managing records of actions (open, complete, etc) which are taken
+ * against forms that are marked as 'volatile.'
  *
  * @author Clayton Sims (csims@dimagi.com)
  */
@@ -130,7 +130,8 @@ public class FormVolatilityRecord implements Serializable {
      */
     public void updateFormOpened(FormSession session) {
         this.username = session.getUsername();
-        this.currentMessage = formatOpenedMessage(UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
+        this.currentMessage = formatOpenedMessage(
+                UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
         this.openedOn = new Date().getTime();
     }
 
@@ -140,7 +141,8 @@ public class FormVolatilityRecord implements Serializable {
      */
     public void updateFormSubmitted(FormSession session) {
         this.username = session.getUsername();
-        this.currentMessage = formatSubmittedMessage(UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
+        this.currentMessage = formatSubmittedMessage(
+                UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
         this.submittedOn = new Date().getTime();
     }
 
@@ -168,7 +170,8 @@ public class FormVolatilityRecord implements Serializable {
             return null;
         }
 
-        return new NotificationMessage(currentMessage + formatString, type, NotificationMessage.Tag.volatility);
+        return new NotificationMessage(currentMessage + formatString, type,
+                NotificationMessage.Tag.volatility);
     }
 
     public boolean wasSubmitted() {

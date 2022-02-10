@@ -7,12 +7,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * The Walker class is kind of a beast. At the highest level, a Walker is responsible for transforming
- * a given state and index during form entry (as represented by a FormEntryController, FormEntryModel, and Form Index)
- * into a JSON representation. For each question at the Walker's starting depth, the Walker will generate a JSON
- * representation of this question and add it to the compiler array, expanding repeats where necessary.
- * For each subgroup, the Walker will recursively instantiate another Walker for this group and add its output as a child.
- * Each Walker might itself be a subgroup of another Walker.
+ * The Walker class is kind of a beast. At the highest level, a Walker is responsible for
+ * transforming a given state and index during form entry (as represented by a FormEntryController,
+ * FormEntryModel, and Form Index) into a JSON representation. For each question at the Walker's
+ * starting depth, the Walker will generate a JSON representation of this question and add it to the
+ * compiler array, expanding repeats where necessary. For each subgroup, the Walker will recursively
+ * instantiate another Walker for this group and add its output as a child. Each Walker might itself
+ * be a subgroup of another Walker.
  *
  * @author wpride
  */
@@ -23,7 +24,8 @@ public class Walker {
     private final FormEntryController fec;
     private final FormEntryModel fem;
 
-    public Walker(JSONArray compiler, FormIndex parentIndex, FormEntryController fec, FormEntryModel fem) {
+    public Walker(JSONArray compiler, FormIndex parentIndex, FormEntryController fec,
+            FormEntryModel fem) {
         this.compiler = compiler;
         this.parentIndex = parentIndex;
         this.fec = fec;

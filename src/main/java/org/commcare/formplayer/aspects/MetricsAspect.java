@@ -48,7 +48,8 @@ public class MetricsAspect {
 
         this.sentryMessages = new HashMap<>();
         this.sentryMessages.put(INTOLERABLE_REQUEST, "This request took a long time");
-        this.sentryMessages.put(TOLERABLE_REQUEST, "This request was tolerable, but should be improved");
+        this.sentryMessages.put(TOLERABLE_REQUEST,
+                "This request was tolerable, but should be improved");
     }
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
@@ -70,7 +71,8 @@ public class MetricsAspect {
         List<FormplayerDatadog.Tag> datadogArgs = new ArrayList<>();
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.REQUEST_TAG, requestPath));
-        datadogArgs.add(new FormplayerDatadog.Tag(Constants.DURATION_TAG, timer.getDurationBucket()));
+        datadogArgs.add(
+                new FormplayerDatadog.Tag(Constants.DURATION_TAG, timer.getDurationBucket()));
 
         datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
 
@@ -82,7 +84,8 @@ public class MetricsAspect {
 
         if (timer.durationInSeconds() >= 60) {
             sendTimingWarningToSentry(timer, INTOLERABLE_REQUEST);
-        } else if (tolerableRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
+        } else if (tolerableRequestThresholds.containsKey(requestPath)
+                && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
             // limit tolerable requests sent to sentry
             int chanceOfSending = 1000;
             Random random = new Random();

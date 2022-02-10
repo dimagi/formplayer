@@ -9,17 +9,16 @@ import org.springframework.util.Assert;
 import javax.persistence.EntityManager;
 
 /**
- * JPA repository implementation that uses ``Session.update`` instead of
- * ``Session.merge`` when saving. This avoids the additional 'select' that
- * happens when saving detached entities.
+ * JPA repository implementation that uses ``Session.update`` instead of ``Session.merge`` when
+ * saving. This avoids the additional 'select' that happens when saving detached entities.
  * <p>
- * Formplayer caches entities between requests to avoid having to re-fetch them
- * from the DB on successive requests. Since the caching results in detached
- * entities, the advantage of caching is lost when using ``Session.merge`` since
- * the merge will re-fetch the entity from the DB on update.
+ * Formplayer caches entities between requests to avoid having to re-fetch them from the DB on
+ * successive requests. Since the caching results in detached entities, the advantage of caching is
+ * lost when using ``Session.merge`` since the merge will re-fetch the entity from the DB on
+ * update.
  * <p>
- * It is safe to skip the select before update as long as the Formplayer
- * request routing is consistent or the caching is global across all Formplayer instances.
+ * It is safe to skip the select before update as long as the Formplayer request routing is
+ * consistent or the caching is global across all Formplayer instances.
  */
 public class FormplayerBaseJpaRepoImpl<T, ID>
         extends SimpleJpaRepository<T, ID> {
@@ -27,7 +26,8 @@ public class FormplayerBaseJpaRepoImpl<T, ID>
     private final EntityManager entityManager;
     private final JpaEntityInformation<T, ?> entityInformation;
 
-    public FormplayerBaseJpaRepoImpl(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager) {
+    public FormplayerBaseJpaRepoImpl(JpaEntityInformation<T, ?> entityInformation,
+            EntityManager entityManager) {
         super(entityInformation, entityManager);
         this.entityManager = entityManager;
         this.entityInformation = entityInformation;

@@ -22,8 +22,9 @@ public class ConfigureStorageFromSessionAspect {
     public void configureStorage(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         if (!(args[0] instanceof SessionRequestBean)) {
-            throw new RuntimeException("Could not configure StorageFactory, request not a SessionRequestBean "
-                    + args[0]);
+            throw new RuntimeException(
+                    "Could not configure StorageFactory, request not a SessionRequestBean "
+                            + args[0]);
         }
         final SessionRequestBean requestBean = (SessionRequestBean)args[0];
         storageFactory.configure(requestBean.getSessionId());

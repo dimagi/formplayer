@@ -30,7 +30,8 @@ public class SessionListItem {
             return SessionUtils.tryLoadCaseName(caseStorage, caseId);
         } catch (NoSuchElementException e) {
             // This handles the case where the case is no longer open in the database.
-            // The form will crash on open, but I don't know if there's a more elegant but not-opaque way to handle
+            // The form will crash on open, but I don't know if there's a more elegant but
+            // not-opaque way to handle
             return "Case with id " + caseId + "does not exist!";
         }
     }
@@ -66,6 +67,7 @@ public class SessionListItem {
 
     @Override
     public String toString() {
-        return "SessionListItem [title = " + title + " id " + sessionId + " opened " + dateOpened + "]";
+        return "SessionListItem [title = " + title + " id " + sessionId + " opened " + dateOpened
+                + "]";
     }
 }

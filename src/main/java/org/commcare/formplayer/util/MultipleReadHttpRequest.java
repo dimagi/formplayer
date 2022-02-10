@@ -16,8 +16,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 /**
  * Created by benrudolph on 9/7/16.
  * <p>
- * Code modeled off of:
- * http://stackoverflow.com/a/17129256/835696
+ * Code modeled off of: http://stackoverflow.com/a/17129256/835696
  */
 public class MultipleReadHttpRequest extends HttpServletRequestWrapper {
     private ByteArrayOutputStream cachedBytes;
@@ -28,8 +27,9 @@ public class MultipleReadHttpRequest extends HttpServletRequestWrapper {
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        if (cachedBytes == null)
+        if (cachedBytes == null) {
             cacheInputStream();
+        }
 
         return new CachedServletInputStream();
     }

@@ -41,6 +41,7 @@ public class RepeatResponseBean {
 
     @Override
     public String toString() {
-        return "RepeatResponseBean: [tree=" + Arrays.toString(tree) + ", seq_id: " + sequenceId + "]";
+        return "RepeatResponseBean: [tree=" + Arrays.toString(tree) + ", seq_id: " + sequenceId
+                + "]";
     }
 }

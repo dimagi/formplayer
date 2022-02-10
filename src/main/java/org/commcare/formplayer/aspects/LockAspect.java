@@ -104,7 +104,8 @@ public class LockAspect {
         }
     }
 
-    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionService formSessionService) throws Exception {
+    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean,
+            FormSessionService formSessionService) throws Exception {
         if (bean.getUsernameDetail() != null) {
             return TableBuilder.scrubName(bean.getUsernameDetail());
         } else if (bean instanceof SessionRequestBean) {
@@ -126,7 +127,8 @@ public class LockAspect {
         throw new Exception("Unable to get username for locking");
     }
 
-    private void logLockError(AuthenticatedRequestBean bean, ProceedingJoinPoint joinPoint, String lockIssue) {
+    private void logLockError(AuthenticatedRequestBean bean, ProceedingJoinPoint joinPoint,
+            String lockIssue) {
         datadogStatsDClient.increment(
                 Constants.DATADOG_ERRORS_LOCK,
                 "domain:" + bean.getDomain(),
@@ -148,7 +150,8 @@ public class LockAspect {
     }
 
     private boolean obtainLock(FormplayerReentrantLock lock) {
-        CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.WAIT_ON_LOCK);
+        CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(
+                Constants.TimingCategories.WAIT_ON_LOCK);
         timer.start();
         try {
             return lock.tryLock(Constants.USER_LOCK_TIMEOUT, TimeUnit.SECONDS);

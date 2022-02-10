@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A bulk processing parser for Formplayer. Provides superior performance when
- * processing high case loads during syncing and/or processing.
+ * A bulk processing parser for Formplayer. Provides superior performance when processing high case
+ * loads during syncing and/or processing.
  *
  * @author ctsims
  */
@@ -28,7 +28,7 @@ public class FormplayerBulkCaseXmlParser extends BulkProcessingCaseXmlParser {
     private final SqlStorage<Case> storage;
 
     public FormplayerBulkCaseXmlParser(KXmlParser parser,
-                                       UserSqlSandbox sandbox) {
+            UserSqlSandbox sandbox) {
         super(parser);
         mEntityCache = new EntityStorageCache("entitycase", sandbox);
         mCaseIndexTable = new FormplayerCaseIndexTable(sandbox);
@@ -41,7 +41,9 @@ public class FormplayerBulkCaseXmlParser extends BulkProcessingCaseXmlParser {
     }
 
     @Override
-    protected void performBulkRead(Set<String> currentBulkReadSet, Map<String, Case> currentOperatingSet) throws InvalidStructureException, IOException, XmlPullParserException {
+    protected void performBulkRead(Set<String> currentBulkReadSet,
+            Map<String, Case> currentOperatingSet)
+            throws InvalidStructureException, IOException, XmlPullParserException {
         for (Case c : storage.getBulkRecordsForIndex(Case.INDEX_CASE_ID, currentBulkReadSet)) {
             currentOperatingSet.put(c.getCaseId(), c);
         }

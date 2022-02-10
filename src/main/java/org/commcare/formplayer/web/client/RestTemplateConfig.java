@@ -45,7 +45,8 @@ public class RestTemplateConfig {
 
         if (externalRequestMode.equals(MODE_REPLACE_HOST)) {
             log.warn(String.format("RestTemplate configured in '%s' mode", externalRequestMode));
-            builder = builder.additionalInterceptors(new RewriteHostRequestInterceptor(commcareHost));
+            builder = builder.additionalInterceptors(
+                    new RewriteHostRequestInterceptor(commcareHost));
         }
         return builder.build();
     }

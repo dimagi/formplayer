@@ -26,7 +26,8 @@ public class SessionUtils {
 
     private static final Log log = LogFactory.getLog(SessionUtils.class);
 
-    public static String tryLoadCaseName(SqlStorage<Case> caseStorage, String caseId) throws NoSuchElementException {
+    public static String tryLoadCaseName(SqlStorage<Case> caseStorage, String caseId)
+            throws NoSuchElementException {
         if (caseId == null) {
             return null;
         }
@@ -43,15 +44,19 @@ public class SessionUtils {
             // localization resources may not be installed while in the middle
             // of an update, so default to a generic title
 
-            // Also Catch XPathExceptions here since we don't want to show the xpath error on app startup
-            // and these errors will be visible later to the user when they go to the respective menu
+            // Also Catch XPathExceptions here since we don't want to show the xpath error on app
+            // startup
+            // and these errors will be visible later to the user when they go to the respective
+            // menu
             return null;
         }
 
         Vector<StackFrameStep> v = session.getFrame().getSteps();
 
-        //So we need to work our way backwards through each "step" we've taken, since our RelativeLayout
-        //displays the Z-Order b insertion (so items added later are always "on top" of items added earlier
+        //So we need to work our way backwards through each "step" we've taken, since our
+        // RelativeLayout
+        //displays the Z-Order b insertion (so items added later are always "on top" of items
+        // added earlier
         String bestTitle = null;
         for (int i = v.size() - 1; i >= 0; i--) {
             if (bestTitle != null) {

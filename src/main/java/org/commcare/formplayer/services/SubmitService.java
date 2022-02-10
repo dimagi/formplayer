@@ -29,7 +29,8 @@ public class SubmitService {
     private CategoryTimingHelper.RecordingTimer submitTimer;
 
     public String submitForm(String formXml, String submitUrl) {
-        submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ, restoreFactory.getDomain());
+        submitTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.SUBMIT_FORM_TO_HQ,
+                restoreFactory.getDomain());
         submitTimer.start();
         try {
             return webClient.post(submitUrl, formXml);

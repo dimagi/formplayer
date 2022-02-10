@@ -14,12 +14,12 @@ import java.io.InputStream;
 import java.util.Vector;
 
 /**
- * This class sets up everything you need to perform tests on the models and form elements found in JR (such
- * as QuestionDef, FormDef, Selections, etc).  It exposes hooks to the FormEntryController,FormEntryModel and
- * FormDef (all the toys you need to test IFormElements, provide answers to questions and test constraints, etc)
+ * This class sets up everything you need to perform tests on the models and form elements found in
+ * JR (such as QuestionDef, FormDef, Selections, etc).  It exposes hooks to the
+ * FormEntryController,FormEntryModel and FormDef (all the toys you need to test IFormElements,
+ * provide answers to questions and test constraints, etc)
  * <p>
- * REMEMBER to set the
- * PLM: ^^^ AAAhhh, set what?!! What do I need to remember to set?
+ * REMEMBER to set the PLM: ^^^ AAAhhh, set what?!! What do I need to remember to set?
  */
 public class FormParseInit {
     private FormDef xform;
@@ -56,7 +56,8 @@ public class FormParseInit {
         }
 
         if (xform == null) {
-            System.out.println("\n\n==================================\nERROR: XForm has failed validation!!");
+            System.out.println(
+                    "\n\n==================================\nERROR: XForm has failed validation!!");
         }
     }
 
@@ -95,7 +96,8 @@ public class FormParseInit {
     }
 
     /**
-     * @return the next question in the form (QuestionDef), or null if the end of the form has been reached.
+     * @return the next question in the form (QuestionDef), or null if the end of the form has been
+     * reached.
      */
     public QuestionDef getNextQuestion() {
         // jump to next event and check for end of form
@@ -106,8 +108,9 @@ public class FormParseInit {
         FormEntryCaption fep = this.getFormEntryModel().getCaptionPrompt();
 
         do {
-            if (fep.getFormElement() instanceof QuestionDef)
+            if (fep.getFormElement() instanceof QuestionDef) {
                 return (QuestionDef)fep.getFormElement();
+            }
         } while (fec.stepToNextEvent() != FormEntryController.EVENT_END_OF_FORM);
 
         return null;
@@ -142,7 +145,8 @@ public class FormParseInit {
             if (fep.getFormElement() instanceof QuestionDef) {
                 stuff += "\t[Type:QuestionDef, ";
                 Vector s = ((QuestionDef)fep.getFormElement()).getChoices();
-                stuff += "ContainsChoices: " + ((s != null && s.size() > 0) ? "true " : "false") + ", ";
+                stuff += "ContainsChoices: " + ((s != null && s.size() > 0) ? "true " : "false")
+                        + ", ";
                 if (s != null && s.size() > 0) choiceFlag = true;
             } else if (fep.getFormElement() instanceof FormDef) {
                 stuff += "\t[Type:FormDef, ";
@@ -153,10 +157,13 @@ public class FormParseInit {
                 continue;
             }
 
-            stuff += "ID:" + fep.getFormElement().getID() + ", TextID:" + fep.getFormElement().getTextID() + ",InnerText:" + fep.getFormElement().getLabelInnerText();
+            stuff += "ID:" + fep.getFormElement().getID() + ", TextID:"
+                    + fep.getFormElement().getTextID() + ",InnerText:"
+                    + fep.getFormElement().getLabelInnerText();
             if (choiceFlag) {
 
-                stuff += "] \n\t\t---Choices:" + ((QuestionDef)fep.getFormElement()).getChoices().toString() + "\n";
+                stuff += "] \n\t\t---Choices:"
+                        + ((QuestionDef)fep.getFormElement()).getChoices().toString() + "\n";
             } else {
                 stuff += "]\n";
             }

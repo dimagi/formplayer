@@ -76,7 +76,8 @@ public class Tile {
 
     @Override
     public String toString() {
-        return "Tile [gridX=" + gridX + ", gridY=" + gridY + ", gridWidth=" + gridWidth + ", gridHeight=" + gridHeight +
+        return "Tile [gridX=" + gridX + ", gridY=" + gridY + ", gridWidth=" + gridWidth
+                + ", gridHeight=" + gridHeight +
                 ", cssId=" + cssId + ", fontSize=" + fontSize + "]";
     }
 }

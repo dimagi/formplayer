@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
- * Created by willpride on 1/20/16.
- * Get the current instance of the specified session
+ * Created by willpride on 1/20/16. Get the current instance of the specified session
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetInstanceRequestBean {

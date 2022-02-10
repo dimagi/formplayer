@@ -82,7 +82,8 @@ public class CaseBean {
 
     @Override
     public String toString() {
-        return "CaseBean [caseId=" + caseId + ", userId=" + userId + ", properties=" + properties + "]";
+        return "CaseBean [caseId=" + caseId + ", userId=" + userId + ", properties=" + properties
+                + "]";
     }
 
     @JsonGetter(value = "date_modified")

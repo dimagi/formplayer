@@ -74,11 +74,12 @@ public class EntityDetailResponse {
 
     // Constructor used for detail with nodeset
     public EntityDetailResponse(Detail detail,
-                                Vector<TreeReference> references,
-                                EvaluationContext ec,
-                                String title,
-                                boolean isFuzzySearchEnabled) {
-        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, null, 0, isFuzzySearchEnabled);
+            Vector<TreeReference> references,
+            EvaluationContext ec,
+            String title,
+            boolean isFuzzySearchEnabled) {
+        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail,
+                references, ec, null, null, 0, isFuzzySearchEnabled);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);
         this.title = title;

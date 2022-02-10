@@ -19,7 +19,8 @@ import java.util.List;
 public class V11__form_session_add_missing_appid extends BaseJavaMigration {
     @Override
     public void migrate(Context context) throws Exception {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(
+                new SingleConnectionDataSource(context.getConnection(), true));
         String sql = "SELECT * FROM formplayer_sessions WHERE COALESCE(appid, '') = ''";
         List toBeFixed = jdbcTemplate.query(sql, new ResultSetExtractor<List>() {
 
@@ -62,7 +63,9 @@ public class V11__form_session_add_missing_appid extends BaseJavaMigration {
     }
 
     private void executeUpdate(JdbcTemplate jdbcTemplate, String appId, String sessionId) {
-        jdbcTemplate.execute(String.format("UPDATE formplayer_sessions SET appId = '%s' WHERE id = '%s'", appId, sessionId));
+        jdbcTemplate.execute(
+                String.format("UPDATE formplayer_sessions SET appId = '%s' WHERE id = '%s'", appId,
+                        sessionId));
     }
 
     class ToBeFixed {

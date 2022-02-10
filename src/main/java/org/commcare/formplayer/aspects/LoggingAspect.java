@@ -40,7 +40,8 @@ public class LoggingAspect {
         }
 
         if (requestBean != null && requestBean instanceof AuthenticatedRequestBean) {
-            final AuthenticatedRequestBean authenticatedRequestBean = (AuthenticatedRequestBean)requestBean;
+            final AuthenticatedRequestBean authenticatedRequestBean =
+                    (AuthenticatedRequestBean)requestBean;
             FormplayerSentry.newBreadcrumb()
                     .setData(
                             "path", requestPath,

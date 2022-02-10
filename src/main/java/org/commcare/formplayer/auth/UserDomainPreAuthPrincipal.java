@@ -3,8 +3,8 @@ package org.commcare.formplayer.auth;
 import lombok.Value;
 
 /**
- * Immutable objects to store the username and domain associated with a request.
- * This is used during the session auth flow as the 'principal' of the request.
+ * Immutable objects to store the username and domain associated with a request. This is used during
+ * the session auth flow as the 'principal' of the request.
  * <p>
  * Ultimately it is passed to the HQUserDetailsService.
  */

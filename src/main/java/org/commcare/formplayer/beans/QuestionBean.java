@@ -38,7 +38,9 @@ public class QuestionBean {
     private int control;
 
     // The is the help/hint text defined in the formbuilder advanced section.
-    // Read more about its purpose here: https://confluence.dimagi.com/display/commcarepublic/Advanced+CommCare+Android+Formatting#AdvancedCommCareAndroidFormatting-HintandHelpText
+    // Read more about its purpose here: https://confluence.dimagi
+    // .com/display/commcarepublic/Advanced+CommCare+Android+Formatting
+    // #AdvancedCommCareAndroidFormatting-HintandHelpText
     private String help;
     private String hint;
 
@@ -169,7 +171,8 @@ public class QuestionBean {
 
     @Override
     public String toString() {
-        String ret = "QuestionBean [ix=" + ix + ", bind=" + this.getBinding() + ", answer=" + this.getAnswer() + ", type: "
+        String ret = "QuestionBean [ix=" + ix + ", bind=" + this.getBinding() + ", answer="
+                + this.getAnswer() + ", type: "
                 + this.getType() + ", text=" + caption;
 
         if (choices != null) {
