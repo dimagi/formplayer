@@ -1,7 +1,6 @@
 package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.sqlitedb.ApplicationDB;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.utils.TestContext;

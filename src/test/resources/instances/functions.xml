@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<data xmlns:jrm="http://dev.commcarehq.org/jr/xforms"
-    xmlns="http://openrosa.org/formdesigner/E8B02EC5-D090-4AD5-8D81-64435E067FD5" uiVersion="1"
+<data xmlns="http://openrosa.org/formdesigner/E8B02EC5-D090-4AD5-8D81-64435E067FD5" uiVersion="1"
     version="1" name="Functions">
     <form_intro />
     <random />

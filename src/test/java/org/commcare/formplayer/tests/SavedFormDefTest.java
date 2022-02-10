@@ -19,9 +19,6 @@ import org.springframework.test.context.ContextConfiguration;
 import java.io.InputStreamReader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)

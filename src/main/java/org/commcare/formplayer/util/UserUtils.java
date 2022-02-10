@@ -1,7 +1,5 @@
 package org.commcare.formplayer.util;
 
-import org.commcare.modern.database.TableBuilder;
-
 /**
  * Utility methods for dealing with users
  */

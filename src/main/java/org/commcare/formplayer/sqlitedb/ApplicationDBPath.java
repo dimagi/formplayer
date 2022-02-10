@@ -1,8 +1,8 @@
 package org.commcare.formplayer.sqlitedb;
 
-import java.io.File;
-
 import org.commcare.formplayer.util.Constants;
+
+import java.io.File;
 
 class ApplicationDBPath extends DBPath {
 

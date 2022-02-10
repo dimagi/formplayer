@@ -2,16 +2,20 @@ package org.commcare.formplayer.util;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import java.io.*;
-
 /**
  * Created by benrudolph on 9/7/16.
- *
+ * <p>
  * Code modeled off of:
  * http://stackoverflow.com/a/17129256/835696
  */

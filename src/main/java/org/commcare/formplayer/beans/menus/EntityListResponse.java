@@ -1,7 +1,5 @@
 package org.commcare.formplayer.beans.menus;
 
-import datadog.trace.api.Trace;
-
 import org.commcare.cases.entity.Entity;
 import org.commcare.cases.entity.EntitySortNotificationInterface;
 import org.commcare.cases.entity.EntitySorter;
@@ -28,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.function.Predicate;
+
+import datadog.trace.api.Trace;
 
 /**
  * Created by willpride on 4/13/16.

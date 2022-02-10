@@ -5,21 +5,25 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
 import org.commcare.cases.query.queryset.DualTableSingleMatchModelQuerySet;
+import org.commcare.formplayer.sandbox.SqlHelper;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.ConnectionHandler;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.engine.cases.CaseIndexTable;
 import org.commcare.modern.util.Pair;
-import org.commcare.formplayer.sandbox.SqlHelper;
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.services.ConnectionHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * @author ctsims

@@ -5,14 +5,13 @@ import org.commcare.formplayer.beans.SubmitResponseBean
 import org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus
 import org.commcare.formplayer.services.FormSessionService
 import org.commcare.formplayer.utils.CheckedFunction
-import java.util.function.Function
 
 class ProcessingStep(
-        private val name: String,
-        private val step: CheckedFunction<FormSubmissionContext, SubmitResponseBean, Exception>,
-        private val context: FormSubmissionContext,
-        private val formSessionService: FormSessionService,
-        private val checkpoint: SubmitStatus?
+    private val name: String,
+    private val step: CheckedFunction<FormSubmissionContext, SubmitResponseBean, Exception>,
+    private val context: FormSubmissionContext,
+    private val formSessionService: FormSessionService,
+    private val checkpoint: SubmitStatus?
 ) {
 
     private val log = LogFactory.getLog(ProcessingStep::class.java)

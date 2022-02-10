@@ -1,19 +1,16 @@
 package org.commcare.formplayer.tests;
 
-import org.commcare.formplayer.beans.FormEntryResponseBean;
-import org.commcare.formplayer.beans.NewFormResponse;
-import org.commcare.formplayer.beans.QuestionBean;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.QuestionBean;
+import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.commcare.formplayer.utils.TestContext;
-
-import static org.mockito.ArgumentMatchers.any;
+import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Fills out the "Basic Tests > Groups" Form from the QA plan.

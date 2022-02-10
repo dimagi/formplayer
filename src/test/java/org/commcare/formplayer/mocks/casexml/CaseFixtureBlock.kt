@@ -45,17 +45,17 @@ import javax.xml.transform.stream.StreamResult
  *
  */
 class CaseFixtureBlock private constructor(
-        val caseType: String,
-        val caseId: String,
-        val ownerId: String,
-        val props: Map<String, String>,
+    val caseType: String,
+    val caseId: String,
+    val ownerId: String,
+    val props: Map<String, String>,
 ) {
     val status: String = "open"
 
     class Builder @JvmOverloads constructor(
-            private var caseType: String,
-            private var caseId: String? = null,
-            private var ownerId: String? = null,
+        private var caseType: String,
+        private var caseId: String? = null,
+        private var ownerId: String? = null,
     ) {
         private val props: MutableMap<String, String> = mutableMapOf();
 
@@ -63,10 +63,10 @@ class CaseFixtureBlock private constructor(
 
         fun build(): CaseFixtureBlock {
             return CaseFixtureBlock(
-                    caseType,
-                    if (caseId == null) UUID.randomUUID().toString() else caseId!!,
-                    if (ownerId == null) UUID.randomUUID().toString() else ownerId!!,
-                    props
+                caseType,
+                if (caseId == null) UUID.randomUUID().toString() else caseId!!,
+                if (ownerId == null) UUID.randomUUID().toString() else ownerId!!,
+                props
             )
         }
     }

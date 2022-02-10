@@ -2,8 +2,6 @@ package org.commcare.formplayer.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.sentry.Sentry;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.annotations.ConfigureStorageFromSession;
@@ -11,7 +9,16 @@ import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.api.json.JsonActionUtils;
 import org.commcare.formplayer.api.util.ApiConstants;
-import org.commcare.formplayer.beans.*;
+import org.commcare.formplayer.beans.AnswerQuestionRequestBean;
+import org.commcare.formplayer.beans.ChangeLocaleRequestBean;
+import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
+import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.beans.GetInstanceResponseBean;
+import org.commcare.formplayer.beans.InstanceXmlBean;
+import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.NewSessionRequestBean;
+import org.commcare.formplayer.beans.RepeatRequestBean;
+import org.commcare.formplayer.beans.SessionRequestBean;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.objects.FormVolatilityRecord;
 import org.commcare.formplayer.objects.SerializableFormSession;
@@ -29,13 +36,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
 
-import java.util.HashMap;
-import java.util.Map;
+import io.sentry.Sentry;
 
 /**
  * Controller class (API endpoint) containing all form entry logic. This includes

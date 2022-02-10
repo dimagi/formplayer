@@ -1,13 +1,13 @@
 package org.commcare.formplayer.engine.cases;
 
-import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.instance.LedgerInstanceTreeElement;
+import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.query.PredicateProfile;
 import org.commcare.cases.query.QueryContext;
-import org.commcare.cases.util.QueryUtils;
 import org.commcare.cases.query.handlers.StaticLookupQueryHandler;
+import org.commcare.cases.util.QueryUtils;
+import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
+import org.commcare.formplayer.sandbox.SqlStorage;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.services.storage.IStorageIterator;

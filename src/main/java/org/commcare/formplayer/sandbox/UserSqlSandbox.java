@@ -1,11 +1,10 @@
 package org.commcare.formplayer.sandbox;
 
-import datadog.trace.api.Trace;
-
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.StorageIndexedTreeElementModel;
 import org.commcare.core.interfaces.UserSandbox;
+import org.commcare.formplayer.services.ConnectionHandler;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.database.IndexedFixturePathsConstants;
 import org.commcare.modern.database.TableBuilder;
@@ -14,7 +13,6 @@ import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
-import org.commcare.formplayer.services.ConnectionHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,6 +21,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import datadog.trace.api.Trace;
 
 /**
  * A sandbox for user data using SqlStorage. Sandbox is per-User

@@ -1,17 +1,20 @@
 package org.commcare.formplayer.parsers;
 
+import org.commcare.cases.model.Case;
 import org.commcare.formplayer.database.models.EntityStorageCache;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
-import org.commcare.cases.model.Case;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.xml.bulk.BulkProcessingCaseXmlParser;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParserException;
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A bulk processing parser for Formplayer. Provides superior performance when

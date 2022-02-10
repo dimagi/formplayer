@@ -1,5 +1,4 @@
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml"
-    xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:jr="http://openrosa.org/javarosa">
     <h:head>
         <h:title>Male_Breast_v3</h:title>
@@ -7,8 +6,7 @@
             <instance>
                 <data
                     xmlns="http://openrosa.org/formdesigner/89277f89f09aa858ab2a4c1d5881acfcb07a1db1"
-                    xmlns:jrm="http://dev.commcarehq.org/jr/xforms" uiVersion="1" version="2"
-                    name="Male Breast">
+                    uiVersion="1" version="2" name="Male Breast">
                     <phone />
                     <datetoday />
                     <datenow />

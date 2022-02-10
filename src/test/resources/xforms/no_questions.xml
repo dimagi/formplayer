@@ -1,6 +1,5 @@
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml"
-    xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/jr/xforms"
-    xmlns:vellum="http://commcarehq.org/xforms/vellum" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/jr/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     <h:body>
         <group appearance="field-list" ref="/data/a_group">
             <label ref="jr:itext('a_group-label')" />
@@ -15,9 +14,8 @@
             <bind nodeset="/data/meta/timeStart" type="xsd:dateTime" />
             <bind nodeset="/data/meta/timeEnd" type="xsd:dateTime" />
             <instance>
-                <data name="Survey"
-                    uiVersion="1"
-                    version="5" xmlns="http://openrosa.org/formdesigner/179475ED-0A85-4360-852B-4D8AD373076E" xmlns:jrm="http://dev.commcarehq.org/jr/xforms">
+                <data name="Survey" uiVersion="1" version="5"
+                    xmlns="http://openrosa.org/formdesigner/179475ED-0A85-4360-852B-4D8AD373076E">
                     <a_group>
                         <hidden_in_group />
                     </a_group>

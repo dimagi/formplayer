@@ -1,12 +1,11 @@
 <h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms"
     xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    xmlns:jr="http://openrosa.org/javarosa">
     <h:head>
         <h:title>Close a Case</h:title>
         <model>
             <instance>
-                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms"
-                    xmlns="http://openrosa.org/formdesigner/1E47917F-D81B-45BA-BDF5-2F8AC92B116F"
+                <data xmlns="http://openrosa.org/formdesigner/1E47917F-D81B-45BA-BDF5-2F8AC92B116F"
                     uiVersion="1" version="711" name="Close a Case">
                     <close />
                     <case xmlns="http://commcarehq.org/case/transaction/v2" case_id=""

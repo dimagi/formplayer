@@ -1,13 +1,12 @@
 package org.commcare.formplayer.session;
 
 import org.commcare.cases.instance.CaseInstanceTreeElement;
+import org.commcare.cases.model.Case;
+import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.engine.FormplayerIndexedFixtureInstanceTreeElement;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
-
-import org.commcare.cases.model.Case;
-import org.commcare.core.process.CommCareInstanceInitializer;
 import org.commcare.session.SessionInstanceBuilder;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.model.User;
@@ -18,7 +17,6 @@ import org.javarosa.core.model.instance.InstanceRoot;
 import org.javarosa.core.model.instance.TreeElement;
 
 import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * Created by willpride on 1/29/16.

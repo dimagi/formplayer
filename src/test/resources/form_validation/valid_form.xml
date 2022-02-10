@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms"
-    xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:jr="http://openrosa.org/javarosa">
     <h:head>
         <h:title>Cat sighting</h:title>
         <model>
             <instance>
-                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms"
-                    xmlns="http://openrosa.org/formdesigner/3335FAB3-1936-4C6A-9373-37F9F88AFBD4"
+                <data xmlns="http://openrosa.org/formdesigner/3335FAB3-1936-4C6A-9373-37F9F88AFBD4"
                     uiVersion="1" version="1" name="Cat sighting">
                     <label />
                     <time_of_sighting />

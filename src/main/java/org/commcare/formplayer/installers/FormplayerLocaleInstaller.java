@@ -1,9 +1,12 @@
 package org.commcare.formplayer.installers;
 
-import lombok.NonNull;
-
 import org.commcare.resources.ResourceInstallContext;
-import org.commcare.resources.model.*;
+import org.commcare.resources.model.MissingMediaException;
+import org.commcare.resources.model.Resource;
+import org.commcare.resources.model.ResourceLocation;
+import org.commcare.resources.model.ResourceTable;
+import org.commcare.resources.model.UnreliableSourceException;
+import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.reference.InvalidReferenceException;
 import org.javarosa.core.reference.Reference;
@@ -24,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Vector;
+
+import lombok.NonNull;
 
 /**
  * ResourceInstaller for locale files that always persists the locale data in

@@ -5,12 +5,7 @@ import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.protocol.Message;
-import lombok.SneakyThrows;
 import lombok.extern.apachecommons.CommonsLog;
-
-import org.commcare.formplayer.utils.CheckedSupplier;
-
-import java.util.function.Supplier;
 
 @CommonsLog
 public class FormplayerSentry {

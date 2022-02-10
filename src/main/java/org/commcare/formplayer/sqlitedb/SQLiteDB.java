@@ -1,19 +1,19 @@
 package org.commcare.formplayer.sqlitedb;
 
-import datadog.trace.api.Trace;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sqlite.SQLiteConnection;
 import org.commcare.formplayer.sandbox.ArchivableFile;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.services.ConnectionHandler;
-
-import javax.sql.DataSource;
+import org.sqlite.SQLiteConnection;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import javax.sql.DataSource;
+
+import datadog.trace.api.Trace;
 
 public class SQLiteDB implements ConnectionHandler {
     private DBPath dbPath;

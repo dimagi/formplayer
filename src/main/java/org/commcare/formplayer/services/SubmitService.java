@@ -1,13 +1,13 @@
 package org.commcare.formplayer.services;
 
-import lombok.extern.apachecommons.CommonsLog;
-
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.SimpleTimer;
 import org.commcare.formplayer.web.client.WebClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.RequestScope;
+
+import lombok.extern.apachecommons.CommonsLog;
 
 /**
  * Service that handles form submission to CommCareHQ

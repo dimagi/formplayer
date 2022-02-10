@@ -8,14 +8,12 @@ import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.SyncScreen;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URLEncoder;
 import java.util.Hashtable;
 
 /**
  * Screen to make a sync request to HQ after a case claim
- *
+ * <p>
  * This ignores the OkHttpClient logic from SyncScreen.
  * Calling handleInputAndUpdateSession directly causes okhttp3.Credentials
  * to throw an error due to username being null. Instead of using handleInputAndUpdateSession

@@ -1,21 +1,20 @@
 package org.commcare.formplayer.services;
 
-import io.sentry.Sentry;
-import io.sentry.SentryLevel;
-
-import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
-import org.joda.time.Seconds;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.support.locks.LockRegistry;
-import org.springframework.util.Assert;
+import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
+import org.joda.time.DateTime;
+import org.joda.time.Seconds;
+import org.springframework.integration.support.locks.LockRegistry;
+import org.springframework.util.Assert;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 
 /**
  * Created by willpride on 11/6/17.

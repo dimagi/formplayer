@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Created by biyeun on 10/3/16.
- *
+ * <p>
  * Use this to respond to requests related to in form navigation (next / previous / etc)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)

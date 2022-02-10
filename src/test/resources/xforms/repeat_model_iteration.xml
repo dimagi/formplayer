@@ -1,12 +1,11 @@
 <h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms"
     xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    xmlns:jr="http://openrosa.org/javarosa">
     <h:head>
         <h:title>Repeat Groups</h:title>
         <model>
             <instance>
-                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms"
-                    xmlns="http://openrosa.org/formdesigner/531F5743-637E-4E98-9987-3441386B0DE1"
+                <data xmlns="http://openrosa.org/formdesigner/531F5743-637E-4E98-9987-3441386B0DE1"
                     uiVersion="1" version="51" name="Repeat Groups">
                     <here_are_some_songs />
                     <song_ids />

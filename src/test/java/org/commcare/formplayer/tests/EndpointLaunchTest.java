@@ -1,21 +1,18 @@
 package org.commcare.formplayer.tests;
 
-import org.commcare.formplayer.utils.WithHqUser;
-
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
-
-import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
-
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.web.util.NestedServletException;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.util.NestedServletException;
 
 import java.util.HashMap;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

@@ -2,8 +2,6 @@ package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
-import org.commcare.formplayer.beans.menus.CommandListResponseBean;
-import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,14 +1,13 @@
 package org.commcare.formplayer.objects;
 
+import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.session.FormSession;
+import org.commcare.formplayer.util.UserUtils;
 import org.springframework.data.redis.core.ValueOperations;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-
-import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.formplayer.session.FormSession;
-import org.commcare.formplayer.util.UserUtils;
 
 /**
  * Redis cache record object for managing records of actions (open, complete, etc) which

@@ -1,12 +1,11 @@
 <h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms"
     xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    xmlns:jr="http://openrosa.org/javarosa">
     <h:head>
         <h:title>Field List</h:title>
         <model>
             <instance>
-                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms"
-                    xmlns="http://openrosa.org/formdesigner/DFF120A0-D413-46F7-A0E2-44DA7471A053"
+                <data xmlns="http://openrosa.org/formdesigner/DFF120A0-D413-46F7-A0E2-44DA7471A053"
                     uiVersion="1" version="9" name="Field List">
                     <no_build_question />
                     <question1>

@@ -7,7 +7,6 @@ import org.commcare.formplayer.request.MultipleReadRequestWrappingFilter;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.services.HqUserDetailsService;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;

@@ -5,9 +5,15 @@ import com.timgroup.statsd.StatsDClient;
 import org.commcare.formplayer.beans.auth.FeatureFlagChecker;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
-import java.util.*;
+import javax.servlet.http.HttpServletRequest;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
 

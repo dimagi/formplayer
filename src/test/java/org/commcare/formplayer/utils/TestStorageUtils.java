@@ -1,11 +1,11 @@
 package org.commcare.formplayer.utils;
 
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.session.FormplayerInstanceInitializer;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.DataInstance;
 import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.TreeReference;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.session.FormplayerInstanceInitializer;
 
 import java.util.Hashtable;
 

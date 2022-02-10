@@ -1,7 +1,7 @@
 package org.commcare.formplayer.auth;
 
-import org.springframework.http.HttpHeaders;
 import org.commcare.formplayer.util.Constants;
+import org.springframework.http.HttpHeaders;
 
 /**
  * Class for storing a Django auth key and returning its respective headers

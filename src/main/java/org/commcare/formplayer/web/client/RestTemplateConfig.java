@@ -1,19 +1,17 @@
 package org.commcare.formplayer.web.client;
 
-import lombok.extern.apachecommons.CommonsLog;
-
 import org.commcare.formplayer.util.Constants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
-import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URISyntaxException;
 import java.time.Duration;
+
+import lombok.extern.apachecommons.CommonsLog;
 
 @Configuration
 @CommonsLog

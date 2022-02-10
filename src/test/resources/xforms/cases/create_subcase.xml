@@ -1,12 +1,11 @@
 <h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms"
     xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+    xmlns:jr="http://openrosa.org/javarosa">
     <h:head>
         <h:title>Create a Sub Case</h:title>
         <model>
             <instance>
-                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms"
-                    xmlns="http://openrosa.org/formdesigner/98C43145-1A50-4948-945F-EBE4C9C8E4AF"
+                <data xmlns="http://openrosa.org/formdesigner/98C43145-1A50-4948-945F-EBE4C9C8E4AF"
                     uiVersion="1" version="711" name="Create a Sub Case">
                     <sub_case_intro />
                     <sub_case_name />

@@ -1,9 +1,8 @@
 package org.commcare.formplayer.beans;
 
-import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.cases.model.Case;
+import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.util.FormplayerDateUtils;
 import org.commcare.formplayer.util.SessionUtils;
 
 import java.util.NoSuchElementException;

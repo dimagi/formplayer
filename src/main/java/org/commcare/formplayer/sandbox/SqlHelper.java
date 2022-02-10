@@ -1,15 +1,21 @@
 package org.commcare.formplayer.sandbox;
 
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
-
+import org.commcare.modern.database.DatabaseHelper;
+import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.util.Pair;
-import org.commcare.modern.database.*;
 import org.javarosa.core.services.Logger;
 import org.javarosa.core.services.storage.Persistable;
 
 import java.io.ByteArrayInputStream;
 import java.io.PrintStream;
-import java.sql.*;
+import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -126,7 +132,7 @@ public class SqlHelper {
 
     /**
      * Get a prepared statement to select matching rows by the internal ID column
-     *
+     * <p>
      * Note: Caller is responsible for ensuring the prepared statement is closed
      */
     public static PreparedStatement prepareIdSelectStatement(Connection c, String storageKey, int id) {
@@ -143,7 +149,7 @@ public class SqlHelper {
 
     /**
      * Get a prepared statement to select matching rows by multiple storage keys
-     *
+     * <p>
      * Note: Caller is responsible for ensuring the prepared statement is closed
      */
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,
@@ -167,7 +173,7 @@ public class SqlHelper {
     /**
      * Get a prepared statement to select matching appropriate metadata fields from
      * an individual record
-     *
+     * <p>
      * Note: Caller is responsible for ensuring the prepared statement is closed
      */
     public static PreparedStatement prepareTableSelectProjectionStatement(Connection c,

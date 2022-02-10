@@ -1,10 +1,10 @@
 package org.commcare.formplayer.beans;
 
-import org.commcare.formplayer.objects.QueryData;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
+
+import org.commcare.formplayer.objects.QueryData;
 
 import java.util.Arrays;
 import java.util.HashMap;

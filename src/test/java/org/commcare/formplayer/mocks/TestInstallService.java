@@ -1,8 +1,8 @@
 package org.commcare.formplayer.mocks;
 
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
-import org.commcare.modern.util.Pair;
 import org.commcare.formplayer.services.InstallService;
+import org.commcare.modern.util.Pair;
 
 import java.io.File;
 import java.net.URL;

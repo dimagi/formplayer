@@ -1,8 +1,5 @@
 package org.commcare.formplayer.auth;
 
-import lombok.Builder;
-import lombok.extern.apachecommons.CommonsLog;
-
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.FormSessionService;
@@ -29,6 +26,8 @@ import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.GenericFilterBean;
 
+import java.io.IOException;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -36,7 +35,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
+import lombok.Builder;
+import lombok.extern.apachecommons.CommonsLog;
 
 /**
  * Request filter that performs HMAC auth if the request contains the
@@ -186,10 +186,10 @@ public class HmacAuthFilter extends GenericFilterBean {
 
     /**
      * An anonymous token that is used to indicate valid HMAC auth but without any user details.
-     *
+     * <p>
      * This is used for endpoints where we don't require user authentication but still require that the
      * request came from CommCare.
-     *
+     * <p>
      * Setting the role allows us to differentiate this anonymous token from a truly anonymous one that
      * is not authenticated at all.
      */

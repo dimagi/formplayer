@@ -1,31 +1,30 @@
 package org.commcare.formplayer.aspects;
 
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
-import io.sentry.Sentry;
-
-import org.commcare.formplayer.auth.DjangoAuth;
-import org.commcare.formplayer.auth.HqAuth;
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.beans.SessionRequestBean;
-import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.commcare.formplayer.auth.DjangoAuth;
+import org.commcare.formplayer.auth.HqAuth;
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.beans.SessionRequestBean;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
-import org.commcare.formplayer.services.CategoryTimingHelper;
-import org.commcare.formplayer.services.RestoreFactory;
 
 import java.util.Arrays;
 
 import datadog.trace.api.interceptor.MutableSpan;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
+import io.sentry.Sentry;
 
 /**
  * Aspect to configure the RestoreFactory

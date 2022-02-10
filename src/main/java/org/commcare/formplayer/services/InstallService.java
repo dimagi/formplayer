@@ -1,13 +1,13 @@
 package org.commcare.formplayer.services;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.commcare.formplayer.exceptions.UnresolvedResourceRuntimeException;
 import org.commcare.formplayer.installers.FormplayerInstallerFactory;
-
-import datadog.trace.api.Trace;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.commcare.formplayer.sqlitedb.SQLiteDB;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.SimpleTimer;
 import org.commcare.modern.reference.ArchiveFileRoot;
 import org.commcare.modern.util.Pair;
 import org.commcare.resources.model.UnresolvedResourceException;
@@ -15,11 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
-
-import org.commcare.formplayer.sqlitedb.SQLiteDB;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.SimpleTimer;
 import org.springframework.web.client.RestTemplate;
+
+import datadog.trace.api.Trace;
 
 /**
  * The InstallService handles configuring the application,

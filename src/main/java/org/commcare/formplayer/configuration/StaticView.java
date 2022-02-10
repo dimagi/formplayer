@@ -1,15 +1,15 @@
 package org.commcare.formplayer.configuration;
 
-import lombok.extern.apachecommons.CommonsLog;
-
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.View;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.util.Map;
+import lombok.extern.apachecommons.CommonsLog;
 
 /**
  * Simple custom error view to replace the default whitelabel error view.

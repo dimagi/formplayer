@@ -1,11 +1,15 @@
 package org.commcare.formplayer.objects;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Created by willpride on 8/1/16.

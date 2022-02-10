@@ -2,8 +2,6 @@ package org.commcare.formplayer.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import datadog.trace.api.Trace;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -43,12 +41,14 @@ import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.annotation.Nullable;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
 import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import datadog.trace.api.Trace;
 
 import static org.commcare.session.SessionFrame.STATE_DATUM_COMPUTED;
 import static org.commcare.session.SessionFrame.STATE_DATUM_VAL;

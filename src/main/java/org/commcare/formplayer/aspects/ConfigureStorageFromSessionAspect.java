@@ -1,12 +1,12 @@
 package org.commcare.formplayer.aspects;
 
-import org.commcare.formplayer.beans.SessionRequestBean;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.commcare.formplayer.beans.SessionRequestBean;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
 
 /**
  * Aspect to configure the FormplayerStorageManager from a restored FormSession

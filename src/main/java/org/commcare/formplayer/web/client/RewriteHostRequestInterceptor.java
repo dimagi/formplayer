@@ -1,7 +1,5 @@
 package org.commcare.formplayer.web.client;
 
-import lombok.extern.apachecommons.CommonsLog;
-
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -11,6 +9,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import lombok.extern.apachecommons.CommonsLog;
 
 /**
  * Rest request interceptor that will replace the host and port of any request

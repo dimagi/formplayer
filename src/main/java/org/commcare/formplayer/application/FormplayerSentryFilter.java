@@ -1,7 +1,5 @@
 package org.commcare.formplayer.application;
 
-import io.sentry.Sentry;
-
 import org.commcare.formplayer.filters.FilterOrder;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
@@ -9,12 +7,14 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
+import io.sentry.Sentry;
 
 @Component
 @Order(FilterOrder.SENTRY)

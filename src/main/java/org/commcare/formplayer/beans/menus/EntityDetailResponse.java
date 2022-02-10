@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
+import org.commcare.formplayer.util.FormplayerGraphUtil;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
@@ -11,7 +12,6 @@ import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
-import org.commcare.formplayer.util.FormplayerGraphUtil;
 
 import java.util.Arrays;
 import java.util.List;

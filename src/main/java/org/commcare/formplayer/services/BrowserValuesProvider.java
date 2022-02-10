@@ -1,7 +1,5 @@
 package org.commcare.formplayer.services;
 
-import io.sentry.SentryLevel;
-
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.javarosa.core.model.utils.TimezoneProvider;
@@ -9,6 +7,8 @@ import org.javarosa.core.model.utils.TimezoneProvider;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
+
+import io.sentry.SentryLevel;
 
 /**
  * Created by amstone326 on 1/8/18.

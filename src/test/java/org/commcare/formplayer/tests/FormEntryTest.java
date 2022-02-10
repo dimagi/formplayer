@@ -2,21 +2,27 @@ package org.commcare.formplayer.tests;
 
 import com.google.common.collect.ImmutableMap;
 
-import org.commcare.formplayer.beans.*;
+import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
+import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
+import org.commcare.formplayer.beans.FormEntryResponseBean;
+import org.commcare.formplayer.beans.GetInstanceResponseBean;
+import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.beans.QuestionBean;
+import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.ErrorBean;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)

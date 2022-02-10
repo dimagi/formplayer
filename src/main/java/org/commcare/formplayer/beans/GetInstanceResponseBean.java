@@ -1,7 +1,6 @@
 package org.commcare.formplayer.beans;
 
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
-
 import org.commcare.formplayer.session.FormSession;
 
 import java.io.IOException;

@@ -1,10 +1,10 @@
 package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.api.json.JsonActionUtils;
+import org.commcare.formplayer.util.FormParseInit;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.junit.jupiter.api.BeforeEach;
-import org.commcare.formplayer.util.FormParseInit;
 import org.junit.jupiter.api.Test;
 
 /**

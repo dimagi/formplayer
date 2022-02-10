@@ -1,11 +1,10 @@
 package org.commcare.formplayer.sqlitedb;
 
 import org.commcare.formplayer.application.SQLiteProperties;
+import org.commcare.formplayer.util.Constants;
 import org.commcare.modern.database.TableBuilder;
 
 import java.io.File;
-
-import org.commcare.formplayer.util.Constants;
 
 class UserDBPath extends DBPath {
 

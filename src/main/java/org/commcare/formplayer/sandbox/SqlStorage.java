@@ -1,6 +1,7 @@
 package org.commcare.formplayer.sandbox;
 
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
+import org.commcare.formplayer.services.ConnectionHandler;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.util.Pair;
@@ -13,7 +14,6 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
 import org.javarosa.core.util.externalizable.DeserializationException;
-import org.commcare.formplayer.services.ConnectionHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -536,7 +536,7 @@ public class SqlStorage<T extends Persistable>
 
     /**
      * Reads out the metadata columns from the provided cursor.
-     *
+     * <p>
      * NOTE: The column names _must be scrubbed here_ before the method is called
      */
     private String[] readMetaDataFromResultSet(ResultSet resultSet, String[] columnNames) throws SQLException {

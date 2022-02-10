@@ -11,8 +11,8 @@ import org.javarosa.core.util.Iterator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.io.IOException;
 /**
  * Tests the compatibility of the current code runtime against the currently captured database
  * snapshots.
- *
+ * <p>
  * If these tests fail, the snapshots need to be rebuild and databases will need to be cold started
  * in any existing environments after updating.
  *

@@ -1,8 +1,5 @@
 package org.commcare.formplayer.auth;
 
-import io.sentry.Sentry;
-import lombok.extern.apachecommons.CommonsLog;
-
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.json.JSONException;
@@ -13,15 +10,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import java.util.Arrays;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.Arrays;
+import lombok.extern.apachecommons.CommonsLog;
 
 /**
  * Auth filter that extracts the user details from the request (username, domain) along
  * with the session ID from the cookie.
- *
+ * <p>
  * These are then used to authenticate the user using the HQUserDetailsService
  */
 @CommonsLog

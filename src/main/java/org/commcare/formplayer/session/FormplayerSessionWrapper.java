@@ -1,17 +1,13 @@
 package org.commcare.formplayer.session;
 
-import lombok.SneakyThrows;
-
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.core.interfaces.UserSandbox;
 import org.commcare.core.process.CommCareInstanceInitializer;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.CommCareSession;
 import org.commcare.session.SessionFrame;
 import org.commcare.util.CommCarePlatform;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-
-import java.util.Map;
 
 /**
  * Created by willpride on 1/29/16.

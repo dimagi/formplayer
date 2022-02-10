@@ -3,9 +3,9 @@ package org.commcare.formplayer.beans;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
+import org.commcare.cases.model.Case;
 import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.cases.model.Case;
 
 import java.util.ArrayList;
 import java.util.Arrays;

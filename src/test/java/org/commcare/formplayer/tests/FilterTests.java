@@ -1,16 +1,16 @@
 package org.commcare.formplayer.tests;
 
+import org.commcare.cases.model.Case;
 import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.beans.SyncDbResponseBean;
-import org.commcare.cases.model.Case;
-import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)

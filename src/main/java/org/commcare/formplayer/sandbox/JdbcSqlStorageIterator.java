@@ -1,4 +1,3 @@
-
 package org.commcare.formplayer.sandbox;
 
 import org.apache.commons.logging.Log;
@@ -12,7 +11,10 @@ import org.javarosa.core.util.ArrayUtilities;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Iterator over JDBC ResultSet

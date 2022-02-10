@@ -1,7 +1,7 @@
 package org.commcare.formplayer.beans.debugger;
 
-import org.json.JSONArray;
 import org.commcare.formplayer.util.XmlUtils;
+import org.json.JSONArray;
 
 import java.util.HashSet;
 import java.util.List;

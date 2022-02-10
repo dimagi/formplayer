@@ -1,11 +1,12 @@
 package org.commcare.formplayer.util;
 
-import org.apache.http.client.utils.URIBuilder;
-import org.commcare.formplayer.beans.CaseBean;
-import org.commcare.formplayer.hq.CaseAPIs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.utils.URIBuilder;
 import org.commcare.cases.model.Case;
+import org.commcare.formplayer.beans.CaseBean;
+import org.commcare.formplayer.hq.CaseAPIs;
+import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.modern.session.SessionWrapper;
 import org.commcare.session.SessionFrame;
 import org.commcare.suite.model.StackFrameStep;
@@ -13,8 +14,6 @@ import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.Localizer;
 import org.javarosa.core.util.NoLocalizedTextException;
 import org.javarosa.xpath.XPathException;
-
-import org.commcare.formplayer.sandbox.SqlStorage;
 
 import java.net.URISyntaxException;
 import java.util.NoSuchElementException;

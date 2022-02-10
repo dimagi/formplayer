@@ -6,7 +6,13 @@ import org.commcare.formplayer.annotations.NoLogging;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.aspects.LockAspect;
-import org.commcare.formplayer.beans.*;
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.beans.DeleteApplicationDbsRequestBean;
+import org.commcare.formplayer.beans.LockReportBean;
+import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.beans.ServerUpBean;
+import org.commcare.formplayer.beans.SyncDbRequestBean;
+import org.commcare.formplayer.beans.SyncDbResponseBean;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
@@ -20,11 +26,15 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.StringReader;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Controller class (API endpoint) containing all all logic that isn't associated with

@@ -3,12 +3,11 @@ package org.commcare.formplayer.tests;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
+import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-
-import org.commcare.formplayer.utils.TestContext;
+import org.springframework.test.context.ContextConfiguration;
 
 @WebMvcTest
 @ContextConfiguration(

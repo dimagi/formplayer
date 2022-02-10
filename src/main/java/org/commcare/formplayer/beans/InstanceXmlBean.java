@@ -1,9 +1,6 @@
 package org.commcare.formplayer.beans;
 
-import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.XmlUtils;
-
-import java.io.IOException;
 
 /**
  * Created by willpride on 1/20/16.

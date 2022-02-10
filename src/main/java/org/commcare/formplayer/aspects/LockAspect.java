@@ -1,36 +1,32 @@
 package org.commcare.formplayer.aspects;
 
-import io.sentry.SentryLevel;
-
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-
 import com.timgroup.statsd.StatsDClient;
 
-import datadog.trace.api.Trace;
-
-import org.commcare.formplayer.beans.SessionRequestBean;
-import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.commcare.formplayer.services.FormSessionService;
-import org.commcare.modern.database.TableBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.beans.SessionRequestBean;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.services.FormplayerLockRegistry.FormplayerReentrantLock;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.UserUtils;
-
-import javax.servlet.http.HttpServletRequest;
+import org.commcare.modern.database.TableBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
+
+import datadog.trace.api.Trace;
+import io.sentry.SentryLevel;
 
 /**
  * Aspect for weaving locking for classes that require it

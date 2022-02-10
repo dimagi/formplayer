@@ -3,14 +3,13 @@ package org.commcare.formplayer.engine;
 import org.commcare.cases.instance.IndexedFixtureInstanceTreeElement;
 import org.commcare.cases.model.StorageIndexedTreeElementModel;
 import org.commcare.core.interfaces.UserSandbox;
+import org.commcare.formplayer.util.SerializationUtil;
 import org.javarosa.core.model.IndexedFixtureIdentifier;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.InstanceBase;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.externalizable.DeserializationException;
-
-import org.commcare.formplayer.util.SerializationUtil;
 
 public class FormplayerIndexedFixtureInstanceTreeElement extends IndexedFixtureInstanceTreeElement {
 

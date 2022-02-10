@@ -1,9 +1,12 @@
 package org.commcare.formplayer.services;
 
-import datadog.trace.api.Trace;
-
 import org.commcare.formplayer.beans.InstallRequestBean;
 import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sqlitedb.ApplicationDB;
+import org.commcare.formplayer.sqlitedb.SQLiteDB;
+import org.commcare.formplayer.util.FormplayerPropertyManager;
+import org.commcare.formplayer.util.UserUtils;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.javarosa.core.services.storage.IStorageIndexedFactory;
@@ -16,11 +19,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.sqlitedb.ApplicationDB;
-import org.commcare.formplayer.sqlitedb.SQLiteDB;
-import org.commcare.formplayer.util.FormplayerPropertyManager;
-import org.commcare.formplayer.util.UserUtils;
+import datadog.trace.api.Trace;
 
 /**
  * FormPlayer's storage factory that negotiates between parsers/installers and the storage layer

@@ -1,6 +1,6 @@
 package org.commcare.formplayer.objects;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.Map;
 
 /**
  * Created by jschweers on 12/28/20.
- *
+ * <p>
  * QueryData stores the case search & claim data for a session.
  * It's a hashtable keyed by command id, e.g., "search_command.m2"
  * For each command, QueryData stores two values:

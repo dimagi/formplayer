@@ -1,23 +1,23 @@
 package org.commcare.formplayer.aspects;
 
-import datadog.trace.api.Trace;
-import io.sentry.Sentry;
-import lombok.extern.java.Log;
-
 import org.apache.http.client.utils.URIBuilder;
-import org.commcare.formplayer.beans.InstallRequestBean;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.commcare.formplayer.beans.InstallRequestBean;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.util.FormplayerSentry;
 
 import java.net.URISyntaxException;
 import java.util.Arrays;
+
+import datadog.trace.api.Trace;
+import io.sentry.Sentry;
+import lombok.extern.java.Log;
 
 /**
  * Aspect to configure the FormplayerStorageManager

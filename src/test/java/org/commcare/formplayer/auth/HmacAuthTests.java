@@ -5,7 +5,6 @@ import org.commcare.formplayer.configuration.WebSecurityConfig;
 import org.commcare.formplayer.request.MultipleReadRequestWrappingFilter;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.NotificationLogger;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;

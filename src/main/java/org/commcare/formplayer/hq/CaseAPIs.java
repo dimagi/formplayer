@@ -1,9 +1,9 @@
 package org.commcare.formplayer.hq;
 
-import org.commcare.formplayer.beans.CaseBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
+import org.commcare.formplayer.beans.CaseBean;
 import org.commcare.formplayer.sandbox.SqlStorage;
 
 /**

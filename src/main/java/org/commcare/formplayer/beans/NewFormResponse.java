@@ -1,10 +1,8 @@
 package org.commcare.formplayer.beans;
 
-import org.commcare.formplayer.beans.menus.EntityDetailResponse;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.commcare.formplayer.session.FormSession;
+import org.commcare.formplayer.beans.menus.EntityDetailResponse;
 
 import java.io.IOException;
 

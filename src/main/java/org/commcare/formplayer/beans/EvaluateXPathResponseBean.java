@@ -1,8 +1,9 @@
 package org.commcare.formplayer.beans;
 
-import io.sentry.SentryLevel;
-
 import org.commcare.formplayer.beans.menus.LocationRelevantResponseBean;
+import org.commcare.formplayer.exceptions.ApplicationConfigException;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.trace.AccumulatingReporter;
 import org.javarosa.core.model.trace.EvaluationTraceReporter;
@@ -16,13 +17,10 @@ import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.kxml2.io.KXmlSerializer;
 
-import org.commcare.formplayer.exceptions.ApplicationConfigException;
-
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+import io.sentry.SentryLevel;
 
 /**
  * Created by willpride on 1/20/16.

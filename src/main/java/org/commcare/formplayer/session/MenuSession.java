@@ -1,13 +1,20 @@
 package org.commcare.formplayer.session;
 
-import datadog.trace.api.Trace;
-
-import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.core.interfaces.RemoteInstanceFetcher;
-import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.screens.FormplayerQueryScreen;
+import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.services.CaseSearchHelper;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.InstallService;
+import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.SessionUtils;
+import org.commcare.formplayer.util.StringUtils;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
@@ -17,8 +24,11 @@ import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
-import org.commcare.util.screen.*;
+import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.QueryScreen;
+import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -29,17 +39,13 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.screens.FormplayerQueryScreen;
-import org.commcare.formplayer.screens.FormplayerSyncScreen;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.services.InstallService;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.util.*;
-import org.commcare.formplayer.util.SessionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+import datadog.trace.api.Trace;
 
 import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
 
@@ -48,7 +54,7 @@ import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
  * primarily includes module and form navigation, along with case list/details and case selection. When ready,
  * this object will create and hand off flow control to a FormSession object, loading up the proper session data.
- *
+ * <p>
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
  */
 public class MenuSession implements HereFunctionHandlerListener {

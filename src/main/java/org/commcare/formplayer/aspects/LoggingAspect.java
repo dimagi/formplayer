@@ -1,16 +1,15 @@
 package org.commcare.formplayer.aspects;
 
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.util.FormplayerSentry;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.commcare.formplayer.util.FormplayerSentry;
 
 import java.lang.reflect.Method;
 
