@@ -1,30 +1,30 @@
 package org.commcare.formplayer.aspects;
 
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
+import io.sentry.Sentry;
+import org.commcare.formplayer.auth.DjangoAuth;
+import org.commcare.formplayer.auth.HqAuth;
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
+import org.commcare.formplayer.beans.SessionRequestBean;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.commcare.formplayer.auth.DjangoAuth;
-import org.commcare.formplayer.auth.HqAuth;
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.beans.SessionRequestBean;
-import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormSessionService;
-import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
+import org.commcare.formplayer.services.CategoryTimingHelper;
+import org.commcare.formplayer.services.RestoreFactory;
 
 import java.util.Arrays;
 
 import datadog.trace.api.interceptor.MutableSpan;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
-import io.sentry.Sentry;
 
 /**
  * Aspect to configure the RestoreFactory
@@ -58,12 +58,11 @@ public class UserRestoreAspect {
         Object[] args = joinPoint.getArgs();
         if (!(args[0] instanceof AuthenticatedRequestBean)) {
             throw new RuntimeException(
-                    String.format("Could not configure RestoreFactory with invalid request %s",
-                            Arrays.toString(args)));
+                    String.format("Could not configure RestoreFactory with invalid request %s", Arrays.toString(args)));
         }
-        AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean)args[0];
+        AuthenticatedRequestBean requestBean = (AuthenticatedRequestBean) args[0];
 
-        HqAuth auth = getHqAuth((String)args[1]);
+        HqAuth auth = getHqAuth((String) args[1]);
 
         configureRestoreFactory(requestBean, auth);
         configureSentryScope(restoreFactory);
@@ -77,17 +76,14 @@ public class UserRestoreAspect {
         Sentry.configureScope(scope -> {
             scope.setTag(Constants.AS_USER, restoreFactory.getEffectiveUsername());
             scope.setExtra(Constants.USER_SYNC_TOKEN, restoreFactory.getSyncToken());
-            scope.setExtra(Constants.USER_SANDBOX_PATH,
-                    restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes());
+            scope.setExtra(Constants.USER_SANDBOX_PATH, restoreFactory.getSQLiteDB().getDatabaseFileForDebugPurposes());
         });
     }
 
-    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth)
-            throws Exception {
+    private void configureRestoreFactory(AuthenticatedRequestBean requestBean, HqAuth auth) throws Exception {
         if (requestBean.getRestoreAsCaseId() != null) {
             // SMS user filling out a form as a case
-            restoreFactory.configure(requestBean.getDomain(), requestBean.getRestoreAsCaseId(),
-                    auth);
+            restoreFactory.configure(requestBean.getDomain(), requestBean.getRestoreAsCaseId(), auth);
             return;
         }
         if (requestBean.getUsername() != null && requestBean.getDomain() != null) {
@@ -95,21 +91,19 @@ public class UserRestoreAspect {
             restoreFactory.configure(requestBean, auth);
             final Span span = GlobalTracer.get().activeSpan();
             if (span != null && (span instanceof MutableSpan)) {
-                MutableSpan localRootSpan = ((MutableSpan)span).getLocalRootSpan();
+                MutableSpan localRootSpan = ((MutableSpan) span).getLocalRootSpan();
                 localRootSpan.setTag("domain", requestBean.getDomain());
                 localRootSpan.setTag("user", requestBean.getUsername());
             }
-        } else if (requestBean instanceof SessionRequestBean) {
+        } else if (requestBean instanceof SessionRequestBean){
             // SMS users don't submit username and domain with each request, so obtain from session
-            String sessionId = ((SessionRequestBean)requestBean).getSessionId();
+            String sessionId = ((SessionRequestBean) requestBean).getSessionId();
             SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
 
             if (formSession.getRestoreAsCaseId() != null) {
-                restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId(),
-                        auth);
+                restoreFactory.configure(formSession.getDomain(), formSession.getRestoreAsCaseId(), auth);
             } else {
-                restoreFactory.configure(formSession.getUsername(), formSession.getDomain(),
-                        formSession.getAsUser(), auth);
+                restoreFactory.configure(formSession.getUsername(), formSession.getDomain(), formSession.getAsUser(), auth);
             }
         } else {
             throw new Exception("Unable to configure restore factory");

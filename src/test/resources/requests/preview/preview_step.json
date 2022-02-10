@@ -5,7 +5,5 @@
   "app_id": "previewappid",
   "installReference": "archives/case.ccz",
   "previewCommand": "m2-f2",
-  "selections": [
-    "01650834-7c30-4ace-a3cd-f675d9611113"
-  ]
+  "selections": ["01650834-7c30-4ace-a3cd-f675d9611113"]
 }

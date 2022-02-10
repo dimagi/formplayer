@@ -63,7 +63,8 @@ public class TestContext {
 
     @Bean
     public InternalResourceViewResolver viewResolver() {
-        InternalResourceViewResolver internalResourceViewResolver = new InternalResourceViewResolver();
+        InternalResourceViewResolver internalResourceViewResolver =
+                new InternalResourceViewResolver();
         internalResourceViewResolver.setPrefix("/WEB-INF/jsp/view/");
         internalResourceViewResolver.setSuffix(".jsp");
         return internalResourceViewResolver;

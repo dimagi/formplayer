@@ -28,7 +28,9 @@ public class IndexedFixtureTest extends BaseTestClass {
 
     @Test
     public void testBadCaseSelection() throws Throwable {
-        sessionNavigate(new String[]{"0", "action 0"}, "indexed", null, NewFormResponse.class, "test");
-        sessionNavigate(new String[]{"1", "d83cf96f-6f7d-40e1-b3eb-ee8b2b8fed0f", "0"}, "indexed", null, NewFormResponse.class, "test");
+        sessionNavigate(new String[]{"0", "action 0"}, "indexed", null, NewFormResponse.class,
+                "test");
+        sessionNavigate(new String[]{"1", "d83cf96f-6f7d-40e1-b3eb-ee8b2b8fed0f", "0"}, "indexed",
+                null, NewFormResponse.class, "test");
     }
 }

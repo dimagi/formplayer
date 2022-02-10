@@ -1,13 +1,13 @@
 package org.commcare.formplayer.engine.cases;
 
-import org.commcare.cases.instance.LedgerInstanceTreeElement;
-import org.commcare.cases.ledger.Ledger;
-import org.commcare.cases.query.PredicateProfile;
-import org.commcare.cases.query.QueryContext;
-import org.commcare.cases.query.handlers.StaticLookupQueryHandler;
-import org.commcare.cases.util.QueryUtils;
 import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
 import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.cases.ledger.Ledger;
+import org.commcare.cases.instance.LedgerInstanceTreeElement;
+import org.commcare.cases.query.PredicateProfile;
+import org.commcare.cases.query.QueryContext;
+import org.commcare.cases.util.QueryUtils;
+import org.commcare.cases.query.handlers.StaticLookupQueryHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.services.storage.IStorageIterator;
@@ -25,8 +25,7 @@ public class FormplayerLedgerInstanceTreeElement extends LedgerInstanceTreeEleme
 
     private Hashtable<String, Integer> primaryIdMapping;
 
-    public FormplayerLedgerInstanceTreeElement(AbstractTreeElement instanceRoot,
-            SqlStorage<Ledger> storage) {
+    public FormplayerLedgerInstanceTreeElement(AbstractTreeElement instanceRoot, SqlStorage<Ledger> storage) {
         super(instanceRoot, storage);
         primaryIdMapping = null;
         addStaticQueryHandler();
@@ -35,9 +34,7 @@ public class FormplayerLedgerInstanceTreeElement extends LedgerInstanceTreeEleme
     private void addStaticQueryHandler() {
         this.getQueryPlanner().addQueryHandler(new StaticLookupQueryHandler() {
             @Override
-            public Collection<PredicateProfile> collectPredicateProfiles(
-                    Vector<XPathExpression> predicates, QueryContext context,
-                    EvaluationContext evaluationContext) {
+            public Collection<PredicateProfile> collectPredicateProfiles(Vector<XPathExpression> predicates, QueryContext context, EvaluationContext evaluationContext) {
                 return null;
             }
 
@@ -65,8 +62,7 @@ public class FormplayerLedgerInstanceTreeElement extends LedgerInstanceTreeEleme
             int id = i.peekID();
             elements.addElement(buildElement(this, id, null, mult));
             objectIdMapping.put(DataUtil.integer(id), DataUtil.integer(mult));
-            primaryIdMapping.put(String.valueOf(((JdbcSqlStorageIterator)i).peekID()),
-                    DataUtil.integer(id));
+            primaryIdMapping.put(String.valueOf(((JdbcSqlStorageIterator)i).peekID()), DataUtil.integer(id));
             mult++;
             i.nextID();
         }

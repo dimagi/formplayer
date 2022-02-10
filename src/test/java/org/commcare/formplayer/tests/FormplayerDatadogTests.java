@@ -1,5 +1,9 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import com.timgroup.statsd.StatsDClient;
 
 import org.commcare.formplayer.util.FormplayerDatadog;
@@ -14,10 +18,6 @@ import org.springframework.test.context.ContextConfiguration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)

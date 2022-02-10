@@ -1,32 +1,32 @@
 package org.commcare.formplayer.aspects;
 
-import com.timgroup.statsd.StatsDClient;
+import io.sentry.SentryLevel;
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 
+import com.timgroup.statsd.StatsDClient;
+import datadog.trace.api.Trace;
+import org.commcare.formplayer.beans.SessionRequestBean;
+import org.commcare.formplayer.objects.SerializableFormSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.beans.SessionRequestBean;
-import org.commcare.formplayer.objects.SerializableFormSession;
-import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormSessionService;
+import org.commcare.modern.database.TableBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
 import org.commcare.formplayer.services.FormplayerLockRegistry.FormplayerReentrantLock;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.commcare.formplayer.util.RequestUtils;
 import org.commcare.formplayer.util.UserUtils;
-import org.commcare.modern.database.TableBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-
-import datadog.trace.api.Trace;
-import io.sentry.SentryLevel;
 
 /**
  * Aspect for weaving locking for classes that require it
@@ -48,8 +48,7 @@ public class LockAspect {
     private FormSessionService formSessionService;
 
     // needs to be accessible from WebAppContext.exceptionResolver
-    public class LockError extends Exception {
-    }
+    public class LockError extends Exception {}
 
     private final Log log = LogFactory.getLog(LockAspect.class);
 
@@ -67,7 +66,7 @@ public class LockAspect {
         }
 
         String username;
-        AuthenticatedRequestBean bean = (AuthenticatedRequestBean)args[0];
+        AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
 
 
         try {
@@ -104,13 +103,13 @@ public class LockAspect {
         }
     }
 
-    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean,
-            FormSessionService formSessionService) throws Exception {
+    public static String getLockKeyForAuthenticatedBean(AuthenticatedRequestBean bean, FormSessionService formSessionService) throws Exception {
         if (bean.getUsernameDetail() != null) {
             return TableBuilder.scrubName(bean.getUsernameDetail());
-        } else if (bean instanceof SessionRequestBean) {
+        }
+        else if (bean instanceof SessionRequestBean){
             String username;
-            String sessionId = ((SessionRequestBean)bean).getSessionId();
+            String sessionId = ((SessionRequestBean) bean).getSessionId();
             SerializableFormSession formSession = formSessionService.getSessionById(sessionId);
             String tempUser = formSession.getUsername();
             String restoreAs = formSession.getAsUser();
@@ -127,8 +126,7 @@ public class LockAspect {
         throw new Exception("Unable to get username for locking");
     }
 
-    private void logLockError(AuthenticatedRequestBean bean, ProceedingJoinPoint joinPoint,
-            String lockIssue) {
+    private void logLockError(AuthenticatedRequestBean bean, ProceedingJoinPoint joinPoint, String lockIssue) {
         datadogStatsDClient.increment(
                 Constants.DATADOG_ERRORS_LOCK,
                 "domain:" + bean.getDomain(),
@@ -150,12 +148,11 @@ public class LockAspect {
     }
 
     private boolean obtainLock(FormplayerReentrantLock lock) {
-        CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(
-                Constants.TimingCategories.WAIT_ON_LOCK);
+        CategoryTimingHelper.RecordingTimer timer = categoryTimingHelper.newTimer(Constants.TimingCategories.WAIT_ON_LOCK);
         timer.start();
         try {
             return lock.tryLock(Constants.USER_LOCK_TIMEOUT, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException e){
             return obtainLock(lock);
         } finally {
             timer.end()

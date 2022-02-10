@@ -2,7 +2,6 @@ package org.commcare.formplayer.beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
-
 import org.commcare.formplayer.sqlitedb.ApplicationDB;
 
 /**
@@ -30,8 +29,7 @@ public class DeleteApplicationDbsRequestBean extends AuthenticatedRequestBean {
 
     @Override
     public String toString() {
-        return "DeleteApplicationDbsRequestBean with appId=" + appId + ", parent "
-                + super.toString();
+        return "DeleteApplicationDbsRequestBean with appId=" + appId + ", parent " + super.toString();
     }
 
 }

@@ -30,6 +30,8 @@ public class RestTemplateConfig {
 
     /**
      * Constructor for tests
+     *
+     * @param externalRequestMode
      */
     public RestTemplateConfig(String commcareHost, String externalRequestMode) {
         this.commcareHost = commcareHost;

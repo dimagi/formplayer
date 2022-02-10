@@ -1,93 +1,73 @@
-<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms"
-    xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:jr="http://openrosa.org/javarosa">
+
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
     <h:head>
         <h:title>Question Types</h:title>
         <model>
             <instance>
-                <data xmlns="http://openrosa.org/formdesigner/C2D2AE89-CF6F-4EB3-8D92-0805C479376D"
-                    uiVersion="1" version="3" name="Question Types">
-                    <intro />
-                    <q_text />
-                    <q_int />
-                    <q_numeric />
-                    <q_date />
-                    <q_date_time />
-                    <q_time />
-                    <q_pass />
-                    <q_pass_int />
-                    <numerictext />
-                    <q_singleselect />
-                    <q_multiselect />
-                    <no_confirmation />
-                    <q_label />
-                    <sig_cap />
-                    <q_barcode />
-                    <qroutput />
-                    <q_gps />
-                    <q_image />
-                    <q_audio />
-                    <q_video />
-                    <q_image_acquire />
-                    <q_audio_acquire />
-                    <q_video_acquire />
-                    <orx:meta xmlns:cc="http://commcarehq.org/xforms">
-                        <orx:deviceID />
-                        <orx:timeStart />
-                        <orx:timeEnd />
-                        <orx:username />
-                        <orx:userID />
-                        <orx:instanceID />
-                        <cc:appVersion />
-                        <cc:location />
-                    </orx:meta>
-                </data>
-            </instance>
-            <instance id="commcaresession" src="jr://instance/session" />
-            <bind nodeset="/data/intro" />
-            <bind nodeset="/data/q_text" type="xsd:string" />
-            <bind nodeset="/data/q_int" type="xsd:int" />
-            <bind nodeset="/data/q_numeric" type="xsd:double" />
-            <bind nodeset="/data/q_date" type="xsd:date" />
-            <bind nodeset="/data/q_date_time" type="xsd:dateTime" />
-            <bind nodeset="/data/q_time" type="xsd:time" />
-            <bind nodeset="/data/q_pass" type="xsd:string" />
-            <bind nodeset="/data/q_pass_int" type="xsd:string" constraint="regex(.,'^[0-9]+$')" />
-            <bind nodeset="/data/numerictext" type="xsd:string" />
-            <bind nodeset="/data/q_singleselect" />
-            <bind nodeset="/data/q_multiselect" />
-            <bind nodeset="/data/no_confirmation" />
-            <bind nodeset="/data/q_label" />
-            <bind nodeset="/data/sig_cap" type="binary" />
-            <bind nodeset="/data/q_barcode" type="barcode" />
-            <bind nodeset="/data/qroutput" />
-            <bind nodeset="/data/q_gps" type="geopoint" />
-            <bind nodeset="/data/q_image" type="binary" />
-            <bind nodeset="/data/q_audio" type="binary" />
-            <bind nodeset="/data/q_video" type="binary" />
-            <bind nodeset="/data/q_image_acquire" type="binary" />
-            <bind nodeset="/data/q_audio_acquire" type="binary" />
-            <bind nodeset="/data/q_video_acquire" type="binary" />
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/C2D2AE89-CF6F-4EB3-8D92-0805C479376D" uiVersion="1" version="3" name="Question Types">
+                    <intro/>
+                    <q_text/>
+                    <q_int/>
+                    <q_numeric/>
+                    <q_date/>
+                    <q_date_time/>
+                    <q_time/>
+                    <q_pass/>
+                    <q_pass_int/>
+                    <numerictext/>
+                    <q_singleselect/>
+                    <q_multiselect/>
+                    <no_confirmation/>
+                    <q_label/>
+                    <sig_cap/>
+                    <q_barcode/>
+                    <qroutput/>
+                    <q_gps/>
+                    <q_image/>
+                    <q_audio/>
+                    <q_video/>
+                    <q_image_acquire/>
+                    <q_audio_acquire/>
+                    <q_video_acquire/>
+                    <orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/><cc:location/></orx:meta></data>
+            </instance><instance id="commcaresession" src="jr://instance/session"/>
+            <bind nodeset="/data/intro"/>
+            <bind nodeset="/data/q_text" type="xsd:string"/>
+            <bind nodeset="/data/q_int" type="xsd:int"/>
+            <bind nodeset="/data/q_numeric" type="xsd:double"/>
+            <bind nodeset="/data/q_date" type="xsd:date"/>
+            <bind nodeset="/data/q_date_time" type="xsd:dateTime"/>
+            <bind nodeset="/data/q_time" type="xsd:time"/>
+            <bind nodeset="/data/q_pass" type="xsd:string"/>
+            <bind nodeset="/data/q_pass_int" type="xsd:string" constraint="regex(.,'^[0-9]+$')"/>
+            <bind nodeset="/data/numerictext" type="xsd:string"/>
+            <bind nodeset="/data/q_singleselect"/>
+            <bind nodeset="/data/q_multiselect"/>
+            <bind nodeset="/data/no_confirmation"/>
+            <bind nodeset="/data/q_label"/>
+            <bind nodeset="/data/sig_cap" type="binary"/>
+            <bind nodeset="/data/q_barcode" type="barcode"/>
+            <bind nodeset="/data/qroutput"/>
+            <bind nodeset="/data/q_gps" type="geopoint"/>
+            <bind nodeset="/data/q_image" type="binary"/>
+            <bind nodeset="/data/q_audio" type="binary"/>
+            <bind nodeset="/data/q_video" type="binary"/>
+            <bind nodeset="/data/q_image_acquire" type="binary"/>
+            <bind nodeset="/data/q_audio_acquire" type="binary"/>
+            <bind nodeset="/data/q_video_acquire" type="binary"/>
             <itext>
                 <translation lang="en" default="">
                     <text id="intro-label">
-                        <value>The following questions will go over basic question types allowed in
-                            a form.
-                        </value>
+                        <value>The following questions will go over basic question types allowed in a form. </value>
                     </text>
                     <text id="q_text-label">
-                        <value>This question should let you enter any form of text or special
-                            characters. Try different values.
-                        </value>
+                        <value>This question should let you enter any form of text or special characters. Try different values.</value>
                     </text>
                     <text id="q_int-label">
                         <value>This question should only let you enter an integer. [</value>
                     </text>
                     <text id="q_numeric-label">
-                        <value>This question should only let you enter a decimal number. If you
-                            enter a whole number, proceed to the next question and then back to this
-                            one to make sure it was saved as a decimal number.
-                        </value>
+                        <value>This question should only let you enter a decimal number. If you enter a whole number, proceed to the next question and then back to this one to make sure it was saved as a decimal number.</value>
                     </text>
                     <text id="q_date-label">
                         <value>This question should only allow you to enter a date.</value>
@@ -99,19 +79,13 @@
                         <value>This question should only allow you to enter a time.</value>
                     </text>
                     <text id="q_pass-label">
-                        <value>The value of this question should be hidden, but anything can be
-                            entered.
-                        </value>
+                        <value>The value of this question should be hidden, but anything can be entered.</value>
                     </text>
                     <text id="q_pass_int-label">
-                        <value>The value of this question should be hidden and only numbers are
-                            allowed.
-                        </value>
+                        <value>The value of this question should be hidden and only numbers are allowed.</value>
                     </text>
                     <text id="numerictext-label">
-                        <value>You should be able to enter digits here. Enter multiple zeroes and
-                            navigate back and forth to make sure they remain.
-                        </value>
+                        <value>You should be able to enter digits here. Enter multiple zeroes and navigate back and forth to make sure they remain.</value>
                     </text>
                     <text id="q_singleselect-label">
                         <value>You should be able to choose only one answer here.</value>
@@ -129,91 +103,55 @@
                         <value>Three</value>
                     </text>
                     <text id="no_confirmation-label">
-                        <value>You should only see this message. It should have no confirmation
-                            box.
-                        </value>
+                        <value>You should only see this message. It should have no confirmation box.</value>
                     </text>
                     <text id="q_label-label">
-                        <value>You should be able to see this message and a confirmation box. The
-                            next set of questions will go over complex question types and will only
-                            be available on some devices.
-                        </value>
+                        <value>You should be able to see this message and a confirmation box. The next set of questions will go over complex question types and will only be available on some devices. </value>
                     </text>
                     <text id="sig_cap-label">
-                        <value>If using an Android device, you should be able to capture a
-                            signature. Try it out!
-                        </value>
+                        <value>If using an Android device, you should be able to capture a signature. Try it out!</value>
                     </text>
                     <text id="q_barcode-label">
-                        <value>If using an Android device, this question should allow you to scan a
-                            barcode.
-                        </value>
+                        <value>If using an Android device, this question should allow you to scan a barcode. </value>
                     </text>
                     <text id="qroutput-label">
-                        <value>If using an Android device, this question should display a QR Code
-                            (similar to a barcode. If you scanned one in the previous question, it
-                            should contain its contents.)
-                        </value>
-                        <value form="qrcode">
-                            <output
-                                ref="if(/data/q_barcode = '', 'Help, I am trapped in a QR Code!', /data/q_barcode)" />
-                        </value>
+                        <value>If using an Android device, this question should display a QR Code (similar to a barcode. If you scanned one in the previous question, it should contain its contents.)</value>
+                        <value form="qrcode"><output ref="if(/data/q_barcode = '', 'Help, I am trapped in a QR Code!', /data/q_barcode)"/></value>
                     </text>
                     <text id="q_gps-label">
-                        <value>If using an Android device, this question should allow you to capture
-                            a GPS location. Try it out.
-                        </value>
+                        <value>If using an Android device, this question should allow you to capture a GPS location. Try it out.</value>
                     </text>
                     <text id="q_image-label">
-                        <value>If available on your device, this question should allow you to take a
-                            picture or upload an image.
-                        </value>
+                        <value>If available on your device, this question should allow you to take a picture or upload an image.</value>
                     </text>
                     <text id="q_audio-label">
-                        <value>If available on your device, this question should allow you to record
-                            or upload audio, and then play it.
-                        </value>
+                        <value>If available on your device, this question should allow you to record or upload audio, and then play it.</value>
                     </text>
                     <text id="q_video-label">
-                        <value>If available on your device, this question should allow you to record
-                            or upload video, and then play it.
-                        </value>
+                        <value>If available on your device, this question should allow you to record or upload video, and then play it.</value>
                     </text>
                     <text id="q_image_acquire-label">
-                        <value>If available on your device, this question should only allow you to
-                            take a picture.
-                        </value>
+                        <value>If available on your device, this question should only allow you to take a picture.</value>
                     </text>
                     <text id="q_audio_acquire-label">
-                        <value>If available on your device, this question should only allow you to
-                            record audio, and then play it.
-                        </value>
+                        <value>If available on your device, this question should only allow you to record audio, and then play it.</value>
                     </text>
                     <text id="q_video_acquire-label">
-                        <value>If available on your device, this question should only allow you to
-                            record a video, and then play it.
-                        </value>
+                        <value>If available on your device, this question should only allow you to record a video, and then play it.</value>
                     </text>
                 </translation>
                 <translation lang="hin">
                     <text id="intro-label">
-                        <value>The following questions will go over basic question types allowed in
-                            a form.
-                        </value>
+                        <value>The following questions will go over basic question types allowed in a form. </value>
                     </text>
                     <text id="q_text-label">
-                        <value>This question should let you enter any form of text or special
-                            characters. Try different values.
-                        </value>
+                        <value>This question should let you enter any form of text or special characters. Try different values.</value>
                     </text>
                     <text id="q_int-label">
                         <value>This question should only let you enter an integer. [</value>
                     </text>
                     <text id="q_numeric-label">
-                        <value>This question should only let you enter a decimal number. If you
-                            enter a whole number, proceed to the next question and then back to this
-                            one to make sure it was saved as a decimal number.
-                        </value>
+                        <value>This question should only let you enter a decimal number. If you enter a whole number, proceed to the next question and then back to this one to make sure it was saved as a decimal number.</value>
                     </text>
                     <text id="q_date-label">
                         <value>This question should only allow you to enter a date.</value>
@@ -225,19 +163,13 @@
                         <value>This question should only allow you to enter a time.</value>
                     </text>
                     <text id="q_pass-label">
-                        <value>The value of this question should be hidden, but anything can be
-                            entered.
-                        </value>
+                        <value>The value of this question should be hidden, but anything can be entered.</value>
                     </text>
                     <text id="q_pass_int-label">
-                        <value>The value of this question should be hidden and only numbers are
-                            allowed.
-                        </value>
+                        <value>The value of this question should be hidden and only numbers are allowed.</value>
                     </text>
                     <text id="numerictext-label">
-                        <value>You should be able to enter digits here. Enter multiple zeroes and
-                            navigate back and forth to make sure they remain.
-                        </value>
+                        <value>You should be able to enter digits here. Enter multiple zeroes and navigate back and forth to make sure they remain.</value>
                     </text>
                     <text id="q_singleselect-label">
                         <value>You should be able to choose only one answer here.</value>
@@ -255,186 +187,142 @@
                         <value>Three</value>
                     </text>
                     <text id="no_confirmation-label">
-                        <value>You should only see this message. It should have no confirmation
-                            box.
-                        </value>
+                        <value>You should only see this message. It should have no confirmation box.</value>
                     </text>
                     <text id="q_label-label">
-                        <value>You should be able to see this message and a confirmation box. The
-                            next set of questions will go over complex question types and will only
-                            be available on some devices.
-                        </value>
+                        <value>You should be able to see this message and a confirmation box. The next set of questions will go over complex question types and will only be available on some devices. </value>
                     </text>
                     <text id="sig_cap-label">
-                        <value>If using an Android device, you should be able to capture a
-                            signature. Try it out!
-                        </value>
+                        <value>If using an Android device, you should be able to capture a signature. Try it out!</value>
                     </text>
                     <text id="q_barcode-label">
-                        <value>If using an Android device, this question should allow you to scan a
-                            barcode.
-                        </value>
+                        <value>If using an Android device, this question should allow you to scan a barcode. </value>
                     </text>
                     <text id="qroutput-label">
-                        <value>If using an Android device, this question should display a QR Code
-                            (similar to a barcode. If you scanned one in the previous question, it
-                            should contain its contents.)
-                        </value>
-                        <value form="qrcode">
-                            <output
-                                ref="if(/data/q_barcode = '', 'Help, I am trapped in a QR Code!', /data/q_barcode)" />
-                        </value>
+                        <value>If using an Android device, this question should display a QR Code (similar to a barcode. If you scanned one in the previous question, it should contain its contents.)</value>
+                        <value form="qrcode"><output ref="if(/data/q_barcode = '', 'Help, I am trapped in a QR Code!', /data/q_barcode)"/></value>
                     </text>
                     <text id="q_gps-label">
-                        <value>If using an Android device, this question should allow you to capture
-                            a GPS location. Try it out.
-                        </value>
+                        <value>If using an Android device, this question should allow you to capture a GPS location. Try it out.</value>
                     </text>
                     <text id="q_image-label">
-                        <value>If available on your device, this question should allow you to take a
-                            picture or upload an image.
-                        </value>
+                        <value>If available on your device, this question should allow you to take a picture or upload an image.</value>
                     </text>
                     <text id="q_audio-label">
-                        <value>If available on your device, this question should allow you to record
-                            or upload audio, and then play it.
-                        </value>
+                        <value>If available on your device, this question should allow you to record or upload audio, and then play it.</value>
                     </text>
                     <text id="q_video-label">
-                        <value>If available on your device, this question should allow you to record
-                            or upload video, and then play it.
-                        </value>
+                        <value>If available on your device, this question should allow you to record or upload video, and then play it.</value>
                     </text>
                     <text id="q_image_acquire-label">
-                        <value>If available on your device, this question should only allow you to
-                            take a picture.
-                        </value>
+                        <value>If available on your device, this question should only allow you to take a picture.</value>
                     </text>
                     <text id="q_audio_acquire-label">
-                        <value>If available on your device, this question should only allow you to
-                            record audio, and then play it.
-                        </value>
+                        <value>If available on your device, this question should only allow you to record audio, and then play it.</value>
                     </text>
                     <text id="q_video_acquire-label">
-                        <value>If available on your device, this question should only allow you to
-                            record a video, and then play it.
-                        </value>
+                        <value>If available on your device, this question should only allow you to record a video, and then play it.</value>
                     </text>
                 </translation>
             </itext>
-            <setvalue event="xforms-ready" ref="/data/meta/deviceID"
-                value="instance('commcaresession')/session/context/deviceid" />
-            <setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()" />
-            <bind nodeset="/data/meta/timeStart" type="xsd:dateTime" />
-            <setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()" />
-            <bind nodeset="/data/meta/timeEnd" type="xsd:dateTime" />
-            <setvalue event="xforms-ready" ref="/data/meta/username"
-                value="instance('commcaresession')/session/context/username" />
-            <setvalue event="xforms-ready" ref="/data/meta/userID"
-                value="instance('commcaresession')/session/context/userid" />
-            <setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()" />
-            <setvalue event="xforms-ready" ref="/data/meta/appVersion"
-                value="instance('commcaresession')/session/context/appversion" />
-            <orx:pollsensor event="xforms-ready" ref="/data/meta/location" />
-            <bind nodeset="/data/meta/location" type="geopoint" />
-        </model>
+            <setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/><orx:pollsensor event="xforms-ready" ref="/data/meta/location"/><bind nodeset="/data/meta/location" type="geopoint"/></model>
     </h:head>
     <h:body>
         <trigger ref="/data/intro">
-            <label ref="jr:itext('intro-label')" />
+            <label ref="jr:itext('intro-label')"/>
         </trigger>
         <input ref="/data/q_text">
-            <label ref="jr:itext('q_text-label')" />
+            <label ref="jr:itext('q_text-label')"/>
         </input>
         <input ref="/data/q_int">
-            <label ref="jr:itext('q_int-label')" />
+            <label ref="jr:itext('q_int-label')"/>
         </input>
         <input ref="/data/q_numeric">
-            <label ref="jr:itext('q_numeric-label')" />
+            <label ref="jr:itext('q_numeric-label')"/>
         </input>
         <input ref="/data/q_date">
-            <label ref="jr:itext('q_date-label')" />
+            <label ref="jr:itext('q_date-label')"/>
         </input>
         <input ref="/data/q_date_time">
-            <label ref="jr:itext('q_date_time-label')" />
+            <label ref="jr:itext('q_date_time-label')"/>
         </input>
         <input ref="/data/q_time">
-            <label ref="jr:itext('q_time-label')" />
+            <label ref="jr:itext('q_time-label')"/>
         </input>
         <secret ref="/data/q_pass">
-            <label ref="jr:itext('q_pass-label')" />
+            <label ref="jr:itext('q_pass-label')"/>
         </secret>
         <secret ref="/data/q_pass_int">
-            <label ref="jr:itext('q_pass_int-label')" />
+            <label ref="jr:itext('q_pass_int-label')"/>
         </secret>
         <input ref="/data/numerictext" appearance="numeric">
-            <label ref="jr:itext('numerictext-label')" />
+            <label ref="jr:itext('numerictext-label')"/>
         </input>
         <select1 ref="/data/q_singleselect">
-            <label ref="jr:itext('q_singleselect-label')" />
+            <label ref="jr:itext('q_singleselect-label')"/>
             <item>
-                <label ref="jr:itext('q_multiselect-one-label')" />
+                <label ref="jr:itext('q_multiselect-one-label')"/>
                 <value>one</value>
             </item>
             <item>
-                <label ref="jr:itext('q_multiselect-two-label')" />
+                <label ref="jr:itext('q_multiselect-two-label')"/>
                 <value>two</value>
             </item>
             <item>
-                <label ref="jr:itext('q_multiselect-three-label')" />
+                <label ref="jr:itext('q_multiselect-three-label')"/>
                 <value>three</value>
             </item>
         </select1>
         <select ref="/data/q_multiselect">
-            <label ref="jr:itext('q_multiselect-label')" />
+            <label ref="jr:itext('q_multiselect-label')"/>
             <item>
-                <label ref="jr:itext('q_multiselect-one-label')" />
+                <label ref="jr:itext('q_multiselect-one-label')"/>
                 <value>one</value>
             </item>
             <item>
-                <label ref="jr:itext('q_multiselect-two-label')" />
+                <label ref="jr:itext('q_multiselect-two-label')"/>
                 <value>two</value>
             </item>
             <item>
-                <label ref="jr:itext('q_multiselect-three-label')" />
+                <label ref="jr:itext('q_multiselect-three-label')"/>
                 <value>three</value>
             </item>
         </select>
         <trigger ref="/data/no_confirmation" appearance="minimal">
-            <label ref="jr:itext('no_confirmation-label')" />
+            <label ref="jr:itext('no_confirmation-label')"/>
         </trigger>
         <trigger ref="/data/q_label">
-            <label ref="jr:itext('q_label-label')" />
+            <label ref="jr:itext('q_label-label')"/>
         </trigger>
         <upload mediatype="image/*" ref="/data/sig_cap" appearance="signature">
-            <label ref="jr:itext('sig_cap-label')" />
+            <label ref="jr:itext('sig_cap-label')"/>
         </upload>
         <input ref="/data/q_barcode">
-            <label ref="jr:itext('q_barcode-label')" />
+            <label ref="jr:itext('q_barcode-label')"/>
         </input>
         <trigger ref="/data/qroutput">
-            <label ref="jr:itext('qroutput-label')" />
+            <label ref="jr:itext('qroutput-label')"/>
         </trigger>
         <input ref="/data/q_gps">
-            <label ref="jr:itext('q_gps-label')" />
+            <label ref="jr:itext('q_gps-label')"/>
         </input>
         <upload mediatype="image/*" ref="/data/q_image">
-            <label ref="jr:itext('q_image-label')" />
+            <label ref="jr:itext('q_image-label')"/>
         </upload>
         <upload mediatype="audio/*" ref="/data/q_audio">
-            <label ref="jr:itext('q_audio-label')" />
+            <label ref="jr:itext('q_audio-label')"/>
         </upload>
         <upload mediatype="video/*" ref="/data/q_video">
-            <label ref="jr:itext('q_video-label')" />
+            <label ref="jr:itext('q_video-label')"/>
         </upload>
         <upload mediatype="image/*" ref="/data/q_image_acquire" appearance="acquire">
-            <label ref="jr:itext('q_image_acquire-label')" />
+            <label ref="jr:itext('q_image_acquire-label')"/>
         </upload>
         <upload mediatype="audio/*" ref="/data/q_audio_acquire" appearance="acquire">
-            <label ref="jr:itext('q_audio_acquire-label')" />
+            <label ref="jr:itext('q_audio_acquire-label')"/>
         </upload>
         <upload mediatype="video/*" ref="/data/q_video_acquire" appearance="acquire">
-            <label ref="jr:itext('q_video_acquire-label')" />
+            <label ref="jr:itext('q_video_acquire-label')"/>
         </upload>
     </h:body>
 </h:html>

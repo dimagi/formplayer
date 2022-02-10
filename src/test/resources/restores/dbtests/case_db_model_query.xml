@@ -7,8 +7,8 @@
         <uuid>test_user_id</uuid>
         <date>2017-04-21</date>
     </Registration>
-    <case case_id="test_case_parent" date_modified="2015-02-18T21:06:25Z" user_id="test_user_id"
-        xmlns="http://commcarehq.org/case/transaction/v2">
+    <case case_id="test_case_parent" date_modified="2015-02-18T21:06:25Z"
+          user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_parent</case_type>
             <case_name>Test Case</case_name>
@@ -19,8 +19,8 @@
         </update>
     </case>
 
-    <case case_id="parent_two" date_modified="2015-02-18T21:06:25Z" user_id="test_user_id"
-        xmlns="http://commcarehq.org/case/transaction/v2">
+    <case case_id="parent_two" date_modified="2015-02-18T21:06:25Z"
+          user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_parent</case_type>
             <case_name>Test Case</case_name>
@@ -31,8 +31,8 @@
         </update>
     </case>
 
-    <case case_id="child_ptwo_one" date_modified="2015-02-18T21:06:25Z" user_id="test_user_id"
-        xmlns="http://commcarehq.org/case/transaction/v2">
+    <case case_id="child_ptwo_one" date_modified="2015-02-18T21:06:25Z"
+          user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_child</case_type>
             <case_name>Test Case</case_name>
@@ -43,8 +43,8 @@
         </index>
     </case>
 
-    <case case_id="child_ptwo_one_one" date_modified="2015-02-18T21:06:25Z" user_id="test_user_id"
-        xmlns="http://commcarehq.org/case/transaction/v2">
+    <case case_id="child_ptwo_one_one" date_modified="2015-02-18T21:06:25Z"
+          user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_child_child</case_type>
             <case_name>Test Case</case_name>
@@ -56,8 +56,8 @@
     </case>
 
 
-    <case case_id="child_one" date_modified="2015-02-18T21:06:25Z" user_id="test_user_id"
-        xmlns="http://commcarehq.org/case/transaction/v2">
+    <case case_id="child_one" date_modified="2015-02-18T21:06:25Z"
+          user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_child</case_type>
             <case_name>Test Case</case_name>
@@ -67,8 +67,8 @@
             <parent case_type="unit_test_parent">test_case_parent</parent>
         </index>
     </case>
-    <case case_id="child_two" date_modified="2015-02-18T21:06:25Z" user_id="test_user_id"
-        xmlns="http://commcarehq.org/case/transaction/v2">
+    <case case_id="child_two" date_modified="2015-02-18T21:06:25Z"
+          user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_child</case_type>
             <case_name>Test Case</case_name>
@@ -78,8 +78,8 @@
             <parent case_type="unit_test_parent">test_case_parent</parent>
         </index>
     </case>
-    <case case_id="child_three" date_modified="2015-02-18T21:06:25Z" user_id="test_user_id"
-        xmlns="http://commcarehq.org/case/transaction/v2">
+    <case case_id="child_three" date_modified="2015-02-18T21:06:25Z"
+          user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_child</case_type>
             <case_name>Test Case</case_name>
@@ -90,8 +90,8 @@
         </index>
     </case>
 
-    <case case_id="child_one_one" date_modified="2015-02-18T21:06:25Z" user_id="test_user_id"
-        xmlns="http://commcarehq.org/case/transaction/v2">
+    <case case_id="child_one_one" date_modified="2015-02-18T21:06:25Z"
+          user_id="test_user_id" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>unit_test_child_child</case_type>
             <case_name>Test Case</case_name>

@@ -46,7 +46,8 @@ public class EnikshayEndOfFormTests extends BaseTestClass {
 
         LinkedHashMap commandsRaw = (LinkedHashMap)submitResponse.getNextScreen();
         String jsonString = new JSONObject(commandsRaw).toString();
-        CommandListResponseBean commandResponse = mapper.readValue(jsonString, CommandListResponseBean.class);
+        CommandListResponseBean commandResponse = mapper.readValue(jsonString,
+                CommandListResponseBean.class);
 
         assert commandResponse.getCommands().length == 2;
         assert commandResponse.getCommands()[0].getDisplayText().equals("Manage Beneficiary");
@@ -55,7 +56,8 @@ public class EnikshayEndOfFormTests extends BaseTestClass {
         assert commandResponse.getSelections()[0].equals("0");
         assert commandResponse.getBreadcrumbs()[2].equals("NIKITA VERMA");
 
-        ArrayList<String> selections = new ArrayList<>(Arrays.asList(commandResponse.getSelections()));
+        ArrayList<String> selections = new ArrayList<>(
+                Arrays.asList(commandResponse.getSelections()));
         selections.add("1");
 
         String[] newSelections = new String[selections.size()];

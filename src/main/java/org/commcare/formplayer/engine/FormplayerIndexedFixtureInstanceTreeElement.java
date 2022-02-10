@@ -3,7 +3,6 @@ package org.commcare.formplayer.engine;
 import org.commcare.cases.instance.IndexedFixtureInstanceTreeElement;
 import org.commcare.cases.model.StorageIndexedTreeElementModel;
 import org.commcare.core.interfaces.UserSandbox;
-import org.commcare.formplayer.util.SerializationUtil;
 import org.javarosa.core.model.IndexedFixtureIdentifier;
 import org.javarosa.core.model.instance.AbstractTreeElement;
 import org.javarosa.core.model.instance.InstanceBase;
@@ -11,28 +10,28 @@ import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.util.externalizable.DeserializationException;
 
+import org.commcare.formplayer.util.SerializationUtil;
+
 public class FormplayerIndexedFixtureInstanceTreeElement extends IndexedFixtureInstanceTreeElement {
 
     private TreeElement attributes;
 
     private FormplayerIndexedFixtureInstanceTreeElement(AbstractTreeElement instanceRoot,
-            IStorageUtilityIndexed<StorageIndexedTreeElementModel> storage,
-            IndexedFixtureIdentifier indexedFixtureIdentifier) {
+                                                        IStorageUtilityIndexed<StorageIndexedTreeElementModel> storage,
+                                                        IndexedFixtureIdentifier indexedFixtureIdentifier) {
         super(instanceRoot, storage, indexedFixtureIdentifier);
     }
 
     public static IndexedFixtureInstanceTreeElement get(UserSandbox sandbox,
-            String instanceName,
-            InstanceBase instanceBase) {
-        IndexedFixtureIdentifier indexedFixtureIdentifier = sandbox.getIndexedFixtureIdentifier(
-                instanceName);
+                                                        String instanceName,
+                                                        InstanceBase instanceBase) {
+        IndexedFixtureIdentifier indexedFixtureIdentifier = sandbox.getIndexedFixtureIdentifier(instanceName);
         if (indexedFixtureIdentifier == null) {
             return null;
         } else {
             IStorageUtilityIndexed<StorageIndexedTreeElementModel> storage =
                     sandbox.getIndexedFixtureStorage(instanceName);
-            return new FormplayerIndexedFixtureInstanceTreeElement(instanceBase, storage,
-                    indexedFixtureIdentifier);
+            return new FormplayerIndexedFixtureInstanceTreeElement(instanceBase, storage, indexedFixtureIdentifier);
         }
     }
 
@@ -42,9 +41,7 @@ public class FormplayerIndexedFixtureInstanceTreeElement extends IndexedFixtureI
                 attributes = SerializationUtil.deserialize(attrHolder, TreeElement.class);
             } catch (Exception e) {
                 if (e.getCause() instanceof DeserializationException) {
-                    String newMessage =
-                            "Deserialization failed for indexed fixture root atrribute wrapper: "
-                                    + e.getMessage();
+                    String newMessage = "Deserialization failed for indexed fixture root atrribute wrapper: " + e.getMessage();
                     throw new RuntimeException(newMessage);
                 }
                 throw e;

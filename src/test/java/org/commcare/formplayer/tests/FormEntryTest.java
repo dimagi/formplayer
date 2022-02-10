@@ -1,5 +1,9 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.collect.ImmutableMap;
 
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
@@ -20,10 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class FormEntryTest extends BaseTestClass {
@@ -34,7 +34,8 @@ public class FormEntryTest extends BaseTestClass {
 
         configureRestoreFactory("test", "test");
 
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/question_types.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json",
+                "xforms/question_types.xml");
         QuestionBean[] questions = newSessionResponse.getTree();
         assertEquals("intro", questions[0].getQuestion_id());
 
@@ -94,29 +95,37 @@ public class FormEntryTest extends BaseTestClass {
         assert longitude.equals(7.723388671875);
 
         //Test Evaluate XPath
-        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/q_text");
-        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
-        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>William Pride</result>\n";
+        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId,
+                "/data/q_text");
+        assert evaluateXPathResponseBean.getStatus().equals(
+                Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        String result =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>William Pride</result>\n";
         assert evaluateXPathResponseBean.getOutput().equals(result);
 
         // We shouldn't error when a path doesn't exist
         evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/not_broken");
-        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        assert evaluateXPathResponseBean.getStatus().equals(
+                Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
 
         // However, we should error when the path is invalid
         evaluateXPathResponseBean = evaluateXPath(sessionId, "!data/broken");
-        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
+        assert evaluateXPathResponseBean.getStatus().equals(
+                Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
 
         // Should be able to evaluate functions that do not return nodesets
         evaluateXPathResponseBean = evaluateXPath(sessionId, "true()");
-        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        assert evaluateXPathResponseBean.getStatus().equals(
+                Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
 
         // Should be able to evaluate instance expressions
         evaluateXPath(sessionId, "instance('commcaresession')/session/context/username");
-        assert evaluateXPathResponseBean.getStatus().equals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        assert evaluateXPathResponseBean.getStatus().equals(
+                Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
 
         //Test Submission
-        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request.json", sessionId);
+        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request.json",
+                sessionId);
         assert submitResponseBean.getSubmitResponseMessage().equals("OK");
     }
 
@@ -125,7 +134,8 @@ public class FormEntryTest extends BaseTestClass {
     @Test
     public void testFormEntry2() throws Exception {
 
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/question_types_2.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json",
+                "xforms/question_types_2.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -164,7 +174,8 @@ public class FormEntryTest extends BaseTestClass {
     @Test
     public void testOQPS() throws Exception {
 
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_oqps.json",
+                "xforms/oqps.xml");
 
         assert newSessionResponse.getTree().length == 1;
     }
@@ -173,7 +184,8 @@ public class FormEntryTest extends BaseTestClass {
     @Test
     public void testOQPSPreviousNext() throws Exception {
 
-        NewFormResponse newFormResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/oqps.xml");
+        NewFormResponse newFormResponse = startNewForm("requests/new_form/new_form_oqps.json",
+                "xforms/oqps.xml");
 
         String sessionId = newFormResponse.getSessionId();
 
@@ -193,28 +205,33 @@ public class FormEntryTest extends BaseTestClass {
     // Test form with no questions
     @Test
     public void testNoQuestions() throws Exception {
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/no_questions.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_oqps.json",
+                "xforms/no_questions.xml");
         assert newSessionResponse.getTree().length == 0;
     }
 
     @Test
     public void testSubmitAnswerValidation() throws Exception {
         configureRestoreFactory("test", "test");
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/constraints_minimal.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json",
+                "xforms/constraints_minimal.xml");
         String sessionId = newSessionResponse.getSessionId();
 
         Map<String, Object> answers = ImmutableMap.of("0", "", "1", "test", "2", "");
         SubmitResponseBean submitResponseBean = submitForm(answers, sessionId);
         assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, submitResponseBean.getStatus());
         assertEquals(2, submitResponseBean.getErrors().size());
-        assertEquals(new ErrorBean("validation-error", "required"), submitResponseBean.getErrors().get("0"));
-        assertEquals(new ErrorBean("validation-error", "constraint"), submitResponseBean.getErrors().get("1"));
+        assertEquals(new ErrorBean("validation-error", "required"),
+                submitResponseBean.getErrors().get("0"));
+        assertEquals(new ErrorBean("validation-error", "constraint"),
+                submitResponseBean.getErrors().get("1"));
     }
 
     @Test
     public void testSubmitAnswerValidation_afterAnswer() throws Exception {
         configureRestoreFactory("test", "test");
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/constraints_minimal.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json",
+                "xforms/constraints_minimal.xml");
         String sessionId = newSessionResponse.getSessionId();
 
         FormEntryResponseBean response = answerQuestionGetResult("0", null, sessionId);
@@ -231,7 +248,8 @@ public class FormEntryTest extends BaseTestClass {
     @Test
     public void testSubmitAnswerValidation_prevalidate() throws Exception {
         configureRestoreFactory("test", "test");
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json", "xforms/constraints_minimal.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_2.json",
+                "xforms/constraints_minimal.xml");
         String sessionId = newSessionResponse.getSessionId();
 
         Map<String, Object> answers = new HashMap();

@@ -5,7 +5,8 @@ import org.sqlite.javax.SQLiteConnectionPoolDataSource;
 import java.io.File;
 
 /**
- * Methods that mostly are used around the mocks that replicate stuff from other projects.
+ * Methods that mostly are used around the mocks that replicate stuff from
+ * other projects.
  *
  * @author ctsims
  * @author wspride

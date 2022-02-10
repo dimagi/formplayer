@@ -1,6 +1,8 @@
 package org.commcare.formplayer.repo;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.utils.JpaTestUtils;
@@ -13,8 +15,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import javax.persistence.EntityManager;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)

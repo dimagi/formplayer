@@ -1,7 +1,6 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.FormsSessionsRequestBean;
@@ -18,6 +17,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -69,8 +69,7 @@ public class FormSessionService {
         return session.get();
     }
 
-    public List<FormSessionListView> getSessionsForUser(String username,
-            FormsSessionsRequestBean formsSessionsRequest) {
+    public List<FormSessionListView> getSessionsForUser(String username, FormsSessionsRequestBean formsSessionsRequest) {
         String domain = formsSessionsRequest.getDomain();
         String asUser = formsSessionsRequest.getRestoreAs();
         int pageSize = getPageSize(formsSessionsRequest);
@@ -79,25 +78,20 @@ public class FormSessionService {
         Pageable page = PageRequest.of(pageNumber, pageSize);
 
         if (asUser == null) {
-            return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
-                    username, domain, page);
+             return formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain, page);
         } else {
-            return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username,
-                    domain, asUser, page);
+             return formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser, page);
         }
     }
 
-    public long getNumberOfSessionsForUser(String username,
-            FormsSessionsRequestBean formsSessionsRequest) {
+    public long getNumberOfSessionsForUser(String username, FormsSessionsRequestBean formsSessionsRequest) {
         String domain = formsSessionsRequest.getDomain();
         String asUser = formsSessionsRequest.getRestoreAs();
 
         if (asUser == null) {
-            return formSessionRepo.countByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
-                    username, domain);
+            return formSessionRepo.countByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(username, domain);
         } else {
-            return formSessionRepo.countByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username,
-                    domain, asUser);
+            return formSessionRepo.countByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(username, domain, asUser);
         }
     }
 

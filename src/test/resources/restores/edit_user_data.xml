@@ -11,14 +11,13 @@
         <user_data>
             <data key="test">1</data>
             <data key="commcare_project">test</data>
-            <data key="commcare_last_name" />
-            <data key="commcare_phone_number" />
-            <data key="commcare_first_name" />
+            <data key="commcare_last_name"/>
+            <data key="commcare_phone_number"/>
+            <data key="commcare_first_name"/>
         </user_data>
     </Registration>
     <case case_id="5ece8407-4d16-49fc-83d9-c044f08fc708" date_modified="2017-01-17T10:44:07.955000Z"
-        user_id="84c246edf58bfa69e03bdecc39692e1f"
-        xmlns="http://commcarehq.org/case/transaction/v2">
+          user_id="84c246edf58bfa69e03bdecc39692e1f" xmlns="http://commcarehq.org/case/transaction/v2">
         <create>
             <case_type>case</case_type>
             <case_name>123</case_name>

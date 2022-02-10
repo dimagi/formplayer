@@ -57,10 +57,12 @@ public class DoubleManagementTest extends BaseTestClass {
         assert newFormResponse.getTree().length == 2;
 
         // ok, test end of form nav
-        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_double_mgmt.json",
+        SubmitResponseBean submitResponseBean = submitForm(
+                "requests/submit/submit_double_mgmt.json",
                 newFormResponse.getSessionId());
         assert submitResponseBean.getNextScreen() != null;
-        CommandListResponseBean commandListResponseBean = mapper.readValue(mapper.writeValueAsString(submitResponseBean.getNextScreen()),
+        CommandListResponseBean commandListResponseBean = mapper.readValue(
+                mapper.writeValueAsString(submitResponseBean.getNextScreen()),
                 CommandListResponseBean.class);
         assert commandListResponseBean.getCommands().length == 2;
         assert commandListResponseBean.getCommands()[0].getDisplayText().equals("Update Parent");
@@ -69,7 +71,8 @@ public class DoubleManagementTest extends BaseTestClass {
         String firstCommand = selections[0];
         String secondCommand = selections[1];
         String[] newSteps = new String[]{firstCommand, secondCommand, "0"};
-        NewFormResponse followupFormResponse = sessionNavigate(newSteps, "doublemgmt", NewFormResponse.class);
+        NewFormResponse followupFormResponse = sessionNavigate(newSteps, "doublemgmt",
+                NewFormResponse.class);
         assert followupFormResponse.getTree().length == 2;
         assert followupFormResponse.getTree()[0].getAnswer().equals("David Ortiz");
         assert followupFormResponse.getTree()[1].getAnswer().equals(40);
@@ -95,7 +98,8 @@ public class DoubleManagementTest extends BaseTestClass {
         assert entityListResponse.getActions()[0].getText().equals("New Parent");
 
         EntityDetailListResponse detailListResponse =
-                getDetails(new String[]{"2", "a9fde9ae-24ee-4d70-9cb4-20f266a62ef8"}, "doublemgmt", EntityDetailListResponse.class);
+                getDetails(new String[]{"2", "a9fde9ae-24ee-4d70-9cb4-20f266a62ef8"}, "doublemgmt",
+                        EntityDetailListResponse.class);
 
         assert detailListResponse.getEntityDetailList()[0].getTitle().equals("Cases");
         assert detailListResponse.getEntityDetailList().length == 1;
@@ -135,7 +139,8 @@ public class DoubleManagementTest extends BaseTestClass {
         assert commandListResponse.getTitle().equals("Parent (2)");
         assert commandListResponse.getCommands().length == 2;
         assert commandListResponse.getCommands()[0].getDisplayText().equals("Update Parent");
-        assert commandListResponse.getCommands()[1].getDisplayText().equals("Parent Register Child");
+        assert commandListResponse.getCommands()[1].getDisplayText().equals(
+                "Parent Register Child");
 
         newFormResponse =
                 sessionNavigate(new String[]{"2", "4d1831ab-abfe-4086-bce7-16d325d9ca3a", "0"},
@@ -151,11 +156,15 @@ public class DoubleManagementTest extends BaseTestClass {
                 doInstall("requests/install/case_media.json");
         assert menuResponseBean.getCommands().length == 2;
         assert menuResponseBean.getCommands()[0].getDisplayText().equals("Registration");
-        assert menuResponseBean.getCommands()[0].getAudioUri().equals("jr://file/commcare/audio/module0_form0_en.mp3");
-        assert menuResponseBean.getCommands()[0].getImageUri().equals("jr://file/commcare/image/module0_form0_en.png");
+        assert menuResponseBean.getCommands()[0].getAudioUri().equals(
+                "jr://file/commcare/audio/module0_form0_en.mp3");
+        assert menuResponseBean.getCommands()[0].getImageUri().equals(
+                "jr://file/commcare/image/module0_form0_en.png");
         assert menuResponseBean.getCommands()[1].getDisplayText().equals("Follow Up");
-        assert menuResponseBean.getCommands()[1].getAudioUri().equals("jr://file/commcare/audio/module1_en.mp3");
-        assert menuResponseBean.getCommands()[1].getImageUri().equals("jr://file/commcare/image/module1_en.png");
+        assert menuResponseBean.getCommands()[1].getAudioUri().equals(
+                "jr://file/commcare/audio/module1_en.mp3");
+        assert menuResponseBean.getCommands()[1].getImageUri().equals(
+                "jr://file/commcare/image/module1_en.png");
     }
 
     @Test

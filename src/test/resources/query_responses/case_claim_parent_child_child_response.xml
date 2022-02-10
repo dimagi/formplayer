@@ -1,6 +1,5 @@
 <results id="case">
-    <case case_id="d29c08f5-943c-42ca-b0a5-f64cbddba087" case_type="show"
-        owner_id="9c3f4cae5974456194797c6b609fd326" status="open">
+    <case case_id="d29c08f5-943c-42ca-b0a5-f64cbddba087" case_type="show" owner_id="9c3f4cae5974456194797c6b609fd326" status="open">
         <case_name>Mumbai</case_name>
         <last_modified>2021-02-10T17:33:10.692000Z</last_modified>
         <date_opened>2021-02-10</date_opened>

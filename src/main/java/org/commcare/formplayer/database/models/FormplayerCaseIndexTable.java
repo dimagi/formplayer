@@ -5,25 +5,21 @@ import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.CaseIndex;
 import org.commcare.cases.query.queryset.DualTableSingleMatchModelQuerySet;
-import org.commcare.formplayer.sandbox.SqlHelper;
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.services.ConnectionHandler;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.engine.cases.CaseIndexTable;
 import org.commcare.modern.util.Pair;
+import org.commcare.formplayer.sandbox.SqlHelper;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.services.ConnectionHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @author ctsims
@@ -81,22 +77,17 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
 
     private static void createIndexes(Connection connection) {
         String recordFirstIndexId = "RECORD_NAME_ID_TARGET";
-        String recordFirstIndex =
-                COL_CASE_RECORD_ID + ", " + COL_INDEX_NAME + ", " + COL_INDEX_TARGET;
-        execSQL(connection,
-                DatabaseIndexingUtils.indexOnTableCommand(recordFirstIndexId, TABLE_NAME,
-                        recordFirstIndex));
+        String recordFirstIndex = COL_CASE_RECORD_ID + ", " + COL_INDEX_NAME + ", " + COL_INDEX_TARGET;
+        execSQL(connection, DatabaseIndexingUtils.indexOnTableCommand(recordFirstIndexId, TABLE_NAME, recordFirstIndex));
 
         String typeFirstIndexId = "NAME_TARGET_RECORD";
-        String typeFirstIndex =
-                COL_INDEX_NAME + ", " + COL_CASE_RECORD_ID + ", " + COL_INDEX_TARGET;
-        execSQL(connection, DatabaseIndexingUtils.indexOnTableCommand(typeFirstIndexId, TABLE_NAME,
-                typeFirstIndex));
+        String typeFirstIndex = COL_INDEX_NAME + ", " + COL_CASE_RECORD_ID + ", " + COL_INDEX_TARGET;
+        execSQL(connection, DatabaseIndexingUtils.indexOnTableCommand(typeFirstIndexId, TABLE_NAME, typeFirstIndex));
     }
 
     /**
-     * Creates all indexes for this case. TODO: this doesn't ensure any sort of uniquenes, you
-     * should wipe constraints first
+     * Creates all indexes for this case.
+     * TODO: this doesn't ensure any sort of uniquenes, you should wipe constraints first
      */
     public void indexCase(Case c) {
         for (CaseIndex ci : c.getIndices()) {
@@ -136,15 +127,13 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     }
 
 
-    public HashMap<Integer, Vector<Pair<String, String>>> getCaseIndexMap() {
-        String[] projection =
-                new String[]{COL_CASE_RECORD_ID, COL_INDEX_TARGET, COL_INDEX_RELATIONSHIP};
-        HashMap<Integer, Vector<Pair<String, String>>> caseIndexMap = new HashMap<>();
+    public HashMap<Integer,Vector<Pair<String, String>>> getCaseIndexMap() {
+        String[] projection = new String[] {COL_CASE_RECORD_ID, COL_INDEX_TARGET, COL_INDEX_RELATIONSHIP};
+        HashMap<Integer,Vector<Pair<String, String>>> caseIndexMap = new HashMap<>();
 
-        try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectProjectionStatement(
-                connectionHandler.getConnection(),
-                TABLE_NAME,
-                projection)) {
+        try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectProjectionStatement(connectionHandler.getConnection(),
+                    TABLE_NAME,
+                    projection)) {
             try (ResultSet resultSet = selectStatement.executeQuery()) {
                 while (resultSet.next()) {
                     int caseRecordId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
@@ -179,17 +168,16 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
         String[] args = new String[]{indexName, targetValue};
 
         if (log.isTraceEnabled()) {
-            String query = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ?",
-                    COL_CASE_RECORD_ID, TABLE_NAME, COL_INDEX_NAME, COL_INDEX_TARGET);
+            String query = String.format("SELECT %s FROM %s WHERE %s = ? AND %s = ?", COL_CASE_RECORD_ID, TABLE_NAME, COL_INDEX_NAME, COL_INDEX_TARGET);
             SqlHelper.explainSql(connectionHandler.getConnection(), query, args);
         }
 
         try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
                 connectionHandler.getConnection(),
-                TABLE_NAME,
-                new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
-                args)) {
-            try (ResultSet resultSet = selectStatement.executeQuery()) {
+                    TABLE_NAME,
+                    new String[]{COL_INDEX_NAME, COL_INDEX_TARGET},
+                    args)) {
+            try(ResultSet resultSet = selectStatement.executeQuery()) {
                 LinkedHashSet<Integer> ret = new LinkedHashSet<>();
                 SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
                 return ret;
@@ -206,22 +194,20 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
      * @param targetValueSet The set of cases targeted by the index
      * @return An integer array of indexed case record ids
      */
-    public LinkedHashSet<Integer> getCasesMatchingValueSet(String indexName,
-            String[] targetValueSet) {
+    public LinkedHashSet<Integer> getCasesMatchingValueSet(String indexName, String[] targetValueSet) {
         String[] args = new String[1 + targetValueSet.length];
         args[0] = indexName;
 
         System.arraycopy(targetValueSet, 0, args, 1, targetValueSet.length);
         String inSet = getArgumentBasedVariableSet(targetValueSet.length);
 
-        String whereExpr = String.format("%s = ? AND %s IN %s", COL_INDEX_NAME, COL_INDEX_TARGET,
-                inSet);
+        String whereExpr = String.format("%s = ? AND %s IN %s", COL_INDEX_NAME, COL_INDEX_TARGET, inSet);
 
         try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
                 connectionHandler.getConnection(),
-                TABLE_NAME,
-                whereExpr,
-                args)) {
+                    TABLE_NAME,
+                    whereExpr,
+                    args)) {
             try (ResultSet resultSet = selectStatement.executeQuery()) {
                 LinkedHashSet<Integer> ret = new LinkedHashSet<>();
                 SqlStorage.fillIdWindow(resultSet, COL_CASE_RECORD_ID, ret);
@@ -242,7 +228,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                 new String[]{COL_INDEX_NAME},
                 args)) {
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
                 while (resultSet.next()) {
                     resultsReturned++;
                     int id = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
@@ -267,9 +253,11 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
     /**
      * Provided an index name and a list of case row ID's, provides a list of the row ID's of the
      * cases which point to that ID
+     *
+     * @param cuedCases
+     * @return
      */
-    public DualTableSingleMatchModelQuerySet bulkReadIndexToCaseIdMatch(String indexName,
-            Collection<Integer> cuedCases) {
+    public DualTableSingleMatchModelQuerySet bulkReadIndexToCaseIdMatch(String indexName, Collection<Integer> cuedCases) {
         DualTableSingleMatchModelQuerySet set = new DualTableSingleMatchModelQuerySet();
         String caseIdIndex = TableBuilder.scrubName(Case.INDEX_CASE_ID);
 
@@ -286,8 +274,7 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                                 "AND " +
                                 "%s IN %s",
 
-                        COL_CASE_RECORD_ID,
-                        UserSqlSandbox.FORMPLAYER_CASE + "." + DatabaseHelper.ID_COL,
+                        COL_CASE_RECORD_ID, UserSqlSandbox.FORMPLAYER_CASE + "." + DatabaseHelper.ID_COL,
                         TABLE_NAME,
                         UserSqlSandbox.FORMPLAYER_CASE,
                         COL_INDEX_TARGET, caseIdIndex,
@@ -303,15 +290,13 @@ public class FormplayerCaseIndexTable implements CaseIndexTable {
                     }
 
                     if (log.isTraceEnabled()) {
-                        SqlHelper.explainSql(connectionHandler.getConnection(), query,
-                                querySet.second);
+                        SqlHelper.explainSql(connectionHandler.getConnection(), query, querySet.second);
                     }
 
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         while (resultSet.next()) {
                             int caseId = resultSet.getInt(resultSet.findColumn(COL_CASE_RECORD_ID));
-                            int targetCase = resultSet.getInt(
-                                    resultSet.findColumn(DatabaseHelper.ID_COL));
+                            int targetCase = resultSet.getInt(resultSet.findColumn(DatabaseHelper.ID_COL));
                             set.loadResult(caseId, targetCase);
                         }
                     }

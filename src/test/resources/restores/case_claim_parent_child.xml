@@ -11,15 +11,15 @@
         <user_data>
             <data key="color">red</data>
             <data key="commcare_first_name">Shubham</data>
-            <data key="commcare_last_name" />
-            <data key="commcare_phone_number" />
-            <data key="commcare_profile" />
+            <data key="commcare_last_name"/>
+            <data key="commcare_phone_number"/>
+            <data key="commcare_profile"/>
             <data key="commcare_project">bosco</data>
-            <data key="title" />
+            <data key="title"/>
         </user_data>
     </Registration>
     <fixture id="user-groups" user_id="9c3f4cae5974456194797c6b609fd326">
-        <groups />
+        <groups/>
     </fixture>
     <fixture id="item-list:case_search_choices" user_id="9c3f4cae5974456194797c6b609fd326">
         <case_search_choices_list>
@@ -95,7 +95,7 @@
         </numbers_list>
     </fixture>
     <fixture id="item-list:moons" user_id="9c3f4cae5974456194797c6b609fd326">
-        <moons_list />
+        <moons_list/>
     </fixture>
     <schema id="commtrack:products">
         <indices>
@@ -106,7 +106,7 @@
         </indices>
     </schema>
     <fixture id="commtrack:products" indexed="true" user_id="9c3f4cae5974456194797c6b609fd326">
-        <products />
+        <products/>
     </fixture>
     <fixture id="commtrack:programs" user_id="9c3f4cae5974456194797c6b609fd326">
         <programs>
@@ -127,11 +127,9 @@
         </indices>
     </schema>
     <fixture id="locations" indexed="true" user_id="9c3f4cae5974456194797c6b609fd326">
-        <locations />
+        <locations/>
     </fixture>
-    <case xmlns="http://commcarehq.org/case/transaction/v2"
-        case_id="d29c08f5-943c-42ca-b0a5-f64cbddba087" user_id="9c3f4cae5974456194797c6b609fd326"
-        date_modified="2021-02-10T17:33:10.692000Z">
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="d29c08f5-943c-42ca-b0a5-f64cbddba087" user_id="9c3f4cae5974456194797c6b609fd326" date_modified="2021-02-10T17:33:10.692000Z">
         <create>
             <case_type>show</case_type>
             <case_name>Mumbai</case_name>
@@ -144,9 +142,7 @@
             <parent case_type="song">192262cb-fbfa-46a4-ba91-a9d13659b0e0</parent>
         </index>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2"
-        case_id="192262cb-fbfa-46a4-ba91-a9d13659b0e0" user_id="system"
-        date_modified="2021-02-10T23:00:03.315373Z">
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="192262cb-fbfa-46a4-ba91-a9d13659b0e0" user_id="system" date_modified="2021-02-10T23:00:03.315373Z">
         <create>
             <case_type>song</case_type>
             <case_name>Rubaroo</case_name>
@@ -158,9 +154,7 @@
             <play_count>50</play_count>
         </update>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2"
-        case_id="7c4b37cb3f464966a2039b40043ba67d" user_id="callcenter-system"
-        date_modified="2021-02-10T19:52:23.413018Z">
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="7c4b37cb3f464966a2039b40043ba67d" user_id="callcenter-system" date_modified="2021-02-10T19:52:23.413018Z">
         <create>
             <case_type>commcare-user</case_type>
             <case_name>Shubham</case_name>
@@ -170,15 +164,15 @@
             <external_id>9c3f4cae5974456194797c6b609fd326</external_id>
             <date_opened>2021-02-10</date_opened>
             <color>red</color>
-            <commcare_profile />
-            <email />
+            <commcare_profile/>
+            <email/>
             <first_name>Shubham</first_name>
             <hq_user_id>9c3f4cae5974456194797c6b609fd326</hq_user_id>
-            <language />
+            <language/>
             <last_device_id_used>WebAppsLogin*sgoyal@dimagi.com*as*shubham</last_device_id_used>
-            <last_name />
-            <phone_number />
-            <title />
+            <last_name/>
+            <phone_number/>
+            <title/>
             <username>shubham</username>
         </update>
     </case>

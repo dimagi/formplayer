@@ -25,7 +25,8 @@ public class OQPSDateRegression extends BaseTestClass {
     // test that we can override today() successfully
     @Test
     public void testOQPSSubGroup() throws Throwable {
-        NewFormResponse newFormResponse = startNewForm("requests/new_form/new_form_oqps.json", "xforms/oqps_date.xml");
+        NewFormResponse newFormResponse = startNewForm("requests/new_form/new_form_oqps.json",
+                "xforms/oqps_date.xml");
         String sessionId = newFormResponse.getSessionId();
         FormEntryResponseBean response = nextScreen(sessionId);
         assert response.getTree().length == 3;

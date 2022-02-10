@@ -1,5 +1,10 @@
 package org.commcare.formplayer.tests.sandbox;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
@@ -15,11 +20,6 @@ import org.junit.jupiter.api.Test;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import java.util.Vector;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class SqlStorageIndexedTests {
 
@@ -169,7 +169,8 @@ public class SqlStorageIndexedTests {
             Vector ids = ledgerStorage.getIDsForValue("entity_id", "ledger_entity_id");
 
             assertEquals(1, ids.size());
-            assertTrue(ids.contains(1), String.format("ID Set: %s did not contain 1", ids.toString()));
+            assertTrue(ids.contains(1),
+                    String.format("ID Set: %s did not contain 1", ids.toString()));
 
             Ledger readLedger2 = ledgerStorage.getRecordForValue("entity_id", "ledger_entity_id_3");
             assertEquals(readLedger2.getID(), 3);

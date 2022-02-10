@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<data name="Basic Form" uiVersion="1" version="3"
-    xmlns="http://openrosa.org/formdesigner/02FD4762-52FB-404C-9AF1-5F67894D1521">
-    <q_name />
-    <n0:meta xmlns:n0="http://openrosa.org/jr/xforms">
-        <n0:deviceID />
-        <n0:timeStart />
-        <n0:timeEnd />
-        <n0:username />
-        <n0:userID />
-        <n0:instanceID />
-        <n1:appVersion xmlns:n1="http://commcarehq.org/xforms" />
-        <n2:location xmlns:n2="http://commcarehq.org/xforms" />
+<data
+        name="Basic Form" uiVersion="1" version="3"
+        xmlns="http://openrosa.org/formdesigner/02FD4762-52FB-404C-9AF1-5F67894D1521"
+        xmlns:jrm="http://dev.commcarehq.org/jr/xforms">
+    <q_name/>
+    <n0:meta
+            xmlns:n0="http://openrosa.org/jr/xforms">
+        <n0:deviceID/>
+        <n0:timeStart/>
+        <n0:timeEnd/>
+        <n0:username/>
+        <n0:userID/>
+        <n0:instanceID/>
+        <n1:appVersion
+                xmlns:n1="http://commcarehq.org/xforms"/>
+        <n2:location
+                xmlns:n2="http://commcarehq.org/xforms"/>
     </n0:meta>
 </data>

@@ -49,15 +49,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         // not auth required
         http
-                .authorizeRequests()
-                .antMatchers("/serverup", "/favicon.ico")
-                .permitAll();
+            .authorizeRequests()
+            .antMatchers("/serverup", "/favicon.ico")
+            .permitAll();
 
         // relaxed auth (only require HMAC but not user details)
         http
-                .authorizeRequests()
-                .antMatchers("/validate_form")
-                .access("isAuthenticated() or hasAuthority('" + Constants.AUTHORITY_COMMCARE + "')");
+            .authorizeRequests()
+            .antMatchers("/validate_form")
+            .access("isAuthenticated() or hasAuthority('" + Constants.AUTHORITY_COMMCARE + "')");
 
         // full auth required
         http.authorizeRequests().antMatchers("/**").authenticated();
@@ -66,8 +66,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterAt(getHmacAuthFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(sessionAuthFilter(), HmacAuthFilter.class);
         http.csrf()
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers(new RequestHeaderRequestMatcher(Constants.HMAC_HEADER));
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .ignoringRequestMatchers(new RequestHeaderRequestMatcher(Constants.HMAC_HEADER));
         http.cors();
     }
 

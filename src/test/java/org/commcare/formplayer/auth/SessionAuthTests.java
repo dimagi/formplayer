@@ -1,5 +1,11 @@
 package org.commcare.formplayer.auth;
 
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.beans.auth.HqUserDetailsBean;
 import org.commcare.formplayer.configuration.WebSecurityConfig;
@@ -24,12 +30,6 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import javax.servlet.http.Cookie;
-
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @WebMvcTest
@@ -77,7 +77,8 @@ public class SessionAuthTests {
     public void testEndpoint_WithFullAuth_BadCredentials_Fails() throws Exception {
         String sessionId = "123";
         TokenMatcher matcher = new TokenMatcher(DOMAIN, USERNAME, sessionId);
-        when(userDetailsService.loadUserDetails(argThat(matcher))).thenThrow(new UsernameNotFoundException(""));
+        when(userDetailsService.loadUserDetails(argThat(matcher))).thenThrow(
+                new UsernameNotFoundException(""));
         MockHttpServletRequestBuilder builder = getRequestBuilder(FULL_AUTH_BODY)
                 .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, sessionId));
         this.testEndpoint(builder, status().isForbidden());
@@ -95,7 +96,8 @@ public class SessionAuthTests {
         this.testEndpoint(builder, status().isOk());
     }
 
-    private void testEndpoint(MockHttpServletRequestBuilder requestBuilder, ResultMatcher... matchers) throws Exception {
+    private void testEndpoint(MockHttpServletRequestBuilder requestBuilder,
+            ResultMatcher... matchers) throws Exception {
         ResultActions actions = mvc.perform(requestBuilder)
                 .andDo(log());
 
@@ -127,7 +129,8 @@ public class SessionAuthTests {
 
         @Override
         public boolean matches(PreAuthenticatedAuthenticationToken token) {
-            final UserDomainPreAuthPrincipal principal = (UserDomainPreAuthPrincipal)token.getPrincipal();
+            final UserDomainPreAuthPrincipal principal =
+                    (UserDomainPreAuthPrincipal)token.getPrincipal();
             final String sessionId = (String)token.getCredentials();
             return principal.getDomain().equals(this.domain)
                     && principal.getUsername().equals(this.username)

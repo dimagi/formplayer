@@ -6,13 +6,7 @@ import org.commcare.formplayer.annotations.NoLogging;
 import org.commcare.formplayer.annotations.UserLock;
 import org.commcare.formplayer.annotations.UserRestore;
 import org.commcare.formplayer.aspects.LockAspect;
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.beans.DeleteApplicationDbsRequestBean;
-import org.commcare.formplayer.beans.LockReportBean;
-import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.formplayer.beans.ServerUpBean;
-import org.commcare.formplayer.beans.SyncDbRequestBean;
-import org.commcare.formplayer.beans.SyncDbResponseBean;
+import org.commcare.formplayer.beans.*;
 import org.commcare.formplayer.services.CategoryTimingHelper;
 import org.commcare.formplayer.services.FormSessionService;
 import org.commcare.formplayer.services.FormplayerLockRegistry;
@@ -26,23 +20,18 @@ import org.javarosa.xform.schema.JSONReporter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.io.StringReader;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.StringReader;
 
 /**
  * Controller class (API endpoint) containing all all logic that isn't associated with
  * a particular form session or menu navigation. Includes:
- * Get Cases
- * Filter Cases
- * Sync User DB
- * Get Sessions (Incomplete Forms)
+ *      Get Cases
+ *      Filter Cases
+ *      Sync User DB
+ *      Get Sessions (Incomplete Forms)
  */
 @RestController
 @EnableAutoConfiguration
@@ -120,9 +109,9 @@ public class UtilController {
 
 
         Integer secondsLocked = userLockRegistry.getTimeLocked(key);
-        if (secondsLocked == null) {
+        if(secondsLocked == null) {
             return new LockReportBean(false, 0);
-        } else {
+        } else{
             return new LockReportBean(true, secondsLocked);
         }
     }
@@ -133,7 +122,7 @@ public class UtilController {
 
         String message;
 
-        if (userLockRegistry.breakAnyExistingLocks(key)) {
+        if(userLockRegistry.breakAnyExistingLocks(key)) {
             message = "A lock existed and it was requested to be evicted";
         } else {
             message = "No locks for the current user";
@@ -149,10 +138,10 @@ public class UtilController {
 
     @NoLogging
     @RequestMapping(
-            value = Constants.URL_VALIDATE_FORM,
-            method = RequestMethod.POST,
-            produces = {MediaType.APPLICATION_JSON_VALUE},
-            consumes = {MediaType.APPLICATION_XML_VALUE}
+        value = Constants.URL_VALIDATE_FORM,
+        method = RequestMethod.POST,
+        produces = { MediaType.APPLICATION_JSON_VALUE },
+        consumes = { MediaType.APPLICATION_XML_VALUE}
     )
     public String validateForm(@RequestBody String formXML) throws Exception {
         JSONReporter reporter = new JSONReporter();

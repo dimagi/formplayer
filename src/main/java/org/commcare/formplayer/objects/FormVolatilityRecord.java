@@ -1,17 +1,18 @@
 package org.commcare.formplayer.objects;
 
-import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.formplayer.session.FormSession;
-import org.commcare.formplayer.util.UserUtils;
 import org.springframework.data.redis.core.ValueOperations;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import org.commcare.formplayer.beans.NotificationMessage;
+import org.commcare.formplayer.session.FormSession;
+import org.commcare.formplayer.util.UserUtils;
+
 /**
- * Redis cache record object for managing records of actions (open, complete, etc) which are taken
- * against forms that are marked as 'volatile.'
+ * Redis cache record object for managing records of actions (open, complete, etc) which
+ * are taken against forms that are marked as 'volatile.'
  *
  * @author Clayton Sims (csims@dimagi.com)
  */
@@ -29,9 +30,7 @@ public class FormVolatilityRecord implements Serializable {
 
     private String currentMessage;
 
-    /**
-     * For serialization only
-     **/
+    /**For serialization only **/
     public FormVolatilityRecord() {
 
     }
@@ -58,7 +57,7 @@ public class FormVolatilityRecord implements Serializable {
 
     public void setTimeout(long timeout) {
         //Only allow notification records for up to an hour
-        this.timeout = Math.min(timeout, 60 * 60);
+        this.timeout = Math.min(timeout, 60*60);
     }
 
     public String getEntityName() {
@@ -105,7 +104,7 @@ public class FormVolatilityRecord implements Serializable {
         String message = String.format(
                 "Warning: %s recently started this form for %s",
                 userTitle,
-                entityName == null ? "the same record" : entityName);
+                entityName == null? "the same record" : entityName);
         return message;
     }
 
@@ -113,7 +112,7 @@ public class FormVolatilityRecord implements Serializable {
         String message = String.format(
                 "Warning: %s recently submitted this form for %s",
                 userTitle,
-                entityName == null ? "the same record" : entityName);
+                entityName == null? "the same record" : entityName);
         return message;
     }
 
@@ -127,22 +126,24 @@ public class FormVolatilityRecord implements Serializable {
 
     /**
      * This record represents an Opened Form
+     *
+     * @param session
      */
     public void updateFormOpened(FormSession session) {
         this.username = session.getUsername();
-        this.currentMessage = formatOpenedMessage(
-                UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
+        this.currentMessage = formatOpenedMessage(UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
         this.openedOn = new Date().getTime();
     }
 
 
     /**
      * This record represents a finished form
+     *
+     * @param session
      */
     public void updateFormSubmitted(FormSession session) {
         this.username = session.getUsername();
-        this.currentMessage = formatSubmittedMessage(
-                UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
+        this.currentMessage = formatSubmittedMessage(UserUtils.getUsernameBeforeAtSymbol(session.getUsername()));
         this.submittedOn = new Date().getTime();
     }
 
@@ -155,7 +156,7 @@ public class FormVolatilityRecord implements Serializable {
         long current = new Date().getTime();
         long delta = (current - anchor) / 1000;
 
-        if (delta < 60) {
+        if(delta < 60) {
             formatString = String.format(" %d Seconds ago", delta);
         } else {
             delta = delta / 60;
@@ -166,12 +167,11 @@ public class FormVolatilityRecord implements Serializable {
             formatString += ". Your data may be out of date! " +
                     "You haven't synced since this form was submitted";
         }
-        if (wasSubmitted() && submittedOn < lastSyncTime) {
+        if(wasSubmitted() && submittedOn  < lastSyncTime) {
             return null;
         }
 
-        return new NotificationMessage(currentMessage + formatString, type,
-                NotificationMessage.Tag.volatility);
+        return new NotificationMessage(currentMessage + formatString, type, NotificationMessage.Tag.volatility);
     }
 
     public boolean wasSubmitted() {

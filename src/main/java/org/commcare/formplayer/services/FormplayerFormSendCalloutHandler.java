@@ -23,7 +23,7 @@ public class FormplayerFormSendCalloutHandler implements FormSendCalloutHandler 
     @Override
     public String performHttpCalloutForResponse(String url, Map<String, String> paramMap) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-        for (String key : paramMap.keySet()) {
+        for (String key: paramMap.keySet()) {
             builder.queryParam(key, paramMap.get(key));
         }
 

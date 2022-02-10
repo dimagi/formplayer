@@ -1,24 +1,21 @@
 package org.commcare.formplayer.parsers;
 
-import org.commcare.cases.model.Case;
 import org.commcare.formplayer.database.models.EntityStorageCache;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
-import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.cases.model.Case;
 import org.commcare.xml.bulk.BulkProcessingCaseXmlParser;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParserException;
+import org.commcare.formplayer.sandbox.SqlStorage;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
- * A bulk processing parser for Formplayer. Provides superior performance when processing high case
- * loads during syncing and/or processing.
+ * A bulk processing parser for Formplayer. Provides superior performance when
+ * processing high case loads during syncing and/or processing.
  *
  * @author ctsims
  */
@@ -28,7 +25,7 @@ public class FormplayerBulkCaseXmlParser extends BulkProcessingCaseXmlParser {
     private final SqlStorage<Case> storage;
 
     public FormplayerBulkCaseXmlParser(KXmlParser parser,
-            UserSqlSandbox sandbox) {
+                                    UserSqlSandbox sandbox) {
         super(parser);
         mEntityCache = new EntityStorageCache("entitycase", sandbox);
         mCaseIndexTable = new FormplayerCaseIndexTable(sandbox);
@@ -41,9 +38,7 @@ public class FormplayerBulkCaseXmlParser extends BulkProcessingCaseXmlParser {
     }
 
     @Override
-    protected void performBulkRead(Set<String> currentBulkReadSet,
-            Map<String, Case> currentOperatingSet)
-            throws InvalidStructureException, IOException, XmlPullParserException {
+    protected void performBulkRead(Set<String> currentBulkReadSet, Map<String, Case> currentOperatingSet) throws InvalidStructureException, IOException, XmlPullParserException {
         for (Case c : storage.getBulkRecordsForIndex(Case.INDEX_CASE_ID, currentBulkReadSet)) {
             currentOperatingSet.put(c.getCaseId(), c);
         }

@@ -11,18 +11,17 @@ import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 @Order(FilterOrder.LOGGING)
 public class RequestResponseLoggingFilter extends GenericFilterBean {
@@ -30,7 +29,7 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
     private Log log = LogFactory.getLog(RequestResponseLoggingFilter.class);
     private boolean enableSensitiveLogging = false;
 
-    public RequestResponseLoggingFilter(Log log, boolean enableSensitiveLogging) {
+    public RequestResponseLoggingFilter(Log log, boolean enableSensitiveLogging){
         super();
         if (log != null) {
             this.log = log;
@@ -43,10 +42,11 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
     /**
      * Wraps the filterChain `doFilter` call by logging the request and response. Catches potential
      * exceptions within the method and does not propagate them so the request is unaffected.
-     *
-     * @param request     request object
-     * @param response    response object
+     * @param request request object
+     * @param response response object
      * @param filterChain filter chain where `doFilter` is called
+     * @throws IOException
+     * @throws ServletException
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
@@ -69,7 +69,7 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
         }
 
         // Pass onto next filter, which should not throw an exception.
-        final HttpServletResponse httpResponse = (HttpServletResponse)response;
+        final HttpServletResponse httpResponse = (HttpServletResponse) response;
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(httpResponse);
         filterChain.doFilter(request, responseWrapper);
 
@@ -88,7 +88,7 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
 
     private void doBefore(JSONObject logLineJson,
                           ServletRequest request) throws IOException {
-        final HttpServletRequest httpRequest = (HttpServletRequest)request;
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
 
         String requestBody = IOUtils.toString(httpRequest.getReader());
         logLineJson.put("requestBody", requestBody);
@@ -105,7 +105,7 @@ public class RequestResponseLoggingFilter extends GenericFilterBean {
             logLineJson.put("username", userDetails.getUsername());
             logLineJson.put("projectSpace", userDetails.getDomain());
         });
-        logLineJson.put("requestUrl", new String(((HttpServletRequest)request).getRequestURL()));
+        logLineJson.put("requestUrl", new String(((HttpServletRequest) request).getRequestURL()));
     }
 
     private void doAfter(JSONObject logLineJson, ContentCachingResponseWrapper responseWrapper) {

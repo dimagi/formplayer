@@ -1,5 +1,7 @@
 package org.commcare.formplayer.utils;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.commcare.formplayer.application.SQLiteProperties;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.tests.BaseTestClass;
@@ -10,19 +12,17 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 
 /**
- * Not actually a test, this "Test" class uses the same harnesses and mocks as the real tests
- * to produce a snapshot of the database schemas created by the current code.
- * <p>
- * When those implicit schemas are changed, the Snapshot tests will start failing, and will need
- * to be regenerated with the "CreateSnapshotDbs" Gradle task.
- * <p>
- * Reads the input files from the "snapshot_reference" folder to produce a consistent set of
- * dbs for testing. Any new types of models to be tested should be added to that app config
- * and user restore.
+ * Not actually a test, this "Test" class uses the same harnesses and mocks as the real tests to
+ * produce a snapshot of the database schemas created by the current code.
+ *
+ * When those implicit schemas are changed, the Snapshot tests will start failing, and will need to
+ * be regenerated with the "CreateSnapshotDbs" Gradle task.
+ *
+ * Reads the input files from the "snapshot_reference" folder to produce a consistent set of dbs for
+ * testing. Any new types of models to be tested should be added to that app config and user
+ * restore.
  *
  * @author ctsims
  */

@@ -1,14 +1,15 @@
 package org.commcare.formplayer.installers;
 
-import org.commcare.formplayer.services.FormplayerStorageFactory;
 import org.commcare.resources.model.InstallerFactory;
 import org.commcare.resources.model.ResourceInstaller;
+import org.commcare.resources.model.installers.LocaleFileInstaller;
 import org.commcare.resources.model.installers.LoginImageInstaller;
 import org.commcare.resources.model.installers.MediaInstaller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
 
 /**
  * Overrides InstallerFactory to point to Formplayer's own installer classes.

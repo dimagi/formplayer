@@ -1,7 +1,6 @@
 package org.commcare.formplayer.sandbox;
 
 import org.commcare.formplayer.exceptions.SQLiteRuntimeException;
-import org.commcare.formplayer.services.ConnectionHandler;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.util.Pair;
@@ -14,6 +13,7 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 import org.javarosa.core.services.storage.Persistable;
 import org.javarosa.core.util.InvalidIndexException;
 import org.javarosa.core.util.externalizable.DeserializationException;
+import org.commcare.formplayer.services.ConnectionHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -34,8 +34,8 @@ import java.util.NoSuchElementException;
 import java.util.Vector;
 
 /**
- * IStorageIndexedUtility implemented on SQLite using JDBC. Contains all the functionality for
- * interacting with the user's SQLite representation.
+ * IStorageIndexedUtility implemented on SQLite using JDBC. Contains all the functionality
+ * for interacting with the user's SQLite representation.
  *
  * @author wspride
  */
@@ -56,7 +56,7 @@ public class SqlStorage<T extends Persistable>
     }
 
     public SqlStorage(ConnectionHandler connectionHandler, Class<T> prototype,
-            String tableName, boolean initialize) {
+                      String tableName, boolean initialize) {
         this.tableName = tableName;
         this.prototype = prototype;
         this.connectionHandler = connectionHandler;
@@ -130,8 +130,7 @@ public class SqlStorage<T extends Persistable>
         return newObject(readBytes(id), id);
     }
 
-    public static Vector<Integer> fillIdWindow(ResultSet resultSet, String columnName,
-            LinkedHashSet newReturn) throws SQLException {
+    public static Vector<Integer> fillIdWindow(ResultSet resultSet, String columnName, LinkedHashSet newReturn) throws SQLException {
         Vector<Integer> ids = new Vector<>();
         while (resultSet.next()) {
             ids.add(resultSet.getInt(columnName));
@@ -163,12 +162,10 @@ public class SqlStorage<T extends Persistable>
     }
 
     @Override
-    public List<Integer> getIDsForValues(String[] fieldNames, Object[] values,
-            LinkedHashSet<Integer> returnSet) {
+    public List<Integer> getIDsForValues(String[] fieldNames, Object[] values, LinkedHashSet<Integer> returnSet) {
         Connection connection = this.getConnection();
         try (PreparedStatement preparedStatement =
-                     SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames,
-                             values)) {
+                     SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
             }
@@ -178,13 +175,10 @@ public class SqlStorage<T extends Persistable>
     }
 
     @Override
-    public List<Integer> getIDsForValues(String[] fieldNames, Object[] values,
-            String[] inverseMatchFields, Object[] inverseMatchValues,
-            LinkedHashSet<Integer> returnSet) {
+    public List<Integer> getIDsForValues(String[] fieldNames, Object[] values, String[] inverseMatchFields, Object[] inverseMatchValues, LinkedHashSet<Integer> returnSet) {
         Connection connection = this.getConnection();
         try (PreparedStatement preparedStatement =
-                     SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames,
-                             values, inverseMatchFields, inverseMatchValues)) {
+             SqlHelper.prepareTableSelectStatement(connection, this.tableName, fieldNames, values, inverseMatchFields, inverseMatchValues)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 return fillIdWindow(resultSet, DatabaseHelper.ID_COL, returnSet);
             }
@@ -305,13 +299,10 @@ public class SqlStorage<T extends Persistable>
 
     public JdbcSqlStorageIterator<T> iterate(boolean includeData, String[] metaDataToInclude) {
         try {
-            String[] projection = getProjectedFieldsWithId(includeData,
-                    scrubMetadataNames(metaDataToInclude));
-            PreparedStatement preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(
-                    this.getConnection(), tableName, projection);
+            String[] projection = getProjectedFieldsWithId(includeData, scrubMetadataNames(metaDataToInclude));
+            PreparedStatement preparedStatement = SqlHelper.prepareTableSelectProjectionStatement(this.getConnection(), tableName, projection);
             ResultSet resultSet = preparedStatement.executeQuery();
-            return new JdbcSqlStorageIterator<>(preparedStatement, resultSet, this,
-                    metaDataToInclude);
+            return new JdbcSqlStorageIterator<>(preparedStatement, resultSet, this, metaDataToInclude);
         } catch (SQLException e) {
             throw new SQLiteRuntimeException(e);
         }
@@ -437,8 +428,7 @@ public class SqlStorage<T extends Persistable>
         return iterate();
     }
 
-    public void getIDsForValues(String[] namesToMatch, String[] valuesToMatch,
-            LinkedHashSet<Integer> ids) {
+    public void getIDsForValues(String[] namesToMatch, String[] valuesToMatch, LinkedHashSet<Integer> ids) {
         Connection connection = this.getConnection();
 
         try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
@@ -458,16 +448,15 @@ public class SqlStorage<T extends Persistable>
     }
 
     private RuntimeException logAndWrap(Exception e, String message) {
-        RuntimeException re = new RuntimeException(
-                message + " while inflating type " + prototype.getName());
+        RuntimeException re = new RuntimeException(message + " while inflating type " + prototype.getName());
         re.initCause(e);
         Logger.log("Error:", e.getMessage());
         return re;
     }
 
     /**
-     * @param dbEntryId Set the deserialized persistable's id to the database entry id. Doing so now
-     *                  is more effecient then during writes
+     * @param dbEntryId Set the deserialized persistable's id to the database entry id.
+     *                  Doing so now is more effecient then during writes
      */
     public T newObject(InputStream serializedObjectInputStream, int dbEntryId) {
         try {
@@ -488,15 +477,14 @@ public class SqlStorage<T extends Persistable>
     }
 
     /**
-     * @param dbEntryId Set the deserialized persistable's id to the database entry id. Doing so now
-     *                  is more effecient then during writes
+     * @param dbEntryId Set the deserialized persistable's id to the database entry id.
+     *                  Doing so now is more effecient then during writes
      */
     public T newObject(byte[] serializedObjectAsBytes, int dbEntryId) {
         return newObject(new ByteArrayInputStream(serializedObjectAsBytes), dbEntryId);
     }
 
-    public void bulkRead(LinkedHashSet<Integer> cuedCases, HashMap<Integer, T> recordMap)
-            throws RequestAbandonedException {
+    public void bulkRead(LinkedHashSet<Integer> cuedCases, HashMap<Integer, T> recordMap) throws RequestAbandonedException {
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(cuedCases);
         Connection connection = this.getConnection();
         try {
@@ -504,8 +492,7 @@ public class SqlStorage<T extends Persistable>
 
                 try (PreparedStatement preparedStatement =
                              SqlHelper.prepareTableSelectStatement(connection,
-                                     this.tableName,
-                                     DatabaseHelper.ID_COL + " IN " + querySet.first,
+                                     this.tableName, DatabaseHelper.ID_COL + " IN " + querySet.first,
                                      querySet.second)) {
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         while (resultSet.next()) {
@@ -539,8 +526,7 @@ public class SqlStorage<T extends Persistable>
                 if (resultSet.next()) {
                     return readMetaDataFromResultSet(resultSet, scrubbedNames);
                 } else {
-                    throw new NoSuchElementException(
-                            "No record in table " + tableName + " for ID " + recordId);
+                    throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
                 }
             }
         } catch (SQLException e) {
@@ -550,11 +536,10 @@ public class SqlStorage<T extends Persistable>
 
     /**
      * Reads out the metadata columns from the provided cursor.
-     * <p>
+     *
      * NOTE: The column names _must be scrubbed here_ before the method is called
      */
-    private String[] readMetaDataFromResultSet(ResultSet resultSet, String[] columnNames)
-            throws SQLException {
+    private String[] readMetaDataFromResultSet(ResultSet resultSet, String[] columnNames) throws SQLException {
         String[] results = new String[columnNames.length];
         int i = 0;
         for (String columnName : columnNames) {
@@ -565,8 +550,7 @@ public class SqlStorage<T extends Persistable>
     }
 
     @Override
-    public void bulkReadMetadata(LinkedHashSet<Integer> recordIds, String[] metaFieldNames,
-            HashMap<Integer, String[]> metadataMap) {
+    public void bulkReadMetadata(LinkedHashSet<Integer> recordIds, String[] metaFieldNames, HashMap<Integer, String[]> metadataMap) {
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(recordIds);
         String[] scrubbedNames = scrubMetadataNames(metaFieldNames);
         String[] projection = getProjectedFieldsWithId(false, scrubbedNames);
@@ -608,8 +592,7 @@ public class SqlStorage<T extends Persistable>
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(matchingValues, "?");
         try {
             for (Pair<String, String[]> querySet : whereParamList) {
-                try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(
-                        connectionHandler.getConnection(),
+                try (PreparedStatement selectStatement = SqlHelper.prepareTableSelectStatement(connectionHandler.getConnection(),
                         tableName,
                         fieldName + " IN " + querySet.first,
                         querySet.second)) {
@@ -641,8 +624,7 @@ public class SqlStorage<T extends Persistable>
                     if (resultSet.next()) {
                         return resultSet.getString(scrubbedName);
                     } else {
-                        throw new NoSuchElementException(
-                                "No record in table " + tableName + " for ID " + recordId);
+                        throw new NoSuchElementException("No record in table " + tableName + " for ID " + recordId);
                     }
                 }
             }

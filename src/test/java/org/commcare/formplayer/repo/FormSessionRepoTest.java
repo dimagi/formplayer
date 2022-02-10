@@ -1,5 +1,7 @@
 package org.commcare.formplayer.repo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -32,8 +34,6 @@ import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnableJpaAuditing
@@ -62,7 +62,8 @@ public class FormSessionRepoTest {
         SerializableFormSession loaded = JpaTestUtils.unwrapProxy(
                 formSessionRepo.getById(session.getId())
         );
-        assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated", "version").isEqualTo(session);
+        assertThat(loaded).usingRecursiveComparison().ignoringFields("dateCreated",
+                "version").isEqualTo(session);
         Instant dateCreated = loaded.getDateCreated();
         assertThat(dateCreated).isNotNull();
         assertThat(loaded.getVersion()).isEqualTo(1);
@@ -77,9 +78,10 @@ public class FormSessionRepoTest {
         SerializableFormSession session = getSession();
         Map<String, String> sessionData = session.getSessionData();
         formSessionRepo.save(session);
-        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
-                "momo", "domain", PageRequest.of(0, 10)
-        );
+        List<FormSessionListView> userSessions =
+                formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
+                        "momo", "domain", PageRequest.of(0, 10)
+                );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("More Momo");
         assertThat(userSessions.get(0).getDateCreated()).isEqualTo(session.getDateCreated());
@@ -90,16 +92,18 @@ public class FormSessionRepoTest {
     @Test
     public void testGetListView_Ordering() {
         // create and save 3 sessions, reverse order of creation, extract IDs
-        Iterator<String> sessionIdIterator = Stream.of(getSession(), getSession(), getSession()).map((session) -> {
+        Iterator<String> sessionIdIterator = Stream.of(getSession(), getSession(),
+                getSession()).map((session) -> {
             formSessionRepo.save(session);
             return session;
         }).map(SerializableFormSession::getId).collect(Collectors.toCollection(LinkedList::new))
                 .descendingIterator();
         ArrayList<String> sessionIds = Lists.newArrayList(sessionIdIterator);
 
-        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
-                "momo", "domain", PageRequest.of(0, 10)
-        );
+        List<FormSessionListView> userSessions =
+                formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
+                        "momo", "domain", PageRequest.of(0, 10)
+                );
         assertThat(userSessions).extracting("id").containsExactlyElementsOf(
                 sessionIds
         );
@@ -109,9 +113,10 @@ public class FormSessionRepoTest {
     public void testGetListView_filterByDomain() {
         formSessionRepo.save(getSession("domain1", "session1"));
         formSessionRepo.save(getSession("domain2", "session2"));
-        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
-                "momo", "domain1", PageRequest.of(0, 10)
-        );
+        List<FormSessionListView> userSessions =
+                formSessionRepo.findByUsernameAndDomainAndAsUserIsNullOrderByDateCreatedDesc(
+                        "momo", "domain1", PageRequest.of(0, 10)
+                );
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session1");
 
@@ -127,8 +132,9 @@ public class FormSessionRepoTest {
         formSessionRepo.save(getSession("domain1", "session_user1", "asUser1"));
         formSessionRepo.save(getSession("domain1", "session_user2", "asUser2"));
         formSessionRepo.save(getSession("domain1", "session_momo", null));
-        List<FormSessionListView> userSessions = formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(
-                "momo", "domain1", "asUser1", PageRequest.of(0, 10));
+        List<FormSessionListView> userSessions =
+                formSessionRepo.findByUsernameAndDomainAndAsUserOrderByDateCreatedDesc(
+                        "momo", "domain1", "asUser1", PageRequest.of(0, 10));
         assertThat(userSessions).hasSize(1);
         assertThat(userSessions.get(0).getTitle()).isEqualTo("session_user1");
 
@@ -179,14 +185,16 @@ public class FormSessionRepoTest {
                     Timestamp.from(now.minus(i, ChronoUnit.DAYS)), session.getId()
             );
         }
-        List<String> allIds = jdbcTemplate.queryForList("SELECT id FROM formplayer_sessions", String.class);
+        List<String> allIds = jdbcTemplate.queryForList("SELECT id FROM formplayer_sessions",
+                String.class);
         assertThat(allIds.size()).isEqualTo(5);
 
         int deleted = formSessionRepo.deleteSessionsOlderThan(now.minus(2, ChronoUnit.DAYS));
         assertThat(deleted).isEqualTo(2);
         entityManager.flush();
 
-        List<String> remainingIds = jdbcTemplate.queryForList("SELECT id FROM formplayer_sessions", String.class);
+        List<String> remainingIds = jdbcTemplate.queryForList("SELECT id FROM formplayer_sessions",
+                String.class);
         assertThat(remainingIds.size()).isEqualTo(3);
     }
 
@@ -198,7 +206,8 @@ public class FormSessionRepoTest {
         return getSession(domain, title, null);
     }
 
-    private SerializableFormSession getSession(String domain, String title, @Nullable String asUser) {
+    private SerializableFormSession getSession(String domain, String title,
+            @Nullable String asUser) {
         FunctionHandler[] functionHandlers = {new FunctionHandler("count()", "123")};
         SerializableFormSession session = new SerializableFormSession(
                 domain, "appId", "momo", asUser, "restoreAsCaseId",

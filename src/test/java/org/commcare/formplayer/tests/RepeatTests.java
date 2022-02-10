@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
@@ -20,8 +22,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 /**
  * Created by willpride on 1/14/16.
  */
@@ -38,7 +38,8 @@ public class RepeatTests extends BaseTestClass {
     @Test
     public void testRepeat() throws Exception {
 
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json", "xforms/repeat.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
+                "xforms/repeat.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -93,14 +94,17 @@ public class RepeatTests extends BaseTestClass {
 
     @Test
     public void testRepeatModelIteration() throws Exception {
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json", "xforms/repeat_model_iteration.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form.json",
+                "xforms/repeat_model_iteration.xml");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(new ByteArrayInputStream(newSessionResponse.getInstanceXml().getOutput().getBytes()));
+        Document doc = builder.parse(new ByteArrayInputStream(
+                newSessionResponse.getInstanceXml().getOutput().getBytes()));
         Node songRepeats = doc.getElementsByTagName("song_repeats").item(0);
 
         XPath xPath = XPathFactory.newInstance().newXPath();
-        NodeList nodeList = (NodeList)xPath.compile("/data/song_repeats/item").evaluate(doc, XPathConstants.NODESET);
+        NodeList nodeList = (NodeList)xPath.compile("/data/song_repeats/item").evaluate(doc,
+                XPathConstants.NODESET);
         assertEquals(2, nodeList.getLength());
         assertEquals("0", nodeList.item(0).getAttributes().getNamedItem("index").getNodeValue());
         assertEquals("1", nodeList.item(1).getAttributes().getNamedItem("index").getNodeValue());

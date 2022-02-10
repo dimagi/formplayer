@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.utils.DbTestUtils.evaluate;
+
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.TestStorageUtils;
@@ -8,8 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
-
-import static org.commcare.formplayer.utils.DbTestUtils.evaluate;
 
 /**
  * @author wspride
@@ -39,10 +39,20 @@ public class CaseDbModelQueryTests extends BaseTestClass {
         UserSqlSandbox sandbox = getRestoreSandbox();
         EvaluationContext ec = TestStorageUtils.getEvaluationContextWithoutSession(sandbox);
         ec.setDebugModeOn();
-        evaluate("join(',',instance('casedb')/casedb/case[@case_type='unit_test_child_child'][@status='open'][true() and " +
-                "instance('casedb')/casedb/case[@case_id = instance('casedb')/casedb/case[@case_id=current()/index/parent]/index/parent]/test = 'true']/@case_id)", "child_ptwo_one_one,child_one_one", ec);
-        evaluate("join(',',instance('casedb')/casedb/case[@case_type='unit_test_child'][@status='open'][true() and " +
-                "count(instance('casedb')/casedb/case[index/parent = instance('casedb')/casedb/case[@case_id=current()/@case_id]/index/parent][false = 'true']) > 0]/@case_id)", "", ec);
+        evaluate(
+                "join(',',instance('casedb')/casedb/case[@case_type='unit_test_child_child"
+                        + "'][@status='open'][true() and "
+                        +
+                        "instance('casedb')/casedb/case[@case_id = instance('casedb')"
+                        + "/casedb/case[@case_id=current()/index/parent]/index/parent]/test = "
+                        + "'true']/@case_id)",
+                "child_ptwo_one_one,child_one_one", ec);
+        evaluate(
+                "join(',',instance('casedb')/casedb/case[@case_type='unit_test_child'][@status"
+                        + "='open'][true() and "
+                        +
+                        "count(instance('casedb')/casedb/case[index/parent = instance('casedb')/casedb/case[@case_id=current()/@case_id]/index/parent][false = 'true']) > 0]/@case_id)",
+                "", ec);
 
     }
 }

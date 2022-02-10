@@ -1,25 +1,16 @@
 package org.commcare.formplayer.aspects;
 
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.util.FormplayerSentry;
-import org.commcare.formplayer.util.RequestUtils;
-import org.commcare.formplayer.util.SimpleTimer;
+import org.commcare.formplayer.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
-import io.sentry.Sentry;
-import io.sentry.SentryLevel;
+import java.util.*;
 
 
 /**
@@ -48,8 +39,7 @@ public class MetricsAspect {
 
         this.sentryMessages = new HashMap<>();
         this.sentryMessages.put(INTOLERABLE_REQUEST, "This request took a long time");
-        this.sentryMessages.put(TOLERABLE_REQUEST,
-                "This request was tolerable, but should be improved");
+        this.sentryMessages.put(TOLERABLE_REQUEST, "This request was tolerable, but should be improved");
     }
 
     @Around(value = "@annotation(org.springframework.web.bind.annotation.RequestMapping)")
@@ -59,7 +49,7 @@ public class MetricsAspect {
 
         String requestPath = RequestUtils.getRequestEndpoint();
         if (args != null && args.length > 0 && args[0] instanceof AuthenticatedRequestBean) {
-            AuthenticatedRequestBean bean = (AuthenticatedRequestBean)args[0];
+            AuthenticatedRequestBean bean = (AuthenticatedRequestBean) args[0];
             domain = bean.getDomain();
         }
 
@@ -71,8 +61,7 @@ public class MetricsAspect {
         List<FormplayerDatadog.Tag> datadogArgs = new ArrayList<>();
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.DOMAIN_TAG, domain));
         datadogArgs.add(new FormplayerDatadog.Tag(Constants.REQUEST_TAG, requestPath));
-        datadogArgs.add(
-                new FormplayerDatadog.Tag(Constants.DURATION_TAG, timer.getDurationBucket()));
+        datadogArgs.add(new FormplayerDatadog.Tag(Constants.DURATION_TAG, timer.getDurationBucket()));
 
         datadog.recordExecutionTime(Constants.DATADOG_TIMINGS, timer.durationInMs(), datadogArgs);
 
@@ -84,8 +73,7 @@ public class MetricsAspect {
 
         if (timer.durationInSeconds() >= 60) {
             sendTimingWarningToSentry(timer, INTOLERABLE_REQUEST);
-        } else if (tolerableRequestThresholds.containsKey(requestPath)
-                && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
+        } else if (tolerableRequestThresholds.containsKey(requestPath) && timer.durationInMs() >= tolerableRequestThresholds.get(requestPath)) {
             // limit tolerable requests sent to sentry
             int chanceOfSending = 1000;
             Random random = new Random();

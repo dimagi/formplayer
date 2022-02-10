@@ -1,5 +1,5 @@
 {
   "filter_expr": "[@case_type = 'coverage_basic'][@status = 'open']",
   "domain": "test",
-  "username": "sql_test.user"
+  "username": "sql_test.user",
 }

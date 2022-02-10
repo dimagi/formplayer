@@ -1,5 +1,13 @@
 package org.commcare.formplayer.tests;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.FileUtils;
 import org.commcare.formplayer.utils.TestContext;
@@ -13,14 +21,6 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
@@ -70,7 +70,8 @@ public class FormValidatorTests extends BaseTestClass {
     }
 
     public void testValidateForm(String formXML, List<ResultMatcher> matchers) throws Exception {
-        ResultActions actions = mockUtilController.perform(post(String.format("/%s", Constants.URL_VALIDATE_FORM))
+        ResultActions actions = mockUtilController.perform(post(
+                String.format("/%s", Constants.URL_VALIDATE_FORM))
                 .content(formXML)
                 .contentType(contentType))
                 .andExpect(status().isOk())

@@ -18,8 +18,8 @@ public class TestStorageUtils {
     public static final String LEDGER_INSTANCE = "jr://instance/ledgerdb";
 
     /**
-     * @return An evaluation context which is capable of evaluating against
-     * the connected storage instances: casedb is the only one supported for now
+     * @return An evaluation context which is capable of evaluating against the connected storage
+     * instances: casedb is the only one supported for now
      */
     public static EvaluationContext getEvaluationContextWithoutSession(UserSqlSandbox sandbox) {
         FormplayerInstanceInitializer iif = new FormplayerInstanceInitializer(sandbox);
@@ -30,13 +30,15 @@ public class TestStorageUtils {
         ExternalDataInstance edi = new ExternalDataInstance(CASE_INSTANCE, "casedb");
         DataInstance specializedDataInstance = edi.initialize(iif, "casedb");
 
-        ExternalDataInstance ledgerDataInstanceRaw = new ExternalDataInstance(LEDGER_INSTANCE, "ledgerdb");
+        ExternalDataInstance ledgerDataInstanceRaw = new ExternalDataInstance(LEDGER_INSTANCE,
+                "ledgerdb");
         DataInstance ledgerDataInstance = ledgerDataInstanceRaw.initialize(iif, "ledger");
 
         Hashtable<String, DataInstance> formInstances = new Hashtable<>();
         formInstances.put("casedb", specializedDataInstance);
         formInstances.put("ledger", ledgerDataInstance);
 
-        return new EvaluationContext(new EvaluationContext(null), formInstances, TreeReference.rootRef());
+        return new EvaluationContext(new EvaluationContext(null), formInstances,
+                TreeReference.rootRef());
     }
 }

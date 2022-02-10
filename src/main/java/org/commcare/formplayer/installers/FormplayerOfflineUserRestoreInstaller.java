@@ -4,19 +4,20 @@ import org.commcare.resources.ResourceInstallContext;
 import org.commcare.resources.model.Resource;
 import org.commcare.resources.model.ResourceLocation;
 import org.commcare.resources.model.ResourceTable;
+import org.commcare.resources.model.UnresolvedResourceException;
 import org.commcare.resources.model.installers.OfflineUserRestoreInstaller;
 import org.commcare.suite.model.OfflineUserRestore;
 import org.commcare.util.CommCarePlatform;
 import org.javarosa.core.reference.Reference;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.javarosa.xml.util.UnfullfilledRequirementsException;
 
 /**
  * Created by willpride on 12/1/16.
  */
 public class FormplayerOfflineUserRestoreInstaller extends OfflineUserRestoreInstaller {
 
-    public FormplayerOfflineUserRestoreInstaller() {
-    }
+    public FormplayerOfflineUserRestoreInstaller(){}
 
     @Override
     public boolean initialize(CommCarePlatform platform, boolean isUpgrade) {

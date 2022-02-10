@@ -27,6 +27,6 @@ public class SQLiteProperties {
     }
 
     private String normalizeUnixStylePathReferences(String input) {
-        return input.replaceAll("\\/", String.format("\\%s", File.separator));
+        return input.replaceAll("\\/",String.format("\\%s", File.separator));
     }
 }

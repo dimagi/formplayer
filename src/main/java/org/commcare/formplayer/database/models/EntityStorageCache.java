@@ -2,12 +2,12 @@ package org.commcare.formplayer.database.models;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.modern.database.TableBuilder;
 import org.commcare.formplayer.sandbox.SqlHelper;
-import org.commcare.formplayer.services.ConnectionHandler;
 import org.commcare.modern.database.DatabaseHelper;
 import org.commcare.modern.database.DatabaseIndexingUtils;
-import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.util.Pair;
+import org.commcare.formplayer.services.ConnectionHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -82,11 +82,9 @@ public class EntityStorageCache {
 
     public static void createIndexes(Connection connection) throws SQLException {
         execSQL(connection,
-                DatabaseIndexingUtils.indexOnTableCommand("CACHE_TIMESTAMP", TABLE_NAME,
-                        COL_CACHE_NAME + ", " + COL_TIMESTAMP));
+                DatabaseIndexingUtils.indexOnTableCommand("CACHE_TIMESTAMP", TABLE_NAME, COL_CACHE_NAME + ", " + COL_TIMESTAMP));
         execSQL(connection,
-                DatabaseIndexingUtils.indexOnTableCommand("NAME_ENTITY_KEY", TABLE_NAME,
-                        COL_CACHE_NAME + ", " + COL_ENTITY_KEY + ", " + COL_CACHE_KEY));
+                DatabaseIndexingUtils.indexOnTableCommand("NAME_ENTITY_KEY", TABLE_NAME, COL_CACHE_NAME + ", " + COL_ENTITY_KEY + ", " + COL_CACHE_KEY));
     }
 
     // Currently unused
@@ -94,11 +92,9 @@ public class EntityStorageCache {
         long timestamp = System.currentTimeMillis();
         //TODO: this should probably just be an ON CONFLICT REPLACE call
         Pair<String, String[]> wherePair =
-                DatabaseHelper.createWhere(
-                        new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
+                DatabaseHelper.createWhere(new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
                         new String[]{this.mCacheName, entityKey, cacheKey});
-        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first,
-                wherePair.second);
+        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
         //We need to clear this cache value if it exists first.
         HashMap<String, Object> contentValues = new HashMap<>();
         contentValues.put(COL_CACHE_NAME, mCacheName);
@@ -113,9 +109,9 @@ public class EntityStorageCache {
     public String retrieveCacheValue(String entityKey, String cacheKey) {
         Connection connection = handler.getConnection();
         try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(connection,
-                TABLE_NAME,
-                new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
-                new String[]{mCacheName, entityKey, cacheKey})) {
+                    TABLE_NAME,
+                    new String[]{COL_CACHE_NAME, COL_ENTITY_KEY, COL_CACHE_KEY},
+                    new String[]{mCacheName, entityKey, cacheKey})) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
                 if (resultSet.next()) {
@@ -136,8 +132,7 @@ public class EntityStorageCache {
         Pair<String, String[]> wherePair =
                 DatabaseHelper.createWhere(new String[]{COL_CACHE_NAME, COL_ENTITY_KEY},
                         new String[]{this.mCacheName, recordId});
-        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first,
-                wherePair.second);
+        SqlHelper.deleteFromTableWhere(handler.getConnection(), TABLE_NAME, wherePair.first, wherePair.second);
     }
 
     /**
@@ -148,14 +143,13 @@ public class EntityStorageCache {
             return;
         }
         List<Pair<String, String[]>> whereParamList = TableBuilder.sqlList(recordIds);
-        for (Pair<String, String[]> querySet : whereParamList) {
+        for(Pair<String, String[]> querySet : whereParamList) {
             String[] updated = new String[querySet.second.length + 1];
             System.arraycopy(querySet.second, 0, updated, 1, querySet.second.length);
             updated[0] = this.mCacheName;
             SqlHelper.deleteFromTableWhere(handler.getConnection(),
                     TABLE_NAME,
-                    MessageFormat.format("{0} = ? AND {1} IN {2}", COL_CACHE_NAME, COL_ENTITY_KEY,
-                            querySet.first),
+                    MessageFormat.format("{0} = ? AND {1} IN {2}", COL_CACHE_NAME, COL_ENTITY_KEY, querySet.first),
                     updated);
         }
     }

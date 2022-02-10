@@ -1,14 +1,10 @@
 package org.commcare.formplayer.services;
 
 import com.timgroup.statsd.StatsDClient;
-
+import lombok.SneakyThrows;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
-import org.commcare.formplayer.util.RequestUtils;
-import org.commcare.formplayer.util.SimpleTimer;
-import org.commcare.formplayer.util.Timing;
+import org.commcare.formplayer.util.*;
 import org.commcare.formplayer.utils.CheckedRunnable;
 import org.commcare.formplayer.utils.CheckedSupplier;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +16,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import lombok.SneakyThrows;
 
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -54,8 +48,7 @@ public class CategoryTimingHelper {
         }
 
         public void record() {
-            parent.recordCategoryTiming(this, category, sentryMessage,
-                    Collections.singletonMap(Constants.DOMAIN_TAG, domain));
+            parent.recordCategoryTiming(this, category, sentryMessage, Collections.singletonMap(Constants.DOMAIN_TAG, domain));
         }
     }
 
@@ -106,11 +99,10 @@ public class CategoryTimingHelper {
     }
 
     /**
-     * @param extras - optional tag/value pairs to send to datadog NOTE: if adding a new tag, add a
-     *               constant for the tag name
+     * @param extras - optional tag/value pairs to send to datadog
+     * NOTE: if adding a new tag, add a constant for the tag name 
      */
-    public void recordCategoryTiming(Timing timing, String category, String sentryMessage,
-            Map<String, String> extras) {
+    public void recordCategoryTiming(Timing timing, String category, String sentryMessage, Map<String, String> extras) {
         FormplayerSentry.recordTimingBreadcrumb(timing, category, sentryMessage);
         recordDatadogMetrics(timing, category, extras);
         logTiming(timing, category);

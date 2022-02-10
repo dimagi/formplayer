@@ -1,23 +1,22 @@
 package org.commcare.formplayer.aspects;
 
-import org.apache.http.client.utils.URIBuilder;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.commcare.formplayer.beans.InstallRequestBean;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.annotation.Order;
-
-import java.net.URISyntaxException;
-import java.util.Arrays;
-
 import datadog.trace.api.Trace;
 import io.sentry.Sentry;
 import lombok.extern.java.Log;
+import org.apache.http.client.utils.URIBuilder;
+import org.commcare.formplayer.beans.InstallRequestBean;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.commcare.formplayer.util.Constants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.util.FormplayerSentry;
+
+import java.net.URISyntaxException;
+import java.util.Arrays;
 
 /**
  * Aspect to configure the FormplayerStorageManager
@@ -38,10 +37,9 @@ public class AppInstallAspect {
     public void configureStorageFactory(JoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
         if (!(args[0] instanceof InstallRequestBean)) {
-            throw new RuntimeException(
-                    "Could not configure StorageFactory with args " + Arrays.toString(args));
+            throw new RuntimeException("Could not configure StorageFactory with args " + Arrays.toString(args));
         }
-        final InstallRequestBean requestBean = (InstallRequestBean)args[0];
+        final InstallRequestBean requestBean = (InstallRequestBean) args[0];
         storageFactory.configure(requestBean);
 
         FormplayerSentry.newBreadcrumb()

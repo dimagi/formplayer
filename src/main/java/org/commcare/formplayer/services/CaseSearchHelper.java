@@ -1,7 +1,6 @@
 package org.commcare.formplayer.services;
 
 import com.google.common.collect.Multimap;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
@@ -18,9 +17,10 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Component;
-import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayInputStream;
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,8 +44,7 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
 
     @Override
     public TreeElement getExternalRoot(String instanceId, ExternalDataInstanceSource source)
-            throws UnfullfilledRequirementsException, XmlPullParserException,
-            InvalidStructureException, IOException {
+            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
         Multimap<String, String> requestData = source.getRequestData();
         String url = source.getSourceUri();
@@ -62,19 +61,15 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
         if (cachedRoot != null) {
             log.info(String.format("Using cached case search results for %s", uri));
             // Deep copy to avoid concurrency issues
-            TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot),
-                    TreeElement.class);
+            TreeElement copyOfRoot = SerializationUtil.deserialize(ExtUtil.serialize(cachedRoot), TreeElement.class);
             return copyOfRoot;
         }
 
-        log.info(String.format("Making case search request to url %s with data %s", url,
-                requestData));
+        log.info(String.format("Making case search request to url %s with data %s",  url, requestData));
         String responseString = webClient.postFormData(url, requestData);
 
         if (responseString != null) {
-            TreeElement root = ExternalDataInstance.parseExternalTree(
-                    new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)),
-                    instanceId);
+            TreeElement root = ExternalDataInstance.parseExternalTree(new ByteArrayInputStream(responseString.getBytes(StandardCharsets.UTF_8)), instanceId);
             if (root != null) {
                 cache.put(cacheKey, root);
             }
@@ -84,13 +79,10 @@ public class CaseSearchHelper implements RemoteInstanceFetcher {
         throw new IOException("No response from server for case search query");
     }
 
-    public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate,
-            URL url, Multimap<String, String> requestData)
-            throws UnfullfilledRequirementsException, XmlPullParserException,
-            InvalidStructureException, IOException {
+    public ExternalDataInstance getRemoteDataInstance(String instanceId, boolean useCaseTemplate, URL url, Multimap<String, String> requestData)
+            throws UnfullfilledRequirementsException, XmlPullParserException, InvalidStructureException, IOException {
 
-        ExternalDataInstanceSource source = new ExternalDataInstanceSource(instanceId,
-                url.toString(), requestData, useCaseTemplate);
+        ExternalDataInstanceSource source = new ExternalDataInstanceSource(instanceId, url.toString(), requestData, useCaseTemplate);
 
         TreeElement root = getExternalRoot(instanceId, source);
         source.init(root);

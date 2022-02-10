@@ -13,8 +13,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
- * Fills out the "Basic Tests > Groups" Form from the QA plan.
- * Provides coverage of fixtures, group expansion, selects from itemsets, conditional selects
+ * Fills out the "Basic Tests > Groups" Form from the QA plan. Provides coverage of fixtures, group
+ * expansion, selects from itemsets, conditional selects
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
@@ -34,7 +34,8 @@ public class GroupTests extends BaseTestClass {
     @Test
     public void testConditionalItemsets() throws Exception {
 
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json",
+                "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -48,7 +49,8 @@ public class GroupTests extends BaseTestClass {
         assert cityBean.getChoices().length == 0;
         assert labelBean.getCaption().equals("Selected county was: ");
 
-        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(countyBean.getIx(), "1", sessionId);
+        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(countyBean.getIx(), "1",
+                sessionId);
         // test that after making a selection our city list populates
         groupBean = mAnswerBean.getTree()[3];
         cityBean = groupBean.getChildren()[3];
@@ -78,7 +80,8 @@ public class GroupTests extends BaseTestClass {
     @Test
     public void testMultiSelectGroups() throws Exception {
 
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json",
+                "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -87,7 +90,8 @@ public class GroupTests extends BaseTestClass {
         QuestionBean[] children = groupBean.getChildren();
         assert children.length == 1;
 
-        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(children[0].getIx(), "1", sessionId);
+        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(children[0].getIx(), "1",
+                sessionId);
         groupBean = mAnswerBean.getTree()[1];
         children = groupBean.getChildren();
 
@@ -112,6 +116,7 @@ public class GroupTests extends BaseTestClass {
 
     @Test
     public void testInnerOuterGroups() throws Exception {
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json",
+                "xforms/groups.xml");
     }
 }

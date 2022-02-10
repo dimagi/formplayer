@@ -8,8 +8,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
- * This regression test confirms that the suite-fixture in the scheduler is parsed
- * and stored correctly
+ * This regression test confirms that the suite-fixture in the scheduler is parsed and stored
+ * correctly
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)

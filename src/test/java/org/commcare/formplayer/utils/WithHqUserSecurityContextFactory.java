@@ -18,9 +18,12 @@ final class WithHqUserSecurityContextFactory implements WithSecurityContextFacto
 
     @Override
     public SecurityContext createSecurityContext(WithHqUser withUser) {
-        String username = StringUtils.hasLength(withUser.username()) ? withUser.username() : withUser.value();
-        Assert.notNull(username, () -> withUser + " cannot have null username on both username and value properties");
-        HqUserDetailsBean principal = new HqUserDetailsBean(withUser.domain(), withUser.domains(), username,
+        String username = StringUtils.hasLength(withUser.username()) ? withUser.username()
+                : withUser.value();
+        Assert.notNull(username, () -> withUser
+                + " cannot have null username on both username and value properties");
+        HqUserDetailsBean principal = new HqUserDetailsBean(withUser.domain(), withUser.domains(),
+                username,
                 withUser.isSuperUser(), withUser.enabledToggles(), withUser.enabledPreviews());
         Authentication authentication = new PreAuthenticatedAuthenticationToken(principal,
                 "sessionId", principal.getAuthorities());

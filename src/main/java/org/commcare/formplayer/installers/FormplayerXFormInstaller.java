@@ -10,8 +10,7 @@ import org.javarosa.core.services.storage.IStorageUtilityIndexed;
  */
 public class FormplayerXFormInstaller extends XFormInstaller {
 
-    public FormplayerXFormInstaller() {
-    }
+    public FormplayerXFormInstaller(){}
 
     @Override
     protected IStorageUtilityIndexed<FormDef> storage(CommCarePlatform platform) {

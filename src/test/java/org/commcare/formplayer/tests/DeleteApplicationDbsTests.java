@@ -29,8 +29,10 @@ public class DeleteApplicationDbsTests extends BaseTestClass {
     }
 
     /**
-     * Ensures that when an application db exists that a delete db request
-     * will successfully delete it.
+     * Ensures that when an application db exists that a delete db request will successfully delete
+     * it.
+     *
+     * @throws Exception
      */
     @Test
     public void testDeleteApplicationDbsView() throws Exception {
@@ -49,8 +51,10 @@ public class DeleteApplicationDbsTests extends BaseTestClass {
     }
 
     /**
-     * Ensures that if no application db exists and a delete db request is
-     * made that it successfully returns with status OK.
+     * Ensures that if no application db exists and a delete db request is made that it successfully
+     * returns with status OK.
+     *
+     * @throws Exception
      */
     @Test
     public void testDeleteApplicationDbsWithNoDbView() throws Exception {

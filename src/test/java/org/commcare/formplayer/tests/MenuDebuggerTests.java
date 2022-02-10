@@ -26,7 +26,8 @@ public class MenuDebuggerTests extends BaseTestClass {
         EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateMenuXPath(
                 "requests/evaluate_xpath/evaluate_xpath_menu.json"
         );
-        Assertions.assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXPathResponseBean.getStatus());
+        Assertions.assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE,
+                evaluateXPathResponseBean.getStatus());
         // Hack to not have to parse the XML returned
         Assertions.assertTrue(evaluateXPathResponseBean.getOutput().contains("15"));
     }

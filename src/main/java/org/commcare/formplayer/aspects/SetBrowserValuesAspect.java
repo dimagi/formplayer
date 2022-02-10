@@ -1,13 +1,13 @@
 package org.commcare.formplayer.aspects;
 
+import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.commcare.formplayer.beans.AuthenticatedRequestBean;
-import org.commcare.formplayer.services.BrowserValuesProvider;
 import org.javarosa.core.model.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.commcare.formplayer.services.BrowserValuesProvider;
 
 /**
  * Created by amstone326 on 1/8/18.

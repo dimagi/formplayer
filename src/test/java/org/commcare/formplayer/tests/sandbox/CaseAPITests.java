@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests.sandbox;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.sandbox.SqlHelper;
@@ -19,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
-
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class CaseAPITests {
 
@@ -85,7 +85,8 @@ public class CaseAPITests {
 
             SqlHelper.insertToTable(connection, "TFLedger", l);
 
-            preparedStatement = SqlHelper.prepareTableSelectStatement(connection, "TFLedger", new String[]{"entity-id"},
+            preparedStatement = SqlHelper.prepareTableSelectStatement(connection, "TFLedger",
+                    new String[]{"entity-id"},
                     new String[]{"ledger_entity_id"});
             if (preparedStatement == null) {
                 fail("failed to prepare table select query");

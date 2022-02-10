@@ -1,9 +1,9 @@
 package org.commcare.formplayer.parsers;
 
-import org.commcare.cases.model.Case;
 import org.commcare.formplayer.database.models.EntityStorageCache;
 import org.commcare.formplayer.database.models.FormplayerCaseIndexTable;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.cases.model.Case;
 import org.commcare.xml.CaseXmlParser;
 import org.kxml2.io.KXmlParser;
 
@@ -17,7 +17,7 @@ public class FormplayerCaseXmlParser extends CaseXmlParser {
     private final FormplayerCaseIndexTable mCaseIndexTable;
 
     public FormplayerCaseXmlParser(KXmlParser parser, boolean acceptCreateOverwrites,
-            UserSqlSandbox sandbox) {
+                                   UserSqlSandbox sandbox) {
         super(parser, acceptCreateOverwrites, sandbox.getCaseStorage());
         mEntityCache = new EntityStorageCache("entitycase", sandbox);
         mCaseIndexTable = new FormplayerCaseIndexTable(sandbox);

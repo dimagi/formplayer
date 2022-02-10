@@ -1,10 +1,10 @@
 package org.commcare.formplayer.sandbox;
 
+import datadog.trace.api.Trace;
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
 import org.commcare.cases.model.StorageIndexedTreeElementModel;
 import org.commcare.core.interfaces.UserSandbox;
-import org.commcare.formplayer.services.ConnectionHandler;
 import org.commcare.modern.database.DatabaseIndexingUtils;
 import org.commcare.modern.database.IndexedFixturePathsConstants;
 import org.commcare.modern.database.TableBuilder;
@@ -13,6 +13,7 @@ import org.javarosa.core.model.User;
 import org.javarosa.core.model.instance.FormInstance;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.core.services.storage.IStorageUtilityIndexed;
+import org.commcare.formplayer.services.ConnectionHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,8 +22,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import datadog.trace.api.Trace;
 
 /**
  * A sandbox for user data using SqlStorage. Sandbox is per-User
@@ -45,7 +44,8 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     private ConnectionHandler handler;
 
     /**
-     * Create a sandbox of the necessary storage objects with the shared factory.
+     * Create a sandbox of the necessary storage objects with the shared
+     * factory.
      */
     public UserSqlSandbox(ConnectionHandler handler) {
         this.handler = handler;
@@ -74,8 +74,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     }
 
     @Override
-    public IStorageUtilityIndexed<StorageIndexedTreeElementModel> getIndexedFixtureStorage(
-            String fixtureName) {
+    public IStorageUtilityIndexed<StorageIndexedTreeElementModel> getIndexedFixtureStorage(String fixtureName) {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
         return new SqlStorage<>(handler,
                 StorageIndexedTreeElementModel.class,
@@ -85,8 +84,8 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
 
     @Override
     public void setupIndexedFixtureStorage(String fixtureName,
-            StorageIndexedTreeElementModel exampleEntry,
-            Set<String> indices) {
+                                           StorageIndexedTreeElementModel exampleEntry,
+                                           Set<String> indices) {
         String tableName = StorageIndexedTreeElementModel.getTableName(fixtureName);
         SqlStorage<StorageIndexedTreeElementModel> sqlUtil
                 = new SqlStorage<>(handler, exampleEntry, tableName);
@@ -98,7 +97,7 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
     public IndexedFixtureIdentifier getIndexedFixtureIdentifier(String fixtureName) {
         Connection connection = sqlUtil.getConnection();
         try (PreparedStatement preparedStatement = connection.prepareStatement(
-                IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE_SELECT_STMT)) {
+                IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_TABLE_SELECT_STMT) ){
             preparedStatement.setString(1, fixtureName);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -117,13 +116,12 @@ public class UserSqlSandbox extends UserSandbox implements ConnectionHandler {
 
     @Override
     public void setIndexedFixturePathBases(String fixtureName, String baseName,
-            String childName, TreeElement attrs) {
+                                           String childName,  TreeElement attrs) {
         Map<String, Object> contentVals = new HashMap<>();
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_BASE, baseName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_CHILD, childName);
         contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_NAME, fixtureName);
-        contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_ATTRIBUTES,
-                TableBuilder.toBlob(attrs));
+        contentVals.put(IndexedFixturePathsConstants.INDEXED_FIXTURE_PATHS_COL_ATTRIBUTES, TableBuilder.toBlob(attrs));
         sqlUtil.insertOrReplace(contentVals);
     }
 

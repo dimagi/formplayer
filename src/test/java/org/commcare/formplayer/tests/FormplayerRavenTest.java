@@ -1,13 +1,13 @@
 package org.commcare.formplayer.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.commcare.formplayer.util.FormplayerSentry;
 import org.junit.jupiter.api.Test;
 
 import io.sentry.Breadcrumb;
 import io.sentry.SentryLevel;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FormplayerRavenTest {
     FormplayerSentry raven = new FormplayerSentry();

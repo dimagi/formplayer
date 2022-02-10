@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Request to change the locale of the form session
- * <p>
+ *
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)

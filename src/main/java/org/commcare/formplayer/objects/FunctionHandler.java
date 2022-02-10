@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Created by willpride on 3/4/17.
  */
-public class FunctionHandler implements Serializable {
+public class FunctionHandler implements Serializable{
     private String name;
     private String value;
 

@@ -1,37 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:jr="http://openrosa.org/javarosa">
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
     <h:head>
         <h:title>Constraints</h:title>
         <model>
             <instance>
-                <data xmlns="http://openrosa.org/formdesigner/CECC652E-339C-4784-84FB-DCBEF0812797"
-                    uiVersion="1" version="1" name="Constraints">
+                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/CECC652E-339C-4784-84FB-DCBEF0812797" uiVersion="1" version="1" name="Constraints">
                     <l_req />
                     <no_word />
                     <final_question_ok />
                 </data>
             </instance>
             <bind nodeset="/data/l_req" type="xsd:string" required="true()" />
-            <bind nodeset="/data/no_word" type="xsd:string" constraint=". != 'test'"
-                jr:constraintMsg="jr:itext('no_word-constraintMsg')" />
+            <bind nodeset="/data/no_word" type="xsd:string" constraint=". != 'test'" jr:constraintMsg="jr:itext('no_word-constraintMsg')" />
             <bind nodeset="/data/final_question_ok" />
             <itext>
                 <translation lang="en" default="">
                     <text id="l_req-label">
-                        <value>This question is required. You should not be allowed to proceed with
-                            a blank answer.
-                        </value>
+                        <value>This question is required. You should not be allowed to proceed with a blank answer.</value>
                     </text>
                     <text id="no_word-label">
-                        <value>This answer can be anything but the word, "test". Try a different
-                            word. An error message should display. Note this is case sensitive.
-                        </value>
+                        <value>This answer can be anything but the word, "test". Try a different word. An error message should display. Note this is case sensitive. </value>
                     </text>
                     <text id="no_word-constraintMsg">
-                        <value>Your answer cannot be "test". Please try something else and
-                            continue.
-                        </value>
+                        <value>Your answer cannot be "test". Please try something else and continue.</value>
                     </text>
                     <text id="final_question_ok-label">
                         <value>Final question.</value>

@@ -20,7 +20,7 @@ import java.io.IOException;
 /**
  * Tests the compatibility of the current code runtime against the currently captured database
  * snapshots.
- * <p>
+ *
  * If these tests fail, the snapshots need to be rebuild and databases will need to be cold started
  * in any existing environments after updating.
  *
@@ -47,8 +47,9 @@ public class SnapshotTests extends BaseTestClass {
     public void testUserSandbox() throws Exception {
         UserDB database = getUserDbConnector("snapshot", "snapshot_test", null);
         if (!database.databaseFileExists()) {
-            Assertions.fail("Snapshot UserDB Missing for tests you may need to rebuild the snapshot " +
-                    "with the CreateSnapshotDbs Gradle Task ");
+            Assertions.fail(
+                    "Snapshot UserDB Missing for tests you may need to rebuild the snapshot " +
+                            "with the CreateSnapshotDbs Gradle Task ");
         }
         //Try to enumerate records of each type
         UserSqlSandbox sandbox = new UserSqlSandbox(database);

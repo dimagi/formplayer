@@ -1,20 +1,20 @@
 package org.commcare.formplayer.services;
 
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
+import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.exceptions.InterruptedRuntimeException;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.locks.LockRegistry;
 import org.springframework.util.Assert;
+import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.FormplayerSentry;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-
-import io.sentry.Sentry;
-import io.sentry.SentryLevel;
 
 /**
  * Created by willpride on 11/6/17.
@@ -97,7 +97,7 @@ public class FormplayerLockRegistry implements LockRegistry {
         }
         if (ownerThread.isAlive()) {
             log.error(String.format(
-                    "Unable to evict thread %s owning lock with lock key %s. expired=%s, lockTime=%s(s)",
+                "Unable to evict thread %s owning lock with lock key %s. expired=%s, lockTime=%s(s)",
                     ownerThread, lockKey, lock.isExpired(), lock.timeLocked()));
             Exception e = new Exception("Unable to get expired lock, owner thread has stack trace");
             e.setStackTrace(ownerThread.getStackTrace());
@@ -168,7 +168,7 @@ public class FormplayerLockRegistry implements LockRegistry {
         }
 
         public int timeLocked() {
-            return Seconds.secondsBetween(lockTime, new DateTime()).getSeconds();
+            return Seconds.secondsBetween(lockTime,new DateTime()).getSeconds();
         }
     }
 }

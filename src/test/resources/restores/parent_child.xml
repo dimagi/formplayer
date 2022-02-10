@@ -18,9 +18,7 @@
     <fixture id="user-groups" user_id="9355120324b8c4955970a4cb962919f1">
         <groups />
     </fixture>
-    <case xmlns="http://commcarehq.org/case/transaction/v2"
-        case_id="4d1831ab-abfe-4086-bce7-16d325d9ca3a" date_modified="2016-04-04T13:06:30.512000Z"
-        user_id="9355120324b8c4955970a4cb962919f1">
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="4d1831ab-abfe-4086-bce7-16d325d9ca3a" date_modified="2016-04-04T13:06:30.512000Z" user_id="9355120324b8c4955970a4cb962919f1">
         <create>
             <case_type>parent</case_type>
             <case_name>will</case_name>
@@ -30,9 +28,7 @@
             <age>25</age>
         </update>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2"
-        case_id="6a4c61ec-7357-435f-90b0-6f7baf92f8e5" date_modified="2016-04-01T10:12:36.831000Z"
-        user_id="9355120324b8c4955970a4cb962919f1">
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="6a4c61ec-7357-435f-90b0-6f7baf92f8e5" date_modified="2016-04-01T10:12:36.831000Z" user_id="9355120324b8c4955970a4cb962919f1">
         <create>
             <case_type>individual_order</case_type>
             <case_name>will</case_name>
@@ -46,9 +42,7 @@
             <parent case_type="team_order">7ad6624c-5f67-4d29-ab55-c88cc0fb64c6</parent>
         </index>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2"
-        case_id="7ad6624c-5f67-4d29-ab55-c88cc0fb64c6" date_modified="2016-04-01T10:12:36.831000Z"
-        user_id="9355120324b8c4955970a4cb962919f1">
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="7ad6624c-5f67-4d29-ab55-c88cc0fb64c6" date_modified="2016-04-01T10:12:36.831000Z" user_id="9355120324b8c4955970a4cb962919f1">
         <create>
             <case_type>team_order</case_type>
             <case_name>Mary Chungs</case_name>
@@ -58,9 +52,7 @@
             <order_date>2016-04-01</order_date>
         </update>
     </case>
-    <case xmlns="http://commcarehq.org/case/transaction/v2"
-        case_id="a9fde9ae-24ee-4d70-9cb4-20f266a62ef8" date_modified="2016-03-30T14:38:33.265000Z"
-        user_id="9355120324b8c4955970a4cb962919f1">
+    <case xmlns="http://commcarehq.org/case/transaction/v2" case_id="a9fde9ae-24ee-4d70-9cb4-20f266a62ef8" date_modified="2016-03-30T14:38:33.265000Z" user_id="9355120324b8c4955970a4cb962919f1">
         <create>
             <case_type>parent</case_type>
             <case_name>Anne</case_name>

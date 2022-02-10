@@ -1,12 +1,12 @@
 package org.commcare.formplayer.engine;
 
+import org.commcare.formplayer.parsers.FormplayerBulkCaseXmlParser;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.core.parse.CommCareTransactionParserFactory;
 import org.commcare.data.xml.TransactionParser;
 import org.commcare.data.xml.TransactionParserFactory;
-import org.commcare.formplayer.parsers.FormplayerBulkCaseXmlParser;
-import org.commcare.formplayer.parsers.FormplayerCaseXmlParser;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.kxml2.io.KXmlParser;
+import org.commcare.formplayer.parsers.FormplayerCaseXmlParser;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -31,14 +31,13 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
     }
 
     public UserSqlSandbox getSqlSandbox() {
-        return (UserSqlSandbox)sandbox;
+        return (UserSqlSandbox) sandbox;
     }
 
     @Override
     public TransactionParser getParser(KXmlParser parser) {
         String namespace = parser.getNamespace();
-        if (namespace != null && formInstanceNamespaces != null
-                && formInstanceNamespaces.containsKey(namespace)) {
+        if (namespace != null && formInstanceNamespaces != null && formInstanceNamespaces.containsKey(namespace)) {
             req();
             return formInstanceParser.getParser(parser);
         }
@@ -62,7 +61,7 @@ public class FormplayerTransactionParserFactory extends CommCareTransactionParse
             @Override
             public FormplayerCaseXmlParser getParser(KXmlParser parser) {
                 if (created == null) {
-                    created = new FormplayerCaseXmlParser(parser, true, (UserSqlSandbox)sandbox) {
+                    created = new FormplayerCaseXmlParser(parser, true, (UserSqlSandbox) sandbox) {
 
                         @Override
                         public void onIndexDisrupted(String caseId) {

@@ -1,8 +1,9 @@
 package org.commcare.formplayer.services;
 
+import datadog.trace.api.Trace;
 import com.google.common.collect.ImmutableMap;
 import com.timgroup.statsd.StatsDClient;
-
+import io.sentry.SentryLevel;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,11 +19,7 @@ import org.commcare.formplayer.sandbox.JdbcSqlStorageIterator;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.sqlitedb.UserDB;
-import org.commcare.formplayer.util.Constants;
-import org.commcare.formplayer.util.FormplayerSentry;
-import org.commcare.formplayer.util.RequestUtils;
-import org.commcare.formplayer.util.SimpleTimer;
-import org.commcare.formplayer.util.UserUtils;
+import org.commcare.formplayer.util.*;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.modern.database.TableBuilder;
 import org.javarosa.core.api.ClassNameHasher;
@@ -50,11 +47,17 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
@@ -63,14 +66,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import datadog.trace.api.Trace;
-import io.sentry.SentryLevel;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Factory that determines the correct URL endpoint based on domain, host, and username/asUsername,
@@ -189,8 +185,7 @@ public class RestoreFactory {
         return performTimedSync(true, false, false);
     }
 
-    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures,
-            boolean isResponseTo412) throws Exception {
+    public UserSqlSandbox performTimedSync(boolean shouldPurge, boolean skipFixtures, boolean isResponseTo412) throws Exception {
         // create extras to send to category timing helper
         Map<String, String> extras = new HashMap<>();
         extras.put(Constants.DOMAIN_TAG, domain);
@@ -243,8 +238,7 @@ public class RestoreFactory {
         return sandbox;
     }
 
-    private UserSqlSandbox handle412Sync(boolean shouldPurge, boolean skipFixtures)
-            throws Exception {
+    private UserSqlSandbox handle412Sync(boolean shouldPurge, boolean skipFixtures) throws Exception {
         getSQLiteDB().deleteDatabaseFile();
         // this line has the effect of clearing the sync token
         // from the restore URL that's used
@@ -266,8 +260,7 @@ public class RestoreFactory {
 
     @Trace
     private UserSqlSandbox restoreUser(boolean skipFixtures) throws
-            UnfullfilledRequirementsException, InvalidStructureException, IOException,
-            XmlPullParserException {
+            UnfullfilledRequirementsException, InvalidStructureException, IOException, XmlPullParserException {
         PrototypeFactory.setStaticHasher(new ClassNameHasher());
 
         // create extras to send to category timing helper
@@ -279,8 +272,7 @@ public class RestoreFactory {
         while (true) {
             try {
                 UserSqlSandbox sandbox = getSqlSandbox();
-                FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(
-                        sandbox, true);
+                FormplayerTransactionParserFactory factory = new FormplayerTransactionParserFactory(sandbox, true);
                 InputStream restoreStream = getRestoreXml(skipFixtures);
 
                 SimpleTimer parseTimer = new SimpleTimer();
@@ -310,9 +302,8 @@ public class RestoreFactory {
                     getSQLiteDB().createDatabaseFolder();
                     throw e;
                 } else {
-                    log.info(
-                            String.format("Retrying restore for user %s after receiving exception.",
-                                    getEffectiveUsername()),
+                    log.info(String.format("Retrying restore for user %s after receiving exception.",
+                            getEffectiveUsername()),
                             e);
                 }
             }
@@ -372,11 +363,10 @@ public class RestoreFactory {
 
     private void ensureValidParameters() {
         if (domain == null || (username == null && asUsername == null)) {
-            throw new RuntimeException(
-                    "Domain and one of username or asUsername must be non-null. " +
-                            " Domain: " + domain +
-                            ", username: " + username +
-                            ", asUsername: " + asUsername);
+            throw new RuntimeException("Domain and one of username or asUsername must be non-null. " +
+                    " Domain: " + domain +
+                    ", username: " + username +
+                    ", asUsername: " + asUsername);
         }
     }
 
@@ -395,16 +385,15 @@ public class RestoreFactory {
             return storageFactory.getPropertyManager().isSyncAfterFormEnabled() &&
                     permitAggressiveSyncs;
         } catch (RuntimeException e) {
-            // In cases where we don't have access to the PropertyManager, such as sync-db, this
-            // call
+            // In cases where we don't have access to the PropertyManager, such as sync-db, this call
             // throws a RuntimeException
             return false;
         }
     }
 
     /**
-     * Based on the frequency of restore set in the app, this method determines whether the user
-     * should sync
+     * Based on the frequency of restore set in the app, this method determines
+     * whether the user should sync
      *
      * @return boolean - true if restore has expired, false otherwise
      */
@@ -455,8 +444,7 @@ public class RestoreFactory {
         if (RequestUtils.requestAuthedWithHmac()) {
             headers = getHmacHeader(url);
         } else {
-            headers = getHqAuth().getAuthHeaders();
-            ;
+            headers = getHqAuth().getAuthHeaders();;
         }
         headers.addAll(getStandardHeaders());
         return headers;
@@ -488,8 +476,8 @@ public class RestoreFactory {
     }
 
     /**
-     * Given an async restore xml response, this function throws an AsyncRetryException with meta
-     * data about the async restore.
+     * Given an async restore xml response, this function throws an AsyncRetryException
+     * with meta data about the async restore.
      *
      * @param xml     - Async restore response
      * @param headers - HttpHeaders from the restore response
@@ -545,8 +533,7 @@ public class RestoreFactory {
         ResponseEntity<org.springframework.core.io.Resource> response;
         String status = "error";
         log.info("Restoring at domain: " + domain + " with url: " + restoreUrl.toString());
-        downloadRestoreTimer = categoryTimingHelper.newTimer(
-                Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
+        downloadRestoreTimer = categoryTimingHelper.newTimer(Constants.TimingCategories.DOWNLOAD_RESTORE, domain);
         downloadRestoreTimer.start();
         try {
             response = webClient.getRaw(restoreUrl, org.springframework.core.io.Resource.class);
@@ -641,9 +628,8 @@ public class RestoreFactory {
             requestPath = String.format("%s?%s", requestPath, url.getRawQuery());
         }
         if (!RequestUtils.requestAuthedWithHmac()) {
-            throw new RuntimeException(
-                    String.format("Tried getting HMAC Auth for request %s but this request" +
-                            "was not validated with HMAC.", requestPath));
+            throw new RuntimeException(String.format("Tried getting HMAC Auth for request %s but this request" +
+                    "was not validated with HMAC.", requestPath));
         }
         String digest;
         try {
@@ -661,8 +647,7 @@ public class RestoreFactory {
     }
 
     public URI getCaseRestoreUrl() {
-        return UriComponentsBuilder.fromHttpUrl(caseRestoreUrl).buildAndExpand(domain,
-                caseId).toUri();
+        return UriComponentsBuilder.fromHttpUrl(caseRestoreUrl).buildAndExpand(domain, caseId).toUri();
     }
 
     public URI getUserRestoreUrl(boolean skipFixtures) {
@@ -725,8 +710,8 @@ public class RestoreFactory {
     }
 
     /**
-     * Adds a sequence of menu selections to the set of validated selections for a given user
-     * session so that certain optimizations can skip validation
+     * Adds a sequence of menu selections to the set of validated selections
+     * for a given user session so that certain optimizations can skip validation
      *
      * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
      */
@@ -738,8 +723,8 @@ public class RestoreFactory {
     }
 
     /**
-     * Checks whether a sequence of menu selections has already been validated for a given user
-     * session
+     * Checks whether a sequence of menu selections has already been validated
+     * for a given user session
      *
      * @param selections - Array of menu selections (e.g. ["1", "1", <case_id>])
      */

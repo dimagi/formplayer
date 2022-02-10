@@ -1,5 +1,14 @@
 package org.commcare.formplayer.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
+
+import static java.util.Optional.ofNullable;
+
 import org.commcare.formplayer.exceptions.FormNotFoundException;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.repo.FormSessionRepo;
@@ -24,14 +33,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 import java.util.UUID;
-
-import static java.util.Optional.ofNullable;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
 
 
 @ExtendWith(SpringExtension.class)
@@ -69,7 +70,8 @@ public class FormSessionServiceTest {
 
     @Test
     public void testGetSessionById_NotFound() {
-        assertThrows(FormNotFoundException.class, () -> formSessionService.getSessionById(sessionId));
+        assertThrows(FormNotFoundException.class,
+                () -> formSessionService.getSessionById(sessionId));
     }
 
     @Test
@@ -127,7 +129,8 @@ public class FormSessionServiceTest {
     @ComponentScan(
             basePackageClasses = {FormSessionService.class},
             useDefaultFilters = false,
-            includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {FormSessionService.class})
+            includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+                    FormSessionService.class})
     )
     @EnableCaching
     @Configuration

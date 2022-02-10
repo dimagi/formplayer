@@ -49,21 +49,21 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.net.URI;
+import java.util.*;
 
 import javax.annotation.Resource;
 
-import datadog.trace.api.Trace;
 import io.sentry.Sentry;
+
+import datadog.trace.api.Trace;
 
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 
@@ -310,22 +310,24 @@ public class MenuSessionRunnerService {
             if (notificationMessage == null) {
                 notificationMessage = new NotificationMessage(null, false, NotificationMessage.Tag.selection);
             }
-            return new BaseResponseBean(null, notificationMessage, true);
+            return new BaseResponseBean(null, notificationMessage,true);
         }
     }
 
     /**
      * Apply an actions to the menu session that do not require user input e.g.
-     * - auto launch
-     * - queries
-     * - auto advance menu
-     *
-     * @param currentInput      The current input being processed
-     * @param nextInput         The next input being processed or NO_SELECTION constant
-     * @param queryData         Query data from the request
-     * @param needsDetail       Whether the full entity screen is required
-     * @param inputValidated    Whether the input has been validated (allows skipping validation)
+     *  - auto launch
+     *  - queries
+     *  - auto advance menu
+     * @param menuSession
+     * @param currentInput The current input being processed
+     * @param nextInput The next input being processed or NO_SELECTION constant
+     * @param queryData Query data from the request
+     * @param needsDetail Whether the full entity screen is required
+     * @param inputValidated Whether the input has been validated (allows skipping validation)
      * @param forceManualAction Prevent auto execution of queries if true.
+     * @return
+     * @throws CommCareSessionException
      */
     private Screen autoAdvanceSession(
             MenuSession menuSession,
@@ -354,17 +356,17 @@ public class MenuSessionRunnerService {
             if (nextScreen instanceof EntityScreen) {
                 // Advance the session in case auto launch is set
                 sessionAdvanced = handleAutoLaunch(
-                        (EntityScreen)nextScreen, menuSession, currentInput, needsDetail, inputValidated, nextInput
+                        (EntityScreen) nextScreen, menuSession, currentInput, needsDetail, inputValidated, nextInput
                 );
             } else if (nextScreen instanceof FormplayerQueryScreen) {
                 boolean replay = !nextInput.equals(NO_SELECTION);
                 sessionAdvanced = handleQueryScreen(
-                        (FormplayerQueryScreen)nextScreen, menuSession, queryData, replay, forceManualAction
+                        (FormplayerQueryScreen) nextScreen, menuSession, queryData, replay, forceManualAction
                 );
             } else if (nextScreen instanceof MenuScreen) {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
             }
-        } while (!Thread.interrupted() && sessionAdvanced && iterationCount < maxIterations);
+        } while(!Thread.interrupted() && sessionAdvanced && iterationCount < maxIterations);
 
         return nextScreen;
     }
@@ -373,17 +375,17 @@ public class MenuSessionRunnerService {
      * This method handles Query Screens during app navigation. This method does nothing
      * if the 'nextScreen' is not a query screen.
      *
-     * @param queryScreen       The query screen to handle
-     * @param menuSession       The current menu session
-     * @param queryData         Query data passed in from the response
-     * @param replay            Boolean that is True if there are still more selections to process in the navigation loop.
-     *                          i.e. if we are handling the query as part of navigation replay
+     * @param queryScreen The query screen to handle
+     * @param menuSession The current menu session
+     * @param queryData Query data passed in from the response
+     * @param replay Boolean that is True if there are still more selections to process in the navigation loop.
+     *               i.e. if we are handling the query as part of navigation replay
      * @param forceManualAction Boolean passed in from the request which will prevent auto launch actions
      * @return true if the query was executed and the session should move to the next screen
      * @throws CommCareSessionException if the was an error performing a query
      */
     private boolean handleQueryScreen(FormplayerQueryScreen queryScreen, MenuSession menuSession, QueryData queryData,
-                                      boolean replay, boolean forceManualAction)
+                                                  boolean replay, boolean forceManualAction)
             throws CommCareSessionException {
         queryScreen.refreshItemSetChoices();
         boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualAction);
@@ -410,9 +412,10 @@ public class MenuSessionRunnerService {
      * Handle auto-launch actions for EntityScreens
      *
      * @return true if the session was advanced
+     * @throws CommCareSessionException
      */
     private boolean handleAutoLaunch(EntityScreen entityScreen, MenuSession menuSession,
-                                     String selection, boolean needsDetail, boolean inputValidated, String nextInput)
+                                    String selection, boolean needsDetail, boolean inputValidated, String nextInput)
             throws CommCareSessionException {
         entityScreen.evaluateAutoLaunch(nextInput);
         if (entityScreen.getAutoLaunchAction() != null) {
@@ -710,7 +713,7 @@ public class MenuSessionRunnerService {
             if (s instanceof FormplayerSyncScreen) {
                 try {
                     s.init(sessionWrapper);
-                    doSyncGetNext((FormplayerSyncScreen)s, menuSession);
+                    doSyncGetNext((FormplayerSyncScreen) s, menuSession);
                 } catch (CommCareSessionException ccse) {
                     throw new RuntimeException("Unable to claim case.");
                 }

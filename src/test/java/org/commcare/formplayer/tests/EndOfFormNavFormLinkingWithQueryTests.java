@@ -1,6 +1,10 @@
 package org.commcare.formplayer.tests;
 
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ImmutableMultimap;
 
 import org.commcare.formplayer.beans.NewFormResponse;
@@ -16,10 +20,6 @@ import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.HashMap;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
@@ -50,7 +50,8 @@ public class EndOfFormNavFormLinkingWithQueryTests extends BaseTestClass {
         );
         assertEquals("1st Followup Form", response.getTitle());
         SubmitResponseBean submitResponse = submitForm(new HashMap<>(), response.getSessionId());
-        NewFormResponse formResponse = getNextScreenForEOFNavigation(submitResponse, NewFormResponse.class);
+        NewFormResponse formResponse = getNextScreenForEOFNavigation(submitResponse,
+                NewFormResponse.class);
         assertEquals("2nd Followup Form", formResponse.getTitle());
     }
 
@@ -64,17 +65,23 @@ public class EndOfFormNavFormLinkingWithQueryTests extends BaseTestClass {
                         .withProperty("case_name", "second_case")
                         .build()
         );
-        String searchUrl = "http://localhost:8000/a/test/phone/search/c4d2d3a7b32948cea64d28e961b183cb/";
-        ImmutableMultimap<String, String> data = ImmutableMultimap.of("commcare_registry", "test", "case_type", "case");
+        String searchUrl =
+                "http://localhost:8000/a/test/phone/search/c4d2d3a7b32948cea64d28e961b183cb/";
+        ImmutableMultimap<String, String> data = ImmutableMultimap.of("commcare_registry", "test",
+                "case_type", "case");
         when(webClientMock.postFormData(eq(searchUrl), eq(data))).thenReturn(searchResponse);
 
-        String registryUrl = "http://localhost:8000/a/test/phone/registry_case/c4d2d3a7b32948cea64d28e961b183cb/";
+        String registryUrl =
+                "http://localhost:8000/a/test/phone/registry_case"
+                        + "/c4d2d3a7b32948cea64d28e961b183cb/";
         ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.builder();
         builder.putAll(data).put("case_id", "first_case");
-        when(webClientMock.postFormData(eq(registryUrl), eq(builder.build()))).thenReturn(searchResponse);
+        when(webClientMock.postFormData(eq(registryUrl), eq(builder.build()))).thenReturn(
+                searchResponse);
 
         builder = ImmutableMultimap.builder();
         builder.putAll(data).put("case_id", "second_case");
-        when(webClientMock.postFormData(eq(registryUrl), eq(builder.build()))).thenReturn(searchResponse);
+        when(webClientMock.postFormData(eq(registryUrl), eq(builder.build()))).thenReturn(
+                searchResponse);
     }
 }

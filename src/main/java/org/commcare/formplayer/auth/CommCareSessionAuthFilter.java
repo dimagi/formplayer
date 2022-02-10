@@ -20,7 +20,7 @@ import lombok.extern.apachecommons.CommonsLog;
 /**
  * Auth filter that extracts the user details from the request (username, domain) along with the
  * session ID from the cookie.
- * <p>
+ *
  * These are then used to authenticate the user using the HQUserDetailsService
  */
 @CommonsLog
