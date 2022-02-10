@@ -246,8 +246,8 @@ public class JsonActionUtils {
     }
 
     /**
-     * Given a String represnetation of a form index, decompose it into a list of <index,
-     * multiplicity> pairs
+     * Given a String represnetation of a form index, decompose it into a list of index and
+     * multiplicity pairs
      *
      * @param index the comma separated String representation of the form index
      * @return @index represented as a list of index,multiplicity integer pairs
@@ -268,7 +268,7 @@ public class JsonActionUtils {
 
     /**
      * Given the string representation of one "Step" in a form index, return an Integer pair of
-     * <index, multiplicity>
+     * index and multiplicity
      */
     private static Pair<Integer, Integer> stepFromString(String step) {
         // honestly not sure. thanks obama/drew

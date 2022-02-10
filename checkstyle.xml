@@ -101,7 +101,7 @@
         </module>
         <module name="WhitespaceAfter">
             <property name="tokens"
-                value="COMMA, SEMI, TYPECAST, LITERAL_IF, LITERAL_ELSE,
+                value="COMMA, SEMI, LITERAL_IF, LITERAL_ELSE,
                     LITERAL_WHILE, LITERAL_DO, LITERAL_FOR, DO_WHILE"/>
         </module>
         <module name="WhitespaceAround">
@@ -127,7 +127,7 @@
         <module name="OneStatementPerLine"/>
         <module name="MultipleVariableDeclarations"/>
         <module name="ArrayTypeStyle"/>
-        <module name="MissingSwitchDefault"/>
+<!--        <module name="MissingSwitchDefault"/>-->
         <module name="FallThrough"/>
         <module name="UpperEll"/>
         <module name="ModifierOrder"/>
@@ -261,12 +261,6 @@
         <module name="NoWhitespaceBeforeCaseDefaultColon"/>
         <module name="OverloadMethodsDeclarationOrder"/>
         <module name="VariableDeclarationUsageDistance"/>
-<!--        <module name="CustomImportOrder">-->
-<!--            <property name="sortImportsInGroupAlphabetically" value="true"/>-->
-<!--            <property name="separateLineBetweenGroups" value="true"/>-->
-<!--            <property name="customImportOrderRules" value="STATIC###THIRD_PARTY_PACKAGE"/>-->
-<!--            <property name="tokens" value="IMPORT, STATIC_IMPORT, PACKAGE_DEF"/>-->
-<!--        </module>-->
         <module name="ImportOrder">
             <property name="groups" value="android,androidx,com,dalvik,libcore,com,gov,junit,net,org,java,javax,*"/>
             <property name="ordered" value="true"/>
@@ -293,13 +287,13 @@
                     METHOD_DEF, QUESTION, RESOURCE_SPECIFICATION, SUPER_CTOR_CALL, LAMBDA,
                     RECORD_DEF"/>
         </module>
-        <module name="OperatorWrap">
-            <property name="option" value="NL"/>
-            <property name="tokens"
-                value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR,
-                    LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR, METHOD_REF,
-                    TYPE_EXTENSION_AND "/>
-        </module>
+<!--        <module name="OperatorWrap">-->
+<!--            <property name="option" value="NL"/>-->
+<!--            <property name="tokens"-->
+<!--                value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR,-->
+<!--                    LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR, METHOD_REF,-->
+<!--                    TYPE_EXTENSION_AND "/>-->
+<!--        </module>-->
         <module name="AnnotationLocation">
             <property name="id" value="AnnotationLocationMostCases"/>
             <property name="tokens"
@@ -332,13 +326,13 @@
             <property name="allowedAnnotations" value="Override, Test"/>
             <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF, COMPACT_CTOR_DEF"/>
         </module>
-        <module name="MissingJavadocMethod">
-            <property name="scope" value="public"/>
-            <property name="minLineCount" value="2"/>
-            <property name="allowedAnnotations" value="Override, Test"/>
-            <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF,
-                                   COMPACT_CTOR_DEF"/>
-        </module>
+<!--        <module name="MissingJavadocMethod">-->
+<!--            <property name="scope" value="public"/>-->
+<!--            <property name="minLineCount" value="2"/>-->
+<!--            <property name="allowedAnnotations" value="Override, Test"/>-->
+<!--            <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF,-->
+<!--                                   COMPACT_CTOR_DEF"/>-->
+<!--        </module>-->
         <module name="MissingJavadocType">
             <property name="scope" value="protected"/>
             <property name="tokens"

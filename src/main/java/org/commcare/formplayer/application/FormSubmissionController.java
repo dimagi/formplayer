@@ -1,5 +1,8 @@
 package org.commcare.formplayer.application;
 
+import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
+import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.cases.util.InvalidCaseGraphException;
@@ -50,12 +53,9 @@ import javax.servlet.http.HttpServletRequest;
 import datadog.trace.api.Trace;
 import io.sentry.Sentry;
 
-import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_STACK;
-import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
-
 /**
- * Controller class (API endpoint) containing all form entry logic. This includes
- * opening a new form, question answering, and form submission.
+ * Controller class (API endpoint) containing all form entry logic. This includes opening a new
+ * form, question answering, and form submission.
  */
 @RestController
 @EnableAutoConfiguration
@@ -87,11 +87,12 @@ public class FormSubmissionController extends AbstractBaseController {
     @UserRestore
     @ConfigureStorageFromSession
     public SubmitResponseBean submitForm(@RequestBody SubmitRequestBean submitRequestBean,
-                                         @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
-                                         HttpServletRequest request) throws Exception {
+            @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken,
+            HttpServletRequest request) throws Exception {
         FormSubmissionContext context = getFormProcessingContext(request, submitRequestBean);
 
-        ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context, formSessionService);
+        ProcessingStep.StepFactory stepFactory = new ProcessingStep.StepFactory(context,
+                formSessionService);
         Stream<ProcessingStep> processingSteps = Stream.of(
                 stepFactory.makeStep("validateAnswers", this::validateAnswers),
                 stepFactory.makeStep("processFormXml", this::processFormXml, PROCESSED_XML),
@@ -100,7 +101,8 @@ public class FormSubmissionController extends AbstractBaseController {
                 stepFactory.makeStep("doEndOfFormNav", this::doEndOfFormNav, PROCESSED_STACK)
         );
 
-        // execute steps one at a time, only proceeding to the next step if the previous step was successful
+        // execute steps one at a time, only proceeding to the next step if the previous step was
+        // successful
         Optional<SubmitResponseBean> error = processingSteps
                 .map((step) -> executeStep(request, step))
                 .filter(Optional::isPresent)
@@ -117,8 +119,10 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.getResponse();
     }
 
-    public FormSubmissionContext getFormProcessingContext(HttpServletRequest request, SubmitRequestBean submitRequestBean) throws Exception {
-        SerializableFormSession serializableFormSession = formSessionService.getSessionById(submitRequestBean.getSessionId());
+    public FormSubmissionContext getFormProcessingContext(HttpServletRequest request,
+            SubmitRequestBean submitRequestBean) throws Exception {
+        SerializableFormSession serializableFormSession = formSessionService.getSessionById(
+                submitRequestBean.getSessionId());
         FormSession formEntrySession = getFormSession(serializableFormSession);
 
         // add tags for future datadog/sentry requests
@@ -133,16 +137,17 @@ public class FormSubmissionController extends AbstractBaseController {
     }
 
     /**
-     * Execute a step in the process and return an error response to halt processing or
-     * and empty response to continue.
+     * Execute a step in the process and return an error response to halt processing or and empty
+     * response to continue.
      *
      * @param request The HTTP Request object
-     * @param step    A supplier object that performs one unit of form processing and returns
-     *                a SubmitResponseBean.
+     * @param step    A supplier object that performs one unit of form processing and returns a
+     *                SubmitResponseBean.
      * @return Empty Optional if the processing should continue otherwise an Optional containing the
      * error response.
      */
-    private Optional<SubmitResponseBean> executeStep(HttpServletRequest request, ProcessingStep step) {
+    private Optional<SubmitResponseBean> executeStep(HttpServletRequest request,
+            ProcessingStep step) {
         SubmitResponseBean response = null;
         try {
             response = step.execute();
@@ -155,7 +160,8 @@ public class FormSubmissionController extends AbstractBaseController {
             step.recordCheckpoint();
             return Optional.empty();  // continue processing
         }
-        log.debug(String.format("Aborting execution of processing steps after error in step: %s", step));
+        log.debug(String.format("Aborting execution of processing steps after error in step: %s",
+                step));
         return Optional.of(response);
     }
 
@@ -231,7 +237,8 @@ public class FormSubmissionController extends AbstractBaseController {
         categoryTimingHelper.timed(
                 Constants.TimingCategories.PURGE_CASES,
                 () -> {
-                    if (factory.wereCaseIndexesDisrupted() && storageFactory.getPropertyManager().isAutoPurgeEnabled()) {
+                    if (factory.wereCaseIndexesDisrupted()
+                            && storageFactory.getPropertyManager().isAutoPurgeEnabled()) {
                         FormRecordProcessorHelper.purgeCases(factory.getSqlSandbox());
                     }
                 },
@@ -247,7 +254,8 @@ public class FormSubmissionController extends AbstractBaseController {
                 () -> {
                     if (formEntrySession.getMenuSessionId() != null &&
                             !("").equals(formEntrySession.getMenuSessionId().trim())) {
-                        return doEndOfFormNav(menuSessionService.getSessionById(formEntrySession.getMenuSessionId()));
+                        return doEndOfFormNav(menuSessionService.getSessionById(
+                                formEntrySession.getMenuSessionId()));
                     }
                     return null;
                 },
@@ -272,10 +280,12 @@ public class FormSubmissionController extends AbstractBaseController {
     }
 
     private SubmitResponseBean updateVolatility(FormSubmissionContext context) {
-        FormVolatilityRecord volatilityRecord = context.getFormEntrySession().getSessionVolatilityRecord();
+        FormVolatilityRecord volatilityRecord =
+                context.getFormEntrySession().getSessionVolatilityRecord();
         if (volatilityCache != null && volatilityRecord != null) {
             FormVolatilityRecord existingRecord = volatilityCache.get(volatilityRecord.getKey());
-            if (existingRecord != null && existingRecord.matchesUser(context.getFormEntrySession())) {
+            if (existingRecord != null && existingRecord.matchesUser(
+                    context.getFormEntrySession())) {
                 volatilityRecord = existingRecord;
             }
             volatilityRecord.updateFormSubmitted(context.getFormEntrySession());
@@ -284,11 +294,13 @@ public class FormSubmissionController extends AbstractBaseController {
         return context.success();
     }
 
-    private void parseSubmitResponseMessage(String responseBody, SubmitResponseBean submitResponseBean) {
+    private void parseSubmitResponseMessage(String responseBody,
+            SubmitResponseBean submitResponseBean) {
         if (responseBody != null) {
             try {
                 Serializer serializer = new Persister();
-                OpenRosaResponse openRosaResponse = serializer.read(OpenRosaResponse.class, responseBody);
+                OpenRosaResponse openRosaResponse = serializer.read(OpenRosaResponse.class,
+                        responseBody);
                 if (openRosaResponse != null && openRosaResponse.getMessage() != null) {
                     submitResponseBean.setSubmitResponseMessage(openRosaResponse.getMessage());
                 }
@@ -305,8 +317,8 @@ public class FormSubmissionController extends AbstractBaseController {
     }
 
     /**
-     * Iterate over all answers and attempt to save them to check for validity.
-     * Submit the complete XML instance to HQ if valid.
+     * Iterate over all answers and attempt to save them to check for validity. Submit the complete
+     * XML instance to HQ if valid.
      */
     @Trace
     private Map<String, ErrorBean> validateSubmitAnswers(FormSubmissionContext context) {
