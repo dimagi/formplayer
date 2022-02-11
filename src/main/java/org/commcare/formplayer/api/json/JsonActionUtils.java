@@ -84,7 +84,7 @@ public class JsonActionUtils {
             FormEntryModel model,
             String formIndex) {
         return new JSONObject().put(ApiConstants.QUESTION_TREE_KEY,
-                getOneQuestionPerScreenJSON(model, controller,
+                getOneQuestionPerScreenJson(model, controller,
                         JsonActionUtils.indexFromString(formIndex, model.getForm())));
     }
 
@@ -147,7 +147,7 @@ public class JsonActionUtils {
         } else if (result == FormEntryController.ANSWER_OK) {
             if (returnTree) {
                 if (oneQuestionPerScreen) {
-                    ret.put(ApiConstants.QUESTION_TREE_KEY, getOneQuestionPerScreenJSON(
+                    ret.put(ApiConstants.QUESTION_TREE_KEY, getOneQuestionPerScreenJson(
                             model, controller, navIndex));
                 } else {
                     ret.put(ApiConstants.QUESTION_TREE_KEY, getFullFormJSON(model, controller));
@@ -246,8 +246,8 @@ public class JsonActionUtils {
     }
 
     /**
-     * Given a String represnetation of a form index, decompose it into a list of <index,
-     * multiplicity> pairs
+     * Given a String represnetation of a form index, decompose it into a list of index,
+     * multiplicity pairs
      *
      * @param index the comma separated String representation of the form index
      * @return @index represented as a list of index,multiplicity integer pairs
@@ -268,7 +268,7 @@ public class JsonActionUtils {
 
     /**
      * Given the string representation of one "Step" in a form index, return an Integer pair of
-     * <index, multiplicity>
+     * index, multiplicity
      */
     private static Pair<Integer, Integer> stepFromString(String step) {
         // honestly not sure. thanks obama/drew
@@ -323,7 +323,7 @@ public class JsonActionUtils {
         return ret;
     }
 
-    public static JSONArray getOneQuestionPerScreenJSON(FormEntryModel fem, FormEntryController fec,
+    public static JSONArray getOneQuestionPerScreenJson(FormEntryModel fem, FormEntryController fec,
             FormIndex formIndex) {
         JSONArray ret = new JSONArray();
         if (formIndex.isEndOfFormIndex()) {

@@ -237,12 +237,12 @@ public class FormEntryWithQueryTests extends BaseTestClass {
     }
 
     private void configureQueryMock() {
-        String searchURI =
+        String searchUri =
                 "http://localhost:8000/a/test-1/phone/search/dec220eae9974c788654f23320f3a8d3/";
         String searchResponse = "query_responses/case_claim_response.xml";
         ImmutableMultimap<String, String> data = ImmutableMultimap.of("commcare_registry",
                 "shubham", "case_type", "case");
-        when(webClientMock.postFormData(eq(searchURI), eq(data))).thenReturn(
+        when(webClientMock.postFormData(eq(searchUri), eq(data))).thenReturn(
                 FileUtils.getFile(this.getClass(), searchResponse));
 
         String registryUrl =

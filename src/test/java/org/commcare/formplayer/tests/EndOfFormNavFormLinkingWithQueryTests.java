@@ -50,7 +50,7 @@ public class EndOfFormNavFormLinkingWithQueryTests extends BaseTestClass {
         );
         assertEquals("1st Followup Form", response.getTitle());
         SubmitResponseBean submitResponse = submitForm(new HashMap<>(), response.getSessionId());
-        NewFormResponse formResponse = getNextScreenForEOFNavigation(submitResponse,
+        NewFormResponse formResponse = getNextScreenForEofNavigation(submitResponse,
                 NewFormResponse.class);
         assertEquals("2nd Followup Form", formResponse.getTitle());
     }
