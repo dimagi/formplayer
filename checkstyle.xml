@@ -40,7 +40,7 @@
     <module name="LineLength">
         <property name="fileExtensions" value="java"/>
         <property name="max" value="100"/>
-        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://|^@.*"/>
+        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://|^@.*|^ *\* *[^ ]+$"/>
     </module>
 
     <module name="TreeWalker">
@@ -182,7 +182,7 @@
                 value="Member name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="ParameterName">
-            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
+            <property name="format" value="^[a-z]([a-zA-Z0-9]*)?$"/>
             <message key="name.invalidPattern"
                 value="Parameter name ''{0}'' must match pattern ''{1}''."/>
         </module>
@@ -249,6 +249,7 @@
             <property name="throwsIndent" value="8"/>
             <property name="lineWrappingIndentation" value="8"/>
             <property name="arrayInitIndent" value="4"/>
+            <property name="tabWidth" value="8"/>
         </module>
         <module name="AbbreviationAsWordInName">
             <property name="ignoreFinal" value="false"/>
@@ -266,6 +267,7 @@
             <property name="staticGroups" value="android,androidx,com,dalvik,libcore,com,gov,junit,net,org,java,javax,*"/>
             <property name="ordered" value="true"/>
             <property name="separated" value="true"/>
+            <property name="separatedStaticGroups" value="true"/>
             <property name="option" value="bottom"/>
             <property name="sortStaticImportsAlphabetically" value="true"/>
         </module>

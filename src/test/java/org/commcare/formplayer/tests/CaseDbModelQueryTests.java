@@ -51,7 +51,9 @@ public class CaseDbModelQueryTests extends BaseTestClass {
                 "join(',',instance('casedb')/casedb/case[@case_type='unit_test_child'][@status"
                         + "='open'][true() and "
                         +
-                        "count(instance('casedb')/casedb/case[index/parent = instance('casedb')/casedb/case[@case_id=current()/@case_id]/index/parent][false = 'true']) > 0]/@case_id)",
+                        "count(instance('casedb')/casedb/case[index/parent = instance('casedb')"
+                        + "/casedb/case[@case_id=current()/@case_id]/index/parent][false = "
+                        + "'true']) > 0]/@case_id)",
                 "", ec);
 
     }

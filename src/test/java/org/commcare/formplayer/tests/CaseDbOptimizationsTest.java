@@ -65,7 +65,8 @@ public class CaseDbOptimizationsTest extends BaseTestClass {
                         + "test_case_parent', index/parent)]/@case_id))",
                 "child_one child_three child_two", ec);
         evaluate(
-                "join(' ',instance('casedb')/casedb/case[selected('test_case_parent_2 test_case_parent_3', index/parent)]/@case_id)",
+                "join(' ',instance('casedb')/casedb/case[selected('test_case_parent_2 "
+                        + "test_case_parent_3', index/parent)]/@case_id)",
                 "", ec);
         evaluate("join(' ',instance('casedb')/casedb/case[selected('', index/parent)]/@case_id)",
                 "", ec);
