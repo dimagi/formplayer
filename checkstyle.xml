@@ -263,8 +263,8 @@
         <module name="OverloadMethodsDeclarationOrder"/>
         <module name="VariableDeclarationUsageDistance"/>
         <module name="ImportOrder">
-            <property name="groups" value="android,androidx,com,dalvik,libcore,com,gov,junit,net,org,java,javax,*"/>
-            <property name="staticGroups" value="android,androidx,com,dalvik,libcore,com,gov,junit,net,org,java,javax,*"/>
+            <property name="groups" value="android,androidx,com.android,dalvik,libcore,com,gov,junit,net,org,java,javax,*"/>
+            <property name="staticGroups" value="android,androidx,com.android,dalvik,libcore,com,gov,junit,net,org,java,javax,*"/>
             <property name="ordered" value="true"/>
             <property name="separated" value="true"/>
             <property name="separatedStaticGroups" value="true"/>
