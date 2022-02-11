@@ -463,6 +463,17 @@ public class BaseTestClass {
                 FormEntryNavigationResponseBean.class);
     }
 
+    FormEntryResponseBean changeLanguage(String locale, String sessionId) throws Exception {
+        ChangeLocaleRequestBean changeLocaleBean = populateFromSession(
+                new ChangeLocaleRequestBean(), sessionId);
+        changeLocaleBean.setLocale(locale);
+        return generateMockQuery(ControllerType.FORM,
+                RequestType.POST,
+                Constants.URL_CHANGE_LANGUAGE,
+                changeLocaleBean,
+                FormEntryResponseBean.class);
+    }
+
     FormEntryResponseBean answerQuestionGetResult(String requestPath, String sessionId)
             throws Exception {
         String requestPayload = FileUtils.getFile(this.getClass(), requestPath);
@@ -473,17 +484,6 @@ public class BaseTestClass {
                 RequestType.POST,
                 Constants.URL_ANSWER_QUESTION,
                 answerQuestionBean,
-                FormEntryResponseBean.class);
-    }
-
-    FormEntryResponseBean changeLanguage(String locale, String sessionId) throws Exception {
-        ChangeLocaleRequestBean changeLocaleBean = populateFromSession(
-                new ChangeLocaleRequestBean(), sessionId);
-        changeLocaleBean.setLocale(locale);
-        return generateMockQuery(ControllerType.FORM,
-                RequestType.POST,
-                Constants.URL_CHANGE_LANGUAGE,
-                changeLocaleBean,
                 FormEntryResponseBean.class);
     }
 
@@ -638,7 +638,7 @@ public class BaseTestClass {
         );
     }
 
-    EvaluateXPathResponseBean evaluateMenuXPath(String requestPath) throws Exception {
+    EvaluateXPathResponseBean evaluateMenuXpath(String requestPath) throws Exception {
         Pair<String, EvaluateXPathMenuRequestBean> refAndBean = getInstallReferenceAndBean(
                 requestPath, EvaluateXPathMenuRequestBean.class);
         return generateMockQueryWithInstallReference(refAndBean.first,
@@ -650,7 +650,7 @@ public class BaseTestClass {
         );
     }
 
-    EvaluateXPathResponseBean evaluateMenuXPath(String menuSessionId, String xpath)
+    EvaluateXPathResponseBean evaluateMenuXpath(String menuSessionId, String xpath)
             throws Exception {
         SerializableMenuSession menuSession = menuSessionService.getSessionById(menuSessionId);
 
@@ -684,10 +684,6 @@ public class BaseTestClass {
         return getDetails(selections, testName, null, clazz, false);
     }
 
-    <T> T getDetailsInline(String[] selections, String testName, Class<T> clazz) throws Exception {
-        return getDetails(selections, testName, null, clazz, true);
-    }
-
     <T> T getDetails(String[] selections, String testName, String locale, Class<T> clazz,
             boolean inline) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
@@ -705,6 +701,10 @@ public class BaseTestClass {
                 Constants.URL_GET_DETAILS,
                 sessionNavigationBean,
                 clazz);
+    }
+
+    <T> T getDetailsInline(String[] selections, String testName, Class<T> clazz) throws Exception {
+        return getDetails(selections, testName, null, clazz, true);
     }
 
     <T> T sessionNavigate(String requestPath, Class<T> clazz) throws Exception {
@@ -970,7 +970,7 @@ public class BaseTestClass {
         );
     }
 
-    <T> T getNextScreenForEOFNavigation(SubmitResponseBean submitResponse, Class<T> clazz)
+    <T> T getNextScreenForEofNavigation(SubmitResponseBean submitResponse, Class<T> clazz)
             throws IOException {
         LinkedHashMap commandsRaw = (LinkedHashMap)submitResponse.getNextScreen();
         String jsonString = new JSONObject(commandsRaw).toString();

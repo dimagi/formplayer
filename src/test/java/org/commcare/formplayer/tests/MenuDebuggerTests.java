@@ -23,12 +23,12 @@ public class MenuDebuggerTests extends BaseTestClass {
     @Test
     public void testMenuDebugger() throws Exception {
         // Menu session should be saved so let's run some menu xpath queries against it
-        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateMenuXPath(
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateMenuXpath(
                 "requests/evaluate_xpath/evaluate_xpath_menu.json"
         );
         Assertions.assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE,
-                evaluateXPathResponseBean.getStatus());
+                evaluateXpathResponseBean.getStatus());
         // Hack to not have to parse the XML returned
-        Assertions.assertTrue(evaluateXPathResponseBean.getOutput().contains("15"));
+        Assertions.assertTrue(evaluateXpathResponseBean.getOutput().contains("15"));
     }
 }
