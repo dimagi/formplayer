@@ -1,25 +1,31 @@
 package tests;
 
-import org.commcare.formplayer.application.RequestResponseLoggingFilter;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import org.apache.commons.logging.Log;
+import org.commcare.formplayer.application.RequestResponseLoggingFilter;
+import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.commcare.formplayer.utils.TestContext;
+
+import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
-import static org.mockito.Mockito.*;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
@@ -46,16 +52,18 @@ public class RequestResponseLoggingFilterTest {
         MockHttpServletResponse response = this.getHttpServletResponse(responseBody);
         FilterChain filterChain = this.getFilterChain(responseBody);
 
-        RequestResponseLoggingFilter reqRespFilter= new RequestResponseLoggingFilter(this.log, true);
+        RequestResponseLoggingFilter reqRespFilter = new RequestResponseLoggingFilter(this.log,
+                true);
         reqRespFilter.doFilter(request, response, filterChain);
 
         verify(this.log).info(argThat(logMessage -> {
-            return ((JSONObject) logMessage).getString("username").equals(user) &&
-                    ((JSONObject) logMessage).getString("username").equals(user) &&
-                    ((JSONObject) logMessage).getString("requestBody").equals(requestBody) &&
-                    ((JSONObject) logMessage).getString("restoreAs").equals(restoreAs) &&
-                    ((JSONObject) logMessage).getString("requestUrl").equals("http://localhost" + uri) &&
-                    ((JSONObject) logMessage).getString("requestBody").equals(requestBody);
+            return ((JSONObject)logMessage).getString("username").equals(user) &&
+                    ((JSONObject)logMessage).getString("username").equals(user) &&
+                    ((JSONObject)logMessage).getString("requestBody").equals(requestBody) &&
+                    ((JSONObject)logMessage).getString("restoreAs").equals(restoreAs) &&
+                    ((JSONObject)logMessage).getString("requestUrl").equals(
+                            "http://localhost" + uri) &&
+                    ((JSONObject)logMessage).getString("requestBody").equals(requestBody);
 
         }));
     }
@@ -67,7 +75,8 @@ public class RequestResponseLoggingFilterTest {
         MockHttpServletResponse response = this.getHttpServletResponse("b");
         FilterChain filterChain = this.getFilterChain("b");
 
-        RequestResponseLoggingFilter reqRespFilter= new RequestResponseLoggingFilter(this.log, false);
+        RequestResponseLoggingFilter reqRespFilter = new RequestResponseLoggingFilter(this.log,
+                false);
         reqRespFilter.doFilter(request, response, filterChain);
 
         verify(this.log, never()).info(Mockito.any());
@@ -81,14 +90,16 @@ public class RequestResponseLoggingFilterTest {
     }
 
     private FilterChain getFilterChain(String responseBody) throws IOException, ServletException {
-        // Return mock filter chain, but also intercept calls to doFilter (which calls the next filter
+        // Return mock filter chain, but also intercept calls to doFilter (which calls the next
+        // filter
         // and eventually the servlet code) to add the response body to the response object.
         FilterChain filterChain = mock(FilterChain.class);
         doAnswer(invocation -> {
             HttpServletResponse servletResponse = invocation.getArgument(1);
             servletResponse.getOutputStream().write(responseBody.getBytes());
             return null;
-        }).when(filterChain).doFilter(any(HttpServletRequest.class), any(HttpServletResponse.class));
+        }).when(filterChain).doFilter(any(HttpServletRequest.class),
+                any(HttpServletResponse.class));
         return filterChain;
     }
 

@@ -19,7 +19,8 @@ public class FormEntryResponseBean extends SessionResponseBean {
     private HashMap<String, ErrorBean> errors;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public FormEntryResponseBean(){}
+    public FormEntryResponseBean() {
+    }
 
     public QuestionBean[] getTree() {
         return tree;
@@ -38,9 +39,10 @@ public class FormEntryResponseBean extends SessionResponseBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "FormEntryResponseBean: [status=" + status + ", seq_id: " + sequenceId
-                + ( status != null && status.equals("error") ? ", reason=" + reason + ", type=" + type : "") +  "]";
+                + (status != null && status.equals("error") ? ", reason=" + reason + ", type="
+                + type : "") + "]";
     }
 
     public String getReason() {

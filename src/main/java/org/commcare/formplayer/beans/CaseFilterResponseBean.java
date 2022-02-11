@@ -9,19 +9,20 @@ import java.util.Arrays;
 public class CaseFilterResponseBean {
     private String[] cases; // comma separated case list
 
-    public CaseFilterResponseBean(){
+    public CaseFilterResponseBean() {
 
     }
-    public CaseFilterResponseBean(String caseString){
+
+    public CaseFilterResponseBean(String caseString) {
         String[] caseIds = caseString.split(",");
         ArrayList<String> caseIdArray = new ArrayList<>();
-        for(String caseId: caseIds){
-            if(!caseId.trim().equals("")){
+        for (String caseId : caseIds) {
+            if (!caseId.trim().equals("")) {
                 caseIdArray.add(caseId);
             }
         }
         cases = new String[caseIdArray.size()];
-        for(int i=0; i< caseIdArray.size(); i++){
+        for (int i = 0; i < caseIdArray.size(); i++) {
             cases[i] = caseIdArray.get(i);
         }
     }
@@ -31,7 +32,7 @@ public class CaseFilterResponseBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "CaseFitlerResponse: " + Arrays.toString(cases);
     }
 

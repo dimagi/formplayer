@@ -8,7 +8,7 @@ import java.io.IOException;
  * Created by willpride on 1/14/16.
  */
 public class FileUtils {
-    public static String getFile(Class mClass, String fileName){
+    public static String getFile(Class mClass, String fileName) {
 
         String result = "";
 

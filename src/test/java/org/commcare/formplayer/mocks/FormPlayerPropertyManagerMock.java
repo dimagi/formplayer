@@ -1,8 +1,7 @@
 package org.commcare.formplayer.mocks;
 
-import org.javarosa.core.services.storage.IStorageUtilityIndexed;
-
 import org.commcare.formplayer.util.FormplayerPropertyManager;
+import org.javarosa.core.services.storage.IStorageUtilityIndexed;
 
 /**
  * @author $|-|!˅@M

@@ -4,7 +4,9 @@ import org.commcare.formplayer.exceptions.ApplicationConfigException;
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.SelectChoice;
-import org.javarosa.core.model.data.*;
+import org.javarosa.core.model.data.GeoPointData;
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.SelectMultiData;
 import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.core.model.utils.DateUtils;
@@ -13,7 +15,6 @@ import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -47,7 +48,8 @@ public class PromptToJson {
         parseQuestionAnswer(questionJson, prompt);
         questionJson.put("ix", jsonNullIfNull(prompt.getIndex()));
 
-        if (prompt.getDataType() == Constants.DATATYPE_CHOICE || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
+        if (prompt.getDataType() == Constants.DATATYPE_CHOICE
+                || prompt.getDataType() == Constants.DATATYPE_CHOICE_LIST) {
             questionJson.put("choices", parseSelect(prompt));
         }
     }
@@ -142,16 +144,17 @@ public class PromptToJson {
                 obj.put("answer", answerValue.getDisplayText());
                 return;
             case Constants.DATATYPE_INTEGER:
-                obj.put("answer", (int) answerValue.getValue());
+                obj.put("answer", (int)answerValue.getValue());
                 return;
             case Constants.DATATYPE_LONG:
-                obj.put("answer", (long) answerValue.getValue());
+                obj.put("answer", (long)answerValue.getValue());
                 return;
             case Constants.DATATYPE_DECIMAL:
-                obj.put("answer", (double) answerValue.getValue());
+                obj.put("answer", (double)answerValue.getValue());
                 return;
             case Constants.DATATYPE_DATE:
-                obj.put("answer", (DateUtils.formatDate((Date) answerValue.getValue(), DateUtils.FORMAT_ISO8601)));
+                obj.put("answer", (DateUtils.formatDate((Date)answerValue.getValue(),
+                        DateUtils.FORMAT_ISO8601)));
                 return;
             case Constants.DATATYPE_TIME:
                 obj.put("answer", answerValue.getDisplayText());
@@ -161,7 +164,7 @@ public class PromptToJson {
                 obj.put("answer", answer.toString("yyyy-MM-dd'T'HH:mm:ssZZ"));
                 return;
             case Constants.DATATYPE_CHOICE:
-                Selection singleSelection = ((Selection) answerValue.getValue());
+                Selection singleSelection = ((Selection)answerValue.getValue());
                 singleSelection.attachChoice(prompt.getQuestion());
                 int singleOrdinal = singleSelection.getTouchformsIndex();
                 if (singleOrdinal > 0) {
@@ -169,20 +172,21 @@ public class PromptToJson {
                 }
                 return;
             case Constants.DATATYPE_CHOICE_LIST:
-                Vector<Selection> selections = ((SelectMultiData) answerValue).getValue();
+                Vector<Selection> selections = ((SelectMultiData)answerValue).getValue();
                 JSONArray acc = new JSONArray();
                 for (Selection selection : selections) {
                     selection.attachChoice(prompt.getQuestion());
                     int multiOrdinal = selection.getTouchformsIndex();
-                    if (multiOrdinal > 0){
+                    if (multiOrdinal > 0) {
                         acc.put(multiOrdinal);
                     }
                 }
                 obj.put("answer", acc);
                 return;
             case Constants.DATATYPE_GEOPOINT:
-                GeoPointData geoPointData = ((GeoPointData) prompt.getAnswerValue());
-                double[] coords = new double[]{geoPointData.getLatitude(), geoPointData.getLongitude()};
+                GeoPointData geoPointData = ((GeoPointData)prompt.getAnswerValue());
+                double[] coords =
+                        new double[]{geoPointData.getLatitude(), geoPointData.getLongitude()};
                 obj.put("answer", new JSONArray(Arrays.toString(coords)));
                 return;
             case Constants.DATATYPE_BINARY:
@@ -191,15 +195,18 @@ public class PromptToJson {
     }
 
     /**
-     * Given a prompt, generate a JSONArray of the possible select choices. return empty array if no choices.
+     * Given a prompt, generate a JSONArray of the possible select choices. return empty array if no
+     * choices.
      */
     private static JSONArray parseSelect(FormEntryPrompt prompt) {
         JSONArray obj = new JSONArray();
         for (SelectChoice choice : prompt.getSelectChoices()) {
             String choiceValue = prompt.getSelectChoiceText(choice);
-            if (prompt.getControlType() == Constants.CONTROL_SELECT_MULTI && choice.getValue().contains(" ")) {
-                throw new ApplicationConfigException(String.format("Select answer options cannot contain spaces. " +
-                        "Question %s with answer %s", prompt, choiceValue));
+            if (prompt.getControlType() == Constants.CONTROL_SELECT_MULTI
+                    && choice.getValue().contains(" ")) {
+                throw new ApplicationConfigException(
+                        String.format("Select answer options cannot contain spaces. " +
+                                "Question %s with answer %s", prompt, choiceValue));
             }
             obj.put(prompt.getSelectChoiceText(choice));
         }

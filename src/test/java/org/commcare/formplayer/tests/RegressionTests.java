@@ -1,20 +1,19 @@
 package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.NewFormResponse;
+import org.commcare.formplayer.utils.TestContext;
 import org.commcare.util.screen.CommCareSessionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-
-import org.commcare.formplayer.utils.TestContext;
+import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Regression tests for fixed behaviors
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class RegressionTests extends BaseTestClass{
+public class RegressionTests extends BaseTestClass {
 
     @Override
     @BeforeEach
@@ -32,11 +31,11 @@ public class RegressionTests extends BaseTestClass{
     public void testBadCaseSelection() {
         try {
             sessionNavigate(new String[]{"2", "1"}, "doublemgmt", NewFormResponse.class);
-        } catch(Exception e) {
+        } catch (Exception e) {
             assert e.getCause() instanceof CommCareSessionException;
         }
     }
-    
+
     @Test
     public void testReportModule() throws Exception {
         configureRestoreFactory("modulerelevancydomain", "modulerelevancyusername");

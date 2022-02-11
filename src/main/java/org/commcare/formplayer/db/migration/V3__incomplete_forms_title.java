@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 /**
  * Initialize the formplayer session database
+ *
  * @author wspride
  */
 public class V3__incomplete_forms_title extends BaseFormplayerMigration {

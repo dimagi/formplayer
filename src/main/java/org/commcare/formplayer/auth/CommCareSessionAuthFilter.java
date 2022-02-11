@@ -1,7 +1,5 @@
 package org.commcare.formplayer.auth;
 
-import io.sentry.Sentry;
-import lombok.extern.apachecommons.CommonsLog;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.RequestUtils;
 import org.json.JSONException;
@@ -12,14 +10,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
+import lombok.extern.apachecommons.CommonsLog;
+
 /**
- * Auth filter that extracts the user details from the request (username, domain) along
- * with the session ID from the cookie.
- *
+ * Auth filter that extracts the user details from the request (username, domain) along with the
+ * session ID from the cookie.
+ * <p>
  * These are then used to authenticate the user using the HQUserDetailsService
  */
 @CommonsLog
@@ -48,9 +49,9 @@ public class CommCareSessionAuthFilter extends AbstractPreAuthenticatedProcessin
 
     @Override
     protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
-        if(request.getCookies() != null) {
+        if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if(Constants.POSTGRES_DJANGO_SESSION_ID.equals(cookie.getName())){
+                if (Constants.POSTGRES_DJANGO_SESSION_ID.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
@@ -67,7 +68,7 @@ public class CommCareSessionAuthFilter extends AbstractPreAuthenticatedProcessin
             if (username != null && domain != null) {
                 return new UserDomainPreAuthPrincipal(username, domain);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("Unable to extract user details from request", e);
             return null;
         }

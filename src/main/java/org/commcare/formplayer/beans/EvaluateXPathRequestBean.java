@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
- * Created by willpride on 1/20/16.
- * SessionResponseBean that evaluates the given XPath against the current session evaluation context
+ * Created by willpride on 1/20/16. SessionResponseBean that evaluates the given XPath against the
+ * current session evaluation context
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EvaluateXPathRequestBean extends SessionRequestBean {
@@ -14,12 +14,14 @@ public class EvaluateXPathRequestBean extends SessionRequestBean {
     private String debugOutput;
 
     // default constructor for Jackson
-    public EvaluateXPathRequestBean(){}
+    public EvaluateXPathRequestBean() {
+    }
 
     @JsonGetter(value = "xpath")
     public String getXpath() {
         return xpath;
     }
+
     @JsonSetter(value = "xpath")
     public void setXpath(String xpath) {
         this.xpath = xpath;
@@ -29,12 +31,13 @@ public class EvaluateXPathRequestBean extends SessionRequestBean {
     public String getDebugOutputLevel() {
         return debugOutput;
     }
+
     @JsonSetter(value = "debugOutput")
     public void setDebugOutputLevel(String debugOutput) {
         this.debugOutput = debugOutput;
     }
 
-    public String toString(){
+    public String toString() {
         return "EvaluateXPathRequestBean [xpath: " + xpath + ", sessionId: " + sessionId +
                 ", debugOutput: " + debugOutput + "]";
     }

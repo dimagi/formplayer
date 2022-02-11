@@ -22,18 +22,23 @@ import org.springframework.security.test.context.support.WithSecurityContext;
 import org.springframework.security.test.context.support.WithSecurityContextTestExecutionListener;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * When used with {@link WithSecurityContextTestExecutionListener} this annotation can be
- * added to a test method to emulate running with a mocked user. In order to work with
- * {@link MockMvc} The {@link SecurityContext} that is used will have the following
- * properties:
+ * When used with {@link WithSecurityContextTestExecutionListener} this annotation can be added to a
+ * test method to emulate running with a mocked user. In order to work with {@link MockMvc} The
+ * {@link SecurityContext} that is used will have the following properties:
  *
  * <ul>
  * <li>The {@link SecurityContext} created with be that of
  * {@link SecurityContextHolder#createEmptyContext()}</li>
- * <li>It will be populated with an {@link org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken} that uses
+ * <li>It will be populated with an
+ * {@link org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken} that uses
  * the username of either {@link #value()} or {@link #username()},
  * domains that are specified by {@link #domains()}, the 'current domain'
  * specified by {@link #domain()},
@@ -50,15 +55,14 @@ import java.lang.annotation.*;
 public @interface WithHqUser {
 
     /**
-     * Convenience mechanism for specifying the username. The default is "user". If
-     * {@link #username()} is specified it will be used instead of {@link #value()}
+     * Convenience mechanism for specifying the username. The default is "user". If {@link
+     * #username()} is specified it will be used instead of {@link #value()}
      */
     String value() default "user";
 
     /**
-     * The username to be used. Note that {@link #value()} is a synonym for
-     * {@link #username()}, but if {@link #username()} is specified it will take
-     * precedence.
+     * The username to be used. Note that {@link #value()} is a synonym for {@link #username()}, but
+     * if {@link #username()} is specified it will take precedence.
      */
     String username() default "";
 
@@ -68,8 +72,8 @@ public @interface WithHqUser {
     String[] domains() default {"domain"};
 
     /**
-     * The domain the user details was created for. This represents the domain of the
-     * request. The default value is "domain".
+     * The domain the user details was created for. This represents the domain of the request. The
+     * default value is "domain".
      */
     String domain() default "domain";
 
@@ -78,14 +82,14 @@ public @interface WithHqUser {
      */
     boolean isSuperUser() default false;
 
-	/**
-	 * List of enabled previews for the user. Defaults to a mock list of preview_a and preview_b
-	 */
-	String[] enabledPreviews() default {"preview_a", "preview_b"};
+    /**
+     * List of enabled previews for the user. Defaults to a mock list of preview_a and preview_b
+     */
+    String[] enabledPreviews() default {"preview_a", "preview_b"};
 
 
-	/**
-	 * List of enabled toggles for the user. Defaults to a mock list of toggle_a and toggle_b
-	 */
+    /**
+     * List of enabled toggles for the user. Defaults to a mock list of toggle_a and toggle_b
+     */
     String[] enabledToggles() default {"toggle_a", "toggle_b"};
 }

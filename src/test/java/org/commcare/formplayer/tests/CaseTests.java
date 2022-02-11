@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.commcare.cases.model.Case;
 import org.commcare.cases.util.CasePurgeFilter;
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
@@ -17,11 +19,9 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Iterator;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 /**
  * Created by willpride on 1/14/16.
- *
+ * <p>
  * This test tests that we can create and delete a case via the form API
  */
 @WebMvcTest
@@ -36,7 +36,7 @@ public class CaseTests extends BaseTestClass {
 
         UserSqlSandbox sandbox = getRestoreSandbox();
 
-        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
 
         assertEquals(15, caseStorage.getNumRecords());
         sandbox.getConnection().close();
@@ -46,7 +46,8 @@ public class CaseTests extends BaseTestClass {
         answerQuestionGetResult("0", "Tom Brady", sessionId);
         answerQuestionGetResult("1", "1", sessionId);
 
-        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_case.json", sessionId);
+        SubmitResponseBean submitResponseBean = submitForm(
+                "requests/submit/submit_request_case.json", sessionId);
 
         assertEquals("success", submitResponseBean.getStatus());
 
@@ -56,10 +57,12 @@ public class CaseTests extends BaseTestClass {
 
         // Try updating case
 
-        NewFormResponse newSessionResponse1 = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+        NewFormResponse newSessionResponse1 = startNewForm("requests/new_form/new_form_4.json",
+                "xforms/cases/update_case.xml");
         sessionId = newSessionResponse1.getSessionId();
 
-        FormEntryResponseBean responseBean = answerQuestionGetResult("0", "Test Response", sessionId);
+        FormEntryResponseBean responseBean = answerQuestionGetResult("0", "Test Response",
+                sessionId);
         QuestionBean firstResponseBean = responseBean.getTree()[0];
         assertEquals("Test Response", firstResponseBean.getAnswer());
 
@@ -75,16 +78,18 @@ public class CaseTests extends BaseTestClass {
 
     @Test
     public void testCaseClose() throws Exception {
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/close_case.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_4.json",
+                "xforms/cases/close_case.xml");
 
         UserSqlSandbox sandbox = getRestoreSandbox();
-        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
         assertEquals(15, caseStorage.getNumRecords());
 
         String sessionId = newSessionResponse.getSessionId();
         answerQuestionGetResult("0", "1", sessionId);
 
-        SubmitResponseBean submitResponseBean = submitForm("requests/submit/submit_request_not_prevalidated.json", sessionId);
+        SubmitResponseBean submitResponseBean = submitForm(
+                "requests/submit/submit_request_not_prevalidated.json", sessionId);
         assertEquals(Constants.ANSWER_RESPONSE_STATUS_NEGATIVE, submitResponseBean.getStatus());
 
         submitResponseBean = submitForm("requests/submit/submit_request_bad.json", sessionId);
@@ -92,7 +97,8 @@ public class CaseTests extends BaseTestClass {
         assertEquals(1, submitResponseBean.getErrors().keySet().size());
         assertEquals("illegal-argument", submitResponseBean.getErrors().get("0").getType());
 
-        submitResponseBean = submitForm("requests/submit/submit_request_close_case.json", sessionId);
+        submitResponseBean = submitForm("requests/submit/submit_request_close_case.json",
+                sessionId);
         assertEquals(Constants.SUBMIT_RESPONSE_STATUS_POSITIVE, submitResponseBean.getStatus());
 
         // test that we have successfully closed this case (will still be in storage)
@@ -102,7 +108,7 @@ public class CaseTests extends BaseTestClass {
         while (caseIterator.hasNext()) {
             Case cCase = (Case)caseIterator.next();
             if (!cCase.isClosed()) {
-                openCount ++;
+                openCount++;
             }
         }
         assertEquals(14, openCount);
@@ -110,12 +116,15 @@ public class CaseTests extends BaseTestClass {
 
     @Test
     public void testEvaluateInstance() throws Exception {
-        NewFormResponse newSessionResponse2 = startNewForm("requests/new_form/new_form_4.json", "xforms/cases/update_case.xml");
+        NewFormResponse newSessionResponse2 = startNewForm("requests/new_form/new_form_4.json",
+                "xforms/cases/update_case.xml");
 
         // Aside: test EvaluateXPath with instance() and multiple matching nodes works
         EvaluateXPathResponseBean evaluateXPathResponseBean =
-                evaluateXPath(newSessionResponse2.getSessionId(), "instance('casedb')/casedb/case/@case_id");
+                evaluateXPath(newSessionResponse2.getSessionId(),
+                        "instance('casedb')/casedb/case/@case_id");
 
-        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE, evaluateXPathResponseBean.getStatus());
+        assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE,
+                evaluateXPathResponseBean.getStatus());
     }
 }

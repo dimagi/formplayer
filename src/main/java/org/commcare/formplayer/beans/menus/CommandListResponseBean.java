@@ -15,7 +15,8 @@ public class CommandListResponseBean extends MenuBean {
     private final String type = "commands";
     private String layoutStyle;
 
-    CommandListResponseBean(){}
+    CommandListResponseBean() {
+    }
 
     public Command[] getCommands() {
         return commands;
@@ -25,12 +26,13 @@ public class CommandListResponseBean extends MenuBean {
         this.commands = commands;
     }
 
-    public CommandListResponseBean(MenuScreen menuScreen, SessionWrapper session, String menuSessionId){
+    public CommandListResponseBean(MenuScreen menuScreen, SessionWrapper session,
+            String menuSessionId) {
         processTitle(session);
         String[] badges = menuScreen.getBadges();
         MenuDisplayable[] options = menuScreen.getMenuDisplayables();
         Command[] commands = new Command[options.length];
-        for(int i = 0; i < options.length; i++){
+        for (int i = 0; i < options.length; i++) {
             Command command = new Command(options[i], i, session, badges[i]);
             commands[i] = command;
         }
@@ -44,7 +46,7 @@ public class CommandListResponseBean extends MenuBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "CommandListResponseBean [commands=" + Arrays.toString(commands)
                 + "MenuBean= " + super.toString() + "]";
     }

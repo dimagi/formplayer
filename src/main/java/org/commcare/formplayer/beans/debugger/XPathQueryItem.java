@@ -17,7 +17,8 @@ public class XPathQueryItem {
         this.status = status;
     }
 
-    public XPathQueryItem() {}
+    public XPathQueryItem() {
+    }
 
     public String getXpath() {
         return xpath;

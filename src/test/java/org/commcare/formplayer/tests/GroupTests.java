@@ -1,25 +1,24 @@
 package org.commcare.formplayer.tests;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.commcare.formplayer.beans.FormEntryResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.commcare.formplayer.utils.TestContext;
-
-import static org.mockito.ArgumentMatchers.any;
+import org.springframework.test.context.ContextConfiguration;
 
 /**
- * Fills out the "Basic Tests > Groups" Form from the QA plan.
- * Provides coverage of fixtures, group expansion, selects from itemsets, conditional selects
+ * Fills out the "Basic Tests > Groups" Form from the QA plan. Provides coverage of fixtures, group
+ * expansion, selects from itemsets, conditional selects
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class GroupTests extends BaseTestClass{
+public class GroupTests extends BaseTestClass {
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -35,7 +34,8 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testConditionalItemsets() throws Exception {
 
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json",
+                "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -49,7 +49,8 @@ public class GroupTests extends BaseTestClass{
         assert cityBean.getChoices().length == 0;
         assert labelBean.getCaption().equals("Selected county was: ");
 
-        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(countyBean.getIx(), "1", sessionId);
+        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(countyBean.getIx(), "1",
+                sessionId);
         // test that after making a selection our city list populates
         groupBean = mAnswerBean.getTree()[3];
         cityBean = groupBean.getChildren()[3];
@@ -71,7 +72,7 @@ public class GroupTests extends BaseTestClass{
     public String toPrettyTree(QuestionBean[] questionBean) {
         try {
             return new ObjectMapper().writeValueAsString(questionBean);
-        } catch(JsonProcessingException e){
+        } catch (JsonProcessingException e) {
             return "Error: " + e;
         }
     }
@@ -79,7 +80,8 @@ public class GroupTests extends BaseTestClass{
     @Test
     public void testMultiSelectGroups() throws Exception {
 
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json",
+                "xforms/groups.xml");
 
         String sessionId = newSessionResponse.getSessionId();
 
@@ -88,7 +90,8 @@ public class GroupTests extends BaseTestClass{
         QuestionBean[] children = groupBean.getChildren();
         assert children.length == 1;
 
-        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(children[0].getIx(), "1", sessionId);
+        FormEntryResponseBean mAnswerBean = answerQuestionGetResult(children[0].getIx(), "1",
+                sessionId);
         groupBean = mAnswerBean.getTree()[1];
         children = groupBean.getChildren();
 
@@ -113,6 +116,7 @@ public class GroupTests extends BaseTestClass{
 
     @Test
     public void testInnerOuterGroups() throws Exception {
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json", "xforms/groups.xml");
+        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_group.json",
+                "xforms/groups.xml");
     }
 }
