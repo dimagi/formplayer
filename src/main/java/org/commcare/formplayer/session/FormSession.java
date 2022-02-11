@@ -547,13 +547,13 @@ public class FormSession {
         session.setCurrentIndex(formController.getFormIndex().toString());
     }
 
-    public FormEntryResponseBean getCurrentJSON() throws IOException {
+    public FormEntryResponseBean getCurrentJson() throws IOException {
         JSONObject jsonObject = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel);
         return new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
     }
 
     @Trace
-    public FormEntryResponseBean answerQuestionToJSON(Object answer, String answerIndex)
+    public FormEntryResponseBean answerQuestionToJson(Object answer, String answerIndex)
             throws IOException {
         if (answerIndex == null) {
             answerIndex = session.getCurrentIndex();
