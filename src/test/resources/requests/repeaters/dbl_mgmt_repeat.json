@@ -1,4 +1,7 @@
 {
-  "session_id":"overridethis",
-  "selections":[2, "action 0"]
+  "session_id": "overridethis",
+  "selections": [
+    2,
+    "action 0"
+  ]
 }

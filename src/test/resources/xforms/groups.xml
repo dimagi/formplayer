@@ -1,91 +1,117 @@
-<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms" xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:vellum="http://commcarehq.org/xforms/vellum">
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns:orx="http://openrosa.org/jr/xforms"
+    xmlns="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:jr="http://openrosa.org/javarosa">
     <h:head>
         <h:title>Groups</h:title>
         <model>
             <instance>
-                <data xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/C1417AEE-F51D-4BA6-9769-381896D4CB9F" uiVersion="1" version="711" name="Groups">
-                    <q_intro/>
+                <data xmlns="http://openrosa.org/formdesigner/C1417AEE-F51D-4BA6-9769-381896D4CB9F"
+                    uiVersion="1" version="711" name="Groups">
+                    <q_intro />
                     <onepagegroup>
-                        <top_label/>
-                        <multiple_one/>
-                        <multiple_select/>
-                        <multiple_sel_other/>
-                        <multiple_text/>
+                        <top_label />
+                        <multiple_one />
+                        <multiple_select />
+                        <multiple_sel_other />
+                        <multiple_text />
                     </onepagegroup>
                     <dynamic_refresh_text>
-                        <test_explanation/>
-                        <first_select/>
-                        <dependent_label/>
+                        <test_explanation />
+                        <first_select />
+                        <dependent_label />
                     </dynamic_refresh_text>
                     <dynamic_refresh_select>
-                        <test_explanation/>
-                        <county_select/>
-                        <test_selected_county/>
-                        <city_select/>
+                        <test_explanation />
+                        <county_select />
+                        <test_selected_county />
+                        <city_select />
                     </dynamic_refresh_select>
-                    <q_skip_one/>
+                    <q_skip_one />
                     <group_one>
-                        <group_label/>
+                        <group_label />
                     </group_one>
-                    <q_skip_inner/>
+                    <q_skip_inner />
                     <outer_group>
                         <inner_group>
-                            <inner/>
+                            <inner />
                         </inner_group>
-                        <q_outer_label/>
+                        <q_outer_label />
                     </outer_group>
                     <q_empty>
-                        <q_label_egroup/>
+                        <q_label_egroup />
                     </q_empty>
-                    <empty_group_intro/>
-                    <empty_group/>
+                    <empty_group_intro />
+                    <empty_group />
                     <new_q_list>
-                        <multi_q_list/>
-                        <multi_y/>
-                        <multi_answer/>
-                        <any_item/>
+                        <multi_q_list />
+                        <multi_y />
+                        <multi_answer />
+                        <any_item />
                     </new_q_list>
-                    <orx:meta xmlns:cc="http://commcarehq.org/xforms"><orx:deviceID/><orx:timeStart/><orx:timeEnd/><orx:username/><orx:userID/><orx:instanceID/><cc:appVersion/><cc:location/></orx:meta></data>
-            </instance><instance id="commcaresession" src="jr://instance/session"/>
-            <instance src="jr://fixture/item-list:County" id="County"/>
-            <instance src="jr://fixture/item-list:City" id="City"/>
-            <bind nodeset="/data/q_intro"/>
-            <bind nodeset="/data/onepagegroup"/>
-            <bind nodeset="/data/onepagegroup/top_label" relevant="/data/onepagegroup/multiple_select = 'popinbug'"/>
-            <bind nodeset="/data/onepagegroup/multiple_one"/>
-            <bind nodeset="/data/onepagegroup/multiple_select" relevant="/data/onepagegroup/multiple_one = 'select'"/>
-            <bind nodeset="/data/onepagegroup/multiple_sel_other" relevant="/data/onepagegroup/multiple_select = 'other'"/>
-            <bind nodeset="/data/onepagegroup/multiple_text" type="xsd:string" constraint="string-length(.) &lt; 8" jr:constraintMsg="jr:itext('multiple_text-constraintMsg')" relevant="/data/onepagegroup/multiple_one = 'text_entry'"/>
-            <bind nodeset="/data/dynamic_refresh_text"/>
-            <bind nodeset="/data/dynamic_refresh_text/test_explanation"/>
-            <bind nodeset="/data/dynamic_refresh_text/first_select"/>
-            <bind nodeset="/data/dynamic_refresh_text/dependent_label"/>
-            <bind nodeset="/data/dynamic_refresh_select"/>
-            <bind nodeset="/data/dynamic_refresh_select/test_explanation"/>
-            <bind nodeset="/data/dynamic_refresh_select/county_select"/>
-            <bind nodeset="/data/dynamic_refresh_select/test_selected_county"/>
-            <bind nodeset="/data/dynamic_refresh_select/city_select"/>
-            <bind nodeset="/data/q_skip_one"/>
-            <bind nodeset="/data/group_one" relevant="/data/q_skip_one != 'yes'"/>
-            <bind nodeset="/data/group_one/group_label"/>
-            <bind nodeset="/data/q_skip_inner"/>
-            <bind nodeset="/data/outer_group" relevant="/data/q_skip_inner != 'outer'"/>
-            <bind nodeset="/data/outer_group/inner_group" relevant="/data/q_skip_inner != 'inner'"/>
-            <bind nodeset="/data/outer_group/inner_group/inner"/>
-            <bind nodeset="/data/outer_group/q_outer_label"/>
-            <bind nodeset="/data/q_empty"/>
-            <bind nodeset="/data/q_empty/q_label_egroup"/>
-            <bind nodeset="/data/empty_group_intro"/>
-            <bind nodeset="/data/empty_group"/>
-            <bind nodeset="/data/new_q_list" relevant="/data/onepagegroup/multiple_select = 'new_list'"/>
-            <bind nodeset="/data/new_q_list/multi_q_list"/>
-            <bind nodeset="/data/new_q_list/multi_y" relevant="/data/new_q_list/multi_q_list = 'y'"/>
-            <bind nodeset="/data/new_q_list/multi_answer"/>
-            <bind nodeset="/data/new_q_list/any_item" relevant="selected(/data/new_q_list/multi_answer, '1') or selected(/data/new_q_list/multi_answer, '2') or selected(/data/new_q_list/multi_answer, '3')"/>
+                    <orx:meta xmlns:cc="http://commcarehq.org/xforms">
+                        <orx:deviceID />
+                        <orx:timeStart />
+                        <orx:timeEnd />
+                        <orx:username />
+                        <orx:userID />
+                        <orx:instanceID />
+                        <cc:appVersion />
+                        <cc:location />
+                    </orx:meta>
+                </data>
+            </instance>
+            <instance id="commcaresession" src="jr://instance/session" />
+            <instance src="jr://fixture/item-list:County" id="County" />
+            <instance src="jr://fixture/item-list:City" id="City" />
+            <bind nodeset="/data/q_intro" />
+            <bind nodeset="/data/onepagegroup" />
+            <bind nodeset="/data/onepagegroup/top_label"
+                relevant="/data/onepagegroup/multiple_select = 'popinbug'" />
+            <bind nodeset="/data/onepagegroup/multiple_one" />
+            <bind nodeset="/data/onepagegroup/multiple_select"
+                relevant="/data/onepagegroup/multiple_one = 'select'" />
+            <bind nodeset="/data/onepagegroup/multiple_sel_other"
+                relevant="/data/onepagegroup/multiple_select = 'other'" />
+            <bind nodeset="/data/onepagegroup/multiple_text" type="xsd:string"
+                constraint="string-length(.) &lt; 8"
+                jr:constraintMsg="jr:itext('multiple_text-constraintMsg')"
+                relevant="/data/onepagegroup/multiple_one = 'text_entry'" />
+            <bind nodeset="/data/dynamic_refresh_text" />
+            <bind nodeset="/data/dynamic_refresh_text/test_explanation" />
+            <bind nodeset="/data/dynamic_refresh_text/first_select" />
+            <bind nodeset="/data/dynamic_refresh_text/dependent_label" />
+            <bind nodeset="/data/dynamic_refresh_select" />
+            <bind nodeset="/data/dynamic_refresh_select/test_explanation" />
+            <bind nodeset="/data/dynamic_refresh_select/county_select" />
+            <bind nodeset="/data/dynamic_refresh_select/test_selected_county" />
+            <bind nodeset="/data/dynamic_refresh_select/city_select" />
+            <bind nodeset="/data/q_skip_one" />
+            <bind nodeset="/data/group_one" relevant="/data/q_skip_one != 'yes'" />
+            <bind nodeset="/data/group_one/group_label" />
+            <bind nodeset="/data/q_skip_inner" />
+            <bind nodeset="/data/outer_group" relevant="/data/q_skip_inner != 'outer'" />
+            <bind nodeset="/data/outer_group/inner_group"
+                relevant="/data/q_skip_inner != 'inner'" />
+            <bind nodeset="/data/outer_group/inner_group/inner" />
+            <bind nodeset="/data/outer_group/q_outer_label" />
+            <bind nodeset="/data/q_empty" />
+            <bind nodeset="/data/q_empty/q_label_egroup" />
+            <bind nodeset="/data/empty_group_intro" />
+            <bind nodeset="/data/empty_group" />
+            <bind nodeset="/data/new_q_list"
+                relevant="/data/onepagegroup/multiple_select = 'new_list'" />
+            <bind nodeset="/data/new_q_list/multi_q_list" />
+            <bind nodeset="/data/new_q_list/multi_y"
+                relevant="/data/new_q_list/multi_q_list = 'y'" />
+            <bind nodeset="/data/new_q_list/multi_answer" />
+            <bind nodeset="/data/new_q_list/any_item"
+                relevant="selected(/data/new_q_list/multi_answer, '1') or selected(/data/new_q_list/multi_answer, '2') or selected(/data/new_q_list/multi_answer, '3')" />
             <itext>
                 <translation lang="en" default="">
                     <text id="q_intro-label">
-                        <value>This following questions will test question list group structures. Please test all combinations of inputs.</value>
+                        <value>This following questions will test question list group structures.
+                            Please test all combinations of inputs.
+                        </value>
                     </text>
                     <text id="onepagegroup-label">
                         <value>Multiple Questions List</value>
@@ -94,7 +120,9 @@
                         <value>If you can see this, the "pop-in" bug has been fixed.</value>
                     </text>
                     <text id="multiple_one-label">
-                        <value>If multiple questions per screen are supported, you should see a new question on the same screen after you make a selection:</value>
+                        <value>If multiple questions per screen are supported, you should see a new
+                            question on the same screen after you make a selection:
+                        </value>
                     </text>
                     <text id="multiple_one-text_entry-label">
                         <value>Display a new text question</value>
@@ -103,13 +131,18 @@
                         <value>Display a new multiple choice question</value>
                     </text>
                     <text id="multiple_select-label">
-                        <value>If you selected, "Display a new multiple choice question", this question should display on the same screen, if supported. Otherwise, it will be shown in a different screen. Select a choice:</value>
+                        <value>If you selected, "Display a new multiple choice question", this
+                            question should display on the same screen, if supported. Otherwise, it
+                            will be shown in a different screen. Select a choice:
+                        </value>
                     </text>
                     <text id="onepagegroup/multiple_select-new_list-label">
-                        <value>New question list </value>
+                        <value>New question list</value>
                     </text>
                     <text id="multiple_select-popinbug-label">
-                        <value>Select this to test the pop in bug. If selected, a message should appear at the top of your screen.</value>
+                        <value>Select this to test the pop in bug. If selected, a message should
+                            appear at the top of your screen.
+                        </value>
                     </text>
                     <text id="multiple_select-other-label">
                         <value>Other</value>
@@ -118,7 +151,10 @@
                         <value>Please continue.</value>
                     </text>
                     <text id="multiple_text-label">
-                        <value>If you selected, "A new text question", this text question should display on the same screen, if supported. Otherwise, it will be on a different screen. Please proceed.</value>
+                        <value>If you selected, "A new text question", this text question should
+                            display on the same screen, if supported. Otherwise, it will be on a
+                            different screen. Please proceed.
+                        </value>
                     </text>
                     <text id="multiple_text-constraintMsg">
                         <value>Too many characters!</value>
@@ -127,10 +163,14 @@
                         <value>Dynamic Refresh of Text in Question Lists</value>
                     </text>
                     <text id="dynamic_refresh_text/test_explanation-label">
-                        <value>This item tests that display text whose content should refresh based upon the answer to another question in the list is updating properly.</value>
+                        <value>This item tests that display text whose content should refresh based
+                            upon the answer to another question in the list is updating properly.
+                        </value>
                     </text>
                     <text id="dynamic_refresh_text/first_select-label">
-                        <value>Changing your selection here should update the text below this question.</value>
+                        <value>Changing your selection here should update the text below this
+                            question.
+                        </value>
                     </text>
                     <text id="dynamic_refresh_text/first_select-choice_value_1-label">
                         <value>Choice 1</value>
@@ -142,25 +182,39 @@
                         <value>Choice 3</value>
                     </text>
                     <text id="dynamic_refresh_text/dependent_label-label">
-                        <value>You selected <output value="/data/dynamic_refresh_text/first_select"/></value>
+                        <value>You selected
+                            <output value="/data/dynamic_refresh_text/first_select" />
+                        </value>
                     </text>
                     <text id="dynamic_refresh_select-label">
                         <value>Dynamic Refresh of Select Choices in Question Lists</value>
                     </text>
                     <text id="dynamic_refresh_select/test_explanation-label">
-                        <value>This item tests that a select question whose select choices should refresh based upon the answer to another question in the list is updating properly.</value>
+                        <value>This item tests that a select question whose select choices should
+                            refresh based upon the answer to another question in the list is
+                            updating properly.
+                        </value>
                     </text>
                     <text id="dynamic_refresh_select/county_select-label">
-                        <value>Changing your county selection should update the available options in the City select question below.</value>
+                        <value>Changing your county selection should update the available options in
+                            the City select question below.
+                        </value>
                     </text>
                     <text id="dynamic_refresh_select/test_selected_county-label">
-                        <value>Selected county was: <output value="/data/dynamic_refresh_select/county_select"/></value>
+                        <value>Selected county was:
+                            <output value="/data/dynamic_refresh_select/county_select" />
+                        </value>
                     </text>
                     <text id="dynamic_refresh_select/city_select-label">
-                        <value>If you selected Essex above, you should see answer options Boston and Cambridge. If you selected Middlesex, you should see Wilmington and Billerica.</value>
+                        <value>If you selected Essex above, you should see answer options Boston and
+                            Cambridge. If you selected Middlesex, you should see Wilmington and
+                            Billerica.
+                        </value>
                     </text>
                     <text id="q_skip_one-label">
-                        <value>Now we'll test other grouping structures. Do you want to skip the first group?</value>
+                        <value>Now we'll test other grouping structures. Do you want to skip the
+                            first group?
+                        </value>
                     </text>
                     <text id="q_skip_one-yes-label">
                         <value>Yes</value>
@@ -172,10 +226,12 @@
                         <value>Group One</value>
                     </text>
                     <text id="group_one/group_label-label">
-                        <value>This item belongs to Group One. </value>
+                        <value>This item belongs to Group One.</value>
                     </text>
                     <text id="q_skip_inner-label">
-                        <value>The next section tests groups within other groups. Which parts of the group do you want to skip?</value>
+                        <value>The next section tests groups within other groups. Which parts of the
+                            group do you want to skip?
+                        </value>
                     </text>
                     <text id="q_skip_inner-none-label">
                         <value>None</value>
@@ -193,16 +249,20 @@
                         <value>Inner Group</value>
                     </text>
                     <text id="inner-label">
-                        <value>This item belongs to the inner group. </value>
+                        <value>This item belongs to the inner group.</value>
                     </text>
                     <text id="q_outer_label-label">
                         <value>This item belongs to the outer group.</value>
                     </text>
                     <text id="q_label_egroup-label">
-                        <value>This label is in a group with no name.  The group name should not be displayed.</value>
+                        <value>This label is in a group with no name. The group name should not be
+                            displayed.
+                        </value>
                     </text>
                     <text id="empty_group_intro-label">
-                        <value>The next item in the form is an empty group. It may or may not display, but the form should not crash.</value>
+                        <value>The next item in the form is an empty group. It may or may not
+                            display, but the form should not crash.
+                        </value>
                     </text>
                     <text id="empty_group-label">
                         <value>Empty Group</value>
@@ -211,7 +271,9 @@
                         <value>New Question List</value>
                     </text>
                     <text id="question74-label">
-                        <value>To display a label select "Yes". Select "No" to not show the label and move on.</value>
+                        <value>To display a label select "Yes". Select "No" to not show the label
+                            and move on.
+                        </value>
                     </text>
                     <text id="question77-label">
                         <value>This should display if you selected "Yes" above.</value>
@@ -229,12 +291,15 @@
                         <value>Three</value>
                     </text>
                     <text id="question83-label">
-                        <value>This should show if an item was selected above. Please continue.</value>
+                        <value>This should show if an item was selected above. Please continue.
+                        </value>
                     </text>
                 </translation>
                 <translation lang="hin">
                     <text id="q_intro-label">
-                        <value>This following questions will test question list group structures. Please test all combinations of inputs.</value>
+                        <value>This following questions will test question list group structures.
+                            Please test all combinations of inputs.
+                        </value>
                     </text>
                     <text id="onepagegroup-label">
                         <value>Multiple Questions List</value>
@@ -243,7 +308,9 @@
                         <value>If you can see this, the "pop-in" bug has been fixed.</value>
                     </text>
                     <text id="multiple_one-label">
-                        <value>If multiple questions per screen are supported, you should see a new question on the same screen after you make a selection:</value>
+                        <value>If multiple questions per screen are supported, you should see a new
+                            question on the same screen after you make a selection:
+                        </value>
                     </text>
                     <text id="multiple_one-text_entry-label">
                         <value>Display a new text question</value>
@@ -252,13 +319,18 @@
                         <value>Display a new multiple choice question</value>
                     </text>
                     <text id="multiple_select-label">
-                        <value>If you selected, "Display a new multiple choice question", this question should display on the same screen, if supported. Otherwise, it will be shown in a different screen. Select a choice:</value>
+                        <value>If you selected, "Display a new multiple choice question", this
+                            question should display on the same screen, if supported. Otherwise, it
+                            will be shown in a different screen. Select a choice:
+                        </value>
                     </text>
                     <text id="onepagegroup/multiple_select-new_list-label">
-                        <value>New question list </value>
+                        <value>New question list</value>
                     </text>
                     <text id="multiple_select-popinbug-label">
-                        <value>Select this to test the pop in bug. If selected, a message should appear at the top of your screen.</value>
+                        <value>Select this to test the pop in bug. If selected, a message should
+                            appear at the top of your screen.
+                        </value>
                     </text>
                     <text id="multiple_select-other-label">
                         <value>Other</value>
@@ -267,7 +339,10 @@
                         <value>Please continue.</value>
                     </text>
                     <text id="multiple_text-label">
-                        <value>If you selected, "A new text question", this text question should display on the same screen, if supported. Otherwise, it will be on a different screen. Please proceed.</value>
+                        <value>If you selected, "A new text question", this text question should
+                            display on the same screen, if supported. Otherwise, it will be on a
+                            different screen. Please proceed.
+                        </value>
                     </text>
                     <text id="multiple_text-constraintMsg">
                         <value>Too many characters!</value>
@@ -276,10 +351,14 @@
                         <value>Dynamic Refresh of Text in Question Lists</value>
                     </text>
                     <text id="dynamic_refresh_text/test_explanation-label">
-                        <value>This item tests that display text whose content should refresh based upon the answer to another question in the list is updating properly.</value>
+                        <value>This item tests that display text whose content should refresh based
+                            upon the answer to another question in the list is updating properly.
+                        </value>
                     </text>
                     <text id="dynamic_refresh_text/first_select-label">
-                        <value>Changing your selection here should update the text below this question.</value>
+                        <value>Changing your selection here should update the text below this
+                            question.
+                        </value>
                     </text>
                     <text id="dynamic_refresh_text/first_select-choice_value_1-label">
                         <value>Choice 1</value>
@@ -291,25 +370,37 @@
                         <value>Choice 3</value>
                     </text>
                     <text id="dynamic_refresh_text/dependent_label-label">
-                        <value>You selected <output value="/data/dynamic_refresh_text/first_select"/></value>
+                        <value>You selected
+                            <output value="/data/dynamic_refresh_text/first_select" />
+                        </value>
                     </text>
                     <text id="dynamic_refresh_select-label">
                         <value>Dynamic Refresh of Select Choices in Question Lists</value>
                     </text>
                     <text id="dynamic_refresh_select/test_explanation-label">
-                        <value>This item tests that a select question whose select choices should refresh based upon the answer to another question in the list is updating properly.</value>
+                        <value>This item tests that a select question whose select choices should
+                            refresh based upon the answer to another question in the list is
+                            updating properly.
+                        </value>
                     </text>
                     <text id="dynamic_refresh_select/county_select-label">
-                        <value>Changing your county selection should update the available options in the City select question below.</value>
+                        <value>Changing your county selection should update the available options in
+                            the City select question below.
+                        </value>
                     </text>
                     <text id="dynamic_refresh_select/test_selected_county-label">
                         <value>s</value>
                     </text>
                     <text id="dynamic_refresh_select/city_select-label">
-                        <value>If you selected 'Essex' above, you should see answer options 'Boston' and 'Cambridge'. If you selected 'Middlesex', you should see 'Wilmington' and 'Billerica'.</value>
+                        <value>If you selected 'Essex' above, you should see answer options 'Boston'
+                            and 'Cambridge'. If you selected 'Middlesex', you should see
+                            'Wilmington' and 'Billerica'.
+                        </value>
                     </text>
                     <text id="q_skip_one-label">
-                        <value>Now we'll test other grouping structures. Do you want to skip the first group?</value>
+                        <value>Now we'll test other grouping structures. Do you want to skip the
+                            first group?
+                        </value>
                     </text>
                     <text id="q_skip_one-yes-label">
                         <value>Yes</value>
@@ -321,10 +412,12 @@
                         <value>Group One</value>
                     </text>
                     <text id="group_one/group_label-label">
-                        <value>This item belongs to Group One. </value>
+                        <value>This item belongs to Group One.</value>
                     </text>
                     <text id="q_skip_inner-label">
-                        <value>The next section tests groups within other groups. Which parts of the group do you want to skip?</value>
+                        <value>The next section tests groups within other groups. Which parts of the
+                            group do you want to skip?
+                        </value>
                     </text>
                     <text id="q_skip_inner-none-label">
                         <value>None</value>
@@ -342,16 +435,20 @@
                         <value>Inner Group</value>
                     </text>
                     <text id="inner-label">
-                        <value>This item belongs to the inner group. </value>
+                        <value>This item belongs to the inner group.</value>
                     </text>
                     <text id="q_outer_label-label">
                         <value>This item belongs to the outer group.</value>
                     </text>
                     <text id="q_label_egroup-label">
-                        <value>This label is in a group with no name.  The group name should not be displayed.</value>
+                        <value>This label is in a group with no name. The group name should not be
+                            displayed.
+                        </value>
                     </text>
                     <text id="empty_group_intro-label">
-                        <value>The next item in the form is an empty group. It may or may not display, but the form should not crash.</value>
+                        <value>The next item in the form is an empty group. It may or may not
+                            display, but the form should not crash.
+                        </value>
                     </text>
                     <text id="empty_group-label">
                         <value>Empty Group</value>
@@ -360,7 +457,9 @@
                         <value>New Question List</value>
                     </text>
                     <text id="question74-label">
-                        <value>To display a label select "Yes". Select "No" to not show the label and move on.</value>
+                        <value>To display a label select "Yes". Select "No" to not show the label
+                            and move on.
+                        </value>
                     </text>
                     <text id="question77-label">
                         <value>This should display if you selected "Yes" above.</value>
@@ -378,190 +477,210 @@
                         <value>Three</value>
                     </text>
                     <text id="question83-label">
-                        <value>This should show if an item was selected above. Please continue.</value>
+                        <value>This should show if an item was selected above. Please continue.
+                        </value>
                     </text>
                 </translation>
             </itext>
-            <setvalue event="xforms-ready" ref="/data/meta/deviceID" value="instance('commcaresession')/session/context/deviceid"/><setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()"/><bind nodeset="/data/meta/timeStart" type="xsd:dateTime"/><setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()"/><bind nodeset="/data/meta/timeEnd" type="xsd:dateTime"/><setvalue event="xforms-ready" ref="/data/meta/username" value="instance('commcaresession')/session/context/username"/><setvalue event="xforms-ready" ref="/data/meta/userID" value="instance('commcaresession')/session/context/userid"/><setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()"/><setvalue event="xforms-ready" ref="/data/meta/appVersion" value="instance('commcaresession')/session/context/appversion"/><orx:pollsensor event="xforms-ready" ref="/data/meta/location"/><bind nodeset="/data/meta/location" type="geopoint"/></model>
+            <setvalue event="xforms-ready" ref="/data/meta/deviceID"
+                value="instance('commcaresession')/session/context/deviceid" />
+            <setvalue event="xforms-ready" ref="/data/meta/timeStart" value="now()" />
+            <bind nodeset="/data/meta/timeStart" type="xsd:dateTime" />
+            <setvalue event="xforms-revalidate" ref="/data/meta/timeEnd" value="now()" />
+            <bind nodeset="/data/meta/timeEnd" type="xsd:dateTime" />
+            <setvalue event="xforms-ready" ref="/data/meta/username"
+                value="instance('commcaresession')/session/context/username" />
+            <setvalue event="xforms-ready" ref="/data/meta/userID"
+                value="instance('commcaresession')/session/context/userid" />
+            <setvalue event="xforms-ready" ref="/data/meta/instanceID" value="uuid()" />
+            <setvalue event="xforms-ready" ref="/data/meta/appVersion"
+                value="instance('commcaresession')/session/context/appversion" />
+            <orx:pollsensor event="xforms-ready" ref="/data/meta/location" />
+            <bind nodeset="/data/meta/location" type="geopoint" />
+        </model>
     </h:head>
     <h:body>
         <trigger ref="/data/q_intro">
-            <label ref="jr:itext('q_intro-label')"/>
+            <label ref="jr:itext('q_intro-label')" />
         </trigger>
         <group ref="/data/onepagegroup" appearance="field-list">
-            <label ref="jr:itext('onepagegroup-label')"/>
+            <label ref="jr:itext('onepagegroup-label')" />
             <trigger ref="/data/onepagegroup/top_label">
-                <label ref="jr:itext('top_label-label')"/>
+                <label ref="jr:itext('top_label-label')" />
             </trigger>
             <select1 ref="/data/onepagegroup/multiple_one">
-                <label ref="jr:itext('multiple_one-label')"/>
+                <label ref="jr:itext('multiple_one-label')" />
                 <item>
-                    <label ref="jr:itext('multiple_one-text_entry-label')"/>
+                    <label ref="jr:itext('multiple_one-text_entry-label')" />
                     <value>text_entry</value>
                 </item>
                 <item>
-                    <label ref="jr:itext('onepagegroup/multiple_one-select-label')"/>
+                    <label ref="jr:itext('onepagegroup/multiple_one-select-label')" />
                     <value>select</value>
                 </item>
             </select1>
             <select1 ref="/data/onepagegroup/multiple_select">
-                <label ref="jr:itext('multiple_select-label')"/>
+                <label ref="jr:itext('multiple_select-label')" />
                 <item>
-                    <label ref="jr:itext('onepagegroup/multiple_select-new_list-label')"/>
+                    <label ref="jr:itext('onepagegroup/multiple_select-new_list-label')" />
                     <value>new_list</value>
                 </item>
                 <item>
-                    <label ref="jr:itext('multiple_select-popinbug-label')"/>
+                    <label ref="jr:itext('multiple_select-popinbug-label')" />
                     <value>popinbug</value>
                 </item>
                 <item>
-                    <label ref="jr:itext('multiple_select-other-label')"/>
+                    <label ref="jr:itext('multiple_select-other-label')" />
                     <value>other</value>
                 </item>
             </select1>
             <trigger ref="/data/onepagegroup/multiple_sel_other">
-                <label ref="jr:itext('multiple_sel_other-label')"/>
+                <label ref="jr:itext('multiple_sel_other-label')" />
             </trigger>
             <input ref="/data/onepagegroup/multiple_text">
-                <label ref="jr:itext('multiple_text-label')"/>
-                <alert ref="jr:itext('multiple_text-constraintMsg')"/>
+                <label ref="jr:itext('multiple_text-label')" />
+                <alert ref="jr:itext('multiple_text-constraintMsg')" />
             </input>
         </group>
         <group ref="/data/dynamic_refresh_text" appearance="field-list">
-            <label ref="jr:itext('dynamic_refresh_text-label')"/>
+            <label ref="jr:itext('dynamic_refresh_text-label')" />
             <trigger ref="/data/dynamic_refresh_text/test_explanation" appearance="minimal">
-                <label ref="jr:itext('dynamic_refresh_text/test_explanation-label')"/>
+                <label ref="jr:itext('dynamic_refresh_text/test_explanation-label')" />
             </trigger>
             <select1 ref="/data/dynamic_refresh_text/first_select">
-                <label ref="jr:itext('dynamic_refresh_text/first_select-label')"/>
+                <label ref="jr:itext('dynamic_refresh_text/first_select-label')" />
                 <item>
-                    <label ref="jr:itext('dynamic_refresh_text/first_select-choice_value_1-label')"/>
+                    <label
+                        ref="jr:itext('dynamic_refresh_text/first_select-choice_value_1-label')" />
                     <value>choice_value_1</value>
                 </item>
                 <item>
-                    <label ref="jr:itext('dynamic_refresh_text/first_select-choice_value_2-label')"/>
+                    <label
+                        ref="jr:itext('dynamic_refresh_text/first_select-choice_value_2-label')" />
                     <value>choice_value_2</value>
                 </item>
                 <item>
-                    <label ref="jr:itext('dynamic_refresh_text/first_select-choice_value_3-label')"/>
+                    <label
+                        ref="jr:itext('dynamic_refresh_text/first_select-choice_value_3-label')" />
                     <value>choice_value_3</value>
                 </item>
             </select1>
             <trigger ref="/data/dynamic_refresh_text/dependent_label" appearance="minimal">
-                <label ref="jr:itext('dynamic_refresh_text/dependent_label-label')"/>
+                <label ref="jr:itext('dynamic_refresh_text/dependent_label-label')" />
             </trigger>
         </group>
         <group ref="/data/dynamic_refresh_select" appearance="field-list">
-            <label ref="jr:itext('dynamic_refresh_select-label')"/>
+            <label ref="jr:itext('dynamic_refresh_select-label')" />
             <trigger ref="/data/dynamic_refresh_select/test_explanation" appearance="minimal">
-                <label ref="jr:itext('dynamic_refresh_select/test_explanation-label')"/>
+                <label ref="jr:itext('dynamic_refresh_select/test_explanation-label')" />
             </trigger>
             <select1 ref="/data/dynamic_refresh_select/county_select">
-                <label ref="jr:itext('dynamic_refresh_select/county_select-label')"/>
+                <label ref="jr:itext('dynamic_refresh_select/county_select-label')" />
                 <itemset nodeset="instance('County')/County_list/County">
-                    <label ref="county"/>
-                    <value ref="id"/>
+                    <label ref="county" />
+                    <value ref="id" />
                 </itemset>
             </select1>
             <trigger ref="/data/dynamic_refresh_select/test_selected_county" appearance="minimal">
-                <label ref="jr:itext('dynamic_refresh_select/test_selected_county-label')"/>
+                <label ref="jr:itext('dynamic_refresh_select/test_selected_county-label')" />
             </trigger>
             <select1 ref="/data/dynamic_refresh_select/city_select">
-                <label ref="jr:itext('dynamic_refresh_select/city_select-label')"/>
-                <itemset nodeset="instance('City')/City_list/City[county_id = /data/dynamic_refresh_select/county_select]">
-                    <label ref="city"/>
-                    <value ref="id"/>
+                <label ref="jr:itext('dynamic_refresh_select/city_select-label')" />
+                <itemset
+                    nodeset="instance('City')/City_list/City[county_id = /data/dynamic_refresh_select/county_select]">
+                    <label ref="city" />
+                    <value ref="id" />
                 </itemset>
             </select1>
         </group>
         <select1 ref="/data/q_skip_one">
-            <label ref="jr:itext('q_skip_one-label')"/>
+            <label ref="jr:itext('q_skip_one-label')" />
             <item>
-                <label ref="jr:itext('q_skip_one-yes-label')"/>
+                <label ref="jr:itext('q_skip_one-yes-label')" />
                 <value>yes</value>
             </item>
             <item>
-                <label ref="jr:itext('q_skip_one-no-label')"/>
+                <label ref="jr:itext('q_skip_one-no-label')" />
                 <value>no</value>
             </item>
         </select1>
         <group ref="/data/group_one">
-            <label ref="jr:itext('group_one-label')"/>
+            <label ref="jr:itext('group_one-label')" />
             <trigger ref="/data/group_one/group_label" appearance="minimal">
-                <label ref="jr:itext('group_one/group_label-label')"/>
+                <label ref="jr:itext('group_one/group_label-label')" />
             </trigger>
         </group>
         <select1 ref="/data/q_skip_inner">
-            <label ref="jr:itext('q_skip_inner-label')"/>
+            <label ref="jr:itext('q_skip_inner-label')" />
             <item>
-                <label ref="jr:itext('q_skip_inner-none-label')"/>
+                <label ref="jr:itext('q_skip_inner-none-label')" />
                 <value>none</value>
             </item>
             <item>
-                <label ref="jr:itext('q_skip_inner-inner-label')"/>
+                <label ref="jr:itext('q_skip_inner-inner-label')" />
                 <value>inner</value>
             </item>
             <item>
-                <label ref="jr:itext('q_skip_inner-outer-label')"/>
+                <label ref="jr:itext('q_skip_inner-outer-label')" />
                 <value>outer</value>
             </item>
         </select1>
         <group ref="/data/outer_group">
-            <label ref="jr:itext('outer_group-label')"/>
+            <label ref="jr:itext('outer_group-label')" />
             <group ref="/data/outer_group/inner_group">
-                <label ref="jr:itext('inner_group-label')"/>
+                <label ref="jr:itext('inner_group-label')" />
                 <trigger ref="/data/outer_group/inner_group/inner">
-                    <label ref="jr:itext('inner-label')"/>
+                    <label ref="jr:itext('inner-label')" />
                 </trigger>
             </group>
             <trigger ref="/data/outer_group/q_outer_label">
-                <label ref="jr:itext('q_outer_label-label')"/>
+                <label ref="jr:itext('q_outer_label-label')" />
             </trigger>
         </group>
         <group ref="/data/q_empty">
             <trigger ref="/data/q_empty/q_label_egroup">
-                <label ref="jr:itext('q_label_egroup-label')"/>
+                <label ref="jr:itext('q_label_egroup-label')" />
             </trigger>
         </group>
         <trigger ref="/data/empty_group_intro" appearance="minimal">
-            <label ref="jr:itext('empty_group_intro-label')"/>
+            <label ref="jr:itext('empty_group_intro-label')" />
         </trigger>
         <group ref="/data/empty_group">
-            <label ref="jr:itext('empty_group-label')"/>
+            <label ref="jr:itext('empty_group-label')" />
         </group>
         <group ref="/data/new_q_list" appearance="field-list">
-            <label ref="jr:itext('new_q_list-label')"/>
+            <label ref="jr:itext('new_q_list-label')" />
             <select1 ref="/data/new_q_list/multi_q_list" appearance="minimal">
-                <label ref="jr:itext('question74-label')"/>
+                <label ref="jr:itext('question74-label')" />
                 <item>
-                    <label ref="jr:itext('q_skip_one-yes-label')"/>
+                    <label ref="jr:itext('q_skip_one-yes-label')" />
                     <value>y</value>
                 </item>
                 <item>
-                    <label ref="jr:itext('q_skip_one-no-label')"/>
+                    <label ref="jr:itext('q_skip_one-no-label')" />
                     <value>n</value>
                 </item>
             </select1>
             <trigger ref="/data/new_q_list/multi_y" appearance="minimal">
-                <label ref="jr:itext('question77-label')"/>
+                <label ref="jr:itext('question77-label')" />
             </trigger>
             <select ref="/data/new_q_list/multi_answer" appearance="minimal">
-                <label ref="jr:itext('question79-label')"/>
+                <label ref="jr:itext('question79-label')" />
                 <item>
-                    <label ref="jr:itext('question79-1-label')"/>
+                    <label ref="jr:itext('question79-1-label')" />
                     <value>1</value>
                 </item>
                 <item>
-                    <label ref="jr:itext('question79-2-label')"/>
+                    <label ref="jr:itext('question79-2-label')" />
                     <value>2</value>
                 </item>
                 <item>
-                    <label ref="jr:itext('question79-3-label')"/>
+                    <label ref="jr:itext('question79-3-label')" />
                     <value>3</value>
                 </item>
             </select>
             <trigger ref="/data/new_q_list/any_item">
-                <label ref="jr:itext('question83-label')"/>
+                <label ref="jr:itext('question83-label')" />
             </trigger>
         </group>
     </h:body>

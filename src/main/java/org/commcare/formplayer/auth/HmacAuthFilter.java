@@ -195,10 +195,10 @@ public class HmacAuthFilter extends GenericFilterBean {
 
     /**
      * An anonymous token that is used to indicate valid HMAC auth but without any user details.
-     * <p>
+     *
      * This is used for endpoints where we don't require user authentication but still require that
      * the request came from CommCare.
-     * <p>
+     *
      * Setting the role allows us to differentiate this anonymous token from a truly anonymous one
      * that is not authenticated at all.
      */

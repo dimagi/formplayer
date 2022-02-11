@@ -13,7 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class OqpsDateRegression extends BaseTestClass {
+public class OQPSDateRegression extends BaseTestClass {
 
     @Override
     @BeforeEach

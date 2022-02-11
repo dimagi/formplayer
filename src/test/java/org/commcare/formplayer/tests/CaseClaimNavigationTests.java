@@ -132,7 +132,7 @@ public class CaseClaimNavigationTests extends BaseTestClass {
                 response.getSessionId()
         );
 
-        CommandListResponseBean commandResponse = getNextScreenForEofNavigation(submitResponse,
+        CommandListResponseBean commandResponse = getNextScreenForEOFNavigation(submitResponse,
                 CommandListResponseBean.class);
 
         inputs.put("rating", "2");

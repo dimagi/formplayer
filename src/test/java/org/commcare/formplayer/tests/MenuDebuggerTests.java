@@ -23,7 +23,7 @@ public class MenuDebuggerTests extends BaseTestClass {
     @Test
     public void testMenuDebugger() throws Exception {
         // Menu session should be saved so let's run some menu xpath queries against it
-        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateMenuXpath(
+        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateMenuXPath(
                 "requests/evaluate_xpath/evaluate_xpath_menu.json"
         );
         Assertions.assertEquals(Constants.ANSWER_RESPONSE_STATUS_POSITIVE,

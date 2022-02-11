@@ -11,12 +11,12 @@ import javax.persistence.EntityManager;
 /**
  * JPA repository implementation that uses ``Session.update`` instead of ``Session.merge`` when
  * saving. This avoids the additional 'select' that happens when saving detached entities.
- * <p>
+ *
  * Formplayer caches entities between requests to avoid having to re-fetch them from the DB on
  * successive requests. Since the caching results in detached entities, the advantage of caching is
  * lost when using ``Session.merge`` since the merge will re-fetch the entity from the DB on
  * update.
- * <p>
+ *
  * It is safe to skip the select before update as long as the Formplayer request routing is
  * consistent or the caching is global across all Formplayer instances.
  */

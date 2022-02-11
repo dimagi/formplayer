@@ -20,7 +20,7 @@ public class FormplayerGraphUtil {
      * @param graphData The data to render.
      * @return Full HTML page, including head, body, and all script and style tags
      */
-    public static String getHtml(org.commcare.core.graph.model.GraphData graphData, String title)
+    public static String getHTML(org.commcare.core.graph.model.GraphData graphData, String title)
             throws GraphException {
         SortedMap<String, String> variables = new TreeMap<>();
         JSONObject config = new JSONObject();

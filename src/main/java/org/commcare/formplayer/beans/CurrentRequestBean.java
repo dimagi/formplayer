@@ -8,7 +8,7 @@ import java.util.Map;
 
 /**
  * Request to return the current question tree of the identified session
- * <p>
+ *
  * Created by willpride on 1/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)

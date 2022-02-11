@@ -20,7 +20,7 @@ import java.io.IOException;
 /**
  * Tests the compatibility of the current code runtime against the currently captured database
  * snapshots.
- * <p>
+ *
  * If these tests fail, the snapshots need to be rebuild and databases will need to be cold started
  * in any existing environments after updating.
  *

@@ -44,7 +44,7 @@ public class EndOfFormNavFormLinkingTests extends BaseTestClass {
                 getAnswers("0", "bart"),
                 response.getSessionId()
         );
-        NewFormResponse formResponse = getNextScreenForEofNavigation(submitResponse,
+        NewFormResponse formResponse = getNextScreenForEOFNavigation(submitResponse,
                 NewFormResponse.class);
         assertEquals("Followup Form 2", formResponse.getTitle());
     }
@@ -60,7 +60,7 @@ public class EndOfFormNavFormLinkingTests extends BaseTestClass {
         HashMap<String, Object> answers = getAnswers("0", "bart");  // name question
         answers.put("1", "followup2");  // next_form question
         SubmitResponseBean submitResponse = submitForm(answers, response.getSessionId());
-        NewFormResponse formResponse = getNextScreenForEofNavigation(submitResponse,
+        NewFormResponse formResponse = getNextScreenForEOFNavigation(submitResponse,
                 NewFormResponse.class);
         assertEquals("Followup Form 2", formResponse.getTitle());
     }

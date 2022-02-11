@@ -3,7 +3,10 @@
   "password": "loadpass",
   "domain": "loaddomain",
   "app_id": "loadappid",
-  "selections": [2, 1],
+  "selections": [
+    2,
+    1
+  ],
   "search_text": "t",
   "offset": 15,
   "cases_per_page": 15,

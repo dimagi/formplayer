@@ -3,7 +3,10 @@
   "password": "loadpass",
   "domain": "loaddomain",
   "app_id": "loadappid",
-  "selections": [2, 1],
+  "selections": [
+    2,
+    1
+  ],
   "installReference": "archives/basic.ccz",
   "xpath": "count(instance('casedb')/casedb/case)"
 }
