@@ -9,7 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class SyncDbRequestBean extends AuthenticatedRequestBean {
     private boolean preserveCache;
 
-    public SyncDbRequestBean(){}
+    public SyncDbRequestBean() {
+    }
 
     public boolean isPreserveCache() {
         return preserveCache;

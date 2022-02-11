@@ -10,10 +10,10 @@ public class V5__incomplete_forms_set extends BaseFormplayerMigration {
     public Iterable<String> getSqlStatements() {
         return Arrays.asList(
                 "UPDATE formplayer_sessions " +
-                "SET title='CommCare Form' WHERE title IS NULL",
+                        "SET title='CommCare Form' WHERE title IS NULL",
 
                 "UPDATE formplayer_sessions " +
-                "SET dateOpened='Thu Jan 1 00:00:00 UTC 1970' WHERE dateOpened IS NULL"
+                        "SET dateOpened='Thu Jan 1 00:00:00 UTC 1970' WHERE dateOpened IS NULL"
         );
     }
 }

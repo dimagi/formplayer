@@ -33,13 +33,16 @@ public class Command {
         this.navigationState = navigatonState;
     }
 
-    public Command(){}
+    public Command() {
+    }
 
-    public Command(MenuDisplayable menuDisplayable, int index, SessionWrapper session, String badgeText){
+    public Command(MenuDisplayable menuDisplayable, int index, SessionWrapper session,
+            String badgeText) {
         super();
         this.setIndex(index);
         this.setDisplayText(menuDisplayable.getDisplayText(
-                session.getEvaluationContextWithAccumulatedInstances(menuDisplayable.getCommandID(), menuDisplayable.getRawText())));
+                session.getEvaluationContextWithAccumulatedInstances(menuDisplayable.getCommandID(),
+                        menuDisplayable.getRawText())));
         this.setImageUri(menuDisplayable.getImageURI());
         this.setAudioUri(menuDisplayable.getAudioURI());
         this.setNavigationState(getIconState(menuDisplayable, session));
@@ -91,11 +94,16 @@ public class Command {
         this.imageUri = imageUri;
     }
 
-    public String getBadgeText() { return badgeText; }
-    public void setBadgeText(String badgeText) { this.badgeText = badgeText; }
+    public String getBadgeText() {
+        return badgeText;
+    }
+
+    public void setBadgeText(String badgeText) {
+        this.badgeText = badgeText;
+    }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "Command [index=" + index + ", text=" + displayText + ", " +
                 "audioUri=" + audioUri + ", imageUri=" + imageUri + "]";
     }

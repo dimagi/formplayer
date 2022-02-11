@@ -1,17 +1,13 @@
 package org.commcare.formplayer.tests;
 
-import io.sentry.Breadcrumb;
-import io.sentry.Sentry;
-import io.sentry.SentryLevel;
-import org.commcare.formplayer.util.FormplayerSentry;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+
+import org.commcare.formplayer.util.FormplayerSentry;
+import org.junit.jupiter.api.Test;
+
+import io.sentry.Breadcrumb;
+import io.sentry.SentryLevel;
 
 public class FormplayerRavenTest {
     FormplayerSentry raven = new FormplayerSentry();

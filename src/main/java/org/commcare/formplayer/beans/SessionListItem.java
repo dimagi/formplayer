@@ -1,9 +1,8 @@
 package org.commcare.formplayer.beans;
 
-import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.cases.model.Case;
+import org.commcare.formplayer.objects.FormSessionListView;
 import org.commcare.formplayer.sandbox.SqlStorage;
-import org.commcare.formplayer.util.FormplayerDateUtils;
 import org.commcare.formplayer.util.SessionUtils;
 
 import java.util.NoSuchElementException;
@@ -18,7 +17,7 @@ public class SessionListItem {
     private String sessionId;
     private String caseName;
 
-    public SessionListItem(SqlStorage<Case> caseStorage, FormSessionListView session){
+    public SessionListItem(SqlStorage<Case> caseStorage, FormSessionListView session) {
         this.title = session.getTitle();
         this.dateOpened = session.getDateCreated().toString();
         this.sessionId = session.getId();
@@ -31,7 +30,8 @@ public class SessionListItem {
             return SessionUtils.tryLoadCaseName(caseStorage, caseId);
         } catch (NoSuchElementException e) {
             // This handles the case where the case is no longer open in the database.
-            // The form will crash on open, but I don't know if there's a more elegant but not-opaque way to handle
+            // The form will crash on open, but I don't know if there's a more elegant but
+            // not-opaque way to handle
             return "Case with id " + caseId + "does not exist!";
         }
     }
@@ -67,6 +67,7 @@ public class SessionListItem {
 
     @Override
     public String toString() {
-        return "SessionListItem [title = " + title + " id " + sessionId + " opened " + dateOpened + "]";
+        return "SessionListItem [title = " + title + " id " + sessionId + " opened " + dateOpened
+                + "]";
     }
 }

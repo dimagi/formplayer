@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Returns true if the server is up and healthy
- *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServerUpBean {
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public ServerUpBean(){}
+    public ServerUpBean() {
+    }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "ServerUpBean ✓";
     }
 

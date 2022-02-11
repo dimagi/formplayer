@@ -1,13 +1,15 @@
 package org.commcare.formplayer.tests.sandbox;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.commcare.cases.ledger.Ledger;
 import org.commcare.cases.model.Case;
-import org.javarosa.core.util.externalizable.PrototypeFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.commcare.formplayer.sandbox.SqlHelper;
 import org.commcare.formplayer.sandbox.SqlSandboxUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.javarosa.core.util.externalizable.PrototypeFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -19,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
-
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class CaseAPITests {
 
@@ -85,7 +85,8 @@ public class CaseAPITests {
 
             SqlHelper.insertToTable(connection, "TFLedger", l);
 
-            preparedStatement = SqlHelper.prepareTableSelectStatement(connection, "TFLedger", new String[]{"entity-id"},
+            preparedStatement = SqlHelper.prepareTableSelectStatement(connection, "TFLedger",
+                    new String[]{"entity-id"},
                     new String[]{"ledger_entity_id"});
             if (preparedStatement == null) {
                 fail("failed to prepare table select query");
@@ -106,19 +107,19 @@ public class CaseAPITests {
     }
 
     @AfterEach
-    public void tearDown(){
+    public void tearDown() {
         try {
-            if(preparedStatement != null) {
+            if (preparedStatement != null) {
                 preparedStatement.close();
             }
-            if(connection != null) {
+            if (connection != null) {
                 connection.close();
             }
-            if(resultSet != null){
+            if (resultSet != null) {
                 resultSet.close();
             }
             File databaseFile = new File(databaseName);
-            if(databaseFile.exists()){
+            if (databaseFile.exists()) {
                 databaseFile.delete();
             }
         } catch (SQLException e1) {
