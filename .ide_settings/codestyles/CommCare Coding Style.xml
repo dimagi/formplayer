@@ -1,4 +1,4 @@
-<code_scheme name="AndroidStyle">
+<code_scheme name="CommCare Coding Style">
     <option name="JAVA_INDENT_OPTIONS">
         <value>
             <option name="INDENT_SIZE" value="4" />
@@ -112,6 +112,9 @@
     <ADDITIONAL_INDENT_OPTIONS fileType="js">
         <option name="CONTINUATION_INDENT_SIZE" value="4" />
     </ADDITIONAL_INDENT_OPTIONS>
+    <JavaCodeStyleSettings>
+        <option name="JD_P_AT_EMPTY_LINES" value="false" />
+    </JavaCodeStyleSettings>
     <codeStyleSettings language="JAVA">
         <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
         <option name="ALIGN_MULTILINE_FOR" value="false" />
