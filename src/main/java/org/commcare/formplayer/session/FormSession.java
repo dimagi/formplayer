@@ -386,7 +386,7 @@ public class FormSession {
     @Trace
     public JSONArray getFormTree() {
         if (session.isOneQuestionPerScreen()) {
-            return JsonActionUtils.getOneQuestionPerScreenJSON(formController.getFormEntryController().getModel(),
+            return JsonActionUtils.getOneQuestionPerScreenJson(formController.getFormEntryController().getModel(),
                     formController.getFormEntryController(),
                     formController.getFormIndex());
         }

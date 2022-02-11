@@ -55,7 +55,7 @@ public class EntityDetailResponse {
             Object datum = data[i];
             if (datum instanceof GraphData) {
                 try {
-                    datum = FormplayerGraphUtil.getHTML((GraphData)datum, "").replace("\"", "'");
+                    datum = FormplayerGraphUtil.getHtml((GraphData)datum, "").replace("\"", "'");
                 } catch (GraphException e) {
                     datum = "Error loading graph " + e;
                 }

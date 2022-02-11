@@ -95,32 +95,32 @@ public class FormEntryTest extends BaseTestClass {
         assert longitude.equals(7.723388671875);
 
         //Test Evaluate XPath
-        EvaluateXPathResponseBean evaluateXPathResponseBean = evaluateXPath(sessionId,
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
                 "/data/q_text");
-        assert evaluateXPathResponseBean.getStatus().equals(
+        assert evaluateXpathResponseBean.getStatus().equals(
                 Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
         String result =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>William Pride</result>\n";
-        assert evaluateXPathResponseBean.getOutput().equals(result);
+        assert evaluateXpathResponseBean.getOutput().equals(result);
 
         // We shouldn't error when a path doesn't exist
-        evaluateXPathResponseBean = evaluateXPath(sessionId, "/data/not_broken");
-        assert evaluateXPathResponseBean.getStatus().equals(
+        evaluateXpathResponseBean = evaluateXPath(sessionId, "/data/not_broken");
+        assert evaluateXpathResponseBean.getStatus().equals(
                 Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
 
         // However, we should error when the path is invalid
-        evaluateXPathResponseBean = evaluateXPath(sessionId, "!data/broken");
-        assert evaluateXPathResponseBean.getStatus().equals(
+        evaluateXpathResponseBean = evaluateXPath(sessionId, "!data/broken");
+        assert evaluateXpathResponseBean.getStatus().equals(
                 Constants.ANSWER_RESPONSE_STATUS_NEGATIVE);
 
         // Should be able to evaluate functions that do not return nodesets
-        evaluateXPathResponseBean = evaluateXPath(sessionId, "true()");
-        assert evaluateXPathResponseBean.getStatus().equals(
+        evaluateXpathResponseBean = evaluateXPath(sessionId, "true()");
+        assert evaluateXpathResponseBean.getStatus().equals(
                 Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
 
         // Should be able to evaluate instance expressions
         evaluateXPath(sessionId, "instance('commcaresession')/session/context/username");
-        assert evaluateXPathResponseBean.getStatus().equals(
+        assert evaluateXpathResponseBean.getStatus().equals(
                 Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
 
         //Test Submission
