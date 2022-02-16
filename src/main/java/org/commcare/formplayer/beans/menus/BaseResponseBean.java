@@ -1,18 +1,17 @@
 package org.commcare.formplayer.beans.menus;
 
 import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.modern.session.SessionWrapper;
 import org.commcare.formplayer.util.SessionUtils;
+import org.commcare.modern.session.SessionWrapper;
 
 import java.util.HashMap;
 
 /**
- * Base class for responses being sent to the front end. Params are:
- * title - self explanatory
- * notification - A message String and error boolean to be displayed by frontend
- * sholdAutoSubmit - A boolean to indicate if the frontend should auto-submit the form
- * clearSession - True if the front end should redirect to the app home
- *  NOTE: clearSession causes all other displayables to be disregarded
+ * Base class for responses being sent to the front end. Params are: title - self explanatory
+ * notification - A message String and error boolean to be displayed by frontend sholdAutoSubmit - A
+ * boolean to indicate if the frontend should auto-submit the form clearSession - True if the front
+ * end should redirect to the app home NOTE: clearSession causes all other displayables to be
+ * disregarded
  */
 public class BaseResponseBean extends LocationRelevantResponseBean {
     protected NotificationMessage notification;
@@ -25,9 +24,10 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     private HashMap<String, String> translations;
     private String smartLinkRedirect;
 
-    public BaseResponseBean() {}
+    public BaseResponseBean() {
+    }
 
-    public BaseResponseBean(String title, NotificationMessage notification, boolean clearSession){
+    public BaseResponseBean(String title, NotificationMessage notification, boolean clearSession) {
         this.title = title;
         this.notification = notification;
         this.clearSession = clearSession;
@@ -66,7 +66,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
         return shouldAutoSubmit;
     }
 
-     public void setShouldAutoSubmit(boolean shouldAutoSubmit) {
+    public void setShouldAutoSubmit(boolean shouldAutoSubmit) {
         this.shouldAutoSubmit = shouldAutoSubmit;
     }
 
@@ -79,7 +79,7 @@ public class BaseResponseBean extends LocationRelevantResponseBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "BaseResponseBean [title=" + title + ", " +
                 "notification=" + notification + ", " +
                 "clearSession=" + clearSession + ", " +

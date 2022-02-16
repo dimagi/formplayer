@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests.sandbox;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.commcare.core.parse.ParseUtils;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.sqlitedb.UserDB;
@@ -11,8 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests for the SqlSandsbox API. Just initializes and makes sure we can access at the moment.
@@ -32,7 +32,8 @@ public class UserSqlSandboxTest {
         try {
             sandbox = new UserSqlSandbox(new UserDB("a", "b", null));
             PrototypeFactory.setStaticHasher(new ClassNameHasher());
-            ParseUtils.parseIntoSandbox(this.getClass().getClassLoader().getResourceAsStream("restores/ipm_restore.xml"), sandbox);
+            ParseUtils.parseIntoSandbox(this.getClass().getClassLoader().getResourceAsStream(
+                    "restores/ipm_restore.xml"), sandbox);
         } finally {
             sandbox.getConnection().close();
         }

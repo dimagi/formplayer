@@ -14,7 +14,8 @@ public class FormplayerHereFunctionHandler extends HereFunctionHandler {
 
     private final String browserLocation;
 
-    public FormplayerHereFunctionHandler(HereFunctionHandlerListener listener, String browserLocation) {
+    public FormplayerHereFunctionHandler(HereFunctionHandlerListener listener,
+            String browserLocation) {
         super();
         registerListener(listener);
         this.browserLocation = browserLocation;
@@ -32,7 +33,10 @@ public class FormplayerHereFunctionHandler extends HereFunctionHandler {
             double lon = Double.parseDouble(locationData[1]);
             return (new GeoPointData(new double[]{lat, lon})).getDisplayText();
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            throw new XPathTypeMismatchException("The browser location provided for evaluation of here() was of an unexpected format: " + browserLocation);
+            throw new XPathTypeMismatchException(
+                    "The browser location provided for evaluation of here() was of an unexpected "
+                            + "format: "
+                            + browserLocation);
         }
     }
 

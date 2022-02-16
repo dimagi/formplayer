@@ -45,17 +45,17 @@ import javax.xml.transform.stream.StreamResult
  *
  */
 class CaseFixtureBlock private constructor(
-        val caseType: String,
-        val caseId: String,
-        val ownerId: String,
-        val props: Map<String, String>,
+    val caseType: String,
+    val caseId: String,
+    val ownerId: String,
+    val props: Map<String, String>,
 ) {
     val status: String = "open"
 
     class Builder @JvmOverloads constructor(
-            private var caseType: String,
-            private var caseId: String? = null,
-            private var ownerId: String? = null,
+        private var caseType: String,
+        private var caseId: String? = null,
+        private var ownerId: String? = null,
     ) {
         private val props: MutableMap<String, String> = mutableMapOf();
 
@@ -82,7 +82,8 @@ class CaseFixtureBlock private constructor(
 class CaseFixtureResultSerializer() {
 
     companion object {
-        @JvmStatic fun blocksToXml(vararg blocks: CaseFixtureBlock): Document {
+        @JvmStatic
+        fun blocksToXml(vararg blocks: CaseFixtureBlock): Document {
             val docFactory = DocumentBuilderFactory.newInstance();
             val docBuilder = docFactory.newDocumentBuilder();
 
@@ -108,7 +109,8 @@ class CaseFixtureResultSerializer() {
             return doc;
         }
 
-        @JvmStatic fun blocksToString(vararg blocks: CaseFixtureBlock): String {
+        @JvmStatic
+        fun blocksToString(vararg blocks: CaseFixtureBlock): String {
             val xml = blocksToXml(*blocks)
 
             val transformerFactory = TransformerFactory.newInstance()

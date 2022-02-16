@@ -12,14 +12,15 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Optional;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Utility function to deal with request objects.
@@ -67,7 +68,8 @@ public class RequestUtils {
         try {
             data = new JSONObject(getBody(request));
         } catch (IOException | JSONException a) {
-            throw new RuntimeException("Unreadable POST Body for the request: " + request.getRequestURI(), a);
+            throw new RuntimeException(
+                    "Unreadable POST Body for the request: " + request.getRequestURI(), a);
         }
         return data;
     }
@@ -78,8 +80,8 @@ public class RequestUtils {
     }
 
     /**
-     * Get the HMAC hash of a given request body with a given key
-     * Used by Formplayer to validate requests from HQ using shared internal key `commcarehq.formplayerAuthKey`
+     * Get the HMAC hash of a given request body with a given key Used by Formplayer to validate
+     * requests from HQ using shared internal key `commcarehq.formplayerAuthKey`
      */
     public static String getHmac(String key, String data) throws Exception {
         Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
@@ -91,7 +93,7 @@ public class RequestUtils {
     public static HttpServletRequest getCurrentRequest() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
-            return ((ServletRequestAttributes) attributes).getRequest();
+            return ((ServletRequestAttributes)attributes).getRequest();
         }
         return null;
     }
@@ -99,14 +101,15 @@ public class RequestUtils {
     public static Optional<HqUserDetailsBean> getUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
-            HqUserDetailsBean userDetails = (HqUserDetailsBean) authentication.getPrincipal();
+            HqUserDetailsBean userDetails = (HqUserDetailsBean)authentication.getPrincipal();
             return Optional.of(userDetails);
         }
         return Optional.empty();
     }
 
     /**
-     * @return True if there is request in the context AND the request was authenticated with HMAC auth
+     * @return True if there is request in the context AND the request was authenticated with HMAC
+     * auth
      */
     public static boolean requestAuthedWithHmac() {
         HttpServletRequest request = getCurrentRequest();
@@ -114,6 +117,6 @@ public class RequestUtils {
             return false;
         }
         Object attribute = request.getAttribute(Constants.HMAC_REQUEST_ATTRIBUTE);
-        return attribute != null && (Boolean) attribute;
+        return attribute != null && (Boolean)attribute;
     }
 }

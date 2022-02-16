@@ -31,17 +31,21 @@ public class EditTest extends BaseTestClass {
     // test that we can override today() successfully
     @Test
     public void testFunctionHandlers() throws Throwable {
-        NewFormResponse newFormResponse = startNewForm("requests/new_form/edit_form.json", "xforms/edit_form.xml");
+        NewFormResponse newFormResponse = startNewForm("requests/new_form/edit_form.json",
+                "xforms/edit_form.xml");
         Date date = DateUtils.getDateTimeFromString("2016-11-14T21:24:00.334Z");
         String formattedDate = DateUtils.formatDateToTimeStamp(date);
-        assert newFormResponse.getInstanceXml().getOutput().contains("<datetoday>2016-11-14</datetoday>");
-        assert newFormResponse.getInstanceXml().getOutput().contains("<datenow>" + formattedDate + "</datenow>");
+        assert newFormResponse.getInstanceXml().getOutput().contains(
+                "<datetoday>2016-11-14</datetoday>");
+        assert newFormResponse.getInstanceXml().getOutput().contains(
+                "<datenow>" + formattedDate + "</datenow>");
     }
 
     // test that we can override today() successfully
     @Test
     public void testEditImage() throws Throwable {
-        NewFormResponse newFormResponse = startNewForm("requests/new_form/edit_image.json", "xforms/edit_image.xml");
+        NewFormResponse newFormResponse = startNewForm("requests/new_form/edit_image.json",
+                "xforms/edit_image.xml");
         assert newFormResponse.getTree()[22].getAnswer().equals("1488964254571.jpg");
     }
 }

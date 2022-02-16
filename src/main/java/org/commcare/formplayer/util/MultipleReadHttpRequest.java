@@ -2,17 +2,21 @@ package org.commcare.formplayer.util;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import java.io.*;
 
 /**
  * Created by benrudolph on 9/7/16.
  *
- * Code modeled off of:
- * http://stackoverflow.com/a/17129256/835696
+ * Code modeled off of: http://stackoverflow.com/a/17129256/835696
  */
 public class MultipleReadHttpRequest extends HttpServletRequestWrapper {
     private ByteArrayOutputStream cachedBytes;
@@ -23,14 +27,15 @@ public class MultipleReadHttpRequest extends HttpServletRequestWrapper {
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        if (cachedBytes == null)
+        if (cachedBytes == null) {
             cacheInputStream();
+        }
 
         return new CachedServletInputStream();
     }
 
     @Override
-    public BufferedReader getReader() throws IOException{
+    public BufferedReader getReader() throws IOException {
         return new BufferedReader(new InputStreamReader(getInputStream()));
     }
 
@@ -62,7 +67,8 @@ public class MultipleReadHttpRequest extends HttpServletRequestWrapper {
         }
 
         @Override
-        public void setReadListener(ReadListener listener) { }
+        public void setReadListener(ReadListener listener) {
+        }
 
         @Override
         public int read() throws IOException {

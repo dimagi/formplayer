@@ -5,11 +5,7 @@ import io.sentry.Sentry;
 import io.sentry.SentryEvent;
 import io.sentry.SentryLevel;
 import io.sentry.protocol.Message;
-import lombok.SneakyThrows;
 import lombok.extern.apachecommons.CommonsLog;
-import org.commcare.formplayer.utils.CheckedSupplier;
-
-import java.util.function.Supplier;
 
 @CommonsLog
 public class FormplayerSentry {
@@ -27,7 +23,7 @@ public class FormplayerSentry {
             for (int i = 0; i < length; i++) {
                 String key = dataPairs[2 * i];
                 String value = dataPairs[2 * i + 1];
-                if (key != null && value != null){
+                if (key != null && value != null) {
                     breadcrumb.setData(key, value);
                 }
             }
@@ -62,6 +58,7 @@ public class FormplayerSentry {
             Sentry.addBreadcrumb(breadcrumb);
         }
     }
+
     public static BreadcrumbRecorder newBreadcrumb() {
         return new BreadcrumbRecorder();
     }
@@ -83,7 +80,8 @@ public class FormplayerSentry {
         Sentry.captureEvent(event);
     }
 
-    public static void recordTimingBreadcrumb(Timing timing, String category, String sentryMessage) {
+    public static void recordTimingBreadcrumb(Timing timing, String category,
+            String sentryMessage) {
         FormplayerSentry.newBreadcrumb()
                 .setCategory(category)
                 .setMessage(sentryMessage)

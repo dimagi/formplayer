@@ -1,5 +1,16 @@
 package org.commcare.formplayer.tests;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.commcare.formplayer.application.UtilController;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.NotificationLogger;
@@ -28,17 +39,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.Cookie;
-
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CsrfIntegrationTest {
@@ -94,12 +94,12 @@ public class CsrfIntegrationTest {
     public void postApiCall_withCsrf_succeeds() throws Exception {
         String payload = FileUtils.getFile(this.getClass(), "requests/delete_db/delete_db.json");
         mockUtilController.perform(
-            post("/" + Constants.URL_DELETE_APPLICATION_DBS)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(payload)
-                    .with(testUser())
-                    .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
-                    .with(csrf())
+                post("/" + Constants.URL_DELETE_APPLICATION_DBS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload)
+                        .with(testUser())
+                        .cookie(new Cookie(Constants.POSTGRES_DJANGO_SESSION_ID, "derp"))
+                        .with(csrf())
         ).andExpect(status().isOk());
     }
 

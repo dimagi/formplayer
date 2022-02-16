@@ -15,14 +15,16 @@ public class HqUserDetailsTests {
 
     @Test
     public void testWebUserIsAuthorized() {
-        HqUserDetailsBean user = new HqUserDetailsBean("domain", new String[]{"domain", "other-domain"}, "aragorn",
+        HqUserDetailsBean user = new HqUserDetailsBean("domain",
+                new String[]{"domain", "other-domain"}, "aragorn",
                 false, new String[]{}, new String[]{});
 
         Assertions.assertTrue(user.isAuthorized("domain", "aragorn"));
         Assertions.assertFalse(user.isAuthorized("wrong-domain", "aragorn"));
         Assertions.assertFalse(user.isAuthorized("domain", "wrong-aragorn"));
 
-        HqUserDetailsBean superuser = new HqUserDetailsBean("domain", new String[]{"domain", "other-domain"}, "aragorn",
+        HqUserDetailsBean superuser = new HqUserDetailsBean("domain",
+                new String[]{"domain", "other-domain"}, "aragorn",
                 true, new String[]{}, new String[]{});
         Assertions.assertTrue(superuser.isAuthorized("wrong-domain", "wrong-aragorn"));
     }

@@ -4,12 +4,12 @@ import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.utils.TestContext;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.commcare.formplayer.utils.TestContext;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class EnikshayEndOfFormTests extends BaseTestClass{
+public class EnikshayEndOfFormTests extends BaseTestClass {
 
     @Override
     @BeforeEach
@@ -38,15 +38,16 @@ public class EnikshayEndOfFormTests extends BaseTestClass{
     public void testEnikshayEndOfFormNavigation() throws Exception {
         NewFormResponse response =
                 sessionNavigate(new String[]{"0", "action 0"},
-                "enikshay_private", NewFormResponse.class);
+                        "enikshay_private", NewFormResponse.class);
         SubmitResponseBean submitResponse = submitForm(
-                    "requests/submit/submit_enikshay_private_0.json",
-                    response.getSessionId()
-                );
+                "requests/submit/submit_enikshay_private_0.json",
+                response.getSessionId()
+        );
 
-        LinkedHashMap commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
+        LinkedHashMap commandsRaw = (LinkedHashMap)submitResponse.getNextScreen();
         String jsonString = new JSONObject(commandsRaw).toString();
-        CommandListResponseBean commandResponse = mapper.readValue(jsonString, CommandListResponseBean.class);
+        CommandListResponseBean commandResponse = mapper.readValue(jsonString,
+                CommandListResponseBean.class);
 
         assert commandResponse.getCommands().length == 2;
         assert commandResponse.getCommands()[0].getDisplayText().equals("Manage Beneficiary");
@@ -55,7 +56,8 @@ public class EnikshayEndOfFormTests extends BaseTestClass{
         assert commandResponse.getSelections()[0].equals("0");
         assert commandResponse.getBreadcrumbs()[2].equals("NIKITA VERMA");
 
-        ArrayList<String> selections = new ArrayList<>(Arrays.asList(commandResponse.getSelections()));
+        ArrayList<String> selections = new ArrayList<>(
+                Arrays.asList(commandResponse.getSelections()));
         selections.add("1");
 
         String[] newSelections = new String[selections.size()];
@@ -86,7 +88,7 @@ public class EnikshayEndOfFormTests extends BaseTestClass{
                 formResponse.getSessionId()
         );
 
-        commandsRaw = (LinkedHashMap) submitResponse.getNextScreen();
+        commandsRaw = (LinkedHashMap)submitResponse.getNextScreen();
         JSONObject jsonObject = new JSONObject(commandsRaw);
         jsonString = jsonObject.toString();
         entityResponse = mapper.readValue(jsonString, EntityListResponse.class);

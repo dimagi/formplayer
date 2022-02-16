@@ -2,12 +2,12 @@ package org.commcare.formplayer.beans;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+
 import org.commcare.formplayer.util.UserUtils;
 
 /**
- * The AuthenticatedRequestBean should be used for requests that
- * need to be authenticated with HQ. This Bean will ensure the
- * necessary json values are present in the request.
+ * The AuthenticatedRequestBean should be used for requests that need to be authenticated with HQ.
+ * This Bean will ensure the necessary json values are present in the request.
  */
 public class AuthenticatedRequestBean {
 
@@ -95,6 +95,7 @@ public class AuthenticatedRequestBean {
     public String getRestoreAsCaseId() {
         return restoreAsCaseId;
     }
+
     @JsonSetter(value = "restoreAsCaseId")
     public void setRestoreAsCaseId(String restoreAsCaseId) {
         this.restoreAsCaseId = restoreAsCaseId;

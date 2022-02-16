@@ -4,7 +4,6 @@ import org.commcare.formplayer.beans.SubmitRequestBean
 import org.commcare.formplayer.beans.SubmitResponseBean
 import org.commcare.formplayer.beans.menus.ErrorBean
 import org.commcare.formplayer.session.FormSession
-import java.util.HashMap
 import javax.servlet.http.HttpServletRequest
 
 class FormSubmissionContext(val httpRequest: HttpServletRequest,
@@ -18,7 +17,8 @@ class FormSubmissionContext(val httpRequest: HttpServletRequest,
         return response
     }
 
-    @JvmOverloads fun error(status: String, errors: Map<String, ErrorBean>? = null): SubmitResponseBean {
+    @JvmOverloads
+    fun error(status: String, errors: Map<String, ErrorBean>? = null): SubmitResponseBean {
         response.status = status;
         errors?.let { response.errors = errors }
         return response;

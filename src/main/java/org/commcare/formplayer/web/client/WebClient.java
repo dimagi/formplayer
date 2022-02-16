@@ -1,6 +1,7 @@
 package org.commcare.formplayer.web.client;
 
 import com.google.common.collect.Multimap;
+
 import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.RequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,8 @@ public class WebClient {
 
     public <T> ResponseEntity<T> getRaw(URI uri, Class<T> responseType) {
         return restTemplate.exchange(
-                RequestEntity.get(uri).headers(restoreFactory.getRequestHeaders(uri)).build(), responseType
+                RequestEntity.get(uri).headers(restoreFactory.getRequestHeaders(uri)).build(),
+                responseType
         );
     }
 
@@ -43,7 +45,8 @@ public class WebClient {
         checkHmac();
         URI uri = URI.create(url);
         return restTemplate.exchange(
-                RequestEntity.post(uri).headers(restoreFactory.getRequestHeaders(uri)).body(body), String.class
+                RequestEntity.post(uri).headers(restoreFactory.getRequestHeaders(uri)).body(body),
+                String.class
         ).getBody();
     }
 
@@ -62,8 +65,8 @@ public class WebClient {
     }
 
     /**
-     * This is not a technical limitation, just a code limitation that should
-     * be fixed in the future.
+     * This is not a technical limitation, just a code limitation that should be fixed in the
+     * future.
      */
     private void checkHmac() {
         if (RequestUtils.requestAuthedWithHmac()) {

@@ -18,5 +18,7 @@ public class HqSessionKeyBean implements Serializable {
         return sessionId;
     }
 
-    public String getDomain() { return domain; }
+    public String getDomain() {
+        return domain;
+    }
 }

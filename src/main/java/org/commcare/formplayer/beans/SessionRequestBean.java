@@ -13,6 +13,7 @@ public class SessionRequestBean extends AuthenticatedRequestBean {
     public String getSessionId() {
         return sessionId;
     }
+
     @JsonSetter(value = "session_id")
     public void setSessionId(String sessionId) {
         if (sessionId != null) {
@@ -37,7 +38,7 @@ public class SessionRequestBean extends AuthenticatedRequestBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "SessionRequestBean [sessionId=" + sessionId + "]";
     }
 }

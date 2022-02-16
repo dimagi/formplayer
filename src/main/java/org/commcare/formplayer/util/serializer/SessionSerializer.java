@@ -22,7 +22,8 @@ public class SessionSerializer {
         return baos.toByteArray();
     }
 
-    public static CommCareSession deserialize(CommCarePlatform platform, byte[] bytes) throws DeserializationException, IOException {
+    public static CommCareSession deserialize(CommCarePlatform platform, byte[] bytes)
+            throws DeserializationException, IOException {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes));
         return CommCareSession.restoreSessionFromStream(platform, in);
     }
