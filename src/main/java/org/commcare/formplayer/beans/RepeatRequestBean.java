@@ -13,20 +13,22 @@ public class RepeatRequestBean extends SessionRequestBean {
     private String formIndex;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public RepeatRequestBean(){}
+    public RepeatRequestBean() {
+    }
 
     // in delete commands this will represent the iteration of the repeat to be deleted
     @JsonGetter(value = "ix")
     public String getRepeatIndex() {
         return repeatIndex;
     }
+
     @JsonSetter(value = "ix")
     public void setRepeatIndex(String repeatIndex) {
         this.repeatIndex = repeatIndex;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "RepeatRequestBean [repeatIndex: " + repeatIndex + ", sessionId: " + sessionId + "]";
     }
 

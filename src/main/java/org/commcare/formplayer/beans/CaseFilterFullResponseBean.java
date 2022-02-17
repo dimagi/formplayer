@@ -6,9 +6,10 @@ package org.commcare.formplayer.beans;
 public class CaseFilterFullResponseBean {
     private CaseBean[] cases; // comma separated case list
 
-    public CaseFilterFullResponseBean(){
+    public CaseFilterFullResponseBean() {
 
     }
+
     public CaseFilterFullResponseBean(CaseBean[] caseBeans) {
         cases = caseBeans;
     }

@@ -5,6 +5,7 @@ config/application.properties
 gradle/
 local.properties
 *.DS_STORE
+*.DS_Store
 *.idea/
 *.iml
 *.swp

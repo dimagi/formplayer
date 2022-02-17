@@ -84,7 +84,7 @@ public class FormController extends AbstractBaseController {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(changeLocaleBean.getSessionId());
         FormSession formEntrySession = getFormSession(serializableFormSession);
         formEntrySession.changeLocale(changeLocaleBean.getLocale());
-        FormEntryResponseBean responseBean = formEntrySession.getCurrentJSON();
+        FormEntryResponseBean responseBean = formEntrySession.getCurrentJson();
         updateSession(formEntrySession);
         responseBean.setTitle(serializableFormSession.getTitle());
         return responseBean;
@@ -113,7 +113,7 @@ public class FormController extends AbstractBaseController {
 
         FormEntryResponseBean responseBean = categoryTimingHelper.timed(
                 Constants.TimingCategories.PROCESS_ANSWER,
-                () -> formEntrySession.answerQuestionToJSON(
+                () -> formEntrySession.answerQuestionToJson(
                         answerQuestionBean.getAnswer(), answerQuestionBean.getFormIndex()
                 )
         );

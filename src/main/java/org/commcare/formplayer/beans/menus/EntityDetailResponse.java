@@ -1,8 +1,10 @@
 package org.commcare.formplayer.beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
+import org.commcare.formplayer.util.FormplayerGraphUtil;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
@@ -10,7 +12,6 @@ import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
-import org.commcare.formplayer.util.FormplayerGraphUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +54,7 @@ public class EntityDetailResponse {
             Object datum = data[i];
             if (datum instanceof GraphData) {
                 try {
-                    datum = FormplayerGraphUtil.getHTML((GraphData) datum, "").replace("\"", "'");
+                    datum = FormplayerGraphUtil.getHtml((GraphData)datum, "").replace("\"", "'");
                 } catch (GraphException e) {
                     datum = "Error loading graph " + e;
                 }
@@ -72,11 +73,12 @@ public class EntityDetailResponse {
 
     // Constructor used for detail with nodeset
     public EntityDetailResponse(Detail detail,
-                                Vector<TreeReference> references,
-                                EvaluationContext ec,
-                                String title,
-                                boolean isFuzzySearchEnabled) {
-        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, null, 0, isFuzzySearchEnabled);
+            Vector<TreeReference> references,
+            EvaluationContext ec,
+            String title,
+            boolean isFuzzySearchEnabled) {
+        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail,
+                references, ec, null, null, 0, isFuzzySearchEnabled);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);
         this.title = title;

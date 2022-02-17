@@ -14,7 +14,7 @@ public class MenuBean extends BaseResponseBean {
     private EntityDetailResponse persistentCaseTile;
 
     @Override
-    public String toString(){
+    public String toString() {
         return "MenuBean [title=" + title + ", breadcrumbs: " + Arrays.toString(breadcrumbs) +
                 "super=" + super.toString() + "]";
     }

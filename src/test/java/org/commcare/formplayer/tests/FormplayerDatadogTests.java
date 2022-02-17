@@ -1,20 +1,23 @@
 package org.commcare.formplayer.tests;
 
+import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import com.timgroup.statsd.StatsDClient;
 
+import org.commcare.formplayer.util.FormplayerDatadog;
+import org.commcare.formplayer.utils.TestContext;
 import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.commcare.formplayer.util.FormplayerDatadog;
-import org.commcare.formplayer.utils.TestContext;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 
-import static org.commcare.formplayer.util.Constants.TOGGLE_DETAILED_TAGGING;
-import static org.mockito.Mockito.*;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)

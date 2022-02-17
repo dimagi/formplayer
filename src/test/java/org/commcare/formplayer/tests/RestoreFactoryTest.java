@@ -1,5 +1,13 @@
 package org.commcare.formplayer.tests;
 
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import static java.util.Collections.singletonList;
+
 import org.commcare.formplayer.auth.DjangoAuth;
 import org.commcare.formplayer.beans.AuthenticatedRequestBean;
 import org.commcare.formplayer.services.RestoreFactory;
@@ -24,19 +32,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Created by benrudolph on 1/19/17.
@@ -164,7 +166,9 @@ public class RestoreFactoryTest {
         restoreFactorySpy.setAsUsername("asUser@domain1.commcarehq.org");
         assertEquals(
                 BASE_URL + "?version=2.0" +
-                        "&device_id=WebAppsLogin%2Arestore-dude%2Aas%2AasUser%40domain1.commcarehq.org" +
+                        "&device_id=WebAppsLogin%2Arestore-dude%2Aas%2AasUser%40domain1"
+                        + ".commcarehq.org"
+                        +
                         "&as=asUser%40domain1.commcarehq.org",
                 restoreFactorySpy.getUserRestoreUrl(false).toString()
         );
@@ -175,7 +179,9 @@ public class RestoreFactoryTest {
         restoreFactorySpy.setAsUsername("asUser+test-encoding@domain1.commcarehq.org");
         assertEquals(
                 BASE_URL + "?version=2.0" +
-                        "&device_id=WebAppsLogin%2Arestore-dude%2Aas%2AasUser%2Btest-encoding%40domain1.commcarehq.org" +
+                        "&device_id=WebAppsLogin%2Arestore-dude%2Aas%2AasUser%2Btest-encoding"
+                        + "%40domain1.commcarehq.org"
+                        +
                         "&as=asUser%2Btest-encoding%40domain1.commcarehq.org",
                 restoreFactorySpy.getUserRestoreUrl(false).toString()
         );
@@ -215,10 +221,12 @@ public class RestoreFactoryTest {
         mockHmacRequest();
         restoreFactorySpy.configure(domain, "case_id", null);
         String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(new URI("http://localhost:8000" + requestPath));
+        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
+                new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
         validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST", singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
+                hasEntry("X-MAC-DIGEST",
+                        singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
                 hasEntry("X-OpenRosa-Version", singletonList("3.0")),
                 hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
                 hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
@@ -229,11 +237,14 @@ public class RestoreFactoryTest {
     public void testGetRequestHeaders_HmacAuth_UrlWithQuery() throws Exception {
         mockHmacRequest();
         restoreFactorySpy.configure(domain, "case_id", null);
-        String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/?query_param=true";
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(new URI("http://localhost:8000" + requestPath));
+        String requestPath =
+                "/a/restore-domain/case_migrations/restore/case_id_123/?query_param=true";
+        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
+                new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
         validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST", singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
+                hasEntry("X-MAC-DIGEST",
+                        singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
                 hasEntry("X-OpenRosa-Version", singletonList("3.0")),
                 hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
                 hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
@@ -244,18 +255,21 @@ public class RestoreFactoryTest {
     public void testGetRequestHeaders_UseHmacAuthEvenIfHqAuthPresent() throws Exception {
         mockHmacRequest();
         String requestPath = "/a/restore-domain/case_migrations/restore/case_id_123/";
-        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(new URI("http://localhost:8000" + requestPath));
+        HttpHeaders headers = restoreFactorySpy.getRequestHeaders(
+                new URI("http://localhost:8000" + requestPath));
         assertEquals(4, headers.size());
         validateHeaders(headers, Arrays.asList(
-                hasEntry("X-MAC-DIGEST", singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
+                hasEntry("X-MAC-DIGEST",
+                        singletonList(RequestUtils.getHmac(formplayerAuthKey, requestPath))),
                 hasEntry("X-OpenRosa-Version", singletonList("3.0")),
                 hasEntry("X-OpenRosa-DeviceId", singletonList("WebAppsLogin")),
                 hasEntry(equalTo("X-CommCareHQ-Origin-Token"), new ValueIsUUID()))
         );
     }
 
-    private void validateHeaders(HttpHeaders headers, List<Matcher<Map<? extends String, ? extends List<String>>>> matchers) {
-        for (Matcher<Map<? extends String, ? extends List<String>>> matcher: matchers) {
+    private void validateHeaders(HttpHeaders headers,
+            List<Matcher<Map<? extends String, ? extends List<String>>>> matchers) {
+        for (Matcher<Map<? extends String, ? extends List<String>>> matcher : matchers) {
             MatcherAssert.assertThat(headers, matcher);
         }
     }

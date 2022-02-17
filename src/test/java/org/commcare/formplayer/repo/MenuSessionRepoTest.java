@@ -1,20 +1,20 @@
 package org.commcare.formplayer.repo;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.formplayer.utils.JpaTestUtils;
 import org.commcare.session.CommCareSession;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import javax.persistence.EntityManager;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -28,7 +28,7 @@ public class MenuSessionRepoTest {
 
     @Autowired
     private EntityManager entityManager;
-    
+
     @BeforeEach
     public void setUp() throws Exception {
         sessionWrapper = new CommCareSession();

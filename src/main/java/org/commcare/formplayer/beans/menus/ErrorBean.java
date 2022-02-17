@@ -9,7 +9,8 @@ public class ErrorBean {
     private String status;
     private String type;
 
-    public ErrorBean() {}
+    public ErrorBean() {
+    }
 
     public ErrorBean(String status, String type) {
         this.status = status;
@@ -33,15 +34,15 @@ public class ErrorBean {
     }
 
     @Override
-    public String toString(){
-        return "ErrorBean: [status=" + status + ", type=" + type +"]";
+    public String toString() {
+        return "ErrorBean: [status=" + status + ", type=" + type + "]";
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ErrorBean errorBean = (ErrorBean) o;
+        ErrorBean errorBean = (ErrorBean)o;
         return Objects.equals(status, errorBean.status) && Objects.equals(type, errorBean.type);
     }
 

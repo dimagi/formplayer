@@ -15,7 +15,8 @@ public class SubmitResponseBean extends SessionResponseBean {
     private Object nextScreen;
 
     // default constructor for Jackson
-    public SubmitResponseBean(){}
+    public SubmitResponseBean() {
+    }
 
     public SubmitResponseBean(String status) {
         this.status = status;
@@ -38,8 +39,8 @@ public class SubmitResponseBean extends SessionResponseBean {
     }
 
     @Override
-    public String toString(){
-        return "SubmitResponseBean, [status=" +  status + ", errors: " + errors +
+    public String toString() {
+        return "SubmitResponseBean, [status=" + status + ", errors: " + errors +
                 ", next screen= " + nextScreen + "]";
     }
 

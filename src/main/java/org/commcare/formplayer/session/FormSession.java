@@ -1,8 +1,9 @@
 package org.commcare.formplayer.session;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.commcare.session.SessionFrame.STATE_DATUM_COMPUTED;
+import static org.commcare.session.SessionFrame.STATE_DATUM_VAL;
 
-import datadog.trace.api.Trace;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,22 +44,22 @@ import org.javarosa.xpath.XPathException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Date;
 import java.util.Map;
 
-import static org.commcare.session.SessionFrame.STATE_DATUM_COMPUTED;
-import static org.commcare.session.SessionFrame.STATE_DATUM_VAL;
+import javax.annotation.Nullable;
+
+import datadog.trace.api.Trace;
 
 
 /**
- * OK this (and MenuSession) is a total god object that basically mananges everything about the state of
- * a form entry session. We turn this into a SerializableFormSession to persist it. Within that we also
- * serialize the formDef to persist the session, in addition to a bunch of other information.
- * Confusingly we also have a SessionWrapper object within this session which tracks a bunch of other information. There
- * is a lot of unification that needs to happen here.
+ * OK this (and MenuSession) is a total god object that basically mananges everything about the
+ * state of a form entry session. We turn this into a SerializableFormSession to persist it. Within
+ * that we also serialize the formDef to persist the session, in addition to a bunch of other
+ * information. Confusingly we also have a SessionWrapper object within this session which tracks a
+ * bunch of other information. There is a lot of unification that needs to happen here.
  *
  * @author willpride
  */
@@ -91,11 +92,11 @@ public class FormSession {
     }
 
     public FormSession(SerializableFormSession session,
-                       RestoreFactory restoreFactory,
-                       FormSendCalloutHandler formSendCalloutHandler,
-                       FormplayerStorageFactory storageFactory,
-                       @Nullable CommCareSession commCareSession,
-                       RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RestoreFactory restoreFactory,
+            FormSendCalloutHandler formSendCalloutHandler,
+            FormplayerStorageFactory storageFactory,
+            @Nullable CommCareSession commCareSession,
+            RemoteInstanceFetcher instanceFetcher) throws Exception {
 
         this.session = session;
         //We don't want ongoing form sessions to change their db state underneath in the middle,
@@ -110,9 +111,11 @@ public class FormSession {
         setupJavaRosaObjects();
 
         if (session.isOneQuestionPerScreen() || session.isInPromptMode()) {
-            FormIndex formIndex = JsonActionUtils.indexFromString(session.getCurrentIndex(), this.formDef);
+            FormIndex formIndex = JsonActionUtils.indexFromString(session.getCurrentIndex(),
+                    this.formDef);
             formController.jumpToIndex(formIndex);
-            formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
+            formEntryModel.setQuestionIndex(
+                    JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
         }
         setupFunctionContext();
         SessionFrame sessionFrame = commCareSession != null ? commCareSession.getFrame() : null;
@@ -123,24 +126,24 @@ public class FormSession {
     }
 
     public FormSession(UserSqlSandbox sandbox,
-                       FormDef formDef,
-                       String username,
-                       String domain,
-                       Map<String, String> sessionData,
-                       String postUrl,
-                       String locale,
-                       String menuSessionId,
-                       String instanceContent,
-                       boolean oneQuestionPerScreen,
-                       String asUser,
-                       String appId,
-                       Map<String, FunctionHandler[]> functionContext,
-                       FormSendCalloutHandler formSendCalloutHandler,
-                       FormplayerStorageFactory storageFactory,
-                       boolean inPromptMode,
-                       String caseId,
-                       @Nullable SessionFrame sessionFrame,
-                       RemoteInstanceFetcher instanceFetcher) throws Exception {
+            FormDef formDef,
+            String username,
+            String domain,
+            Map<String, String> sessionData,
+            String postUrl,
+            String locale,
+            String menuSessionId,
+            String instanceContent,
+            boolean oneQuestionPerScreen,
+            String asUser,
+            String appId,
+            Map<String, FunctionHandler[]> functionContext,
+            FormSendCalloutHandler formSendCalloutHandler,
+            FormplayerStorageFactory storageFactory,
+            boolean inPromptMode,
+            String caseId,
+            @Nullable SessionFrame sessionFrame,
+            RemoteInstanceFetcher instanceFetcher) throws Exception {
 
         this.formDef = formDef;
         session = new SerializableFormSession(
@@ -177,9 +180,11 @@ public class FormSession {
         if (sessionData != null) {
             for (String key : sessionData.keySet()) {
                 if (key.equalsIgnoreCase(STATE_DATUM_VAL)) {
-                    sessionFrame.pushStep(new StackFrameStep(STATE_DATUM_VAL, key, sessionData.get(key)));
+                    sessionFrame.pushStep(
+                            new StackFrameStep(STATE_DATUM_VAL, key, sessionData.get(key)));
                 } else {
-                    sessionFrame.pushStep(new StackFrameStep(STATE_DATUM_COMPUTED, key, sessionData.get(key)));
+                    sessionFrame.pushStep(
+                            new StackFrameStep(STATE_DATUM_COMPUTED, key, sessionData.get(key)));
                 }
             }
         }
@@ -187,8 +192,8 @@ public class FormSession {
     }
 
     /**
-     * Setup static function handlers. At the moment we only expect/accept date functions
-     * (in particular, now() and today()) but could be extended in the future.
+     * Setup static function handlers. At the moment we only expect/accept date functions (in
+     * particular, now() and today()) but could be extended in the future.
      */
     @Trace
     private void setupFunctionContext() {
@@ -237,9 +242,11 @@ public class FormSession {
 
     @Trace
     private void initialize(boolean newInstance, StorageManager storageManager,
-                            SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher) throws RemoteInstanceFetcher.RemoteInstanceException {
+            SessionFrame sessionFrame, RemoteInstanceFetcher instanceFetcher)
+            throws RemoteInstanceFetcher.RemoteInstanceException {
         CommCarePlatform platform = new CommCarePlatform(CommCareConfigEngine.MAJOR_VERSION,
-                CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION, storageManager);
+                CommCareConfigEngine.MINOR_VERSION, CommCareConfigEngine.MINIMAL_VERSION,
+                storageManager);
         FormplayerSessionWrapper sessionWrapper = new FormplayerSessionWrapper(
                 platform, this.sandbox, sessionFrame, instanceFetcher);
 
@@ -250,7 +257,6 @@ public class FormSession {
         setSuppressAutosyncFlag();
         setSkipValidation();
     }
-
 
 
     private String getPragma(String key) {
@@ -282,9 +288,9 @@ public class FormSession {
     }
 
     /**
-     * When this flag is set the form will be automatically submitted by the Web Apps UI after
-     * it has loaded. Assuming the form validation succeeds the form will be processed
-     * without the need for user interaction.
+     * When this flag is set the form will be automatically submitted by the Web Apps UI after it
+     * has loaded. Assuming the form validation succeeds the form will be processed without the need
+     * for user interaction.
      */
     private void setAutoSubmitFlag() {
         String shouldSubmit = getPragma("Pragma-Submit-Automatically");
@@ -297,9 +303,9 @@ public class FormSession {
 
     /**
      * Disable auto-sync after form submissions for the current form session (if it was enabled).
-     * This is useful  when it is combined "Pragma-Submit-Automatically" so that multiple automatic submissions
-     * can be done without the need for sync in between each one.
-     * See {@link org.commcare.formplayer.util.FormplayerPropertyManager#POST_FORM_SYNC}
+     * This is useful  when it is combined "Pragma-Submit-Automatically" so that multiple automatic
+     * submissions can be done without the need for sync in between each one. See {@link
+     * org.commcare.formplayer.util.FormplayerPropertyManager#POST_FORM_SYNC}
      */
     private void setSuppressAutosyncFlag() {
         String shouldSubmit = getPragma("Pragma-Suppress-Autosync");
@@ -311,11 +317,11 @@ public class FormSession {
     }
 
     /**
-     * This allows forms to skip some validation that occurs on submit.
-     * If the answer in the submission matches the answer in the model, it will no revalidate.
-     * This will still catch required questions and changes since the last validation,
-     * but will no longer catch the case where a later response invalidates an earlier one.
-     * As such, it should be used with caution, but will provide meaningful speed-ups when used in that way.
+     * This allows forms to skip some validation that occurs on submit. If the answer in the
+     * submission matches the answer in the model, it will no revalidate. This will still catch
+     * required questions and changes since the last validation, but will no longer catch the case
+     * where a later response invalidates an earlier one. As such, it should be used with caution,
+     * but will provide meaningful speed-ups when used in that way.
      */
     private void setSkipValidation() {
         String shouldSkipValidation = getPragma("Pragma-Skip-Full-Form-Validation");
@@ -367,7 +373,8 @@ public class FormSession {
     }
 
     public String getInstanceXml(boolean serializeAllData) throws IOException {
-        byte[] bytes = new XFormSerializingVisitor(!serializeAllData).serializeInstance(formDef.getInstance());
+        byte[] bytes = new XFormSerializingVisitor(!serializeAllData).serializeInstance(
+                formDef.getInstance());
         return new String(bytes, "US-ASCII");
     }
 
@@ -386,7 +393,8 @@ public class FormSession {
     @Trace
     public JSONArray getFormTree() {
         if (session.isOneQuestionPerScreen()) {
-            return JsonActionUtils.getOneQuestionPerScreenJSON(formController.getFormEntryController().getModel(),
+            return JsonActionUtils.getOneQuestionPerScreenJson(
+                    formController.getFormEntryController().getModel(),
                     formController.getFormEntryController(),
                     formController.getFormIndex());
         }
@@ -399,7 +407,8 @@ public class FormSession {
     }
 
     public String getXmlns() {
-        Object metaData = getFormEntryModel().getForm().getMainInstance().getMetaData(FormInstance.META_XMLNS);
+        Object metaData = getFormEntryModel().getForm().getMainInstance().getMetaData(
+                FormInstance.META_XMLNS);
         if (metaData == null) {
             return null;
         }
@@ -500,7 +509,8 @@ public class FormSession {
             while (event != FormEntryController.EVENT_BEGINNING_OF_FORM
                     && event != FormEntryController.EVENT_QUESTION
                     && !(event == FormEntryController.EVENT_GROUP
-                    && formController.indexIsInFieldList() && formController.getQuestionPrompts().length != 0)) {
+                    && formController.indexIsInFieldList()
+                    && formController.getQuestionPrompts().length != 0)) {
                 event = formController.stepToPreviousEvent();
                 lastValidIndex = formController.getFormIndex();
             }
@@ -514,7 +524,8 @@ public class FormSession {
                 if (lastValidIndex.isBeginningOfFormIndex()) {
                     //We might have walked all the way back still, which isn't great,
                     //so keep moving forward again until we find it
-                    //there must be a repeat between where we started and the beginning of hte form, walk back up to it
+                    //there must be a repeat between where we started and the beginning of hte
+                    // form, walk back up to it
                     moveToNextView();
                 }
             }
@@ -536,13 +547,14 @@ public class FormSession {
         session.setCurrentIndex(formController.getFormIndex().toString());
     }
 
-    public FormEntryResponseBean getCurrentJSON() throws IOException {
+    public FormEntryResponseBean getCurrentJson() throws IOException {
         JSONObject jsonObject = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel);
         return new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
     }
 
     @Trace
-    public FormEntryResponseBean answerQuestionToJSON(Object answer, String answerIndex) throws IOException {
+    public FormEntryResponseBean answerQuestionToJson(Object answer, String answerIndex)
+            throws IOException {
         if (answerIndex == null) {
             answerIndex = session.getCurrentIndex();
         }
@@ -556,17 +568,21 @@ public class FormSession {
                 false,
                 true);
 
-        FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(), FormEntryResponseBean.class);
-        if (!session.isInPromptMode() || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(response.getStatus())) {
+        FormEntryResponseBean response = new ObjectMapper().readValue(jsonObject.toString(),
+                FormEntryResponseBean.class);
+        if (!session.isInPromptMode() || !Constants.ANSWER_RESPONSE_STATUS_POSITIVE.equals(
+                response.getStatus())) {
             return response;
         }
         return getNextFormNavigation();
     }
 
     public FormEntryNavigationResponseBean getFormNavigation() throws IOException {
-        JSONObject resp = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel, session.getCurrentIndex());
+        JSONObject resp = JsonActionUtils.getCurrentJson(formEntryController, formEntryModel,
+                session.getCurrentIndex());
         FormEntryNavigationResponseBean responseBean
-                = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
+                = new ObjectMapper().readValue(resp.toString(),
+                FormEntryNavigationResponseBean.class);
         responseBean.setIsAtLastIndex(isAtLastIndex);
         responseBean.setIsAtFirstIndex(isAtFirstIndex);
         responseBean.setTitle(session.getTitle());
@@ -576,16 +592,18 @@ public class FormSession {
     }
 
     /**
-     * Automatically advance to the next question after an answer when in "prompt" mode
-     * (currently only used by SMS)
+     * Automatically advance to the next question after an answer when in "prompt" mode (currently
+     * only used by SMS)
      */
     public FormEntryNavigationResponseBean getNextFormNavigation() throws IOException {
-        formEntryModel.setQuestionIndex(JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
+        formEntryModel.setQuestionIndex(
+                JsonActionUtils.indexFromString(session.getCurrentIndex(), formDef));
         int nextEvent = formEntryController.stepToNextEvent();
         session.setCurrentIndex(formController.getFormIndex().toString());
         JSONObject resp = JsonActionUtils.getPromptJson(formEntryModel);
         FormEntryNavigationResponseBean responseBean
-                = new ObjectMapper().readValue(resp.toString(), FormEntryNavigationResponseBean.class);
+                = new ObjectMapper().readValue(resp.toString(),
+                FormEntryNavigationResponseBean.class);
         responseBean.setIsAtLastIndex(isAtLastIndex);
         responseBean.setIsAtFirstIndex(isAtFirstIndex);
         responseBean.setTitle(session.getTitle());

@@ -2,6 +2,7 @@ package org.commcare.formplayer.beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+
 import org.commcare.suite.model.Detail;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.commcare.util.screen.EntityScreen;
@@ -18,29 +19,33 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
     private EntityDetailResponse[] entityDetailList;
     private boolean isPersistentDetail;
 
-    public EntityDetailListResponse() {}
+    public EntityDetailListResponse() {
+    }
 
     public EntityDetailListResponse(EntityDetailResponse entityDetailResponse) {
         this.entityDetailList = new EntityDetailResponse[]{entityDetailResponse};
         this.isPersistentDetail = true;
     }
 
-    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec, TreeReference treeReference, boolean isFuzzySearchEnabled) {
+    public EntityDetailListResponse(EntityScreen screen, EvaluationContext ec,
+            TreeReference treeReference, boolean isFuzzySearchEnabled) {
         entityDetailList = processDetails(screen, ec, treeReference, isFuzzySearchEnabled);
     }
 
-    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec, TreeReference treeReference, boolean isFuzzySearchEnabled) {
+    public EntityDetailListResponse(Detail[] detailList, EvaluationContext ec,
+            TreeReference treeReference, boolean isFuzzySearchEnabled) {
         entityDetailList = processDetails(detailList, ec, treeReference, isFuzzySearchEnabled);
     }
 
-    private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec, TreeReference ref, boolean isFuzzySearchEnabled) {
+    private EntityDetailResponse[] processDetails(EntityScreen screen, EvaluationContext ec,
+            TreeReference ref, boolean isFuzzySearchEnabled) {
         return processDetails(screen.getLongDetailList(ref), ec, ref, isFuzzySearchEnabled);
     }
 
     private EntityDetailResponse[] processDetails(Detail[] detailList,
-                                                  EvaluationContext ec,
-                                                  TreeReference ref,
-                                                  boolean isFuzzySearchEnabled) {
+            EvaluationContext ec,
+            TreeReference ref,
+            boolean isFuzzySearchEnabled) {
         if (detailList == null || !(detailList.length > 0)) {
             // No details, just return null
             return null;

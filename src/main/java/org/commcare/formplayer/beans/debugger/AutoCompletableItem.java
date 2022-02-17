@@ -3,8 +3,7 @@ package org.commcare.formplayer.beans.debugger;
 import org.json.JSONObject;
 
 /**
- * A class representing the question model returned from HQ. See HQ's
- * FormQuestionResponse class.
+ * A class representing the question model returned from HQ. See HQ's FormQuestionResponse class.
  */
 public class AutoCompletableItem {
     protected String value;

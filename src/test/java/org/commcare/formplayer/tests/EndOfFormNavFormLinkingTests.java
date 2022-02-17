@@ -1,9 +1,10 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
-import org.commcare.formplayer.beans.menus.CommandListResponseBean;
-import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,12 +13,9 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.HashMap;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class EndOfFormNavFormLinkingTests extends BaseTestClass{
+public class EndOfFormNavFormLinkingTests extends BaseTestClass {
 
     @BeforeEach
     @Override
@@ -46,7 +44,8 @@ public class EndOfFormNavFormLinkingTests extends BaseTestClass{
                 getAnswers("0", "bart"),
                 response.getSessionId()
         );
-        NewFormResponse formResponse = getNextScreenForEOFNavigation(submitResponse, NewFormResponse.class);
+        NewFormResponse formResponse = getNextScreenForEofNavigation(submitResponse,
+                NewFormResponse.class);
         assertEquals("Followup Form 2", formResponse.getTitle());
     }
 
@@ -61,7 +60,8 @@ public class EndOfFormNavFormLinkingTests extends BaseTestClass{
         HashMap<String, Object> answers = getAnswers("0", "bart");  // name question
         answers.put("1", "followup2");  // next_form question
         SubmitResponseBean submitResponse = submitForm(answers, response.getSessionId());
-        NewFormResponse formResponse = getNextScreenForEOFNavigation(submitResponse, NewFormResponse.class);
+        NewFormResponse formResponse = getNextScreenForEofNavigation(submitResponse,
+                NewFormResponse.class);
         assertEquals("Followup Form 2", formResponse.getTitle());
     }
 

@@ -1,6 +1,15 @@
 package org.commcare.formplayer.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ImmutableMap;
+
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.SubmitResponseBean;
@@ -19,14 +28,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.commcare.formplayer.objects.SerializableFormSession.SubmitStatus.PROCESSED_XML;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
 
 /**
  * Regression tests for submission behaviors
@@ -85,7 +86,8 @@ public class SubmitTests extends BaseTestClass {
         SubmitResponseBean response = submitForm(answers, sessionId);
 
         assertEquals("success", response.getStatus());
-        Assertions.assertThrows(FormNotFoundException.class, () -> formSessionService.getSessionById(sessionId));
+        Assertions.assertThrows(FormNotFoundException.class,
+                () -> formSessionService.getSessionById(sessionId));
     }
 
     @Test
@@ -105,11 +107,12 @@ public class SubmitTests extends BaseTestClass {
 
         SubmitResponseBean response = submitForm(answers, sessionId);
         assertEquals("success", response.getStatus());
-        Assertions.assertThrows(FormNotFoundException.class, () -> formSessionService.getSessionById(sessionId));
+        Assertions.assertThrows(FormNotFoundException.class,
+                () -> formSessionService.getSessionById(sessionId));
         assertLocalCaseCount(117);
     }
 
-    private String startSession(String ...selections) throws Exception {
+    private String startSession(String... selections) throws Exception {
         NewFormResponse response = sessionNavigate(selections, "basic", NewFormResponse.class);
         String sessionId = response.getSessionId();
         assertLocalCaseCount(116);
@@ -118,7 +121,7 @@ public class SubmitTests extends BaseTestClass {
 
     private void assertLocalCaseCount(int expected) {
         UserSqlSandbox sandbox = getRestoreSandbox();
-        SqlStorage<Case> caseStorage =  sandbox.getCaseStorage();
+        SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
         assertThat(caseStorage.getNumRecords()).isEqualTo(expected);
     }
 

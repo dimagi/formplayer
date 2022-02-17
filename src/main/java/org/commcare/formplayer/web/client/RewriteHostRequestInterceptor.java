@@ -1,6 +1,5 @@
 package org.commcare.formplayer.web.client;
 
-import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -10,6 +9,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import lombok.extern.apachecommons.CommonsLog;
 
 /**
  * Rest request interceptor that will replace the host and port of any request
@@ -26,7 +27,8 @@ public class RewriteHostRequestInterceptor implements ClientHttpRequestIntercept
     }
 
     @Override
-    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
+            ClientHttpRequestExecution execution) throws IOException {
         URI uri = request.getURI();
         if (!uri.toString().startsWith(commcareHost)) {
             URI newUri = UriComponentsBuilder.fromUri(uri)
@@ -35,7 +37,8 @@ public class RewriteHostRequestInterceptor implements ClientHttpRequestIntercept
                     .port(commcareUri.getPort())
                     .build().toUri();
             request = new ReplaceUriHttpRequest(newUri, request);
-            log.warn(String.format("HTTP request to '%s' rewritten to '%s'", formatHost(uri), formatHost(newUri)));
+            log.warn(String.format("HTTP request to '%s' rewritten to '%s'", formatHost(uri),
+                    formatHost(newUri)));
         }
         return execution.execute(request, body);
     }
