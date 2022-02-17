@@ -64,6 +64,7 @@ public class CasePaginationTests extends BaseTestClass {
                         EntityDetailListResponse.class);
 
         assert details.getEntityDetailList().length == 2;
+        checkDetailTemplates(details.getEntityDetailList()[0]);
 
         EntityListResponse entityListResponse2 =
                 sessionNavigate("requests/navigators/pagination_navigator_1.json",
@@ -84,6 +85,13 @@ public class CasePaginationTests extends BaseTestClass {
         assert secondDetail.getDetails().length == 0;
 
         assert firstDetail.getHeaders()[0].equals("Name");
+    }
+
+    private void checkDetailTemplates(EntityDetailResponse entityDetailResponse) {
+        assert String.valueOf(entityDetailResponse.getStyles()[3].getDisplayFormat()).equals(
+                "Markdown");
+        assert String.valueOf(entityDetailResponse.getStyles()[4].getDisplayFormat()).equals(
+                "Phone");
     }
 
     // test that searching (filtering the case list) works
