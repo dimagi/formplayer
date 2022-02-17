@@ -10,7 +10,6 @@ import org.commcare.formplayer.mocks.FormPlayerPropertyManagerMock;
 import org.commcare.formplayer.sandbox.SqlStorage;
 import org.commcare.formplayer.sqlitedb.SQLiteDB;
 import org.commcare.formplayer.utils.TestContext;
-import org.commcare.suite.model.Style;
 import org.javarosa.core.services.PropertyManager;
 import org.javarosa.core.services.properties.Property;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,8 +88,10 @@ public class CasePaginationTests extends BaseTestClass {
     }
 
     private void checkDetailTemplates(EntityDetailResponse entityDetailResponse) {
-        assert String.valueOf(entityDetailResponse.getStyles()[3].getDisplayFormat()).equals("Markdown");
-        assert String.valueOf(entityDetailResponse.getStyles()[4].getDisplayFormat()).equals("Phone");
+        assert String.valueOf(entityDetailResponse.getStyles()[3].getDisplayFormat()).equals(
+                "Markdown");
+        assert String.valueOf(entityDetailResponse.getStyles()[4].getDisplayFormat()).equals(
+                "Phone");
     }
 
     // test that searching (filtering the case list) works
