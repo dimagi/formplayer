@@ -798,16 +798,14 @@ public class BaseTestClass {
     <T> T sessionNavigateWithQuery(ArrayList<String> selections,
             String testName,
             QueryData queryData,
-            boolean forceManualAction,
             Class<T> clazz) throws Exception {
         return sessionNavigateWithQuery(selections.toArray(new String[selections.size()]),
-                testName, queryData, forceManualAction, clazz);
+                testName, queryData, clazz);
     }
 
     <T> T sessionNavigateWithQuery(String[] selections,
             String testName,
             QueryData queryData,
-            boolean forceManualAction,
             Class<T> clazz) throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setSelections(selections);
@@ -815,7 +813,6 @@ public class BaseTestClass {
         sessionNavigationBean.setAppId(testName + "appid");
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setQueryData(queryData);
-        sessionNavigationBean.setForceManualAction(forceManualAction);
         return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
                 ControllerType.MENU,
                 RequestType.POST,
