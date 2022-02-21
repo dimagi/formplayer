@@ -65,8 +65,7 @@ public class EntityDetailListResponse extends LocationRelevantResponseBean {
                         detailList[i],
                         subContext,
                         titles);
-                EntityDetailResponse response = new EntityDetailResponse(subscreen, titles[i],
-                        detailList[i]);
+                EntityDetailResponse response = new EntityDetailResponse(subscreen, titles[i]);
                 accumulator.add(response);
             } else {
                 TreeReference contextualizedNodeset = detailList[i].getNodeset().contextualize(ref);
