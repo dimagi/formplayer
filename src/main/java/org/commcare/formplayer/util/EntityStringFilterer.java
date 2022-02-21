@@ -23,9 +23,9 @@ public class EntityStringFilterer {
     private final boolean isFuzzySearchEnabled;
 
     public EntityStringFilterer(String[] searchTerms,
-                                NodeEntityFactory nodeFactory,
-                                List<Entity<TreeReference>> fullEntityList,
-                                boolean isFuzzySearchEnabled) {
+            NodeEntityFactory nodeFactory,
+            List<Entity<TreeReference>> fullEntityList,
+            boolean isFuzzySearchEnabled) {
         this.isFuzzySearchEnabled = isFuzzySearchEnabled;
         this.matchList = new ArrayList<>();
         this.nodeFactory = nodeFactory;

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Returns true if the server is up and healthy
- *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LockReportBean {
@@ -13,7 +12,8 @@ public class LockReportBean {
     int secondsLocked;
 
     // our JSON-Object mapping lib (Jackson) requires a default constructor
-    public LockReportBean(){}
+    public LockReportBean() {
+    }
 
     public LockReportBean(boolean locked, int secondsLocked) {
         this.locked = locked;

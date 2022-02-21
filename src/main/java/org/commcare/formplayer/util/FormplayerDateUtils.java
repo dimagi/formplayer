@@ -15,7 +15,7 @@ public class FormplayerDateUtils {
         DateFormat dfFrom = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy", Locale.ENGLISH);
         Date result;
         try {
-            result =  dfFrom.parse(date);
+            result = dfFrom.parse(date);
         } catch (ParseException e) {
             // Could not parse date
             return null;
@@ -31,7 +31,7 @@ public class FormplayerDateUtils {
         DateFormat dfFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSX", Locale.ENGLISH);
         Date result;
         try {
-            result =  dfFrom.parse(date);
+            result = dfFrom.parse(date);
         } catch (ParseException e) {
             // Could not parse date
             return null;

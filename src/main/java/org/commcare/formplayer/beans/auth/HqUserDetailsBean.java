@@ -3,19 +3,15 @@ package org.commcare.formplayer.beans.auth;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-import lombok.Data;
-import lombok.Value;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.stream.Collectors;
+
+import lombok.Data;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
@@ -40,7 +36,8 @@ public class HqUserDetailsBean implements UserDetails {
         this(domain, new String[]{domain}, username, false, new String[]{}, new String[]{});
     }
 
-    public HqUserDetailsBean(String domain, String[] domains, String username, boolean isSuperuser, String[] enabledToggles, String[] enabledPreviews) {
+    public HqUserDetailsBean(String domain, String[] domains, String username, boolean isSuperuser,
+            String[] enabledToggles, String[] enabledPreviews) {
         this.domain = domain;
         this.domains = domains;
         this.username = username;
@@ -50,7 +47,8 @@ public class HqUserDetailsBean implements UserDetails {
     }
 
     public boolean isAuthorized(String domain, String username) {
-        return isSuperUser || Arrays.asList(domains).contains(domain) && this.username.equals(username);
+        return isSuperUser || Arrays.asList(domains).contains(domain) && this.username.equals(
+                username);
     }
 
     /////////////////////// UserDetails methods

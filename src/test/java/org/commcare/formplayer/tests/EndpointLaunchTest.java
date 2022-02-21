@@ -1,20 +1,20 @@
 package org.commcare.formplayer.tests;
-import org.commcare.formplayer.utils.WithHqUser;
+
+import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
-import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 import org.commcare.formplayer.utils.TestContext;
+import org.commcare.formplayer.utils.WithHqUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.web.util.NestedServletException;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.util.NestedServletException;
 
 import java.util.HashMap;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Do launch tests for very basic session endpoint definitions
@@ -76,7 +76,8 @@ public class EndpointLaunchTest extends BaseTestClass {
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Followup");
         assert formResponse.getBreadcrumbs()[3].contentEquals("Batman Begins");
-        assertArrayEquals(formResponse.getSelections(), new String[]{"0", "1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"});
+        assertArrayEquals(formResponse.getSelections(),
+                new String[]{"0", "1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"});
 
         commandListResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "parents",
@@ -84,17 +85,21 @@ public class EndpointLaunchTest extends BaseTestClass {
                 CommandListResponseBean.class);
         assert commandListResponse.getCommands().length == 2;
         assert commandListResponse.getCommands()[0].getDisplayText().contentEquals("Add Child");
-        assert commandListResponse.getCommands()[1].getDisplayText().contentEquals("Child Case List");
-        assertArrayEquals(commandListResponse.getSelections(), new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"});
+        assert commandListResponse.getCommands()[1].getDisplayText().contentEquals(
+                "Child Case List");
+        assertArrayEquals(commandListResponse.getSelections(),
+                new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18"});
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "add_child",
                 endpointArgs,
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Add Child");
-        assertArrayEquals(formResponse.getSelections(), new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "0"});
+        assertArrayEquals(formResponse.getSelections(),
+                new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "0"});
 
-        // Since auto-advance is true, the endpoint endpoint advances to open the form from the case list
+        // Since auto-advance is true, the endpoint endpoint advances to open the form from the
+        // case list
         endpointArgs.put("case_id_child_case", "f04bf0e8-2001-4885-a724-5497b34abe95");
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "child_case_list",
@@ -102,7 +107,9 @@ public class EndpointLaunchTest extends BaseTestClass {
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Update Child");
         assert formResponse.getBreadcrumbs()[4].contentEquals("The Dark Knight");
-        assertArrayEquals(formResponse.getSelections(), new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "1", "f04bf0e8-2001-4885-a724-5497b34abe95"});
+        assertArrayEquals(formResponse.getSelections(),
+                new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "1",
+                        "f04bf0e8-2001-4885-a724-5497b34abe95"});
 
         formResponse = sessionNavigateWithEndpoint(APP_NAME,
                 "update_child",
@@ -110,6 +117,8 @@ public class EndpointLaunchTest extends BaseTestClass {
                 NewFormResponse.class);
         assert formResponse.getTitle().contentEquals("Update Child");
         assert formResponse.getBreadcrumbs()[4].contentEquals("The Dark Knight");
-        assertArrayEquals(formResponse.getSelections(), new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "1", "f04bf0e8-2001-4885-a724-5497b34abe95"});
+        assertArrayEquals(formResponse.getSelections(),
+                new String[]{"1", "94f8d030-c6f9-49e0-bc3f-5e0cdbf10c18", "1",
+                        "f04bf0e8-2001-4885-a724-5497b34abe95"});
     }
 }

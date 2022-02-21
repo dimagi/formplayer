@@ -1,8 +1,10 @@
 package org.commcare.formplayer.beans.menus;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.commcare.core.graph.model.GraphData;
 import org.commcare.core.graph.util.GraphException;
+import org.commcare.formplayer.util.FormplayerGraphUtil;
 import org.commcare.modern.util.Pair;
 import org.commcare.suite.model.Detail;
 import org.commcare.suite.model.DetailField;
@@ -10,7 +12,6 @@ import org.commcare.suite.model.Style;
 import org.commcare.util.screen.EntityDetailSubscreen;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.instance.TreeReference;
-import org.commcare.formplayer.util.FormplayerGraphUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +26,6 @@ public class EntityDetailResponse {
     private EntityBean[] entities;
     protected Style[] styles;
     protected String[] headers;
-    protected String[] templateForms;
     protected String title;
     protected boolean isUseNodeset;
 
@@ -40,12 +40,12 @@ public class EntityDetailResponse {
     public EntityDetailResponse() {
     }
 
-    public EntityDetailResponse(EntityDetailSubscreen entityScreen, String title, Detail detail) {
+    public EntityDetailResponse(EntityDetailSubscreen entityScreen, String title) {
         this.title = title;
         this.details = processDetails(entityScreen.getData());
         this.headers = entityScreen.getHeaders();
         this.styles = entityScreen.getStyles();
-        this.templateForms = detail.getTemplateForms();
+
     }
 
     private static Object[] processDetails(Object[] data) {
@@ -54,7 +54,7 @@ public class EntityDetailResponse {
             Object datum = data[i];
             if (datum instanceof GraphData) {
                 try {
-                    datum = FormplayerGraphUtil.getHTML((GraphData) datum, "").replace("\"", "'");
+                    datum = FormplayerGraphUtil.getHtml((GraphData)datum, "").replace("\"", "'");
                 } catch (GraphException e) {
                     datum = "Error loading graph " + e;
                 }
@@ -66,18 +66,19 @@ public class EntityDetailResponse {
 
     // Constructor used for persistent case tile
     public EntityDetailResponse(Detail detail, EvaluationContext ec) {
-        this(new EntityDetailSubscreen(0, detail, ec, new String[]{}), "Details", detail);
+        this(new EntityDetailSubscreen(0, detail, ec, new String[]{}), "Details");
         processCaseTiles(detail);
         processStyles(detail);
     }
 
     // Constructor used for detail with nodeset
     public EntityDetailResponse(Detail detail,
-                                Vector<TreeReference> references,
-                                EvaluationContext ec,
-                                String title,
-                                boolean isFuzzySearchEnabled) {
-        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail, references, ec, null, null, 0, isFuzzySearchEnabled);
+            Vector<TreeReference> references,
+            EvaluationContext ec,
+            String title,
+            boolean isFuzzySearchEnabled) {
+        List<EntityBean> entityList = EntityListResponse.processEntitiesForCaseList(detail,
+                references, ec, null, null, 0, isFuzzySearchEnabled);
         this.entities = new EntityBean[entityList.size()];
         entityList.toArray(this.entities);
         this.title = title;
@@ -142,14 +143,6 @@ public class EntityDetailResponse {
 
     public void setHeaders(String[] headers) {
         this.headers = headers;
-    }
-
-    public String[] getTemplateForms() {
-        return templateForms;
-    }
-
-    public void setTemplateForms(String[] templateForms) {
-        this.templateForms = templateForms;
     }
 
     @Override

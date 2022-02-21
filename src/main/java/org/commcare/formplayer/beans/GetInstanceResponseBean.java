@@ -1,7 +1,6 @@
 package org.commcare.formplayer.beans;
 
 import org.commcare.formplayer.beans.menus.BaseResponseBean;
-
 import org.commcare.formplayer.session.FormSession;
 
 import java.io.IOException;
@@ -14,7 +13,8 @@ public class GetInstanceResponseBean extends BaseResponseBean {
     private String output;
     private String xmlns;
 
-    GetInstanceResponseBean() {}
+    GetInstanceResponseBean() {
+    }
 
     public GetInstanceResponseBean(FormSession formSession) throws IOException {
         this.output = formSession.getInstanceXml();

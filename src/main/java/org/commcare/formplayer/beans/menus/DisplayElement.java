@@ -54,9 +54,10 @@ public class DisplayElement {
     }
 
 
-    public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id, @Nullable String input,
-                          @Nullable String receive, @Nullable String hidden, @Nullable String value,
-                          @Nullable String[] itemsetChoices, boolean allowBlankValue) {
+    public DisplayElement(DisplayUnit displayUnit, EvaluationContext ec, String id,
+            @Nullable String input,
+            @Nullable String receive, @Nullable String hidden, @Nullable String value,
+            @Nullable String[] itemsetChoices, boolean allowBlankValue) {
         this.id = id;
         this.text = displayUnit.getText().evaluate(ec);
         if (displayUnit.getImageURI() != null) {
@@ -110,8 +111,9 @@ public class DisplayElement {
     }
 
     @Override
-    public String toString(){
-        return "DisplayElement id=" + id + ", text=" + text + ", value=" + value + ", imageUri=" + imageUri
+    public String toString() {
+        return "DisplayElement id=" + id + ", text=" + text + ", value=" + value + ", imageUri="
+                + imageUri
                 + ", audioUri=" + audioUri + ", itemsetChoices=" + Arrays.toString(itemsetChoices);
     }
 

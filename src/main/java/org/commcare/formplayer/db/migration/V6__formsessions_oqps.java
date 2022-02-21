@@ -10,10 +10,10 @@ public class V6__formsessions_oqps extends BaseFormplayerMigration {
     public Iterable<String> getSqlStatements() {
         return Arrays.asList(
                 "ALTER TABLE formplayer_sessions " +
-                "ADD oneQuestionPerScreen boolean DEFAULT false",
+                        "ADD oneQuestionPerScreen boolean DEFAULT false",
 
                 "ALTER TABLE formplayer_sessions " +
-                "ADD currentIndex integer DEFAULT -1"
+                        "ADD currentIndex integer DEFAULT -1"
         );
     }
 }

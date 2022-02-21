@@ -2,18 +2,18 @@ package org.commcare.formplayer.tests;
 
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityDetailListResponse;
+import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.commcare.formplayer.utils.TestContext;
+import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Created by willpride on 4/14/16.
  */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class InlineCaseTilesTest extends BaseTestClass{
+public class InlineCaseTilesTest extends BaseTestClass {
 
     @Override
     @BeforeEach
@@ -30,7 +30,7 @@ public class InlineCaseTilesTest extends BaseTestClass{
     @Test
     public void testInlineDetails() throws Exception {
         EntityDetailListResponse response =
-                getDetailsInline(new String[] {"3", "1d59d16b-c52c-49d6-889e-801736962281"},
+                getDetailsInline(new String[]{"3", "1d59d16b-c52c-49d6-889e-801736962281"},
                         "inlinecasetiles",
                         EntityDetailListResponse.class);
         assert response.getEntityDetailList().length == 1;
@@ -40,7 +40,7 @@ public class InlineCaseTilesTest extends BaseTestClass{
     @Test
     public void testNoInline() throws Exception {
         CommandListResponseBean response =
-                sessionNavigate(new String[] {"1", "1d59d16b-c52c-49d6-889e-801736962281"},
+                sessionNavigate(new String[]{"1", "1d59d16b-c52c-49d6-889e-801736962281"},
                         "inlinecasetiles",
                         CommandListResponseBean.class);
         assert !response.getPersistentCaseTile().getHasInlineTile();
@@ -49,7 +49,7 @@ public class InlineCaseTilesTest extends BaseTestClass{
     @Test
     public void testHasInline() throws Exception {
         CommandListResponseBean response =
-                sessionNavigate(new String[] {"3", "1d59d16b-c52c-49d6-889e-801736962281"},
+                sessionNavigate(new String[]{"3", "1d59d16b-c52c-49d6-889e-801736962281"},
                         "inlinecasetiles",
                         CommandListResponseBean.class);
         assert response.getPersistentCaseTile().getHasInlineTile();

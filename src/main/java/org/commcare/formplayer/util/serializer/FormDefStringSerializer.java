@@ -20,7 +20,8 @@ public class FormDefStringSerializer {
         return Base64.encodeBase64String(baos.toByteArray());
     }
 
-    public static FormDef deserialize(String serializedFormDef) throws IOException, DeserializationException {
+    public static FormDef deserialize(String serializedFormDef)
+            throws IOException, DeserializationException {
         byte[] sessionBytes = Base64.decodeBase64(serializedFormDef);
         DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(sessionBytes));
         FormDef formDef = new FormDef();

@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
-public class BasicEndOfFormTests extends BaseTestClass{
+public class BasicEndOfFormTests extends BaseTestClass {
 
     @BeforeEach
     @Override
@@ -55,7 +55,8 @@ public class BasicEndOfFormTests extends BaseTestClass{
                 getAnswers("0", "0"),
                 response.getSessionId()
         );
-        CommandListResponseBean commandResponse = getNextScreenForEOFNavigation(submitResponse, CommandListResponseBean.class);
+        CommandListResponseBean commandResponse = getNextScreenForEofNavigation(submitResponse,
+                CommandListResponseBean.class);
         assert commandResponse.getCommands().length == 18;
         assert commandResponse.getTitle().equals("Basic Tests");
     }
@@ -64,12 +65,13 @@ public class BasicEndOfFormTests extends BaseTestClass{
     public void testPreviousScreen() throws Exception {
         NewFormResponse response =
                 sessionNavigate(new String[]{"15", "2", "bef97ca3-e815-4841-ae54-0baf40d9f1af"},
-                "basic", NewFormResponse.class);
+                        "basic", NewFormResponse.class);
         SubmitResponseBean submitResponse = submitForm(
-                    getAnswers("0", "0"),
-                    response.getSessionId()
-                );
-        EntityListResponse entityResponse = getNextScreenForEOFNavigation(submitResponse, EntityListResponse.class);
+                getAnswers("0", "0"),
+                response.getSessionId()
+        );
+        EntityListResponse entityResponse = getNextScreenForEofNavigation(submitResponse,
+                EntityListResponse.class);
         assert entityResponse.getEntities().length == 3;
         assert entityResponse.getTitle().equals("Previous Screen");
     }
@@ -83,7 +85,8 @@ public class BasicEndOfFormTests extends BaseTestClass{
                 getAnswers("0", "0"),
                 response.getSessionId()
         );
-        CommandListResponseBean commandResponse = getNextScreenForEOFNavigation(submitResponse, CommandListResponseBean.class);
+        CommandListResponseBean commandResponse = getNextScreenForEofNavigation(submitResponse,
+                CommandListResponseBean.class);
         assert commandResponse.getCommands().length == 5;
         assert commandResponse.getTitle().equals("End of Form Navigation");
     }
@@ -94,7 +97,8 @@ public class BasicEndOfFormTests extends BaseTestClass{
                 sessionNavigate(new String[]{"15", "4", "17967331-5ef3-40a7-bcb4-ee36fb9091c2"},
                         "basic", NewFormResponse.class);
         SubmitResponseBean submitResponse = submitForm(response.getSessionId());
-        NewFormResponse formResponse = getNextScreenForEOFNavigation(submitResponse, NewFormResponse.class);
+        NewFormResponse formResponse = getNextScreenForEofNavigation(submitResponse,
+                NewFormResponse.class);
         assert formResponse.getTitle().equals("Home Screen");
         assert formResponse.getTree().length == 1;
     }

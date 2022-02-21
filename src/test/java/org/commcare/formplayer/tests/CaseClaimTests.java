@@ -1,6 +1,16 @@
 package org.commcare.formplayer.tests;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.Multimap;
+
 import org.commcare.cases.model.Case;
 import org.commcare.formplayer.beans.menus.CommandListResponseBean;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
@@ -21,15 +31,6 @@ import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Hashtable;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Regression tests for fixed behaviors
@@ -65,7 +66,8 @@ public class CaseClaimTests extends BaseTestClass {
         configureQueryMock();
 
         // When no queryData, Formplayer should return the default values
-        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
+                new String[]{"1", "action 1"},
                 "caseclaim",
                 null,
                 true,
@@ -109,12 +111,13 @@ public class CaseClaimTests extends BaseTestClass {
                 queryData,
                 true,
                 EntityListResponse.class);
-        verify(webClientMock, times(1)).postFormData(urlCaptor.capture(), requestDataCaptor.capture());
+        verify(webClientMock, times(1)).postFormData(urlCaptor.capture(),
+                requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(0));
         Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
         assertEquals(4, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
-                          requestData.get("case_type").toArray());
+                requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{""}, requestData.get("name").toArray());
         assertArrayEquals(new String[]{""}, requestData.get("state").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
@@ -139,12 +142,13 @@ public class CaseClaimTests extends BaseTestClass {
                 queryData,
                 true,
                 EntityListResponse.class);
-        verify(webClientMock, times(2)).postFormData(urlCaptor.capture(), requestDataCaptor.capture());
+        verify(webClientMock, times(2)).postFormData(urlCaptor.capture(),
+                requestDataCaptor.capture());
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(2));
         requestData = requestDataCaptor.getAllValues().get(2);
         assertEquals(5, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
-                          requestData.get("case_type").toArray());
+                requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"", "chris"}, requestData.get("name").toArray());
         assertArrayEquals(new String[]{"", "hampi"}, requestData.get("district").toArray());
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
@@ -153,7 +157,8 @@ public class CaseClaimTests extends BaseTestClass {
 
     @Test
     public void testQueryScreen() throws Exception {
-        UserSqlSandbox sandbox = new UserSqlSandbox(getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
+        UserSqlSandbox sandbox = new UserSqlSandbox(
+                getUserDbConnector("caseclaimdomain", "caseclaimusername", null));
         SqlStorage<Case> caseStorage = sandbox.getCaseStorage();
 
         configureQueryMock();
@@ -167,13 +172,16 @@ public class CaseClaimTests extends BaseTestClass {
                 EntityListResponse.class);
 
         assert cacheManager.getCache("case_search")
-                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search/_case_type=case1=case2=case3_include_closed=False") != null;
+                .get("caseclaimdomain_caseclaimusername_http://localhost:8000/a/test/phone/search"
+                        + "/_case_type=case1=case2=case3_include_closed=False")
+                != null;
 
         assert responseBean.getEntities().length == 1;
         assert responseBean.getEntities()[0].getId().equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
 
         // forceManualAction true when default Search on should result in query screen
-        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(new String[]{"1", "action 1"},
+        QueryResponseBean queryResponseBean = sessionNavigateWithQuery(
+                new String[]{"1", "action 1"},
                 "caseclaim",
                 null,
                 true,
@@ -182,10 +190,12 @@ public class CaseClaimTests extends BaseTestClass {
         // test default value
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Formplayer");
         assert !queryResponseBean.getDisplays()[0].isAllowBlankValue();
-        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
+                new String[]{"karnataka", "Raj as than"});
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
         assert queryResponseBean.getDisplays()[1].isAllowBlankValue();
-        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
+                new String[]{"Bangalore", "Hampi"});
         assert !queryResponseBean.getDisplays()[2].isAllowBlankValue();
 
         // test hint
@@ -206,8 +216,10 @@ public class CaseClaimTests extends BaseTestClass {
         assert queryResponseBean.getDisplays()[0].getValue() == null;
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("1");
         assert queryResponseBean.getDisplays()[2].getValue() == null;
-        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
-        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Baran", "Kota"});
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
+                new String[]{"karnataka", "Raj as than"});
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
+                new String[]{"Baran", "Kota"});
 
 
         // change selection
@@ -221,10 +233,12 @@ public class CaseClaimTests extends BaseTestClass {
                 QueryResponseBean.class);
         assert queryResponseBean.getDisplays()[0].getValue().contentEquals("Burt");
         assert queryResponseBean.getDisplays()[1].getValue().contentEquals("0");
-        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(), new String[]{"karnataka", "Raj as than"});
+        assertArrayEquals(queryResponseBean.getDisplays()[1].getItemsetChoices(),
+                new String[]{"karnataka", "Raj as than"});
 
         // check if we have districts corresponding to karnataka state
-        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(), new String[]{"Bangalore", "Hampi"});
+        assertArrayEquals(queryResponseBean.getDisplays()[2].getItemsetChoices(),
+                new String[]{"Bangalore", "Hampi"});
 
 
         // multi-select test
@@ -261,7 +275,8 @@ public class CaseClaimTests extends BaseTestClass {
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim2.xml");
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
 
-        CommandListResponseBean commandResponse = sessionNavigateWithQuery(new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
+        CommandListResponseBean commandResponse = sessionNavigateWithQuery(
+                new String[]{"1", "action 1", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
                 "caseclaim",
                 queryData,
                 true,
@@ -271,24 +286,27 @@ public class CaseClaimTests extends BaseTestClass {
         assert commandResponse.getSelections()[1].equals("0156fa3e-093e-4136-b95c-01b13dae66c6");
         assert caseStorage.getNumRecords() == 23;
 
-        verify(webClientMock, times(2)).postFormData(urlCaptor.capture(), requestDataCaptor.capture());
+        verify(webClientMock, times(2)).postFormData(urlCaptor.capture(),
+                requestDataCaptor.capture());
 
         // when default search, prompts doesn't get included
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(0));
         Multimap<String, String> requestData = requestDataCaptor.getAllValues().get(0);
         assertEquals(2, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
-                          requestData.get("case_type").toArray());
+                requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"False"}, requestData.get("include_closed").toArray());
 
         // when default search but forceManualSearch, prompts should get included
-        // Subsequently when search happens as part of replaying a session, prompts should be same as the last search
-        // and therefore be served through cache. Therefore there are only 2 http calls here instead of 3
+        // Subsequently when search happens as part of replaying a session, prompts should be
+        // same as the last search
+        // and therefore be served through cache. Therefore there are only 2 http calls here
+        // instead of 3
         assertEquals("http://localhost:8000/a/test/phone/search/", urlCaptor.getAllValues().get(1));
         requestData = requestDataCaptor.getAllValues().get(1);
         assertEquals(5, requestData.keySet().size());
         assertArrayEquals(new String[]{"case1", "case2", "case3"},
-                          requestData.get("case_type").toArray());
+                requestData.get("case_type").toArray());
         assertArrayEquals(new String[]{"Burt"}, requestData.get("name").toArray());
         assertArrayEquals(new String[]{"bang", "hampi"}, requestData.get("district").toArray());
         assertArrayEquals(new String[]{"ka"}, requestData.get("state").toArray());
@@ -308,7 +326,8 @@ public class CaseClaimTests extends BaseTestClass {
         RestoreFactoryAnswer answer = new RestoreFactoryAnswer("restores/caseclaim.xml");
         Mockito.doAnswer(answer).when(restoreFactoryMock).getRestoreXml(anyBoolean());
 
-        CommandListResponseBean response = sessionNavigateWithQuery(new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
+        CommandListResponseBean response = sessionNavigateWithQuery(
+                new String[]{"1", "action 1", "3512eb7c-7a58-4a95-beda-205eb0d7f163"},
                 "caseclaim",
                 queryData,
                 true,
@@ -323,11 +342,13 @@ public class CaseClaimTests extends BaseTestClass {
 
     private void configureQueryMock() {
         when(webClientMock.postFormData(anyString(), any(Multimap.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response.xml"));
+                .thenReturn(FileUtils.getFile(this.getClass(),
+                        "query_responses/case_claim_response.xml"));
     }
 
     private void configureQueryMockOwned() {
         when(webClientMock.postFormData(anyString(), any(Multimap.class)))
-                .thenReturn(FileUtils.getFile(this.getClass(), "query_responses/case_claim_response_owned.xml"));
+                .thenReturn(FileUtils.getFile(this.getClass(),
+                        "query_responses/case_claim_response_owned.xml"));
     }
 }

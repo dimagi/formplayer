@@ -9,7 +9,8 @@ public class EntityBean {
     private String id;
     private Object[] data;
 
-    public EntityBean(){}
+    public EntityBean() {
+    }
 
     public EntityBean(String id) {
         this.id = id;
@@ -32,7 +33,7 @@ public class EntityBean {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "EntityBean with id=" + id + ", data=" + Arrays.toString(data);
     }
 }

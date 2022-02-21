@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 /**
  * Initialize the formplayer session database
+ *
  * @author wspride
  */
 public class V2__init_menu_session extends BaseFormplayerMigration {
@@ -12,15 +13,15 @@ public class V2__init_menu_session extends BaseFormplayerMigration {
     public Iterable<String> getSqlStatements() {
         return Arrays.asList(
                 "CREATE TABLE menu_sessions (\n" +
-                    "    id text NOT NULL,\n" +
-                    "    username text NOT NULL,\n" +
-                    "    domain text NOT NULL,\n" +
-                    "    appid text NOT NULL,\n" +
-                    "    installreference text NOT NULL,\n" +
-                    "    locale text,\n" +
-                    "    commcaresession bytea NOT NULL,\n" +
-                    "    CONSTRAINT menu_sessions_pkey PRIMARY KEY (id)\n" +
-                    ")",
+                        "    id text NOT NULL,\n" +
+                        "    username text NOT NULL,\n" +
+                        "    domain text NOT NULL,\n" +
+                        "    appid text NOT NULL,\n" +
+                        "    installreference text NOT NULL,\n" +
+                        "    locale text,\n" +
+                        "    commcaresession bytea NOT NULL,\n" +
+                        "    CONSTRAINT menu_sessions_pkey PRIMARY KEY (id)\n" +
+                        ")",
 
                 "ALTER TABLE formplayer_sessions ADD menu_session_id text",
 

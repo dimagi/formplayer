@@ -19,14 +19,15 @@ import java.util.List;
 public class V11__form_session_add_missing_appid extends BaseJavaMigration {
     @Override
     public void migrate(Context context) throws Exception {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(
+                new SingleConnectionDataSource(context.getConnection(), true));
         String sql = "SELECT * FROM formplayer_sessions WHERE COALESCE(appid, '') = ''";
-        List toBeFixed = jdbcTemplate.query(sql, new ResultSetExtractor<List>(){
+        List toBeFixed = jdbcTemplate.query(sql, new ResultSetExtractor<List>() {
 
             public List extractData(ResultSet rs) throws SQLException,
                     DataAccessException {
                 List toBeFixed = new ArrayList();
-                while(rs.next()) {
+                while (rs.next()) {
                     String id = rs.getString("id");
                     String postUrl = rs.getString("postUrl");
                     String menuId = rs.getString("menu_session_id");
@@ -37,7 +38,7 @@ public class V11__form_session_add_missing_appid extends BaseJavaMigration {
             }
         });
 
-        for(Iterator<ToBeFixed> i = toBeFixed.iterator(); i.hasNext(); ) {
+        for (Iterator<ToBeFixed> i = toBeFixed.iterator(); i.hasNext(); ) {
             ToBeFixed fixObject = i.next();
             updateObject(fixObject, jdbcTemplate);
         }
@@ -62,7 +63,9 @@ public class V11__form_session_add_missing_appid extends BaseJavaMigration {
     }
 
     private void executeUpdate(JdbcTemplate jdbcTemplate, String appId, String sessionId) {
-        jdbcTemplate.execute(String.format("UPDATE formplayer_sessions SET appId = '%s' WHERE id = '%s'", appId, sessionId));
+        jdbcTemplate.execute(
+                String.format("UPDATE formplayer_sessions SET appId = '%s' WHERE id = '%s'", appId,
+                        sessionId));
     }
 
     class ToBeFixed {
