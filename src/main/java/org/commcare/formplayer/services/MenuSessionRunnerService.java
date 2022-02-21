@@ -384,7 +384,7 @@ public class MenuSessionRunnerService {
             throws CommCareSessionException {
         queryScreen.refreshItemSetChoices();
         String queryKey = menuSession.getSessionWrapper().getCommand();
-        boolean forceManualSearch = queryData!=null && queryData.isForceManualSearch(queryKey);
+        boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey);
         boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualSearch);
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
             doQuery(

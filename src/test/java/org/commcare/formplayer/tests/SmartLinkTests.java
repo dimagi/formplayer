@@ -18,6 +18,9 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Hashtable;
 
+/**
+ * Tests for smart link workflow
+ */
 @WebMvcTest
 @ContextConfiguration(classes = TestContext.class)
 public class SmartLinkTests extends BaseTestClass {

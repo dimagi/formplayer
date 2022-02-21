@@ -19,9 +19,9 @@ import java.util.Map;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryData extends Hashtable<String, Object> {
-    private String KEY_EXECUTE = "execute";
-    private String KEY_FORCE_MANUAL_SEARCH = "force_manual_search";
-    private String KEY_INPUTS = "inputs";
+    private static final String KEY_EXECUTE = "execute";
+    private static final String KEY_FORCE_MANUAL_SEARCH = "force_manual_search";
+    private static final String KEY_INPUTS = "inputs";
 
     public Boolean getExecute(String key) {
         return getProperty(key, KEY_EXECUTE);
