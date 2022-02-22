@@ -19,20 +19,24 @@ import java.util.Map;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryData extends Hashtable<String, Object> {
-    private String KEY_EXECUTE = "execute";
-    private String KEY_INPUTS = "inputs";
+    private static final String KEY_EXECUTE = "execute";
+    private static final String KEY_FORCE_MANUAL_SEARCH = "force_manual_search";
+    private static final String KEY_INPUTS = "inputs";
 
     public Boolean getExecute(String key) {
-        Map<String, Object> value = (Map<String, Object>) this.get(key);
-        if (value != null) {
-            return (Boolean) value.get(this.KEY_EXECUTE);
-        }
-        return new Boolean(false);
+        return getProperty(key, KEY_EXECUTE);
+    }
+
+    public boolean isForceManualSearch(String key) {
+        return getProperty(key, KEY_FORCE_MANUAL_SEARCH);
     }
 
     public void setExecute(String key, Boolean value) {
-        this.initKey(key);
-        ((Map<String, Object>) this.get(key)).put(this.KEY_EXECUTE, value);
+        setProperty(key, value, KEY_EXECUTE);
+    }
+
+    public void setForceManualSearch(String key, Boolean value) {
+        setProperty(key, value, KEY_FORCE_MANUAL_SEARCH);
     }
 
     public Hashtable<String, String> getInputs(String key) {
@@ -59,5 +63,18 @@ public class QueryData extends Hashtable<String, Object> {
         if (this.get(key) == null) {
             this.put(key, new Hashtable<String, Object>());
         }
+    }
+
+    private Boolean getProperty(String key, String property) {
+        Map<String, Object> value = (Map<String, Object>) this.get(key);
+        if (value != null) {
+            return value.containsKey(property) && (Boolean) value.get(property);
+        }
+        return Boolean.FALSE;
+    }
+
+    private void setProperty(String key, Boolean value, String property) {
+        this.initKey(key);
+        ((Map<String, Object>) this.get(key)).put(property, value);
     }
 }
