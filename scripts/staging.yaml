@@ -51,6 +51,7 @@ trunk: master
 name: autostaging
 branches:
   - gh/form-def/add-table # Graham Jan 24 (contains migration)
+  - fixForSearchAgain # Shubham/Jenny Feb 22
 submodules:
   libs/commcare:
     trunk: formplayer
