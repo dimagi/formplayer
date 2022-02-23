@@ -20,7 +20,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryData extends Hashtable<String, Object> {
     private static final String KEY_EXECUTE = "execute";
-    private static final String KEY_FORCE_MANUAL_SEARCH = "force_manual_search";
+    public static final String KEY_FORCE_MANUAL_SEARCH = "force_manual_search";
     private static final String KEY_INPUTS = "inputs";
 
     public Boolean getExecute(String key) {
@@ -57,6 +57,14 @@ public class QueryData extends Hashtable<String, Object> {
     public void setInputs(String key, Hashtable<String, String> value) {
         this.initKey(key);
         ((Map<String, Object>) this.get(key)).put(this.KEY_INPUTS, value);
+    }
+
+    public Boolean hasProperty(String key, String property) {
+        Map<String, Object> value = (Map<String, Object>) this.get(key);
+        if (value != null) {
+            return value.containsKey(property);
+        }
+        return Boolean.FALSE;
     }
 
     private void initKey(String key) {
