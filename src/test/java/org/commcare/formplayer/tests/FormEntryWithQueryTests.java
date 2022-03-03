@@ -61,7 +61,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         sessionNavigateWithQuery(new String[]{"1"},
                 "caseclaimquery",
                 null,
-                false,
                 QueryResponseBean.class);
 
         Hashtable<String, String> inputs = new Hashtable<>();
@@ -72,7 +71,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         sessionNavigateWithQuery(new String[]{"1"},
                 "caseclaimquery",
                 queryData,
-                false,
                 EntityListResponse.class);
 
         // Check if form's query was executed
@@ -84,7 +82,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
                 new String[]{"1", "0156fa3e-093e-4136-b95c-01b13dae66c6", "0"},
                 "caseclaimquery",
                 queryData,
-                false,
                 NewFormResponse.class);
 
         // verify the second query block to fetch the remote case was executed
@@ -115,7 +112,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         sessionNavigateWithQuery(new String[]{"2"},
                 "caseclaimquery",
                 null,
-                false,
                 QueryResponseBean.class);
 
 
@@ -128,7 +124,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         sessionNavigateWithQuery(new String[]{"2"},
                 "caseclaimquery",
                 queryData,
-                false,
                 EntityListResponse.class);
 
         // Check if form's query was executed
@@ -140,7 +135,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
                 new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
                 "caseclaimquery",
                 queryData,
-                false,
                 CommandListResponseBean.class);
 
         assertEquals(1, menuResponse.getCommands().length);
@@ -157,7 +151,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
                 new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6", "0"},
                 "caseclaimquery",
                 queryData,
-                false,
                 NewFormResponse.class);
 
         verify(webClientMock, times(3)).postFormData(any(), any());
@@ -187,7 +180,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         sessionNavigateWithQuery(new String[]{"2"},
                 "caseclaimquery",
                 null,
-                false,
                 QueryResponseBean.class);
 
 
@@ -200,7 +192,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
         sessionNavigateWithQuery(new String[]{"2"},
                 "caseclaimquery",
                 queryData,
-                false,
                 EntityListResponse.class);
 
         // Check if form's query was executed
@@ -213,7 +204,6 @@ public class FormEntryWithQueryTests extends BaseTestClass {
                 new String[]{"2", "0156fa3e-093e-4136-b95c-01b13dae66c6"},
                 "caseclaimquery",
                 queryData,
-                false,
                 NewFormResponse.class);
 
         assertEquals(formResponse.getTitle(), "Followup Form");

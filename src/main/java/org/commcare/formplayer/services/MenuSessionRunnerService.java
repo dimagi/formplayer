@@ -65,6 +65,7 @@ import io.sentry.Sentry;
 
 import datadog.trace.api.Trace;
 
+import static org.commcare.formplayer.objects.QueryData.KEY_FORCE_MANUAL_SEARCH;
 import static org.commcare.formplayer.util.Constants.TOGGLE_SESSION_ENDPOINTS;
 
 /**
@@ -207,7 +208,7 @@ public class MenuSessionRunnerService {
     public BaseResponseBean advanceSessionWithSelections(MenuSession menuSession,
                                                          String[] selections) throws Exception {
         return advanceSessionWithSelections(menuSession, selections, null, null,
-                0, null, 0, false, 0, null);
+                0, null, 0,  false, 0, null);
     }
 
     /**
@@ -388,13 +389,21 @@ public class MenuSessionRunnerService {
                                                   boolean replay, boolean forceManualAction)
             throws CommCareSessionException {
         queryScreen.refreshItemSetChoices();
-        boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualAction);
         String queryKey = menuSession.getSessionWrapper().getCommand();
+        boolean forceManualSearch = queryData != null && queryData.isForceManualSearch(queryKey);
+
+        // this is to manintain backward compatibility with forceManualAction flag,
+        // to be removed soon after a deploy cycle
+        if (queryData == null || !queryData.hasProperty(queryKey, KEY_FORCE_MANUAL_SEARCH)) {
+            forceManualSearch = forceManualAction;
+        }
+
+        boolean autoSearch = replay || (queryScreen.doDefaultSearch() && !forceManualSearch);
         if ((queryData != null && queryData.getExecute(queryKey)) || autoSearch) {
             doQuery(
                     queryScreen,
                     queryData == null ? null : queryData.getInputs(queryKey),
-                    queryScreen.doDefaultSearch() && !forceManualAction
+                    queryScreen.doDefaultSearch() && !forceManualSearch
             );
             return true;
         } else if (queryData != null) {

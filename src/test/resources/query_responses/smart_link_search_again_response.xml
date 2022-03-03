@@ -1,0 +1,12 @@
+<results id="case">
+    <case case_id="192262cb-fbfa-46a4-ba91-a9d13659b0e2" case_type="song" owner_id="9c3f4cae5974456194797c6b609fd326" status="open">
+        <case_name>Rubaroo</case_name>
+        <last_modified>2021-02-10T23:00:03.315373Z</last_modified>
+        <date_opened>2021-02-10</date_opened>
+        <artist>A R Rahman</artist>
+        <commcare_search_score>1.0</commcare_search_score>
+        <location_id>None</location_id>
+        <commcare_project>X</commcare_project>
+        <play_count>50</play_count>
+    </case>
+</results>
