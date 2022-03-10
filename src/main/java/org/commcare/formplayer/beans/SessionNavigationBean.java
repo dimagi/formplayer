@@ -24,7 +24,6 @@ public class SessionNavigationBean extends InstallRequestBean {
     private QueryData queryData;
     private boolean isPersistent;
     private int sortIndex;
-    private boolean forceManualSearch;
     private int casesPerPage;
     private String smartLinkTemplate;
 
@@ -136,16 +135,6 @@ public class SessionNavigationBean extends InstallRequestBean {
 
     public void setSortIndex(int sortIndex) {
         this.sortIndex = sortIndex;
-    }
-
-    @JsonGetter(value = "force_manual_action")
-    public boolean isForceManualAction() {
-        return forceManualSearch;
-    }
-
-    @JsonSetter(value = "force_manual_action")
-    public void setForceManualAction(boolean forceManualSearch) {
-        this.forceManualSearch = forceManualSearch;
     }
 
     @JsonGetter(value = "cases_per_page")
