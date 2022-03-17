@@ -55,6 +55,8 @@ public class EntityListResponse extends MenuBean {
     private int maxWidth;
     private int maxHeight;
 
+    private String queryKey;
+
     public EntityListResponse() {
     }
 
@@ -117,6 +119,7 @@ public class EntityListResponse extends MenuBean {
         this.headers = pair.first;
         this.widthHints = pair.second;
         this.sortIndices = detail.getOrderedFieldIndicesForSorting();
+        this.queryKey = session.getCommand();
     }
 
     private void processCaseTiles(Detail shortDetail) {
@@ -251,6 +254,10 @@ public class EntityListResponse extends MenuBean {
 
     public void setSortIndices(int[] sortIndices) {
         this.sortIndices = sortIndices;
+    }
+
+    public String getQueryKey() {
+        return queryKey;
     }
 
     static class LogNotifier implements EntitySortNotificationInterface {
