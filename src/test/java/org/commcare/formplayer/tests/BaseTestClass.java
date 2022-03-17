@@ -422,11 +422,15 @@ public class BaseTestClass {
     }
 
     private <T extends SessionRequestBean> T populateFromSession(T bean, String sessionId) {
+        return populateFromSession(bean, sessionId, false);
+    }
+
+    private <T extends SessionRequestBean> T populateFromSession(T bean, String sessionId, boolean forSubmission) {
         SerializableFormSession session = formSessionService.getSessionById(sessionId);
         bean.setUsername(session.getUsername());
         bean.setDomain(session.getDomain());
         bean.setSessionId(sessionId);
-        bean.setForSubmission(true);
+        bean.setForSubmission(forSubmission);
         return bean;
     }
 
@@ -501,8 +505,12 @@ public class BaseTestClass {
     }
 
     GetInstanceResponseBean getInstance(String sessionId) throws Exception {
+        return getInstance(sessionId, false);
+    }
+
+    GetInstanceResponseBean getInstance(String sessionId, boolean forSubmission) throws Exception {
         SessionRequestBean sessionRequestBean = populateFromSession(new SessionRequestBean(),
-                sessionId);
+                sessionId, forSubmission);
         return generateMockQuery(ControllerType.FORM,
                 RequestType.GET,
                 Constants.URL_GET_INSTANCE,
