@@ -117,6 +117,7 @@ public class EntityListResponse extends MenuBean {
         this.headers = pair.first;
         this.widthHints = pair.second;
         this.sortIndices = detail.getOrderedFieldIndicesForSorting();
+        setQueryKey(session.getCommand());
     }
 
     private void processCaseTiles(Detail shortDetail) {
