@@ -267,7 +267,7 @@ public class FormController extends AbstractBaseController {
                                                   @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(requestBean.getSessionId());
         FormSession formSession = getFormSession(serializableFormSession);
-        Boolean serializeAllData = !requestBean.getForSubmission();
+        boolean serializeAllData = !requestBean.getForSubmission();
         return new GetInstanceResponseBean(formSession, serializeAllData);
     }
 

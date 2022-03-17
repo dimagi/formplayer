@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 public class SessionRequestBean extends AuthenticatedRequestBean {
     protected String sessionId;
-    protected Boolean forSubmission;
+    protected boolean forSubmission;
 
     @JsonGetter(value = "session_id")
     public String getSessionId() {
@@ -23,12 +23,12 @@ public class SessionRequestBean extends AuthenticatedRequestBean {
     }
 
     @JsonGetter(value = "for_submission")
-    public Boolean getForSubmission() {
+    public boolean getForSubmission() {
         return forSubmission;
     }
 
     @JsonSetter(value = "for_submission")
-    public void setForSubmission(Boolean forSubmission) {
+    public void setForSubmission(boolean forSubmission) {
         this.forSubmission = forSubmission;
     }
 

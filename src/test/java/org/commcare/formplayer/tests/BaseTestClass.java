@@ -426,6 +426,7 @@ public class BaseTestClass {
         bean.setUsername(session.getUsername());
         bean.setDomain(session.getDomain());
         bean.setSessionId(sessionId);
+        bean.setForSubmission(true);
         return bean;
     }
 
