@@ -6,7 +6,9 @@ import org.commcare.core.interfaces.RemoteInstanceFetcher;
 import org.commcare.formplayer.engine.FormplayerConfigEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.commcare.formplayer.services.CaseSearchHelper;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
+import org.commcare.formplayer.services.*;
+import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
@@ -32,9 +34,6 @@ import org.commcare.formplayer.objects.SerializableMenuSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.screens.FormplayerQueryScreen;
 import org.commcare.formplayer.screens.FormplayerSyncScreen;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.services.InstallService;
-import org.commcare.formplayer.services.RestoreFactory;
 import org.commcare.formplayer.util.*;
 import org.commcare.formplayer.util.SessionUtils;
 
@@ -310,12 +309,14 @@ public class MenuSession implements HereFunctionHandlerListener {
     @Trace
     public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
                                            FormplayerStorageFactory storageFactory,
-                                           CaseSearchHelper caseSearchHelper) throws Exception {
+                                           CaseSearchHelper caseSearchHelper,
+                                           FormDefinitionService formDefinitionService) throws Exception {
         String formXmlns = sessionWrapper.getForm();
-        FormDef formDef = engine.loadFormByXmlns(formXmlns);
+        FormDef formDef = this.engine.loadFormByXmlns(formXmlns);
+        SerializableFormDefinition serializableFormDefinition = formDefinitionService.getOrCreateFormDefinition(this.getAppId(), this.getAppVersion(), formXmlns, formDef);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
-        return new FormSession(sandbox, formDef, session.getUsername(), session.getDomain(),
+        return new FormSession(sandbox, serializableFormDefinition, session.getUsername(), session.getDomain(),
                 sessionData, postUrl, session.getLocale(), session.getId(),
                 null, oneQuestionPerScreen,
                 session.getAsUser(), session.getAppId(), null, formSendCalloutHandler, storageFactory,
