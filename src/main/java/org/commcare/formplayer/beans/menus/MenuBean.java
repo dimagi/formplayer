@@ -12,6 +12,7 @@ public class MenuBean extends BaseResponseBean {
     private String[] locales;
     private String[] breadcrumbs;
     private EntityDetailResponse persistentCaseTile;
+    private String queryKey;
 
     @Override
     public String toString() {
@@ -41,5 +42,13 @@ public class MenuBean extends BaseResponseBean {
 
     public void setPersistentCaseTile(EntityDetailResponse persistentCaseTile) {
         this.persistentCaseTile = persistentCaseTile;
+    }
+
+    public String getQueryKey() {
+        return queryKey;
+    }
+
+    public void setQueryKey(String queryKey) {
+        this.queryKey = queryKey;
     }
 }
