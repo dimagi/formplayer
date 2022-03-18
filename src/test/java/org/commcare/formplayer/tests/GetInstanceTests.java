@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class GetInstanceTests extends BaseTestClass {
 
     @Test
-    public void testRespectsRelevancyWhenForSubmissionIsTrue() throws Exception {
+    public void testRespectsRelevancyWhenTrue() throws Exception {
         String formXml = FileUtils.getFile(this.getClass(), "xforms/hidden_value_form.xml");
         FormDef expectedFormDef = XFormUtils.getFormRaw(
                 new InputStreamReader(IOUtils.toInputStream(formXml, "UTF-8")));
@@ -43,7 +43,7 @@ public class GetInstanceTests extends BaseTestClass {
     }
 
     @Test
-    public void testDoesNotRespectsRelevancyWhenForSubmissionIsFalse() throws Exception {
+    public void testDoesNotRespectsRelevancyWhenFalse() throws Exception {
         String formXml = FileUtils.getFile(this.getClass(), "xforms/hidden_value_form.xml");
         FormDef expectedFormDef = XFormUtils.getFormRaw(
                 new InputStreamReader(IOUtils.toInputStream(formXml, "UTF-8")));
