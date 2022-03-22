@@ -51,7 +51,6 @@ trunk: master
 name: autostaging
 branches:
   - gh/form-def/add-table # Graham Jan 24 (contains migration)
-  - sk/set-query-key-for-entity-list # Simon March 17
 submodules:
   libs/commcare:
     trunk: formplayer
