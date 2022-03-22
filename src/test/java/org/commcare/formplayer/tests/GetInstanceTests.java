@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class GetInstanceTests extends BaseTestClass {
 
     @Test
-    public void testRespectsRelevancyWhenTrue() throws Exception {
+    public void testRespectsRelevancy() throws Exception {
         String formXml = FileUtils.getFile(this.getClass(), "xforms/hidden_value_form.xml");
         FormDef expectedFormDef = XFormUtils.getFormRaw(
                 new InputStreamReader(IOUtils.toInputStream(formXml, "UTF-8")));
@@ -36,29 +36,9 @@ public class GetInstanceTests extends BaseTestClass {
 
         // do not answer any questions
 
-        GetInstanceResponseBean getInstanceResponse = getInstance(sessionId, true);
+        GetInstanceResponseBean getInstanceResponse = getInstance(sessionId);
 
         assertTrue(getInstanceResponse.getOutput().contains("favorite_number"));
         assertFalse(getInstanceResponse.getOutput().contains("twice_favorite_number"));
-    }
-
-    @Test
-    public void testDoesNotRespectsRelevancyWhenFalse() throws Exception {
-        String formXml = FileUtils.getFile(this.getClass(), "xforms/hidden_value_form.xml");
-        FormDef expectedFormDef = XFormUtils.getFormRaw(
-                new InputStreamReader(IOUtils.toInputStream(formXml, "UTF-8")));
-        byte[] expectedInstanceBytes = new XFormSerializingVisitor(false).serializeInstance(
-                expectedFormDef.getInstance());
-
-        NewFormResponse newSessionResponse = startNewForm("requests/new_form/new_form_3.json",
-                "xforms/hidden_value_form.xml");
-        String sessionId = newSessionResponse.getSessionId();
-
-        // do not answer any questions
-
-        GetInstanceResponseBean getInstanceResponse = getInstance(sessionId, false);
-
-        assertTrue(getInstanceResponse.getOutput().contains("favorite_number"));
-        assertTrue(getInstanceResponse.getOutput().contains("twice_favorite_number"));
     }
 }

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 public class SessionRequestBean extends AuthenticatedRequestBean {
     protected String sessionId;
-    protected boolean respectRelevancy;
 
     @JsonGetter(value = "session_id")
     public String getSessionId() {
@@ -20,16 +19,6 @@ public class SessionRequestBean extends AuthenticatedRequestBean {
         if (sessionId != null) {
             this.sessionId = sessionId;
         }
-    }
-
-    @JsonGetter(value = "respect_relevancy")
-    public boolean getRespectRelevancy() {
-        return respectRelevancy;
-    }
-
-    @JsonSetter(value = "respect_relevancy")
-    public void setRespectRelevancy(boolean respectRelevancy) {
-        this.respectRelevancy = respectRelevancy;
     }
 
     @Deprecated

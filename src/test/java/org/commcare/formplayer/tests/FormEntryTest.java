@@ -9,11 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.FormEntryNavigationResponseBean;
 import org.commcare.formplayer.beans.FormEntryResponseBean;
-import org.commcare.formplayer.beans.GetInstanceResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.QuestionBean;
 import org.commcare.formplayer.beans.SubmitResponseBean;
 import org.commcare.formplayer.beans.menus.ErrorBean;
+import org.commcare.formplayer.objects.SerializableFormSession;
+import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.Test;
@@ -51,13 +52,15 @@ public class FormEntryTest extends BaseTestClass {
         response = answerQuestionGetResult("10", "2", sessionId);
         response = answerQuestionGetResult("11", "1 2 3", sessionId);
 
-        GetInstanceResponseBean getInstanceResponse = getInstance(sessionId);
+        SerializableFormSession serializableFormSession = formSessionService.getSessionById(sessionId);
+        FormSession formSession = getFormSession(serializableFormSession);
+        String output = formSession.getInstanceXml(true);
+
+        assertTrue(output.contains("ben rudolph"));
+        assertTrue(output.contains("William Pride"));
+        assertNotNull(formSession.getXmlns());
 
         QuestionBean[] tree = response.getTree();
-
-        assertTrue(getInstanceResponse.getOutput().contains("ben rudolph"));
-        assertTrue(getInstanceResponse.getOutput().contains("William Pride"));
-        assertNotNull(getInstanceResponse.getXmlns());
 
         QuestionBean textBean = tree[1];
         assert textBean.getAnswer().equals("William Pride");
