@@ -21,6 +21,7 @@ import org.commcare.suite.model.ComputedDatum;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormEntry;
 import org.commcare.suite.model.FormIdDatum;
+import org.commcare.suite.model.MultiEntitiesDatum;
 import org.commcare.suite.model.PropertySetter;
 import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.RemoteRequestEntry;
@@ -138,6 +139,7 @@ public class PrototypeUtils {
                 BubbleSeries.class.getName(),
                 SendAction.class.getName(),
                 XPathDistinctValuesFunc.class.getName(),
+                MultiEntitiesDatum.class.getName()
         };
 
         for (Class clazz : FunctionUtils.getXPathFuncListMap().values()) {
