@@ -258,6 +258,10 @@ public class FormController extends AbstractBaseController {
         return responseBean;
     }
 
+    /**
+     * Returns xml that does not contain irrelevant nodes
+     * This xml should only be used for submission
+     */
     @RequestMapping(value = Constants.URL_GET_INSTANCE, method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     @UserLock
@@ -265,10 +269,6 @@ public class FormController extends AbstractBaseController {
     @ConfigureStorageFromSession
     public GetInstanceResponseBean getRawInstance(@RequestBody SessionRequestBean requestBean,
                                                   @CookieValue(name = Constants.POSTGRES_DJANGO_SESSION_ID, required = false) String authToken) throws Exception {
-        /**
-         * Returns xml that is omits irrelevant nodes when serialized
-         * The ideal use case is for submitting partially completed forms
-         */
         SerializableFormSession serializableFormSession = formSessionService.getSessionById(requestBean.getSessionId());
         FormSession formSession = getFormSession(serializableFormSession);
         return new GetInstanceResponseBean(formSession, false);
