@@ -26,13 +26,13 @@ public class FormDefinitionService {
     private FormDefinitionRepo formDefinitionRepo;
 
 
-    @Cacheable(key="{#appId, #appVersion, #formXmlns}")
-    public SerializableFormDefinition getOrCreateFormDefinition(String appId, String appVersion, String formXmlns, FormDef formDef) {
-        Optional<SerializableFormDefinition> optFormDef = this.formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(appId, appVersion, formXmlns);
+    @Cacheable(key="{#appId, #formVersion, #formXmlns}")
+    public SerializableFormDefinition getOrCreateFormDefinition(String appId, String formVersion, String formXmlns, FormDef formDef) {
+        Optional<SerializableFormDefinition> optFormDef = this.formDefinitionRepo.findByAppIdAndFormVersionAndXmlns(appId, formVersion, formXmlns);
         return optFormDef.orElseGet(() -> {
             try {
                 String serializedFormDef = FormDefStringSerializer.serialize(formDef);
-                SerializableFormDefinition newFormDef = new SerializableFormDefinition(appId, appVersion, formXmlns, serializedFormDef);
+                SerializableFormDefinition newFormDef = new SerializableFormDefinition(appId, formVersion, formXmlns, serializedFormDef);
                 return this.formDefinitionRepo.save(newFormDef);
             } catch (IOException e) {
                 throw new WrappedException("Error serializing form def", e);

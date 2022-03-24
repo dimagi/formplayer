@@ -23,8 +23,8 @@ public class SerializableFormDefinition {
     @Column(name="appid")
     private String appId;
 
-    @Column(name="appversion")
-    private String appVersion;
+    @Column(name="formversion")
+    private String formVersion;
 
     @Column(name="xmlns")
     private String xmlns;
@@ -33,9 +33,9 @@ public class SerializableFormDefinition {
     private String serializedFormDef;
 
     protected SerializableFormDefinition(){}
-    public SerializableFormDefinition(String appId, String appVersion, String formXmlns, String formdef) {
+    public SerializableFormDefinition(String appId, String formVersion, String formXmlns, String formdef) {
         this.appId = appId;
-        this.appVersion = appVersion;
+        this.formVersion = formVersion;
         this.xmlns = formXmlns;
         this.serializedFormDef = formdef;
     }

@@ -40,7 +40,7 @@ public class FormDefinitionRepoTest {
     public void testSaveAndLoad() {
         SerializableFormDefinition formDef = new SerializableFormDefinition(
                 "appId",
-                "appVersion",
+                "formVersion",
                 "xmlns",
                 "formdef"
         );
@@ -58,21 +58,21 @@ public class FormDefinitionRepoTest {
     }
 
     @Test
-    public void testFindByAppIdAndAppVersionAndXmlns() {
+    public void testFindByAppIdAndFormVersionAndXmlns() {
         SerializableFormDefinition formDef = new SerializableFormDefinition(
                 "appId",
-                "appVersion",
+                "formVersion",
                 "xmlns",
                 "formdef"
         );
         formDefinitionRepo.save(formDef);
-        Optional<SerializableFormDefinition> optFormDef = formDefinitionRepo.findByAppIdAndAppVersionAndXmlns(
-                "appId", "appVersion", "xmlns"
+        Optional<SerializableFormDefinition> optFormDef = formDefinitionRepo.findByAppIdAndFormVersionAndXmlns(
+                "appId", "formVersion", "xmlns"
         );
         assertThat(optFormDef.isPresent()).isTrue();
         SerializableFormDefinition fetchedFormDef = optFormDef.get();
         assertThat(fetchedFormDef.getAppId()).isEqualTo("appId");
-        assertThat(fetchedFormDef.getAppVersion()).isEqualTo("appVersion");
+        assertThat(fetchedFormDef.getFormVersion()).isEqualTo("formVersion");
         assertThat(fetchedFormDef.getXmlns()).isEqualTo("xmlns");
         assertThat(fetchedFormDef.getDateCreated()).isEqualTo(formDef.getDateCreated());
     }
