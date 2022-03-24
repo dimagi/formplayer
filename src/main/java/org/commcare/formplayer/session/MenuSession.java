@@ -313,7 +313,7 @@ public class MenuSession implements HereFunctionHandlerListener {
                                            FormDefinitionService formDefinitionService) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = this.engine.loadFormByXmlns(formXmlns);
-        SerializableFormDefinition serializableFormDefinition = formDefinitionService.getOrCreateFormDefinition(this.getAppId(), this.getAppVersion(), formXmlns, formDef);
+        SerializableFormDefinition serializableFormDefinition = formDefinitionService.getOrCreateFormDefinition(this.getAppId(), formDef.getMainInstance().formVersion, formXmlns, formDef);
         HashMap<String, String> sessionData = getSessionData();
         String postUrl = sessionWrapper.getPlatform().getPropertyManager().getSingularProperty("PostURL");
         return new FormSession(sandbox, serializableFormDefinition, session.getUsername(), session.getDomain(),
