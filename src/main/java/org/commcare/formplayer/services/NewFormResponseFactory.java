@@ -1,6 +1,8 @@
 package org.commcare.formplayer.services;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NewSessionRequestBean;
 import org.commcare.formplayer.objects.SerializableFormDefinition;
@@ -27,6 +29,8 @@ import java.io.InputStreamReader;
  */
 @Component
 public class NewFormResponseFactory {
+
+    private final Log log = LogFactory.getLog(NewFormResponseFactory.class);
 
     @Autowired
     private WebClient webClient;
@@ -58,8 +62,10 @@ public class NewFormResponseFactory {
 
         if (bean.getFormUrl() != null) {
             formXml = getFormXml(bean.getFormUrl());
+            log.info(String.format("Retrieved xml via url %s. Result is %s. Form content is %s", bean.getFormUrl(), formXml, bean.getFormContent()));
         } else if (bean.getFormContent() != null) {
             formXml = bean.getFormContent();
+            log.info(String.format("Retrieved xml via url form content. Result is %s", formXml));
         } else {
             throw new RuntimeException("No FormURL or FormContent");
         }
