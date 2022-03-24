@@ -3,10 +3,12 @@ package org.commcare.formplayer.services;
 import org.apache.commons.io.IOUtils;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.NewSessionRequestBean;
+import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.objects.SerializableFormSession;
 import org.commcare.formplayer.sandbox.UserSqlSandbox;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.util.Constants;
+import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.web.client.WebClient;
 import org.commcare.session.CommCareSession;
 import org.javarosa.core.model.FormDef;
@@ -39,6 +41,9 @@ public class NewFormResponseFactory {
     private FormSessionService formSessionService;
 
     @Autowired
+    private FormDefinitionService formDefinitionService;
+
+    @Autowired
     private FormSendCalloutHandler formSendCalloutHandler;
 
     @Autowired
@@ -68,9 +73,11 @@ public class NewFormResponseFactory {
                 bean.getRestoreAs(),
                 bean.getRestoreAsCaseId());
 
+        FormDef formDef = parseFormDef(formXml);
+        SerializableFormDefinition serializableFormDefinition = this.formDefinitionService.getOrCreateFormDefinition(bean.getSessionData().getAppId(), bean.getSessionData().getAppVersion(), formDef.getMainInstance().schema, formDef);
         FormSession formSession = new FormSession(
                 sandbox,
-                parseFormDef(formXml),
+                serializableFormDefinition,
                 bean.getUsername(),
                 bean.getDomain(),
                 bean.getSessionData().getData(),
