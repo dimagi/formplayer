@@ -16,8 +16,8 @@ public class GetInstanceResponseBean extends BaseResponseBean {
     GetInstanceResponseBean() {
     }
 
-    public GetInstanceResponseBean(FormSession formSession, Boolean serializeAllData) throws IOException {
-        this.output = formSession.getInstanceXml(serializeAllData);
+    public GetInstanceResponseBean(FormSession formSession) throws IOException {
+        this.output = formSession.getInstanceXml();
         this.xmlns = formSession.getXmlns();
     }
 
