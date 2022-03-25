@@ -40,9 +40,9 @@ public class FormDefinitionRepoTest {
     public void testSaveAndLoad() {
         SerializableFormDefinition formDef = new SerializableFormDefinition(
                 "appId",
+                "formXmlns",
                 "formVersion",
-                "xmlns",
-                "formdef"
+                "formDef"
         );
         formDefinitionRepo.saveAndFlush(formDef);
         entityManager.clear(); // clear the EM cache to force a re-fetch from DB
@@ -58,22 +58,22 @@ public class FormDefinitionRepoTest {
     }
 
     @Test
-    public void testFindByAppIdAndFormVersionAndXmlns() {
+    public void testFindByAppIdAndFormXmlnsAndFormVersion() {
         SerializableFormDefinition formDef = new SerializableFormDefinition(
                 "appId",
+                "formXmlns",
                 "formVersion",
-                "xmlns",
-                "formdef"
+                "formDef"
         );
         formDefinitionRepo.save(formDef);
-        Optional<SerializableFormDefinition> optFormDef = formDefinitionRepo.findByAppIdAndFormVersionAndXmlns(
-                "appId", "formVersion", "xmlns"
+        Optional<SerializableFormDefinition> optFormDef = formDefinitionRepo.findByAppIdAndFormXmlnsAndFormVersion(
+                "appId", "formXmlns", "formVersion"
         );
         assertThat(optFormDef.isPresent()).isTrue();
         SerializableFormDefinition fetchedFormDef = optFormDef.get();
         assertThat(fetchedFormDef.getAppId()).isEqualTo("appId");
+        assertThat(fetchedFormDef.getFormXmlns()).isEqualTo("formXmlns");
         assertThat(fetchedFormDef.getFormVersion()).isEqualTo("formVersion");
-        assertThat(fetchedFormDef.getXmlns()).isEqualTo("xmlns");
         assertThat(fetchedFormDef.getDateCreated()).isEqualTo(formDef.getDateCreated());
     }
 }

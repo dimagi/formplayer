@@ -23,20 +23,20 @@ public class SerializableFormDefinition {
     @Column(name="appid")
     private String appId;
 
+    @Column(name="formxmlns")
+    private String formXmlns;
+
     @Column(name="formversion")
     private String formVersion;
-
-    @Column(name="xmlns")
-    private String xmlns;
 
     @Column(name="formdef")
     private String serializedFormDef;
 
     protected SerializableFormDefinition(){}
-    public SerializableFormDefinition(String appId, String formVersion, String formXmlns, String formdef) {
+    public SerializableFormDefinition(String appId, String formXmlns, String formVersion, String formDef) {
         this.appId = appId;
+        this.formXmlns = formXmlns;
         this.formVersion = formVersion;
-        this.xmlns = formXmlns;
-        this.serializedFormDef = formdef;
+        this.serializedFormDef = formDef;
     }
 }

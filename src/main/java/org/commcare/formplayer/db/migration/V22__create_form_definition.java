@@ -10,10 +10,10 @@ public class V22__create_form_definition extends BaseFormplayerMigration {
                         "    id bigserial PRIMARY KEY,\n" +
                         "    datecreated timestamp with time zone,\n" +
                         "    appid text NOT NULL,\n" +
+                        "    formxmlns text NOT NULL,\n" +
                         "    formversion text NOT NULL,\n" +
-                        "    xmlns text NOT NULL,\n" +
                         "    formdef text NOT NULL,\n" +
-                        "    CONSTRAINT form_definition_version UNIQUE (appid, formversion, xmlns)\n" +
+                        "    CONSTRAINT form_definition_version UNIQUE (appid, formxmlns, formversion)\n" +
                         ")",
 
                 "ALTER TABLE formplayer_sessions ADD form_definition_id bigint",

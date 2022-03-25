@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface FormDefinitionRepo extends JpaRepository<SerializableFormDefinition, Long> {
-    Optional<SerializableFormDefinition> findByAppIdAndFormVersionAndXmlns(String appId, String formVersion, String xmlns);
+    Optional<SerializableFormDefinition> findByAppIdAndFormXmlnsAndFormVersion(String appId, String formXmlns, String formVersion);
 }
 

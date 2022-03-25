@@ -334,7 +334,7 @@ public class BaseTestClass {
                 String appVersion = ((String)invocation.getArguments()[1]);
                 String xmlns = ((String)invocation.getArguments()[2]);
                 for (SerializableFormDefinition tmp : formDefinitionMap.values()) {
-                    if (tmp.getAppId().equals(appId) && tmp.getFormVersion().equals(appVersion) && tmp.getXmlns().equals(xmlns)) {
+                    if (tmp.getAppId().equals(appId) && tmp.getFormXmlns().equals(xmlns) && tmp.getFormVersion().equals(appVersion)) {
                         return tmp;
                     }
                 }
