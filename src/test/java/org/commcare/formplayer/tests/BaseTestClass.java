@@ -775,6 +775,22 @@ public class BaseTestClass {
                 clazz);
     }
 
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues, Class<T> clazz)
+            throws Exception {
+        SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
+        sessionNavigationBean.setDomain(testName + "domain");
+        sessionNavigationBean.setAppId(testName + "appid");
+        sessionNavigationBean.setUsername(testName + "username");
+        sessionNavigationBean.setSelections(selections);
+        sessionNavigationBean.setSelectedValues(selectedValues);
+        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+                ControllerType.MENU,
+                RequestType.POST,
+                Constants.URL_MENU_NAVIGATION,
+                sessionNavigationBean,
+                clazz);
+    }
+
     <T> T sessionNavigateWithEndpoint(String testName,
             String endpointId,
             HashMap<String, String> endpointArgs,

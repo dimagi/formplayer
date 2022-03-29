@@ -27,6 +27,7 @@ public class SessionNavigationBean extends InstallRequestBean {
     private boolean forceManualSearch;
     private int casesPerPage;
     private String smartLinkTemplate;
+    private String[] selectedValues;
 
     public String[] getSelections() {
         return selections;
@@ -156,5 +157,13 @@ public class SessionNavigationBean extends InstallRequestBean {
     @JsonSetter(value = "cases_per_page")
     public void setCasesPerPage(int casesPerPage) {
         this.casesPerPage = casesPerPage;
+    }
+
+    public String[] getSelectedValues() {
+        return selectedValues;
+    }
+
+    public void setSelectedValues(String[] selectedValues) {
+        this.selectedValues = selectedValues;
     }
 }

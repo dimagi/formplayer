@@ -1,5 +1,7 @@
 package org.commcare.formplayer.tests;
 
+
+import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.utils.TestContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,10 +33,14 @@ public class MultiSelectCaseListTest extends BaseTestClass {
 
     @Test
     public void testNormalMultiSelectCaseList() throws Exception {
-        EntityListResponse entityListResp = sessionNavigate(new String[]{"0", "1"}, APP,
+        String[] selections = new String[]{"0", "1"};
+        EntityListResponse entityListResp = sessionNavigate(selections, APP,
                 EntityListResponse.class);
         Assert.isTrue(entityListResp.isMultiSelect(),
                 "Multi Select should be turned on for instance-datum backed entity list");
         Assert.isTrue(entityListResp.getMaxSelectValue() == 10, "max-select-value is not set correctly");
+
+        String[] selectedValues = new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
+        sessionNavigateWithSelectedValues(selections, APP, selectedValues, NewFormResponse.class);
     }
 }
