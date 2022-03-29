@@ -65,7 +65,7 @@ public class MenuSessionFactory {
     public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
-        Screen screen = menuSession.getNextScreen(false);
+        Screen screen = menuSession.getNextScreen(false, null);
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
@@ -81,7 +81,7 @@ public class MenuSessionFactory {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 entityScreen.init(menuSession.getSessionWrapper());
                 if (entityScreen.shouldBeSkipped()) {
-                    screen = menuSession.getNextScreen(false);
+                    screen = menuSession.getNextScreen(false, null);
                     continue;
                 }
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
@@ -115,7 +115,7 @@ public class MenuSessionFactory {
                                 dataBuilder.build()
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
-                            screen = menuSession.getNextScreen(false);
+                            screen = menuSession.getNextScreen(false, null);
                             currentStep = NEXT_SCREEN;
                             break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
@@ -128,9 +128,9 @@ public class MenuSessionFactory {
             if (currentStep == null) {
                 break;
             } else if (currentStep != NEXT_SCREEN) {
-                menuSession.handleInput(currentStep, false, true, false);
+                menuSession.handleInput(currentStep, false, true, false, null);
                 menuSession.addSelection(currentStep);
-                screen = menuSession.getNextScreen(false);
+                screen = menuSession.getNextScreen(false, null);
             }
         }
         if (screen != null) {
