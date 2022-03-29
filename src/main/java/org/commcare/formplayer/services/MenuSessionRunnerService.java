@@ -39,7 +39,6 @@ import org.commcare.suite.model.Text;
 import org.commcare.util.screen.CommCareSessionException;
 import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
-import org.commcare.util.screen.MultiSelectEntityScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
@@ -273,7 +272,7 @@ public class MenuSessionRunnerService {
             try {
                 nextScreen = autoAdvanceSession(
                         menuSession, selection, nextInput, queryData, needsDetail, inputValidated,
-                        forceManualAction, selectedValues
+                        forceManualAction
                 );
             } catch (CommCareSessionException e) {
                 notificationMessage = new NotificationMessage(e.getMessage(), true, NotificationMessage.Tag.query);
@@ -341,8 +340,7 @@ public class MenuSessionRunnerService {
             QueryData queryData,
             boolean needsDetail,
             boolean inputValidated,
-            boolean forceManualAction,
-            String[] selectedValues) throws CommCareSessionException {
+            boolean forceManualAction) throws CommCareSessionException {
         boolean sessionAdvanced;
         Screen nextScreen = null;
         Screen previousScreen;
@@ -353,7 +351,7 @@ public class MenuSessionRunnerService {
             previousScreen = nextScreen;
             iterationCount += 1;
 
-            nextScreen = menuSession.getNextScreen(needsDetail, selectedValues);
+            nextScreen = menuSession.getNextScreen(needsDetail);
             if (previousScreen != null) {
                 String to = nextScreen == null ? "XForm" : nextScreen.toString();
                 log.info(String.format("Menu session auto advanced from %s to %s", previousScreen, to));
@@ -371,9 +369,6 @@ public class MenuSessionRunnerService {
                 );
             } else if (nextScreen instanceof MenuScreen) {
                 sessionAdvanced = menuSession.autoAdvanceMenu(nextScreen, isAutoAdvanceMenu());
-            }
-            if (nextScreen instanceof MultiSelectEntityScreen && selectedValues != null) {
-                sessionAdvanced = true;
             }
         } while (!Thread.interrupted() && sessionAdvanced && iterationCount < maxIterations);
 
@@ -533,7 +528,7 @@ public class MenuSessionRunnerService {
 
             autoAdvanceSession(
                     menuSession, "", "", new QueryData(),
-                    false, false, false, null
+                    false, false, false
             );
             BaseResponseBean response = getNextMenu(menuSession);
             response.setSelections(menuSession.getSelections());

@@ -1,16 +1,14 @@
 package org.commcare.formplayer.services;
 
-import datadog.trace.api.Trace;
 import com.google.common.collect.ImmutableMultimap;
-import org.commcare.suite.model.*;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.session.MenuSession;
 import org.commcare.suite.model.MenuDisplayable;
+import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.SessionDatum;
 import org.commcare.suite.model.StackFrameStep;
 import org.commcare.util.screen.CommCareSessionException;
@@ -18,17 +16,20 @@ import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
 import org.commcare.util.screen.QueryScreen;
 import org.commcare.util.screen.Screen;
+import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.xml.util.InvalidStructureException;
 import org.javarosa.xml.util.UnfullfilledRequirementsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.session.MenuSession;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Vector;
+
+import datadog.trace.api.Trace;
 
 /**
  * Class containing logic for accepting a NewSessionRequest and services,
@@ -65,7 +66,7 @@ public class MenuSessionFactory {
     public void rebuildSessionFromFrame(MenuSession menuSession, CaseSearchHelper caseSearchHelper) throws CommCareSessionException, RemoteInstanceFetcher.RemoteInstanceException {
         Vector<StackFrameStep> steps = menuSession.getSessionWrapper().getFrame().getSteps();
         menuSession.resetSession();
-        Screen screen = menuSession.getNextScreen(false, null);
+        Screen screen = menuSession.getNextScreen(false);
         while (screen != null) {
             String currentStep = null;
             if (screen instanceof MenuScreen) {
@@ -81,7 +82,7 @@ public class MenuSessionFactory {
                 EntityScreen entityScreen = (EntityScreen)screen;
                 entityScreen.init(menuSession.getSessionWrapper());
                 if (entityScreen.shouldBeSkipped()) {
-                    screen = menuSession.getNextScreen(false, null);
+                    screen = menuSession.getNextScreen(false);
                     continue;
                 }
                 SessionDatum neededDatum = entityScreen.getSession().getNeededDatum();
@@ -115,7 +116,7 @@ public class MenuSessionFactory {
                                 dataBuilder.build()
                             );
                             queryScreen.setQueryDatum(searchDataInstance);
-                            screen = menuSession.getNextScreen(false, null);
+                            screen = menuSession.getNextScreen(false);
                             currentStep = NEXT_SCREEN;
                             break;
                         } catch (InvalidStructureException | IOException | XmlPullParserException | UnfullfilledRequirementsException e) {
@@ -130,7 +131,7 @@ public class MenuSessionFactory {
             } else if (currentStep != NEXT_SCREEN) {
                 menuSession.handleInput(currentStep, false, true, false, null);
                 menuSession.addSelection(currentStep);
-                screen = menuSession.getNextScreen(false, null);
+                screen = menuSession.getNextScreen(false);
             }
         }
         if (screen != null) {

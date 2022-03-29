@@ -152,7 +152,7 @@ public class MenuSession implements HereFunctionHandlerListener {
      */
     public boolean handleInput(String input, boolean needsDetail, boolean inputValidated,
             boolean allowAutoLaunch, String[] selectedValues) throws CommCareSessionException {
-        Screen screen = getNextScreen(needsDetail, selectedValues);
+        Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
             return false;
@@ -168,12 +168,12 @@ public class MenuSession implements HereFunctionHandlerListener {
                     if (screen.shouldBeSkipped()) {
                         return handleInput(input, true, inputValidated, allowAutoLaunch, selectedValues);
                     }
-                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                    screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
                 } else {
                     sessionWrapper.setDatum(sessionWrapper.getNeededDatum().getDataId(), input);
                 }
             } else {
-                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch);
+                screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
             }
 
             if (addBreadcrumb) {
@@ -223,19 +223,18 @@ public class MenuSession implements HereFunctionHandlerListener {
      * with no performance optimization and autolaunching of actions not allowed.
      */
     public Screen getNextScreen() throws CommCareSessionException {
-        return getNextScreen(true, null);
+        return getNextScreen(true);
     }
 
     /**
      * Get next screen for current request, based on current state of session,
      * with autolaunching of actions not allowed.
      *
-     * @param needsDetail Whether a full entity screen is required for this request
-     *                    or if a list of references is sufficient
-     * @param selectedValues
+     * @param needsDetail    Whether a full entity screen is required for this request
+     *                       or if a list of references is sufficient
      */
     @Trace
-    public Screen getNextScreen(boolean needsDetail, String[] selectedValues) throws CommCareSessionException {
+    public Screen getNextScreen(boolean needsDetail) throws CommCareSessionException {
         String next = sessionWrapper.getNeededData(sessionWrapper.getEvaluationContext());
         if (next == null) {
             if (sessionWrapper.isViewCommand(sessionWrapper.getCommand())) {
@@ -249,7 +248,7 @@ public class MenuSession implements HereFunctionHandlerListener {
             menuScreen.init(sessionWrapper);
             return menuScreen;
         } else if (isEntitySelectionDatum(next)) {
-            EntityScreen entityScreen = getEntityScreenForSession(needsDetail, selectedValues);
+            EntityScreen entityScreen = getEntityScreenForSession(needsDetail);
             if (entityScreen.shouldBeSkipped()) {
                 return getNextScreen();
             }
@@ -281,7 +280,7 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     @Trace
-    private EntityScreen getEntityScreenForSession(boolean needsDetail, String[] selectedValues)
+    private EntityScreen getEntityScreenForSession(boolean needsDetail)
             throws CommCareSessionException {
         EntityDatum datum = (EntityDatum)sessionWrapper.getNeededDatum();
 
@@ -291,7 +290,7 @@ public class MenuSession implements HereFunctionHandlerListener {
 
         String datumKey = datum.getDataId() + ", " + nodesetHash;
         if (!entityScreenCache.containsKey(datumKey)) {
-            EntityScreen entityScreen = createFreshEntityScreen(needsDetail, datum, selectedValues);
+            EntityScreen entityScreen = createFreshEntityScreen(needsDetail, datum);
             entityScreenCache.put(datumKey, entityScreen);
             return entityScreen;
         } else {
@@ -301,17 +300,13 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     @Trace
     private EntityScreen createFreshEntityScreen(boolean needsDetail,
-            EntityDatum datum, String[] selectedValues)
+            EntityDatum datum)
             throws CommCareSessionException {
         if (datum instanceof MultiSelectEntityDatum) {
-            EntitiesSelectionStorage entitiesSelectionStorage = new EntitiesSelectionStorage(sandbox.getConnection());
-            try {
-                return new MultiSelectEntityScreen(false, needsDetail,
-                        sessionWrapper, selectedValues, entitiesSelectionStorage);
-            } catch (SQLException throwables) {
-                throw new RuntimeException("Failed to process input on entity list screen due to "
-                        + throwables.getMessage(), throwables);
-            }
+            EntitiesSelectionStorage entitiesSelectionStorage = new EntitiesSelectionStorage(
+                    sandbox.getConnection());
+            return new MultiSelectEntityScreen(false, needsDetail,
+                    sessionWrapper, entitiesSelectionStorage);
         } else {
             return new EntityScreen(false, needsDetail, sessionWrapper);
         }

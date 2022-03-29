@@ -40,7 +40,11 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 "Multi Select should be turned on for instance-datum backed entity list");
         Assert.isTrue(entityListResp.getMaxSelectValue() == 10, "max-select-value is not set correctly");
 
-        String[] selectedValues = new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
-        sessionNavigateWithSelectedValues(selections, APP, selectedValues, NewFormResponse.class);
+        selections = new String[]{"0", "1", "use_selected_values"};
+        String[] selectedValues =
+                new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
+        NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
+                NewFormResponse.class);
+        assert formResp.getSelections() != null;
     }
 }
