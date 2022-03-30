@@ -1,11 +1,12 @@
 package org.commcare.formplayer.database.models;
 
+import static org.commcare.formplayer.sandbox.SqlSandboxUtils.execSql;
+
 import com.google.common.base.Joiner;
 
 import org.commcare.core.interfaces.EntitiesSelectionCache;
 import org.commcare.formplayer.sandbox.SqlHelper;
 import org.commcare.modern.database.DatabaseHelper;
-import org.javarosa.core.services.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,6 +14,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+/**
+ * A simple sql backed cache that stores the selectons on a multi select Entity list into user DB
+ */
 public class EntitiesSelectionStorage implements EntitiesSelectionCache {
 
     private static final String TABLE_NAME = "entity_selection_cache";
@@ -24,33 +28,14 @@ public class EntitiesSelectionStorage implements EntitiesSelectionCache {
 
     public EntitiesSelectionStorage(Connection connection) {
         this.handler = connection;
-
         try {
-            execSQL(handler, getTableDefinition());
+            execSql(handler, getTableDefinition());
             // Need to commit in order to make these tables available
             if (!handler.getAutoCommit()) {
                 handler.commit();
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private static void execSQL(Connection connection, String query) {
-        PreparedStatement preparedStatement = null;
-        try {
-            preparedStatement = connection.prepareStatement(query);
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    Logger.exception("Exception closing connection ", e);
-                }
-            }
         }
     }
 

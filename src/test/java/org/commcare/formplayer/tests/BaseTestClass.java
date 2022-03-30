@@ -775,7 +775,8 @@ public class BaseTestClass {
                 clazz);
     }
 
-    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues, Class<T> clazz)
+    <T> T sessionNavigateWithSelectedValues(String[] selections, String testName, String[] selectedValues,
+            Class<T> clazz)
             throws Exception {
         SessionNavigationBean sessionNavigationBean = new SessionNavigationBean();
         sessionNavigationBean.setDomain(testName + "domain");
