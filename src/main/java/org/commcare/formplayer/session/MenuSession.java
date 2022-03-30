@@ -55,8 +55,7 @@ import datadog.trace.api.Trace;
 
 /**
  * This (along with FormSession) is a total god object. This manages everything from installation to form entry.
- * This
- * primarily includes module and form navigation, along with case list/details and case selection. When ready,
+ * This primarily includes module and form navigation, along with case list/details and case selection. When ready,
  * this object will create and hand off flow control to a FormSession object, loading up the proper session data.
  *
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
