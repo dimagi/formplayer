@@ -1,12 +1,22 @@
 package org.commcare.formplayer.session;
 
-import datadog.trace.api.Trace;
-import org.commcare.formplayer.beans.NotificationMessage;
-import org.commcare.core.interfaces.RemoteInstanceFetcher;
-import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.commcare.core.interfaces.RemoteInstanceFetcher;
+import org.commcare.formplayer.engine.FormplayerConfigEngine;
+import org.commcare.formplayer.objects.SerializableMenuSession;
+import org.commcare.formplayer.sandbox.UserSqlSandbox;
+import org.commcare.formplayer.screens.FormplayerQueryScreen;
+import org.commcare.formplayer.screens.FormplayerSyncScreen;
 import org.commcare.formplayer.services.CaseSearchHelper;
+import org.commcare.formplayer.services.FormplayerStorageFactory;
+import org.commcare.formplayer.services.InstallService;
+import org.commcare.formplayer.services.RestoreFactory;
+import org.commcare.formplayer.util.FormplayerHereFunctionHandler;
+import org.commcare.formplayer.util.SessionUtils;
+import org.commcare.formplayer.util.StringUtils;
 import org.commcare.formplayer.util.serializer.SessionSerializer;
 import org.commcare.modern.database.TableBuilder;
 import org.commcare.modern.session.SessionWrapper;
@@ -16,8 +26,11 @@ import org.commcare.suite.model.Endpoint;
 import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.SessionDatum;
-import org.commcare.util.screen.*;
+import org.commcare.util.screen.CommCareSessionException;
+import org.commcare.util.screen.EntityScreen;
 import org.commcare.util.screen.MenuScreen;
+import org.commcare.util.screen.QueryScreen;
+import org.commcare.util.screen.Screen;
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -28,24 +41,18 @@ import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
-import org.commcare.formplayer.objects.SerializableMenuSession;
-import org.commcare.formplayer.sandbox.UserSqlSandbox;
-import org.commcare.formplayer.screens.FormplayerQueryScreen;
-import org.commcare.formplayer.screens.FormplayerSyncScreen;
-import org.commcare.formplayer.services.FormplayerStorageFactory;
-import org.commcare.formplayer.services.InstallService;
-import org.commcare.formplayer.services.RestoreFactory;
-import org.commcare.formplayer.util.*;
-import org.commcare.formplayer.util.SessionUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
-import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
+import datadog.trace.api.Trace;
 
 
 /**
- * This (along with FormSession) is a total god object. This manages everything from installation to form entry. This
- * primarily includes module and form navigation, along with case list/details and case selection. When ready,
+ * This (along with FormSession) is a total god object. This manages everything from installation to form entry.
+ * This primarily includes module and form navigation, along with case list/details and case selection. When ready,
  * this object will create and hand off flow control to a FormSession object, loading up the proper session data.
  *
  * A lot of this is copied from the CLI. We need to merge that. Big TODO
@@ -71,10 +78,11 @@ public class MenuSession implements HereFunctionHandlerListener {
     private String smartLinkRedirect;
 
     public MenuSession(SerializableMenuSession session, InstallService installService,
-                       RestoreFactory restoreFactory, RemoteInstanceFetcher instanceFetcher) throws Exception {
+            RestoreFactory restoreFactory, RemoteInstanceFetcher instanceFetcher) throws Exception {
         this.instanceFetcher = instanceFetcher;
         this.session = session;
-        this.engine = installService.configureApplication(session.getInstallReference(), session.isPreview()).first;
+        this.engine = installService.configureApplication(session.getInstallReference(),
+                session.isPreview()).first;
         this.sandbox = restoreFactory.getSandbox();
         this.sessionWrapper = new FormplayerSessionWrapper(
                 SessionSerializer.deserialize(engine.getPlatform(), session.getCommcareSession()),
@@ -85,9 +93,9 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     public MenuSession(String username, String domain, String appId, String locale,
-                       InstallService installService, RestoreFactory restoreFactory, String host,
-                       boolean oneQuestionPerScreen, String asUser, boolean preview,
-                       RemoteInstanceFetcher instanceFetcher) throws Exception {
+            InstallService installService, RestoreFactory restoreFactory, String host,
+            boolean oneQuestionPerScreen, String asUser, boolean preview,
+            RemoteInstanceFetcher instanceFetcher) throws Exception {
         this.oneQuestionPerScreen = oneQuestionPerScreen;
         this.instanceFetcher = instanceFetcher;
         String resolvedInstallReference = resolveInstallReference(appId, host, domain);
@@ -100,7 +108,8 @@ public class MenuSession implements HereFunctionHandlerListener {
                 asUser,
                 preview
         );
-        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(resolvedInstallReference, preview);
+        Pair<FormplayerConfigEngine, Boolean> install = installService.configureApplication(
+                resolvedInstallReference, preview);
         this.engine = install.first;
         if (install.second && !preview && !restoreFactory.getHasRestored()) {
             this.sandbox = restoreFactory.performTimedSync();
@@ -132,7 +141,8 @@ public class MenuSession implements HereFunctionHandlerListener {
      * @param allowAutoLaunch If this step is allowed to automatically launch an action,
      *                        assuming it has an autolaunch action specified.
      */
-    public boolean handleInput(String input, boolean needsDetail, boolean inputValidated, boolean allowAutoLaunch) throws CommCareSessionException {
+    public boolean handleInput(String input, boolean needsDetail, boolean inputValidated, boolean allowAutoLaunch)
+            throws CommCareSessionException {
         Screen screen = getNextScreen(needsDetail);
         log.info("Screen " + screen + " handling input " + input);
         if (screen == null) {
@@ -170,11 +180,10 @@ public class MenuSession implements HereFunctionHandlerListener {
     }
 
     /**
-     *
-     * @param screen The current screen that has been navigated to.
+     * @param screen          The current screen that has been navigated to.
      * @param autoAdvanceMenu Whether the menu navigation should be advanced if it can be.
-     * @throws CommCareSessionException
      * @return true if the session was advanced
+     * @throws CommCareSessionException
      */
     public boolean autoAdvanceMenu(Screen screen, boolean autoAdvanceMenu) throws CommCareSessionException {
         if (!autoAdvanceMenu || !(screen instanceof MenuScreen)) {
@@ -309,8 +318,8 @@ public class MenuSession implements HereFunctionHandlerListener {
 
     @Trace
     public FormSession getFormEntrySession(FormSendCalloutHandler formSendCalloutHandler,
-                                           FormplayerStorageFactory storageFactory,
-                                           CaseSearchHelper caseSearchHelper) throws Exception {
+            FormplayerStorageFactory storageFactory,
+            CaseSearchHelper caseSearchHelper) throws Exception {
         String formXmlns = sessionWrapper.getForm();
         FormDef formDef = engine.loadFormByXmlns(formXmlns);
         HashMap<String, String> sessionData = getSessionData();
