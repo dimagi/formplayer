@@ -1,9 +1,15 @@
 package org.commcare.formplayer.tests;
 
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.utils.TestContext;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsEqual;
+import org.hamcrest.core.IsNot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -45,6 +51,13 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 new String[]{"5e421eb8bf414e03b4871195b869d894", "3512eb7c-7a58-4a95-beda-205eb0d7f163"};
         NewFormResponse formResp = sessionNavigateWithSelectedValues(selections, APP, selectedValues,
                 NewFormResponse.class);
-        assert formResp.getSelections() != null;
+
+        // use_selected_values would be replaced by guid in the selections array in response
+        MatcherAssert.assertThat(selections, IsNot.not(IsEqual.equalTo(formResp.getSelections())));
+
+        // Navigate without using selected values using the selections from response
+        selections = formResp.getSelections();
+        NewFormResponse formRespUsingGuid = sessionNavigate(selections, APP, NewFormResponse.class);
+        assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
     }
 }
