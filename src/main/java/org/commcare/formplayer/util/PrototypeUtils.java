@@ -22,6 +22,7 @@ import org.commcare.suite.model.EntityDatum;
 import org.commcare.suite.model.FormEntry;
 import org.commcare.suite.model.FormIdDatum;
 import org.commcare.suite.model.ListQueryData;
+import org.commcare.suite.model.MultiSelectEntityDatum;
 import org.commcare.suite.model.PropertySetter;
 import org.commcare.suite.model.RemoteQueryDatum;
 import org.commcare.suite.model.RemoteRequestEntry;
@@ -140,6 +141,7 @@ public class PrototypeUtils {
                 BubbleSeries.class.getName(),
                 SendAction.class.getName(),
                 XPathDistinctValuesFunc.class.getName(),
+                MultiSelectEntityDatum.class.getName(),
                 ValueQueryData.class.getName(),
                 ListQueryData.class.getName(),
         };
