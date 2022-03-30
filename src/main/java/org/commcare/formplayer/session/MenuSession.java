@@ -45,7 +45,6 @@ import org.javarosa.xpath.expr.FunctionUtils;
 import org.javarosa.xpath.expr.XPathExpression;
 import org.javarosa.xpath.parser.XPathSyntaxException;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -176,6 +175,11 @@ public class MenuSession implements HereFunctionHandlerListener {
                 screen.handleInputAndUpdateSession(sessionWrapper, input, allowAutoLaunch, selectedValues);
             }
 
+            if (screen instanceof MultiSelectEntityScreen && input.contentEquals(
+                    MultiSelectEntityScreen.USE_SELECTED_VALUES)) {
+                addSelection(((MultiSelectEntityScreen)screen).getStorageReferenceId());
+            }
+
             if (addBreadcrumb) {
                 addTitle(input, screen);
             }
@@ -230,8 +234,8 @@ public class MenuSession implements HereFunctionHandlerListener {
      * Get next screen for current request, based on current state of session,
      * with autolaunching of actions not allowed.
      *
-     * @param needsDetail    Whether a full entity screen is required for this request
-     *                       or if a list of references is sufficient
+     * @param needsDetail Whether a full entity screen is required for this request
+     *                    or if a list of references is sufficient
      */
     @Trace
     public Screen getNextScreen(boolean needsDetail) throws CommCareSessionException {
