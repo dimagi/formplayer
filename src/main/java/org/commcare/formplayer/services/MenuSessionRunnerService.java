@@ -393,11 +393,10 @@ public class MenuSessionRunnerService {
      * @param queryScreen       The query screen to handle
      * @param menuSession       The current menu session
      * @param queryData         Query data passed in from the response
-     * @param replay            Boolean that is True if there are still more selections to
-     *                          process in the navigation loop.
+     * @param replay            Boolean that is True if there are still more selections to process in the
+     *                          navigation loop.
      *                          i.e. if we are handling the query as part of navigation replay
-     * @param forceManualAction Boolean passed in from the request which will prevent auto launch
-     *                          actions
+     * @param forceManualAction Boolean passed in from the request which will prevent auto launch actions
      * @return true if the query was executed and the session should move to the next screen
      * @throws CommCareSessionException if the was an error performing a query
      */
