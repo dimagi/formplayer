@@ -77,7 +77,7 @@ public class NewFormResponseFactory {
         SerializableFormDefinition serializableFormDefinition = this.formDefinitionService.getOrCreateFormDefinition(
                 bean.getSessionData().getAppId(),
                 formDef.getMainInstance().schema,
-                formDef.getMainInstance().formVersion,
+                bean.getSessionData().getAppVersion(),
                 formDef
         );
         FormSession formSession = new FormSession(

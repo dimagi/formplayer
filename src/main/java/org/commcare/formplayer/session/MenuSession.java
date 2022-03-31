@@ -316,7 +316,7 @@ public class MenuSession implements HereFunctionHandlerListener {
         SerializableFormDefinition serializableFormDefinition = formDefinitionService.getOrCreateFormDefinition(
                 this.getAppId(),
                 formXmlns,
-                formDef.getMainInstance().formVersion,
+                this.getAppVersion(),
                 formDef
         );
         HashMap<String, String> sessionData = getSessionData();
