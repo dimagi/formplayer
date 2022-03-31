@@ -67,7 +67,6 @@ import org.commcare.formplayer.services.SubmitService;
 import org.commcare.formplayer.session.FormSession;
 import org.commcare.formplayer.session.MenuSession;
 import org.commcare.formplayer.sqlitedb.UserDB;
-import org.commcare.formplayer.util.*;
 import org.commcare.formplayer.util.serializer.FormDefStringSerializer;
 import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.util.FormplayerDatadog;
@@ -345,7 +344,9 @@ public class BaseTestClass {
                 } catch (IOException ex) {
                     serializedFormDef = "could not serialize provided form def";
                 }
-                SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(appId, appVersion, xmlns, serializedFormDef);
+                SerializableFormDefinition serializableFormDef = new SerializableFormDefinition(
+                        appId, appVersion, xmlns, serializedFormDef
+                );
                 if (serializableFormDef.getId() == null) {
                     // this is normally taken care of by Hibernate
                     ReflectionTestUtils.setField(serializableFormDef, "id", currentFormDefinitionId);
@@ -354,7 +355,9 @@ public class BaseTestClass {
                 formDefinitionMap.put(serializableFormDef.getId(), serializableFormDef);
                 return serializableFormDef;
             }
-        }).when(this.formDefinitionService).getOrCreateFormDefinition(anyString(), anyString(), anyString(), any(FormDef.class));
+        }).when(this.formDefinitionService).getOrCreateFormDefinition(
+                anyString(), anyString(), anyString(), any(FormDef.class)
+        );
     }
 
     private void mockMenuSessionService() {

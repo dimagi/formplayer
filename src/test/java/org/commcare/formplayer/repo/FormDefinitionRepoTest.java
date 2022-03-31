@@ -1,5 +1,9 @@
 package org.commcare.formplayer.repo;
 
+import java.time.Instant;
+import java.util.Optional;
+import javax.persistence.EntityManager;
+
 import org.commcare.formplayer.objects.SerializableFormDefinition;
 import org.commcare.formplayer.utils.JpaTestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,10 +13,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.persistence.EntityManager;
-import java.time.Instant;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

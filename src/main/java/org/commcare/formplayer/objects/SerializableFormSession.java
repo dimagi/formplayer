@@ -54,7 +54,7 @@ public class SerializableFormSession implements Serializable{
     @Column(updatable = false)
     private String title;
 
-    @Column(name ="onequestionperscreen", updatable = false)
+    @Column(name = "onequestionperscreen", updatable = false)
     private boolean oneQuestionPerScreen;
 
     @Setter
