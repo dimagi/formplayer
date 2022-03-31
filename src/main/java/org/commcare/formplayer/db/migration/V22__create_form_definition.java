@@ -2,6 +2,11 @@ package org.commcare.formplayer.db.migration;
 
 import java.util.Arrays;
 
+/**
+ * A table to hold a serialized FormDef objects that can be shared across sessions
+ * Uniquely identifiable by the combination of appid, form xmlns and form version
+ * See SerializableFormDefinition for the Java representation
+ */
 public class V22__create_form_definition extends BaseFormplayerMigration {
     @Override
     public Iterable<String> getSqlStatements() {
