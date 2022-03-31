@@ -55,6 +55,9 @@ public class EntityListResponse extends MenuBean {
     private int maxWidth;
     private int maxHeight;
 
+    private boolean isMultiSelect = false;
+    private int maxSelectValue = -1;
+
     public EntityListResponse() {
     }
 
@@ -117,6 +120,8 @@ public class EntityListResponse extends MenuBean {
         this.headers = pair.first;
         this.widthHints = pair.second;
         this.sortIndices = detail.getOrderedFieldIndicesForSorting();
+        this.isMultiSelect = nextScreen.isMultiSelect();
+        this.maxSelectValue = nextScreen.getMaxSelectValue();
         setQueryKey(session.getCommand());
     }
 
@@ -458,5 +463,21 @@ public class EntityListResponse extends MenuBean {
 
     public void setUseUniformUnits(boolean useUniformUnits) {
         this.useUniformUnits = useUniformUnits;
+    }
+
+    public boolean isMultiSelect() {
+        return isMultiSelect;
+    }
+
+    public void setMultiSelect(boolean multiSelect) {
+        isMultiSelect = multiSelect;
+    }
+
+    public int getMaxSelectValue() {
+        return maxSelectValue;
+    }
+
+    public void setMaxSelectValue(int maxSelectValue) {
+        this.maxSelectValue = maxSelectValue;
     }
 }
