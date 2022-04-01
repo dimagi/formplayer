@@ -2,8 +2,10 @@ package org.commcare.formplayer.tests;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
+import org.commcare.formplayer.beans.EvaluateXPathResponseBean;
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
+import org.commcare.formplayer.util.Constants;
 import org.commcare.formplayer.utils.TestContext;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
@@ -57,5 +59,29 @@ public class MultiSelectCaseListTest extends BaseTestClass {
         selections = formResp.getSelections();
         NewFormResponse formRespUsingGuid = sessionNavigate(selections, APP, NewFormResponse.class);
         assertArrayEquals(formResp.getBreadcrumbs(), formRespUsingGuid.getBreadcrumbs());
+
+        // Ensure that the datum is set correctly to the guid
+        String sessionId = formRespUsingGuid.getSessionId();
+        EvaluateXPathResponseBean evaluateXpathResponseBean = evaluateXPath(sessionId,
+                "instance('commcaresession')/session/data/selected_cases");
+        assert evaluateXpathResponseBean.getStatus().equals(
+                Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        String guid = selections[selections.length - 1];
+        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<result>" + guid + "</result>\n";
+        assert evaluateXpathResponseBean.getOutput().equals(result);
+
+        // Ensure that 'selected_cases' instance is populated correctly
+        evaluateXpathResponseBean = evaluateXPath(sessionId,
+                "instance('selected_cases')/results");
+        assert evaluateXpathResponseBean.getStatus().equals(
+                Constants.ANSWER_RESPONSE_STATUS_POSITIVE);
+        result = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<result>\n"
+                + "  <results id=\"selected_cases\">\n"
+                + "    <value>5e421eb8bf414e03b4871195b869d894</value>\n"
+                + "    <value>3512eb7c-7a58-4a95-beda-205eb0d7f163</value>\n"
+                + "  </results>\n"
+                + "</result>\n";
+        assert evaluateXpathResponseBean.getOutput().equals(result);
     }
 }
