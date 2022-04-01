@@ -1,6 +1,7 @@
 package org.commcare.formplayer.session;
 
 import static org.commcare.formplayer.util.SessionUtils.resolveInstallReference;
+import static org.commcare.session.SessionFrame.isEntitySelectionDatum;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -269,11 +270,6 @@ public class MenuSession implements HereFunctionHandlerListener {
             return syncScreen;
         }
         throw new RuntimeException("Unexpected Frame Request: " + sessionWrapper.getNeededData());
-    }
-
-    private boolean isEntitySelectionDatum(String datum) {
-        return datum.equals(SessionFrame.STATE_DATUM_VAL) ||
-                datum.equals(SessionFrame.STATE_MULTIPLE_DATUM_VAL);
     }
 
     private void clearEntityScreenCache() {
