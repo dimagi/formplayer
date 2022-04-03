@@ -1,13 +1,11 @@
 package org.commcare.formplayer.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import org.commcare.formplayer.beans.NewFormResponse;
 import org.commcare.formplayer.beans.menus.EntityListResponse;
 import org.commcare.formplayer.utils.TestContext;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.core.IsEqual;
-import org.hamcrest.core.IsNot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -51,7 +49,7 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 NewFormResponse.class);
 
         // use_selected_values would be replaced by guid in the selections array in response
-        MatcherAssert.assertThat(selections, IsNot.not(IsEqual.equalTo(formResp.getSelections())));
+        assertThat(selections).isNotEqualTo(formResp.getSelections());
 
         // Navigate without using selected values using the selections from response
         selections = formResp.getSelections();
