@@ -14,6 +14,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import javax.annotation.Nullable;
+
 /**
  * A simple sql backed cache that stores the selectons on a multi select Entity list into user DB
  */
@@ -56,7 +58,8 @@ public class EntitiesSelectionStorage implements EntitiesSelectionCache {
     }
 
     @Override
-    public String[] read(String key) {
+    @Nullable
+    public String[] read(String key) throws SQLException {
         try (PreparedStatement preparedStatement = SqlHelper.prepareTableSelectStatement(handler,
                 TABLE_NAME,
                 new String[]{COL_KEY},
@@ -69,8 +72,6 @@ public class EntitiesSelectionStorage implements EntitiesSelectionCache {
                     return null;
                 }
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 

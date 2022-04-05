@@ -18,6 +18,7 @@ import org.javarosa.core.model.instance.ExternalDataInstance;
 import org.javarosa.core.model.instance.InstanceRoot;
 import org.javarosa.core.model.instance.TreeElement;
 
+import java.sql.SQLException;
 import java.util.Hashtable;
 
 /**
@@ -88,11 +89,15 @@ public class FormplayerInstanceInitializer extends CommCareInstanceInitializer {
     protected InstanceRoot setupSelectedCases(ExternalDataInstance instance) {
         String guid = getGuidForSelectedCasesInstance(instance);
         if (guid != null) {
-            String[] selectedValues = new EntitiesSelectionStorage(
-                    ((UserSqlSandbox)mSandbox).getConnection()).read(guid);
-            if (selectedValues != null) {
-                return new ConcreteInstanceRoot(
-                        VirtualInstances.buildSelectedValuesInstance(instance, selectedValues).getRoot());
+            try {
+                String[] selectedValues = new EntitiesSelectionStorage(
+                        ((UserSqlSandbox)mSandbox).getConnection()).read(guid);
+                if (selectedValues != null) {
+                    return new ConcreteInstanceRoot(
+                            VirtualInstances.buildSelectedValuesInstance(instance, selectedValues).getRoot());
+                }
+            } catch (SQLException throwables) {
+                throw new RuntimeException("An error occurred while trying to read entity selections from storage ", throwables);
             }
         }
         return ConcreteInstanceRoot.NULL;
