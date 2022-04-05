@@ -37,4 +37,9 @@ public class MultiSelectCaseListTest extends BaseTestClass {
                 "Multi Select should be turned on for instance-datum backed entity list");
         Assert.isTrue(entityListResp.getMaxSelectValue() == 10, "max-select-value is not set correctly");
     }
+
+    @Override
+    protected boolean useCommCareArchiveReference() {
+        return false;
+    }
 }

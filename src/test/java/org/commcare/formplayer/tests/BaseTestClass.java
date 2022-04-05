@@ -84,6 +84,7 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.actions.FormSendCalloutHandler;
 import org.javarosa.core.model.utils.DateUtils;
 import org.javarosa.core.model.utils.TimezoneProvider;
+import org.javarosa.core.reference.ReferenceHandler;
 import org.javarosa.core.services.locale.Localization;
 import org.javarosa.core.services.locale.LocalizerManager;
 import org.json.JSONObject;
@@ -746,7 +747,7 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_GET_DETAILS,
@@ -783,12 +784,27 @@ public class BaseTestClass {
         if (locale != null && !"".equals(locale.trim())) {
             sessionNavigationBean.setLocale(locale);
         }
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
                 sessionNavigationBean,
                 clazz);
+    }
+
+    private String getInstallReference(String testName) {
+        if (useCommCareArchiveReference()) {
+            return "archives/" + testName + ".ccz";
+        } else {
+            return "archives/" + testName + "/profile.ccpr";
+        }
+    }
+
+    /**
+     * @return whether to use a ccz file reference for the test
+     */
+    protected boolean useCommCareArchiveReference() {
+        return true;
     }
 
     <T> T sessionNavigate(String[] selections, String testName, int sortIndex, Class<T> clazz)
@@ -799,7 +815,7 @@ public class BaseTestClass {
         sessionNavigationBean.setUsername(testName + "username");
         sessionNavigationBean.setSelections(selections);
         sessionNavigationBean.setSortIndex(sortIndex);
-        return generateMockQueryWithInstallReference("archives/" + testName + ".ccz",
+        return generateMockQueryWithInstallReference(getInstallReference(testName),
                 ControllerType.MENU,
                 RequestType.POST,
                 Constants.URL_MENU_NAVIGATION,
